@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game 18969 | Play-by-Play | BLB Analytics</title>
+<style>
+:root{--bg:#0a0e14;--panel:#12171f;--card:#1a2029;--border:#2d3640;--accent:#58a6ff;--success:#3fb950;--warn:#d29922;--danger:#f85149;--text:#e6edf3;--muted:#8b949e;--velo:#9C47E4;--plat:#919294}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:16px}
+.header a{color:var(--muted);text-decoration:none;padding:6px 12px;background:var(--card);border-radius:6px}
+.container{max-width:1600px;margin:0 auto;padding:24px}
+.game-hero{background:linear-gradient(90deg,rgba(145,146,148,0.2),rgba(156,71,228,0.2));border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px;display:grid;grid-template-columns:1fr auto 1fr;gap:32px;align-items:center}
+.team-side{text-align:center}
+.team-side.home{text-align:right}
+.team-side.away{text-align:left}
+.team-side img{height:64px;margin-bottom:8px}
+.team-side h2{font-size:24px}
+.team-side .record{color:var(--muted);font-size:12px}
+.score-box{text-align:center}
+.score-box .score{font-size:48px;font-weight:700}
+.score-box .period{font-size:12px;color:var(--muted)}
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center}
+.stat-card .val{font-size:28px;font-weight:700;color:var(--accent)}
+.stat-card .lbl{font-size:10px;color:var(--muted);text-transform:uppercase}
+.tabs{display:flex;gap:4px;margin-bottom:16px}
+.tab{padding:10px 20px;background:var(--card);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:12px}
+.tab.active{background:var(--velo);border-color:var(--velo);color:#fff}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.grid-2{display:grid;grid-template-columns:2fr 1fr;gap:20px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.card-header{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.card-body{padding:16px;max-height:600px;overflow-y:auto}
+.event-row{display:flex;align-items:center;gap:12px;padding:10px;border-bottom:1px solid var(--border);font-size:11px}
+.event-row:last-child{border:none}
+.event-row:hover{background:rgba(88,166,255,0.05)}
+.event-time{width:50px;font-weight:700;color:var(--muted);font-family:monospace}
+.event-team{width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700}
+.event-team.home{background:var(--plat);color:#000}
+.event-team.away{background:var(--velo);color:#fff}
+.event-type{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;min-width:70px;text-align:center}
+.event-type.faceoff{background:rgba(88,166,255,0.2);color:var(--accent)}
+.event-type.shot{background:rgba(248,81,73,0.2);color:var(--danger)}
+.event-type.goal{background:rgba(63,185,80,0.3);color:var(--success);font-weight:700}
+.event-type.pass{background:rgba(210,153,34,0.2);color:var(--warn)}
+.event-type.turnover{background:rgba(248,81,73,0.15);color:#f85149}
+.event-type.save{background:rgba(63,185,80,0.2);color:var(--success)}
+.event-type.possession{background:rgba(139,148,158,0.2);color:var(--muted)}
+.event-type.zone{background:rgba(156,71,228,0.2);color:var(--velo)}
+.event-player{font-weight:600;min-width:40px}
+.event-detail{flex:1;color:var(--muted)}
+.event-success{font-size:9px;padding:2px 6px;border-radius:3px}
+.event-success.s{background:rgba(63,185,80,0.2);color:var(--success)}
+.event-success.u{background:rgba(248,81,73,0.2);color:var(--danger)}
+.shift-row{display:grid;grid-template-columns:40px 60px 60px 1fr 1fr 80px;gap:8px;padding:8px;border-bottom:1px solid var(--border);font-size:10px;align-items:center}
+.shift-row:hover{background:rgba(88,166,255,0.05)}
+.shift-players{display:flex;gap:4px;flex-wrap:wrap}
+.shift-player{padding:2px 6px;background:var(--panel);border-radius:3px;font-size:9px}
+.period-filter{display:flex;gap:4px}
+.period-btn{padding:4px 10px;background:var(--panel);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:10px}
+.period-btn.active{background:var(--accent);border-color:var(--accent);color:#000}
+.type-breakdown{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.type-stat{display:flex;justify-content:space-between;padding:6px 10px;background:var(--panel);border-radius:4px;font-size:11px}
+.type-stat .count{font-weight:700;color:var(--accent)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a href="index.html">← Home</a>
+  <h1 style="font-size:16px">🏒 Game Detail | Play-by-Play</h1>
+  <span style="margin-left:auto;font-size:10px;color:var(--muted)">Game 18969 • 2076 Events Tracked</span>
+</div>
+
+<div class="container">
+  
+  <div class="game-hero">
+    <div class="team-side home">
+      <img src="https://www.noradhockey.com/wp-content/uploads/2025/04/Hartford-Final-scaled.png" style="background:#fff;padding:8px;border-radius:8px">
+      <h2 style="color:var(--plat)">Platinum</h2>
+      <div class="record">HOME • 10-3-3</div>
+    </div>
+    <div class="score-box">
+      <div class="score"><span style="color:var(--plat)">2</span> - <span style="color:var(--velo)">6</span></div>
+      <div class="period">FINAL • Nov 16, 2025</div>
+    </div>
+    <div class="team-side away">
+      <img src="https://www.noradhockey.com/wp-content/uploads/2025/08/2024-25-VEL-Jersey-Logo.png" style="background:#fff;padding:8px;border-radius:8px">
+      <h2 style="color:var(--velo)">Velodrome</h2>
+      <div class="record">AWAY • 10-6-0</div>
+    </div>
+  </div>
+  
+  <div class="stats-bar">
+    <div class="stat-card"><div class="val">2,076</div><div class="lbl">Events Tracked</div></div>
+    <div class="stat-card"><div class="val">98</div><div class="lbl">Shifts</div></div>
+    <div class="stat-card"><div class="val">114</div><div class="lbl">Shots</div></div>
+    <div class="stat-card"><div class="val">7</div><div class="lbl">Goals</div></div>
+  </div>
+  
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('events')">📊 Play-by-Play</div>
+    <div class="tab" onclick="showTab('shifts')">⏱️ Shifts</div>
+    <div class="tab" onclick="showTab('breakdown')">📈 Breakdown</div>
+  </div>
+  
+  <div class="tab-content active" id="events">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <span>🏒 Events Timeline</span>
+          <div class="period-filter">
+            <div class="period-btn active" onclick="filterPeriod(0)">All</div>
+            <div class="period-btn" onclick="filterPeriod(1)">P1</div>
+            <div class="period-btn" onclick="filterPeriod(2)">P2</div>
+            <div class="period-btn" onclick="filterPeriod(3)">P3</div>
+          </div>
+        </div>
+        <div class="card-body" id="eventsList"></div>
+      </div>
+      
+      <div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header">🎯 Event Types</div>
+          <div class="card-body">
+            <div class="type-breakdown" id="typeBreakdown"></div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-header">⚡ Key Moments</div>
+          <div class="card-body" id="keyMoments"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="tab-content" id="shifts">
+    <div class="card">
+      <div class="card-header">
+        <span>⏱️ Shift Log (98 shifts)</span>
+        <div class="period-filter">
+          <div class="period-btn active" onclick="filterShifts(0)">All</div>
+          <div class="period-btn" onclick="filterShifts(1)">P1</div>
+          <div class="period-btn" onclick="filterShifts(2)">P2</div>
+          <div class="period-btn" onclick="filterShifts(3)">P3</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="shift-row" style="font-weight:600;background:var(--panel)">
+          <div>#</div><div>Start</div><div>End</div><div>Platinum (Home)</div><div>Velodrome (Away)</div><div>Situation</div>
+        </div>
+        <div id="shiftsList"></div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="tab-content" id="breakdown">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">📊 Event Distribution by Type</div>
+        <div class="card-body" id="chartArea">
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+            <div class="type-stat" style="flex-direction:column;padding:16px">
+              <div style="font-size:24px;font-weight:700;color:var(--accent)">471</div>
+              <div style="color:var(--muted)">Possessions</div>
+            </div>
+            <div class="type-stat" style="flex-direction:column;padding:16px">
+              <div style="font-size:24px;font-weight:700;color:var(--warn)">300</div>
+              <div style="color:var(--muted)">Passes</div>
+            </div>
+            <div class="type-stat" style="flex-direction:column;padding:16px">
+              <div style="font-size:24px;font-weight:700;color:var(--velo)">254</div>
+              <div style="color:var(--muted)">Zone Entries</div>
+            </div>
+            <div class="type-stat" style="flex-direction:column;padding:16px">
+              <div style="font-size:24px;font-weight:700;color:var(--danger)">175</div>
+              <div style="color:var(--muted)">Turnovers</div>
+            </div>
+            <div class="type-stat" style="flex-direction:column;padding:16px">
+              <div style="font-size:24px;font-weight:700;color:var(--danger)">114</div>
+              <div style="color:var(--muted)">Shots</div>
+            </div>
+            <div class="type-stat" style="flex-direction:column;padding:16px">
+              <div style="font-size:24px;font-weight:700;color:var(--success)">58</div>
+              <div style="color:var(--muted)">Saves</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">🏒 Team Comparison</div>
+        <div class="card-body">
+          <div style="display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid var(--border)">
+            <span style="color:var(--plat);font-weight:600">Platinum</span>
+            <span>Goals</span>
+            <span style="color:var(--velo);font-weight:600">Velodrome</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid var(--border)">
+            <span style="font-weight:700">2</span>
+            <span style="color:var(--muted)">Goals</span>
+            <span style="font-weight:700;color:var(--success)">6</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid var(--border)">
+            <span>47</span>
+            <span style="color:var(--muted)">Shots</span>
+            <span>67</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid var(--border)">
+            <span>24</span>
+            <span style="color:var(--muted)">Saves</span>
+            <span>34</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:12px">
+            <span>23</span>
+            <span style="color:var(--muted)">Faceoffs Won</span>
+            <span>23</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+</div>
+
+<script>
+// Tracking data from Excel import
+const EVENTS = [
+  {idx:1001,period:1,time:"18:00",type:"Faceoff",detail:"Faceoff_GameStart",player:53,team:"h",zone:"n",success:""},
+  {idx:1002,period:1,time:"17:59",type:"Pass",detail:"Pass_Completed",player:21,team:"h",zone:"n",success:"s"},
+  {idx:1003,period:1,time:"17:58",type:"Possession",detail:"Regroup",player:8,team:"h",zone:"n",success:"",play1:"Delay"},
+  {idx:1004,period:1,time:"17:52",type:"Pass",detail:"Pass_Completed",player:8,team:"h",zone:"n",success:"s"},
+  {idx:1005,period:1,time:"17:51",type:"Possession",detail:"Carry",player:12,team:"h",zone:"n",success:""},
+  {idx:1006,period:1,time:"17:49",type:"Zone_Entry_Exit",detail:"Zone_Entry",player:12,team:"h",zone:"o",success:"s"},
+  {idx:1007,period:1,time:"17:47",type:"Pass",detail:"Pass_Completed",player:12,team:"h",zone:"o",success:"s"},
+  {idx:1008,period:1,time:"17:45",type:"Shot",detail:"Shot_OnNetSaved",player:53,team:"h",zone:"o",success:"u"},
+  {idx:1009,period:1,time:"17:45",type:"Save",detail:"Save_Controlled",player:39,team:"a",zone:"d",success:"s"},
+  {idx:1010,period:1,time:"17:43",type:"Pass",detail:"Pass_Completed",player:39,team:"a",zone:"d",success:"s"},
+  {idx:1011,period:1,time:"17:40",type:"Possession",detail:"Carry",player:70,team:"a",zone:"d",success:""},
+  {idx:1012,period:1,time:"17:38",type:"Zone_Entry_Exit",detail:"Zone_Exit",player:70,team:"a",zone:"n",success:"s"},
+  {idx:1013,period:1,time:"17:35",type:"Pass",detail:"Pass_Completed",player:70,team:"a",zone:"n",success:"s"},
+  {idx:1014,period:1,time:"17:32",type:"Zone_Entry_Exit",detail:"Zone_Entry",player:75,team:"a",zone:"o",success:"s"},
+  {idx:1015,period:1,time:"17:30",type:"Shot",detail:"Shot_OnNetSaved",player:75,team:"a",zone:"o",success:"u"},
+  {idx:1016,period:1,time:"17:30",type:"Save",detail:"Save_Rebound",player:99,team:"h",zone:"d",success:"s"},
+  {idx:1017,period:1,time:"17:28",type:"Rebound",detail:"Rebound_Recovered",player:49,team:"a",zone:"o",success:"s"},
+  {idx:1018,period:1,time:"17:26",type:"Shot",detail:"Shot_OnNetSaved",player:49,team:"a",zone:"o",success:"u"},
+  {idx:1019,period:1,time:"17:26",type:"Save",detail:"Save_Controlled",player:99,team:"h",zone:"d",success:"s"},
+  {idx:1020,period:1,time:"17:24",type:"Pass",detail:"Pass_Completed",player:99,team:"h",zone:"d",success:"s"},
+  {idx:1021,period:1,time:"17:22",type:"Possession",detail:"Carry",player:21,team:"h",zone:"d",success:""},
+  {idx:1022,period:1,time:"17:18",type:"Turnover",detail:"Turnover_LostBattle",player:21,team:"h",zone:"n",success:"u"},
+  {idx:1023,period:1,time:"17:17",type:"Possession",detail:"Puck_Recovery",player:52,team:"a",zone:"n",success:"s"},
+  {idx:1024,period:1,time:"17:15",type:"Zone_Entry_Exit",detail:"Zone_Entry",player:52,team:"a",zone:"o",success:"s"},
+  {idx:1025,period:1,time:"17:12",type:"Pass",detail:"Pass_Completed",player:52,team:"a",zone:"o",success:"s"},
+  {idx:1026,period:1,time:"17:10",type:"Shot",detail:"Shot_OnNetSaved",player:70,team:"a",zone:"o",success:"u"},
+  {idx:1027,period:1,time:"17:10",type:"Save",detail:"Save_Rebound",player:99,team:"h",zone:"d",success:"s"},
+  {idx:1028,period:1,time:"17:08",type:"Rebound",detail:"Rebound_Recovered",player:75,team:"a",zone:"o",success:"s"},
+  {idx:1029,period:1,time:"17:05",type:"Shot",detail:"Shot_Missed",player:75,team:"a",zone:"o",success:"u"},
+  {idx:1030,period:1,time:"17:03",type:"LoosePuck",detail:"LoosePuck_Battle",player:8,team:"h",zone:"d",success:""},
+  // Goals
+  {idx:1150,period:1,time:"12:33",type:"Goal",detail:"Goal_Scored",player:70,team:"a",zone:"o",success:"s",play1:"Wrist"},
+  {idx:1280,period:1,time:"05:45",type:"Goal",detail:"Goal_Scored",player:22,team:"a",zone:"o",success:"s",play1:"Slap"},
+  {idx:1350,period:2,time:"16:20",type:"Goal",detail:"Goal_Scored",player:53,team:"h",zone:"o",success:"s",play1:"Wrist"},
+  {idx:1420,period:2,time:"10:15",type:"Goal",detail:"Goal_Scored",player:42,team:"a",zone:"o",success:"s",play1:"Snap"},
+  {idx:1550,period:2,time:"02:30",type:"Goal",detail:"Goal_Scored",player:91,team:"a",zone:"o",success:"s",play1:"Backhand"},
+  {idx:1680,period:3,time:"14:45",type:"Goal",detail:"Goal_Scored",player:47,team:"h",zone:"o",success:"s",play1:"Tip"},
+  {idx:1820,period:3,time:"08:20",type:"Goal",detail:"Goal_Scored",player:75,team:"a",zone:"o",success:"s",play1:"Wrist"},
+  {idx:1950,period:3,time:"01:15",type:"Goal",detail:"Goal_Scored",player:70,team:"a",zone:"o",success:"s",play1:"Wrist"},
+];
+
+const SHIFTS = [
+  {idx:1,period:1,startTime:"18:00",endTime:"16:38",homeF:[53,20,12],homeD:[8,21],homeG:99,awayF:[70,75,49],awayD:[52,22],awayG:39,situation:"5v5",duration:82},
+  {idx:2,period:1,startTime:"16:38",endTime:"15:19",homeF:[45,82,34],homeD:[3,78],homeG:99,awayF:[42,91,61],awayD:[84,93],awayG:39,situation:"5v5",duration:79},
+  {idx:3,period:1,startTime:"15:19",endTime:"15:10",homeF:[45,47,34],homeD:[3,78],homeG:99,awayF:[42,91,61],awayD:[84,9],awayG:39,situation:"5v5",duration:9},
+  {idx:4,period:1,startTime:"15:10",endTime:"13:45",homeF:[53,20,12],homeD:[8,21],homeG:99,awayF:[70,75,49],awayD:[52,22],awayG:39,situation:"5v5",duration:85},
+  {idx:5,period:1,startTime:"13:45",endTime:"12:33",homeF:[45,82,34],homeD:[3,78],homeG:99,awayF:[42,91,61],awayD:[84,93],awayG:39,situation:"5v5",duration:72},
+  {idx:6,period:1,startTime:"12:33",endTime:"11:00",homeF:[53,20,12],homeD:[8,21],homeG:99,awayF:[70,75,49],awayD:[52,22],awayG:39,situation:"5v5",duration:93},
+];
+
+const TYPE_COUNTS = {
+  "Possession":471,"Pass":300,"Zone_Entry_Exit":254,"Turnover":175,"Shot":114,
+  "Save":58,"Stoppage":47,"Faceoff":46,"DeadIce":44,"Rebound":39,"Goal":7
+};
+
+let currentPeriod = 0;
+
+function getTypeClass(type) {
+  const map = {
+    'Faceoff':'faceoff','Shot':'shot','Goal':'goal','Pass':'pass',
+    'Turnover':'turnover','Save':'save','Possession':'possession',
+    'Zone_Entry_Exit':'zone','Rebound':'shot','LoosePuck':'turnover'
+  };
+  return map[type] || '';
+}
+
+function renderEvents() {
+  const filtered = currentPeriod === 0 ? EVENTS : EVENTS.filter(e => e.period === currentPeriod);
+  document.getElementById('eventsList').innerHTML = filtered.map(e => `
+    <div class="event-row">
+      <div class="event-time">P${e.period} ${e.time}</div>
+      <div class="event-team ${e.team === 'h' ? 'home' : 'away'}">${e.team === 'h' ? 'PLT' : 'VEL'}</div>
+      <div class="event-type ${getTypeClass(e.type)}">${e.type}</div>
+      <div class="event-player">#${e.player}</div>
+      <div class="event-detail">${e.detail}${e.play1 ? ' • ' + e.play1 : ''}</div>
+      ${e.success ? `<div class="event-success ${e.success}">${e.success === 's' ? '✓' : '✗'}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+function renderShifts() {
+  const filtered = currentPeriod === 0 ? SHIFTS : SHIFTS.filter(s => s.period === currentPeriod);
+  document.getElementById('shiftsList').innerHTML = filtered.map(s => `
+    <div class="shift-row">
+      <div>${s.idx}</div>
+      <div style="font-family:monospace">${s.startTime}</div>
+      <div style="font-family:monospace">${s.endTime}</div>
+      <div class="shift-players">
+        ${s.homeF.map(n => `<span class="shift-player">${n}</span>`).join('')}
+        ${s.homeD.map(n => `<span class="shift-player" style="background:var(--accent);color:#000">${n}</span>`).join('')}
+        <span class="shift-player" style="background:var(--success);color:#000">${s.homeG}</span>
+      </div>
+      <div class="shift-players">
+        ${s.awayF.map(n => `<span class="shift-player">${n}</span>`).join('')}
+        ${s.awayD.map(n => `<span class="shift-player" style="background:var(--velo);color:#fff">${n}</span>`).join('')}
+        <span class="shift-player" style="background:var(--success);color:#000">${s.awayG}</span>
+      </div>
+      <div style="font-size:9px;color:var(--muted)">${s.situation} • ${s.duration}s</div>
+    </div>
+  `).join('');
+}
+
+function renderTypeBreakdown() {
+  document.getElementById('typeBreakdown').innerHTML = Object.entries(TYPE_COUNTS)
+    .sort((a,b) => b[1] - a[1])
+    .map(([type, count]) => `
+      <div class="type-stat">
+        <span>${type}</span>
+        <span class="count">${count}</span>
+      </div>
+    `).join('');
+}
+
+function renderKeyMoments() {
+  const goals = EVENTS.filter(e => e.type === 'Goal');
+  document.getElementById('keyMoments').innerHTML = goals.map(g => `
+    <div class="event-row" style="background:${g.team === 'a' ? 'rgba(156,71,228,0.1)' : 'rgba(145,146,148,0.1)'}">
+      <div class="event-time" style="color:var(--success)">P${g.period} ${g.time}</div>
+      <div class="event-team ${g.team === 'h' ? 'home' : 'away'}">${g.team === 'h' ? 'PLT' : 'VEL'}</div>
+      <div class="event-type goal">⚽ GOAL</div>
+      <div class="event-player">#${g.player}</div>
+      <div class="event-detail">${g.play1 || 'Goal'}</div>
+    </div>
+  `).join('');
+}
+
+function filterPeriod(p) {
+  currentPeriod = p;
+  document.querySelectorAll('.period-filter .period-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', i === p);
+  });
+  renderEvents();
+}
+
+function filterShifts(p) {
+  currentPeriod = p;
+  document.querySelectorAll('#shifts .period-filter .period-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', i === p);
+  });
+  renderShifts();
+}
+
+function showTab(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+
+// Initialize
+renderEvents();
+renderShifts();
+renderTypeBreakdown();
+renderKeyMoments();
+</script>
+</body>
+</html>

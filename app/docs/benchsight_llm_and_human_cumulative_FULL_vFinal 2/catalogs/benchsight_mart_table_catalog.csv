@@ -1,0 +1,30 @@
+table_name,table_type,grain,primary_key,csv_file,short_description
+dim_league_mart,dimension,One row per league,league_id,dim_league_mart.csv,"Static lookup for league (Beer League, Rec League, Tournament)."
+dim_season_mart,dimension,One row per season,season_id,dim_season_mart.csv,"Season metadata (start/end dates, division, skill tier)."
+dim_game_mart,dimension,One row per game,game_id,dim_game_mart.csv,"Game details (date, teams, rink, score, tracking coverage flags)."
+dim_team_mart,dimension,One row per team,team_id,dim_team_mart.csv,"Team attributes (name, league, colors, home rink, ratings)."
+dim_player_mart,dimension,One row per player,player_id,dim_player_mart.csv,"Player attributes (name/number, handedness, position, skill rating 2–6, NHL comps)."
+dim_date_mart,dimension,One row per calendar date,date_id,dim_date_mart.csv,Calendar date dimension (joins games to week/month/season).
+dim_position_mart,dimension,One row per position,position_id,dim_position_mart.csv,"Positions and groups (F, D, G, C, W, LD, RD, etc.)."
+dim_rink_zone_mart,dimension,One row per ice zone,zone_id,dim_rink_zone_mart.csv,Offensive/defensive/neutral zone definitions and coordinates.
+dim_rink_box_mart,dimension,One row per goaltender box region,box_id,dim_rink_box_mart.csv,"Shot-location boxes on net (high glove, low blocker, five-hole, etc.)."
+dim_event_type_mart,dimension,One row per event type + detail,event_type_id,dim_event_type_mart.csv,"Canonical catalog of events (shots, passes, turnovers, entries, exits, faceoffs, etc.)."
+dim_strength_state_mart,dimension,One row per manpower state,strength_id,dim_strength_state_mart.csv,"Strength states like 5v5, 5v4, 4v5, 6v5 EN, etc."
+dim_situation_mart,dimension,One row per game situation,situation_id,dim_situation_mart.csv,"Situations like EV, PP, PK, pulled goalie, penalty shot, etc."
+dim_rating_band_mart,dimension,One row per skill rating band,rating_band_id,dim_rating_band_mart.csv,Buckets players into rating tiers (2–6) for context and matchup analysis.
+dim_sequence_type_mart,dimension,One row per chain/sequence type,sequence_type_id,dim_sequence_type_mart.csv,"Types of chains: rush, cycle, counter-rush, OZ play, DZ breakout, etc."
+fact_game_roster_mart,fact,One row per player per game,game_roster_id,fact_game_roster_mart.csv,"Official roster per game (eligibility, with/without-you baselines)."
+fact_events_mart,fact,One row per atomic event,event_key,fact_events_mart.csv,"Fully normalized event record (players, team, zone, chain IDs, ratings, xy references)."
+fact_shifts_mart,fact,One row per logical player shift,shift_key,fact_shifts_mart.csv,"Per-player shifts with TOI, stoppage-adjusted TOI, goal states, zone start/end, ratings on ice."
+fact_player_boxscore_mart,fact,One row per player per game,player_game_key,fact_player_boxscore_mart.csv,"Aggregated stats per player per game: goals, assists, xG, CF/Fenwick, microstats, ratings context."
+fact_game_summary_mart,fact,One row per game per team,game_team_key,fact_game_summary_mart.csv,"Team-level game summary including score, xG, CF%, shot maps, special teams results."
+fact_line_combos_mart,fact,One row per forward/defense combo per game,line_combo_key,fact_line_combos_mart.csv,"Line/defense pair results: TOI together, xG for/against, CF%, goals, microstats as a unit."
+fact_head_to_head_mart,fact,One row per player-vs-player matchup in a game,h2h_key,fact_head_to_head_mart.csv,"Head-to-head matchups: TOI, xG, CF, goals when players share the ice."
+fact_sequence_chain_mart,fact,One row per sequence_index chain,sequence_key,fact_sequence_chain_mart.csv,"Multi-zone, multi-possession sequences (entries/exits/turnovers leading into shots)."
+fact_play_chain_mart,fact,One row per play_index chain,play_key,fact_play_chain_mart.csv,"Single-possession plays: OZ cycles, rushes, controlled entries leading to shots/goals."
+fact_linked_chain_mart,fact,One row per linked_event_index chain,linked_key,fact_linked_chain_mart.csv,Micro chains like shot–save–rebound–goal or pass–interception events.
+fact_xy_events_mart,fact,One row per event-location record,event_xy_key,fact_xy_events_mart.csv,"XY coordinates for non-shot events, zoned + enriched with rink dimensions."
+fact_xy_shots_mart,fact,One row per shot-location record,shot_xy_key,fact_xy_shots_mart.csv,"Net-relative XY locations for shots/goals, joined to box/segment dims for shot maps."
+fact_puck_xy_mart,fact,One row per puck XY sample,puck_xy_key,fact_puck_xy_mart.csv,Frames/points tracking puck location for trajectory and speed analysis.
+fact_game_tracking_coverage_mart,fact,One row per game per tracked module,coverage_key,fact_game_tracking_coverage_mart.csv,"Which parts of each game are tracked (shifts, events, XY, shots, video) and over what time ranges."
+fact_data_quality_issues_mart,fact,One row per data quality issue,dq_issue_key,fact_data_quality_issues_mart.csv,"Logged anomalies: weird durations, missing IDs, broken joins, suspicious strings like #N/A."

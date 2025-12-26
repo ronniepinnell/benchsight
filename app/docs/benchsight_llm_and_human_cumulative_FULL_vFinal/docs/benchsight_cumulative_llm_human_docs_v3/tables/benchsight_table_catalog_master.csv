@@ -1,0 +1,11 @@
+table_name,layer,grain,purpose
+dim_player,mart,one row per player,"Master player attributes including rating, handedness, position, team, and IDs for joins."
+fact_events_long,mart,one row per event per involved player,"Detailed play-by-play events used for microstats and chains (sequence, play, linked)."
+fact_events_wide,mart,one row per event,"Event header table with core fields, on-ice context, ratings, and links to chains and video."
+fact_shifts_long,mart,one row per logical shift per player,"Shift-level TOI, score state, situations and per-shift microstats."
+fact_shifts_wide,mart,one row per shift segment per team line,Line-level view of who was on the ice together and for how long.
+fact_player_boxscore,mart,one row per player per game,"Boxscore stats including basic, advanced, and microstats used for reports and comps."
+fact_event_chains,mart,"one row per chain (linked, sequence, play)","Chains of events like rushes, cycles, counter-rushes used for xG-style analysis."
+fact_xy_events,mart,one row per event-location per actor,XY coordinates for events on the rink joined to rink coordinate zones.
+fact_xy_shots_net,mart,one row per shot impact location on net,Shot placement tracking for goalie analysis and shot maps.
+fact_video_bookmarks,mart,one row per video bookmark,Links events/shifts to exact YouTube timestamps for film review.

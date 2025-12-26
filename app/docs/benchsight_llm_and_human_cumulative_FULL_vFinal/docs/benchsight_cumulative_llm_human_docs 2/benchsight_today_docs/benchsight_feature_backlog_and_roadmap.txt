@@ -1,0 +1,67 @@
+BENCHSIGHT FEATURE BACKLOG & ROADMAP (SHORT / MID / LONG)
+========================================================
+
+SHORT TERM (0–3 months) – TEAM & RESUME
+---------------------------------------
+Goals:
+  - Have a stable ETL + datamart.
+  - Produce meaningful reports for your team.
+  - Have a project that looks great on a resume / portfolio.
+
+Key Features:
+  - Clean project structure: src/, sql/, data/, docs/, powerbi/, tracker/.
+  - One main orchestrator Python script (e.g., run_benchsight.py) with menu:
+      * Stage/refresh BLB master tables.
+      * Ingest new game folders (manual tracker).
+      * Rebuild datamart tables for all games.
+      * Export datamart tables as CSV for Power BI.
+  - Power BI model with:
+      * Game summary page (ESPN/NHL style).
+      * Player card page (NHL Edge inspired).
+      * Line combo / head-to-head pages.
+      * Season overview page (trends over time).
+  - Basic Python dashboard (Dash/Streamlit) that mirrors key PBI pages.
+  - Core stats from the catalog: G, A, SOG, CF/CA, FF/FA, TOI, shift counts, zone entry/exit, etc.
+
+MID TERM (3–12 months) – BENCH TOOL / LIGHT COMMERCIAL
+------------------------------------------------------
+Goals:
+  - Make tracking faster and more pleasant.
+  - Turn the system into something a whole team or club can use.
+
+Key Features:
+  - Web-based tracker UI:
+      * Login / multi-team support.
+      * Roster selection from dim_player and fact_game_roster.
+      * Event entry form with dependent dropdowns (like Excel Lists tab).
+      * Integrated XY clicker for rink & net (events and shots).
+      * Shift logging, with auto-on/off, copy last line, etc.
+  - Per-game logging QA:
+      * fact_game_tracking_coverage summarizing what’s tracked (shifts/events/xy/video) and which time ranges.
+      * Automated data quality logs (missing players, weird durations, bad clock values).
+  - Simple subscription-ready structure:
+      * Multi-tenant database or schema-per-league.
+      * The ability to invite multiple users and control which teams they see.
+
+LONG TERM (1–3 years) – VISION PLATFORM & PRO USE
+-------------------------------------------------
+Goals:
+  - Reduce manual tracking using computer vision.
+  - Offer pro-level insights (xG/xPlay, route analysis, etc.).
+
+Key Features:
+  - Vision pipeline:
+      * Video ingestion (YouTube or uploaded MP4).
+      * Pose / tracking model integration (e.g., OpenCV + DeepSORT + domain-specific models).
+      * Data alignment between tracking and events (time-coded by running seconds).
+  - xG and xPlay models:
+      * Train models on your own data + possibly public NHL data (e.g., MoneyPuck) where permitted.
+      * Surface these in dashboards, reports, and scouting tools.
+  - Bench/iPad UI with live-like feedback:
+      * Simple scoreboard, next shift suggestions, mismatches to exploit, etc.
+
+VERY LONG TERM (3+ years) – ECOSYSTEM
+-------------------------------------
+  - White-label version for multiple sports (soccer, lacrosse, basketball).
+  - Public APIs for third-party apps.
+  - Marketplace for custom models and analytics packages.

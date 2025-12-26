@@ -1,0 +1,8 @@
+﻿event_type,event_category,is_shot,is_possession
+Shot,Offense,1,1
+Pass,Offense,0,1
+Turnover,Defense,0,0
+Faceoff,Neutral,0,0
+Zone_Entry_Exit,Transition,0,1
+Save,Goaltending,0,0
+Penalty,Discipline,0,0

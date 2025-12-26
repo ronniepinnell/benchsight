@@ -1,0 +1,53 @@
+BENCHSIGHT COMMERCIAL SUMMARY (HIGH LEVEL)
+=========================================
+
+1) Core Idea
+   ----------
+   BenchSight is a “Moneyball for beer league and junior hockey” platform:
+   - You manually (or semi‑automatically) track detailed events and shifts.
+   - The system combines that with league boxscore data and ratings.
+   - It produces NHL‑style advanced stats, microstats, and visual reports for:
+     * individual players
+     * lines / pairings
+     * full teams
+     * head‑to‑head matchups over time.
+
+2) Audience Ladder
+   ----------------
+   - **Phase 1 – Your team / league**: prove value with your own games.
+   - **Phase 2 – Local/junior clubs**: white‑glove onboarding, simple subscription.
+   - **Phase 3 – Regional/national**: more automation, APIs, and self‑serve dashboards.
+   - **Phase 4 – Pro**: computer vision, full data pipeline, custom models, on‑site support.
+
+3) Monetization
+   ------------
+   - Tiered subscriptions:
+     * Team tier: few hundred $/season for full analytics + support.
+     * Club tier: bundle multiple teams; higher price.
+     * League tier: per‑team pricing or flat league deal.
+   - Services / consulting:
+     * custom reports
+     * player scouting dossiers
+     * draft / roster consulting.
+
+4) Differentiation
+   ----------------
+   - Depth of tracking: microstats that most leagues cannot see.
+   - Flexibility: works with **fully tracked games** and **boxscore‑only games**.
+   - Storytelling: ESG / NHL‑style summaries, player cards, line matchup dashboards.
+   - Roadmap toward **computer‑vision powered auto‑tracking**.
+
+5) Tech / Data Stack (Conceptual)
+   -------------------------------
+   - Storage: Postgres (or cloud DB) + parquet/CSV snapshots.
+   - ETL: Python (pandas + SQLAlchemy), modular src/ package.
+   - Tracking: web UI (FastAPI/Flask backend + React/Vue front‑end) or Dash/Streamlit MVP.
+   - Analytics: Power BI + Python dashboards (Plotly, Dash, etc.).
+   - ML (later): Pytorch/TensorFlow + tracking data to learn xG/xPlay models.
+
+6) Key Risks / Hurdles
+   --------------------
+   - Manual tracking load: must make the UI extremely fast and low‑click.
+   - Data quality: logs & QA to flag inconsistent events or missing data.
+   - Legal/IP: for pro content you’d need licensing or use public/partner feeds.
+   - Distribution: selling into clubs and leagues is a **relationship** business.

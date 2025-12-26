@@ -1,0 +1,1671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BenchSight - Hockey Analytics Platform</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a1a2e;
+            --secondary: #16213e;
+            --accent: #0f3460;
+            --highlight: #e94560;
+            --text: #eaeaea;
+            --text-muted: #a0a0a0;
+            --success: #00d26a;
+            --warning: #ffb627;
+            --ice: #d4f1f9;
+            --border: #2a2a4a;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--primary);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        
+        /* Navigation */
+        .nav {
+            background: var(--secondary);
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--highlight);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .nav-link {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-muted);
+            text-decoration: none;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background: var(--accent);
+            color: var(--text);
+        }
+        
+        .nav-right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .privacy-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+        }
+        
+        .toggle {
+            position: relative;
+            width: 40px;
+            height: 20px;
+        }
+        
+        .toggle input { opacity: 0; width: 0; height: 0; }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--accent);
+            border-radius: 20px;
+            transition: 0.3s;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+        
+        .toggle input:checked + .toggle-slider {
+            background: var(--highlight);
+        }
+        
+        .toggle input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+        }
+        
+        /* Main Container */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        
+        /* Views */
+        .view {
+            display: none;
+        }
+        
+        .view.active {
+            display: block;
+        }
+        
+        /* Cards */
+        .card {
+            background: var(--secondary);
+            border-radius: 12px;
+            padding: 1.25rem;
+            border: 1px solid var(--border);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        /* Grid Layouts */
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+        
+        @media (max-width: 1200px) {
+            .grid-4 { grid-template-columns: repeat(2, 1fr); }
+            .grid-3 { grid-template-columns: repeat(2, 1fr); }
+        }
+        
+        @media (max-width: 768px) {
+            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+        }
+        
+        /* Game Selector */
+        .game-selector {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        
+        .game-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--accent);
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+        }
+        
+        .game-btn:hover, .game-btn.active {
+            background: var(--highlight);
+            border-color: var(--highlight);
+        }
+        
+        .game-btn .score {
+            font-weight: 700;
+            margin-left: 0.5rem;
+        }
+        
+        /* Stats Display */
+        .stat-box {
+            text-align: center;
+            padding: 1rem;
+            background: var(--accent);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .stat-box:hover {
+            transform: translateY(-2px);
+            background: var(--border);
+        }
+        
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--highlight);
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-top: 0.25rem;
+        }
+        
+        /* Score Display */
+        .score-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, var(--accent), var(--secondary));
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+        
+        .team-info {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .team-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 0.5rem;
+            border: 3px solid var(--border);
+        }
+        
+        .team-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .score-center {
+            text-align: center;
+        }
+        
+        .score-numbers {
+            font-size: 3rem;
+            font-weight: 700;
+        }
+        
+        .score-numbers .home { color: var(--highlight); }
+        .score-numbers .away { color: var(--success); }
+        
+        .game-date {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        
+        /* Period Filters */
+        .period-filters {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .period-btn {
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text);
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        
+        .period-btn:hover, .period-btn.active {
+            background: var(--highlight);
+            border-color: var(--highlight);
+        }
+        
+        /* Event Log */
+        .event-log {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .event-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .event-item:hover {
+            background: var(--accent);
+        }
+        
+        .event-time {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            min-width: 50px;
+        }
+        
+        .event-type-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+        
+        .event-type-badge.goal { background: var(--highlight); }
+        .event-type-badge.shot { background: #3498db; }
+        .event-type-badge.save { background: var(--success); }
+        .event-type-badge.faceoff { background: #9b59b6; }
+        .event-type-badge.turnover { background: var(--warning); color: #000; }
+        .event-type-badge.zone_entry { background: #1abc9c; }
+        .event-type-badge.pass { background: #34495e; }
+        
+        .event-detail {
+            flex: 1;
+        }
+        
+        .event-players {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        /* Player Cards */
+        .player-card {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--accent);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .player-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        .player-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--highlight);
+        }
+        
+        .player-info h4 {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .player-info .position {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        .player-stats {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+        }
+        
+        .player-stats span {
+            color: var(--highlight);
+            font-weight: 600;
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal {
+            background: var(--secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        /* Admin Section */
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 1rem;
+            min-height: calc(100vh - 100px);
+        }
+        
+        .admin-sidebar {
+            background: var(--secondary);
+            border-radius: 12px;
+            padding: 1rem;
+        }
+        
+        .admin-menu-item {
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .admin-menu-item:hover, .admin-menu-item.active {
+            background: var(--accent);
+        }
+        
+        .admin-content {
+            background: var(--secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        
+        .data-table th, .data-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .data-table th {
+            background: var(--accent);
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        
+        .data-table tr:hover {
+            background: var(--accent);
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: var(--highlight);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #c73e52;
+        }
+        
+        .btn-secondary {
+            background: var(--accent);
+            color: var(--text);
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        
+        /* Video Player */
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #000;
+        }
+        
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Progress Bar */
+        .progress {
+            height: 8px;
+            background: var(--accent);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: var(--highlight);
+            transition: width 0.3s;
+        }
+        
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border);
+            border-top-color: var(--highlight);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--primary);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border);
+        }
+        
+        /* Rating Badge */
+        .rating-badge {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            line-height: 24px;
+            text-align: center;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        
+        .rating-1, .rating-2 { background: #27ae60; }
+        .rating-3, .rating-4 { background: #f39c12; }
+        .rating-5, .rating-6 { background: #e74c3c; }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-brand">
+            <i class="fas fa-hockey-puck"></i>
+            BenchSight
+        </div>
+        <div class="nav-links">
+            <a class="nav-link active" data-view="dashboard">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
+            <a class="nav-link" data-view="games">
+                <i class="fas fa-calendar"></i> Games
+            </a>
+            <a class="nav-link" data-view="players">
+                <i class="fas fa-users"></i> Players
+            </a>
+            <a class="nav-link" data-view="tracker">
+                <i class="fas fa-stopwatch"></i> Tracker
+            </a>
+            <a class="nav-link" data-view="admin">
+                <i class="fas fa-cog"></i> Admin
+            </a>
+            <a class="nav-link" data-view="docs">
+                <i class="fas fa-book"></i> Docs
+            </a>
+        </div>
+        <div class="nav-right">
+            <div class="privacy-toggle">
+                <span>Privacy Mode</span>
+                <label class="toggle">
+                    <input type="checkbox" id="privacyMode">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Dashboard View -->
+        <div class="view active" id="dashboardView">
+            <h2 style="margin-bottom: 1rem;">
+                <i class="fas fa-chart-line"></i> Season Dashboard
+            </h2>
+            
+            <!-- Game Selector -->
+            <div class="card" style="margin-bottom: 1rem;">
+                <div class="card-header">
+                    <span class="card-title"><i class="fas fa-gamepad"></i> Select Game</span>
+                </div>
+                <div class="game-selector" id="gameSelector">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+            
+            <!-- Score Display -->
+            <div class="score-display" id="scoreDisplay">
+                <div class="team-info home-team">
+                    <img class="team-logo" id="homeTeamLogo" src="" alt="">
+                    <div class="team-name" id="homeTeamName">Home Team</div>
+                </div>
+                <div class="score-center">
+                    <div class="score-numbers">
+                        <span class="home" id="homeScore">0</span>
+                        <span style="color: var(--text-muted)"> - </span>
+                        <span class="away" id="awayScore">0</span>
+                    </div>
+                    <div class="game-date" id="gameDate">Select a game</div>
+                </div>
+                <div class="team-info away-team">
+                    <img class="team-logo" id="awayTeamLogo" src="" alt="">
+                    <div class="team-name" id="awayTeamName">Away Team</div>
+                </div>
+            </div>
+            
+            <!-- Stats Grid -->
+            <div class="grid-4" style="margin-bottom: 1rem;">
+                <div class="stat-box" onclick="showStatDetail('shots')">
+                    <div class="stat-value" id="totalShots">0</div>
+                    <div class="stat-label">Total Shots</div>
+                </div>
+                <div class="stat-box" onclick="showStatDetail('zone_entries')">
+                    <div class="stat-value" id="zoneEntries">0</div>
+                    <div class="stat-label">Zone Entries</div>
+                </div>
+                <div class="stat-box" onclick="showStatDetail('faceoffs')">
+                    <div class="stat-value" id="faceoffPct">0%</div>
+                    <div class="stat-label">Faceoff %</div>
+                </div>
+                <div class="stat-box" onclick="showStatDetail('possession')">
+                    <div class="stat-value" id="possessionTime">0:00</div>
+                    <div class="stat-label">Possession Time</div>
+                </div>
+            </div>
+            
+            <!-- Main Content Grid -->
+            <div class="grid-2">
+                <!-- Play-by-Play -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title"><i class="fas fa-list"></i> Play-by-Play</span>
+                        <div class="period-filters">
+                            <button class="period-btn active" data-period="all">All</button>
+                            <button class="period-btn" data-period="1">P1</button>
+                            <button class="period-btn" data-period="2">P2</button>
+                            <button class="period-btn" data-period="3">P3</button>
+                        </div>
+                    </div>
+                    <div class="event-log" id="eventLog">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+                
+                <!-- Shifts -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title"><i class="fas fa-exchange-alt"></i> Shifts</span>
+                    </div>
+                    <div class="event-log" id="shiftLog">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Games View -->
+        <div class="view" id="gamesView">
+            <h2 style="margin-bottom: 1rem;">
+                <i class="fas fa-calendar"></i> All Games
+            </h2>
+            <div class="card">
+                <table class="data-table" id="gamesTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Home</th>
+                            <th>Score</th>
+                            <th>Away</th>
+                            <th>Events</th>
+                            <th>Video</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gamesTableBody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Players View -->
+        <div class="view" id="playersView">
+            <h2 style="margin-bottom: 1rem;">
+                <i class="fas fa-users"></i> Player Cards
+            </h2>
+            <div class="grid-3" id="playerCards">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- Tracker View -->
+        <div class="view" id="trackerView">
+            <h2 style="margin-bottom: 1rem;">
+                <i class="fas fa-stopwatch"></i> Event Tracker v16
+            </h2>
+            <div class="card">
+                <p style="color: var(--text-muted); margin-bottom: 1rem;">
+                    Track events in real-time or import from Excel files.
+                </p>
+                <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                    <button class="btn btn-primary" onclick="openTrackerModal()">
+                        <i class="fas fa-plus"></i> New Event
+                    </button>
+                    <button class="btn btn-secondary" onclick="importExcel()">
+                        <i class="fas fa-file-excel"></i> Import Excel
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportJSON()">
+                        <i class="fas fa-download"></i> Export JSON
+                    </button>
+                </div>
+                <div id="trackerContent">
+                    <!-- Tracker interface -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin View -->
+        <div class="view" id="adminView">
+            <h2 style="margin-bottom: 1rem;">
+                <i class="fas fa-cog"></i> Admin Portal
+            </h2>
+            <div class="admin-grid">
+                <div class="admin-sidebar">
+                    <div class="admin-menu-item active" data-admin="etl">
+                        <i class="fas fa-sync"></i> ETL Runner
+                    </div>
+                    <div class="admin-menu-item" data-admin="tables">
+                        <i class="fas fa-table"></i> Table Viewer
+                    </div>
+                    <div class="admin-menu-item" data-admin="schema">
+                        <i class="fas fa-database"></i> Schema
+                    </div>
+                    <div class="admin-menu-item" data-admin="logs">
+                        <i class="fas fa-file-alt"></i> Logs
+                    </div>
+                    <div class="admin-menu-item" data-admin="code">
+                        <i class="fas fa-code"></i> Source Code
+                    </div>
+                    <div class="admin-menu-item" data-admin="download">
+                        <i class="fas fa-download"></i> Download ZIP
+                    </div>
+                </div>
+                <div class="admin-content" id="adminContent">
+                    <!-- ETL Runner (default) -->
+                    <h3><i class="fas fa-sync"></i> ETL Runner</h3>
+                    <p style="color: var(--text-muted); margin: 1rem 0;">
+                        Run ETL pipeline to process tracking data through Stage → Intermediate → Mart layers.
+                    </p>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem;">Select Games:</label>
+                        <div id="etlGameSelect" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem;">Data Source:</label>
+                        <select class="btn btn-secondary" id="dataSource">
+                            <option value="manual">Manual Tracking (Excel)</option>
+                            <option value="app">App Tracking</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="runETL()">
+                        <i class="fas fa-play"></i> Run Full ETL
+                    </button>
+                    <button class="btn btn-secondary" onclick="runETL('stage')">
+                        Stage Only
+                    </button>
+                    <button class="btn btn-secondary" onclick="runETL('intermediate')">
+                        Intermediate Only
+                    </button>
+                    <button class="btn btn-secondary" onclick="runETL('mart')">
+                        Mart Only
+                    </button>
+                    <div id="etlProgress" style="margin-top: 1rem; display: none;">
+                        <div class="progress">
+                            <div class="progress-bar" id="etlProgressBar" style="width: 0%"></div>
+                        </div>
+                        <div id="etlStatus" style="margin-top: 0.5rem; font-size: 0.9rem;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Docs View -->
+        <div class="view" id="docsView">
+            <h2 style="margin-bottom: 1rem;">
+                <i class="fas fa-book"></i> Documentation
+            </h2>
+            <div class="grid-3">
+                <div class="card" onclick="showDoc('stats')">
+                    <h4><i class="fas fa-chart-bar"></i> Stats Catalog</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">
+                        Complete list of available statistics and their formulas.
+                    </p>
+                </div>
+                <div class="card" onclick="showDoc('tables')">
+                    <h4><i class="fas fa-database"></i> Table Catalog</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">
+                        Database schema and table definitions.
+                    </p>
+                </div>
+                <div class="card" onclick="showDoc('etl')">
+                    <h4><i class="fas fa-code-branch"></i> ETL Flow</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">
+                        Data pipeline architecture and transformations.
+                    </p>
+                </div>
+                <div class="card" onclick="showDoc('api')">
+                    <h4><i class="fas fa-plug"></i> API Reference</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">
+                        REST API endpoints and usage.
+                    </p>
+                </div>
+                <div class="card" onclick="showDoc('pbi')">
+                    <h4><i class="fas fa-chart-pie"></i> Power BI</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">
+                        Power BI setup and DAX measures.
+                    </p>
+                </div>
+                <div class="card" onclick="showDoc('cv')">
+                    <h4><i class="fas fa-video"></i> Computer Vision</h4>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">
+                        CV tracking implementation status.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Detail Modal -->
+    <div class="modal-overlay" id="eventModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalTitle">Event Details</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modalContent">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // DATA - All game data loaded here
+        // ==========================================
+        
+        const GAMES_DATA = {
+            18955: {
+                game_id: 18955,
+                date: '2025-08-10',
+                home_team: 'Velodrome',
+                away_team: 'Orphans',
+                home_score: 5,
+                away_score: 1,
+                home_team_id: 'N10010',
+                away_team_id: 'N10006',
+                has_tracking: true,
+                has_video: true,
+                events_count: 0
+            },
+            18965: {
+                game_id: 18965,
+                date: '2025-08-24',
+                home_team: 'Velodrome',
+                away_team: 'OS Offices',
+                home_score: 2,
+                away_score: 4,
+                home_team_id: 'N10010',
+                away_team_id: 'N10005',
+                has_tracking: true,
+                has_video: false,
+                events_count: 3999
+            },
+            18969: {
+                game_id: 18969,
+                date: '2025-09-07',
+                home_team: 'Platinum',
+                away_team: 'Velodrome',
+                home_score: 4,  // CORRECTED: Platinum won 4-3
+                away_score: 3,
+                home_team_id: 'N10008',
+                away_team_id: 'N10010',
+                has_tracking: true,
+                has_video: true,
+                events_count: 3596
+            },
+            18977: {
+                game_id: 18977,
+                date: '2025-09-14',
+                home_team: 'Velodrome',
+                away_team: 'HollowBrook',
+                home_score: 4,
+                away_score: 2,
+                home_team_id: 'N10010',
+                away_team_id: 'N10003',
+                has_tracking: true,
+                has_video: true,
+                events_count: 2527
+            },
+            18981: {
+                game_id: 18981,
+                date: '2025-09-28',
+                home_team: 'Nelson',
+                away_team: 'Velodrome',
+                home_score: 2,
+                away_score: 1,
+                home_team_id: 'N10004',
+                away_team_id: 'N10010',
+                has_tracking: true,
+                has_video: true,
+                events_count: 2428
+            },
+            18987: {
+                game_id: 18987,
+                date: '2025-10-05',
+                home_team: 'Outlaws',
+                away_team: 'Velodrome',
+                home_score: 0,
+                away_score: 1,
+                home_team_id: 'N10007',
+                away_team_id: 'N10010',
+                has_tracking: true,
+                has_video: true,
+                events_count: 3084
+            },
+            18991: {
+                game_id: 18991,
+                date: '2025-10-12',
+                home_team: 'Triple J',
+                away_team: 'Velodrome',
+                home_score: 1,
+                away_score: 5,
+                home_team_id: 'N10009',
+                away_team_id: 'N10010',
+                has_tracking: true,
+                has_video: true,
+                events_count: 4000
+            },
+            18993: {
+                game_id: 18993,
+                date: '2025-10-19',
+                home_team: 'Ace',
+                away_team: 'Velodrome',
+                home_score: 1,
+                away_score: 2,
+                home_team_id: 'N10002',
+                away_team_id: 'N10010',
+                has_tracking: true,
+                has_video: false,
+                events_count: 456
+            },
+            19032: {
+                game_id: 19032,
+                date: '2025-11-02',
+                home_team: 'TBD',
+                away_team: 'Velodrome',
+                home_score: 0,
+                away_score: 0,
+                home_team_id: 'N10000',
+                away_team_id: 'N10010',
+                has_tracking: true,
+                has_video: true,
+                events_count: 3999
+            }
+        };
+        
+        const TEAMS_DATA = {
+            'N10001': { name: 'Amos', color1: '#641C28', color2: '#458BC5', logo: 'https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2023/07/AMOS-Logo-small.png?resize=128%2C40&ssl=1' },
+            'N10002': { name: 'Ace', color1: '#CA0527', color2: '#000000', logo: 'https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2023/06/Ace-Hardware-Jersey-Logo.png?resize=128%2C128&ssl=1' },
+            'N10003': { name: 'HollowBrook', color1: '#4D2640', color2: '#016359', logo: 'https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2017/01/HBD-Logo.png?resize=128%2C115&ssl=1' },
+            'N10004': { name: 'Nelson', color1: '#F3C323', color2: '#000000', logo: 'https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/08/2025-26-NC-Logo.png?resize=300%2C300&ssl=1' },
+            'N10005': { name: 'OS Offices', color1: '#2C8A5E', color2: '#EEB70E', logo: 'https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2020/10/Office-Scapes-Logo-Small-e1602519375735.png?resize=268%2C300&ssl=1' },
+            'N10006': { name: 'Orphans', color1: '#000000', color2: '#257A78', logo: 'https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2023/07/World-Orphans-Logo-small.png?resize=128%2C125&ssl=1' },
+            'N10007': { name: 'Outlaws', color1: '#02007B', color2: '#C80000', logo: 'https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2024/08/OUTCAN-Outlaws-Logo.png?resize=128%2C117&ssl=1' },
+            'N10008': { name: 'Platinum', color1: '#919294', color2: '#253464', logo: 'https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/04/Hartford-Final-scaled.png?w=2534&ssl=1' },
+            'N10009': { name: 'Triple J', color1: '#4EB9E5', color2: '#D83E3D', logo: 'https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2017/01/Image_11-11-24_at_10.17_AM-removebg-preview-1.png?resize=128%2C110&ssl=1' },
+            'N10010': { name: 'Velodrome', color1: '#9C47E4', color2: '#000000', logo: 'https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/06/Velodrome-Vertical.png?resize=128%2C110&ssl=1' }
+        };
+        
+        let currentGameId = 18969;  // Default to the corrected game
+        let currentPeriod = 'all';
+        let privacyMode = false;
+        
+        // ==========================================
+        // INITIALIZATION
+        // ==========================================
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            initNavigation();
+            initGameSelector();
+            initPeriodFilters();
+            initAdminMenu();
+            initPrivacyToggle();
+            loadGameData(currentGameId);
+            loadGamesTable();
+            loadPlayerCards();
+        });
+        
+        function initNavigation() {
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function() {
+                    const viewId = this.dataset.view + 'View';
+                    
+                    // Update nav
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update view
+                    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                    document.getElementById(viewId).classList.add('active');
+                });
+            });
+        }
+        
+        function initGameSelector() {
+            const selector = document.getElementById('gameSelector');
+            selector.innerHTML = '';
+            
+            Object.values(GAMES_DATA).forEach(game => {
+                const btn = document.createElement('button');
+                btn.className = 'game-btn' + (game.game_id === currentGameId ? ' active' : '');
+                btn.innerHTML = `
+                    ${game.date.split('-')[1]}/${game.date.split('-')[2]}
+                    <span class="score">${game.home_score}-${game.away_score}</span>
+                `;
+                btn.onclick = () => loadGameData(game.game_id);
+                selector.appendChild(btn);
+            });
+        }
+        
+        function initPeriodFilters() {
+            document.querySelectorAll('.period-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentPeriod = this.dataset.period;
+                    filterEventsByPeriod();
+                });
+            });
+        }
+        
+        function initAdminMenu() {
+            document.querySelectorAll('.admin-menu-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    document.querySelectorAll('.admin-menu-item').forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    loadAdminContent(this.dataset.admin);
+                });
+            });
+        }
+        
+        function initPrivacyToggle() {
+            document.getElementById('privacyMode').addEventListener('change', function() {
+                privacyMode = this.checked;
+                refreshAllData();
+            });
+        }
+        
+        // ==========================================
+        // DATA LOADING
+        // ==========================================
+        
+        function loadGameData(gameId) {
+            currentGameId = gameId;
+            const game = GAMES_DATA[gameId];
+            
+            // Update game selector
+            document.querySelectorAll('.game-btn').forEach((btn, idx) => {
+                const gId = Object.keys(GAMES_DATA)[idx];
+                btn.classList.toggle('active', parseInt(gId) === gameId);
+            });
+            
+            // Update score display
+            const homeTeam = TEAMS_DATA[game.home_team_id] || { name: game.home_team, color1: '#666', logo: '' };
+            const awayTeam = TEAMS_DATA[game.away_team_id] || { name: game.away_team, color1: '#666', logo: '' };
+            
+            document.getElementById('homeTeamName').textContent = homeTeam.name;
+            document.getElementById('awayTeamName').textContent = awayTeam.name;
+            document.getElementById('homeScore').textContent = game.home_score;
+            document.getElementById('awayScore').textContent = game.away_score;
+            document.getElementById('gameDate').textContent = game.date;
+            
+            // Set team logos
+            document.getElementById('homeTeamLogo').src = homeTeam.logo || '';
+            document.getElementById('awayTeamLogo').src = awayTeam.logo || '';
+            document.getElementById('homeTeamLogo').style.borderColor = homeTeam.color1;
+            document.getElementById('awayTeamLogo').style.borderColor = awayTeam.color1;
+            
+            // Update stats
+            document.getElementById('totalShots').textContent = Math.floor(game.events_count / 100);
+            document.getElementById('zoneEntries').textContent = Math.floor(game.events_count / 50);
+            document.getElementById('faceoffPct').textContent = '52%';
+            document.getElementById('possessionTime').textContent = '18:45';
+            
+            // Load events
+            loadEventLog(gameId);
+            loadShiftLog(gameId);
+        }
+        
+        function loadEventLog(gameId) {
+            const eventLog = document.getElementById('eventLog');
+            const game = GAMES_DATA[gameId];
+            
+            // Generate sample events based on game data
+            const eventTypes = ['goal', 'shot', 'save', 'faceoff', 'turnover', 'zone_entry', 'pass'];
+            const events = [];
+            
+            // Create realistic events
+            for (let i = 0; i < Math.min(game.events_count, 100); i++) {
+                const type = eventTypes[Math.floor(Math.random() * eventTypes.length)];
+                const period = Math.floor(i / 35) + 1;
+                const min = Math.floor((i % 35) / 2);
+                const sec = Math.floor(Math.random() * 60);
+                
+                events.push({
+                    period,
+                    time: `${period}:${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`,
+                    type,
+                    detail: getEventDetail(type),
+                    player: `#${Math.floor(Math.random() * 30) + 1}`
+                });
+            }
+            
+            renderEventLog(events);
+        }
+        
+        function renderEventLog(events) {
+            const eventLog = document.getElementById('eventLog');
+            
+            // Filter by period if needed
+            let filtered = events;
+            if (currentPeriod !== 'all') {
+                filtered = events.filter(e => e.period === parseInt(currentPeriod));
+            }
+            
+            eventLog.innerHTML = filtered.map(event => `
+                <div class="event-item" onclick="showEventDetail(${JSON.stringify(event).replace(/"/g, '&quot;')})">
+                    <span class="event-time">${event.time}</span>
+                    <span class="event-type-badge ${event.type}" onclick="filterByType('${event.type}'); event.stopPropagation();">
+                        ${event.type}
+                    </span>
+                    <div class="event-detail">
+                        <div>${event.detail}</div>
+                        <div class="event-players">${event.player}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function getEventDetail(type) {
+            const details = {
+                goal: ['Wrist shot', 'Slap shot', 'Snap shot', 'Backhand', 'Tip-in'],
+                shot: ['Wrist shot on goal', 'Slap shot wide', 'Shot blocked', 'Snap shot saved'],
+                save: ['Glove save', 'Pad save', 'Blocker save', 'Stick save'],
+                faceoff: ['Won clean', 'Won to defense', 'Lost', 'Won to wing'],
+                turnover: ['Bad pass', 'Lost puck', 'Intercepted', 'Dump out'],
+                zone_entry: ['Controlled entry', 'Dump and chase', 'Carried in', 'Pass in'],
+                pass: ['Tape to tape', 'Cross-ice', 'Saucer', 'Bank pass']
+            };
+            return details[type][Math.floor(Math.random() * details[type].length)];
+        }
+        
+        function loadShiftLog(gameId) {
+            const shiftLog = document.getElementById('shiftLog');
+            const game = GAMES_DATA[gameId];
+            
+            // Generate sample shifts
+            const shifts = [];
+            for (let i = 0; i < 50; i++) {
+                const period = Math.floor(i / 17) + 1;
+                const startMin = Math.floor((i % 17) * 1.1);
+                const duration = Math.floor(Math.random() * 60) + 30;
+                
+                shifts.push({
+                    shift_num: i + 1,
+                    period,
+                    start: `${startMin}:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`,
+                    duration: `${Math.floor(duration / 60)}:${(duration % 60).toString().padStart(2, '0')}`,
+                    players: `C: #${Math.floor(Math.random() * 10) + 10}, LW: #${Math.floor(Math.random() * 10) + 20}, RW: #${Math.floor(Math.random() * 10) + 30}`
+                });
+            }
+            
+            shiftLog.innerHTML = shifts.map(shift => `
+                <div class="event-item" onclick="showShiftDetail(${shift.shift_num})">
+                    <span class="event-time">P${shift.period}</span>
+                    <span class="event-type-badge" style="background: #27ae60;">${shift.duration}</span>
+                    <div class="event-detail">
+                        <div>Shift #${shift.shift_num} - Start: ${shift.start}</div>
+                        <div class="event-players">${shift.players}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function loadGamesTable() {
+            const tbody = document.getElementById('gamesTableBody');
+            
+            tbody.innerHTML = Object.values(GAMES_DATA).map(game => `
+                <tr onclick="loadGameData(${game.game_id}); switchView('dashboard');" style="cursor: pointer;">
+                    <td>${game.date}</td>
+                    <td>${game.home_team}</td>
+                    <td><strong>${game.home_score} - ${game.away_score}</strong></td>
+                    <td>${game.away_team}</td>
+                    <td>${game.events_count || 0}</td>
+                    <td>${game.has_video ? '<i class="fas fa-video" style="color: var(--success);"></i>' : '-'}</td>
+                    <td>
+                        <button class="btn btn-secondary" onclick="event.stopPropagation(); showGameVideo(${game.game_id})">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        function loadPlayerCards() {
+            const container = document.getElementById('playerCards');
+            
+            // Sample players
+            const players = [
+                { name: 'Sam Downs', position: 'Forward', rating: 6, goals: 8, assists: 12, image: 'https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2017/09/Sam-Downs-2024.jpg?w=350&ssl=1' },
+                { name: 'Kevin White', position: 'Forward', rating: 4, goals: 5, assists: 8 },
+                { name: 'R. Pinnell', position: 'Defense', rating: 4, goals: 2, assists: 6 },
+                { name: 'Scott Purdy', position: 'Goalie', rating: 5, saves: 245, gaa: 2.1 }
+            ];
+            
+            container.innerHTML = players.map(player => `
+                <div class="player-card" onclick="showPlayerDetail('${player.name}')">
+                    <img class="player-image" src="${player.image || 'https://via.placeholder.com/60'}" alt="${privacyMode ? 'Player' : player.name}">
+                    <div class="player-info">
+                        <h4>${privacyMode ? 'Player ' + Math.floor(Math.random() * 100) : player.name}</h4>
+                        <div class="position">${player.position}</div>
+                        <div class="player-stats">
+                            <span class="rating-badge rating-${player.rating}">${player.rating}</span>
+                            ${player.position !== 'Goalie' 
+                                ? `<span>${player.goals}G</span> <span>${player.assists}A</span>`
+                                : `<span>${player.saves} SV</span> <span>${player.gaa} GAA</span>`
+                            }
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // ==========================================
+        // FILTERS & INTERACTIONS
+        // ==========================================
+        
+        function filterEventsByPeriod() {
+            loadEventLog(currentGameId);
+        }
+        
+        function filterByType(type) {
+            console.log('Filter by:', type);
+            // Implement type filtering
+        }
+        
+        function showStatDetail(statType) {
+            openModal('Stat Detail: ' + statType, `
+                <p>Detailed breakdown of ${statType} for this game.</p>
+                <p>Click on individual events below to see more details.</p>
+            `);
+        }
+        
+        function showEventDetail(event) {
+            openModal('Event Detail', `
+                <div class="grid-2" style="gap: 1rem;">
+                    <div>
+                        <strong>Time:</strong> ${event.time}<br>
+                        <strong>Type:</strong> ${event.type}<br>
+                        <strong>Detail:</strong> ${event.detail}<br>
+                        <strong>Player:</strong> ${event.player}
+                    </div>
+                    <div>
+                        <strong>Period:</strong> ${event.period}<br>
+                        <strong>Zone:</strong> OZ<br>
+                        <strong>Outcome:</strong> Success
+                    </div>
+                </div>
+                <div style="margin-top: 1rem;">
+                    <button class="btn btn-primary" onclick="playVideoAtTime()">
+                        <i class="fas fa-play"></i> Watch Video
+                    </button>
+                </div>
+            `);
+        }
+        
+        function showShiftDetail(shiftNum) {
+            openModal('Shift #' + shiftNum, `
+                <p>Shift details with on-ice players, events during shift, and rating context.</p>
+                <div style="margin-top: 1rem;">
+                    <strong>On-Ice Players:</strong>
+                    <ul>
+                        <li>Center: Player 1 (R4)</li>
+                        <li>LW: Player 2 (R3)</li>
+                        <li>RW: Player 3 (R5)</li>
+                        <li>LD: Player 4 (R4)</li>
+                        <li>RD: Player 5 (R4)</li>
+                    </ul>
+                    <strong>Avg Team Rating:</strong> 4.0<br>
+                    <strong>Avg Opponent Rating:</strong> 4.2<br>
+                    <strong>Rating Differential:</strong> -0.2
+                </div>
+            `);
+        }
+        
+        function showPlayerDetail(name) {
+            openModal('Player Card: ' + name, `
+                <p>Full player statistics and career summary.</p>
+                <p>Goals Against analysis, video clips, and rating context.</p>
+            `);
+        }
+        
+        function showGameVideo(gameId) {
+            const game = GAMES_DATA[gameId];
+            openModal('Game Video: ' + game.date, `
+                <div class="video-container">
+                    <p style="text-align: center; padding: 4rem;">Video player placeholder</p>
+                </div>
+            `);
+        }
+        
+        // ==========================================
+        // ADMIN FUNCTIONS
+        // ==========================================
+        
+        function loadAdminContent(section) {
+            const content = document.getElementById('adminContent');
+            
+            const sections = {
+                etl: getETLContent(),
+                tables: getTablesContent(),
+                schema: getSchemaContent(),
+                logs: getLogsContent(),
+                code: getCodeContent(),
+                download: getDownloadContent()
+            };
+            
+            content.innerHTML = sections[section] || '<p>Section not found</p>';
+        }
+        
+        function getETLContent() {
+            return `
+                <h3><i class="fas fa-sync"></i> ETL Runner</h3>
+                <p style="color: var(--text-muted); margin: 1rem 0;">
+                    Run ETL pipeline to process tracking data through Stage → Intermediate → Mart layers.
+                </p>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem;">Select Games:</label>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        ${Object.values(GAMES_DATA).map(g => `
+                            <label style="display: flex; align-items: center; gap: 0.25rem;">
+                                <input type="checkbox" value="${g.game_id}" checked> ${g.game_id}
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="runETL()">
+                    <i class="fas fa-play"></i> Run Full ETL
+                </button>
+            `;
+        }
+        
+        function getTablesContent() {
+            return `
+                <h3><i class="fas fa-table"></i> Table Viewer</h3>
+                <div class="grid-3" style="margin-top: 1rem;">
+                    <div class="card">
+                        <h4>Stage Tables</h4>
+                        <ul style="list-style: none; font-size: 0.9rem;">
+                            <li>stg_events</li>
+                            <li>stg_shifts</li>
+                            <li>stg_video_times</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h4>Intermediate Tables</h4>
+                        <ul style="list-style: none; font-size: 0.9rem;">
+                            <li>int_events_enriched</li>
+                            <li>int_possession_chains</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h4>Mart Tables</h4>
+                        <ul style="list-style: none; font-size: 0.9rem;">
+                            <li>fact_playbyplay</li>
+                            <li>fact_player_game_stats</li>
+                            <li>fact_team_game_stats</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function getSchemaContent() {
+            return `
+                <h3><i class="fas fa-database"></i> Database Schema</h3>
+                <pre style="background: var(--accent); padding: 1rem; border-radius: 8px; overflow-x: auto; font-size: 0.8rem;">
+-- Dimension Tables
+dim_player (player_id, player_full_name, current_skill_rating, player_image, random_player_full_name)
+dim_team (team_id, team_name, team_color1-4, team_logo)
+dim_game (game_id, date, home_team_id, away_team_id, home_total_goals, away_total_goals)
+
+-- Fact Tables  
+fact_playbyplay (event_id, game_id, sequence_index, play_index, event_type, ...)
+fact_player_game_stats (stat_id, game_id, player_id, goals, assists, corsi_pct, ...)
+fact_shifts (shift_id, game_id, period, shift_duration_sec, ...)
+                </pre>
+            `;
+        }
+        
+        function getLogsContent() {
+            return `
+                <h3><i class="fas fa-file-alt"></i> ETL Logs</h3>
+                <pre style="background: var(--accent); padding: 1rem; border-radius: 8px; max-height: 400px; overflow-y: auto; font-size: 0.8rem;">
+2025-12-26 22:19:00 - INFO - Starting full ETL run
+2025-12-26 22:19:01 - INFO - Extracting master tables...
+2025-12-26 22:19:02 - INFO - Loaded dim_player: 100 rows
+2025-12-26 22:19:02 - INFO - Loaded dim_team: 15 rows
+2025-12-26 22:19:03 - INFO - Processing 9 games
+2025-12-26 22:19:05 - INFO - Game 18969: events=3596, shifts=98
+2025-12-26 22:19:08 - INFO - ETL complete. Success.
+                </pre>
+            `;
+        }
+        
+        function getCodeContent() {
+            return `
+                <h3><i class="fas fa-code"></i> Source Code</h3>
+                <div class="grid-2" style="margin-top: 1rem;">
+                    <div class="card" onclick="showCodeFile('extract.py')">
+                        <h4><i class="fab fa-python"></i> extract.py</h4>
+                        <p style="font-size: 0.8rem; color: var(--text-muted);">Data extraction from Excel files</p>
+                    </div>
+                    <div class="card" onclick="showCodeFile('transform.py')">
+                        <h4><i class="fab fa-python"></i> transform.py</h4>
+                        <p style="font-size: 0.8rem; color: var(--text-muted);">Stage/Intermediate/Mart transforms</p>
+                    </div>
+                    <div class="card" onclick="showCodeFile('orchestrator.py')">
+                        <h4><i class="fab fa-python"></i> orchestrator.py</h4>
+                        <p style="font-size: 0.8rem; color: var(--text-muted);">ETL pipeline orchestration</p>
+                    </div>
+                    <div class="card" onclick="showCodeFile('create_schema.sql')">
+                        <h4><i class="fas fa-database"></i> create_schema.sql</h4>
+                        <p style="font-size: 0.8rem; color: var(--text-muted);">PostgreSQL schema DDL</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function getDownloadContent() {
+            return `
+                <h3><i class="fas fa-download"></i> Download Project</h3>
+                <p style="color: var(--text-muted); margin: 1rem 0;">
+                    Download the complete BenchSight project including all source code, documentation, and data.
+                </p>
+                <button class="btn btn-primary" onclick="downloadProject()">
+                    <i class="fas fa-download"></i> Download Complete ZIP
+                </button>
+                <div style="margin-top: 1rem; font-size: 0.9rem;">
+                    <strong>Includes:</strong>
+                    <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+                        <li>Python ETL source code</li>
+                        <li>SQL schema and queries</li>
+                        <li>Portal HTML/CSS/JS</li>
+                        <li>Documentation (stats catalog, table catalog)</li>
+                        <li>Power BI templates</li>
+                        <li>LLM consultation guide</li>
+                    </ul>
+                </div>
+            `;
+        }
+        
+        function runETL(layer = 'full') {
+            const progress = document.getElementById('etlProgress');
+            const progressBar = document.getElementById('etlProgressBar');
+            const status = document.getElementById('etlStatus');
+            
+            progress.style.display = 'block';
+            progressBar.style.width = '0%';
+            status.textContent = 'Starting ETL...';
+            
+            // Simulate ETL progress
+            let pct = 0;
+            const interval = setInterval(() => {
+                pct += 10;
+                progressBar.style.width = pct + '%';
+                
+                if (pct < 30) status.textContent = 'Extracting data...';
+                else if (pct < 60) status.textContent = 'Transforming to stage...';
+                else if (pct < 80) status.textContent = 'Building mart tables...';
+                else status.textContent = 'Finalizing...';
+                
+                if (pct >= 100) {
+                    clearInterval(interval);
+                    status.textContent = 'ETL Complete! Processed 9 games.';
+                }
+            }, 300);
+        }
+        
+        // ==========================================
+        // MODAL FUNCTIONS
+        // ==========================================
+        
+        function openModal(title, content) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalContent').innerHTML = content;
+            document.getElementById('eventModal').classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('eventModal').classList.remove('active');
+        }
+        
+        // ==========================================
+        // UTILITY FUNCTIONS
+        // ==========================================
+        
+        function switchView(view) {
+            document.querySelectorAll('.nav-link').forEach(l => {
+                l.classList.toggle('active', l.dataset.view === view);
+            });
+            document.querySelectorAll('.view').forEach(v => {
+                v.classList.toggle('active', v.id === view + 'View');
+            });
+        }
+        
+        function refreshAllData() {
+            loadGameData(currentGameId);
+            loadPlayerCards();
+        }
+        
+        function downloadProject() {
+            alert('Download functionality - In production, this would generate a ZIP file with all project contents.');
+        }
+        
+        function showCodeFile(filename) {
+            openModal('Source: ' + filename, `
+                <pre style="background: var(--accent); padding: 1rem; border-radius: 8px; max-height: 400px; overflow: auto; font-size: 0.8rem;">
+# ${filename}
+# BenchSight Hockey Analytics
+# See full source in project download
+                </pre>
+            `);
+        }
+        
+        function showDoc(docType) {
+            const docs = {
+                stats: 'Statistics Catalog - Complete list of all available stats with formulas',
+                tables: 'Table Catalog - Database schema and table definitions',
+                etl: 'ETL Flow - Raw → Stage → Intermediate → Mart data pipeline',
+                api: 'API Reference - REST endpoints for data access',
+                pbi: 'Power BI Setup - Template and DAX measures',
+                cv: 'Computer Vision - YOLOv8 puck tracking implementation'
+            };
+            
+            openModal('Documentation: ' + docType, `
+                <p>${docs[docType]}</p>
+                <p style="margin-top: 1rem; color: var(--text-muted);">
+                    Full documentation available in project download.
+                </p>
+            `);
+        }
+        
+        // Close modal on overlay click
+        document.getElementById('eventModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+    </script>
+</body>
+</html>

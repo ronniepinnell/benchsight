@@ -1,0 +1,4 @@
+zone_code,zone_name,is_offensive,is_defensive,is_neutral,_updated_timestamp,_export_timestamp
+OZ,Offensive Zone,1,0,0,2025-12-20T00:43:12.607677,2025-12-20T01:05:41.438581
+DZ,Defensive Zone,0,1,0,2025-12-20T00:43:12.607677,2025-12-20T01:05:41.438581
+NZ,Neutral Zone,0,0,1,2025-12-20T00:43:12.607677,2025-12-20T01:05:41.438581

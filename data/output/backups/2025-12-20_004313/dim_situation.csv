@@ -1,0 +1,6 @@
+﻿situation_id,situation_name,description,is_power_play,is_penalty_kill,is_empty_net
+even,Even Strength,Equal number of skaters,False,False,False
+pp,Power Play,Man advantage,True,False,False
+pk,Penalty Kill,Short-handed,False,True,False
+en,Empty Net,Goalie pulled,False,False,True
+pp_en,Power Play + Empty Net,PP with goalie pulled,True,False,True

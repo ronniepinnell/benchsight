@@ -1,0 +1,93 @@
+Benchsight Strategy: BLB vs NHL Data
+====================================
+
+High-level idea
+---------------
+Think of BLB (your Beer League Beauties tracking) and NHL data as two layers that talk to each other:
+
+  • NHL layer – massive, noisy, but standardized: great for training models and learning what "good" looks like.
+  • BLB layer – small but extremely rich: every shift, event, and play is tagged in far more detail than public NHL data.
+
+You use the NHL layer to *learn patterns* (e.g., expected goals, entry success, passing trees), then project those
+patterns down onto BLB to evaluate your own games, lines, and players. In the other direction, you use BLB to
+prototype new ideas that you later scale to NHL once you have video + tracking.
+
+Suggested architecture
+----------------------
+1. Raw / Stage (NHL)
+   - Ingest sources:
+       • MoneyPuck CSVs (per-season, per-game shot and play-by-play files).
+       • NHL API endpoints (schedule, teams, rosters, plays).
+       • Optional: hockeyR or other open scrapers for redundancy.
+   - Store in a set of raw tables that mirror the sources, then normalize into:
+       • dim_nhl_team, dim_nhl_player, dim_nhl_season, dim_nhl_game
+       • fact_nhl_events (shots, goals, penalties, etc.)
+       • fact_nhl_shifts (if you ingest shift endpoints)
+
+2. Feature / ML layer (NHL)
+   - Build feature tables for shots and possessions:
+       • fact_nhl_shots_features (distance, angle, rush/cycle, rebound, traffic, pre-shot passes).
+       • fact_nhl_possessions (seq_id, zone entries, passes, time in zone, outcome).
+   - Train models on these tables:
+       • xG (shot-based logistic / gradient boosting).
+       • xEntry (probability an entry leads to a shot or goal within N seconds).
+       • Player clustering ("styles" based on micro-patterns using k-means, UMAP, etc.).
+
+3. Raw / Stage (BLB)
+   - Your existing pipeline already brings in BLB_Tables (dims) and tracking folders (events, shifts, XY, video).
+   - Make sure BLB dim_player and dim_team share a consistent identifier scheme with the NHL dims so that
+     cross-dataset joins are possible in the future (for example: a mapping table between BLB player_id and
+     NHL player IDs where applicable).
+
+4. Benchsight Datamart (BLB)
+   - Fact tables:
+       • fact_blb_events_long / fact_blb_events_wide
+       • fact_blb_shifts_long / fact_blb_shifts_logical
+       • fact_blb_boxscore_player / fact_blb_boxscore_team
+       • fact_blb_chains (linked, sequence, play indices)
+       • fact_blb_xy_events / fact_blb_xy_shots
+   - Dim tables:
+       • dim_player, dim_team, dim_game, dim_date, dim_zone, dim_rink_coordinates, dim_event_type, dim_role, etc.
+   - Add NHL-aware columns:
+       • xG_from_NHL_model, xA_from_NHL_model on shots/passes.
+       • NHL-style Corsi/Fenwick buckets (5v5, score-tied, by period) so BLB reports can mirror NHL reports.
+
+5. Crosswalk layer (BLB ↔ NHL)
+   - Create mapping tables:
+       • map_player_blb_to_nhl (for any players that exist in both worlds).
+       • map_event_type_blb_to_nhl (shot/penalty/zone definitions).
+       • map_zone_blb_to_nhl (offensive/neutral/defensive definitions, even if rink sizes differ).
+   - Use these to build comparison views:
+       • vw_player_comp_blb_vs_nhl – "This BLB defender’s entry defense metrics look like NHL player X."
+       • vw_team_style_blb_vs_nhl – BLB team zone-entry profile vs NHL league distributions.
+
+6. Reporting & UX
+   - Power BI / Dash pages that explicitly support:
+       • BLB-only analysis (your own games and league).
+       • NHL-only analysis (league context, example players).
+       • BLB-vs-NHL overlays (radar charts, comp cards, heatmaps).
+
+Implementation order
+--------------------
+Short term (1–2 weeks)
+  • Ingest MoneyPuck seasonal CSVs into a simple Postgres schema (or even just CSVs in /data/raw).
+  • Normalize into dim_nhl_team, dim_nhl_player, dim_nhl_game, fact_nhl_shots.
+  • Add a very basic xG field from MoneyPuck directly to BLB shot tables via a join on shot coordinates & game state
+    (for demonstration, even 1–2 sample NHL seasons is enough).
+
+Medium term (1–3 months)
+  • Add NHL API ingestion for schedules and rosters.
+  • Build your own feature tables and re-train an xG model using open code examples (e.g., hockeyR expected-goals model).
+  • Create player comp visuals that put BLB players on the same radar as NHL players for a small number of metrics.
+
+Long term (6–18+ months)
+  • Extend your video tracking to approximate a subset of NHL EDGE metrics (speed, distance, rush vs cycle).
+  • Deploy a full Benchsight SaaS for junior/college teams: upload video + basic stats, get microstats + xG + comps.
+  • Add real-time or near-real-time tracking so coaches can use it in-game.
+
+Design principles
+-----------------
+  • Keep schemas parallel: BLB and NHL fact/dim structures should be cousins, not strangers.
+  • Treat NHL as the "teacher" and BLB as the "student" you care most about.
+  • Start with a small, opinionated subset of metrics that you can compute reliably; expand once those are stable.
+  • Document every definition so LLMs and humans can reason about BLB and NHL stats the same way.

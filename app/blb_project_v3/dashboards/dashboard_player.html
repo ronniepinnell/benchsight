@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Player Profile | BLB Analytics</title>
+<style>
+:root{--bg:#0a0e14;--panel:#12171f;--card:#1a2029;--border:#2d3640;--accent:#58a6ff;--success:#3fb950;--warn:#d29922;--danger:#f85149;--text:#e6edf3;--muted:#8b949e;--velo:#9C47E4}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:16px}
+.header a{color:var(--muted);text-decoration:none;font-size:20px}
+.header h1{font-size:16px}
+.back{padding:6px 12px;background:var(--card);border-radius:6px;margin-right:8px}
+.container{max-width:1200px;margin:0 auto;padding:24px}
+.player-hero{display:grid;grid-template-columns:auto 1fr auto;gap:32px;background:linear-gradient(135deg,rgba(156,71,228,0.15),rgba(88,166,255,0.05));border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:24px}
+.player-photo{width:160px;height:160px;border-radius:16px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:64px;border:4px solid var(--velo)}
+.player-info h2{font-size:32px;margin-bottom:8px}
+.player-info .meta{display:flex;gap:16px;margin-bottom:16px}
+.player-info .meta span{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+.player-info .team{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--card);border-radius:8px;width:fit-content}
+.player-info .team img{width:32px;height:32px;border-radius:6px;object-fit:contain;background:#fff}
+.player-info .team span{font-size:14px;font-weight:600}
+.player-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.player-stat{text-align:center;padding:16px;background:var(--card);border-radius:10px;border:1px solid var(--border)}
+.player-stat .val{font-size:28px;font-weight:700;color:var(--accent)}
+.player-stat .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;margin-top:4px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:20px}
+.card-header{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600}
+.card-body{padding:16px}
+.game-log{width:100%;font-size:11px;border-collapse:collapse}
+.game-log th{text-align:left;padding:10px;color:var(--muted);border-bottom:1px solid var(--border);font-weight:500}
+.game-log td{padding:10px;border-bottom:1px solid var(--border)}
+.game-log tr:hover{background:rgba(88,166,255,0.05);cursor:pointer}
+.game-log .opponent{display:flex;align-items:center;gap:8px}
+.game-log .opponent img{width:18px;height:18px;border-radius:3px;object-fit:contain;background:#fff}
+.game-log .result{font-weight:600}
+.game-log .result.w{color:var(--success)}
+.game-log .result.l{color:var(--danger)}
+.chart-container{height:200px;display:flex;align-items:flex-end;gap:4px;padding:16px 0}
+.chart-bar{flex:1;background:linear-gradient(to top,var(--velo),rgba(156,71,228,0.5));border-radius:4px 4px 0 0;transition:height 0.3s;position:relative}
+.chart-bar:hover{opacity:0.8}
+.chart-bar .tip{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:#000;color:#fff;padding:4px 8px;border-radius:4px;font-size:9px;white-space:nowrap;opacity:0;transition:opacity 0.2s;margin-bottom:4px}
+.chart-bar:hover .tip{opacity:1}
+.chart-labels{display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-top:4px}
+.stat-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.stat-row:last-child{border:none}
+.stat-row .label{font-size:12px}
+.stat-row .val{font-size:14px;font-weight:600}
+.rating-stars{color:var(--warn);font-size:14px}
+.tabs{display:flex;gap:4px;margin-bottom:16px}
+.tab{padding:8px 16px;background:var(--card);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:11px}
+.tab.active{background:var(--velo);border-color:var(--velo);color:#fff}
+.tracking-comparison{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.comparison-col{padding:16px;background:var(--panel);border-radius:8px}
+.comparison-col h4{font-size:11px;color:var(--muted);margin-bottom:12px;text-transform:uppercase}
+.comparison-row{display:flex;justify-content:space-between;padding:6px 0;font-size:12px}
+.match{color:var(--success)}
+.mismatch{color:var(--danger)}
+.shot-zones{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.shot-zone{text-align:center;padding:12px;background:var(--panel);border-radius:6px}
+.shot-zone .pct{font-size:18px;font-weight:700}
+.shot-zone .lbl{font-size:9px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a href="dashboard_players.html" class="back">←</a>
+  <h1>Player Profile</h1>
+</div>
+
+<div class="container">
+  
+  <div class="player-hero">
+    <div class="player-photo">6</div>
+    <div class="player-info">
+      <h2>Sam Downs</h2>
+      <div class="meta">
+        <span>🏒 Forward</span>
+        <span>📏 #6</span>
+        <span>✋ Right Shot</span>
+        <span>⭐ Rating: <span class="rating-stars">★★★★★★</span></span>
+        <span>🎖️ Alternate Captain</span>
+      </div>
+      <div class="team">
+        <img src="https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/06/Velodrome-Vertical.png?resize=128%2C110&ssl=1" alt="Velodrome">
+        <span style="color:var(--velo)">Velodrome</span>
+      </div>
+    </div>
+    <div class="player-stats">
+      <div class="player-stat"><div class="val">14</div><div class="lbl">Games</div></div>
+      <div class="player-stat"><div class="val" style="color:var(--success)">12</div><div class="lbl">Goals</div></div>
+      <div class="player-stat"><div class="val">8</div><div class="lbl">Assists</div></div>
+      <div class="player-stat"><div class="val">20</div><div class="lbl">Points</div></div>
+    </div>
+  </div>
+  
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('overview')">Overview</button>
+    <button class="tab" onclick="showTab('tracking')">Tracking Stats</button>
+    <button class="tab" onclick="showTab('shots')">Shot Analysis</button>
+    <button class="tab" onclick="showTab('comparison')">BLB Comparison</button>
+  </div>
+  
+  <div id="overviewTab">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">📊 Season Statistics</div>
+        <div class="card-body">
+          <div class="stat-row"><span class="label">Games Played</span><span class="val">14</span></div>
+          <div class="stat-row"><span class="label">Goals</span><span class="val" style="color:var(--success)">12</span></div>
+          <div class="stat-row"><span class="label">Assists</span><span class="val">8</span></div>
+          <div class="stat-row"><span class="label">Points</span><span class="val">20</span></div>
+          <div class="stat-row"><span class="label">+/-</span><span class="val" style="color:var(--success)">+8</span></div>
+          <div class="stat-row"><span class="label">Shots</span><span class="val">42</span></div>
+          <div class="stat-row"><span class="label">Shooting %</span><span class="val">28.6%</span></div>
+          <div class="stat-row"><span class="label">Points Per Game</span><span class="val">1.43</span></div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">📈 Points by Game</div>
+        <div class="card-body">
+          <div class="chart-container">
+            <div class="chart-bar" style="height:40%"><span class="tip">vs Orphans: 1P</span></div>
+            <div class="chart-bar" style="height:60%"><span class="tip">@ Amos: 2P</span></div>
+            <div class="chart-bar" style="height:80%"><span class="tip">vs OS: 3P (2G,1A)</span></div>
+            <div class="chart-bar" style="height:100%"><span class="tip">@ Plat: 3P (2G,1A)</span></div>
+            <div class="chart-bar" style="height:60%"><span class="tip">vs HB: 2P</span></div>
+            <div class="chart-bar" style="height:40%"><span class="tip">@ Nelson: 1P</span></div>
+            <div class="chart-bar" style="height:80%"><span class="tip">@ Outlaws: 2P</span></div>
+            <div class="chart-bar" style="height:60%"><span class="tip">@ TJ: 2P</span></div>
+            <div class="chart-bar" style="height:20%"><span class="tip">@ Ace: 0P</span></div>
+            <div class="chart-bar" style="height:60%"><span class="tip">vs Orph: 1P</span></div>
+            <div class="chart-bar" style="height:80%"><span class="tip">@ Amos: 2P</span></div>
+            <div class="chart-bar" style="height:40%"><span class="tip">@ OS: 1P</span></div>
+          </div>
+          <div class="chart-labels">
+            <span>G1</span><span>G2</span><span>G3</span><span>G4</span><span>G5</span><span>G6</span>
+            <span>G7</span><span>G8</span><span>G9</span><span>G10</span><span>G11</span><span>G12</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-header">📋 Game Log</div>
+      <table class="game-log">
+        <thead>
+          <tr><th>Date</th><th>Opponent</th><th>Result</th><th>G</th><th>A</th><th>P</th><th>+/-</th><th>S</th><th>TOI</th></tr>
+        </thead>
+        <tbody>
+          <tr onclick="location.href='dashboard_game.html?id=18969'">
+            <td>Sep 7</td>
+            <td><div class="opponent"><img src="https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/04/Hartford-Final-scaled.png">@ Platinum</div></td>
+            <td class="result w">W 4-2</td>
+            <td>2</td><td>1</td><td>3</td><td>+2</td><td>5</td><td>16:32</td>
+          </tr>
+          <tr onclick="location.href='dashboard_game.html?id=18977'">
+            <td>Sep 14</td>
+            <td><div class="opponent"><img src="https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2017/01/HBD-Logo.png">vs HollowBrook</div></td>
+            <td class="result w">W 5-3</td>
+            <td>1</td><td>1</td><td>2</td><td>+1</td><td>4</td><td>15:48</td>
+          </tr>
+          <tr onclick="location.href='dashboard_game.html?id=18981'">
+            <td>Sep 28</td>
+            <td><div class="opponent"><img src="https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/08/2025-26-NC-Logo.png">@ Nelson</div></td>
+            <td class="result l">L 3-4</td>
+            <td>1</td><td>0</td><td>1</td><td>-1</td><td>3</td><td>14:22</td>
+          </tr>
+          <tr onclick="location.href='dashboard_game.html?id=18987'">
+            <td>Oct 5</td>
+            <td><div class="opponent"><img src="https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2024/08/OUTCAN-Outlaws-Logo.png">@ Outlaws</div></td>
+            <td class="result w">W 6-2</td>
+            <td>2</td><td>0</td><td>2</td><td>+2</td><td>4</td><td>15:10</td>
+          </tr>
+          <tr onclick="location.href='dashboard_game.html?id=18991'">
+            <td>Oct 12</td>
+            <td><div class="opponent"><img src="https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2017/01/Image_11-11-24_at_10.17_AM.png">@ Triple J</div></td>
+            <td class="result w">W 4-3</td>
+            <td>1</td><td>1</td><td>2</td><td>+1</td><td>3</td><td>16:05</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <div id="trackingTab" style="display:none">
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-header">🎯 Offensive Stats</div>
+        <div class="card-body">
+          <div class="stat-row"><span class="label">Total Events</span><span class="val">187</span></div>
+          <div class="stat-row"><span class="label">Shots</span><span class="val">42</span></div>
+          <div class="stat-row"><span class="label">Passes Completed</span><span class="val">89</span></div>
+          <div class="stat-row"><span class="label">Pass Completion %</span><span class="val">78.2%</span></div>
+          <div class="stat-row"><span class="label">Zone Entries</span><span class="val">34</span></div>
+          <div class="stat-row"><span class="label">Entry Success %</span><span class="val">76.5%</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">🛡️ Defensive Stats</div>
+        <div class="card-body">
+          <div class="stat-row"><span class="label">Takeaways</span><span class="val">18</span></div>
+          <div class="stat-row"><span class="label">Turnovers</span><span class="val">12</span></div>
+          <div class="stat-row"><span class="label">Blocks</span><span class="val">4</span></div>
+          <div class="stat-row"><span class="label">Defensive Zone Starts</span><span class="val">28%</span></div>
+          <div class="stat-row"><span class="label">Puck Recoveries</span><span class="val">22</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">⏱️ Time Stats</div>
+        <div class="card-body">
+          <div class="stat-row"><span class="label">Avg TOI</span><span class="val">15:42</span></div>
+          <div class="stat-row"><span class="label">Total Ice Time</span><span class="val">3:39:52</span></div>
+          <div class="stat-row"><span class="label">Shifts Per Game</span><span class="val">12.4</span></div>
+          <div class="stat-row"><span class="label">Avg Shift Length</span><span class="val">1:16</span></div>
+          <div class="stat-row"><span class="label">OZ Time %</span><span class="val">58%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div id="shotsTab" style="display:none">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">Shot Location Heat Map</div>
+        <div class="card-body">
+          <svg viewBox="-10 -50 120 100" style="width:100%">
+            <rect x="0" y="-42.5" width="100" height="85" rx="0" fill="#f8fafc" stroke="#94a3b8" stroke-width="0.5"/>
+            <line x1="89" y1="-42.5" x2="89" y2="42.5" stroke="#dc2626" stroke-width="1"/>
+            <line x1="25" y1="-42.5" x2="25" y2="42.5" stroke="#2563eb" stroke-width="2"/>
+            <rect x="91" y="-3" width="4" height="6" fill="#1e293b"/>
+            <!-- High danger zone -->
+            <ellipse cx="80" cy="0" rx="15" ry="20" fill="rgba(220,38,38,0.3)" stroke="none"/>
+            <!-- Goals -->
+            <circle cx="75" cy="-5" r="5" fill="#3fb950" stroke="#fff"/>
+            <circle cx="72" cy="8" r="5" fill="#3fb950" stroke="#fff"/>
+            <circle cx="82" cy="-2" r="5" fill="#3fb950" stroke="#fff"/>
+            <circle cx="78" cy="12" r="5" fill="#3fb950" stroke="#fff"/>
+            <circle cx="68" cy="0" r="5" fill="#3fb950" stroke="#fff"/>
+            <!-- More goals -->
+            <circle cx="70" cy="-10" r="5" fill="#3fb950" stroke="#fff"/>
+            <circle cx="85" cy="5" r="5" fill="#3fb950" stroke="#fff"/>
+            <circle cx="74" cy="15" r="5" fill="#3fb950" stroke="#fff"/>
+            <circle cx="80" cy="-8" r="5" fill="#3fb950" stroke="#fff"/>
+            <circle cx="76" cy="3" r="5" fill="#3fb950" stroke="#fff"/>
+            <circle cx="72" cy="-15" r="5" fill="#3fb950" stroke="#fff"/>
+            <circle cx="78" cy="10" r="5" fill="#3fb950" stroke="#fff"/>
+            <!-- Saved -->
+            <circle cx="65" cy="-12" r="4" fill="#58a6ff"/>
+            <circle cx="60" cy="5" r="4" fill="#58a6ff"/>
+            <circle cx="55" cy="-8" r="4" fill="#58a6ff"/>
+          </svg>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">Shot Zone Breakdown</div>
+        <div class="card-body">
+          <div class="shot-zones">
+            <div class="shot-zone"><div class="pct">35%</div><div class="lbl">Left Wing</div></div>
+            <div class="shot-zone"><div class="pct" style="color:var(--success)">45%</div><div class="lbl">Slot</div></div>
+            <div class="shot-zone"><div class="pct">20%</div><div class="lbl">Right Wing</div></div>
+            <div class="shot-zone"><div class="pct">15%</div><div class="lbl">High Slot</div></div>
+            <div class="shot-zone"><div class="pct" style="color:var(--danger)">8%</div><div class="lbl">Point</div></div>
+            <div class="shot-zone"><div class="pct" style="color:var(--success)">52%</div><div class="lbl">Crease</div></div>
+          </div>
+          <div style="margin-top:20px">
+            <div class="stat-row"><span class="label">Shot Type: Wrist</span><span class="val">68%</span></div>
+            <div class="stat-row"><span class="label">Shot Type: Snap</span><span class="val">22%</span></div>
+            <div class="stat-row"><span class="label">Shot Type: Slap</span><span class="val">6%</span></div>
+            <div class="stat-row"><span class="label">Shot Type: Backhand</span><span class="val">4%</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div id="comparisonTab" style="display:none">
+    <div class="card">
+      <div class="card-header">📊 BLB Table Stats vs Tracking Stats Comparison</div>
+      <div class="card-body">
+        <p style="font-size:11px;color:var(--muted);margin-bottom:16px">Comparing official NORAD stats (from BLB_Tables) with calculated tracking data</p>
+        <div class="tracking-comparison">
+          <div class="comparison-col">
+            <h4>📋 BLB Tables (Official)</h4>
+            <div class="comparison-row"><span>Games Played</span><span>14</span></div>
+            <div class="comparison-row"><span>Goals</span><span>12</span></div>
+            <div class="comparison-row"><span>Assists</span><span>8</span></div>
+            <div class="comparison-row"><span>Points</span><span>20</span></div>
+          </div>
+          <div class="comparison-col">
+            <h4>🎯 Tracking Data (Calculated)</h4>
+            <div class="comparison-row"><span>Games Tracked</span><span class="match">14 ✓</span></div>
+            <div class="comparison-row"><span>Goals (event_player_1)</span><span class="match">12 ✓</span></div>
+            <div class="comparison-row"><span>Assists (Primary + Secondary)</span><span class="match">8 ✓</span></div>
+            <div class="comparison-row"><span>Points</span><span class="match">20 ✓</span></div>
+          </div>
+        </div>
+        <div style="margin-top:20px;padding:12px;background:rgba(63,185,80,0.1);border-radius:8px;border:1px solid var(--success)">
+          <span style="color:var(--success);font-size:12px">✓ All stats match between BLB_Tables and tracking data</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+</div>
+
+<script>
+function showTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('[id$="Tab"]').forEach(c => c.style.display = 'none');
+  event.target.classList.add('active');
+  document.getElementById(tab + 'Tab').style.display = 'block';
+}
+</script>
+</body>
+</html>

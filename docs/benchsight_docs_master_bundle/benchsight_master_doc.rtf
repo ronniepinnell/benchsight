@@ -1,0 +1,1958 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2867
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fnil\fcharset0 .SFNS-Semibold;\f2\fnil\fcharset0 .SFNS-Regular;
+\f3\fnil\fcharset0 .SFNS-RegularItalic;\f4\fnil\fcharset0 .AppleSystemUIFontMonospaced-Regular;\f5\fnil\fcharset0 HelveticaNeue-Bold;
+\f6\froman\fcharset0 TimesNewRomanPSMT;}
+{\colortbl;\red255\green255\blue255;\red14\green14\blue14;}
+{\*\expandedcolortbl;;\cssrgb\c6700\c6700\c6700;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 # BenchSight \'96 Master Overview (Human + LLM)\
+\
+> **What this file is:**  \
+> Your single source of truth for the BenchSight hockey analytics project.  \
+> It explains:\
+> - What BenchSight is trying to do  \
+> - How the data flows (tracker \uc0\u8594  ETL \u8594  datamart \u8594  dashboards \u8594  ML)  \
+> - What the main tables and stats are  \
+> - How humans *and* LLMs should use this repo without breaking it\
+\
+---\
+\
+## 1. Project Concept\
+\
+BenchSight is a **hockey analytics platform** built around your beer-league / local team now, with three main goals:\
+\
+1. **Short term (0\'961 month)**  \
+   - Let you and your teammates view rich game summaries, player scorecards, and microstats using your manually tracked data (Excel tracker or future UI tracker).\
+   - Make the tracking process faster and less painful.\
+\
+2. **Medium term (resume / portfolio)**  \
+   - Demonstrate end-to-end data engineering, analytics, and ML:\
+     - Ingestion from messy Excel + UI forms\
+     - Normalized datamart in Postgres\
+     - Power BI & Python dashboards\
+     - First ML models (xG, player comps, microstats)\
+\
+3. **Long term (commercial / junior / pro)**  \
+   - Evolve BenchSight into something that a junior or pro organization *could* use:\
+     - Better tracking UI\
+     - Automated tracking via computer vision\
+     - Robust analytics and coach-friendly tools\
+\
+There are two big \'93halves\'94 of BenchSight that meet in the datamart:\
+\
+### 1.1 BLB Project (Analytics / Datamart side)\
+\
+This is everything built around your existing **manual Excel tracking files** (like `18969_tracking.xlsx`) and BLB static tables (`BLB_Tables.xlsx`):\
+\
+- **Inputs**\
+  - BLB static tables:\
+    - `dim_player`, `dim_team`, `dim_game`, `dim_league`, `dim_dates`, rink coordinate dims, etc.\
+  - Per-game tracking Excel:\
+    - `events` (long)\
+    - `shifts` (wide)\
+    - `xy` (event X,Y)\
+    - `shots` (net X,Y)\
+    - `video_times`\
+    - `lists` tab for dependent dropdowns\
+\
+- **Outputs**\
+  - A normalized **Postgres datamart** with clean dimension & fact tables.\
+  - CSV exports of the datamart for:\
+    - Power BI (Windows / Parallels)\
+    - Python dashboards\
+    - ML notebooks.\
+\
+### 1.2 Tracker Project (UI tracking side)\
+\
+This is a **future tracking UI** intended to replace the Excel tracker *without* losing:\
+\
+- Dependent dropdown logic (event types, details, valid combinations).\
+- The long-format events and long player-shift tracking you already use.\
+- The ability to click on a rink / net to record XY locations.\
+\
+Key points:\
+\
+- The tracker should **load rosters** from the dim tables instead of you re-typing them.\
+- It should capture:\
+  - Shifts\
+  - Events\
+  - XY for events and shots\
+  - Links to video (via running times \uc0\u8594  YouTube start timestamps)\
+- The tracker output must align with the **same schemas** as the Excel tracker so the ETL / datamart is agnostic to the source.\
+\
+Eventually, both the BLB (Excel) flow and the Tracker (UI) flow produce the same **staging tables**, and ETL handles the rest.\
+\
+---\
+\
+## 2. End-to-End Data Flow (High Level)\
+\
+Think of the pipeline as 6 stages:\
+\
+1. **Static dimensions (BLB_Tables.xlsx)**  \
+   - Loaded occasionally to Postgres:\
+     - `dim_player`\
+     - `dim_team`\
+     - `dim_game`\
+     - `dim_league`\
+     - `dim_dates`\
+     - Rink coordinate dims (`dim_rink_zone`, `dim_rink_box`)  \
+   - These don\'92t change often, except for:\
+     - Adding players\
+     - New teams\
+     - New games / seasons\
+\
+2. **Game tracking data (per game or batch of games)**  \
+   - Source A: Excel trackers (current reality, e.g. `18969_tracking.xlsx`)  \
+   - Source B: Tracker UI output (future)  \
+   - Contains:\
+     - `events` long\
+     - `shifts` wide\
+     - `xy` for events\
+     - `shots` XY for net\
+     - `video_times`\
+   - Saved under something like:\
+     - `data/raw/tracking/<game_id>/...`\
+\
+3. **Staging Layer (Postgres `stg_` tables)**  \
+   - Raw-ish but type-cleaned copies of:\
+     - BLB dims: `stg_dim_player`, `stg_dim_team`, `stg_dim_game`, `stg_dim_dates`, etc.\
+     - Tracking data: `stg_events_long`, `stg_shifts_wide`, `stg_xy_events_raw`, `stg_xy_shots_raw`, `stg_video_times_raw`\
+   - This layer should be reloadable and idempotent.\
+\
+4. **Intermediate Transformations**  \
+   - Where the heavy lifting happens:\
+     - Shifts:\
+       - Wide \uc0\u8594  long per player\
+       - Collapse consecutive segments into **logical shifts**\
+       - Compute TOI (with and without stoppages), score state, zone, rating context\
+     - Events:\
+       - Long \uc0\u8594  wide per event_index\
+       - Ensure each event has **exactly one row**\
+       - Join to shifts to get who was on ice\
+       - Add microstat flags (entries, exits, giveaways, etc.)\
+     - Chains:\
+       - Use `linked_event_index`, `sequence_index`, `play_index` to group events into:\
+         - Linked event clusters\
+         - Multi-zone sequences\
+         - Single-team plays\
+     - XY Integration:\
+       - Join XY to events via `linked_event_index` + team logic\
+       - Map XY into rink zones and boxes\
+       - Compute distance/angle\
+     - Quality / Coverage:\
+       - Build facts about tracking coverage and data issue detections.\
+\
+5. **Datamart (mart schema + CSV outputs)**  \
+   - Clean star/snowflake schema:\
+     - Dimensions: players, teams, games, dates, event types, strength state, rink zones/boxes, etc.\
+     - Facts: events, shifts, player boxscore, event chains, XY events, XY shots, tracking status, data issues.\
+   - Export every mart table to:\
+     - `data/output/mart/<table_name>.csv`  \
+   - Power BI uses these CSVs as its source; Python dashboards & ML also use them.\
+\
+6. **Analytics: Power BI / Dash / ML**  \
+   - Power BI:\
+     - Pages for:\
+       - Game summary (ESPN / NHL style)\
+       - Player cards (NHL Edge style)\
+       - Line combos & head-to-head\
+       - Microstats / tracking coverage\
+   - Dash (or other web UI):\
+     - Similar pages but accessible via browser / Render\
+   - ML:\
+     - xG models\
+     - Player style clusters\
+     - BenchSight vs NHL player comps using external NHL datasets.\
+\
+---\
+\
+## 3. Target Repo Structure (Logical Map)\
+\
+This is the **ideal** layout you want to converge to. It\'92s okay if your actual repo is slightly different right now; the key is that this is the architecture LLMs should assume.\
+\
+```text\
+/\
+\uc0\u9500 \u9472 \u9472  README.md                        # Human overview\
+\uc0\u9500 \u9472 \u9472  README_LLM_BenchSight.md         # This master doc (LLM + human)\
+\uc0\u9500 \u9472 \u9472  config/\
+\uc0\u9474    \u9492 \u9472 \u9472  config.ini                   # DB connection, paths, schema names\
+\uc0\u9500 \u9472 \u9472  data/\
+\uc0\u9474    \u9500 \u9472 \u9472  raw/\
+\uc0\u9474    \u9474    \u9500 \u9472 \u9472  BLB_Tables.xlsx          # Static dim/fact source\
+\uc0\u9474    \u9474    \u9492 \u9472 \u9472  tracking/\
+\uc0\u9474    \u9474        \u9500 \u9472 \u9472  18969/\
+\uc0\u9474    \u9474        \u9474    \u9500 \u9472 \u9472  18969_tracking.xlsx\
+\uc0\u9474    \u9474        \u9474    \u9500 \u9472 \u9472  xy/\
+\uc0\u9474    \u9474        \u9474    \u9492 \u9472 \u9472  shots/\
+\uc0\u9474    \u9474        \u9492 \u9472 \u9472  <other_game_ids>/\
+\uc0\u9474    \u9500 \u9472 \u9472  stage/                       # Optional snapshots of stg tables\
+\uc0\u9474    \u9500 \u9472 \u9472  intermediate/                # Optional snapshots of intermediate tables\
+\uc0\u9474    \u9492 \u9472 \u9472  output/\
+\uc0\u9474        \u9492 \u9472 \u9472  mart/                    # Final Power BI\'96ready CSVs\
+\uc0\u9500 \u9472 \u9472  sql/\
+\uc0\u9474    \u9500 \u9472 \u9472  stage/\
+\uc0\u9474    \u9474    \u9500 \u9472 \u9472  create_stage_schemas.sql\
+\uc0\u9474    \u9474    \u9492 \u9472 \u9472  load_stg_from_excel.sql\
+\uc0\u9474    \u9500 \u9472 \u9472  intermediate/\
+\uc0\u9474    \u9474    \u9500 \u9472 \u9472  shifts_long_and_logical.sql\
+\uc0\u9474    \u9474    \u9500 \u9472 \u9472  events_wide.sql\
+\uc0\u9474    \u9474    \u9492 \u9472 \u9472  event_chains.sql\
+\uc0\u9474    \u9492 \u9472 \u9472  mart/\
+\uc0\u9474        \u9500 \u9472 \u9472  create_mart_dims.sql\
+\uc0\u9474        \u9500 \u9472 \u9472  create_mart_facts.sql\
+\uc0\u9474        \u9492 \u9472 \u9472  indexes_and_constraints.sql\
+\uc0\u9500 \u9472 \u9472  src/\
+\uc0\u9474    \u9500 \u9472 \u9472  main.py                      # Single orchestrator; user entrypoint\
+\uc0\u9474    \u9500 \u9472 \u9472  blb/                         # BLB (analytics/datamart)\
+\uc0\u9474    \u9474    \u9500 \u9472 \u9472  etl_stage.py\
+\uc0\u9474    \u9474    \u9500 \u9472 \u9472  etl_intermediate.py\
+\uc0\u9474    \u9474    \u9500 \u9472 \u9472  etl_mart.py\
+\uc0\u9474    \u9474    \u9500 \u9472 \u9472  stats/\
+\uc0\u9474    \u9474    \u9474    \u9500 \u9472 \u9472  boxscore.py\
+\uc0\u9474    \u9474    \u9474    \u9492 \u9472 \u9472  microstats.py\
+\uc0\u9474    \u9474    \u9492 \u9472 \u9472  utils/\
+\uc0\u9474    \u9474        \u9500 \u9472 \u9472  util_config_loader.py\
+\uc0\u9474    \u9474        \u9500 \u9472 \u9472  util_paths.py\
+\uc0\u9474    \u9474        \u9492 \u9472 \u9472  util_db.py\
+\uc0\u9474    \u9492 \u9472 \u9472  tracker/                     # Tracker UI (future)\
+\uc0\u9474        \u9500 \u9472 \u9472  app.py                   # Flask/Dash tracker app\
+\uc0\u9474        \u9500 \u9472 \u9472  models.py                # Pydantic-style definitions for tracker I/O\
+\uc0\u9474        \u9492 \u9472 \u9472  adapters/\
+\uc0\u9474            \u9492 \u9472 \u9472  tracker_to_blb_schema.py\
+\uc0\u9500 \u9472 \u9472  docs/\
+\uc0\u9474    \u9500 \u9472 \u9472  overview/\
+\uc0\u9474    \u9474    \u9492 \u9472 \u9472  benchesight_master_overview.md\
+\uc0\u9474    \u9500 \u9472 \u9472  stats/\
+\uc0\u9474    \u9474    \u9500 \u9472 \u9472  benchesight_stats_catalog.csv\
+\uc0\u9474    \u9474    \u9492 \u9472 \u9472  benchesight_stats_catalog.md\
+\uc0\u9474    \u9500 \u9472 \u9472  tables/\
+\uc0\u9474    \u9474    \u9500 \u9472 \u9472  benchesight_table_catalog.csv\
+\uc0\u9474    \u9474    \u9492 \u9472 \u9472  benchesight_table_catalog.md\
+\uc0\u9474    \u9500 \u9472 \u9472  etl/\
+\uc0\u9474    \u9474    \u9500 \u9472 \u9472  blb_etl_flow.md\
+\uc0\u9474    \u9474    \u9492 \u9472 \u9472  tracker_integration.md\
+\uc0\u9474    \u9500 \u9472 \u9472  powerbi/\
+\uc0\u9474    \u9474    \u9500 \u9472 \u9472  powerbi_schema.md\
+\uc0\u9474    \u9474    \u9492 \u9472 \u9472  example_measures.md\
+\uc0\u9474    \u9500 \u9472 \u9472  ml/\
+\uc0\u9474    \u9474    \u9500 \u9472 \u9472  ml_roadmap.md\
+\uc0\u9474    \u9474    \u9492 \u9472 \u9472  nhl_integration.md\
+\uc0\u9474    \u9492 \u9472 \u9472  inspiration/\
+\uc0\u9474        \u9492 \u9472 \u9472  inspiration_links_and_notes.md\
+\uc0\u9500 \u9472 \u9472  powerbi/\
+\uc0\u9474    \u9492 \u9472 \u9472  BenchSight_Report.pbit       # Template for Power BI\
+\uc0\u9492 \u9472 \u9472  ml/\
+    \uc0\u9500 \u9472 \u9472  notebooks/\
+    \uc0\u9474    \u9500 \u9472 \u9472  xg_baseline.ipynb\
+    \uc0\u9474    \u9492 \u9472 \u9472  player_similarity.ipynb\
+    \uc0\u9492 \u9472 \u9472  data/\
+        \uc0\u9492 \u9472 \u9472  (NHL comparison data extracts)\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs34 \cf2 4. Core Table Catalog (Summary)
+\f2\b0\fs28 \
+\
+\pard\tx860\tx1420\tx1980\tx2540\tx3100\tx3660\tx4220\tx4780\tx5340\tx5900\tx6460\tx7020\li300\sl324\slmult1\partightenfactor0
+\cf2 The 
+\f3\i detailed
+\f2\i0  catalogs live in:\
+
+\f4 docs/tables/benchsight_table_catalog.csv
+\f2  and 
+\f4 .md
+\f2 \
+This section is a human + LLM 
+\f5\b summary
+\f2\b0  so you don\'92t have to open the CSV every time.\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs30 \cf2 4.1 Key Dimension Tables
+\f2\b0\fs28 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f5\b \cf2 dim_player
+\f2\b0 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Grain: 
+\f5\b one row per player (logical identity)
+\f2\b0 .\
+	\'95	Primary key: 
+\f4 player_id
+\f2 \
+	\'95	Important columns:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 player_name
+\f2 \
+	\'95	
+\f4 shoots
+\f2  (L/R)\
+	\'95	
+\f4 position_primary
+\f2  (D/F/G, etc.)\
+	\'95	
+\f4 rating
+\f2  (2\'966 skill rating)\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Relationships:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	All player-based facts (events, shifts, boxscore, chains, XY) link via 
+\f4 player_id
+\f2 .\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f5\b \cf2 dim_team
+\f2\b0 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Grain: 
+\f5\b one row per team
+\f2\b0 .\
+	\'95	Primary key: 
+\f4 team_id
+\f2 \
+	\'95	Important columns:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 team_name
+\f2 , 
+\f4 team_code
+\f2 \
+	\'95	
+\f4 league_id
+\f2 , 
+\f4 level
+\f2  (beer / rec / etc.)\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Relationships:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	All team-based facts use 
+\f4 team_id
+\f2  (home/away roles stored in the facts).\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f5\b \cf2 dim_game
+\f2\b0 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Grain: 
+\f5\b one row per game
+\f2\b0 .\
+	\'95	Primary key: 
+\f4 game_id
+\f2  (e.g. 
+\f4 18969
+\f2 )\
+	\'95	Important columns:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 game_date
+\f2  (FK \uc0\u8594  dim_dates via 
+\f4 date_key
+\f2 )\
+	\'95	
+\f4 home_team_id
+\f2 , 
+\f4 away_team_id
+\f2 \
+	\'95	
+\f4 season_id
+\f2 , 
+\f4 league_id
+\f2 \
+	\'95	
+\f4 is_playoffs
+\f2 , 
+\f4 rink_id
+\f2 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Relationships:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Every fact table uses 
+\f4 game_id
+\f2 .\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f5\b \cf2 dim_dates
+\f2\b0 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Grain: 
+\f5\b one row per calendar date
+\f2\b0 .\
+	\'95	Primary key: 
+\f4 date_key
+\f2  (int like 
+\f4 YYYYMMDD
+\f2 )\
+	\'95	Important columns:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 date
+\f2 , 
+\f4 year
+\f2 , 
+\f4 month
+\f2 , 
+\f4 day
+\f2 \
+	\'95	
+\f4 week_of_year
+\f2 , 
+\f4 quarter
+\f2 \
+	\'95	
+\f4 is_weekend
+\f2 , 
+\f4 is_playoffs_period
+\f2  (if modeled)\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Used to slice:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Games over time\
+	\'95	Player performance trends\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f5\b \cf2 dim_event_type
+\f2\b0 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Grain: 
+\f5\b one row per event type
+\f2\b0 .\
+	\'95	Primary key: 
+\f4 event_type_id
+\f2 \
+	\'95	Columns:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 event_type_name
+\f2  (shot, pass, faceoff, zone_entry, zone_exit, turnover, etc.)\
+	\'95	
+\f4 event_category
+\f2  (shot/pass/battle/faceoff/etc.)\
+	\'95	Flags (e.g. 
+\f4 is_shot
+\f2 , 
+\f4 is_zone_entry
+\f2 , 
+\f4 is_giveaway
+\f2 , etc.)\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Drives:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Filtering for base stats and microstats.\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f5\b \cf2 dim_strength_state
+\f2\b0 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Grain: 
+\f5\b one row per strength state
+\f2\b0  (5v5, 5v4, 4v5, etc.).\
+	\'95	Primary key: 
+\f4 strength_id
+\f2 \
+	\'95	Columns:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 home_skaters
+\f2 , 
+\f4 away_skaters
+\f2  (int)\
+	\'95	
+\f4 strength_label
+\f2  (e.g. 
+\f4 5v5
+\f2 , 
+\f4 5v4
+\f2 )\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f5\b \cf2 dim_rink_zone / dim_rink_box
+\f2\b0 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Grain:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 dim_rink_zone
+\f2  \uc0\u8594  coarse areas (OZ/NZ/DZ, left/right, high/low)\
+	\'95	
+\f4 dim_rink_box
+\f2  \uc0\u8594  finer-grained boxes (slot, point, etc.)\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Primary keys: 
+\f4 zone_id
+\f2 , 
+\f4 box_id
+\f2 \
+	\'95	Columns:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Descriptive names\
+	\'95	Coordinate boundaries\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Used by:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 fact_xy_events
+\f2 , 
+\f4 fact_xy_shots
+\f2 \
+	\'95	Optionally joined into 
+\f4 fact_events
+\f2  / 
+\f4 fact_shifts
+\f2  for analysis.\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \
+\uc0\u11835 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f2\fs28 \cf2 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs30 \cf2 4.2 Fact Tables \'96 Events, Shifts, Boxscore, Chains, XY
+\f2\b0\fs28 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f5\b \cf2 fact_events
+\f2\b0 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Grain: 
+\f5\b one row per event
+\f2\b0  in the game.\
+	\'95	Surrogate key: 
+\f4 event_id
+\f2  (e.g. 
+\f4 EV<game_id><event_index+offset>
+\f2 )\
+	\'95	Natural keys:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 game_id
+\f2 \
+	\'95	
+\f4 event_index
+\f2  (from tracking)\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Major columns:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Time:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 period
+\f2 \
+	\'95	
+\f4 event_clock
+\f2  (MM:SS, countdown as in hockey)\
+	\'95	
+\f4 event_start_running_sec
+\f2 , 
+\f4 event_end_running_sec
+\f2  (for video join)\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Teams:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 event_team_id
+\f2  (team performing the action)\
+	\'95	
+\f4 opp_team_id
+\f2 \
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Players:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 event_player_1_id
+\f2  \'85 
+\f4 event_player_6_id
+\f2 \
+	\'95	
+\f4 opp_player_1_id
+\f2  \'85 
+\f4 opp_player_6_id
+\f2 \
+	\'95	Stats are 
+\f5\b credited to event_player_1_id
+\f2\b0  unless defined otherwise.\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Classification:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 event_type_id
+\f2  (FK \uc0\u8594  dim_event_type)\
+	\'95	
+\f4 event_detail_1
+\f2 , 
+\f4 event_detail_2
+\f2 \
+	\'95	
+\f4 play_detail_1
+\f2 , 
+\f4 play_detail_2
+\f2 \
+	\'95	
+\f4 event_successful
+\f2 , 
+\f4 play_successful
+\f2 \
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Context:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 strength_id
+\f2  (FK \uc0\u8594  dim_strength_state)\
+	\'95	
+\f4 zone_id
+\f2  (OZ/NZ/DZ; possibly 
+\f4 box_id
+\f2  for slot vs point)\
+	\'95	Score state at event (score_diff, etc.)\
+	\'95	On-ice rating context:\
+\pard\tqr\tx1300\tx1460\li1460\fi-1460\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 event_team_rating_avg
+\f2 , 
+\f4 event_team_rating_min
+\f2 , 
+\f4 event_team_rating_max
+\f2 \
+	\'95	
+\f4 opp_team_rating_avg
+\f2 , 
+\f4 opp_team_rating_min
+\f2 , 
+\f4 opp_team_rating_max
+\f2 \
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Chains:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 linked_event_id
+\f2  (shot+save cluster etc.)\
+	\'95	
+\f4 sequence_id
+\f2  (multi-zone sequence)\
+	\'95	
+\f4 play_id
+\f2  (single-team play within zone)\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Derived flags:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 is_shot_attempt
+\f2 , 
+\f4 is_shot_on_goal
+\f2 , 
+\f4 is_goal
+\f2 \
+	\'95	
+\f4 is_block
+\f2 , 
+\f4 is_miss
+\f2 , 
+\f4 is_save
+\f2 \
+	\'95	
+\f4 is_zone_entry
+\f2 , 
+\f4 is_zone_exit
+\f2 \
+	\'95	
+\f4 is_carry_in
+\f2 , 
+\f4 is_pass_in
+\f2 \
+	\'95	
+\f4 is_controlled_exit
+\f2 , 
+\f4 is_dump_out
+\f2 \
+	\'95	
+\f4 is_giveaway
+\f2 , 
+\f4 is_primary_assist_event
+\f2 , etc.\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f5\b \cf2 fact_shifts
+\f2\b0 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Grain: 
+\f5\b one row per logical shift per player per game
+\f2\b0 .\
+	\'95	Surrogate key: 
+\f4 shift_id
+\f2  (e.g. 
+\f4 SH<game_id><player_id><shift_number_in_game+offset>
+\f2 )\
+	\'95	Natural keys:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 game_id
+\f2 , 
+\f4 player_id
+\f2 , 
+\f4 shift_number_in_game
+\f2 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Major columns:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Time:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 period
+\f2 \
+	\'95	
+\f4 shift_start_clock
+\f2 , 
+\f4 shift_end_clock
+\f2  (countdown)\
+	\'95	
+\f4 shift_start_running_sec
+\f2 , 
+\f4 shift_end_running_sec
+\f2 \
+	\'95	
+\f4 shift_duration_sec_raw
+\f2 \
+	\'95	
+\f4 shift_duration_sec_excl_stoppages
+\f2  (subtract stoppage_time)\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Counters:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 shift_number_in_game
+\f2  (cumulative logical shift count)\
+	\'95	
+\f4 shift_segment_count
+\f2  (how many raw rows combined)\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Context:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 team_id
+\f2 \
+	\'95	
+\f4 strength_id
+\f2 \
+	\'95	
+\f4 start_zone_id
+\f2 , 
+\f4 end_zone_id
+\f2 \
+	\'95	
+\f4 score_diff_start
+\f2 , 
+\f4 score_diff_end
+\f2 \
+	\'95	On-ice rating context for both teams.\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f5\b \cf2 fact_player_boxscore
+\f2\b0 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Grain: 
+\f5\b one row per player per game
+\f2\b0 .\
+	\'95	Key: (
+\f4 game_id
+\f2 , 
+\f4 player_id
+\f2 )\
+	\'95	Columns:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Base stats:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 goals
+\f2 , 
+\f4 assists
+\f2 , 
+\f4 points
+\f2 \
+	\'95	
+\f4 shots_on_goal
+\f2 , 
+\f4 shot_attempts
+\f2 \
+	\'95	
+\f4 blocks
+\f2 , 
+\f4 hits
+\f2 \
+	\'95	
+\f4 giveaways
+\f2 , 
+\f4 takeaways
+\f2  (with refined filters)\
+	\'95	
+\f4 faceoff_won
+\f2 , 
+\f4 faceoff_lost
+\f2 \
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	TOI:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 toi_total_sec
+\f2 \
+	\'95	
+\f4 toi_5v5_sec
+\f2 , 
+\f4 toi_pp_sec
+\f2 , 
+\f4 toi_pk_sec
+\f2 \
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Advanced:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 corsi_for
+\f2 , 
+\f4 corsi_against
+\f2 , 
+\f4 cf_pct
+\f2 \
+	\'95	
+\f4 fenwick_for
+\f2 , 
+\f4 fenwick_against
+\f2 , 
+\f4 ff_pct
+\f2 \
+	\'95	
+\f4 xg_for
+\f2 , 
+\f4 xg_against
+\f2  (future)\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Microstats:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Controlled entries / exits\
+	\'95	Primary pass targets / primary passer stats\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Rating context:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Average on-ice teammate rating\
+	\'95	Average on-ice opponent rating\
+	\'95	Performance vs stronger/weaker opposition.\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f5\b \cf2 fact_event_chain_linked / fact_event_chain_sequence / fact_event_chain_play
+\f2\b0 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Linked (tight cluster, e.g. shot + save + rebound):\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Grain: one row per 
+\f4 linked_event_id
+\f2 .\
+	\'95	Summaries: which events, who shot, who saved, outcomes, xG sum.\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Sequence (broader: multiple zones & possession changes):\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Grain: one row per 
+\f4 sequence_id
+\f2 .\
+	\'95	Summaries: entries, exits, turnovers, shots, xG, how sequence started and ended.\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Play (single team\'92s possession in a zone):\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Grain: one row per 
+\f4 play_id
+\f2 .\
+	\'95	Summaries: passes, cycles, shot quality, who drove the play.\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f5\b \cf2 fact_xy_events
+\f2\b0 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Grain: 
+\f5\b one row per (event, player, XY point)
+\f2\b0 .\
+	\'95	Keys:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 xy_event_id
+\f2 \
+	\'95	
+\f4 game_id
+\f2 \
+	\'95	
+\f4 linked_event_id
+\f2 \
+	\'95	
+\f4 player_id
+\f2  OR 
+\f4 is_puck = true
+\f2  when player_number = \'91P\'92\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Columns:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 x
+\f2 , 
+\f4 y
+\f2  (rink coordinates)\
+	\'95	
+\f4 distance
+\f2 , 
+\f4 angle
+\f2  (derived)\
+	\'95	
+\f4 zone_id
+\f2 , 
+\f4 box_id
+\f2 \
+	\'95	
+\f4 team_role
+\f2  (event team vs opp)\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Links to:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 dim_rink_zone
+\f2 , 
+\f4 dim_rink_box
+\f2 .\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f5\b \cf2 fact_xy_shots
+\f2\b0 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Grain: 
+\f5\b one row per shot event XY location at the net
+\f2\b0 .\
+	\'95	Columns:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 x_net
+\f2 , 
+\f4 y_net
+\f2 \
+	\'95	
+\f4 distance_to_goal
+\f2 , 
+\f4 angle_to_goal
+\f2 \
+	\'95	
+\f4 shot_location_box_id
+\f2 \
+	\'95	
+\f4 shot_outcome
+\f2  (goal, save, miss, block).\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f5\b \cf2 fact_game_tracking_status / fact_game_data_issues
+\f2\b0 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 fact_game_tracking_status
+\f2 \
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Grain: one row per game.\
+	\'95	Columns:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Flags for which data types exist (shifts, events, xy, shots, video).\
+	\'95	Coverage windows (start/end times, per period).\
+	\'95	Notes if game is fully tracked, partially tracked, not tracked.\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 fact_game_data_issues
+\f2 \
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Grain: one row per (game, issue_type, maybe row identifier).\
+	\'95	Columns:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 issue_type
+\f2  (negative duration, 18:00 at wrong time, null game_numbers, #N/A, etc.)\
+	\'95	
+\f4 issue_count
+\f2 \
+	\'95	Optional sample identifiers / row keys.\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \
+\uc0\u11835 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f2\fs28 \cf2 \
+
+\f1\b\fs34 5. Stats & Microstats \'96 Conceptual Catalog
+\f2\b0\fs28 \
+\
+\pard\tx860\tx1420\tx1980\tx2540\tx3100\tx3660\tx4220\tx4780\tx5340\tx5900\tx6460\tx7020\li300\sl324\slmult1\partightenfactor0
+\cf2 Full detailed catalog lives in 
+\f4 docs/stats/benchsight_stats_catalog_*.csv
+\f2  and 
+\f4 .md
+\f2 .\
+This section summarizes the categories to orient you and any LLM.\
+\
+Categories:\
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f6 \cf2 	1.	
+\f5\b Base counting stats
+\f2\b0 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li420\sl324\slmult1\pardirnatural\partightenfactor0
+\cf2 Directly from 
+\f4 fact_events
+\f2  filtering on:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 event_type_id
+\f2 \
+	\'95	
+\f4 event_detail_*
+\f2 , 
+\f4 play_detail_*
+\f2 \
+	\'95	
+\f4 event_successful
+\f2 , 
+\f4 play_successful
+\f2 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li420\sl324\slmult1\pardirnatural\partightenfactor0
+\cf2 Examples:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Shots, shots on goal, goals\
+	\'95	Pass attempts/completions\
+	\'95	Hits, blocks, faceoffs, giveaways, takeaways\
+	\'95	Zone entries/exits (controlled vs uncontrolled)\
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f6 \cf2 	2.	
+\f5\b On-ice advanced stats (Corsi, Fenwick, xG)
+\f2\b0 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li420\sl324\slmult1\pardirnatural\partightenfactor0
+\cf2 For each player and game:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Find all events where:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Event time \uc0\u8712  any of the player\'92s shift intervals (
+\f4 fact_shifts
+\f2 )\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Classify shots:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f5\b Corsi For
+\f2\b0 : any shot attempt by player\'92s team while they\'92re on ice (SOG, miss, block).\
+	\'95	
+\f5\b Corsi Against
+\f2\b0 : any shot attempt against while on ice.\
+	\'95	
+\f5\b Fenwick For/Against
+\f2\b0 : same but exclude blocks.\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	xG is future work using shot/XY data.\
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f6 \cf2 	3.	
+\f5\b Microstats using event_details & play_details
+\f2\b0 \
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Controlled entries and exits:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 event_type
+\f2  like 
+\f4 zone_entry
+\f2  or 
+\f4 zone_exit
+\f2 \
+	\'95	
+\f4 event_detail
+\f2  / 
+\f4 play_detail
+\f2  indicates carry vs pass vs dump.\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Entry outcomes:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Did a shot happen within N seconds of entry?\
+	\'95	Was possession retained or lost quickly?\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Passing microstats:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Who is primary target (
+\f4 event_player_2_id
+\f2 )?\
+	\'95	Royal road / cross-ice passes (using XY data).\
+	\'95	Cycle length and patterns in OZ.\
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f6 \cf2 	4.	
+\f5\b Rating-aware stats
+\f2\b0 \
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	For each event or shift, compute average / min / max rating:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Of player\'92s teammates on ice\
+	\'95	Of opponent players on ice\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Then microstats can be sliced:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Controlled entries vs high-rated opposition\
+	\'95	Giveaways vs weak lines, etc.\
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f6 \cf2 	5.	
+\f5\b Head-to-head and With/Without You (WOWY)
+\f2\b0 \
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Use overlapping shift intervals and events to compute:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	On-ice stats when players A and B share ice\
+	\'95	A without B\
+	\'95	B without A\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Useful for:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Line chemistry\
+	\'95	Matchup strength\
+	\'95	\'93With goalie X, defender Y is much better/worse\'94 style analysis.\
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f6 \cf2 	6.	
+\f5\b Tracking coverage & data quality metrics
+\f2\b0 \
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Which games have:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	full event coverage?\
+	\'95	only partial shifts?\
+	\'95	no XY?\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Where are data issues:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	invalid times\
+	\'95	negative durations\
+	\'95	missing IDs\
+	\'95	Excel error strings.\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \
+\uc0\u11835 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f2\fs28 \cf2 \
+
+\f1\b\fs34 6. ETL Flow & Orchestrator
+\f2\b0\fs28 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs30 \cf2 6.1 Single Orchestrator (src/main.py)
+\f2\b0\fs28 \
+\
+Goal: 
+\f5\b one Python entrypoint
+\f2\b0  that does everything controlled by user prompts.\
+\
+Rough flow:\
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f6 \cf2 	1.	User runs:\
+\
+2.	
+\f4 \cf2 main.py
+\f2 \cf2 :\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Loads config from 
+\f4 config/config.ini
+\f2 :\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	DB host/port/user/password\
+	\'95	Schema names (
+\f4 stg
+\f2 , 
+\f4 mart
+\f2 )\
+	\'95	Paths to BLB_Tables and tracking folders\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Displays a menu such as:\
+\pard\tqr\tx1060\tx1220\li1220\fi-1220\sl324\slmult1\sb240\partightenfactor0
+
+\f6 \cf2 	1.	Load/refresh BLB static tables into stage\
+	2.	Load/refresh tracking data for selected games into stage\
+	3.	Run intermediate transforms (shifts, events, chains, XY, ratings)\
+	4.	Build/refresh datamart fact & dim tables\
+	5.	Export datamart tables to 
+\f4 data/output/mart/*.csv
+\f2 \
+
+\f6 	6.	Launch Tracker UI (future; opens web app)\
+	7.	Run data quality & tracking coverage diagnostics\
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+\cf2 	3.	For each option, 
+\f4 \cf2 main.py
+\f2 \cf2  calls a top-level function:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 blb.etl_stage.run_stage(config, selected_games)
+\f2 \
+	\'95	
+\f4 blb.etl_intermediate.run_intermediate(config, selected_games)
+\f2 \
+	\'95	
+\f4 blb.etl_mart.run_mart(config, selected_games)
+\f2 \
+	\'95	
+\f4 tracker.app.run_tracker_app(config)
+\f2  (future)\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs30 \cf2 6.2 Stage Layer (SQL + Python)
+\f2\b0\fs28 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Create 
+\f4 stg_
+\f2  schema and tables via SQL scripts (
+\f4 sql/stage/*.sql
+\f2 ).\
+	\'95	Use Python to:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Read Excel files (BLB and tracking).\
+	\'95	Normalize into DataFrames.\
+	\'95	Write to 
+\f4 stg_*
+\f2  tables in Postgres using SQLAlchemy/psycopg2.\
+\
+Stage tables include:\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 stg_dim_player
+\f2 , 
+\f4 stg_dim_team
+\f2 , 
+\f4 stg_dim_game
+\f2 , 
+\f4 stg_dim_dates
+\f2 \
+	\'95	
+\f4 stg_events_long
+\f2 \
+	\'95	
+\f4 stg_shifts_wide
+\f2 \
+	\'95	
+\f4 stg_xy_events_raw
+\f2 \
+	\'95	
+\f4 stg_xy_shots_raw
+\f2 \
+	\'95	
+\f4 stg_video_times_raw
+\f2 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs30 \cf2 6.3 Intermediate Layer (heavy transformations)
+\f2\b0\fs28 \
+\
+SQL scripts (and/or Python) implement:\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f5\b Shifts: wide \uc0\u8594  long + logical
+\f2\b0 \
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Wide row with columns: home_forward_1, home_forward_2, etc.\
+	\'95	Unpivot to 1 row per player on ice per raw shift row.\
+	\'95	Use window functions to merge consecutive rows for same player into 
+\f5\b \cf2 logical shifts
+\f2\b0 \cf2 .\
+	\'95	Compute:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 shift_number_in_game
+\f2 \
+	\'95	
+\f4 shift_segment_count
+\f2 \
+	\'95	
+\f4 shift_duration_sec_raw
+\f2 \
+	\'95	
+\f4 shift_duration_sec_excl_stoppages
+\f2 \
+	\'95	rating context, strength, zones, score states.\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f5\b Events: long \uc0\u8594  wide + on-ice context
+\f2\b0 \
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	For each 
+\f4 game_id, event_index
+\f2  ensure 
+\f5\b \cf2 exactly one row
+\f2\b0 \cf2  in 
+\f4 events_wide
+\f2 :\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	event/opp players go into fixed columns based on 
+\f4 player_role
+\f2 .\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Drop columns ending with 
+\f4 _
+\f2  that are just helpers.\
+	\'95	Join to logical shifts using 
+\f4 event_start_running_sec
+\f2  to determine:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	which players were on ice\
+	\'95	strength state\
+	\'95	rating context.\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f5\b Chains
+\f2\b0 \
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Build:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 event_chain_linked
+\f2 : summarizing 
+\f4 linked_event_id
+\f2 \
+	\'95	
+\f4 event_chain_sequence
+\f2 : summarizing 
+\f4 sequence_id
+\f2 \
+	\'95	
+\f4 event_chain_play
+\f2 : summarizing 
+\f4 play_id
+\f2 \
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Add derived fields:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	chain duration\
+	\'95	number of passes, entries, exits, shots, goals\
+	\'95	which team controlled the play.\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f5\b XY integration
+\f2\b0 \
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Join 
+\f4 stg_xy_events_raw
+\f2  and 
+\f4 stg_xy_shots_raw
+\f2  to events using:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 game_id
+\f2 \
+	\'95	
+\f4 linked_event_index
+\f2 \
+	\'95	
+\f4 player_number
+\f2  and 
+\f4 team
+\f2  (E vs O) logic.\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Map XY to dims:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 dim_rink_zone
+\f2 , 
+\f4 dim_rink_box
+\f2 \
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Compute 
+\f4 distance
+\f2 , 
+\f4 angle
+\f2 , etc.\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f5\b Quality & coverage facts
+\f2\b0 \
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Use queries to:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Detect impossible durations\
+	\'95	18:00 events in non-start contexts\
+	\'95	missing game_numbers, player_ids, etc.\
+	\'95	mismatched joins (missing dims).\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Insert/merge results into:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 fact_game_tracking_status
+\f2 \
+	\'95	
+\f4 fact_game_data_issues
+\f2 .\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs30 \cf2 6.4 Mart Layer
+\f2\b0\fs28 \
+\
+Scripts under 
+\f4 \cf2 sql/mart/
+\f2 \cf2 :\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Create 
+\f5\b dimensions
+\f2\b0 :\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 dim_player
+\f2 , 
+\f4 dim_team
+\f2 , 
+\f4 dim_game
+\f2 , 
+\f4 dim_dates
+\f2 \
+	\'95	
+\f4 dim_event_type
+\f2 , 
+\f4 dim_strength_state
+\f2 \
+	\'95	
+\f4 dim_rink_zone
+\f2 , 
+\f4 dim_rink_box
+\f2 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Create 
+\f5\b facts
+\f2\b0 :\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 fact_events
+\f2 \
+	\'95	
+\f4 fact_shifts
+\f2 \
+	\'95	
+\f4 fact_player_boxscore
+\f2 \
+	\'95	
+\f4 fact_event_chain_linked
+\f2 \
+	\'95	
+\f4 fact_event_chain_sequence
+\f2 \
+	\'95	
+\f4 fact_event_chain_play
+\f2 \
+	\'95	
+\f4 fact_xy_events
+\f2 \
+	\'95	
+\f4 fact_xy_shots
+\f2 \
+	\'95	
+\f4 fact_game_tracking_status
+\f2 \
+	\'95	
+\f4 fact_game_data_issues
+\f2 \
+\
+Python then exports each mart table to CSV in 
+\f4 data/output/mart/
+\f2 .\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \
+\uc0\u11835 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f2\fs28 \cf2 \
+
+\f1\b\fs34 7. Tracker vs Excel \'96 Alignment
+\f2\b0\fs28 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs30 \cf2 7.1 Excel Manual Tracking (current ground truth)
+\f2\b0\fs28 \
+\
+Your existing Excel tracker:\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Tabs:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 events
+\f2  (long)\
+	\'95	
+\f4 shifts
+\f2  (wide)\
+	\'95	
+\f4 xy
+\f2  (rink)\
+	\'95	
+\f4 shots
+\f2  (net)\
+	\'95	
+\f4 video_times
+\f2 \
+	\'95	
+\f4 lists
+\f2  for dependent dropdowns\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Contains:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Data validation (only valid combos of event_type, details, outcomes)\
+	\'95	Formulas to:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	convert period clock \uc0\u8594  running seconds\
+	\'95	compute durations\
+	\'95	propagate linked events, sequences, plays\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	This template\'92s 
+\f3\i \cf2 output structure
+\f2\i0 \cf2  (field names and semantics) is the canonical source of truth.\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs30 \cf2 7.2 Tracker UI (future)
+\f2\b0\fs28 \
+\
+The tracker UI should:\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	On game setup:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Ask for 
+\f4 game_id
+\f2 .\
+	\'95	Allow picking home/away teams from 
+\f4 dim_team
+\f2 .\
+	\'95	Load rosters from 
+\f4 dim_player
+\f2 /fact_game_roster.\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	For shifts:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	A workspace where:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	You click who is on ice (or pre-define lines).\
+	\'95	Indicate zone and stoppage time.\
+	\'95	Tracker computes:\
+\pard\tqr\tx1300\tx1460\li1460\fi-1460\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	running times\
+	\'95	durations\
+	\'95	cumulative shifts\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Save rows that behave like the Excel 
+\f4 shifts
+\f2  tab \uc0\u8594  
+\f4 stg_shifts_wide
+\f2 .\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	For events:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	A workspace with:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Event type dropdown\
+	\'95	Context-dependent detail dropdowns\
+	\'95	Player selectors for event & opp sides\
+	\'95	rink/net canvas to click XY points\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Should compute:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Linked events\
+	\'95	Sequence / play indices\
+	\'95	Running time for video join\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Output event rows exactly matching 
+\f4 stg_events_long
+\f2  logic.\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	For XY:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Each click on rink adds a point linked to:\
+\pard\tqr\tx900\tx1060\li1060\fi-1060\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 game_id
+\f2 \
+	\'95	
+\f4 linked_event_index
+\f2 \
+	\'95	
+\f4 player_number
+\f2  or 
+\f4 p
+\f2  for puck\
+	\'95	
+\f4 team
+\f2  (E/O) if necessary.\
+\
+Everything the tracker outputs should feed directly into the same 
+\f5\b staging schema
+\f2\b0  the Excel flow uses.\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \
+\uc0\u11835 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f2\fs28 \cf2 \
+
+\f1\b\fs34 8. Using BenchSight With LLMs
+\f2\b0\fs28 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs30 \cf2 8.1 What to give the LLM
+\f2\b0\fs28 \
+\
+When you involve another model (Claude, Gemini, future ChatGPT) with this project:\
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f6 \cf2 	1.	Provide this file (
+\f4 \cf2 README_LLM_BenchSight.md
+\f2 \cf2 ).\
+
+\f6 	2.	Provide:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	
+\f4 \cf2 benchsight_table_catalog.csv
+\f2  and/or 
+\f4 .md
+\f2 \
+	\'95	
+\f4 benchsight_stats_catalog.csv
+\f2  and/or 
+\f4 .md
+\f2 \
+\pard\tqr\tx260\tx420\li420\fi-420\sl324\slmult1\sb240\partightenfactor0
+
+\f6 \cf2 	3.	Provide 
+\f5\b specific
+\f2\b0  code files you want help with (e.g., 
+\f4 \cf2 events_wide.sql
+\f2 \cf2 , 
+\f4 \cf2 boxscore.py
+\f2 \cf2 , 
+\f4 \cf2 tracker/app.py
+\f2 \cf2 ).\
+\
+Tell the model clearly:\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	These docs describe the 
+\f5\b canonical
+\f2\b0  schema and logic.\
+	\'95	Do 
+\f3\i \cf2 not
+\f2\i0 \cf2  silently rename tables or keys.\
+	\'95	When proposing changes, update the docs or explain the impact.\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f1\b\fs30 \cf2 8.2 Example prompts
+\f2\b0\fs28 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f5\b \cf2 ETL (SQL) prompt
+\f2\b0 \
+\
+\pard\tx860\tx1420\tx1980\tx2540\tx3100\tx3660\tx4220\tx4780\tx5340\tx5900\tx6460\tx7020\li300\sl324\slmult1\partightenfactor0
+\cf2 Using README_LLM_BenchSight.md and benchesight_table_catalog.csv, help me rewrite sql/intermediate/events_wide.sql so that for each (game_id, event_index) there is exactly one row in fact_events, with the correct player roles filled from the long events, and joined to shifts to add which skaters were on ice for both teams.\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f5\b \cf2 Stats (Python) prompt
+\f2\b0 \
+\
+\pard\tx860\tx1420\tx1980\tx2540\tx3100\tx3660\tx4220\tx4780\tx5340\tx5900\tx6460\tx7020\li300\sl324\slmult1\partightenfactor0
+\cf2 Using the stats catalog and the schemas for fact_events and fact_shifts, implement Corsi and Fenwick in src/blb/stats/boxscore.py so that each player\'92s CF, CA, FF, FA, CF%, and FF% are computed based on shot attempts that occur while the player is on ice, not only events where they are event_player_1.\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f5\b \cf2 Tracker UI prompt
+\f2\b0 \
+\
+\pard\tx860\tx1420\tx1980\tx2540\tx3100\tx3660\tx4220\tx4780\tx5340\tx5900\tx6460\tx7020\li300\sl324\slmult1\partightenfactor0
+\cf2 Using README_LLM_BenchSight.md and the description of the Excel tracker, design a Flask/Dash layout for a shift + event recording screen. It should minimize clicks per event and output rows that match the stg_events_long and stg_shifts_wide schemas.\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \
+\uc0\u11835 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f2\fs28 \cf2 \
+
+\f1\b\fs34 9. Roadmap Snapshot (Short / Mid / Long)
+\f2\b0\fs28 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f5\b \cf2 Short term (0\'961 month)
+\f2\b0 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Solid ETL from:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	BLB_Tables + tracking Excel \uc0\u8594  Postgres mart \u8594  CSV outputs.\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Base Power BI report:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Game summary\
+	\'95	Player cards\
+	\'95	Line combos and head-to-head\
+	\'95	Tracking coverage page\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Clear stats and table catalogs.\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f5\b \cf2 Medium term (1\'966 months)
+\f2\b0 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Tracker UI:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Reliable enough to use for full games.\
+	\'95	XY click capture working for events and shots.\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	More microstats:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Controlled entries/exits\
+	\'95	Passing networks\
+	\'95	Rating-aware metrics\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	First ML:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Simple xG baseline\
+	\'95	Player similarity using microstats\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Compare BLB players to NHL players using external datasets.\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f5\b \cf2 Long term (6+ months)
+\f2\b0 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	BenchSight web product:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Hosted, multi-team capable, user accounts.\
+	\'95	Robust dashboards for coaches & managers.\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Stronger computer vision:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Auto tracking locations and speeds.\
+	\'95	Augmenting, not replacing, manual tracking.\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Experiment with commercial pilots (junior teams, academies).\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \
+\uc0\u11835 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\sl324\slmult1\pardirnatural\partightenfactor0
+
+\f2\fs28 \cf2 \
+
+\f1\b\fs34 10. Final Notes
+\f2\b0\fs28 \
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	This doc is intentionally dense; it\'92s both a 
+\f5\b design spec
+\f2\b0  and an 
+\f5\b LLM brief
+\f2\b0 .\
+	\'95	When you or an LLM expand the project:\
+\pard\tqr\tx500\tx660\li660\fi-660\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	Keep this file up to date.\
+	\'95	Add/remap fields in the table & stats catalogs.\
+	\'95	Prefer additive changes over destructive ones.\
+\pard\tqr\tx100\tx260\li260\fi-260\sl324\slmult1\sb240\partightenfactor0
+\cf2 	\'95	If something in your actual repo diverges, fix the docs or explicitly call out the difference when asking an LLM for help.\
+\
+\
+That\'92s the full thing in **one** chunk. You can tweak names or sections, but this should be copy-paste ready.\
+\
+---\
+\
+## 2\uc0\u65039 \u8419  How to \'93Chunk\'94 the Big Docs + Project Bundle (Without Relying on Huge ZIPs)\
+\
+Since the app keeps choking on big ZIP downloads, the safest way right now is:\
+\
+1. Use the master doc above as your **root README**.\
+2. Split the rest into a few *small*, clearly named files you can create manually.\
+3. If/when downloads behave again, you can re-zip everything locally.\
+\
+Here\'92s a simple **chunk plan** you can implement on your machine:\
+\
+### Chunk A \'96 Core Docs (LLM + Human)\
+\
+Create a folder: `docs/overview/` and add these files:\
+\
+1. `docs/overview/benchsight_master_overview.md`  \
+   - Copy the **same content** as `README_LLM_BenchSight.md` or a slightly trimmed version.\
+   - This is your high-level narrative + architecture.\
+\
+2. `docs/overview/how_to_use_llms_with_benchsight.md`  \
+   - Short file that just contains:\
+     - Example prompts\
+     - Do\'92s/don\'92ts (don\'92t rename tables silently, etc.)\
+     - Where to find table & stats catalogs.\
+\
+You already have the ingredients for this in the master doc (section 8).\
+\
+---\
+\
+### Chunk B \'96 Table Catalog\
+\
+Create: `docs/tables/benchsight_table_catalog.csv` with something like:\
+\
+- Columns:\
+  - `table_name`\
+  - `table_type` (dim/fact/helper)\
+  - `grain`\
+  - `primary_keys`\
+  - `foreign_keys`\
+  - `description`\
+  - `notes`\
+\
+Fill in at least the **core tables**:\
+\
+- dim_player  \
+- dim_team  \
+- dim_game  \
+- dim_dates  \
+- dim_event_type  \
+- dim_strength_state  \
+- dim_rink_zone  \
+- dim_rink_box  \
+- fact_events  \
+- fact_shifts  \
+- fact_player_boxscore  \
+- fact_event_chain_linked  \
+- fact_event_chain_sequence  \
+- fact_event_chain_play  \
+- fact_xy_events  \
+- fact_xy_shots  \
+- fact_game_tracking_status  \
+- fact_game_data_issues  \
+\
+You can copy definitions from section **4** of the master doc.\
+\
+Also add: `docs/tables/benchsight_table_catalog.md` with 1\'962 paragraphs per table if you want a human-readable version.\
+\
+---\
+\
+### Chunk C \'96 Stats Catalog\
+\
+Create: `docs/stats/benchsight_stats_catalog.csv` with columns like:\
+\
+- `stat_id`\
+- `stat_name`\
+- `category` (base / on-ice advanced / microstat / quality / etc.)\
+- `fact_table_source`\
+- `definition_plain_english`\
+- `formula_sql_hint`\
+- `filter_context_notes`\
+- `requires_xy` (Y/N)\
+- `requires_rating` (Y/N)\
+\
+Populate with:\
+\
+- Base stats (goals, assists, shots, etc.)\
+- Corsi/Fenwick\
+- Zone entries/exits\
+- Microstats you\'92ve defined so far\
+- Tracking coverage metrics\
+\
+You can use section **5** of the master doc as the seed.\
+\
+Add `docs/stats/benchsight_stats_catalog.md` to explain:\
+\
+- How to interpret the CSV\
+- How to add new stats\
+- How to use them in Power BI/SQL/Python.\
+\
+---\
+\
+### Chunk D \'96 ETL + Power BI Docs\
+\
+Create:\
+\
+- `docs/etl/blb_etl_flow.md`\
+  - Describe:\
+    - Stage \uc0\u8594  Intermediate \u8594  Mart\
+    - Where each layer\'92s SQL lives\
+    - How `src/main.py` orchestrates it.\
+- `docs/etl/tracker_integration.md`\
+  - Describe:\
+    - How tracker UI should output data\
+    - Mapping UI fields \uc0\u8594  staging tables\
+    - How to handle XY and video time alignment.\
+\
+Create:\
+\
+- `docs/powerbi/powerbi_schema.md`\
+  - Describe:\
+    - Which fact and dim tables you load into Power BI\
+    - Star schema relationships\
+    - Example visuals (game summary, player cards, lines).\
+- `docs/powerbi/example_measures.md`\
+  - List DAX measures:\
+    - Basic (Goals, Shots, TOI)\
+    - Corsi/Fenwick measures\
+    - Example microstat measures.\
+\
+---\
+\
+### Chunk E \'96 ML & NHL Integration\
+\
+Create:\
+\
+- `docs/ml/ml_roadmap.md`\
+  - Outline:\
+    - Short/mid/long term ML goals\
+    - xG baseline\
+    - Player similarity\
+    - Style clusters.\
+\
+- `docs/ml/nhl_integration.md`\
+  - Describe:\
+    - Where to find NHL data (e.g. MoneyPuck, NHL API)\
+    - How to map BLB stats to NHL dimensions\
+    - How to build BLB vs NHL player comps.\
+\
+---\
+\
+### What to Tell Future LLMs\
+\
+In a fresh chat with any model, you can say:\
+\
+> \'93I\'92ve uploaded a BenchSight repo.  \
+> Start with `README_LLM_BenchSight.md` in the root.  \
+> Then use `docs/tables/benchsight_table_catalog.*` and `docs/stats/benchsight_stats_catalog.*` for schemas and stats.  \
+> Don\'92t rename or slim anything down; treat these docs as the canonical architecture.\'94\
+\
+That\'92s enough for an LLM to navigate everything logically, even without giant ZIP downloads.\
+\
+---\
+\
+If you\'92d like next, I can:\
+\
+- Draft a **concrete CSV header + a few example rows** for the table and stats catalogs so you can just paste them into Excel/CSV, or  \
+- Design a **Power BI star schema diagram in text** (relationships table-by-table) that you can mirror in the PBIX.}

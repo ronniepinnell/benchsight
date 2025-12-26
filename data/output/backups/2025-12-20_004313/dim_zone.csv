@@ -1,0 +1,4 @@
+﻿zone_id,zone_name,zone_type,description,sort_order
+OZ,Offensive Zone,attacking,Attacking zone (opponent goal),1
+NZ,Neutral Zone,neutral,Center ice between blue lines,2
+DZ,Defensive Zone,defending,Defending zone (own goal),3

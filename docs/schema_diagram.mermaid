@@ -1,0 +1,301 @@
+erDiagram
+    %% ========================================
+    %% STAGE LAYER
+    %% ========================================
+    
+    stg_dim_player {
+        varchar player_id PK
+        varchar player_full_name
+        varchar random_player_full_name
+        varchar player_primary_position
+        decimal current_skill_rating
+        timestamp _load_timestamp
+    }
+    
+    stg_dim_team {
+        varchar team_id PK
+        varchar team_name
+        varchar team_cd
+        varchar league
+        timestamp _load_timestamp
+    }
+    
+    stg_dim_schedule {
+        integer game_id PK
+        varchar home_team_name
+        varchar away_team_name
+        date date
+        integer home_total_goals
+        integer away_total_goals
+        timestamp _load_timestamp
+    }
+    
+    stg_dim_dates {
+        integer datekey PK
+        date date
+        varchar weekdayname
+        varchar monthname
+        integer year
+        timestamp _load_timestamp
+    }
+    
+    stg_dim_seconds {
+        integer time_key PK
+        integer period
+        varchar period_name
+        integer minute_in_period
+        integer total_seconds_in_period
+        timestamp _load_timestamp
+    }
+    
+    stg_fact_gameroster {
+        integer game_id FK
+        varchar player_id FK
+        integer player_game_number
+        integer goals
+        integer assist
+        timestamp _load_timestamp
+    }
+    
+    stg_events_GAMEID {
+        integer event_index PK
+        integer shift_index FK
+        varchar Type
+        varchar event_detail
+        integer period
+        timestamp _load_timestamp
+    }
+    
+    stg_shifts_GAMEID {
+        integer shift_index PK
+        integer Period
+        integer shift_duration
+        varchar strength
+        timestamp _load_timestamp
+    }
+
+    stg_dim_schedule ||--o{ stg_fact_gameroster : "game_id"
+    stg_dim_player ||--o{ stg_fact_gameroster : "player_id"
+    stg_shifts_GAMEID ||--o{ stg_events_GAMEID : "shift_index"
+
+    %% ========================================
+    %% INTERMEDIATE LAYER
+    %% ========================================
+    
+    int_dim_player {
+        varchar player_id PK
+        varchar display_name
+        varchar primary_position
+        decimal skill_rating
+        timestamp _updated_timestamp
+    }
+    
+    int_dim_team {
+        varchar team_id PK
+        varchar team_name
+        varchar team_abbr
+        timestamp _updated_timestamp
+    }
+    
+    int_dim_schedule {
+        integer game_id PK
+        varchar home_team
+        varchar away_team
+        date game_date
+        varchar winner
+        timestamp _updated_timestamp
+    }
+    
+    int_fact_gameroster {
+        varchar player_game_key PK
+        integer game_id FK
+        varchar player_id FK
+        integer goals
+        integer assists
+        integer points
+        decimal skill_rating
+        timestamp _updated_timestamp
+    }
+    
+    int_events_GAMEID {
+        varchar event_key PK
+        integer event_index
+        varchar shift_key FK
+        varchar event_type
+        varchar event_detail
+        integer period
+        timestamp _processed_timestamp
+    }
+    
+    int_shifts_GAMEID {
+        varchar shift_key PK
+        integer shift_index
+        integer period
+        integer shift_duration
+        varchar strength
+        timestamp _processed_timestamp
+    }
+
+    int_dim_schedule ||--o{ int_fact_gameroster : "game_id"
+    int_dim_player ||--o{ int_fact_gameroster : "player_id"
+    int_shifts_GAMEID ||--o{ int_events_GAMEID : "shift_key"
+
+    %% ========================================
+    %% DATAMART LAYER - DIMENSIONS
+    %% ========================================
+    
+    dim_player {
+        varchar player_id PK
+        varchar display_name
+        varchar primary_position
+        decimal skill_rating
+        integer birth_year
+        timestamp _updated_timestamp
+    }
+    
+    dim_team {
+        varchar team_id PK
+        varchar team_name
+        varchar team_abbr
+        varchar team_color1
+        varchar team_color2
+        timestamp _updated_timestamp
+    }
+    
+    dim_schedule {
+        integer game_id PK
+        varchar home_team
+        varchar away_team
+        date game_date
+        integer home_score
+        integer away_score
+        varchar winner
+        timestamp _updated_timestamp
+    }
+    
+    dim_dates {
+        integer date_key PK
+        date full_date
+        varchar day_name
+        varchar month_name
+        integer year_num
+        boolean is_weekend
+        timestamp _updated_timestamp
+    }
+    
+    dim_seconds {
+        integer time_key PK
+        integer period
+        varchar period_name
+        integer minute_in_period
+        integer second_in_minute
+        varchar time_remaining_period_formatted
+        boolean is_overtime
+        timestamp _updated_timestamp
+    }
+    
+    dim_period {
+        integer period_id PK
+        varchar period_name
+        boolean is_overtime
+        timestamp _updated_timestamp
+    }
+    
+    dim_event_type {
+        varchar event_type PK
+        varchar event_category
+        boolean is_shot
+        timestamp _updated_timestamp
+    }
+    
+    dim_strength {
+        varchar strength PK
+        integer home_players
+        integer away_players
+        boolean is_powerplay
+        timestamp _updated_timestamp
+    }
+    
+    dim_position {
+        varchar position_code PK
+        varchar position_name
+        boolean is_forward
+        boolean is_defense
+        timestamp _updated_timestamp
+    }
+    
+    dim_skill_tier {
+        integer tier_id PK
+        varchar tier_name
+        decimal min_rating
+        decimal max_rating
+        timestamp _updated_timestamp
+    }
+    
+    dim_venue {
+        varchar venue_code PK
+        varchar venue_name
+        boolean is_home
+        timestamp _updated_timestamp
+    }
+    
+    dim_zone {
+        varchar zone_code PK
+        varchar zone_name
+        boolean is_offensive
+        timestamp _updated_timestamp
+    }
+
+    %% ========================================
+    %% DATAMART LAYER - FACTS
+    %% ========================================
+    
+    fact_gameroster {
+        varchar player_game_key PK
+        integer game_id FK
+        varchar player_id FK
+        integer goals
+        integer assists
+        integer points
+        decimal skill_rating
+        timestamp _updated_timestamp
+    }
+    
+    fact_box_score {
+        varchar player_game_key PK
+        integer game_id FK
+        varchar player_id FK
+        integer goals
+        integer assists_primary
+        integer assists_secondary
+        integer shots
+        integer faceoff_wins
+        integer takeaways
+        integer blocked_shots
+        timestamp _processed_timestamp
+    }
+    
+    fact_events {
+        varchar event_key PK
+        integer game_id FK
+        varchar event_type FK
+        integer period FK
+        integer time_total_seconds FK
+        varchar event_detail
+        timestamp _processed_timestamp
+    }
+
+    %% DATAMART RELATIONSHIPS (Star Schema)
+    dim_player ||--o{ fact_box_score : "player_id"
+    dim_player ||--o{ fact_gameroster : "player_id"
+    dim_schedule ||--o{ fact_box_score : "game_id"
+    dim_schedule ||--o{ fact_gameroster : "game_id"
+    dim_schedule ||--o{ fact_events : "game_id"
+    dim_team ||--o{ dim_schedule : "home_team_id"
+    dim_team ||--o{ dim_schedule : "away_team_id"
+    dim_dates ||--o{ dim_schedule : "game_date"
+    dim_seconds ||--o{ fact_events : "time_key"
+    dim_period ||--o{ fact_events : "period"
+    dim_event_type ||--o{ fact_events : "event_type"
+    dim_position ||--o{ dim_player : "position"
+    dim_skill_tier ||--o{ dim_player : "skill_rating"

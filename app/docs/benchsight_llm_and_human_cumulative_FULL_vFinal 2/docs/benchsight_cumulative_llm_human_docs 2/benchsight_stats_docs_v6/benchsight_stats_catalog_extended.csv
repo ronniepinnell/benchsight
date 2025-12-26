@@ -1,0 +1,123 @@
+StatID,Name,Category,Level,Description,FormulaConcept,PrimaryInputs,FilterContext,ComputableNow,ExtraDataNeeded,LLMNotes
+BS01,Goals,Basic,player_game,Number of non-empty-net goals a player is credited with in a game.,"Count of events where event_type = 'shot' AND event_detail_1 IN ('goal','pp_goal','sh_goal','ev_goal', etc.)
+AND event_successful = 1 AND event_player_1 = player_id.","fact_player_events, dim_event_types",Usually all strengths; can also be filtered to EV (5v5) only.,Yes,,"Treat as a simple count measure. When asked for season totals, sum over games. For rate stats, combine with
+TOI (e.g., Goals/60)."
+BS02,Assists (Primary + Secondary),Basic,player_game,"Total number of assists a player records in a game, both primary and secondary.","Count of events flagged as goals where assist_1_id = player_id OR assist_2_id = player_id, wired via
+play_details_1/play_details_2 or explicit assist columns, depending on actual implementation.","fact_player_events (goal rows), dim_players",All strengths by default; can be limited to EV or special teams.,Yes,,"Make sure the model understands that a player can get at most 2 assists per goal event (primary + secondary).
+If schemas differ, rely on whatever columns are explicitly marked as assists."
+BS03,Points,Basic,player_game,Sum of goals and assists a player records in a game.,Points = Goals + Assists.,"fact_player_boxscore[goals, assists]","Same context as the goals/assists being referenced (e.g., all strengths, EV).",Yes,,"Treat this as a composite stat and do not double-count goals. If computing from events instead of boxscore,
+first compute BS01 and BS02, then add."
+BS04,Shots on Goal,Basic,player_game,"Number of shots on goal by a player (goals + saved shots, excluding misses and blocks).","Count events where event_type IN ('shot','tip', etc.) AND event_detail_1 IN
+('on_goal','goal','rebound_on_goal') AND event_player_1 = player_id.","fact_player_events, dim_event_types",Usually 5v5 or all strengths; context should be explicit in generated queries.,Yes,,"Different data sources classify shot types slightly differently. When unsure, prefer a curated mapping in
+dim_event_types that explicitly flags 'is_shot_on_goal = 1'."
+BS05,Shot Attempts (Corsi Events),On-Ice,player_onice_game,"All shot attempts (shots on goal, misses, and blocks) for the player's team while the player is on
+the ice.","For each event that is a shot attempt (shot_on_goal, missed_shot, blocked_shot), flag CF if the event_team =
+player's team AND the player is on the ice according to shifts_long or the on-ice join; then count these.","fact_onice_events, fact_events_long, fact_shifts_long",Typically restricted to 5v5 non-empty-net situations for standard Corsi.,Yes,,"This is the core 'Corsi For' input. The model should remember this is an on-ice stat, not purely 'player did
+the shot'. It reflects team shot volume with that player."
+BS06,Unblocked Shot Attempts (Fenwick Events),On-Ice,player_onice_game,"All unblocked shot attempts (shots on goal and misses, but excluding blocks) for the player's team
+while the player is on the ice.","Same as Corsi, but only events where event_detail_1 indicates 'on_goal' or 'missed', excluding 'blocked'.
+Count these when event_team = player's team and the player is on the ice.","fact_onice_events, fact_events_long, fact_shifts_long",Typically 5v5 non-empty net for standard Fenwick.,Yes,,"Fenwick is 'Corsi without blocks'. Explain this clearly when asked why it might differ from CF. Use a curated
+'is_fenwick' flag in dim_event_types when possible."
+BS07,Plus-Minus,Basic,player_game,"Traditional plus-minus: goals for minus goals against at even strength while the player is on the
+ice.","For each non-empty-net even-strength goal, +1 when the player's team scores and the player is on the ice; -1
+when the opponent scores and the player is on the ice. Sum.","fact_onice_goal_events, fact_shifts_long, dim_event_types","Typically only EV (5v5) and maybe 4v4, excluding PP/PK and EN goals.",Yes,,"Plus-minus is noisy and heavily team/context dependent. When the user asks for 'better' impact measures,
+propose xGF-based or Corsi-based metrics instead."
+BS08,Time on Ice (Seconds),Basic,player_game,"Total time a player spends on the ice in a game, excluding stoppage time if available.","Sum of logical shift durations for the player from player_shifts table. If 'stoppage_time' per shift segment
+is available, subtract stoppage segments from total.","fact_shifts_long, fact_player_shifts","Can be split by strength, period, or game state using filters on strength/situation fields.",Yes,,"For consistency, TOI should be based on logical shifts, not raw segment rows. The LLM should prefer
+fact_player_shifts or fact_player_toi tables instead of recomputing from raw timestamps unless necessary."
+BS09,Time on Ice (Minutes),Basic,player_game,TOI expressed in minutes instead of seconds.,TOI_minutes = TOI_seconds / 60.,fact_player_boxscore[toi_seconds],"Same context as TOI_seconds (e.g., all strengths, EV).",Yes,,"Display this with one decimal (e.g., 19.3). Make sure to handle rounding consistently."
+BS10,Points per 60,Rate,player_game,Rate of points per 60 minutes of ice time in a game or range of games.,"Points60 = (Goals + Assists) * 3600 / TOI_seconds, provided TOI_seconds > 0.","fact_player_boxscore[goals, assists, toi_seconds]","Usually at 5v5 or all strengths; specify explicitly. DO NOT compute if TOI < a small threshold (e.g., 60s) without warning.",Yes,,"When TOI is very low, this stat explodes. If asked to rank players, suggest including a minimum TOI filter,
+e.g., >= 100 minutes for season comparisons."
+BS11,Corsi For %,On-Ice,player_onice_game,Percentage of total on-ice Corsi events that are for the player's team.,"CF% = CF / (CF + CA), where CF = Corsi For, CA = Corsi Against. Only include events where the player is on the
+ice.","fact_player_onice_shot_attempts[cf, ca]",Typically 5v5 score/tied adjustment may be applied in advanced versions.,Yes,,"If CF + CA = 0 (no attempts while on ice), set CF% to NULL or leave blank. The LLM should explicitly check for
+division-by-zero edge cases."
+BS12,Fenwick For %,On-Ice,player_onice_game,"Percentage of unblocked shot attempts (Fenwick) that are for the player's team while the player is
+on the ice.","FF% = FF / (FF + FA). Definitions mirror CF%, but for unblocked attempts only.","fact_player_onice_shot_attempts[ff, fa]","Same filters as CF (5v5 non-EN), unless otherwise specified.",Yes,,"Fenwick% behaves similarly to CF%. The model should treat them as cousins and avoid mixing inputs (e.g., do
+not use CF as numerator when computing FF%)."
+BS13,Expected Goals (xG),Advanced,player_game,Sum of expected goal values for all shots taken by the player.,"xG = sum over shots (xG_value_i) where xG_value_i is derived from features like shot location, shot type, pre-
+shot movement, screens, etc.","fact_shots_xy (with xG per shot once model is trained), fact_player_events",Often restricted to 5v5 or all situations; must be explicit.,Partial,"Requires a trained xG model and shot-level input features (distance, angle, shot type, pre-shot passes). If not present, treat xG as not available.","LLM should check whether an xG column exists in the fact_shots_xy or fact_events_wide tables. If it does not,
+explain that xG is a planned metric and describe conceptually how it would be computed."
+BS14,"Expected Goals Against (xGA, On-Ice)",Advanced,player_onice_game,Total expected goals against while the player is on the ice.,"xGA_on_ice = sum of shot xG_values where shot is by opponents and the player is on the ice according to on-ice
+tables.","fact_onice_shots_xy, fact_shifts_long",Usually 5v5; may be split by score state or zone.,Partial,Same requirements as xG stats: must have per-shot xG values plus reliable on-ice data.,"Model should handle this like Corsi Against but with xG weights instead of binary attempts. If xG is missing,
+the stat cannot be computed numerically."
+BS15,Rating-Weighted Corsi For per 60,RatingAware,player_onice_game,"Corsi For per 60 minutes, adjusted by the average rating of opponents on the ice.","CF60_raw = CF * 3600 / TOI_seconds. OppRating = average rating of all opponent skaters on ice for those CF
+events. RatingWeightedCF60 could be CF60_raw * (OppRating / LeagueAvgRating).","fact_player_onice_shot_attempts, dim_player[rating], fact_shifts_long",Usually 5v5 only; this is a context-heavy stat for talent evaluation.,Partial,"Requires stable 'rating' field in dim_player and defined LeagueAvgRating value. Without ratings, compute ordinary CF60 instead.","LLM should check for dim_player.rating; if not present, explain that the rating-adjusted version can't be
+computed and fall back to plain CF60. Make the dependency explicit."
+BS16,Zone Entry Success Rate (Carry-In / Dump-In),Microstat,player_game,"Success rate of zone entries attempted by a player, separated by carry-ins vs dump-ins.","CarrySuccessRate = successful_carry_entries / total_carry_entries. DumpSuccessRate = successful_dump_entries /
+total_dump_entries, where each entry is an event with type IN ('zone_entry') and details / play_details encode
+carry vs dump and successful vs unsuccessful.","fact_player_events (zone entries), dim_event_types, dim_zones","Can be filtered to 5v5, game state, or period.",Partial,"Requires the events schema to explicitly classify entries as 'carry' vs 'dump' and successful vs unsuccessful (event_successful or play_successful). If that labeling is inconsistent, the stat may be incomplete.","When the user requests entry microstats, LLM should search for event types labeled 'zone_entry' and examine
+event_detail_1/2, play_detail_1/2, and success flags. If classification columns aren't present, the model
+should describe what's missing."
+BS17,Zone Exit Success Rate,Microstat,player_game,"Success rate of zone exits a player attempts, including with-possession and without-possession
+exits.","ExitSuccessRate = successful_exits / total_exits, where each exit is an event with type IN ('zone_exit') and
+success is encoded in event_successful or play_successful and additional details for with-possession vs
+rims/clears.","fact_player_events, dim_event_types, dim_zones",Often restricted to defensive-zone exits at 5v5.,Partial,Needs clear tagging of exit events and success conditions in the tracking template.,"LLM should note that not all 'exits' are of equal quality. If more detail exists in play_detail fields (e.g.,
+with-control vs without-control), propose separate metrics for each."
+BS18,Controlled Breakout Rate,Microstat,team_game,Percentage of defensive-zone exits that lead to controlled possession through the neutral zone.,"ControlledBreakoutRate = controlled_exits / total_exits, where controlled_exits are those tagged as with-
+possession and may be followed by a controlled neutral-zone carry or pass.","fact_team_events, chain_sequence tables for zone transitions, dim_zones",Typically 5v5; can be measured by team or by player on-ice.,Partial,Requires sequence/chain modeling across events: must know that an exit and subsequent events belong to the same sequence.,"Recommend implementing sequences that span DZ → NZ → OZ using the existing sequence_index or play_index. LLM
+should describe conceptual logic if the sequence tables are not yet created."
+BS19,Rush Chances,Microstat,player_game,"Number of scoring chances (shots or passes leading to shots) that occur shortly after a fast
+transition through multiple zones.","RushChance is typically defined as a shot or high-danger chance that occurs within N seconds of a controlled
+zone entry or multi-zone carry. Count such events for which the player is either shooter (event_player_1) or
+primary passer (event_player_2).","fact_events_long, chain_sequence tables with zone labels, dim_zones, fact_shots_xy",Often restricted to 5v5 and used in xG models.,No,"Requires (1) time-aware sequence modeling, (2) speed or at least start/end zone timestamps, (3) shot categorization as 'chance' vs 'simple shot'. These are not fully implemented yet.","LLM should flag this stat as 'planned but not fully implemented'. It can describe how to compute it logically
+but avoid claiming numeric values unless the necessary derived tables exist."
+BS20,Cycle Possessions,Microstat,team_game,"Number of offensive-zone possessions where the puck is retained and passed multiple times without
+exiting the offensive zone.","Define a cycle as a sequence of events where the puck stays in OZ, there are >= N successful passes among
+teammates, and no zone exit occurs before the sequence ends. Count these per team.","chain_play tables, fact_events_long with zone labels and pass events, dim_zones",Usually 5v5; may be filtered to possessions that last at least X seconds.,No,Needs robust possession + zone modeling and a clear rule for 'cycle' vs 'simple OZ touch'.,"LLM can propose logic and feature-engineering steps but should mark actual metric as not yet implemented
+unless cycle classification columns exist."
+BS21,With-You vs Without-You GF%,Impact,pair_or_line_game,Comparative GF% when a player is on the ice with a specific teammate vs when that teammate is off.,"For a pair (A,B): GF%_with = GF_with / (GF_with + GA_with) in minutes where both on ice; GF%_without =
+GF_without / (GF_without + GA_without) where A is on ice and B is not. The difference reflects synergy or
+dependency.","fact_onice_goal_events, fact_shifts_long (line combos), dim_player","5v5 only; apply TOI minimums (e.g., at least 50 min together).",Partial,Needs robust on-ice combination tables (line/pair IDs) and enough samples per pair.,"LLM should caution about small-sample noise and propose usage thresholds. For large combinatorics, suggest
+pre-aggregated 'fact_line_onice' tables."
+BS22,Head-to-Head Expected Goals For vs Specific Opponent,Impact,player_vs_player,"Expected goals generated by Player A's team while A is on the ice against a specific opponent Player
+B.","xGF_H2H(A vs B) = sum of xG for shots by A's team when both A and B are on the ice, minus xGA_H2H, similar to
+CF-style on-ice logic but restricted to overlapping TOI for those two players.","fact_onice_shots_xy (with xG), fact_shifts_long, dim_player",Typically 5v5; used for matchup analysis.,Partial,"As with xG stats, must have xG values per shot and accurate on-ice tables. Also needs efficient pair indexing for on-ice overlap.","LLM should treat this as an advanced H2H view. If xG is unavailable, fallback to shot attempts or goals in the
+same on-ice windows."
+BS23,Puck Touches / Possession Events,Microstat,player_game,"Number of times a player directly controls the puck (touches, carries, receptions).","Count events where event_detail_1 or play_detail_1 indicate 'puck_touch', 'receive_pass', 'carry', or similar
+labels, with event_player_1 = player_id.","fact_player_events, dim_event_types",All strengths; often restricted to EV for player-style analysis.,Partial,Requires explicit tagging of touches in the tracking template; not every project tracks these as discrete events.,"The LLM should check for presence of event types or details labeled as 'touch' or 'puck possession'. If not
+present, note that this stat is conceptual only."
+BS24,Giveaways (Non-Dump/Clear),Microstat,player_game,"Number of times a player turns the puck over excluding deliberate dumps/clears and certain missed
+shots.","Count events where event_type or event_detail_1 indicate 'giveaway' or 'turnover' AND NOT (event_detail_2 in
+('dump', 'clear') OR event_detail_1 IN ('shot_miss_special_cases')).","fact_player_events, dim_event_types",All strengths but often restricted to 5v5.,Yes,,"The key requirement from the user: this should ignore low-value dump/clear giveaways and simple missed shots.
+LLM should treat 'smart clears' as separate when flagged."
+BS25,Takeaways,Microstat,player_game,Number of times a player wins the puck from an opponent via a takeaway or interception.,"Count events where event_type = 'takeaway' OR play_detail fields indicate 'interception',
+'poke_check_recover', etc., with event_player_1 = player_id.","fact_player_events, dim_event_types",All strengths; EV by default.,Yes,,"Takeaways often involve subjective scoring; the LLM should acknowledge potential scorer bias when interpreting
+this stat."
+BS26,Faceoff Win %,Basic,player_game,Percentage of faceoffs a player takes that they win.,"FO% = faceoff_wins / (faceoff_wins + faceoff_losses), where a 'win' is indicated by event_player_1 for faceoff
+events and 'loss' by opp_player_1.","fact_player_events (faceoffs), dim_event_types","All situations, though can be split by zone (OZ, NZ, DZ) or strength.",Yes,,"The LLM should ensure it counts only draws where the player is a participant (event_player_1 or opp_player_1).
+Neutral faceoffs or mis-tagged rows should be excluded."
+BS27,Offensive Zone Start %,Usage,player_game,Share of a player's non-neutral zone faceoff shifts that start in the offensive zone.,"OZ_Starts = count of shifts that begin after an OZ faceoff for player's team; DZ_Starts = same for DZ.
+OZ_Start% = OZ_Starts / (OZ_Starts + DZ_Starts).","fact_player_shifts (with zone_start), fact_events_long (faceoffs), dim_zones",Typically 5v5 only.,Partial,Requires zone_start classification in player_shifts or zone labeled faceoff events linked to shift starts.,"If zone_start is present, use it. If not, the LLM should describe how to infer it: map faceoff events to the
+subsequent shifts for players on ice."
+BS28,Zone Time (Offensive / Neutral / Defensive),Usage,player_game,Total time a player spends in each zone while on the ice.,"Sum shift durations grouped by zone (OZ/NZ/DZ) based on where the puck is or where the shift is classified as
+starting/ending, depending on project conventions.","fact_player_shifts (with zone_start and zone_end), dim_zones",Usually EV; can also be broken down by special teams.,Partial,"Needs reliable zone labeling on shifts. If only event zones exist, you must approximate using events overlapping player TOI.","LLM should clarify which convention is used: 'where the shift starts' vs 'where the puck is most of the
+shift'."
+BS29,Shift Count,Usage,player_game,Number of logical shifts a player takes in a game.,Count of rows in player_shifts table for the player in the given game.,fact_player_shifts,All strengths; you can also split by strength.,Yes,,"Your earlier requirement: use logical shifts (grouped by contiguous shift_index segments) and also track
+cumulative shift number. The LLM should not count raw shift_index rows."
+BS30,Average Shift Length,Usage,player_game,Average duration of a player's shifts in a game.,AvgShiftLength = average(shift_duration_seconds) across all logical shifts in player_shifts.,fact_player_shifts[shift_duration_seconds],All or EV-only; usage context must be explicit.,Yes,,"Warn about small sample sizes (e.g., a player with 2 shifts). If asked season-wide, aggregate across games."
+BS31,Possession Time (Event Player),Microstat,player_game,Total time a player has direct puck possession in tracked events.,"Sum over events where event_type in ('possession','zone_entry','zone_exit', etc.) AND event_player_1 =
+player_id of (event_end_time - event_start_time) in seconds.","fact_player_events (with start/end times), dim_event_types",Usually all strengths; can be split by zone.,Partial,Requires event_start and event_end timestamps for possession-type events.,"When those timestamps exist, the LLM can compute per-player and per-zone possession time. If not, mark as
+conceptual-only."
+BS32,Puck Distance Carried,Microstat,player_game,Total distance a player carries the puck across all possession events.,"For each event with XY start/end for the puck (and the player as carrier), compute Euclidean distance or rink-
+distance along the surface, then sum across events.","fact_event_xy (puck rows), dim_rinkcoords, fact_player_events",All strengths; can restrict to rushes or zone entries.,Partial,Requires puck XY positions for possessions and an understanding of rink dimensions.,"The LLM should describe distance computation clearly (sqrt(dx^2 + dy^2) scaled appropriately) and note that
+calibration is needed for real units."
+BS33,Skater Speed Approximation,Vision,player_game,Approximate skating speed based on positional tracking over time.,"Speed ≈ distance traveled between tracking frames divided by time between frames, aggregated as average or max
+over game.","Future: tracking table with (player_id, x, y, t) at high frequency.",N/A,No,Requires a full tracking feed (positions over time) which is not currently present in Excel-based project.,"LLM should treat this as a future feature, not something to compute from current data. It can, however,
+explain how you would derive it from a tracking provider."
+BS34,Shot Distance,Microstat,event_level,Distance from shooter to the goal at the time of a shot.,"Using event_xy or shot_xy coordinates, compute distance from shot location to goal location (e.g., (0,0) in
+rinkcoords).","fact_shots_xy, dim_rinkcoords",All strengths; often filtered to EV.,Yes,,"The LLM should rely on existing 'distance' columns if stored, otherwise recompute from XY coordinates if they
+are in consistent units."
+BS35,Shot Angle,Microstat,event_level,Angle of the shot relative to the goal center.,"Angle = arctan2(lateral_offset, distance_from_goal_line) in degrees, using rink coordinate system.","fact_shots_xy, dim_rinkcoords",All strengths.,Partial,Requires standardized coordinate system and definition of positive angle direction.,"LLM should describe the coordinate convention and may use existing 'angle' columns when present rather than
+recomputing blindly."
+BS36,Chain-Level xG (Play Index),Chain,play_sequence,Total xG generated during a 'play' (a continuous possession or designed play).,"For each play_index, sum xG for all shots or shot-like events in that play.","fact_play_chains, fact_shots_xy (with xG)",All strengths unless otherwise filtered.,Partial,Requires play_index table with chain grouping and xG at event level.,"When play_index exists but xG doesn't, LLM should still be able to compute 'shot count per play' and similar
+simpler metrics."
+BS37,Sequence Outcome (Zone-to-Zone Sequence),Chain,sequence,"Categorization of multi-zone sequences (e.g., DZ exit → NZ carry → OZ entry → shot or turnover).","Label each sequence_index with an outcome class (e.g., 'shot', 'goal', 'turnover', 'dump in', 'fail to exit').","fact_sequence_chains, fact_events_long, dim_zones",All strengths but often EV only.,Partial,Requires robust chain building over events and zone labeling.,"LLM should not attempt to guess labels but can describe how to create a classification pipeline to label
+sequences."
+BS38,Game State Adjusted CF% (Score-Adjusted),Advanced,player_onice_season,"CF% adjusted for score state (e.g., when team is trailing or leading) to reduce score effects.","Use a weighting scheme where Corsi events in different score states (tied, leading, trailing) get different
+weights, then compute a weighted CF%.","fact_player_onice_shot_attempts, dim_game_state",Season-long or multi-game; EV only.,No,Requires explicit game state labeling (goal diff at time of event) and agreed weighting scheme.,"LLM should outline typical score-adjustment methods (e.g., 2014-era NHL methodologies) but mark as future
+unless game_state fields exist."
+BS39,Relative CF%,Advanced,player_onice_season,Player's CF% compared to team CF% when the player is off the ice.,"RelCF% = CF%_on - CF%_off, where CF%_on uses player's on-ice events, CF%_off uses team events when player is
+not on the ice.","fact_team_onice_shot_attempts, fact_player_onice_shot_attempts",Season-level; 5v5 only.,Partial,Needs both on-ice and off-ice splits for the player.,LLM should note that this is a context-dependent stat and can be biased by usage and teammates.
+BS40,Game Tracking Coverage,MetaQuality,game_level,"Degree to which a game is fully, partially, or not tracked in the custom system.","Coverage fields: shifts_tracked (bool), events_tracked (bool), xy_tracked (bool), shots_tracked (bool),
+video_tracked (bool); plus approximate time window: min(event_time_tracked), max(event_time_tracked).","fact_tracking_coverage, fact_events_long, fact_shifts_long, fact_video_times",N/A,Partial,Needs an explicit coverage table (fact_tracking_coverage) that you planned: one row per game with booleans and time ranges.,"LLM should always check coverage before comparing microstats across games, and warn when coverage is partial
+or minimal."

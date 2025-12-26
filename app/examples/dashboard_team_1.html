@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Velodrome Team | BLB Analytics</title>
+<style>
+:root{--bg:#0a0e14;--panel:#12171f;--card:#1a2029;--border:#2d3640;--accent:#58a6ff;--success:#3fb950;--warn:#d29922;--danger:#f85149;--text:#e6edf3;--muted:#8b949e;--velo:#9C47E4}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:16px}
+.header a{color:var(--muted);text-decoration:none;padding:6px 12px;background:var(--card);border-radius:6px}
+.container{max-width:1400px;margin:0 auto;padding:24px}
+.team-hero{display:grid;grid-template-columns:auto 1fr;gap:32px;background:linear-gradient(135deg,rgba(156,71,228,0.2),rgba(88,166,255,0.1));border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:24px;align-items:center}
+.team-logo{width:120px;height:120px;border-radius:16px;background:#fff;padding:12px;display:flex;align-items:center;justify-content:center}
+.team-logo img{max-width:100%;max-height:100%;object-fit:contain}
+.team-info h2{font-size:36px;color:var(--velo);margin-bottom:8px}
+.team-stats{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-top:20px}
+.team-stat{text-align:center;padding:16px;background:var(--card);border-radius:10px}
+.team-stat .val{font-size:22px;font-weight:700}
+.team-stat .lbl{font-size:9px;color:var(--muted);text-transform:uppercase}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:20px}
+.card-header{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600}
+.card-body{padding:16px}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{text-align:left;padding:10px 8px;color:var(--muted);border-bottom:1px solid var(--border)}
+td{padding:10px 8px;border-bottom:1px solid var(--border)}
+tr:hover{background:rgba(88,166,255,0.05);cursor:pointer}
+.num{font-weight:700;font-family:monospace}
+.stat-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.stat-row:last-child{border:none}
+.game-mini{display:flex;align-items:center;gap:12px;padding:10px;background:var(--panel);border-radius:6px;margin-bottom:8px}
+.game-mini .date{font-size:10px;color:var(--muted);width:50px}
+.game-mini .opp{flex:1;font-size:12px}
+.game-mini .result{font-weight:700;padding:4px 8px;border-radius:4px;font-size:11px}
+.game-mini .result.w{background:rgba(63,185,80,0.2);color:var(--success)}
+.game-mini .result.l{background:rgba(248,81,73,0.2);color:var(--danger)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a href="index.html">← Home</a>
+  <h1 style="font-size:16px">🏒 Team Overview</h1>
+  <span style="margin-left:auto;font-size:10px;color:var(--muted)">Data from noradhockey.com</span>
+</div>
+
+<div class="container">
+  
+  <div class="team-hero">
+    <div class="team-logo">
+      <img src="https://www.noradhockey.com/wp-content/uploads/2025/08/2024-25-VEL-Jersey-Logo.png" alt="Velodrome">
+    </div>
+    <div>
+      <div class="team-info">
+        <h2>COS Velodrome</h2>
+        <div style="color:var(--muted)">NORAD Hockey League • Season 2025-26 • <span style="color:var(--success)">3rd Place</span></div>
+      </div>
+      <div class="team-stats">
+        <div class="team-stat"><div class="val">10-6-0</div><div class="lbl">Record</div></div>
+        <div class="team-stat"><div class="val" style="color:var(--success)">20</div><div class="lbl">Points</div></div>
+        <div class="team-stat"><div class="val">62</div><div class="lbl">Goals For</div></div>
+        <div class="team-stat"><div class="val">43</div><div class="lbl">Goals Agst</div></div>
+        <div class="team-stat"><div class="val" style="color:var(--success)">+19</div><div class="lbl">Diff</div></div>
+        <div class="team-stat"><div class="val">2.69</div><div class="lbl">GAA</div></div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">👥 Roster - Skaters (from noradhockey.com)</div>
+      <table>
+        <thead><tr><th>Rating</th><th>Player</th><th>Pos</th><th>GP</th><th>G</th><th>A</th><th>P</th></tr></thead>
+        <tbody>
+          <tr><td class="num">6</td><td>S. Downs (A)</td><td>F</td><td>16</td><td>16</td><td>9</td><td style="font-weight:700;color:var(--success)">25</td></tr>
+          <tr><td class="num">4</td><td>K. White</td><td>F</td><td>16</td><td>10</td><td>5</td><td style="font-weight:700">15</td></tr>
+          <tr><td class="num">5</td><td>J. Cronk</td><td>F</td><td>14</td><td>8</td><td>6</td><td>14</td></tr>
+          <tr><td class="num">5</td><td>G. Ashcroft</td><td>F</td><td>15</td><td>6</td><td>5</td><td>11</td></tr>
+          <tr><td class="num">5</td><td>G. Wood</td><td>F</td><td>12</td><td>5</td><td>4</td><td>9</td></tr>
+          <tr><td class="num">3</td><td>J. Rynearson</td><td>F</td><td>14</td><td>4</td><td>4</td><td>8</td></tr>
+          <tr><td class="num">3</td><td>R. Mayfield (S)</td><td>D</td><td>16</td><td>3</td><td>4</td><td>7</td></tr>
+          <tr><td class="num">4</td><td>N. Ciampoli</td><td>F</td><td>16</td><td>3</td><td>3</td><td>6</td></tr>
+          <tr><td class="num">3</td><td>K. Shain</td><td>F</td><td>15</td><td>2</td><td>3</td><td>5</td></tr>
+          <tr><td class="num">4</td><td>R. Pinnell (C)</td><td>D</td><td>14</td><td>1</td><td>3</td><td>4</td></tr>
+          <tr><td class="num">4</td><td>M. Donaty</td><td>D</td><td>14</td><td>1</td><td>3</td><td>4</td></tr>
+          <tr><td class="num">2</td><td>J. Valente</td><td>D</td><td>15</td><td>1</td><td>2</td><td>3</td></tr>
+          <tr><td class="num">2</td><td>N. Downs</td><td>F</td><td>16</td><td>0</td><td>3</td><td>3</td></tr>
+          <tr><td class="num">4</td><td>H. Perea</td><td>D</td><td>10</td><td>1</td><td>1</td><td>2</td></tr>
+          <tr><td class="num">3</td><td>P. Major</td><td>D</td><td>11</td><td>0</td><td>1</td><td>1</td></tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div>
+      <div class="card">
+        <div class="card-header">🥅 Goalies</div>
+        <table>
+          <thead><tr><th>Rating</th><th>Goalie</th><th>GP</th><th>GAA</th><th>GA</th><th>SO</th></tr></thead>
+          <tbody>
+            <tr><td class="num">5</td><td>W. Crandall</td><td>15</td><td style="color:var(--success)">2.93</td><td>44</td><td>1</td></tr>
+            <tr><td class="num">5</td><td>S. Rivera</td><td>7</td><td>3.00</td><td>21</td><td>0</td></tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">📅 Recent Games</div>
+        <div class="card-body">
+          <div class="game-mini"><span class="date">Dec 21</span><span class="opp">@ Outlaws</span><span class="result w">W 6-3</span></div>
+          <div class="game-mini"><span class="date">Dec 14</span><span class="opp">@ Nelson</span><span class="result w">W 5-3</span></div>
+          <div class="game-mini"><span class="date">Nov 23</span><span class="opp">@ HollowBrook</span><span class="result l">L 1-4</span></div>
+          <div class="game-mini"><span class="date">Nov 16</span><span class="opp">@ Platinum</span><span class="result w">W 6-2</span></div>
+          <div class="game-mini"><span class="date">Nov 9</span><span class="opp">@ OS Offices</span><span class="result l">L 4-5</span></div>
+          <div class="game-mini"><span class="date">Nov 2</span><span class="opp">@ AMOS</span><span class="result w">W 5-4</span></div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">📊 Season Stats</div>
+        <div class="card-body">
+          <div class="stat-row"><span>Goals/Game</span><span style="font-weight:700">3.88</span></div>
+          <div class="stat-row"><span>Goals Against/Game</span><span>2.69</span></div>
+          <div class="stat-row"><span>Current Streak</span><span style="color:var(--success)">W2</span></div>
+          <div class="stat-row"><span>Last 10</span><span>7-3-0</span></div>
+          <div class="stat-row"><span>League Rank</span><span style="color:var(--success)">#3</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+</div>
+</body>
+</html>

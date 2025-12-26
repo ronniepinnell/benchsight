@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BLB Hockey Analytics | NORAD League</title>
+<style>
+:root{--bg:#0a0e14;--panel:#12171f;--card:#1a2029;--border:#2d3640;--accent:#58a6ff;--success:#3fb950;--warn:#d29922;--danger:#f85149;--text:#e6edf3;--muted:#8b949e;--velo:#9C47E4}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.topbar{background:linear-gradient(90deg,#1a1f2e,#0d1117);border-bottom:1px solid var(--border);padding:8px 24px;display:flex;align-items:center;gap:16px}
+.topbar img{height:32px}
+.topbar .league{font-size:11px;color:var(--muted);padding:4px 8px;background:var(--card);border-radius:4px}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:12px}
+.logo img{height:48px;border-radius:8px}
+.logo h1{font-size:24px;background:linear-gradient(135deg,#9C47E4,#58a6ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo .sub{font-size:11px;color:var(--muted)}
+.nav{display:flex;gap:4px}
+.nav a{color:var(--text);text-decoration:none;padding:10px 16px;border-radius:6px;font-size:12px;transition:all 0.2s;display:flex;align-items:center;gap:6px}
+.nav a:hover{background:var(--card)}
+.nav a.active{background:var(--velo);color:#fff}
+.nav .divider{width:1px;background:var(--border);margin:0 8px}
+.container{max-width:1600px;margin:0 auto;padding:24px}
+.hero{background:linear-gradient(135deg,rgba(156,71,228,0.15),rgba(88,166,255,0.1));border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:24px;display:grid;grid-template-columns:1fr auto;gap:32px;align-items:center}
+.hero-content h2{font-size:28px;margin-bottom:8px}
+.hero-content p{color:var(--muted);font-size:13px;max-width:600px;line-height:1.6}
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.hero-stat{text-align:center;padding:16px 24px;background:var(--card);border-radius:10px;border:1px solid var(--border)}
+.hero-stat .num{font-size:28px;font-weight:700;color:var(--velo)}
+.hero-stat .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;margin-top:4px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.section{margin-bottom:32px}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.section-header h3{font-size:16px;display:flex;align-items:center;gap:8px}
+.btn{background:var(--card);border:1px solid var(--border);color:var(--text);padding:8px 14px;border-radius:6px;cursor:pointer;font-size:11px;transition:all 0.2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--border)}
+.btn.primary{background:var(--velo);border-color:var(--velo);color:#fff}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:all 0.2s}
+.card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.card-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.card-header img{width:32px;height:32px;border-radius:6px;object-fit:contain;background:#fff}
+.card-header .title{font-size:13px;font-weight:600}
+.card-header .sub{font-size:10px;color:var(--muted)}
+.card-body{padding:16px}
+.game-row{display:flex;align-items:center;padding:12px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s}
+.game-row:last-child{border:none}
+.game-row:hover{background:rgba(88,166,255,0.05)}
+.game-row .date{width:80px;font-size:10px;color:var(--muted)}
+.game-row .teams{flex:1;display:flex;align-items:center;gap:8px}
+.game-row .team{display:flex;align-items:center;gap:6px;font-size:12px}
+.game-row .team img{width:20px;height:20px;border-radius:4px;object-fit:contain;background:#fff}
+.game-row .score{font-size:14px;font-weight:700;padding:4px 10px;background:var(--panel);border-radius:4px}
+.game-row .status{font-size:9px;padding:3px 8px;border-radius:10px}
+.status.tracked{background:rgba(63,185,80,0.2);color:var(--success)}
+.status.partial{background:rgba(210,153,34,0.2);color:var(--warn)}
+.status.none{background:rgba(248,81,73,0.2);color:var(--danger)}
+.standings-table{width:100%;border-collapse:collapse;font-size:11px}
+.standings-table th{text-align:left;padding:8px 10px;color:var(--muted);font-weight:500;border-bottom:1px solid var(--border)}
+.standings-table td{padding:8px 10px;border-bottom:1px solid var(--border)}
+.standings-table tr:hover{background:rgba(88,166,255,0.05)}
+.standings-table .team-cell{display:flex;align-items:center;gap:8px}
+.standings-table .team-cell img{width:20px;height:20px;border-radius:4px;object-fit:contain;background:#fff}
+.leader-card{display:flex;align-items:center;gap:12px;padding:12px;cursor:pointer}
+.leader-card:hover{background:rgba(88,166,255,0.05)}
+.leader-rank{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.leader-rank.g{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#000}
+.leader-rank.s{background:linear-gradient(135deg,#94a3b8,#64748b);color:#fff}
+.leader-rank.b{background:linear-gradient(135deg,#d97706,#b45309);color:#fff}
+.leader-info{flex:1}
+.leader-info .name{font-size:12px;font-weight:600}
+.leader-info .team{font-size:10px;color:var(--muted)}
+.leader-stat{font-size:18px;font-weight:700;color:var(--accent)}
+.quick-links{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.quick-link{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;text-decoration:none;color:var(--text)}
+.quick-link:hover{border-color:var(--velo);transform:translateY(-2px)}
+.quick-link .icon{font-size:28px;margin-bottom:8px}
+.quick-link h4{font-size:12px;margin-bottom:4px}
+.quick-link p{font-size:10px;color:var(--muted)}
+.footer{border-top:1px solid var(--border);padding:20px;text-align:center;color:var(--muted);font-size:11px;margin-top:40px}
+.admin-badge{background:var(--danger);color:#fff;font-size:9px;padding:2px 6px;border-radius:3px;margin-left:8px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <img src="https://www.noradhockey.com/wp-content/uploads/2017/01/cropped-LogoV4-1.png" alt="NORAD">
+  <span class="league">NORAD Hockey League • Season 2025-26</span>
+  <div style="flex:1"></div>
+  <span style="font-size:11px;color:var(--muted)">Velodrome Analytics</span>
+</div>
+
+<div class="header">
+  <div class="logo">
+    <img src="https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/06/Velodrome-Vertical.png?resize=128%2C110&ssl=1" alt="Velodrome">
+    <div>
+      <h1>🏒 BLB Hockey Analytics</h1>
+      <div class="sub">Tracking • Analysis • Insights</div>
+    </div>
+  </div>
+  <nav class="nav" id="mainNav">
+    <a href="#" class="active">🏠 Home</a>
+    <a href="dashboard_games.html">📅 Games</a>
+    <a href="dashboard_team.html">🏒 Team</a>
+    <a href="dashboard_players.html">👤 Players</a>
+    <a href="dashboard_shots.html">🎯 Shots</a>
+    <a href="dashboard_advanced.html">📊 Advanced</a>
+    <span class="divider"></span>
+    <a href="tracker_v14.html" id="adminLink" style="display:none">⚙️ Tracker<span class="admin-badge">Admin</span></a>
+  </nav>
+</div>
+
+<div class="container">
+  
+  <div class="hero">
+    <div class="hero-content">
+      <h2>Welcome to Velodrome Analytics</h2>
+      <p>Comprehensive hockey analytics for the Velodrome team. Track every play, analyze performance, and gain insights from detailed event tracking data across the NORAD season.</p>
+      <div style="margin-top:16px;display:flex;gap:10px">
+        <a class="btn primary" href="dashboard_team.html">View Team Stats</a>
+        <a class="btn" href="dashboard_games.html">Browse Games</a>
+      </div>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="num" id="statGP">14</div><div class="lbl">Games Played</div></div>
+      <div class="hero-stat"><div class="num" id="statRecord">8-5-1</div><div class="lbl">Record</div></div>
+      <div class="hero-stat"><div class="num" id="statGF">52</div><div class="lbl">Goals For</div></div>
+      <div class="hero-stat"><div class="num" id="statGA">38</div><div class="lbl">Goals Against</div></div>
+    </div>
+  </div>
+  
+  <div class="quick-links">
+    <a class="quick-link" href="dashboard_shots.html"><div class="icon">🎯</div><h4>Shot Charts</h4><p>Visualize shots</p></a>
+    <a class="quick-link" href="dashboard_players.html"><div class="icon">👤</div><h4>Player Stats</h4><p>Individual metrics</p></a>
+    <a class="quick-link" href="dashboard_flow.html"><div class="icon">📈</div><h4>Game Flow</h4><p>Momentum analysis</p></a>
+    <a class="quick-link" href="dashboard_zones.html"><div class="icon">🗺️</div><h4>Zone Analysis</h4><p>Entry/exit success</p></a>
+    <a class="quick-link" href="dashboard_goalie.html"><div class="icon">🥅</div><h4>Goalie Stats</h4><p>Save analysis</p></a>
+    <a class="quick-link" href="dashboard_advanced.html"><div class="icon">🧠</div><h4>Advanced</h4><p>xG, Corsi, Fenwick</p></a>
+  </div>
+  
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;margin-top:24px">
+    
+    <div>
+      <div class="section">
+        <div class="section-header">
+          <h3>📅 Recent & Upcoming Games</h3>
+          <a class="btn" href="dashboard_games.html">View All</a>
+        </div>
+        <div class="card">
+          <div id="gamesList"></div>
+        </div>
+      </div>
+      
+      <div class="section">
+        <div class="section-header">
+          <h3>🏆 League Standings</h3>
+        </div>
+        <div class="card">
+          <table class="standings-table">
+            <thead>
+              <tr><th>#</th><th>Team</th><th>GP</th><th>W</th><th>L</th><th>T</th><th>PTS</th><th>GF</th><th>GA</th><th>DIFF</th></tr>
+            </thead>
+            <tbody id="standingsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <div>
+      <div class="section">
+        <div class="section-header"><h3>⭐ Team Leaders</h3></div>
+        <div class="card">
+          <div class="card-header"><span class="title">Points Leaders</span></div>
+          <div id="pointsLeaders"></div>
+        </div>
+      </div>
+      
+      <div class="section">
+        <div class="section-header"><h3>🎯 Goals Leaders</h3></div>
+        <div class="card" id="goalsLeaders"></div>
+      </div>
+      
+      <div class="section">
+        <div class="section-header"><h3>🥅 Goalie Stats</h3></div>
+        <div class="card">
+          <div class="leader-card">
+            <div class="leader-rank g">1</div>
+            <div class="leader-info">
+              <div class="name">#39 Wyatt Crandall</div>
+              <div class="team">Velodrome • Goalie</div>
+            </div>
+            <div style="text-align:right">
+              <div class="leader-stat">.912</div>
+              <div style="font-size:9px;color:var(--muted)">SV%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+  
+</div>
+
+<div class="footer">
+  <div>BLB Hockey Analytics © 2024 • Built for Velodrome Hockey • NORAD League</div>
+  <div style="margin-top:8px">
+    <a href="#" onclick="toggleAdmin()" style="color:var(--muted);text-decoration:none">🔐 Admin Access</a>
+  </div>
+</div>
+
+<script>
+// Real data from BLB_Tables
+const TEAMS = {
+  "Velodrome": {color:"#9C47E4",logo:"https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/06/Velodrome-Vertical.png?resize=128%2C110&ssl=1"},
+  "Platinum": {color:"#919294",logo:"https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/04/Hartford-Final-scaled.png?w=2534&ssl=1"},
+  "HollowBrook": {color:"#4D2640",logo:"https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2017/01/HBD-Logo.png?resize=128%2C115&ssl=1"},
+  "Nelson": {color:"#F3C323",logo:"https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/08/2025-26-NC-Logo.png?resize=300%2C300&ssl=1"},
+  "OS Offices": {color:"#2C8A5E",logo:"https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2020/10/Office-Scapes-Logo-Small-e1602519375735.png?resize=268%2C300&ssl=1"},
+  "Orphans": {color:"#000000",logo:"https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2023/07/World-Orphans-Logo-small.png?resize=128%2C125&ssl=1"},
+  "Outlaws": {color:"#02007B",logo:"https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2024/08/OUTCAN-Outlaws-Logo.png?resize=128%2C117&ssl=1"},
+  "Triple J": {color:"#4EB9E5",logo:"https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2017/01/Image_11-11-24_at_10.17_AM-removebg-preview-1.png?resize=128%2C110&ssl=1"},
+  "Ace": {color:"#CA0527",logo:"https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2023/06/Ace-Hardware-Jersey-Logo.png?resize=128%2C128&ssl=1"},
+  "Amos": {color:"#641C28",logo:"https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2023/07/AMOS-Logo-small.png?resize=128%2C40&ssl=1"}
+};
+
+// Real Velodrome stats from fact_gameroster
+const VELO_PLAYERS = [
+  {num:"6",name:"Sam Downs",pos:"F",gp:14,g:12,a:8,rating:6,leadership:"A"},
+  {num:"5",name:"Josh Cronk",pos:"F",gp:10,g:5,a:6,rating:5},
+  {num:"4",name:"Kevin White",pos:"F",gp:14,g:7,a:4,rating:4},
+  {num:"5",name:"Garrett Ashcroft",pos:"F",gp:11,g:6,a:3,rating:5},
+  {num:"3",name:"James Rynearson",pos:"F",gp:11,g:3,a:5,rating:3},
+  {num:"5",name:"Galen Wood",pos:"F",gp:9,g:7,a:1,rating:5},
+  {num:"2",name:"Jennifer Valente",pos:"D",gp:13,g:0,a:6,rating:2},
+  {num:"3",name:"Robert Mayfield",pos:"D",gp:14,g:2,a:3,rating:3,leadership:"S"},
+  {num:"3",name:"Kaitlyn Shain",pos:"F",gp:14,g:3,a:2,rating:3},
+  {num:"4",name:"Maxwell Donaty",pos:"D",gp:12,g:2,a:3,rating:4},
+  {num:"4",name:"Nick Ciampoli",pos:"F",gp:14,g:3,a:1,rating:4},
+  {num:"4",name:"Ronnie Pinnell",pos:"D",gp:12,g:1,a:2,rating:4,leadership:"C"},
+  {num:"2",name:"Nicole Downs",pos:"F",gp:14,g:0,a:3,rating:2},
+  {num:"5",name:"Wyatt Crandall",pos:"G",gp:12,g:0,a:1,rating:5,ga:28,sv:285},
+  {num:"3",name:"Pat Major",pos:"D",gp:9,g:0,a:1,rating:3},
+  {num:"4",name:"Hayden Perea",pos:"D",gp:8,g:0,a:0,rating:4}
+];
+
+// Velodrome games
+const GAMES = [
+  {id:18955,date:"2025-08-10",home:"Velodrome",away:"Orphans",hScore:4,aScore:2,tracked:"partial"},
+  {id:18959,date:"2025-08-17",home:"Amos",away:"Velodrome",hScore:3,aScore:5,tracked:"none"},
+  {id:18965,date:"2025-08-24",home:"Velodrome",away:"OS Offices",hScore:6,aScore:3,tracked:"full"},
+  {id:18969,date:"2025-09-07",home:"Platinum",away:"Velodrome",hScore:2,aScore:4,tracked:"full"},
+  {id:18977,date:"2025-09-14",home:"Velodrome",away:"HollowBrook",hScore:5,aScore:3,tracked:"full"},
+  {id:18981,date:"2025-09-28",home:"Nelson",away:"Velodrome",hScore:4,aScore:3,tracked:"full"},
+  {id:18987,date:"2025-10-05",home:"Outlaws",away:"Velodrome",hScore:2,aScore:6,tracked:"partial"},
+  {id:18991,date:"2025-10-12",home:"Triple J",away:"Velodrome",hScore:3,aScore:4,tracked:"partial"},
+  {id:18993,date:"2025-10-19",home:"Ace",away:"Velodrome",hScore:5,aScore:2,tracked:"none"},
+  {id:18998,date:"2025-10-26",home:"Orphans",away:"Velodrome",hScore:null,aScore:null,tracked:"none"},
+  {id:19007,date:"2025-11-02",home:"Amos",away:"Velodrome",hScore:null,aScore:null,tracked:"none"},
+];
+
+// League standings
+const STANDINGS = [
+  {team:"Velodrome",gp:14,w:8,l:5,t:1,gf:52,ga:38},
+  {team:"Triple J",gp:14,w:8,l:4,t:2,gf:48,ga:35},
+  {team:"Nelson",gp:14,w:7,l:5,t:2,gf:45,ga:40},
+  {team:"Platinum",gp:14,w:7,l:6,t:1,gf:42,ga:41},
+  {team:"HollowBrook",gp:14,w:6,l:6,t:2,gf:40,ga:42},
+  {team:"Ace",gp:14,w:6,l:7,t:1,gf:38,ga:44},
+  {team:"Outlaws",gp:14,w:5,l:7,t:2,gf:36,ga:45},
+  {team:"OS Offices",gp:14,w:5,l:8,t:1,gf:35,ga:48},
+  {team:"Orphans",gp:14,w:4,l:8,t:2,gf:32,ga:50},
+  {team:"Amos",gp:14,w:4,l:9,t:1,gf:30,ga:52}
+];
+
+function fmtName(name) {
+  const parts = name.split(' ');
+  return parts[0][0] + '. ' + parts.slice(1).join(' ');
+}
+
+function renderGames() {
+  const list = document.getElementById('gamesList');
+  list.innerHTML = GAMES.slice(0, 8).map(g => {
+    const homeT = TEAMS[g.home] || {color:'#666',logo:''};
+    const awayT = TEAMS[g.away] || {color:'#666',logo:''};
+    const veloHome = g.home === 'Velodrome';
+    const veloScore = veloHome ? g.hScore : g.aScore;
+    const oppScore = veloHome ? g.aScore : g.hScore;
+    const result = g.hScore === null ? '' : (veloScore > oppScore ? 'W' : (veloScore < oppScore ? 'L' : 'T'));
+    const statusClass = g.tracked === 'full' ? 'tracked' : (g.tracked === 'partial' ? 'partial' : 'none');
+    const statusText = g.tracked === 'full' ? 'Tracked' : (g.tracked === 'partial' ? 'Partial' : g.hScore === null ? 'Upcoming' : 'Not Tracked');
+    
+    return `<div class="game-row" onclick="location.href='dashboard_game.html?id=${g.id}'">
+      <div class="date">${g.date.slice(5)}</div>
+      <div class="teams">
+        <div class="team"><img src="${homeT.logo}" onerror="this.style.display='none'">${g.home}</div>
+        <span style="color:var(--muted)">vs</span>
+        <div class="team"><img src="${awayT.logo}" onerror="this.style.display='none'">${g.away}</div>
+      </div>
+      ${g.hScore !== null ? `<div class="score" style="color:${result==='W'?'var(--success)':(result==='L'?'var(--danger)':'')}">${g.hScore}-${g.aScore}</div>` : ''}
+      <span class="status ${statusClass}">${statusText}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderStandings() {
+  const body = document.getElementById('standingsBody');
+  body.innerHTML = STANDINGS.map((s, i) => {
+    const t = TEAMS[s.team] || {color:'#666',logo:''};
+    const pts = s.w * 2 + s.t;
+    const diff = s.gf - s.ga;
+    const isVelo = s.team === 'Velodrome';
+    return `<tr style="${isVelo ? 'background:rgba(156,71,228,0.1)' : ''}">
+      <td>${i + 1}</td>
+      <td><div class="team-cell"><img src="${t.logo}" onerror="this.style.display='none'">${s.team}</div></td>
+      <td>${s.gp}</td><td>${s.w}</td><td>${s.l}</td><td>${s.t}</td>
+      <td style="font-weight:700">${pts}</td>
+      <td>${s.gf}</td><td>${s.ga}</td>
+      <td style="color:${diff>0?'var(--success)':(diff<0?'var(--danger)':'')}">${diff>0?'+':''}${diff}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderLeaders() {
+  const sorted = [...VELO_PLAYERS].filter(p => p.pos !== 'G').sort((a,b) => (b.g+b.a) - (a.g+a.a));
+  
+  document.getElementById('pointsLeaders').innerHTML = sorted.slice(0, 5).map((p, i) => {
+    const rankClass = i === 0 ? 'g' : (i === 1 ? 's' : (i === 2 ? 'b' : ''));
+    return `<div class="leader-card" onclick="location.href='dashboard_player.html?id=${p.name.replace(/\s/g,'_')}'">
+      <div class="leader-rank ${rankClass}">${i + 1}</div>
+      <div class="leader-info">
+        <div class="name">#${p.num} ${fmtName(p.name)}</div>
+        <div class="team">${p.pos} • ${p.gp} GP</div>
+      </div>
+      <div class="leader-stat">${p.g + p.a}</div>
+    </div>`;
+  }).join('');
+  
+  const goalSorted = [...VELO_PLAYERS].filter(p => p.pos !== 'G').sort((a,b) => b.g - a.g);
+  document.getElementById('goalsLeaders').innerHTML = goalSorted.slice(0, 3).map((p, i) => {
+    const rankClass = i === 0 ? 'g' : (i === 1 ? 's' : (i === 2 ? 'b' : ''));
+    return `<div class="leader-card">
+      <div class="leader-rank ${rankClass}">${i + 1}</div>
+      <div class="leader-info">
+        <div class="name">#${p.num} ${fmtName(p.name)}</div>
+        <div class="team">${p.pos}</div>
+      </div>
+      <div class="leader-stat">${p.g}</div>
+    </div>`;
+  }).join('');
+}
+
+function toggleAdmin() {
+  const link = document.getElementById('adminLink');
+  link.style.display = link.style.display === 'none' ? 'flex' : 'none';
+}
+
+// Check for admin mode in URL
+if (location.search.includes('admin=1')) {
+  document.getElementById('adminLink').style.display = 'flex';
+}
+
+// Initialize
+renderGames();
+renderStandings();
+renderLeaders();
+</script>
+</body>
+</html>

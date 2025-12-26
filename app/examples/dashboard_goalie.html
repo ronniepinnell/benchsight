@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Goalie Stats | BLB Analytics</title>
+<style>
+:root{--bg:#0a0e14;--panel:#12171f;--card:#1a2029;--border:#2d3640;--accent:#58a6ff;--success:#3fb950;--warn:#d29922;--danger:#f85149;--text:#e6edf3;--muted:#8b949e;--velo:#9C47E4}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:16px}
+.header a{color:var(--muted);text-decoration:none;padding:6px 12px;background:var(--card);border-radius:6px}
+.header h1{font-size:16px}
+.container{max-width:1400px;margin:0 auto;padding:24px}
+.goalie-hero{display:grid;grid-template-columns:200px 1fr;gap:32px;background:linear-gradient(135deg,rgba(156,71,228,0.15),rgba(88,166,255,0.05));border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:24px}
+.goalie-photo{width:180px;height:180px;border-radius:16px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:72px;border:4px solid var(--velo)}
+.goalie-stats-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.goalie-stat{text-align:center;padding:16px;background:var(--card);border-radius:10px;border:1px solid var(--border)}
+.goalie-stat .val{font-size:24px;font-weight:700}
+.goalie-stat .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;margin-top:4px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:20px}
+.card-header{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600}
+.card-body{padding:16px}
+.save-chart{position:relative}
+.save-chart svg{width:100%}
+.zone-stat{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.zone-stat:last-child{border:none}
+.zone-stat .label{font-size:12px}
+.zone-stat .val{font-size:14px;font-weight:600}
+.shot-type-bar{display:flex;align-items:center;gap:12px;padding:8px 0}
+.shot-type-bar .label{width:80px;font-size:11px}
+.shot-type-bar .bar{flex:1;height:20px;background:var(--panel);border-radius:4px;overflow:hidden;display:flex}
+.shot-type-bar .saved{background:var(--success)}
+.shot-type-bar .goal{background:var(--danger)}
+.shot-type-bar .pct{width:50px;text-align:right;font-size:12px;font-weight:600}
+.game-by-game{width:100%;border-collapse:collapse;font-size:11px}
+.game-by-game th{text-align:left;padding:10px;color:var(--muted);border-bottom:1px solid var(--border)}
+.game-by-game td{padding:10px;border-bottom:1px solid var(--border)}
+.game-by-game tr:hover{background:rgba(88,166,255,0.05)}
+.sv-pct{font-weight:700}
+.sv-pct.good{color:var(--success)}
+.sv-pct.avg{color:var(--warn)}
+.sv-pct.bad{color:var(--danger)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a href="index.html">← Home</a>
+  <h1>🥅 Goalie Statistics</h1>
+</div>
+
+<div class="container">
+  
+  <div class="goalie-hero">
+    <div class="goalie-photo">39</div>
+    <div>
+      <h2 style="font-size:28px;margin-bottom:8px">#39 Wyatt Crandall</h2>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+        <img src="https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/06/Velodrome-Vertical.png?resize=128%2C110&ssl=1" style="height:32px;border-radius:6px;background:#fff;padding:4px">
+        <span style="color:var(--velo);font-weight:600">Velodrome</span>
+        <span style="color:var(--muted)">•</span>
+        <span style="color:var(--muted)">Rating: ★★★★★</span>
+      </div>
+      <div class="goalie-stats-grid">
+        <div class="goalie-stat"><div class="val">12</div><div class="lbl">Games</div></div>
+        <div class="goalie-stat"><div class="val">8-3-1</div><div class="lbl">Record</div></div>
+        <div class="goalie-stat"><div class="val" style="color:var(--success)">.912</div><div class="lbl">SV%</div></div>
+        <div class="goalie-stat"><div class="val">2.33</div><div class="lbl">GAA</div></div>
+        <div class="goalie-stat"><div class="val">285</div><div class="lbl">Saves</div></div>
+        <div class="goalie-stat"><div class="val">28</div><div class="lbl">GA</div></div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">🎯 Save Location Chart</div>
+      <div class="card-body save-chart">
+        <svg viewBox="0 0 200 120">
+          <!-- Goal outline -->
+          <rect x="20" y="10" width="160" height="100" fill="var(--panel)" stroke="var(--border)" stroke-width="2" rx="4"/>
+          
+          <!-- Zones -->
+          <!-- Top left -->
+          <rect x="22" y="12" width="52" height="32" fill="rgba(63,185,80,0.3)" stroke="var(--success)" stroke-width="1"/>
+          <text x="48" y="32" fill="var(--success)" font-size="12" text-anchor="middle" font-weight="bold">.945</text>
+          <text x="48" y="40" fill="var(--muted)" font-size="7" text-anchor="middle">18/19</text>
+          
+          <!-- Top middle -->
+          <rect x="74" y="12" width="52" height="32" fill="rgba(210,153,34,0.3)" stroke="var(--warn)" stroke-width="1"/>
+          <text x="100" y="32" fill="var(--warn)" font-size="12" text-anchor="middle" font-weight="bold">.875</text>
+          <text x="100" y="40" fill="var(--muted)" font-size="7" text-anchor="middle">35/40</text>
+          
+          <!-- Top right -->
+          <rect x="126" y="12" width="52" height="32" fill="rgba(63,185,80,0.3)" stroke="var(--success)" stroke-width="1"/>
+          <text x="152" y="32" fill="var(--success)" font-size="12" text-anchor="middle" font-weight="bold">.920</text>
+          <text x="152" y="40" fill="var(--muted)" font-size="7" text-anchor="middle">23/25</text>
+          
+          <!-- Middle left -->
+          <rect x="22" y="44" width="52" height="32" fill="rgba(63,185,80,0.3)" stroke="var(--success)" stroke-width="1"/>
+          <text x="48" y="64" fill="var(--success)" font-size="12" text-anchor="middle" font-weight="bold">.933</text>
+          <text x="48" y="72" fill="var(--muted)" font-size="7" text-anchor="middle">28/30</text>
+          
+          <!-- Five hole -->
+          <rect x="74" y="44" width="52" height="32" fill="rgba(248,81,73,0.3)" stroke="var(--danger)" stroke-width="1"/>
+          <text x="100" y="64" fill="var(--danger)" font-size="12" text-anchor="middle" font-weight="bold">.800</text>
+          <text x="100" y="72" fill="var(--muted)" font-size="7" text-anchor="middle">16/20</text>
+          
+          <!-- Middle right -->
+          <rect x="126" y="44" width="52" height="32" fill="rgba(63,185,80,0.3)" stroke="var(--success)" stroke-width="1"/>
+          <text x="152" y="64" fill="var(--success)" font-size="12" text-anchor="middle" font-weight="bold">.925</text>
+          <text x="152" y="72" fill="var(--muted)" font-size="7" text-anchor="middle">37/40</text>
+          
+          <!-- Bottom left -->
+          <rect x="22" y="76" width="52" height="32" fill="rgba(63,185,80,0.3)" stroke="var(--success)" stroke-width="1"/>
+          <text x="48" y="96" fill="var(--success)" font-size="12" text-anchor="middle" font-weight="bold">.950</text>
+          <text x="48" y="104" fill="var(--muted)" font-size="7" text-anchor="middle">38/40</text>
+          
+          <!-- Bottom middle -->
+          <rect x="74" y="76" width="52" height="32" fill="rgba(63,185,80,0.3)" stroke="var(--success)" stroke-width="1"/>
+          <text x="100" y="96" fill="var(--success)" font-size="12" text-anchor="middle" font-weight="bold">.960</text>
+          <text x="100" y="104" fill="var(--muted)" font-size="7" text-anchor="middle">48/50</text>
+          
+          <!-- Bottom right -->
+          <rect x="126" y="76" width="52" height="32" fill="rgba(63,185,80,0.3)" stroke="var(--success)" stroke-width="1"/>
+          <text x="152" y="96" fill="var(--success)" font-size="12" text-anchor="middle" font-weight="bold">.952</text>
+          <text x="152" y="104" fill="var(--muted)" font-size="7" text-anchor="middle">40/42</text>
+        </svg>
+        <div style="text-align:center;font-size:10px;color:var(--muted);margin-top:8px">
+          Save percentage by net zone • 🟢 Above .900 • 🟡 .850-.900 • 🔴 Below .850
+        </div>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-header">📊 Saves by Shot Type</div>
+      <div class="card-body">
+        <div class="shot-type-bar">
+          <span class="label">Wrist</span>
+          <div class="bar"><div class="saved" style="width:91%"></div><div class="goal" style="width:9%"></div></div>
+          <span class="pct" style="color:var(--success)">.910</span>
+        </div>
+        <div class="shot-type-bar">
+          <span class="label">Slap</span>
+          <div class="bar"><div class="saved" style="width:88%"></div><div class="goal" style="width:12%"></div></div>
+          <span class="pct" style="color:var(--warn)">.880</span>
+        </div>
+        <div class="shot-type-bar">
+          <span class="label">Snap</span>
+          <div class="bar"><div class="saved" style="width:92%"></div><div class="goal" style="width:8%"></div></div>
+          <span class="pct" style="color:var(--success)">.920</span>
+        </div>
+        <div class="shot-type-bar">
+          <span class="label">Backhand</span>
+          <div class="bar"><div class="saved" style="width:95%"></div><div class="goal" style="width:5%"></div></div>
+          <span class="pct" style="color:var(--success)">.950</span>
+        </div>
+        <div class="shot-type-bar">
+          <span class="label">Tip/Defl</span>
+          <div class="bar"><div class="saved" style="width:78%"></div><div class="goal" style="width:22%"></div></div>
+          <span class="pct" style="color:var(--danger)">.780</span>
+        </div>
+        <div class="shot-type-bar">
+          <span class="label">Rebound</span>
+          <div class="bar"><div class="saved" style="width:82%"></div><div class="goal" style="width:18%"></div></div>
+          <span class="pct" style="color:var(--warn)">.820</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-header">🗺️ By Shot Distance</div>
+      <div class="card-body">
+        <div class="zone-stat"><span class="label">Close (<15ft)</span><span class="val" style="color:var(--danger)">.845</span></div>
+        <div class="zone-stat"><span class="label">Medium (15-30ft)</span><span class="val" style="color:var(--success)">.925</span></div>
+        <div class="zone-stat"><span class="label">Far (>30ft)</span><span class="val" style="color:var(--success)">.965</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">⚡ High Danger Saves</div>
+      <div class="card-body">
+        <div class="zone-stat"><span class="label">Slot Shots</span><span class="val" style="color:var(--warn)">.872</span></div>
+        <div class="zone-stat"><span class="label">Crease Shots</span><span class="val" style="color:var(--danger)">.812</span></div>
+        <div class="zone-stat"><span class="label">xG Against</span><span class="val">32.4</span></div>
+        <div class="zone-stat"><span class="label">GSAx</span><span class="val" style="color:var(--success)">+4.4</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">📈 Advanced</div>
+      <div class="card-body">
+        <div class="zone-stat"><span class="label">Quality Start %</span><span class="val">75%</span></div>
+        <div class="zone-stat"><span class="label">Really Bad Starts</span><span class="val">1</span></div>
+        <div class="zone-stat"><span class="label">Avg Rebound %</span><span class="val">8.2%</span></div>
+        <div class="zone-stat"><span class="label">Freeze %</span><span class="val">24%</span></div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="card">
+    <div class="card-header">📋 Game-by-Game</div>
+    <table class="game-by-game">
+      <thead>
+        <tr><th>Date</th><th>Opponent</th><th>Result</th><th>SA</th><th>SV</th><th>GA</th><th>SV%</th><th>xGA</th><th>GSAx</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Sep 7</td><td>@ Platinum</td><td style="color:var(--success)">W 4-2</td>
+          <td>24</td><td>22</td><td>2</td><td class="sv-pct good">.917</td><td>2.8</td><td style="color:var(--success)">+0.8</td>
+        </tr>
+        <tr>
+          <td>Sep 14</td><td>vs HollowBrook</td><td style="color:var(--success)">W 5-3</td>
+          <td>28</td><td>25</td><td>3</td><td class="sv-pct avg">.893</td><td>3.2</td><td style="color:var(--success)">+0.2</td>
+        </tr>
+        <tr>
+          <td>Sep 28</td><td>@ Nelson</td><td style="color:var(--danger)">L 3-4</td>
+          <td>30</td><td>26</td><td>4</td><td class="sv-pct avg">.867</td><td>3.1</td><td style="color:var(--danger)">-0.9</td>
+        </tr>
+        <tr>
+          <td>Oct 5</td><td>@ Outlaws</td><td style="color:var(--success)">W 6-2</td>
+          <td>22</td><td>20</td><td>2</td><td class="sv-pct good">.909</td><td>2.4</td><td style="color:var(--success)">+0.4</td>
+        </tr>
+        <tr>
+          <td>Oct 12</td><td>@ Triple J</td><td style="color:var(--success)">W 4-3</td>
+          <td>26</td><td>23</td><td>3</td><td class="sv-pct avg">.885</td><td>2.8</td><td style="color:var(--danger)">-0.2</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+</div>
+</body>
+</html>

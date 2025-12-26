@@ -1,0 +1,82 @@
+﻿play_detail_id,play_detail,play_category,play_type,description,points_value
+1,AssistPrimary,scoring,offensive,Primary assist on goal,1
+2,AssistSecondary,scoring,offensive,Secondary assist on goal,1
+10,StickCheck,defense,defensive,Stick check to disrupt opponent,0
+11,PokeCheck,defense,defensive,Poke check to steal puck,0
+12,BlockedShot,defense,defensive,Blocked an opponent shot,0
+13,InShotPassLane,defense,defensive,Positioned in shot/pass lane,0
+14,SeparateFromPuck,defense,defensive,Separated opponent from puck,0
+15,Backcheck,defense,defensive,Backcheck effort,0
+16,ZoneEntryDenial,defense,defensive,Denied zone entry,0
+17,ZoneExitDenial,defense,defensive,Denied zone exit,0
+18,TakeAway,defense,defensive,Took puck from opponent,0
+20,Deke,offense,offensive,Deke attempt,0
+21,BeatDeke,offense,offensive,Successfully beat defender with deke,0
+22,Screen,offense,offensive,Screen on goalie,0
+23,DumpAndChase,offense,offensive,Dump and chase play,0
+24,Tip,offense,offensive,Tip/deflection attempt,0
+25,OneTimer,offense,offensive,One-timer shot,0
+30,DriveMiddle,drive,offensive,Drive to middle,0
+31,DriveWide,drive,offensive,Drive wide,0
+32,DriveCorner,drive,offensive,Drive to corner,0
+33,DriveNetMiddle,drive,offensive,Drive to net front,0
+34,BeatMiddle,drive,offensive,Beat defender to middle,0
+35,BeatWide,drive,offensive,Beat defender wide,0
+40,Breakout,transition,transition,Breakout play,0
+41,AttemptedBreakOutPass,transition,transition,Attempted breakout pass,0
+42,AttemptedBreakOutRush,transition,transition,Attempted breakout rush,0
+50,PuckRecovery,recovery,neutral,Recovered loose puck,0
+51,BoardBattleWin,recovery,neutral,Won board battle,0
+52,BoardBattleLoss,recovery,neutral,Lost board battle,0
+53,RecoveryRetreivalPass,other,unknown,Play detail from data: RecoveryRetreivalPass,0
+54,RecoveryRetreivalClear,other,unknown,Play detail from data: RecoveryRetreivalClear,0
+55,PuckRecoveryRetreivalLoosePuckBattle,other,unknown,Play detail from data: PuckRecoveryRetreivalLoosePuckBattle,0
+56,BoxOut,other,unknown,Play detail from data: BoxOut,0
+57,PuckRecoveryRetreivalOther,other,unknown,Play detail from data: PuckRecoveryRetreivalOther,0
+58,RecoveryRetreivalTurnover,other,unknown,Play detail from data: RecoveryRetreivalTurnover,0
+59,ManOnMan,other,unknown,Play detail from data: ManOnMan,0
+60,LoosePuckBattleLost,other,unknown,Play detail from data: LoosePuckBattleLost,0
+61,AttemptedShot,other,unknown,Play detail from data: AttemptedShot,0
+62,PassIntercepted,other,unknown,Play detail from data: PassIntercepted,0
+63,PassDeflected,other,unknown,Play detail from data: PassDeflected,0
+64,PassForTip,other,unknown,Play detail from data: PassForTip,0
+65,FrontofNet,other,unknown,Play detail from data: FrontofNet,0
+66,AttemptedBlockedShot,other,unknown,Play detail from data: AttemptedBlockedShot,0
+67,PuckRecoveryRetreivalShot,other,unknown,Play detail from data: PuckRecoveryRetreivalShot,0
+68,Delay,other,unknown,Play detail from data: Delay,0
+69,Dump/RimInZone,other,unknown,Play detail from data: Dump/RimInZone,0
+70,PuckRecoveryRetreivalAttemptedClear,other,unknown,Play detail from data: PuckRecoveryRetreivalAttemptedClear,0
+71,AttemptedBreakOutClear,other,unknown,Play detail from data: AttemptedBreakOutClear,0
+72,RecoveryRetreivalDumpIn,other,unknown,Play detail from data: RecoveryRetreivalDumpIn,0
+73,CutBack,other,unknown,Play detail from data: CutBack,0
+74,ForceWide,other,unknown,Play detail from data: ForceWide,0
+75,DumpChase,other,unknown,Play detail from data: DumpChase,0
+76,DumpInAttempt,other,unknown,Play detail from data: DumpInAttempt,0
+77,GiveAndGo,other,unknown,Play detail from data: GiveAndGo,0
+78,PuckRecoveryRetreivalPass,other,unknown,Play detail from data: PuckRecoveryRetreivalPass,0
+79,AttemptedEntryRush,other,unknown,Play detail from data: AttemptedEntryRush,0
+80,ReceiverMissed,other,unknown,Play detail from data: ReceiverMissed,0
+81,AttemptedEntryDumpIn,other,unknown,Play detail from data: AttemptedEntryDumpIn,0
+82,PuckRecoveryRetreivalClear,other,unknown,Play detail from data: PuckRecoveryRetreivalClear,0
+83,PuckRecoveryRetreivalDumpIn,other,unknown,Play detail from data: PuckRecoveryRetreivalDumpIn,0
+84,LostPuck,other,unknown,Play detail from data: LostPuck,0
+85,RecoveryRetreivalAttemptedClear,other,unknown,Play detail from data: RecoveryRetreivalAttemptedClear,0
+86,CededZoneEntry,other,unknown,Play detail from data: CededZoneEntry,0
+87,StoppedDeke,other,unknown,Play detail from data: StoppedDeke,0
+88,PuckRecoveryRetreivalTurnover,other,unknown,Play detail from data: PuckRecoveryRetreivalTurnover,0
+89,RecoveryRetreivalFaceoff,other,unknown,Play detail from data: RecoveryRetreivalFaceoff,0
+90,DeflectedShot,other,unknown,Play detail from data: DeflectedShot,0
+91,RecoveryRetreivalShot,other,unknown,Play detail from data: RecoveryRetreivalShot,0
+92,RecoveryRetreivalRebound,other,unknown,Play detail from data: RecoveryRetreivalRebound,0
+93,ForcedTurnover,other,unknown,Play detail from data: ForcedTurnover,0
+94,ZoneKeepin,other,unknown,Play detail from data: ZoneKeepin,0
+95,AttemptedTip/Deflection,other,unknown,Play detail from data: AttemptedTip/Deflection,0
+96,AttemptedKeepin,other,unknown,Play detail from data: AttemptedKeepin,0
+97,SecondTouch,other,unknown,Play detail from data: SecondTouch,0
+98,PuckRecoveryRetreivalRebound,other,unknown,Play detail from data: PuckRecoveryRetreivalRebound,0
+99,AttemptedEntryPass,other,unknown,Play detail from data: AttemptedEntryPass,0
+100,LoosePuckBattleWon,other,unknown,Play detail from data: LoosePuckBattleWon,0
+101,PuckRecoveryRetreivalFaceoff,other,unknown,Play detail from data: PuckRecoveryRetreivalFaceoff,0
+102,Chip,other,unknown,Play detail from data: Chip,0
+103,SeperateFromPuck,other,unknown,Play detail from data: SeperateFromPuck,0
+104,ForcedDumpin/Clear,other,unknown,Play detail from data: ForcedDumpin/Clear,0

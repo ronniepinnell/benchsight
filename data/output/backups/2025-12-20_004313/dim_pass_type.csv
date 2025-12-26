@@ -1,0 +1,9 @@
+﻿pass_type_id,pass_type,description
+1,Forehand,Standard forehand pass
+2,Backhand,Backhand pass
+3,Saucer,Saucer pass (airborne)
+4,Bank,Bank pass off boards
+5,Drop,Drop pass
+6,OneTouch,One-touch pass
+7,CrossIce,Cross-ice pass
+8,Stretch,Long stretch pass

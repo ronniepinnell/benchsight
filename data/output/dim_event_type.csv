@@ -1,0 +1,8 @@
+event_type,event_category,is_shot,is_possession,is_turnover,is_penalty,sort_order,_updated_timestamp,_export_timestamp
+Shot,Offense,1,1,0,0,1,2025-12-20T00:43:12.607677,2025-12-20T01:05:41.267014
+Pass,Offense,0,1,0,0,2,2025-12-20T00:43:12.607677,2025-12-20T01:05:41.267014
+Turnover,Defense,0,0,1,0,3,2025-12-20T00:43:12.607677,2025-12-20T01:05:41.267014
+Faceoff,Neutral,0,0,0,0,4,2025-12-20T00:43:12.607677,2025-12-20T01:05:41.267014
+Zone_Entry_Exit,Transition,0,1,0,0,5,2025-12-20T00:43:12.607677,2025-12-20T01:05:41.267014
+Save,Goaltending,0,0,0,0,6,2025-12-20T00:43:12.607677,2025-12-20T01:05:41.267014
+Penalty,Discipline,0,0,0,1,7,2025-12-20T00:43:12.607677,2025-12-20T01:05:41.267014

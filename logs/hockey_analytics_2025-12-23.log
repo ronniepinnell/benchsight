@@ -1,0 +1,559 @@
+2025-12-23 18:10:38 | INFO     | src.pipeline.batch_processor | ======================================================================
+2025-12-23 18:10:38 | INFO     | src.pipeline.batch_processor | INITIALIZING PIPELINE
+2025-12-23 18:10:38 | INFO     | src.pipeline.batch_processor | ======================================================================
+2025-12-23 18:10:38 | INFO     | src.pipeline.batch_processor | Loading BLB tables to stage...
+2025-12-23 18:10:38 | INFO     | src.pipeline.stage.load_blb_tables | Loading BLB tables from data/raw/BLB_Tables.xlsx
+2025-12-23 18:10:39 | INFO     | src.database.connection | Database engine created: sqlite
+2025-12-23 18:10:39 | INFO     | src.database.table_operations | Loaded 486 rows into stg_dim_randomnames
+2025-12-23 18:10:39 | INFO     | src.pipeline.stage.load_blb_tables |   Staged stg_dim_randomnames: 486 rows
+2025-12-23 18:10:39 | INFO     | src.database.table_operations | Loaded 543 rows into stg_dim_playerurlref
+2025-12-23 18:10:39 | INFO     | src.pipeline.stage.load_blb_tables |   Staged stg_dim_playerurlref: 543 rows
+2025-12-23 18:10:39 | INFO     | src.database.table_operations | Loaded 50 rows into stg_dim_rinkboxcoord
+2025-12-23 18:10:39 | INFO     | src.pipeline.stage.load_blb_tables |   Staged stg_dim_rinkboxcoord: 50 rows
+2025-12-23 18:10:39 | INFO     | src.database.table_operations | Loaded 297 rows into stg_dim_rinkcoordzones
+2025-12-23 18:10:39 | INFO     | src.pipeline.stage.load_blb_tables |   Staged stg_dim_rinkcoordzones: 297 rows
+2025-12-23 18:10:39 | INFO     | src.database.table_operations | Loaded 335 rows into stg_dim_player
+2025-12-23 18:10:39 | INFO     | src.pipeline.stage.load_blb_tables |   Staged stg_dim_player: 335 rows
+2025-12-23 18:10:39 | INFO     | src.database.table_operations | Loaded 26 rows into stg_dim_team
+2025-12-23 18:10:39 | INFO     | src.pipeline.stage.load_blb_tables |   Staged stg_dim_team: 26 rows
+2025-12-23 18:10:39 | INFO     | src.database.table_operations | Loaded 2 rows into stg_dim_league
+2025-12-23 18:10:39 | INFO     | src.pipeline.stage.load_blb_tables |   Staged stg_dim_league: 2 rows
+2025-12-23 18:10:39 | INFO     | src.database.table_operations | Loaded 9 rows into stg_dim_season
+2025-12-23 18:10:39 | INFO     | src.pipeline.stage.load_blb_tables |   Staged stg_dim_season: 9 rows
+2025-12-23 18:10:40 | INFO     | src.database.table_operations | Loaded 552 rows into stg_dim_schedule
+2025-12-23 18:10:40 | INFO     | src.pipeline.stage.load_blb_tables |   Staged stg_dim_schedule: 552 rows
+2025-12-23 18:10:43 | INFO     | src.database.table_operations | Loaded 14239 rows into stg_fact_gameroster
+2025-12-23 18:10:43 | INFO     | src.pipeline.stage.load_blb_tables |   Staged stg_fact_gameroster: 14239 rows
+2025-12-23 18:10:43 | INFO     | src.database.table_operations | Loaded 28 rows into stg_fact_leadership
+2025-12-23 18:10:43 | INFO     | src.pipeline.stage.load_blb_tables |   Staged stg_fact_leadership: 28 rows
+2025-12-23 18:10:43 | INFO     | src.database.table_operations | Loaded 191 rows into stg_fact_registration
+2025-12-23 18:10:43 | INFO     | src.pipeline.stage.load_blb_tables |   Staged stg_fact_registration: 191 rows
+2025-12-23 18:10:43 | INFO     | src.database.table_operations | Loaded 160 rows into stg_fact_draft
+2025-12-23 18:10:43 | INFO     | src.pipeline.stage.load_blb_tables |   Staged stg_fact_draft: 160 rows
+2025-12-23 18:10:44 | INFO     | src.database.table_operations | Loaded 3010 rows into stg_fact_playergames
+2025-12-23 18:10:44 | INFO     | src.pipeline.stage.load_blb_tables |   Staged stg_fact_playergames: 3010 rows
+2025-12-23 18:10:44 | INFO     | src.pipeline.stage.load_blb_tables | Staged 14 BLB tables
+2025-12-23 18:10:44 | INFO     | src.pipeline.batch_processor | Transforming BLB to intermediate...
+2025-12-23 18:10:44 | INFO     | src.pipeline.intermediate.transform_blb | Transforming BLB tables to intermediate layer
+2025-12-23 18:10:44 | INFO     | src.pipeline.intermediate.transform_blb |   Created int_dim_player: 335 rows
+2025-12-23 18:10:44 | INFO     | src.pipeline.intermediate.transform_blb |   Created int_dim_team: 26 rows
+2025-12-23 18:10:44 | INFO     | src.pipeline.intermediate.transform_blb |   Created int_dim_schedule: 552 rows
+2025-12-23 18:10:44 | INFO     | src.pipeline.intermediate.transform_blb |   Created int_fact_gameroster: 13960 rows
+2025-12-23 18:10:44 | INFO     | src.pipeline.batch_processor | Publishing dimensions to datamart...
+2025-12-23 18:10:44 | INFO     | src.pipeline.datamart.publish_dimensions | Publishing BLB tables to datamart
+2025-12-23 18:10:44 | INFO     | src.database.table_operations | Loaded 335 rows into dim_player
+2025-12-23 18:10:44 | INFO     | src.pipeline.datamart.publish_dimensions |   Published dim_player: 335 rows
+2025-12-23 18:10:44 | INFO     | src.database.table_operations | Loaded 26 rows into dim_team
+2025-12-23 18:10:44 | INFO     | src.pipeline.datamart.publish_dimensions |   Published dim_team: 26 rows
+2025-12-23 18:10:44 | INFO     | src.database.table_operations | Loaded 552 rows into dim_schedule
+2025-12-23 18:10:44 | INFO     | src.pipeline.datamart.publish_dimensions |   Published dim_schedule: 552 rows
+2025-12-23 18:10:45 | INFO     | src.database.table_operations | Loaded 4747 rows into dim_dates
+2025-12-23 18:10:45 | INFO     | src.pipeline.datamart.publish_dimensions |   Published dim_dates: 4747 rows
+2025-12-23 18:10:45 | INFO     | src.database.table_operations | Loaded 4800 rows into dim_seconds
+2025-12-23 18:10:45 | INFO     | src.pipeline.datamart.publish_dimensions |   Published dim_seconds: 4800 rows
+2025-12-23 18:10:45 | INFO     | src.database.table_operations | Loaded 13960 rows into fact_gameroster
+2025-12-23 18:10:45 | INFO     | src.pipeline.datamart.publish_dimensions |   Published fact_gameroster: 13960 rows
+2025-12-23 18:10:45 | INFO     | src.pipeline.batch_processor | Creating static dimensions...
+2025-12-23 18:10:45 | INFO     | src.pipeline.datamart.publish_dimensions | Creating static dimension tables
+2025-12-23 18:10:45 | INFO     | src.pipeline.datamart.publish_dimensions | Created 7 static dimension tables
+2025-12-23 18:10:45 | INFO     | src.pipeline.batch_processor | Publishing rink dimensions...
+2025-12-23 18:10:45 | INFO     | src.pipeline.datamart.build_enhanced_data | Publishing rink dimensions to datamart
+2025-12-23 18:10:45 | INFO     | src.pipeline.datamart.build_enhanced_data | Published rink dimensions: {'dim_rink_box': 50, 'dim_rink_zone': 297}
+2025-12-23 18:10:45 | INFO     | src.pipeline.batch_processor | ✓ Pipeline initialized
+2025-12-23 18:10:45 | INFO     | src.pipeline.batch_processor | ======================================================================
+2025-12-23 18:10:45 | INFO     | src.pipeline.batch_processor | BATCH GAME PROCESSING
+2025-12-23 18:10:45 | INFO     | src.pipeline.batch_processor | ======================================================================
+2025-12-23 18:10:45 | INFO     | src.pipeline.batch_processor | Found 8 games to process: [18965, 18969, 18977, 18981, 18987, 18991, 18993, 19032]
+2025-12-23 18:10:45 | INFO     | src.pipeline.batch_processor | 
+============================================================
+2025-12-23 18:10:45 | INFO     | src.pipeline.batch_processor | PROCESSING GAME 18965
+2025-12-23 18:10:45 | INFO     | src.pipeline.batch_processor | ============================================================
+2025-12-23 18:10:45 | INFO     | src.pipeline.batch_processor | Step 1: Running quality checks...
+2025-12-23 18:10:45 | INFO     | src.pipeline.data_quality | Running data quality checks for game 18965
+2025-12-23 18:10:48 | INFO     | src.database.table_operations | Loaded 1 rows into fact_game_status
+2025-12-23 18:10:48 | INFO     | src.pipeline.data_quality | Saved quality results for game 18965: FULLY_TRACKED
+2025-12-23 18:10:48 | INFO     | src.database.table_operations | Loaded 1614 rows into log_data_issues
+2025-12-23 18:10:48 | INFO     | src.pipeline.data_quality | Saved 1614 issues for game 18965
+2025-12-23 18:10:48 | INFO     | src.pipeline.batch_processor | Step 2: Loading to stage...
+2025-12-23 18:10:48 | INFO     | src.pipeline.stage.load_game_tracking | Staging game 18965 from data/raw/games/18965/18965_tracking.xlsx
+2025-12-23 18:10:50 | INFO     | src.database.table_operations | Loaded 3999 rows into stg_events_18965
+2025-12-23 18:10:50 | INFO     | src.pipeline.stage.load_game_tracking |   Staged events: 3999 rows
+2025-12-23 18:10:50 | INFO     | src.database.table_operations | Loaded 98 rows into stg_shifts_18965
+2025-12-23 18:10:50 | INFO     | src.pipeline.stage.load_game_tracking |   Staged shifts: 98 rows
+2025-12-23 18:10:50 | INFO     | src.pipeline.batch_processor | Step 3: Transforming to intermediate...
+2025-12-23 18:10:50 | INFO     | src.pipeline.intermediate.transform_game | Transforming game 18965 to intermediate layer
+2025-12-23 18:10:50 | ERROR    | src.database.connection | Database error, rolled back: (sqlite3.IntegrityError) UNIQUE constraint failed: int_game_players_18965.player_game_key
+[SQL: -- Create index on primary key
+CREATE UNIQUE INDEX IF NOT EXISTS idx_int_gp_18965_pk 
+    ON int_game_players_18965(player_game_key)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-12-23 18:10:50 | WARNING  | src.pipeline.intermediate.transform_game | SQL warning: (sqlite3.IntegrityError) UNIQUE constraint failed: int_game_players_18965.player_game_key
+[SQL: -- Create index on primary key
+CREATE UNIQUE INDEX IF NOT EXISTS idx_int_gp_18965_pk 
+    ON int_game_players_18965(player_game_key)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-12-23 18:10:50 | INFO     | src.pipeline.intermediate.transform_game |   Created int_events_18965: 1632 rows
+2025-12-23 18:10:50 | INFO     | src.pipeline.intermediate.transform_game |   Created int_event_players_18965: 3990 rows
+2025-12-23 18:10:50 | INFO     | src.pipeline.intermediate.transform_game |   Created int_shifts_18965: 98 rows
+2025-12-23 18:10:50 | INFO     | src.pipeline.intermediate.transform_game |   Created int_game_players_18965: 30 rows
+2025-12-23 18:10:50 | INFO     | src.pipeline.batch_processor | Step 4: Building box score...
+2025-12-23 18:10:50 | INFO     | src.pipeline.datamart.build_box_score | Building box score for game 18965
+2025-12-23 18:10:50 | INFO     | src.database.table_operations | Loaded 30 rows into _tmp_box_score_18965
+2025-12-23 18:10:50 | INFO     | src.database.table_operations | Loaded 57 rows into fact_box_score
+2025-12-23 18:10:50 | INFO     | src.database.table_operations | Dropped table: _tmp_box_score_18965
+2025-12-23 18:10:50 | INFO     | src.pipeline.datamart.build_box_score | Added 30 rows to fact_box_score for game 18965
+2025-12-23 18:10:50 | INFO     | src.pipeline.batch_processor | Step 5: Building events...
+2025-12-23 18:10:50 | INFO     | src.pipeline.datamart.build_events | Building events for game 18965
+2025-12-23 18:10:50 | INFO     | src.database.table_operations | Loaded 3226 rows into fact_events
+2025-12-23 18:10:50 | INFO     | src.pipeline.datamart.build_events | Added 1632 events for game 18965
+2025-12-23 18:10:50 | INFO     | src.pipeline.batch_processor | Step 6: Loading XY data...
+2025-12-23 18:10:50 | INFO     | src.pipeline.stage.load_xy_data | Loading XY data for game 18965
+2025-12-23 18:10:50 | INFO     | src.pipeline.batch_processor | Step 7: Processing video times...
+2025-12-23 18:10:50 | INFO     | src.pipeline.stage.load_video_times | Loading video times for game 18965
+2025-12-23 18:10:50 | INFO     | src.pipeline.stage.load_video_times |   No video times file found for game 18965
+2025-12-23 18:10:50 | INFO     | src.pipeline.stage.load_video_times | No video times for game 18965
+2025-12-23 18:10:50 | INFO     | src.pipeline.batch_processor | ✓ Game 18965 processed successfully
+2025-12-23 18:10:50 | INFO     | src.pipeline.batch_processor | 
+============================================================
+2025-12-23 18:10:50 | INFO     | src.pipeline.batch_processor | PROCESSING GAME 18969
+2025-12-23 18:10:50 | INFO     | src.pipeline.batch_processor | ============================================================
+2025-12-23 18:10:50 | INFO     | src.pipeline.batch_processor | Step 1: Running quality checks...
+2025-12-23 18:10:50 | INFO     | src.pipeline.data_quality | Running data quality checks for game 18969
+2025-12-23 18:10:53 | INFO     | src.database.table_operations | Loaded 1 rows into fact_game_status
+2025-12-23 18:10:53 | INFO     | src.pipeline.data_quality | Saved quality results for game 18969: FULLY_TRACKED
+2025-12-23 18:10:53 | INFO     | src.database.table_operations | Loaded 475 rows into log_data_issues
+2025-12-23 18:10:53 | INFO     | src.pipeline.data_quality | Saved 475 issues for game 18969
+2025-12-23 18:10:53 | INFO     | src.pipeline.batch_processor | Step 2: Loading to stage...
+2025-12-23 18:10:53 | INFO     | src.pipeline.stage.load_game_tracking | Staging game 18969 from data/raw/games/18969/18969_tracking.xlsx
+2025-12-23 18:10:56 | INFO     | src.database.table_operations | Loaded 3596 rows into stg_events_18969
+2025-12-23 18:10:56 | INFO     | src.pipeline.stage.load_game_tracking |   Staged events: 3596 rows
+2025-12-23 18:10:56 | INFO     | src.database.table_operations | Loaded 98 rows into stg_shifts_18969
+2025-12-23 18:10:56 | INFO     | src.pipeline.stage.load_game_tracking |   Staged shifts: 98 rows
+2025-12-23 18:10:56 | INFO     | src.pipeline.batch_processor | Step 3: Transforming to intermediate...
+2025-12-23 18:10:56 | INFO     | src.pipeline.intermediate.transform_game | Transforming game 18969 to intermediate layer
+2025-12-23 18:10:56 | INFO     | src.pipeline.intermediate.transform_game |   Created int_events_18969: 1594 rows
+2025-12-23 18:10:56 | INFO     | src.pipeline.intermediate.transform_game |   Created int_event_players_18969: 3141 rows
+2025-12-23 18:10:56 | INFO     | src.pipeline.intermediate.transform_game |   Created int_shifts_18969: 98 rows
+2025-12-23 18:10:56 | INFO     | src.pipeline.intermediate.transform_game |   Created int_game_players_18969: 27 rows
+2025-12-23 18:10:56 | INFO     | src.pipeline.batch_processor | Step 4: Building box score...
+2025-12-23 18:10:56 | INFO     | src.pipeline.datamart.build_box_score | Building box score for game 18969
+2025-12-23 18:10:56 | INFO     | src.database.table_operations | Loaded 27 rows into _tmp_box_score_18969
+2025-12-23 18:10:56 | INFO     | src.database.table_operations | Loaded 57 rows into fact_box_score
+2025-12-23 18:10:56 | INFO     | src.database.table_operations | Dropped table: _tmp_box_score_18969
+2025-12-23 18:10:56 | INFO     | src.pipeline.datamart.build_box_score | Added 27 rows to fact_box_score for game 18969
+2025-12-23 18:10:56 | INFO     | src.pipeline.batch_processor | Step 5: Building events...
+2025-12-23 18:10:56 | INFO     | src.pipeline.datamart.build_events | Building events for game 18969
+2025-12-23 18:10:56 | INFO     | src.database.table_operations | Loaded 3226 rows into fact_events
+2025-12-23 18:10:56 | INFO     | src.pipeline.datamart.build_events | Added 1594 events for game 18969
+2025-12-23 18:10:56 | INFO     | src.pipeline.batch_processor | Step 6: Loading XY data...
+2025-12-23 18:10:56 | INFO     | src.pipeline.stage.load_xy_data | Loading XY data for game 18969
+2025-12-23 18:10:56 | INFO     | src.database.table_operations | Loaded 7 rows into stg_xy_events_18969
+2025-12-23 18:10:56 | INFO     | src.pipeline.stage.load_xy_data |   Loaded 7 XY event records
+2025-12-23 18:10:56 | WARNING  | src.pipeline.stage.load_xy_data | Error reading data/raw/games/18969/shots/18969_1.csv: int() argument must be a string, a bytes-like object or a real number, not 'NoneType'
+2025-12-23 18:10:56 | INFO     | src.pipeline.batch_processor | Step 6b: Transforming XY to intermediate...
+2025-12-23 18:10:56 | INFO     | src.pipeline.stage.load_xy_data | Transforming XY data for game 18969
+2025-12-23 18:10:56 | INFO     | src.database.table_operations | Dropped table: int_xy_events_18969
+2025-12-23 18:10:56 | INFO     | src.database.table_operations | Dropped table: int_xy_shots_18969
+2025-12-23 18:10:56 | ERROR    | src.database.connection | Database error, rolled back: (sqlite3.OperationalError) no such column: s.shot_key
+[SQL: 
+            CREATE TABLE int_xy_shots_18969 AS
+            SELECT
+                s.shot_key,
+                s.game_id,
+                s.event_index,
+                'EV' || printf('%05d', s.game_id) || printf('%05d', s.event_index) AS event_key,
+                s.x, s.y,
+                s.distance,
+                s.angle,
+                e.event_type,
+                e.event_detail,
+                e.period,
+                e.time_total_seconds,
+                CASE WHEN LOWER(e.event_type) LIKE '%goal%' THEN 1 ELSE 0 END AS is_goal,
+                rb.box_id AS rink_box_id,
+                rb.danger AS rink_danger,
+                rz.box_id AS rink_zone_id,
+                s.source_file,
+                datetime('now') AS _processed_timestamp
+            FROM stg_xy_shots_18969 s
+            LEFT JOIN int_events_18969 e 
+                ON s.event_index = e.event_index
+            LEFT JOIN stg_dim_rinkboxcoord rb
+                ON s.x >= rb.x_min AND s.x < rb.x_max
+                AND s.y >= rb.y_min AND s.y < rb.y_max
+            LEFT JOIN stg_dim_rinkcoordzones rz
+                ON s.x >= rz.x_min AND s.x < rz.x_max
+                AND s.y >= rz.y_min AND rz.y < rz.y_max
+        ]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-12-23 18:10:56 | ERROR    | src.pipeline.batch_processor | Error processing game 18969: (sqlite3.OperationalError) no such column: s.shot_key
+[SQL: 
+            CREATE TABLE int_xy_shots_18969 AS
+            SELECT
+                s.shot_key,
+                s.game_id,
+                s.event_index,
+                'EV' || printf('%05d', s.game_id) || printf('%05d', s.event_index) AS event_key,
+                s.x, s.y,
+                s.distance,
+                s.angle,
+                e.event_type,
+                e.event_detail,
+                e.period,
+                e.time_total_seconds,
+                CASE WHEN LOWER(e.event_type) LIKE '%goal%' THEN 1 ELSE 0 END AS is_goal,
+                rb.box_id AS rink_box_id,
+                rb.danger AS rink_danger,
+                rz.box_id AS rink_zone_id,
+                s.source_file,
+                datetime('now') AS _processed_timestamp
+            FROM stg_xy_shots_18969 s
+            LEFT JOIN int_events_18969 e 
+                ON s.event_index = e.event_index
+            LEFT JOIN stg_dim_rinkboxcoord rb
+                ON s.x >= rb.x_min AND s.x < rb.x_max
+                AND s.y >= rb.y_min AND s.y < rb.y_max
+            LEFT JOIN stg_dim_rinkcoordzones rz
+                ON s.x >= rz.x_min AND s.x < rz.x_max
+                AND s.y >= rz.y_min AND rz.y < rz.y_max
+        ]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-12-23 18:10:56 | INFO     | src.pipeline.batch_processor | 
+============================================================
+2025-12-23 18:10:56 | INFO     | src.pipeline.batch_processor | PROCESSING GAME 18977
+2025-12-23 18:10:56 | INFO     | src.pipeline.batch_processor | ============================================================
+2025-12-23 18:10:56 | INFO     | src.pipeline.batch_processor | Step 1: Running quality checks...
+2025-12-23 18:10:56 | INFO     | src.pipeline.data_quality | Running data quality checks for game 18977
+2025-12-23 18:10:58 | INFO     | src.database.table_operations | Loaded 1 rows into fact_game_status
+2025-12-23 18:10:58 | INFO     | src.pipeline.data_quality | Saved quality results for game 18977: FULLY_TRACKED
+2025-12-23 18:10:58 | INFO     | src.database.table_operations | Loaded 24 rows into log_data_issues
+2025-12-23 18:10:58 | INFO     | src.pipeline.data_quality | Saved 24 issues for game 18977
+2025-12-23 18:10:58 | INFO     | src.pipeline.batch_processor | Step 2: Loading to stage...
+2025-12-23 18:10:58 | INFO     | src.pipeline.stage.load_game_tracking | Staging game 18977 from data/raw/games/18977/18977_tracking.xlsx
+2025-12-23 18:10:59 | INFO     | src.database.table_operations | Loaded 2527 rows into stg_events_18977
+2025-12-23 18:10:59 | INFO     | src.pipeline.stage.load_game_tracking |   Staged events: 2527 rows
+2025-12-23 18:10:59 | INFO     | src.database.table_operations | Loaded 88 rows into stg_shifts_18977
+2025-12-23 18:10:59 | INFO     | src.pipeline.stage.load_game_tracking |   Staged shifts: 88 rows
+2025-12-23 18:10:59 | INFO     | src.pipeline.batch_processor | Step 3: Transforming to intermediate...
+2025-12-23 18:10:59 | INFO     | src.pipeline.intermediate.transform_game | Transforming game 18977 to intermediate layer
+2025-12-23 18:10:59 | ERROR    | src.database.connection | Database error, rolled back: (sqlite3.IntegrityError) UNIQUE constraint failed: int_game_players_18977.player_game_key
+[SQL: -- Create index on primary key
+CREATE UNIQUE INDEX IF NOT EXISTS idx_int_gp_18977_pk 
+    ON int_game_players_18977(player_game_key)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-12-23 18:10:59 | WARNING  | src.pipeline.intermediate.transform_game | SQL warning: (sqlite3.IntegrityError) UNIQUE constraint failed: int_game_players_18977.player_game_key
+[SQL: -- Create index on primary key
+CREATE UNIQUE INDEX IF NOT EXISTS idx_int_gp_18977_pk 
+    ON int_game_players_18977(player_game_key)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-12-23 18:10:59 | INFO     | src.pipeline.intermediate.transform_game |   Created int_events_18977: 1362 rows
+2025-12-23 18:10:59 | INFO     | src.pipeline.intermediate.transform_game |   Created int_event_players_18977: 2518 rows
+2025-12-23 18:10:59 | INFO     | src.pipeline.intermediate.transform_game |   Created int_shifts_18977: 88 rows
+2025-12-23 18:10:59 | INFO     | src.pipeline.intermediate.transform_game |   Created int_game_players_18977: 25 rows
+2025-12-23 18:10:59 | INFO     | src.pipeline.batch_processor | Step 4: Building box score...
+2025-12-23 18:10:59 | INFO     | src.pipeline.datamart.build_box_score | Building box score for game 18977
+2025-12-23 18:10:59 | INFO     | src.database.table_operations | Loaded 25 rows into _tmp_box_score_18977
+2025-12-23 18:11:00 | INFO     | src.database.table_operations | Loaded 82 rows into fact_box_score
+2025-12-23 18:11:00 | INFO     | src.database.table_operations | Dropped table: _tmp_box_score_18977
+2025-12-23 18:11:00 | INFO     | src.pipeline.datamart.build_box_score | Added 25 rows to fact_box_score for game 18977
+2025-12-23 18:11:00 | INFO     | src.pipeline.batch_processor | Step 5: Building events...
+2025-12-23 18:11:00 | INFO     | src.pipeline.datamart.build_events | Building events for game 18977
+2025-12-23 18:11:00 | INFO     | src.database.table_operations | Loaded 4588 rows into fact_events
+2025-12-23 18:11:00 | INFO     | src.pipeline.datamart.build_events | Added 1362 events for game 18977
+2025-12-23 18:11:00 | INFO     | src.pipeline.batch_processor | Step 6: Loading XY data...
+2025-12-23 18:11:00 | INFO     | src.pipeline.stage.load_xy_data | Loading XY data for game 18977
+2025-12-23 18:11:00 | INFO     | src.database.table_operations | Loaded 215 rows into stg_xy_shots_18977
+2025-12-23 18:11:00 | INFO     | src.pipeline.stage.load_xy_data |   Loaded 215 shot records
+2025-12-23 18:11:00 | INFO     | src.pipeline.batch_processor | Step 6b: Transforming XY to intermediate...
+2025-12-23 18:11:00 | INFO     | src.pipeline.stage.load_xy_data | Transforming XY data for game 18977
+2025-12-23 18:11:00 | ERROR    | src.database.connection | Database error, rolled back: (sqlite3.OperationalError) no such column: rz.y
+[SQL: 
+            CREATE TABLE int_xy_shots_18977 AS
+            SELECT
+                s.shot_key,
+                s.game_id,
+                s.event_index,
+                'EV' || printf('%05d', s.game_id) || printf('%05d', s.event_index) AS event_key,
+                s.x, s.y,
+                s.distance,
+                s.angle,
+                e.event_type,
+                e.event_detail,
+                e.period,
+                e.time_total_seconds,
+                CASE WHEN LOWER(e.event_type) LIKE '%goal%' THEN 1 ELSE 0 END AS is_goal,
+                rb.box_id AS rink_box_id,
+                rb.danger AS rink_danger,
+                rz.box_id AS rink_zone_id,
+                s.source_file,
+                datetime('now') AS _processed_timestamp
+            FROM stg_xy_shots_18977 s
+            LEFT JOIN int_events_18977 e 
+                ON s.event_index = e.event_index
+            LEFT JOIN stg_dim_rinkboxcoord rb
+                ON s.x >= rb.x_min AND s.x < rb.x_max
+                AND s.y >= rb.y_min AND s.y < rb.y_max
+            LEFT JOIN stg_dim_rinkcoordzones rz
+                ON s.x >= rz.x_min AND s.x < rz.x_max
+                AND s.y >= rz.y_min AND rz.y < rz.y_max
+        ]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-12-23 18:11:00 | ERROR    | src.pipeline.batch_processor | Error processing game 18977: (sqlite3.OperationalError) no such column: rz.y
+[SQL: 
+            CREATE TABLE int_xy_shots_18977 AS
+            SELECT
+                s.shot_key,
+                s.game_id,
+                s.event_index,
+                'EV' || printf('%05d', s.game_id) || printf('%05d', s.event_index) AS event_key,
+                s.x, s.y,
+                s.distance,
+                s.angle,
+                e.event_type,
+                e.event_detail,
+                e.period,
+                e.time_total_seconds,
+                CASE WHEN LOWER(e.event_type) LIKE '%goal%' THEN 1 ELSE 0 END AS is_goal,
+                rb.box_id AS rink_box_id,
+                rb.danger AS rink_danger,
+                rz.box_id AS rink_zone_id,
+                s.source_file,
+                datetime('now') AS _processed_timestamp
+            FROM stg_xy_shots_18977 s
+            LEFT JOIN int_events_18977 e 
+                ON s.event_index = e.event_index
+            LEFT JOIN stg_dim_rinkboxcoord rb
+                ON s.x >= rb.x_min AND s.x < rb.x_max
+                AND s.y >= rb.y_min AND s.y < rb.y_max
+            LEFT JOIN stg_dim_rinkcoordzones rz
+                ON s.x >= rz.x_min AND s.x < rz.x_max
+                AND s.y >= rz.y_min AND rz.y < rz.y_max
+        ]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-12-23 18:11:00 | INFO     | src.pipeline.batch_processor | 
+============================================================
+2025-12-23 18:11:00 | INFO     | src.pipeline.batch_processor | PROCESSING GAME 18981
+2025-12-23 18:11:00 | INFO     | src.pipeline.batch_processor | ============================================================
+2025-12-23 18:11:00 | INFO     | src.pipeline.batch_processor | Step 1: Running quality checks...
+2025-12-23 18:11:00 | INFO     | src.pipeline.data_quality | Running data quality checks for game 18981
+2025-12-23 18:11:01 | INFO     | src.database.table_operations | Loaded 1 rows into fact_game_status
+2025-12-23 18:11:01 | INFO     | src.pipeline.data_quality | Saved quality results for game 18981: FULLY_TRACKED
+2025-12-23 18:11:01 | INFO     | src.database.table_operations | Loaded 31 rows into log_data_issues
+2025-12-23 18:11:01 | INFO     | src.pipeline.data_quality | Saved 31 issues for game 18981
+2025-12-23 18:11:01 | INFO     | src.pipeline.batch_processor | Step 2: Loading to stage...
+2025-12-23 18:11:01 | INFO     | src.pipeline.stage.load_game_tracking | Staging game 18981 from data/raw/games/18981/18981_tracking.xlsx
+2025-12-23 18:11:03 | INFO     | src.database.table_operations | Loaded 2428 rows into stg_events_18981
+2025-12-23 18:11:03 | INFO     | src.pipeline.stage.load_game_tracking |   Staged events: 2428 rows
+2025-12-23 18:11:03 | INFO     | src.database.table_operations | Loaded 106 rows into stg_shifts_18981
+2025-12-23 18:11:03 | INFO     | src.pipeline.stage.load_game_tracking |   Staged shifts: 106 rows
+2025-12-23 18:11:03 | INFO     | src.pipeline.batch_processor | Step 3: Transforming to intermediate...
+2025-12-23 18:11:03 | INFO     | src.pipeline.intermediate.transform_game | Transforming game 18981 to intermediate layer
+2025-12-23 18:11:03 | INFO     | src.pipeline.intermediate.transform_game |   Created int_events_18981: 1297 rows
+2025-12-23 18:11:03 | INFO     | src.pipeline.intermediate.transform_game |   Created int_event_players_18981: 2422 rows
+2025-12-23 18:11:03 | INFO     | src.pipeline.intermediate.transform_game |   Created int_shifts_18981: 106 rows
+2025-12-23 18:11:03 | INFO     | src.pipeline.intermediate.transform_game |   Created int_game_players_18981: 27 rows
+2025-12-23 18:11:03 | INFO     | src.pipeline.batch_processor | Step 4: Building box score...
+2025-12-23 18:11:03 | INFO     | src.pipeline.datamart.build_box_score | Building box score for game 18981
+2025-12-23 18:11:03 | INFO     | src.database.table_operations | Loaded 27 rows into _tmp_box_score_18981
+2025-12-23 18:11:03 | INFO     | src.database.table_operations | Loaded 109 rows into fact_box_score
+2025-12-23 18:11:03 | INFO     | src.database.table_operations | Dropped table: _tmp_box_score_18981
+2025-12-23 18:11:03 | INFO     | src.pipeline.datamart.build_box_score | Added 27 rows to fact_box_score for game 18981
+2025-12-23 18:11:03 | INFO     | src.pipeline.batch_processor | Step 5: Building events...
+2025-12-23 18:11:03 | INFO     | src.pipeline.datamart.build_events | Building events for game 18981
+2025-12-23 18:11:03 | INFO     | src.database.table_operations | Loaded 5885 rows into fact_events
+2025-12-23 18:11:03 | INFO     | src.pipeline.datamart.build_events | Added 1297 events for game 18981
+2025-12-23 18:11:03 | INFO     | src.pipeline.batch_processor | Step 6: Loading XY data...
+2025-12-23 18:11:03 | INFO     | src.pipeline.stage.load_xy_data | Loading XY data for game 18981
+2025-12-23 18:11:03 | INFO     | src.pipeline.batch_processor | Step 7: Processing video times...
+2025-12-23 18:11:03 | INFO     | src.pipeline.stage.load_video_times | Loading video times for game 18981
+2025-12-23 18:11:03 | INFO     | src.database.table_operations | Loaded 1 rows into stg_video_times_18981
+2025-12-23 18:11:04 | INFO     | src.database.table_operations | Loaded 1296 rows into int_event_video_links_18981
+2025-12-23 18:11:04 | INFO     | src.database.table_operations | Loaded 105 rows into int_shift_video_links_18981
+2025-12-23 18:11:04 | INFO     | src.pipeline.batch_processor | ✓ Game 18981 processed successfully
+2025-12-23 18:11:04 | INFO     | src.pipeline.batch_processor | 
+============================================================
+2025-12-23 18:11:04 | INFO     | src.pipeline.batch_processor | PROCESSING GAME 18987
+2025-12-23 18:11:04 | INFO     | src.pipeline.batch_processor | ============================================================
+2025-12-23 18:11:04 | INFO     | src.pipeline.batch_processor | Step 1: Running quality checks...
+2025-12-23 18:11:04 | INFO     | src.pipeline.data_quality | Running data quality checks for game 18987
+2025-12-23 18:11:06 | INFO     | src.database.table_operations | Loaded 1 rows into fact_game_status
+2025-12-23 18:11:06 | INFO     | src.pipeline.data_quality | Saved quality results for game 18987: FULLY_TRACKED
+2025-12-23 18:11:06 | INFO     | src.database.table_operations | Loaded 26 rows into log_data_issues
+2025-12-23 18:11:06 | INFO     | src.pipeline.data_quality | Saved 26 issues for game 18987
+2025-12-23 18:11:06 | INFO     | src.pipeline.batch_processor | Step 2: Loading to stage...
+2025-12-23 18:11:06 | INFO     | src.pipeline.stage.load_game_tracking | Staging game 18987 from data/raw/games/18987/18987_tracking.xlsx
+2025-12-23 18:11:08 | INFO     | src.database.table_operations | Loaded 3084 rows into stg_events_18987
+2025-12-23 18:11:08 | INFO     | src.pipeline.stage.load_game_tracking |   Staged events: 3084 rows
+2025-12-23 18:11:08 | INFO     | src.database.table_operations | Loaded 106 rows into stg_shifts_18987
+2025-12-23 18:11:08 | INFO     | src.pipeline.stage.load_game_tracking |   Staged shifts: 106 rows
+2025-12-23 18:11:08 | INFO     | src.pipeline.batch_processor | Step 3: Transforming to intermediate...
+2025-12-23 18:11:08 | INFO     | src.pipeline.intermediate.transform_game | Transforming game 18987 to intermediate layer
+2025-12-23 18:11:08 | ERROR    | src.database.connection | Database error, rolled back: (sqlite3.IntegrityError) UNIQUE constraint failed: int_game_players_18987.player_game_key
+[SQL: -- Create index on primary key
+CREATE UNIQUE INDEX IF NOT EXISTS idx_int_gp_18987_pk 
+    ON int_game_players_18987(player_game_key)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-12-23 18:11:08 | WARNING  | src.pipeline.intermediate.transform_game | SQL warning: (sqlite3.IntegrityError) UNIQUE constraint failed: int_game_players_18987.player_game_key
+[SQL: -- Create index on primary key
+CREATE UNIQUE INDEX IF NOT EXISTS idx_int_gp_18987_pk 
+    ON int_game_players_18987(player_game_key)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-12-23 18:11:08 | INFO     | src.pipeline.intermediate.transform_game |   Created int_events_18987: 1578 rows
+2025-12-23 18:11:08 | INFO     | src.pipeline.intermediate.transform_game |   Created int_event_players_18987: 3068 rows
+2025-12-23 18:11:08 | INFO     | src.pipeline.intermediate.transform_game |   Created int_shifts_18987: 106 rows
+2025-12-23 18:11:08 | INFO     | src.pipeline.intermediate.transform_game |   Created int_game_players_18987: 26 rows
+2025-12-23 18:11:08 | INFO     | src.pipeline.batch_processor | Step 4: Building box score...
+2025-12-23 18:11:08 | INFO     | src.pipeline.datamart.build_box_score | Building box score for game 18987
+2025-12-23 18:11:08 | INFO     | src.database.table_operations | Loaded 26 rows into _tmp_box_score_18987
+2025-12-23 18:11:08 | INFO     | src.database.table_operations | Loaded 135 rows into fact_box_score
+2025-12-23 18:11:08 | INFO     | src.database.table_operations | Dropped table: _tmp_box_score_18987
+2025-12-23 18:11:08 | INFO     | src.pipeline.datamart.build_box_score | Added 26 rows to fact_box_score for game 18987
+2025-12-23 18:11:08 | INFO     | src.pipeline.batch_processor | Step 5: Building events...
+2025-12-23 18:11:08 | INFO     | src.pipeline.datamart.build_events | Building events for game 18987
+2025-12-23 18:11:08 | INFO     | src.database.table_operations | Loaded 7463 rows into fact_events
+2025-12-23 18:11:08 | INFO     | src.pipeline.datamart.build_events | Added 1578 events for game 18987
+2025-12-23 18:11:08 | INFO     | src.pipeline.batch_processor | Step 6: Loading XY data...
+2025-12-23 18:11:08 | INFO     | src.pipeline.stage.load_xy_data | Loading XY data for game 18987
+2025-12-23 18:11:08 | INFO     | src.pipeline.batch_processor | Step 7: Processing video times...
+2025-12-23 18:11:08 | INFO     | src.pipeline.stage.load_video_times | Loading video times for game 18987
+2025-12-23 18:11:08 | INFO     | src.database.table_operations | Loaded 2 rows into stg_video_times_18987
+2025-12-23 18:11:09 | INFO     | src.database.table_operations | Loaded 1577 rows into int_event_video_links_18987
+2025-12-23 18:11:09 | INFO     | src.database.table_operations | Loaded 106 rows into int_shift_video_links_18987
+2025-12-23 18:11:09 | INFO     | src.pipeline.batch_processor | ✓ Game 18987 processed successfully
+2025-12-23 18:11:09 | INFO     | src.pipeline.batch_processor | 
+============================================================
+2025-12-23 18:11:09 | INFO     | src.pipeline.batch_processor | PROCESSING GAME 18991
+2025-12-23 18:11:09 | INFO     | src.pipeline.batch_processor | ============================================================
+2025-12-23 18:11:09 | INFO     | src.pipeline.batch_processor | Step 1: Running quality checks...
+2025-12-23 18:11:09 | INFO     | src.pipeline.data_quality | Running data quality checks for game 18991
+2025-12-23 18:11:10 | INFO     | src.database.table_operations | Loaded 1 rows into fact_game_status
+2025-12-23 18:11:10 | INFO     | src.pipeline.data_quality | Saved quality results for game 18991: PARTIALLY_TRACKED
+2025-12-23 18:11:10 | INFO     | src.database.table_operations | Loaded 16 rows into log_data_issues
+2025-12-23 18:11:10 | INFO     | src.pipeline.data_quality | Saved 16 issues for game 18991
+2025-12-23 18:11:10 | INFO     | src.pipeline.batch_processor | Step 2: Loading to stage...
+2025-12-23 18:11:10 | INFO     | src.pipeline.stage.load_game_tracking | Staging game 18991 from data/raw/games/18991/18991_tracking.xlsx
+2025-12-23 18:11:11 | INFO     | src.database.table_operations | Loaded 4000 rows into stg_events_18991
+2025-12-23 18:11:11 | INFO     | src.pipeline.stage.load_game_tracking |   Staged events: 4000 rows
+2025-12-23 18:11:11 | INFO     | src.database.table_operations | Loaded 78 rows into stg_shifts_18991
+2025-12-23 18:11:11 | INFO     | src.pipeline.stage.load_game_tracking |   Staged shifts: 78 rows
+2025-12-23 18:11:11 | INFO     | src.pipeline.batch_processor | Step 3: Transforming to intermediate...
+2025-12-23 18:11:11 | INFO     | src.pipeline.intermediate.transform_game | Transforming game 18991 to intermediate layer
+2025-12-23 18:11:11 | INFO     | src.pipeline.intermediate.transform_game |   Created int_events_18991: 365 rows
+2025-12-23 18:11:11 | INFO     | src.pipeline.intermediate.transform_game |   Created int_event_players_18991: 3999 rows
+2025-12-23 18:11:11 | INFO     | src.pipeline.intermediate.transform_game |   Created int_shifts_18991: 78 rows
+2025-12-23 18:11:11 | INFO     | src.pipeline.intermediate.transform_game |   Created int_game_players_18991: 25 rows
+2025-12-23 18:11:11 | INFO     | src.pipeline.batch_processor | Step 4: Building box score...
+2025-12-23 18:11:11 | INFO     | src.pipeline.datamart.build_box_score | Building box score for game 18991
+2025-12-23 18:11:11 | INFO     | src.database.table_operations | Loaded 25 rows into _tmp_box_score_18991
+2025-12-23 18:11:11 | INFO     | src.database.table_operations | Loaded 160 rows into fact_box_score
+2025-12-23 18:11:11 | INFO     | src.database.table_operations | Dropped table: _tmp_box_score_18991
+2025-12-23 18:11:11 | INFO     | src.pipeline.datamart.build_box_score | Added 25 rows to fact_box_score for game 18991
+2025-12-23 18:11:11 | INFO     | src.pipeline.batch_processor | Step 5: Building events...
+2025-12-23 18:11:11 | INFO     | src.pipeline.datamart.build_events | Building events for game 18991
+2025-12-23 18:11:12 | INFO     | src.database.table_operations | Loaded 7828 rows into fact_events
+2025-12-23 18:11:12 | INFO     | src.pipeline.datamart.build_events | Added 365 events for game 18991
+2025-12-23 18:11:12 | INFO     | src.pipeline.batch_processor | Step 6: Loading XY data...
+2025-12-23 18:11:12 | INFO     | src.pipeline.stage.load_xy_data | Loading XY data for game 18991
+2025-12-23 18:11:12 | INFO     | src.pipeline.batch_processor | Step 7: Processing video times...
+2025-12-23 18:11:12 | INFO     | src.pipeline.stage.load_video_times | Loading video times for game 18991
+2025-12-23 18:11:12 | INFO     | src.database.table_operations | Loaded 2 rows into stg_video_times_18991
+2025-12-23 18:11:12 | INFO     | src.database.table_operations | Loaded 1 rows into int_event_video_links_18991
+2025-12-23 18:11:12 | INFO     | src.database.table_operations | Loaded 3 rows into int_shift_video_links_18991
+2025-12-23 18:11:12 | INFO     | src.pipeline.batch_processor | ✓ Game 18991 processed successfully
+2025-12-23 18:11:12 | INFO     | src.pipeline.batch_processor | 
+============================================================
+2025-12-23 18:11:12 | INFO     | src.pipeline.batch_processor | PROCESSING GAME 18993
+2025-12-23 18:11:12 | INFO     | src.pipeline.batch_processor | ============================================================
+2025-12-23 18:11:12 | INFO     | src.pipeline.batch_processor | Step 1: Running quality checks...
+2025-12-23 18:11:12 | INFO     | src.pipeline.data_quality | Running data quality checks for game 18993
+2025-12-23 18:11:12 | INFO     | src.database.table_operations | Loaded 1 rows into fact_game_status
+2025-12-23 18:11:12 | INFO     | src.pipeline.data_quality | Saved quality results for game 18993: PARTIALLY_TRACKED
+2025-12-23 18:11:12 | INFO     | src.database.table_operations | Loaded 3 rows into log_data_issues
+2025-12-23 18:11:12 | INFO     | src.pipeline.data_quality | Saved 3 issues for game 18993
+2025-12-23 18:11:12 | INFO     | src.pipeline.batch_processor | Step 2: Loading to stage...
+2025-12-23 18:11:12 | INFO     | src.pipeline.stage.load_game_tracking | Staging game 18993 from data/raw/games/18993/_tracking.xlsx
+2025-12-23 18:11:13 | INFO     | src.database.table_operations | Loaded 456 rows into stg_events_18993
+2025-12-23 18:11:13 | INFO     | src.pipeline.stage.load_game_tracking |   Staged events: 456 rows
+2025-12-23 18:11:13 | INFO     | src.database.table_operations | Loaded 98 rows into stg_shifts_18993
+2025-12-23 18:11:13 | INFO     | src.pipeline.stage.load_game_tracking |   Staged shifts: 98 rows
+2025-12-23 18:11:13 | INFO     | src.pipeline.batch_processor | Step 3: Transforming to intermediate...
+2025-12-23 18:11:13 | INFO     | src.pipeline.intermediate.transform_game | Transforming game 18993 to intermediate layer
+2025-12-23 18:11:13 | ERROR    | src.database.connection | Database error, rolled back: (sqlite3.IntegrityError) UNIQUE constraint failed: int_game_players_18993.player_game_key
+[SQL: -- Create index on primary key
+CREATE UNIQUE INDEX IF NOT EXISTS idx_int_gp_18993_pk 
+    ON int_game_players_18993(player_game_key)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-12-23 18:11:13 | WARNING  | src.pipeline.intermediate.transform_game | SQL warning: (sqlite3.IntegrityError) UNIQUE constraint failed: int_game_players_18993.player_game_key
+[SQL: -- Create index on primary key
+CREATE UNIQUE INDEX IF NOT EXISTS idx_int_gp_18993_pk 
+    ON int_game_players_18993(player_game_key)]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-12-23 18:11:13 | INFO     | src.pipeline.intermediate.transform_game |   Created int_events_18993: 2 rows
+2025-12-23 18:11:13 | INFO     | src.pipeline.intermediate.transform_game |   Created int_event_players_18993: 2 rows
+2025-12-23 18:11:13 | INFO     | src.pipeline.intermediate.transform_game |   Created int_shifts_18993: 98 rows
+2025-12-23 18:11:13 | INFO     | src.pipeline.intermediate.transform_game |   Created int_game_players_18993: 29 rows
+2025-12-23 18:11:13 | INFO     | src.pipeline.batch_processor | Step 4: Building box score...
+2025-12-23 18:11:13 | INFO     | src.pipeline.datamart.build_box_score | Building box score for game 18993
+2025-12-23 18:11:13 | INFO     | src.database.table_operations | Loaded 29 rows into _tmp_box_score_18993
+2025-12-23 18:11:13 | INFO     | src.database.table_operations | Loaded 189 rows into fact_box_score
+2025-12-23 18:11:13 | INFO     | src.database.table_operations | Dropped table: _tmp_box_score_18993
+2025-12-23 18:11:13 | INFO     | src.pipeline.datamart.build_box_score | Added 29 rows to fact_box_score for game 18993
+2025-12-23 18:11:13 | INFO     | src.pipeline.batch_processor | Step 5: Building events...
+2025-12-23 18:11:13 | INFO     | src.pipeline.datamart.build_events | Building events for game 18993
+2025-12-23 18:11:13 | INFO     | src.database.table_operations | Loaded 7830 rows into fact_events
+2025-12-23 18:11:13 | INFO     | src.pipeline.datamart.build_events | Added 2 events for game 18993
+2025-12-23 18:11:13 | INFO     | src.pipeline.batch_processor | Step 6: Loading XY data...
+2025-12-23 18:11:13 | INFO     | src.pipeline.stage.load_xy_data | Loading XY data for game 18993
+2025-12-23 18:11:13 | INFO     | src.pipeline.batch_processor | Step 7: Processing video times...
+2025-12-23 18:11:13 | INFO     | src.pipeline.stage.load_video_times | Loading video times for game 18993
+2025-12-23 18:11:13 | INFO     | src.pipeline.stage.load_video_times |   No video times file found for game 18993
+2025-12-23 18:11:13 | INFO     | src.pipeline.stage.load_video_times | No video times for game 18993
+2025-12-23 18:11:13 | INFO     | src.pipeline.batch_processor | ✓ Game 18993 processed successfully
+2025-12-23 18:11:13 | INFO     | src.pipeline.batch_processor | 
+============================================================
+2025-12-23 18:11:13 | INFO     | src.pipeline.batch_processor | PROCESSING GAME 19032
+2025-12-23 18:11:13 | INFO     | src.pipeline.batch_processor | ============================================================
+2025-12-23 18:11:13 | INFO     | src.pipeline.batch_processor | Step 1: Running quality checks...
+2025-12-23 18:11:13 | INFO     | src.pipeline.data_quality | Running data quality checks for game 19032
+2025-12-23 18:11:15 | INFO     | src.database.table_operations | Loaded 1 rows into fact_game_status
+2025-12-23 18:11:15 | INFO     | src.pipeline.data_quality | Saved quality results for game 19032: PARTIALLY_TRACKED
+2025-12-23 18:11:15 | INFO     | src.database.table_operations | Loaded 2 rows into log_data_issues
+2025-12-23 18:11:15 | INFO     | src.pipeline.data_quality | Saved 2 issues for game 19032
+2025-12-23 18:11:15 | INFO     | src.pipeline.batch_processor | Step 2: Loading to stage...
+2025-12-23 18:11:15 | INFO     | src.pipeline.stage.load_game_tracking | Staging game 19032 from data/raw/games/19032/19032_tracking.xlsx
+2025-12-23 18:11:15 | INFO     | src.database.table_operations | Loaded 3999 rows into stg_events_19032
+2025-12-23 18:11:15 | INFO     | src.pipeline.stage.load_game_tracking |   Staged events: 3999 rows
+2025-12-23 18:11:15 | INFO     | src.database.table_operations | Loaded 98 rows into stg_shifts_19032
+2025-12-23 18:11:15 | INFO     | src.pipeline.stage.load_game_tracking |   Staged shifts: 98 rows
+2025-12-23 18:11:15 | INFO     | src.pipeline.batch_processor | Step 3: Transforming to intermediate...
+2025-12-23 18:11:15 | INFO     | src.pipeline.intermediate.transform_game | Transforming game 19032 to intermediate layer
+2025-12-23 18:11:16 | INFO     | src.pipeline.intermediate.transform_game |   Created int_events_19032: 2 rows
+2025-12-23 18:11:16 | INFO     | src.pipeline.intermediate.transform_game |   Created int_event_players_19032: 1 rows
+2025-12-23 18:11:16 | INFO     | src.pipeline.intermediate.transform_game |   Created int_shifts_19032: 98 rows
+2025-12-23 18:11:16 | INFO     | src.pipeline.intermediate.transform_game |   Created int_game_players_19032: 0 rows
+2025-12-23 18:11:16 | INFO     | src.pipeline.batch_processor | Step 4: Building box score...
+2025-12-23 18:11:16 | INFO     | src.pipeline.datamart.build_box_score | Building box score for game 19032
+2025-12-23 18:11:16 | INFO     | src.database.table_operations | Loaded 0 rows into _tmp_box_score_19032
+2025-12-23 18:11:16 | INFO     | src.database.table_operations | Loaded 189 rows into fact_box_score
+2025-12-23 18:11:16 | INFO     | src.database.table_operations | Dropped table: _tmp_box_score_19032
+2025-12-23 18:11:16 | INFO     | src.pipeline.datamart.build_box_score | Added 0 rows to fact_box_score for game 19032
+2025-12-23 18:11:16 | INFO     | src.pipeline.batch_processor | Step 5: Building events...
+2025-12-23 18:11:16 | INFO     | src.pipeline.datamart.build_events | Building events for game 19032
+2025-12-23 18:11:16 | INFO     | src.database.table_operations | Loaded 7832 rows into fact_events
+2025-12-23 18:11:16 | INFO     | src.pipeline.datamart.build_events | Added 2 events for game 19032
+2025-12-23 18:11:16 | INFO     | src.pipeline.batch_processor | Step 6: Loading XY data...
+2025-12-23 18:11:16 | INFO     | src.pipeline.stage.load_xy_data | Loading XY data for game 19032
+2025-12-23 18:11:16 | INFO     | src.pipeline.batch_processor | Step 7: Processing video times...
+2025-12-23 18:11:16 | INFO     | src.pipeline.stage.load_video_times | Loading video times for game 19032
+2025-12-23 18:11:16 | INFO     | src.database.table_operations | Loaded 2 rows into stg_video_times_19032
+2025-12-23 18:11:16 | INFO     | src.database.table_operations | Loaded 1 rows into int_event_video_links_19032
+2025-12-23 18:11:16 | INFO     | src.database.table_operations | Loaded 3 rows into int_shift_video_links_19032
+2025-12-23 18:11:16 | INFO     | src.pipeline.batch_processor | ✓ Game 19032 processed successfully
+2025-12-23 18:11:16 | INFO     | src.pipeline.batch_processor | 
+======================================================================
+2025-12-23 18:11:16 | INFO     | src.pipeline.batch_processor | BATCH PROCESSING COMPLETE
+2025-12-23 18:11:16 | INFO     | src.pipeline.batch_processor | ======================================================================
+2025-12-23 18:11:16 | INFO     | src.pipeline.batch_processor | Total games: 8
+2025-12-23 18:11:16 | INFO     | src.pipeline.batch_processor | Completed: 6
+2025-12-23 18:11:16 | INFO     | src.pipeline.batch_processor | Errors: 2
+2025-12-23 18:11:41 | INFO     | src.database.connection | Database engine created: sqlite

@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Summary | BLB Analytics</title>
+<style>
+:root{--bg:#0a0e14;--panel:#12171f;--card:#1a2029;--border:#2d3640;--accent:#58a6ff;--success:#3fb950;--warn:#d29922;--danger:#f85149;--text:#e6edf3;--muted:#8b949e;--velo:#9C47E4}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:16px}
+.header a{color:var(--muted);text-decoration:none;font-size:20px}
+.header h1{font-size:16px}
+.back{padding:6px 12px;background:var(--card);border-radius:6px;margin-right:8px}
+.container{max-width:1400px;margin:0 auto;padding:24px}
+.game-hero{background:linear-gradient(135deg,rgba(156,71,228,0.1),rgba(88,166,255,0.05));border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:24px}
+.game-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+.game-meta{font-size:12px;color:var(--muted)}
+.matchup{display:flex;align-items:center;justify-content:center;gap:40px}
+.team-block{text-align:center}
+.team-block img{width:80px;height:80px;object-fit:contain;background:#fff;border-radius:12px;padding:8px;margin-bottom:12px}
+.team-block .name{font-size:18px;font-weight:700}
+.team-block .record{font-size:11px;color:var(--muted)}
+.score-block{text-align:center}
+.score-block .score{font-size:56px;font-weight:700}
+.score-block .status{font-size:12px;color:var(--muted);margin-top:8px}
+.period-scores{display:flex;gap:8px;justify-content:center;margin-top:8px}
+.period-scores span{padding:4px 12px;background:var(--card);border-radius:4px;font-size:11px}
+.tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:12px}
+.tab{padding:10px 20px;background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:12px;border-radius:6px 6px 0 0;transition:all 0.2s}
+.tab:hover{color:var(--text)}
+.tab.active{background:var(--card);color:var(--accent)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.card-header{padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.card-body{padding:16px}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+.stat-row:last-child{border:none}
+.stat-row .label{font-size:12px}
+.stat-row .values{display:flex;gap:12px}
+.stat-row .val{font-size:14px;font-weight:600;min-width:40px;text-align:center}
+.stat-bar{flex:1;height:8px;background:var(--panel);border-radius:4px;margin:0 12px;overflow:hidden;display:flex}
+.stat-bar .home{background:var(--velo)}
+.stat-bar .away{background:var(--accent)}
+.roster-table{width:100%;font-size:11px;border-collapse:collapse}
+.roster-table th{text-align:left;padding:8px;color:var(--muted);border-bottom:1px solid var(--border)}
+.roster-table td{padding:8px;border-bottom:1px solid var(--border)}
+.roster-table tr:hover{background:rgba(88,166,255,0.05);cursor:pointer}
+.roster-table .num{font-weight:700;font-family:monospace}
+.play-list{max-height:500px;overflow-y:auto}
+.play-item{display:flex;gap:12px;padding:12px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s}
+.play-item:hover{background:rgba(88,166,255,0.05)}
+.play-item.goal{background:rgba(63,185,80,0.1);border-left:3px solid var(--success)}
+.play-time{font-family:monospace;font-size:11px;color:var(--muted);min-width:50px}
+.play-team{width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff}
+.play-content{flex:1}
+.play-content .type{font-size:12px;font-weight:600}
+.play-content .detail{font-size:10px;color:var(--muted)}
+.play-video{padding:4px 8px;background:var(--panel);border-radius:4px;font-size:10px;color:var(--accent);display:flex;align-items:center;gap:4px}
+.video-modal{position:fixed;inset:0;background:rgba(0,0,0,0.9);display:none;align-items:center;justify-content:center;z-index:100}
+.video-modal.show{display:flex}
+.video-modal-content{background:var(--panel);border-radius:12px;width:90%;max-width:900px;overflow:hidden}
+.video-modal-header{padding:16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.video-modal-body{padding:0}
+.video-modal iframe{width:100%;aspect-ratio:16/9;border:none}
+.shot-chart{background:var(--card);border-radius:10px;padding:16px}
+.btn{background:var(--card);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:4px;cursor:pointer;font-size:11px}
+.btn:hover{background:var(--border)}
+.tracking-status{padding:8px 16px;border-radius:6px;font-size:11px;display:inline-flex;align-items:center;gap:6px}
+.tracking-status.full{background:rgba(63,185,80,0.2);color:var(--success)}
+.tracking-status.partial{background:rgba(210,153,34,0.2);color:var(--warn)}
+.tracking-status.none{background:rgba(248,81,73,0.2);color:var(--danger)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a href="index.html" class="back">←</a>
+  <h1>Game Summary</h1>
+  <div style="flex:1"></div>
+  <span class="tracking-status full" id="trackingStatus">✓ Full Tracking Available</span>
+</div>
+
+<div class="container">
+  
+  <div class="game-hero">
+    <div class="game-header">
+      <div class="game-meta">
+        <div>📅 September 7, 2025 • 6:45 PM</div>
+        <div style="margin-top:4px">#18969 • NORAD Regular Season</div>
+      </div>
+      <div>
+        <a href="https://www.noradhockey.com/event/18969/" target="_blank" class="btn">View on NORAD →</a>
+      </div>
+    </div>
+    
+    <div class="matchup">
+      <div class="team-block">
+        <img src="https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/04/Hartford-Final-scaled.png?w=2534&ssl=1" alt="Platinum">
+        <div class="name">Platinum</div>
+        <div class="record">7-6-1 • Home</div>
+      </div>
+      
+      <div class="score-block">
+        <div class="score">2 - 4</div>
+        <div class="status">FINAL</div>
+        <div class="period-scores">
+          <span>P1: 1-2</span>
+          <span>P2: 1-1</span>
+          <span>P3: 0-1</span>
+        </div>
+      </div>
+      
+      <div class="team-block">
+        <img src="https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/06/Velodrome-Vertical.png?resize=128%2C110&ssl=1" alt="Velodrome">
+        <div class="name" style="color:var(--velo)">Velodrome</div>
+        <div class="record">8-5-1 • Away</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('summary')">📊 Summary</button>
+    <button class="tab" onclick="showTab('plays')">📋 Play-by-Play</button>
+    <button class="tab" onclick="showTab('shots')">🎯 Shot Chart</button>
+    <button class="tab" onclick="showTab('rosters')">👥 Rosters</button>
+    <button class="tab" onclick="showTab('video')">🎬 Video</button>
+  </div>
+  
+  <div class="tab-content active" id="summaryTab">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">Game Stats</div>
+        <div class="card-body">
+          <div class="stat-row">
+            <span class="val" style="color:#919294">12</span>
+            <span class="label">Shots</span>
+            <div class="stat-bar"><div class="home" style="width:40%"></div><div class="away" style="width:60%"></div></div>
+            <span class="val" style="color:var(--velo)">18</span>
+          </div>
+          <div class="stat-row">
+            <span class="val">45%</span>
+            <span class="label">Faceoffs</span>
+            <div class="stat-bar"><div class="home" style="width:45%"></div><div class="away" style="width:55%"></div></div>
+            <span class="val">55%</span>
+          </div>
+          <div class="stat-row">
+            <span class="val">8</span>
+            <span class="label">Turnovers</span>
+            <div class="stat-bar"><div class="home" style="width:57%"></div><div class="away" style="width:43%"></div></div>
+            <span class="val">6</span>
+          </div>
+          <div class="stat-row">
+            <span class="val">65%</span>
+            <span class="label">Zone Entry</span>
+            <div class="stat-bar"><div class="home" style="width:42%"></div><div class="away" style="width:58%"></div></div>
+            <span class="val">72%</span>
+          </div>
+          <div class="stat-row">
+            <span class="val">2</span>
+            <span class="label">Penalties</span>
+            <div class="stat-bar"><div class="home" style="width:50%"></div><div class="away" style="width:50%"></div></div>
+            <span class="val">2</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">Scoring Summary</div>
+        <div class="card-body">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:8px">1ST PERIOD</div>
+          <div class="play-item goal">
+            <div class="play-time">15:23</div>
+            <div class="play-team" style="background:var(--velo)">V</div>
+            <div class="play-content">
+              <div class="type">GOAL - #6 S. Downs</div>
+              <div class="detail">Assisted by #4 R. Pinnell, #3 R. Mayfield</div>
+            </div>
+            <button class="play-video" onclick="openVideo('dQw4w9WgXcQ', 245)">▶ Watch</button>
+          </div>
+          <div class="play-item goal">
+            <div class="play-time">12:45</div>
+            <div class="play-team" style="background:#919294">P</div>
+            <div class="play-content">
+              <div class="type">GOAL - #21 A. Marshall</div>
+              <div class="detail">Assisted by #53 C. Premo</div>
+            </div>
+            <button class="play-video" onclick="openVideo('dQw4w9WgXcQ', 380)">▶ Watch</button>
+          </div>
+          <div class="play-item goal">
+            <div class="play-time">8:10</div>
+            <div class="play-team" style="background:var(--velo)">V</div>
+            <div class="play-content">
+              <div class="type">GOAL - #5 G. Ashcroft</div>
+              <div class="detail">Unassisted</div>
+            </div>
+            <button class="play-video" onclick="openVideo('dQw4w9WgXcQ', 520)">▶ Watch</button>
+          </div>
+          
+          <div style="font-size:11px;color:var(--muted);margin:16px 0 8px">2ND PERIOD</div>
+          <div class="play-item goal">
+            <div class="play-time">14:30</div>
+            <div class="play-team" style="background:var(--velo)">V</div>
+            <div class="play-content">
+              <div class="type">GOAL - #4 K. White</div>
+              <div class="detail">Assisted by #6 S. Downs</div>
+            </div>
+            <button class="play-video" onclick="openVideo('dQw4w9WgXcQ', 890)">▶ Watch</button>
+          </div>
+          <div class="play-item goal">
+            <div class="play-time">6:15</div>
+            <div class="play-team" style="background:#919294">P</div>
+            <div class="play-content">
+              <div class="type">GOAL - #47 J. Simonds</div>
+              <div class="detail">Assisted by #78 M. Quinn</div>
+            </div>
+            <button class="play-video" onclick="openVideo('dQw4w9WgXcQ', 1120)">▶ Watch</button>
+          </div>
+          
+          <div style="font-size:11px;color:var(--muted);margin:16px 0 8px">3RD PERIOD</div>
+          <div class="play-item goal">
+            <div class="play-time">2:45</div>
+            <div class="play-team" style="background:var(--velo)">V</div>
+            <div class="play-content">
+              <div class="type">GOAL - #6 S. Downs (2)</div>
+              <div class="detail">Assisted by #5 G. Wood, #3 J. Rynearson • GWG</div>
+            </div>
+            <button class="play-video" onclick="openVideo('dQw4w9WgXcQ', 1680)">▶ Watch</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="grid-3" style="margin-top:20px">
+      <div class="card">
+        <div class="card-header">⭐ Three Stars</div>
+        <div class="card-body">
+          <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)">
+            <span style="font-size:20px">🥇</span>
+            <div><div style="font-size:13px;font-weight:600">#6 Sam Downs</div><div style="font-size:10px;color:var(--muted)">Velodrome • 2G, 1A</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)">
+            <span style="font-size:20px">🥈</span>
+            <div><div style="font-size:13px;font-weight:600">#5 G. Ashcroft</div><div style="font-size:10px;color:var(--muted)">Velodrome • 1G, 0A</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:8px 0">
+            <span style="font-size:20px">🥉</span>
+            <div><div style="font-size:13px;font-weight:600">#21 A. Marshall</div><div style="font-size:10px;color:var(--muted)">Platinum • 1G, 0A</div></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">🔥 Tracking Insights</div>
+        <div class="card-body" style="font-size:11px">
+          <div style="margin-bottom:8px"><strong>2,076</strong> events tracked</div>
+          <div style="margin-bottom:8px"><strong>98</strong> shifts recorded</div>
+          <div style="margin-bottom:8px"><strong>72%</strong> zone entry success (Velo)</div>
+          <div style="margin-bottom:8px"><strong>15.2 min</strong> avg TOI (Velo)</div>
+          <div>Most active: #6 S. Downs (45 events)</div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">📹 Video Links</div>
+        <div class="card-body" style="font-size:11px">
+          <div style="margin-bottom:8px"><a href="#" onclick="openVideo('dQw4w9WgXcQ', 0)" style="color:var(--accent)">📺 Main Broadcast</a></div>
+          <div style="margin-bottom:8px"><a href="#" onclick="openVideo('dQw4w9WgXcQ', 0)" style="color:var(--accent)">📹 Behind Net Cam</a></div>
+          <div style="margin-bottom:8px"><a href="#" onclick="openVideo('dQw4w9WgXcQ', 0)" style="color:var(--accent)">🎥 Overhead View</a></div>
+          <div style="color:var(--muted)">Click any play for video</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="tab-content" id="playsTab">
+    <div class="card">
+      <div class="card-header">
+        Play-by-Play
+        <div style="display:flex;gap:8px">
+          <select class="btn" style="padding:4px 8px" onchange="filterPlays(this.value)">
+            <option value="all">All Events</option>
+            <option value="goals">Goals Only</option>
+            <option value="shots">Shots</option>
+            <option value="turnovers">Turnovers</option>
+          </select>
+          <select class="btn" style="padding:4px 8px">
+            <option>All Periods</option>
+            <option>1st Period</option>
+            <option>2nd Period</option>
+            <option>3rd Period</option>
+          </select>
+        </div>
+      </div>
+      <div class="play-list" id="playsList">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+  
+  <div class="tab-content" id="shotsTab">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">Velodrome Shots (18)</div>
+        <div class="card-body">
+          <svg viewBox="-10 -50 120 100" style="width:100%">
+            <defs><linearGradient id="ice" x1="0%" y1="0%" x2="100%"><stop offset="0%" style="stop-color:#f8fafc"/><stop offset="100%" style="stop-color:#e2e8f0"/></linearGradient></defs>
+            <rect x="0" y="-42.5" width="100" height="85" rx="0" fill="url(#ice)" stroke="#94a3b8" stroke-width="0.5"/>
+            <path d="M 100 -42.5 A 28 28 0 0 1 100 42.5" fill="none" stroke="#94a3b8" stroke-width="0.5"/>
+            <line x1="89" y1="-42.5" x2="89" y2="42.5" stroke="#dc2626" stroke-width="1"/>
+            <line x1="25" y1="-42.5" x2="25" y2="42.5" stroke="#2563eb" stroke-width="2"/>
+            <circle cx="69" cy="-22" r="15" fill="none" stroke="#dc2626" stroke-width="0.5"/>
+            <circle cx="69" cy="22" r="15" fill="none" stroke="#dc2626" stroke-width="0.5"/>
+            <rect x="91" y="-3" width="4" height="6" fill="#1e293b"/>
+            <!-- Goals -->
+            <circle cx="75" cy="-5" r="5" fill="#3fb950" stroke="#fff" stroke-width="1"/>
+            <circle cx="70" cy="12" r="5" fill="#3fb950" stroke="#fff" stroke-width="1"/>
+            <circle cx="68" cy="-8" r="5" fill="#3fb950" stroke="#fff" stroke-width="1"/>
+            <circle cx="82" cy="0" r="5" fill="#3fb950" stroke="#fff" stroke-width="1"/>
+            <!-- Saved -->
+            <circle cx="72" cy="18" r="4" fill="#58a6ff" stroke="#fff"/>
+            <circle cx="65" cy="-15" r="4" fill="#58a6ff" stroke="#fff"/>
+            <circle cx="78" cy="5" r="4" fill="#58a6ff" stroke="#fff"/>
+            <circle cx="55" cy="-10" r="4" fill="#58a6ff" stroke="#fff"/>
+            <circle cx="60" cy="8" r="4" fill="#58a6ff" stroke="#fff"/>
+            <circle cx="74" cy="-20" r="4" fill="#58a6ff" stroke="#fff"/>
+            <!-- Missed -->
+            <circle cx="45" cy="0" r="4" fill="#f85149" stroke="#fff"/>
+            <circle cx="50" cy="15" r="4" fill="#f85149" stroke="#fff"/>
+          </svg>
+          <div style="display:flex;gap:16px;justify-content:center;margin-top:12px;font-size:10px">
+            <span>🟢 Goals (4)</span><span>🔵 Saved (6)</span><span>🔴 Missed (2)</span><span>⚫ Blocked (6)</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">Platinum Shots (12)</div>
+        <div class="card-body">
+          <svg viewBox="-10 -50 120 100" style="width:100%">
+            <defs><linearGradient id="ice2" x1="0%" y1="0%" x2="100%"><stop offset="0%" style="stop-color:#f8fafc"/><stop offset="100%" style="stop-color:#e2e8f0"/></linearGradient></defs>
+            <rect x="0" y="-42.5" width="100" height="85" rx="0" fill="url(#ice2)" stroke="#94a3b8" stroke-width="0.5"/>
+            <path d="M 100 -42.5 A 28 28 0 0 1 100 42.5" fill="none" stroke="#94a3b8" stroke-width="0.5"/>
+            <line x1="89" y1="-42.5" x2="89" y2="42.5" stroke="#dc2626" stroke-width="1"/>
+            <line x1="25" y1="-42.5" x2="25" y2="42.5" stroke="#2563eb" stroke-width="2"/>
+            <rect x="91" y="-3" width="4" height="6" fill="#1e293b"/>
+            <!-- Goals -->
+            <circle cx="68" cy="12" r="5" fill="#3fb950" stroke="#fff" stroke-width="1"/>
+            <circle cx="75" cy="-8" r="5" fill="#3fb950" stroke="#fff" stroke-width="1"/>
+            <!-- Saved -->
+            <circle cx="72" cy="-5" r="4" fill="#58a6ff" stroke="#fff"/>
+            <circle cx="82" cy="8" r="4" fill="#58a6ff" stroke="#fff"/>
+            <circle cx="65" cy="18" r="4" fill="#58a6ff" stroke="#fff"/>
+            <circle cx="78" cy="-15" r="4" fill="#58a6ff" stroke="#fff"/>
+            <circle cx="60" cy="0" r="4" fill="#58a6ff" stroke="#fff"/>
+            <!-- Missed/Blocked -->
+            <circle cx="45" cy="10" r="4" fill="#8b949e" stroke="#fff"/>
+            <circle cx="50" cy="-12" r="4" fill="#8b949e" stroke="#fff"/>
+          </svg>
+          <div style="display:flex;gap:16px;justify-content:center;margin-top:12px;font-size:10px">
+            <span>🟢 Goals (2)</span><span>🔵 Saved (5)</span><span>⚫ Missed/Blk (5)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="tab-content" id="rostersTab">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header" style="background:#919294;color:#fff">Platinum Roster</div>
+        <table class="roster-table">
+          <thead><tr><th>#</th><th>Player</th><th>Pos</th><th>G</th><th>A</th><th>+/-</th><th>S</th></tr></thead>
+          <tbody>
+            <tr onclick="location.href='dashboard_player.html'"><td class="num">53</td><td>C. Premo</td><td>F</td><td>0</td><td>1</td><td>-1</td><td>4</td></tr>
+            <tr onclick="location.href='dashboard_player.html'"><td class="num">21</td><td>A. Marshall</td><td>F</td><td>1</td><td>0</td><td>0</td><td>3</td></tr>
+            <tr onclick="location.href='dashboard_player.html'"><td class="num">47</td><td>J. Simonds</td><td>F</td><td>1</td><td>0</td><td>0</td><td>2</td></tr>
+            <tr onclick="location.href='dashboard_player.html'"><td class="num">78</td><td>M. Quinn</td><td>D</td><td>0</td><td>1</td><td>-1</td><td>2</td></tr>
+            <tr onclick="location.href='dashboard_player.html'"><td class="num">99</td><td>F. Forte</td><td>G</td><td colspan="4">14 SV, 4 GA (.778)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-header" style="background:var(--velo);color:#fff">Velodrome Roster</div>
+        <table class="roster-table">
+          <thead><tr><th>#</th><th>Player</th><th>Pos</th><th>G</th><th>A</th><th>+/-</th><th>S</th></tr></thead>
+          <tbody>
+            <tr onclick="location.href='dashboard_player.html'"><td class="num">6</td><td>S. Downs</td><td>F</td><td>2</td><td>1</td><td>+2</td><td>5</td></tr>
+            <tr onclick="location.href='dashboard_player.html'"><td class="num">5</td><td>G. Ashcroft</td><td>F</td><td>1</td><td>0</td><td>+1</td><td>3</td></tr>
+            <tr onclick="location.href='dashboard_player.html'"><td class="num">4</td><td>K. White</td><td>F</td><td>1</td><td>0</td><td>+1</td><td>3</td></tr>
+            <tr onclick="location.href='dashboard_player.html'"><td class="num">4</td><td>R. Pinnell (C)</td><td>D</td><td>0</td><td>1</td><td>+1</td><td>2</td></tr>
+            <tr onclick="location.href='dashboard_player.html'"><td class="num">3</td><td>R. Mayfield (S)</td><td>D</td><td>0</td><td>1</td><td>+1</td><td>1</td></tr>
+            <tr onclick="location.href='dashboard_player.html'"><td class="num">5</td><td>G. Wood</td><td>F</td><td>0</td><td>1</td><td>+1</td><td>2</td></tr>
+            <tr onclick="location.href='dashboard_player.html'"><td class="num">3</td><td>J. Rynearson</td><td>F</td><td>0</td><td>1</td><td>+1</td><td>1</td></tr>
+            <tr onclick="location.href='dashboard_player.html'"><td class="num">5</td><td>W. Crandall</td><td>G</td><td colspan="4">10 SV, 2 GA (.833)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  <div class="tab-content" id="videoTab">
+    <div class="card">
+      <div class="card-header">Game Video</div>
+      <div class="card-body">
+        <div style="text-align:center;color:var(--muted);padding:40px">
+          <div style="font-size:48px;margin-bottom:16px">🎬</div>
+          <p>Click any play in the Play-by-Play tab to view video</p>
+          <p style="margin-top:8px">Or select a video source below:</p>
+          <div style="display:flex;gap:12px;justify-content:center;margin-top:20px">
+            <button class="btn" onclick="openVideo('dQw4w9WgXcQ', 0)">📺 Main Broadcast</button>
+            <button class="btn" onclick="openVideo('dQw4w9WgXcQ', 0)">📹 Alt Angle</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+</div>
+
+<!-- Video Modal -->
+<div class="video-modal" id="videoModal" onclick="if(event.target===this)closeVideo()">
+  <div class="video-modal-content">
+    <div class="video-modal-header">
+      <span id="videoTitle">Game Video</span>
+      <button class="btn" onclick="closeVideo()">✕ Close</button>
+    </div>
+    <div class="video-modal-body">
+      <iframe id="videoFrame" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
+  </div>
+</div>
+
+<script>
+function showTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelector(`.tab[onclick*="${name}"]`).classList.add('active');
+  document.getElementById(name + 'Tab').classList.add('active');
+}
+
+function openVideo(videoId, startTime) {
+  const url = `https://www.youtube.com/embed/${videoId}?start=${startTime}&autoplay=1`;
+  document.getElementById('videoFrame').src = url;
+  document.getElementById('videoModal').classList.add('show');
+}
+
+function closeVideo() {
+  document.getElementById('videoFrame').src = '';
+  document.getElementById('videoModal').classList.remove('show');
+}
+
+// Sample play-by-play data
+const PLAYS = [
+  {time:"18:00",period:1,team:"V",type:"Faceoff",detail:"Won by #4 R. Pinnell",video:"dQw4w9WgXcQ",vTime:60},
+  {time:"17:45",period:1,team:"V",type:"Zone Entry",detail:"Rush by #6 S. Downs",video:"dQw4w9WgXcQ",vTime:75},
+  {time:"17:30",period:1,team:"V",type:"Shot",detail:"Wrist shot by #6 S. Downs - Saved",video:"dQw4w9WgXcQ",vTime:90},
+  {time:"15:23",period:1,team:"V",type:"GOAL",detail:"#6 S. Downs (Asst: #4 R. Pinnell, #3 R. Mayfield)",video:"dQw4w9WgXcQ",vTime:245,goal:true},
+  {time:"14:10",period:1,team:"P",type:"Zone Entry",detail:"Dump in by #53 C. Premo",video:"dQw4w9WgXcQ",vTime:310},
+  {time:"13:20",period:1,team:"P",type:"Shot",detail:"Slap shot by #78 M. Quinn - Saved",video:"dQw4w9WgXcQ",vTime:350},
+  {time:"12:45",period:1,team:"P",type:"GOAL",detail:"#21 A. Marshall (Asst: #53 C. Premo)",video:"dQw4w9WgXcQ",vTime:380,goal:true},
+  {time:"10:30",period:1,team:"V",type:"Turnover",detail:"Takeaway by #5 G. Ashcroft",video:"dQw4w9WgXcQ",vTime:450},
+  {time:"8:10",period:1,team:"V",type:"GOAL",detail:"#5 G. Ashcroft - Unassisted (Breakaway)",video:"dQw4w9WgXcQ",vTime:520,goal:true},
+];
+
+function renderPlays() {
+  const list = document.getElementById('playsList');
+  list.innerHTML = PLAYS.map(p => {
+    const teamColor = p.team === 'V' ? 'var(--velo)' : '#919294';
+    return `<div class="play-item ${p.goal ? 'goal' : ''}" onclick="openVideo('${p.video}', ${p.vTime})">
+      <div class="play-time">P${p.period} ${p.time}</div>
+      <div class="play-team" style="background:${teamColor}">${p.team}</div>
+      <div class="play-content">
+        <div class="type">${p.type}</div>
+        <div class="detail">${p.detail}</div>
+      </div>
+      <span class="play-video">▶ ${Math.floor(p.vTime/60)}:${String(p.vTime%60).padStart(2,'0')}</span>
+    </div>`;
+  }).join('');
+}
+
+renderPlays();
+</script>
+</body>
+</html>
