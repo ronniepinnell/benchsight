@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NORAD Hockey League - Standings</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header { 
+            text-align: center; 
+            padding: 30px 0;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+            margin-bottom: 30px;
+        }
+        header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        header .subtitle { color: #8892b0; font-size: 1.1em; }
+        .league-logo { width: 80px; margin-bottom: 15px; }
+        .data-source {
+            background: rgba(74,222,128,0.15);
+            border: 1px solid #4ade80;
+            border-radius: 8px;
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: #4ade80;
+        }
+        .standings-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .standings-table th {
+            background: rgba(255,255,255,0.1);
+            padding: 15px 10px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75em;
+            letter-spacing: 0.5px;
+            color: #8892b0;
+        }
+        .standings-table th:first-child { padding-left: 20px; }
+        .standings-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .standings-table tr:hover { background: rgba(255,255,255,0.05); }
+        .standings-table tr:last-child td { border-bottom: none; }
+        .rank { 
+            font-weight: 700; 
+            font-size: 1.1em;
+            width: 40px;
+            text-align: center;
+        }
+        .rank.top-3 { color: #ffd700; }
+        .rank.playoff { color: #4ade80; }
+        .team-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .team-logo {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            border-radius: 8px;
+            background: #fff;
+            padding: 4px;
+        }
+        .team-name { font-weight: 600; font-size: 1em; }
+        .team-name a { color: #fff; text-decoration: none; }
+        .team-name a:hover { color: #4ade80; }
+        .pts { font-weight: 700; font-size: 1.2em; color: #4ade80; }
+        .diff.positive { color: #4ade80; }
+        .diff.negative { color: #f87171; }
+        .stat-cell { text-align: center; }
+        .streak { font-size: 0.85em; }
+        .streak.win { color: #4ade80; }
+        .streak.loss { color: #f87171; }
+        .section-title {
+            font-size: 1.3em;
+            margin: 30px 0 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+        }
+        .leaders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .leader-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .leader-card h3 {
+            font-size: 0.9em;
+            text-transform: uppercase;
+            color: #8892b0;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+        .leader-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .leader-item:last-child { border-bottom: none; }
+        .leader-rank {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+        .leader-rank.gold { background: #ffd700; color: #000; }
+        .leader-rank.silver { background: #c0c0c0; color: #000; }
+        .leader-rank.bronze { background: #cd7f32; color: #000; }
+        .player-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #333;
+        }
+        .leader-info { flex: 1; }
+        .leader-name { font-weight: 600; }
+        .leader-name a { color: #fff; text-decoration: none; }
+        .leader-name a:hover { color: #4ade80; }
+        .leader-team { font-size: 0.8em; color: #8892b0; }
+        .leader-stat { font-size: 1.3em; font-weight: 700; color: #4ade80; }
+        .l10 { font-size: 0.8em; color: #8892b0; }
+        @media (max-width: 768px) {
+            .standings-table { font-size: 0.85em; }
+            .team-logo { width: 30px; height: 30px; }
+            header h1 { font-size: 1.8em; }
+            .hide-mobile { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="https://www.noradhockey.com/wp-content/uploads/2022/05/New-NORAD-Logo-White.png" alt="NORAD" class="league-logo">
+            <h1>League Standings</h1>
+            <p class="subtitle">2025-2026 Regular Season</p>
+        </header>
+
+        <div class="data-source">
+            ✅ Live data from <a href="https://noradhockey.com/standings/" target="_blank" style="color:#4ade80">noradhockey.com</a> (Week 16 - Dec 21, 2025)
+        </div>
+
+        <table class="standings-table">
+            <thead>
+                <tr>
+                    <th>Pos</th>
+                    <th>Team</th>
+                    <th class="stat-cell">GP</th>
+                    <th class="stat-cell">W</th>
+                    <th class="stat-cell">L</th>
+                    <th class="stat-cell">T</th>
+                    <th class="stat-cell">PTS</th>
+                    <th class="stat-cell">GF</th>
+                    <th class="stat-cell">GA</th>
+                    <th class="stat-cell hide-mobile">GAA</th>
+                    <th class="stat-cell">DIFF</th>
+                    <th class="stat-cell hide-mobile">L10</th>
+                    <th class="stat-cell hide-mobile">STRK</th>
+                </tr>
+            </thead>
+            <tbody id="standingsBody"></tbody>
+        </table>
+
+        <h2 class="section-title">🏆 League Leaders</h2>
+        <div class="leaders-grid" id="leadersGrid"></div>
+
+        <h2 class="section-title">🥅 Goalie Leaders</h2>
+        <div class="leaders-grid" id="goalieGrid"></div>
+    </div>
+
+    <script>
+        // REAL DATA from noradhockey.com (Dec 21, 2025 - Week 16)
+        const standingsData = [
+            {pos: 1, team: "OS Offices", url: "https://www.noradhockey.com/team/os-offices/", logo: "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2020/10/Office-Scapes-Logo-Small-e1602519375735.png?resize=268%2C300&ssl=1", gp: 16, w: 11, l: 3, t: 2, pts: 24, gf: 103, ga: 76, gaa: 4.75, diff: 27, l10: "8-1-1-0", strk: "W1"},
+            {pos: 2, team: "Platinum", url: "https://www.noradhockey.com/team/platinum-group/", logo: "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/04/Hartford-Final-scaled.png?w=2534&ssl=1", gp: 16, w: 10, l: 3, t: 3, pts: 23, gf: 80, ga: 53, gaa: 3.31, diff: 27, l10: "6-2-2-0", strk: "W3"},
+            {pos: 3, team: "Velodrome", url: "https://www.noradhockey.com/team/cos-velodrome/", logo: "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/06/Velodrome-Vertical.png?resize=128%2C110&ssl=1", gp: 16, w: 10, l: 6, t: 0, pts: 20, gf: 62, ga: 43, gaa: 2.69, diff: 19, l10: "7-3-0-0", strk: "W2"},
+            {pos: 4, team: "Ace", url: "https://www.noradhockey.com/team/ace/", logo: "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2023/06/Ace-Hardware-Jersey-Logo.png?resize=128%2C128&ssl=1", gp: 16, w: 8, l: 6, t: 2, pts: 18, gf: 69, ga: 66, gaa: 4.13, diff: 3, l10: "6-4-0-0", strk: "W3"},
+            {pos: 5, team: "Outlaws", url: "https://www.noradhockey.com/team/outcan-outlaws/", logo: "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2024/08/OUTCAN-Outlaws-Logo.png?resize=128%2C117&ssl=1", gp: 16, w: 7, l: 6, t: 3, pts: 17, gf: 64, ga: 53, gaa: 3.31, diff: 11, l10: "4-5-1-0", strk: "L3"},
+            {pos: 6, team: "Nelson", url: "https://www.noradhockey.com/team/nelsoncompany/", logo: "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/08/2025-26-NC-Logo.png?resize=300%2C300&ssl=1", gp: 16, w: 8, l: 8, t: 0, pts: 16, gf: 70, ga: 76, gaa: 4.75, diff: -6, l10: "3-7-0-0", strk: "W1"},
+            {pos: 7, team: "HollowBrook", url: "https://www.noradhockey.com/team/hollowbrook-dental/", logo: "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2017/01/HBD-Logo.png?resize=128%2C115&ssl=1", gp: 16, w: 6, l: 7, t: 3, pts: 15, gf: 50, ga: 54, gaa: 3.38, diff: -4, l10: "5-4-1-0", strk: "L1"},
+            {pos: 8, team: "Orphans", url: "https://www.noradhockey.com/team/world-orphans/", logo: "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2023/07/World-Orphans-Logo-small.png?resize=128%2C125&ssl=1", gp: 16, w: 5, l: 8, t: 3, pts: 13, gf: 72, ga: 72, gaa: 4.50, diff: 0, l10: "3-5-2-0", strk: "L1"},
+            {pos: 9, team: "Triple J", url: "https://www.noradhockey.com/team/triple-j/", logo: "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2017/01/Image_11-11-24_at_10.17_AM-removebg-preview-1.png?resize=128%2C110&ssl=1", gp: 16, w: 4, l: 12, t: 0, pts: 8, gf: 48, ga: 84, gaa: 5.25, diff: -36, l10: "3-7-0-0", strk: "L2"},
+            {pos: 10, team: "AMOS", url: "https://www.noradhockey.com/team/amos-2/", logo: "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2023/07/AMOS-Logo-small.png?resize=128%2C40&ssl=1", gp: 16, w: 2, l: 12, t: 2, pts: 6, gf: 54, ga: 95, gaa: 5.94, diff: -41, l10: "1-8-1-0", strk: "L6"}
+        ];
+
+        // REAL Player Leaders from noradhockey.com
+        const playerLeaders = [
+            {rank: 1, name: "TJ Liebl", team: "OS Offices", url: "https://www.noradhockey.com/player/tj-liebl-6/", img: "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/05/TJ-Liebl.jpg?resize=300%2C300&ssl=1", gp: 16, g: 36, a: 22, pts: 58, pim: 0},
+            {rank: 2, name: "Keegan Mantaro", team: "Platinum", url: "https://www.noradhockey.com/player/keegan-mantaro/", img: "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2020/10/Keegan-Mantaro.jpg?resize=300%2C300&ssl=1", gp: 13, g: 29, a: 8, pts: 37, pim: 0},
+            {rank: 3, name: "Ross Thompson", team: "Orphans", url: "https://www.noradhockey.com/player/ross-thompson/", img: "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2022/08/Ross-Thompson-2024.jpg?resize=300%2C300&ssl=1", gp: 14, g: 18, a: 14, pts: 32, pim: 0},
+            {rank: 4, name: "Mitchell Liebl", team: "OS Offices", url: "https://www.noradhockey.com/player/mitchell-liebl-5/", img: "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/08/M.-Liebl.jpg?resize=300%2C300&ssl=1", gp: 14, g: 9, a: 23, pts: 32, pim: 0},
+            {rank: 5, name: "Samson Leifer", team: "Outlaws", url: "https://www.noradhockey.com/player/samson-leifer-6/", img: "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2023/08/Samson-Leifer-2024.jpg?resize=300%2C300&ssl=1", gp: 15, g: 21, a: 10, pts: 31, pim: 0},
+            {rank: 6, name: "Austin Storm", team: "Ace", url: "https://www.noradhockey.com/player/austin-storm/", img: "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2017/09/Austin-Storm-2024.jpg?resize=300%2C300&ssl=1", gp: 15, g: 21, a: 6, pts: 27, pim: 15},
+            {rank: 7, name: "Nicholas Lang", team: "OS Offices", url: "https://www.noradhockey.com/player/nicholas-lang-5/", img: "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/08/N.-Lang.jpg?resize=300%2C300&ssl=1", gp: 13, g: 14, a: 11, pts: 25, pim: 3},
+            {rank: 8, name: "Sam Downs", team: "Velodrome", url: "https://www.noradhockey.com/player/sam-downs/", img: "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2017/09/Sam-Downs-2024.jpg?w=350&ssl=1", gp: 16, g: 16, a: 9, pts: 25, pim: 0},
+            {rank: 9, name: "Nick Henry", team: "AMOS", url: "https://www.noradhockey.com/player/nick-henry/", img: "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2022/08/Nick-Henry-2024.jpg?resize=300%2C300&ssl=1", gp: 14, g: 16, a: 6, pts: 22, pim: 3},
+            {rank: 10, name: "Austin Webb", team: "Orphans", url: "https://www.noradhockey.com/player/austin-webb/", img: "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2022/08/Austin-Webb-2024.jpg?resize=300%2C300&ssl=1", gp: 15, g: 14, a: 7, pts: 21, pim: 6}
+        ];
+
+        // REAL Goalie Leaders from noradhockey.com
+        const goalieLeaders = [
+            {rank: 1, name: "Wyatt Crandall", team: "Velodrome", url: "https://www.noradhockey.com/player/wyatt-crandall/", img: "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2020/10/Wyatt-Crandall.jpg?resize=300%2C300&ssl=1", gp: 15, gaa: 2.93, ga: 44, so: 1},
+            {rank: 2, name: "Sebastian Rivera", team: "HollowBrook", url: "https://www.noradhockey.com/player/sebastian-rivera/", img: "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2024/08/placeholder-player.png", gp: 7, gaa: 3.00, ga: 21, so: 0},
+            {rank: 3, name: "Francis Forte", team: "Ace", url: "https://www.noradhockey.com/player/francis-forte/", img: "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2023/08/Francis-Forte-2024.jpg?resize=300%2C300&ssl=1", gp: 10, gaa: 3.11, ga: 32, so: 1},
+            {rank: 4, name: "Graham Peters", team: "Outlaws", url: "https://www.noradhockey.com/player/graham-peters/", img: "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2023/08/Graham-Peters-2024.jpg?resize=300%2C300&ssl=1", gp: 15, gaa: 3.20, ga: 48, so: 1},
+            {rank: 5, name: "Scott Purdy", team: "HollowBrook", url: "https://www.noradhockey.com/player/scott-purdy-5/", img: "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2023/08/Scott-Purdy-2024.jpg?resize=300%2C300&ssl=1", gp: 15, gaa: 3.33, ga: 50, so: 0}
+        ];
+
+        // Render standings
+        const tbody = document.getElementById('standingsBody');
+        tbody.innerHTML = standingsData.map(team => {
+            const rankClass = team.pos <= 3 ? 'top-3' : (team.pos <= 8 ? 'playoff' : '');
+            const diffClass = team.diff > 0 ? 'positive' : (team.diff < 0 ? 'negative' : '');
+            const strkClass = team.strk.startsWith('W') ? 'win' : 'loss';
+            return `
+                <tr>
+                    <td class="rank ${rankClass}">${team.pos}</td>
+                    <td>
+                        <div class="team-cell">
+                            <img src="${team.logo}" alt="${team.team}" class="team-logo" onerror="this.style.display='none'">
+                            <span class="team-name"><a href="${team.url}" target="_blank">${team.team}</a></span>
+                        </div>
+                    </td>
+                    <td class="stat-cell">${team.gp}</td>
+                    <td class="stat-cell">${team.w}</td>
+                    <td class="stat-cell">${team.l}</td>
+                    <td class="stat-cell">${team.t}</td>
+                    <td class="stat-cell pts">${team.pts}</td>
+                    <td class="stat-cell">${team.gf}</td>
+                    <td class="stat-cell">${team.ga}</td>
+                    <td class="stat-cell hide-mobile">${team.gaa.toFixed(2)}</td>
+                    <td class="stat-cell diff ${diffClass}">${team.diff > 0 ? '+' : ''}${team.diff}</td>
+                    <td class="stat-cell l10 hide-mobile">${team.l10}</td>
+                    <td class="stat-cell streak ${strkClass} hide-mobile">${team.strk}</td>
+                </tr>
+            `;
+        }).join('');
+
+        // Render player leaders
+        function renderLeaders() {
+            const grid = document.getElementById('leadersGrid');
+            const byPoints = [...playerLeaders].sort((a,b) => b.pts - a.pts).slice(0,5);
+            const byGoals = [...playerLeaders].sort((a,b) => b.g - a.g).slice(0,5);
+            const byAssists = [...playerLeaders].sort((a,b) => b.a - a.a).slice(0,5);
+            
+            function leaderCard(title, players, statKey) {
+                return `
+                    <div class="leader-card">
+                        <h3>${title}</h3>
+                        ${players.map((p, i) => {
+                            const rankClass = i === 0 ? 'gold' : (i === 1 ? 'silver' : (i === 2 ? 'bronze' : ''));
+                            return `
+                                <div class="leader-item">
+                                    <span class="leader-rank ${rankClass}">${i + 1}</span>
+                                    <img src="${p.img}" alt="${p.name}" class="player-img" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23333%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22%23666%22 font-size=%2240%22>?</text></svg>'">
+                                    <div class="leader-info">
+                                        <div class="leader-name"><a href="${p.url}" target="_blank">${p.name}</a></div>
+                                        <div class="leader-team">${p.team} • ${p.gp} GP</div>
+                                    </div>
+                                    <span class="leader-stat">${p[statKey]}</span>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            }
+            
+            grid.innerHTML = leaderCard('🏒 Points Leaders', byPoints, 'pts') +
+                            leaderCard('🥅 Goal Leaders', byGoals, 'g') +
+                            leaderCard('🎯 Assist Leaders', byAssists, 'a');
+        }
+
+        // Render goalie leaders
+        function renderGoalies() {
+            const grid = document.getElementById('goalieGrid');
+            grid.innerHTML = `
+                <div class="leader-card">
+                    <h3>🥅 Goals Against Average (min 3 GP)</h3>
+                    ${goalieLeaders.map((g, i) => {
+                        const rankClass = i === 0 ? 'gold' : (i === 1 ? 'silver' : (i === 2 ? 'bronze' : ''));
+                        return `
+                            <div class="leader-item">
+                                <span class="leader-rank ${rankClass}">${i + 1}</span>
+                                <img src="${g.img}" alt="${g.name}" class="player-img" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23333%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22%23666%22 font-size=%2240%22>?</text></svg>'">
+                                <div class="leader-info">
+                                    <div class="leader-name"><a href="${g.url}" target="_blank">${g.name}</a></div>
+                                    <div class="leader-team">${g.team} • ${g.gp} GP • ${g.so} SO</div>
+                                </div>
+                                <span class="leader-stat">${g.gaa.toFixed(2)}</span>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        renderLeaders();
+        renderGoalies();
+    </script>
+</body>
+</html>

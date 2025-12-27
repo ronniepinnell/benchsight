@@ -1,0 +1,88 @@
+table_name,column_name,data_type,description,primary_key,foreign_key,source
+dim_player,player_id,string,Unique player identifier,TRUE,,BLB_Tables.xlsx
+dim_player,player_full_name,string,Full name of player,,,BLB_Tables.xlsx
+dim_player,player_first_name,string,First name,,,BLB_Tables.xlsx
+dim_player,player_last_name,string,Last name,,,BLB_Tables.xlsx
+dim_player,player_primary_position,string,Primary position (F/D/G),,,BLB_Tables.xlsx
+dim_player,current_skill_rating,integer,Skill rating 2-6 scale,,,BLB_Tables.xlsx
+dim_player,player_hand,string,Shooting hand (L/R),,,BLB_Tables.xlsx
+dim_player,player_norad_current_team,string,Current team name or 'Free Agent',,,BLB_Tables.xlsx
+dim_player,player_norad_current_team_id,string,Current team ID,,"dim_team.team_id",BLB_Tables.xlsx
+dim_player,player_url,string,NORAD profile URL,,,BLB_Tables.xlsx
+dim_player,player_image,string,URL to player image,,,BLB_Tables.xlsx
+dim_team,team_id,string,Unique team identifier,TRUE,,BLB_Tables.xlsx
+dim_team,team_name,string,Short team name,,,BLB_Tables.xlsx
+dim_team,long_team_name,string,Full team name,,,BLB_Tables.xlsx
+dim_team,team_cd,string,Team abbreviation,,,BLB_Tables.xlsx
+dim_team,team_color1,string,Primary color hex,,,BLB_Tables.xlsx
+dim_team,team_color2,string,Secondary color hex,,,BLB_Tables.xlsx
+dim_team,league_id,string,League ID,,"dim_league.league_id",BLB_Tables.xlsx
+dim_schedule,game_id,integer,Unique game identifier,TRUE,,BLB_Tables.xlsx
+dim_schedule,date,date,Game date,,,BLB_Tables.xlsx
+dim_schedule,game_time,string,Game start time,,,BLB_Tables.xlsx
+dim_schedule,home_team_name,string,Home team name,,,BLB_Tables.xlsx
+dim_schedule,away_team_name,string,Away team name,,,BLB_Tables.xlsx
+dim_schedule,home_team_id,string,Home team ID,,"dim_team.team_id",BLB_Tables.xlsx
+dim_schedule,away_team_id,string,Away team ID,,"dim_team.team_id",BLB_Tables.xlsx
+dim_schedule,season_id,string,Season identifier,,"dim_season.season_id",BLB_Tables.xlsx
+dim_schedule,game_url,string,NORAD game URL,,,BLB_Tables.xlsx
+fact_gameroster,game_id,integer,Game identifier,,dim_schedule.game_id,BLB_Tables.xlsx
+fact_gameroster,player_id,string,Player identifier,,dim_player.player_id,BLB_Tables.xlsx
+fact_gameroster,team_name,string,Team player was on for this game,,,BLB_Tables.xlsx
+fact_gameroster,team_id,string,Team ID for this game,,"dim_team.team_id",BLB_Tables.xlsx
+fact_gameroster,player_game_number,integer,Jersey number for this game,,,BLB_Tables.xlsx
+fact_gameroster,player_position,string,Position played,,,BLB_Tables.xlsx
+fact_gameroster,goals,integer,Goals scored in game,,,BLB_Tables.xlsx
+fact_gameroster,assist,integer,Assists in game,,,BLB_Tables.xlsx
+fact_gameroster,pim,integer,Penalty minutes,,,BLB_Tables.xlsx
+fact_gameroster,goals_against,integer,Goals against (for goalies),,,BLB_Tables.xlsx
+fact_gameroster,shutouts,integer,Shutouts (for goalies),,,BLB_Tables.xlsx
+fact_gameroster,sub,boolean,True if player was a sub,,,BLB_Tables.xlsx
+fact_gameroster,season,string,Season string,,,BLB_Tables.xlsx
+tracking_events,event_index,integer,Unique event index within game,TRUE,,tracking.xlsx
+tracking_events,game_id,integer,Game identifier,,"dim_schedule.game_id",tracking.xlsx
+tracking_events,period,integer,Period number (1/2/3/OT),,,tracking.xlsx
+tracking_events,event_type,string,Type of event (Shot/Pass/Faceoff/etc),,,tracking.xlsx
+tracking_events,event_detail,string,Detail 1 (OnNetSaved/Missed/Blocked/etc),,,tracking.xlsx
+tracking_events,event_detail_2,string,Detail 2 (Wrist/Slap/etc),,,tracking.xlsx
+tracking_events,event_successful,boolean,Whether event was successful,,,tracking.xlsx
+tracking_events,player_game_number,integer,Jersey number of primary player,,,tracking.xlsx
+tracking_events,event_team_zone,string,Zone where event occurred (OZ/NZ/DZ),,,tracking.xlsx
+tracking_events,play_detail1,string,Play context (AssistPrimary/etc),,,tracking.xlsx
+tracking_events,play_detail_2,string,Secondary play context,,,tracking.xlsx
+tracking_events,running_video_time,float,Seconds from video start,,,tracking.xlsx
+tracking_events,event_running_start,float,Event start in running seconds,,,tracking.xlsx
+tracking_events,event_running_end,float,Event end in running seconds,,,tracking.xlsx
+tracking_events,home_team,string,Home team name,,,tracking.xlsx
+tracking_events,away_team,string,Away team name,,,tracking.xlsx
+tracking_shifts,shift_index,integer,Unique shift index within game,TRUE,,tracking.xlsx
+tracking_shifts,game_id,integer,Game identifier,,"dim_schedule.game_id",tracking.xlsx
+tracking_shifts,Period,integer,Period number,,,tracking.xlsx
+tracking_shifts,shift_start_min,integer,Shift start time (minutes remaining),,,tracking.xlsx
+tracking_shifts,shift_start_sec,integer,Shift start time (seconds),,,tracking.xlsx
+tracking_shifts,shift_end_min,integer,Shift end time (minutes remaining),,,tracking.xlsx
+tracking_shifts,shift_end_sec,integer,Shift end time (seconds),,,tracking.xlsx
+tracking_shifts,shift_start_type,string,How shift started (GameStart/Faceoff/etc),,,tracking.xlsx
+tracking_shifts,shift_stop_type,string,How shift ended (Icing/Goal/etc),,,tracking.xlsx
+tracking_shifts,home_forward_1,integer,Home team forward 1 jersey,,,tracking.xlsx
+tracking_shifts,home_forward_2,integer,Home team forward 2 jersey,,,tracking.xlsx
+tracking_shifts,home_forward_3,integer,Home team forward 3 jersey,,,tracking.xlsx
+tracking_shifts,home_defense_1,integer,Home team defense 1 jersey,,,tracking.xlsx
+tracking_shifts,home_defense_2,integer,Home team defense 2 jersey,,,tracking.xlsx
+tracking_shifts,home_goalie,integer,Home team goalie jersey,,,tracking.xlsx
+tracking_shifts,away_forward_1,integer,Away team forward 1 jersey,,,tracking.xlsx
+tracking_shifts,away_forward_2,integer,Away team forward 2 jersey,,,tracking.xlsx
+tracking_shifts,away_forward_3,integer,Away team forward 3 jersey,,,tracking.xlsx
+tracking_shifts,away_defense_1,integer,Away team defense 1 jersey,,,tracking.xlsx
+tracking_shifts,away_defense_2,integer,Away team defense 2 jersey,,,tracking.xlsx
+tracking_shifts,away_goalie,integer,Away team goalie jersey,,,tracking.xlsx
+tracking_shifts,shift_duration,float,Duration in seconds,,,tracking.xlsx
+tracking_shifts,strength,string,Game strength (5v5/5v4/etc),,,tracking.xlsx
+tracking_shifts,situation,string,Situation description,,,tracking.xlsx
+tracking_shifts,home_ozone_start,boolean,Home started in offensive zone,,,tracking.xlsx
+tracking_shifts,shift_start_running_time,float,Running seconds at shift start,,,tracking.xlsx
+tracking_shifts,shift_end_running_time,float,Running seconds at shift end,,,tracking.xlsx
+video_times,Game_ID,integer,Game identifier,TRUE,dim_schedule.game_id,video_times.xlsx
+video_times,Url_1,string,Primary video URL (YouTube),,,video_times.xlsx
+video_times,Video_Type,string,Type of video (Full_Ice/Broadcast),,,video_times.xlsx
+video_times,Video_ID,string,YouTube video ID,,,video_times.xlsx

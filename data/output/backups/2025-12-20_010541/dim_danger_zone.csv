@@ -1,4 +1,0 @@
-﻿danger_zone_id,danger_zone_name,xg_base,description,distance_max_ft
-HD,High Danger,0.15,"Slot area, high scoring probability",20
-MD,Medium Danger,0.07,Circles and mid-slot,35
-LD,Low Danger,0.025,Perimeter shots,999

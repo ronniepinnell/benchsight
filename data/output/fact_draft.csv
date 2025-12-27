@@ -1,4 +1,4 @@
-﻿index,team_id,skill_rating,round,player_full_name,player_id,team_name,restricted,overall_draft_round,overall_draft_position,unrestricted_draft_position,season,season_id,league,player_draft_id
+index,team_id,skill_rating,round,player_full_name,player_id,team_name,restricted,overall_draft_round,overall_draft_position,unrestricted_draft_position,season,season_id,league,player_draft_id
 0,N10010,6,1,Sam Downs,P100001,Velodrome,False,1,1,1,20252026,N20252026F,NORAD,DRAFT_N20252026FP100001
 1,N10002,6,1,Austin Storm,P100026,Ace,False,1,2,2,20252026,N20252026F,NORAD,DRAFT_N20252026FP100026
 2,N10007,6,1,Samson Leifer,P100185,Outlaws,False,1,3,3,20252026,N20252026F,NORAD,DRAFT_N20252026FP100185

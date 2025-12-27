@@ -1,5 +1,0 @@
-﻿play_index,first_event,last_event,event_count,event_types,play_key,game_id
-6001.0,1004.0,1006.0,5,"['Pass', 'Pass', 'Pass', 'Zone_Entry_Exit', 'Turnover']",18969_play_6001,18969
-6002.0,1007.0,1009.0,5,"['Possession', 'Pass', 'Pass', 'Zone_Entry_Exit', 'Zone_Entry_Exit']",18969_play_6002,18969
-6003.0,1011.0,1019.0,5,"['Zone_Entry_Exit', 'Zone_Entry_Exit', 'Shot', 'Shot', 'Zone_Entry_Exit']",18969_play_6003,18969
-6004.0,1013.0,1016.0,5,"['Possession', 'Possession', 'Pass', 'Pass', 'Turnover']",18969_play_6004,18969

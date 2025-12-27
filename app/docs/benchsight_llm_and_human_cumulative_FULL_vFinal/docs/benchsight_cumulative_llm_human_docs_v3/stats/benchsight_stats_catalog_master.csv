@@ -1,4 +1,0 @@
-ExtraDataNeeded,Description,Level,StatID,Name,FilterContext,LLMNotes,Category,ComputableNow,FormulaConcept,PrimaryInputs
-,Number of non-empty-net goals a player is credited with in a game.,player_game,BS01,Goals,Usually all strengths; can also be filtered to EV (5v5) only.,"Treat as a simple count measure. When asked for season totals, sum over games. For rate stats, combine with
-TOI (e.g., Goals/60).",Basic,Yes,"Count of events where event_type = 'shot' AND event_detail_1 IN ('goal','pp_goal','sh_goal','ev_goal', etc.)
-AND event_successful = 1 AND event_player_1 = player_id.","fact_player_events, dim_event_types"

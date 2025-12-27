@@ -1,7 +1,0 @@
-﻿shot_type_id,shot_type,shot_type_full,description,avg_velocity,avg_accuracy
-1,Wrist,Wrist Shot,Quick release from wrist,medium,high
-2,Slap,Slap Shot,Wind-up power shot,high,low
-3,Snap,Snap Shot,Quick snap release,medium-high,medium
-4,Backhand,Backhand Shot,Shot from backhand,low,medium
-5,Tip,Tip/Deflection,Redirected shot,varies,low
-6,Wrap,Wraparound,Wraparound attempt,low,low

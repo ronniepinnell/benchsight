@@ -1,9 +1,0 @@
-﻿position_id,position_name,position_full,position_category,typical_count,sort_order
-F,Forward,Forward,skater,3,1
-C,Center,Center,skater,1,2
-LW,Left Wing,Left Wing,skater,1,3
-RW,Right Wing,Right Wing,skater,1,4
-D,Defense,Defenseman,skater,2,5
-LD,Left Defense,Left Defenseman,skater,1,6
-RD,Right Defense,Right Defenseman,skater,1,7
-G,Goalie,Goaltender,goalie,1,8

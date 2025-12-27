@@ -1,6 +1,0 @@
-﻿period_id,period_name,period_abbr,is_overtime,is_shootout
-1,First Period,1st,0,0
-2,Second Period,2nd,0,0
-3,Third Period,3rd,0,0
-4,Overtime,OT,1,0
-5,Shootout,SO,0,1

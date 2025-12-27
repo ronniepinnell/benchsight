@@ -1,0 +1,164 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800">
+  <defs>
+    <linearGradient id="sourceGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#EDF2F7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#CBD5E0;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="etlGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FED7D7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FC8181;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="martGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#C6F6D5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#68D391;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="appGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#BEE3F8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#63B3ED;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+
+  <!-- Title -->
+  <text x="600" y="35" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#1A365D" text-anchor="middle">BenchSight Hockey Analytics - Data Architecture</text>
+
+  <!-- DATA SOURCES Section -->
+  <rect x="50" y="60" width="350" height="170" rx="10" fill="url(#sourceGrad)" stroke="#4A5568" stroke-width="2" filter="url(#shadow)"/>
+  <text x="225" y="85" font-family="Arial" font-size="14" font-weight="bold" fill="#1A365D" text-anchor="middle">📁 DATA SOURCES</text>
+  
+  <rect x="70" y="100" width="100" height="60" rx="5" fill="#fff" stroke="#4A5568"/>
+  <text x="120" y="125" font-family="Arial" font-size="11" fill="#2D3748" text-anchor="middle">BLB_Tables.xlsx</text>
+  <text x="120" y="145" font-family="Arial" font-size="9" fill="#718096" text-anchor="middle">14 sheets, 335 players</text>
+  
+  <rect x="180" y="100" width="100" height="60" rx="5" fill="#fff" stroke="#4A5568"/>
+  <text x="230" y="125" font-family="Arial" font-size="11" fill="#2D3748" text-anchor="middle">Game Tracking</text>
+  <text x="230" y="145" font-family="Arial" font-size="9" fill="#718096" text-anchor="middle">9 games, 11K events</text>
+  
+  <rect x="290" y="100" width="100" height="60" rx="5" fill="#fff" stroke="#4A5568"/>
+  <text x="340" y="125" font-family="Arial" font-size="11" fill="#2D3748" text-anchor="middle">NORAD Site</text>
+  <text x="340" y="145" font-family="Arial" font-size="9" fill="#718096" text-anchor="middle">Macro stats</text>
+  
+  <text x="225" y="195" font-family="Arial" font-size="10" fill="#4A5568" text-anchor="middle">Video Times • XY Coordinates • Box Scores</text>
+
+  <!-- ETL Section -->
+  <rect x="430" y="60" width="340" height="170" rx="10" fill="url(#etlGrad)" stroke="#C53030" stroke-width="2" filter="url(#shadow)"/>
+  <text x="600" y="85" font-family="Arial" font-size="14" font-weight="bold" fill="#742A2A" text-anchor="middle">⚙️ ETL PIPELINE (Python)</text>
+  
+  <rect x="450" y="100" width="75" height="50" rx="5" fill="#fff" stroke="#C53030"/>
+  <text x="488" y="130" font-family="Arial" font-size="10" fill="#2D3748" text-anchor="middle">extract.py</text>
+  
+  <rect x="540" y="100" width="80" height="50" rx="5" fill="#fff" stroke="#C53030"/>
+  <text x="580" y="130" font-family="Arial" font-size="10" fill="#2D3748" text-anchor="middle">transform.py</text>
+  
+  <rect x="635" y="100" width="60" height="50" rx="5" fill="#fff" stroke="#C53030"/>
+  <text x="665" y="130" font-family="Arial" font-size="10" fill="#2D3748" text-anchor="middle">load.py</text>
+  
+  <rect x="710" y="100" width="50" height="50" rx="5" fill="#fff" stroke="#C53030"/>
+  <text x="735" y="125" font-family="Arial" font-size="9" fill="#2D3748" text-anchor="middle">orches-</text>
+  <text x="735" y="140" font-family="Arial" font-size="9" fill="#2D3748" text-anchor="middle">trator.py</text>
+  
+  <!-- Arrows between ETL -->
+  <path d="M525 125 L535 125" stroke="#742A2A" stroke-width="2" marker-end="url(#arrow)"/>
+  <path d="M620 125 L630 125" stroke="#742A2A" stroke-width="2"/>
+  <path d="M695 125 L705 125" stroke="#742A2A" stroke-width="2"/>
+  
+  <text x="600" y="195" font-family="Arial" font-size="10" fill="#742A2A" text-anchor="middle">Validates • Normalizes • Enriches • Outputs JSON/CSV</text>
+
+  <!-- DATAMART Section -->
+  <rect x="800" y="60" width="350" height="170" rx="10" fill="url(#martGrad)" stroke="#276749" stroke-width="2" filter="url(#shadow)"/>
+  <text x="975" y="85" font-family="Arial" font-size="14" font-weight="bold" fill="#22543D" text-anchor="middle">🗄️ DATAMART</text>
+  
+  <rect x="820" y="100" width="100" height="40" rx="5" fill="#fff" stroke="#276749"/>
+  <text x="870" y="125" font-family="Arial" font-size="10" fill="#2D3748" text-anchor="middle">fact_events_long</text>
+  
+  <rect x="930" y="100" width="100" height="40" rx="5" fill="#fff" stroke="#276749"/>
+  <text x="980" y="125" font-family="Arial" font-size="10" fill="#2D3748" text-anchor="middle">fact_shifts_long</text>
+  
+  <rect x="1040" y="100" width="100" height="40" rx="5" fill="#fff" stroke="#276749"/>
+  <text x="1090" y="125" font-family="Arial" font-size="10" fill="#2D3748" text-anchor="middle">fact_boxscore</text>
+  
+  <rect x="875" y="150" width="100" height="40" rx="5" fill="#fff" stroke="#276749"/>
+  <text x="925" y="175" font-family="Arial" font-size="10" fill="#2D3748" text-anchor="middle">fact_video_links</text>
+  
+  <rect x="985" y="150" width="100" height="40" rx="5" fill="#fff" stroke="#276749"/>
+  <text x="1035" y="175" font-family="Arial" font-size="10" fill="#2D3748" text-anchor="middle">dim_player/team</text>
+  
+  <text x="975" y="215" font-family="Arial" font-size="10" fill="#22543D" text-anchor="middle">PostgreSQL / CSV / JSON</text>
+
+  <!-- APPLICATIONS Section -->
+  <rect x="300" y="280" width="600" height="150" rx="10" fill="url(#appGrad)" stroke="#2B6CB0" stroke-width="2" filter="url(#shadow)"/>
+  <text x="600" y="305" font-family="Arial" font-size="14" font-weight="bold" fill="#1A365D" text-anchor="middle">📱 APPLICATIONS</text>
+  
+  <rect x="330" y="320" width="150" height="80" rx="5" fill="#fff" stroke="#2B6CB0"/>
+  <text x="405" y="345" font-family="Arial" font-size="12" font-weight="bold" fill="#2D3748" text-anchor="middle">🖥️ Dashboard</text>
+  <text x="405" y="365" font-family="Arial" font-size="9" fill="#718096" text-anchor="middle">Standings • Players</text>
+  <text x="405" y="380" font-family="Arial" font-size="9" fill="#718096" text-anchor="middle">Games • Team Pages</text>
+  
+  <rect x="525" y="320" width="150" height="80" rx="5" fill="#fff" stroke="#2B6CB0"/>
+  <text x="600" y="345" font-family="Arial" font-size="12" font-weight="bold" fill="#2D3748" text-anchor="middle">📝 Tracker</text>
+  <text x="600" y="365" font-family="Arial" font-size="9" fill="#718096" text-anchor="middle">Log Events • Shifts</text>
+  <text x="600" y="380" font-family="Arial" font-size="9" fill="#718096" text-anchor="middle">Excel Import/Export</text>
+  
+  <rect x="720" y="320" width="150" height="80" rx="5" fill="#fff" stroke="#2B6CB0"/>
+  <text x="795" y="345" font-family="Arial" font-size="12" font-weight="bold" fill="#2D3748" text-anchor="middle">📈 Power BI</text>
+  <text x="795" y="365" font-family="Arial" font-size="9" fill="#718096" text-anchor="middle">Advanced Visuals</text>
+  <text x="795" y="380" font-family="Arial" font-size="9" fill="#718096" text-anchor="middle">DAX Measures</text>
+
+  <!-- Connecting Arrows -->
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#4A5568" />
+    </marker>
+  </defs>
+  
+  <!-- Sources to ETL -->
+  <path d="M400 145 L425 145" stroke="#4A5568" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <!-- ETL to Mart -->
+  <path d="M770 145 L795 145" stroke="#4A5568" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <!-- Mart to Apps -->
+  <path d="M975 235 L975 260 L600 260 L600 275" stroke="#4A5568" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Stats Categories -->
+  <rect x="50" y="470" width="550" height="300" rx="10" fill="#F7FAFC" stroke="#E2E8F0" stroke-width="2"/>
+  <text x="325" y="495" font-family="Arial" font-size="14" font-weight="bold" fill="#1A365D" text-anchor="middle">📊 STATS CATEGORIES</text>
+  
+  <rect x="70" y="510" width="250" height="120" rx="5" fill="#fff" stroke="#9F7AEA" stroke-width="2"/>
+  <text x="195" y="535" font-family="Arial" font-size="12" font-weight="bold" fill="#553C9A" text-anchor="middle">MACRO (NORAD/Box Score)</text>
+  <text x="195" y="560" font-family="Arial" font-size="10" fill="#4A5568" text-anchor="middle">• Goals, Assists, Points</text>
+  <text x="195" y="578" font-family="Arial" font-size="10" fill="#4A5568" text-anchor="middle">• PIM, Games Played</text>
+  <text x="195" y="596" font-family="Arial" font-size="10" fill="#4A5568" text-anchor="middle">• Standings, Schedules</text>
+  <text x="195" y="614" font-family="Arial" font-size="10" fill="#4A5568" text-anchor="middle">• Player Ratings (2-6)</text>
+  
+  <rect x="330" y="510" width="250" height="120" rx="5" fill="#fff" stroke="#38A169" stroke-width="2"/>
+  <text x="455" y="535" font-family="Arial" font-size="12" font-weight="bold" fill="#22543D" text-anchor="middle">MICRO (Tracking Data)</text>
+  <text x="455" y="560" font-family="Arial" font-size="10" fill="#4A5568" text-anchor="middle">• Corsi, Fenwick, TOI</text>
+  <text x="455" y="578" font-family="Arial" font-size="10" fill="#4A5568" text-anchor="middle">• Zone Entries/Exits</text>
+  <text x="455" y="596" font-family="Arial" font-size="10" fill="#4A5568" text-anchor="middle">• Takeaways, Giveaways</text>
+  <text x="455" y="614" font-family="Arial" font-size="10" fill="#4A5568" text-anchor="middle">• XY, Video Timestamps</text>
+
+  <text x="325" y="660" font-family="Arial" font-size="11" fill="#718096" text-anchor="middle" font-style="italic">60+ metrics defined in stats catalog</text>
+
+  <!-- Tracked Games Summary -->
+  <rect x="620" y="470" width="530" height="300" rx="10" fill="#F7FAFC" stroke="#E2E8F0" stroke-width="2"/>
+  <text x="885" y="495" font-family="Arial" font-size="14" font-weight="bold" fill="#1A365D" text-anchor="middle">🎮 TRACKED GAMES (9 Total)</text>
+  
+  <text x="650" y="525" font-family="Courier New" font-size="10" fill="#2D3748">Game ID  Home Team      Away Team     Events  Shifts</text>
+  <text x="650" y="545" font-family="Courier New" font-size="10" fill="#4A5568">18969    Platinum       Velodrome     3,141   98  ✓</text>
+  <text x="650" y="563" font-family="Courier New" font-size="10" fill="#4A5568">18977    Velodrome      HollowBrook   2,527   88  ✓</text>
+  <text x="650" y="581" font-family="Courier New" font-size="10" fill="#4A5568">18981    Nelson         Velodrome     2,425   106 ✓</text>
+  <text x="650" y="599" font-family="Courier New" font-size="10" fill="#4A5568">18987    Velodrome      Outlaws       3,064   106 ✓</text>
+  <text x="650" y="617" font-family="Courier New" font-size="10" fill="#718096">18965    OS Offices     Velodrome     2       98</text>
+  <text x="650" y="635" font-family="Courier New" font-size="10" fill="#718096">18991    Triple J       Velodrome     3       78  ✓</text>
+  <text x="650" y="653" font-family="Courier New" font-size="10" fill="#718096">+ 3 more games...</text>
+  
+  <rect x="640" y="680" width="200" height="30" rx="5" fill="#C6F6D5" stroke="#276749"/>
+  <text x="740" y="700" font-family="Arial" font-size="11" font-weight="bold" fill="#22543D" text-anchor="middle">11,167 events | 770 shifts</text>
+  
+  <rect x="860" y="680" width="130" height="30" rx="5" fill="#BEE3F8" stroke="#2B6CB0"/>
+  <text x="925" y="700" font-family="Arial" font-size="11" font-weight="bold" fill="#1A365D" text-anchor="middle">7/9 with video</text>
+
+</svg>

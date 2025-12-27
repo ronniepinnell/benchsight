@@ -1,0 +1,162 @@
+{
+  "gid": "18977",
+  "date": "2025-09-14",
+  "homeTeam": "Velodrome",
+  "awayTeam": "HollowBrook",
+  "homeColor": "#9C47E4",
+  "awayColor": "#4D2640",
+  "homeRoster": [
+    {
+      "n": "9",
+      "name": "Ronnie Pinnell",
+      "pos": "D",
+      "skill": 4
+    },
+    {
+      "n": "14",
+      "name": "Nick Ciampoli",
+      "pos": "F",
+      "skill": 4
+    },
+    {
+      "n": "22",
+      "name": "Robert Mayfield",
+      "pos": "D",
+      "skill": 3
+    },
+    {
+      "n": "24",
+      "name": "Jennifer Valente",
+      "pos": "F",
+      "skill": 2
+    },
+    {
+      "n": "39",
+      "name": "Wyatt Crandall",
+      "pos": "G",
+      "skill": 5
+    },
+    {
+      "n": "42",
+      "name": "Garrett Ashcroft",
+      "pos": "F",
+      "skill": 5
+    },
+    {
+      "n": "49",
+      "name": "Galen Wood",
+      "pos": "F",
+      "skill": 5
+    },
+    {
+      "n": "52",
+      "name": "Hayden Perea",
+      "pos": "D",
+      "skill": 4
+    },
+    {
+      "n": "61",
+      "name": "Kaitlyn Shain",
+      "pos": "F",
+      "skill": 3
+    },
+    {
+      "n": "70",
+      "name": "Sam Downs",
+      "pos": "F",
+      "skill": 6
+    },
+    {
+      "n": "75",
+      "name": "Nicole Downs",
+      "pos": "F",
+      "skill": 2
+    },
+    {
+      "n": "87",
+      "name": "Josh Cronk",
+      "pos": "D",
+      "skill": 5
+    },
+    {
+      "n": "91",
+      "name": "Kevin White",
+      "pos": "F",
+      "skill": 4
+    }
+  ],
+  "awayRoster": [
+    {
+      "n": "2",
+      "name": "Noel Black",
+      "pos": "D",
+      "skill": 4
+    },
+    {
+      "n": "5",
+      "name": "Kevin Moore",
+      "pos": "D",
+      "skill": 3
+    },
+    {
+      "n": "8",
+      "name": "Bert Loper",
+      "pos": "F",
+      "skill": 2
+    },
+    {
+      "n": "11",
+      "name": "Ty Smith",
+      "pos": "F",
+      "skill": 6
+    },
+    {
+      "n": "13",
+      "name": "Nathan Watts",
+      "pos": "F",
+      "skill": 5
+    },
+    {
+      "n": "18",
+      "name": "Todd Heffner",
+      "pos": "F",
+      "skill": 4
+    },
+    {
+      "n": "19",
+      "name": "Hayden Smith",
+      "pos": "F",
+      "skill": 5
+    },
+    {
+      "n": "22",
+      "name": "Steve Smith",
+      "pos": "F",
+      "skill": 3
+    },
+    {
+      "n": "26",
+      "name": "Nate Flint",
+      "pos": "F",
+      "skill": 4
+    },
+    {
+      "n": "27",
+      "name": "Beau Kelly",
+      "pos": "D",
+      "skill": 4
+    },
+    {
+      "n": "40",
+      "name": "Kirk Moore",
+      "pos": "F",
+      "skill": 3
+    },
+    {
+      "n": "99",
+      "name": "Jared Wolf",
+      "pos": "G",
+      "skill": 4
+    }
+  ]
+}

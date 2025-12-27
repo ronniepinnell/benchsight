@@ -1,5 +1,0 @@
-﻿time_bucket_id,bucket_name,period_start_min,period_end_min,description
-1,0-5 min,0,5,First 5 minutes of period
-2,5-10 min,5,10,Minutes 5-10 of period
-3,10-15 min,10,15,Minutes 10-15 of period
-4,15-20 min,15,20,Last 5 minutes of period
