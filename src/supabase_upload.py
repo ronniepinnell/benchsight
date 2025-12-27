@@ -9,6 +9,7 @@ Usage:
 
 import os
 import pandas as pd
+import numpy as np
 from supabase import create_client, Client
 
 # Supabase credentials
@@ -65,8 +66,7 @@ UPLOAD_ORDER = [
 
 def clean_dataframe(df):
     """Clean dataframe for Supabase upload."""
-    # Replace NaN with None
-    df = df.where(pd.notnull(df), None)
+    import numpy as np
     
     # Remove BOM from column names
     df.columns = [col.lstrip('\ufeff') for col in df.columns]
@@ -74,7 +74,24 @@ def clean_dataframe(df):
     # Convert column names to lowercase
     df.columns = [col.lower() for col in df.columns]
     
-    return df
+    # Replace NaN, inf, -inf with None
+    df = df.replace([np.nan, np.inf, -np.inf, 'NaN', 'nan', 'None', 'none'], None)
+    
+    # Convert to records and clean each value
+    records = df.to_dict(orient='records')
+    cleaned = []
+    for record in records:
+        clean_record = {}
+        for k, v in record.items():
+            if pd.isna(v) or v != v:  # v != v catches NaN
+                clean_record[k] = None
+            elif isinstance(v, float) and (np.isinf(v) or np.isnan(v)):
+                clean_record[k] = None
+            else:
+                clean_record[k] = v
+        cleaned.append(clean_record)
+    
+    return pd.DataFrame(cleaned)
 
 
 def upload_table(supabase: Client, table_name: str, csv_path: str, batch_size: int = 500):
