@@ -1,0 +1,63 @@
+play_detail_2_id,play_detail_2_code,play_detail_2_name,is_secondary_play,description
+P20001,AttemptedBreakOutPass,AttemptedBreakOutPass,Yes,Additional micro-play context
+P20002,AttemptedEntryRush,AttemptedEntryRush,Yes,Additional micro-play context
+P20003,AttemptedTip/Deflection,AttemptedTip/Deflection,Yes,Additional micro-play context
+P20004,Backcheck,Backcheck,Yes,Additional micro-play context
+P20005,BeatMiddle,BeatMiddle,Yes,Additional micro-play context
+P20006,Breakout,Breakout,Yes,Additional micro-play context
+P20007,CrashNet,CrashNet,Yes,Additional micro-play context
+P20008,CutBack,CutBack,Yes,Additional micro-play context
+P20009,Defensive_PlayPass-InShotPassLane,Defensive PlayPass InShotPassLane,Yes,Additional micro-play context
+P20010,Defensive_PlayPossession-BeatDeke,Defensive PlayPossession BeatDeke,Yes,Additional micro-play context
+P20011,Defensive_PlayPossession-BeatMiddle,Defensive PlayPossession BeatMiddle,Yes,Additional micro-play context
+P20012,Defensive_PlayPossession-GapControl,Defensive PlayPossession GapControl,Yes,Additional micro-play context
+P20013,Defensive_PlayPossession-PokeCheck,Defensive PlayPossession PokeCheck,Yes,Additional micro-play context
+P20014,Defensive_PlayPossession-SeperateFromPuck,Defensive PlayPossession SeperateFromPuck,Yes,Additional micro-play context
+P20015,Defensive_PlayPossession-StickCheck,Defensive PlayPossession StickCheck,Yes,Additional micro-play context
+P20016,Defensive_PlayShot-BlockedShot,Defensive PlayShot BlockedShot,Yes,Additional micro-play context
+P20017,Defensive_PlayShot-BoxOut,Defensive PlayShot BoxOut,Yes,Additional micro-play context
+P20018,Defensive_PlayZone-PuckRetrievalDumpIn,Defensive PlayZone PuckRetrievalDumpIn,Yes,Additional micro-play context
+P20019,Defensive_PlayZone-ZoneEntryDenial,Defensive PlayZone ZoneEntryDenial,Yes,Additional micro-play context
+P20020,Defensive_Zone-AttemptedBreakOutClear,Defensive Zone AttemptedBreakOutClear,Yes,Additional micro-play context
+P20021,Defensive_Zone-AttemptedBreakOutPass,Defensive Zone AttemptedBreakOutPass,Yes,Additional micro-play context
+P20022,Deke,Deke,Yes,Additional micro-play context
+P20023,Delay,Delay,Yes,Additional micro-play context
+P20024,DriveWide,DriveWide,Yes,Additional micro-play context
+P20025,DumpChase,DumpChase,Yes,Additional micro-play context
+P20026,DumpInAttempt,DumpInAttempt,Yes,Additional micro-play context
+P20027,FakeShot,FakeShot,Yes,Additional micro-play context
+P20028,ForceWide,ForceWide,Yes,Additional micro-play context
+P20029,GiveAndGo,GiveAndGo,Yes,Additional micro-play context
+P20030,InShotPassLane,InShotPassLane,Yes,Additional micro-play context
+P20031,ManOnMan,ManOnMan,Yes,Additional micro-play context
+P20032,OffensivePlay_Pass-GiveAndGo,OffensivePlay Pass GiveAndGo,Yes,Additional micro-play context
+P20033,OffensivePlay_Pass-QuickUp,OffensivePlay Pass QuickUp,Yes,Additional micro-play context
+P20034,OffensivePlay_Pass-ReceiverMissed,OffensivePlay Pass ReceiverMissed,Yes,Additional micro-play context
+P20035,OffensivePlay_Pass-Reverse,OffensivePlay Pass Reverse,Yes,Additional micro-play context
+P20036,OffensivePlay_Pass-SecondTouch,OffensivePlay Pass SecondTouch,Yes,Additional micro-play context
+P20037,OffensivePlay_Possession-Chip,OffensivePlay Possession Chip,Yes,Additional micro-play context
+P20038,OffensivePlay_Possession-CrashNet,OffensivePlay Possession CrashNet,Yes,Additional micro-play context
+P20039,OffensivePlay_Possession-CutBack,OffensivePlay Possession CutBack,Yes,Additional micro-play context
+P20040,OffensivePlay_Possession-Deke,OffensivePlay Possession Deke,Yes,Additional micro-play context
+P20041,OffensivePlay_Possession-Delay,OffensivePlay Possession Delay,Yes,Additional micro-play context
+P20042,OffensivePlay_Possession-DriveMiddle,OffensivePlay Possession DriveMiddle,Yes,Additional micro-play context
+P20043,OffensivePlay_Possession-DriveNetWide,OffensivePlay Possession DriveNetWide,Yes,Additional micro-play context
+P20044,OffensivePlay_Possession-DriveWide,OffensivePlay Possession DriveWide,Yes,Additional micro-play context
+P20045,OffensivePlay_Shot-Screen,OffensivePlay Shot Screen,Yes,Additional micro-play context
+P20046,OffensivePlay_Zone-Breakout,OffensivePlay Zone Breakout,Yes,Additional micro-play context
+P20047,OffensivePlay_Zone-Cycle,OffensivePlay Zone Cycle,Yes,Additional micro-play context
+P20048,OffensivePlay_Zone-Dump/RimInZone,OffensivePlay Zone Dump/RimInZone,Yes,Additional micro-play context
+P20049,OffensivePlay_Zone-Forecheck,OffensivePlay Zone Forecheck,Yes,Additional micro-play context
+P20050,Offensive_Zone-AttemptedKeepin,Offensive Zone AttemptedKeepin,Yes,Additional micro-play context
+P20051,PassDeflected,PassDeflected,Yes,Additional micro-play context
+P20052,PokeCheck,PokeCheck,Yes,Additional micro-play context
+P20053,PuckRecoveryRetreivalDumpIn,PuckRecoveryRetreivalDumpIn,Yes,Additional micro-play context
+P20054,Regroup,Regroup,Yes,Additional micro-play context
+P20055,Reverse,Reverse,Yes,Additional micro-play context
+P20056,Screen,Screen,Yes,Additional micro-play context
+P20057,SecondTouch,SecondTouch,Yes,Additional micro-play context
+P20058,SeperateFromPuck,SeperateFromPuck,Yes,Additional micro-play context
+P20059,StickCheck,StickCheck,Yes,Additional micro-play context
+P20060,ZoneEntryDenial,ZoneEntryDenial,Yes,Additional micro-play context
+P20061,ZoneExitDenial,ZoneExitDenial,Yes,Additional micro-play context
+P20062,ZoneKeepin,ZoneKeepin,Yes,Additional micro-play context

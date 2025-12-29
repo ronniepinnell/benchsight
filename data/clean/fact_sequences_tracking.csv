@@ -1,5 +1,0 @@
-sequence_index,first_event,last_event,event_count,event_types,shift_index,sequence_key,game_id
-5001,1002.0,1006.0,9,"['Pass', 'Pass', 'Possession', 'Possession', 'Pass', 'Pass', 'Pass', 'Zone_Entry_Exit', 'Turnover']",1,18969_seq_5001,18969
-5002,1007.0,1016.0,15,"['Possession', 'Pass', 'Pass', 'Zone_Entry_Exit', 'Zone_Entry_Exit', 'Possession', 'Zone_Entry_Exit', 'Zone_Entry_Exit', 'Shot', 'Shot', 'Possession', 'Possession', 'Pass', 'Pass', 'Turnover']",1,18969_seq_5002,18969
-5003,1019.0,1019.0,1,['Zone_Entry_Exit'],1,18969_seq_5003,18969
-5004,1019.0,1019.0,1,['Zone_Entry_Exit'],1,18969_seq_5004,18969

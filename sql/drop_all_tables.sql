@@ -1,0 +1,50 @@
+-- BENCHSIGHT v4.0.0 - DROP ALL TABLES
+-- Run this in Supabase SQL Editor before uploading new data
+
+DROP TABLE IF EXISTS fact_shift_players_tracking CASCADE;
+DROP TABLE IF EXISTS fact_shifts_tracking CASCADE;
+DROP TABLE IF EXISTS fact_shifts CASCADE;
+DROP TABLE IF EXISTS fact_events_tracking CASCADE;
+DROP TABLE IF EXISTS fact_events_long CASCADE;
+DROP TABLE IF EXISTS fact_events CASCADE;
+DROP TABLE IF EXISTS fact_event_players_tracking CASCADE;
+DROP TABLE IF EXISTS fact_gameroster CASCADE;
+DROP TABLE IF EXISTS fact_playergames CASCADE;
+DROP TABLE IF EXISTS fact_registration CASCADE;
+DROP TABLE IF EXISTS fact_draft CASCADE;
+DROP TABLE IF EXISTS fact_leadership CASCADE;
+
+DROP TABLE IF EXISTS dim_danger_zone CASCADE;
+DROP TABLE IF EXISTS dim_event_detail CASCADE;
+DROP TABLE IF EXISTS dim_event_detail_2 CASCADE;
+DROP TABLE IF EXISTS dim_event_type CASCADE;
+DROP TABLE IF EXISTS dim_game_players_tracking CASCADE;
+DROP TABLE IF EXISTS dim_league CASCADE;
+DROP TABLE IF EXISTS dim_net_location CASCADE;
+DROP TABLE IF EXISTS dim_pass_type CASCADE;
+DROP TABLE IF EXISTS dim_period CASCADE;
+DROP TABLE IF EXISTS dim_play_detail CASCADE;
+DROP TABLE IF EXISTS dim_player CASCADE;
+DROP TABLE IF EXISTS dim_player_role CASCADE;
+DROP TABLE IF EXISTS dim_playerurlref CASCADE;
+DROP TABLE IF EXISTS dim_position CASCADE;
+DROP TABLE IF EXISTS dim_randomnames CASCADE;
+DROP TABLE IF EXISTS dim_rinkboxcoord CASCADE;
+DROP TABLE IF EXISTS dim_rinkcoordzones CASCADE;
+DROP TABLE IF EXISTS dim_schedule CASCADE;
+DROP TABLE IF EXISTS dim_season CASCADE;
+DROP TABLE IF EXISTS dim_shift_type CASCADE;
+DROP TABLE IF EXISTS dim_shot_type CASCADE;
+DROP TABLE IF EXISTS dim_situation CASCADE;
+DROP TABLE IF EXISTS dim_skill_tier CASCADE;
+DROP TABLE IF EXISTS dim_stat CASCADE;
+DROP TABLE IF EXISTS dim_strength CASCADE;
+DROP TABLE IF EXISTS dim_team CASCADE;
+DROP TABLE IF EXISTS dim_time_bucket CASCADE;
+DROP TABLE IF EXISTS dim_turnover_type CASCADE;
+DROP TABLE IF EXISTS dim_venue CASCADE;
+DROP TABLE IF EXISTS dim_video CASCADE;
+DROP TABLE IF EXISTS dim_zone CASCADE;
+
+-- Verify
+SELECT 'Tables remaining: ' || count(*)::text FROM pg_tables WHERE schemaname = 'public';

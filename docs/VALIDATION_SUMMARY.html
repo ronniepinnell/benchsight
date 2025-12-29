@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BenchSight Validation Summary</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #1a1a2e; color: #eee; }
+        h1 { color: #4cc9f0; }
+        h2 { color: #7209b7; border-bottom: 2px solid #7209b7; padding-bottom: 5px; }
+        .stat-card { background: #16213e; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #4cc9f0; }
+        .stat-name { font-weight: bold; color: #4cc9f0; }
+        .stat-filter { color: #888; font-family: monospace; font-size: 0.9em; margin-top: 5px; }
+        .category { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; }
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; margin-left: 10px; }
+        .badge-success { background: #2ecc71; color: white; }
+        .badge-warning { background: #f39c12; color: white; }
+        .summary { background: #0f3460; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .summary h2 { border: none; margin-top: 0; }
+        .big-number { font-size: 48px; color: #4cc9f0; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>🏒 BenchSight Validation Summary</h1>
+    
+    <div class="summary">
+        <h2>Session Results</h2>
+        <div class="big-number">117</div>
+        <p>Stats Validated</p>
+        <p><strong>Players Validated:</strong> Keegan Mantaro (18969), Wyatt Crandall (18969), Hayden Smith (18977)</p>
+        <p><strong>Date:</strong> 2024-12-28</p>
+    </div>
+
+    <h2>📊 Scoring Stats</h2>
+    <div class="category">
+        <div class="stat-card">
+            <div class="stat-name">Goals <span class="badge badge-success">✓</span></div>
+            <div class="stat-filter">event_type=Goal, player_role=event_team_player_1</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-name">Assists <span class="badge badge-success">✓</span></div>
+            <div class="stat-filter">play_detail LIKE 'Assist%'</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-name">Points <span class="badge badge-success">✓</span></div>
+            <div class="stat-filter">goals + assists</div>
+        </div>
+    </div>
+
+    <h2>🎯 Shot Stats</h2>
+    <div class="category">
+        <div class="stat-card">
+            <div class="stat-name">Shots Total <span class="badge badge-success">✓</span></div>
+            <div class="stat-filter">event_type=Shot, player_role=event_team_player_1</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-name">SOG <span class="badge badge-success">✓</span></div>
+            <div class="stat-filter">Includes goals (shots that reached net)</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-name">Shots Blocked <span class="badge badge-success">✓</span></div>
+            <div class="stat-filter">event_detail=Shot_Blocked</div>
+        </div>
+    </div>
+
+    <h2>🔄 Plus/Minus (From Shifts)</h2>
+    <div class="category">
+        <div class="stat-card">
+            <div class="stat-name">Plus (ES) <span class="badge badge-success">✓</span></div>
+            <div class="stat-filter">SUM(home_team_plus) from shifts</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-name">Minus (ES) <span class="badge badge-success">✓</span></div>
+            <div class="stat-filter">SUM(abs(home_team_minus)) from shifts</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-name">Plus/Minus All <span class="badge badge-success">✓</span></div>
+            <div class="stat-filter">COUNT goal shifts by team</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-name">Empty Net +/- <span class="badge badge-success">✓</span></div>
+            <div class="stat-filter">Goals when opp_team_en=1</div>
+        </div>
+    </div>
+
+    <h2>📈 Advanced Stats</h2>
+    <div class="category">
+        <div class="stat-card">
+            <div class="stat-name">Corsi (CF/CA) <span class="badge badge-success">✓</span></div>
+            <div class="stat-filter">Shot attempts via shift_index matching</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-name">Fenwick (FF/FA) <span class="badge badge-success">✓</span></div>
+            <div class="stat-filter">Unblocked shot attempts</div>
+        </div>
+    </div>
+
+    <h2>🥅 Goalie Stats</h2>
+    <div class="category">
+        <div class="stat-card">
+            <div class="stat-name">Saves <span class="badge badge-success">✓</span></div>
+            <div class="stat-filter">event_type=Save, player_role=event_team_player_1</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-name">GAA <span class="badge badge-success">✓</span></div>
+            <div class="stat-filter">Excludes empty net goals</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-name">Save % <span class="badge badge-success">✓</span></div>
+            <div class="stat-filter">saves / shots_faced * 100</div>
+        </div>
+    </div>
+
+    <h2>⚠️ Known Issues</h2>
+    <div class="category">
+        <div class="stat-card">
+            <div class="stat-name">Tipped Goals <span class="badge badge-warning">Open</span></div>
+            <div class="stat-filter">Scorer sometimes appears as player_2</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-name">Older Game Format <span class="badge badge-warning">Open</span></div>
+            <div class="stat-filter">Game 18977 needs verbiage normalization</div>
+        </div>
+    </div>
+</body>
+</html>

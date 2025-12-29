@@ -213,3 +213,39 @@ Using the 2-6 player rating system:
 
 *Last Updated: December 2025*
 *Maintained as part of BenchSight project*
+
+## Research Sources Added v5.5.0
+
+### Zone Entry/Exit Analytics
+- **Tulsky (2011-2013)**: Zone entry analysis, Sloan Conference
+  - Controlled entries generate 2x shot attempts (0.58 vs 0.26 Fenwick)
+  - Failed zone entry = 71% opponent counter-entry
+- **Hockey Graphs (2016-2017)**: Neutral zone tracking
+  - Controlled entries = 34% higher goal probability
+  - Controlled exits lead to entry 88% of time vs dump-outs 29%
+- **The Hockey Analytics Research Institute (2025)**: Zone entry efficiency studies
+
+### Expected Goals (xG) Models
+- **MoneyPuck**: Public xG model methodology
+- **Evolving Hockey**: xG model documentation
+- **HockeyViz**: Fabric-based xG approach
+- Key xG factors: distance (most important), shot type, angle, rebound, rush, game state
+- Tip-ins highest xG, one-timers high due to goalie movement difficulty
+
+### Goalie Analytics
+- High glove = common weakness (88% save pct)
+- 5-hole = butterfly weakness (92% save pct)
+- Low pad saves routine (96%+ save pct)
+- Blocker high exploitable (89% save pct)
+
+### NHL Benchmarks Applied
+- Goals per player per game: ~0.13
+- Shots on goal per player per game: ~1.2
+- Pass completion rate: ~78%
+- Zone entries per game: ~10
+- Faceoff win rate: ~50%
+
+### NORAD League Data Source
+- noradhockey.com - Official league website
+- Stats: GP, G, A, PTS, PIM, GAA, SO
+- Standings: W, L, T, PTS, GF, GA

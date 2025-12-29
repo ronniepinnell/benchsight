@@ -1,20 +1,17 @@
-pass_type_id,pass_type,description,difficulty_rating,danger_potential,is_slot_pass,is_cross_ice
-1,Forehand,Standard forehand pass,1,,False,False
-2,Backhand,Backhand pass,2,,False,False
-3,Saucer,Saucer pass (airborne),3,,False,False
-4,Bank,Bank pass off boards,2,,False,False
-5,Drop,Drop pass to trailing player,2,,False,False
-6,OneTouch,One-touch quick pass,3,,False,False
-7,CrossIce,Cross-ice pass,3,medium,False,True
-8,Stretch,Long stretch pass,3,,False,False
-9,Rim,Rim/wrap pass along boards,2,,False,False
-10,Dump,Dump pass into zone,1,,False,False
-11,Tipped,Tipped pass to teammate,3,,False,False
-12,Lob,Lobbed aerial pass,3,,False,False
-13,QuickUp,Quick breakout pass,2,,False,False
-14,GiveAndGo,Give and go style,3,,False,False
-15,Reverse,Reverse direction pass,2,,False,False
-16,BehindNet,Pass from behind net,3,high,False,False
-17,SlotPass,Pass into slot area,4,high,True,False
-18,RoyalRoad,Cross-crease royal road,4,high,True,True
-19,Other,Other pass type,2,,False,False
+pass_type_id,pass_type_code,pass_type_name,expected_completion_rate,danger_value,xa_modifier,description,skill_required
+PT0001,Pass-Backhand,Backhand,0.7,0.8,0.9,Backhand pass - deceptive but less accurate,medium
+PT0002,Pass-Bank,Bank,0.75,0.6,0.7,Bank pass off boards,low
+PT0003,Pass-Deflected/TippedShot,Deflected/Tipped Shot,0.4,1.3,1.4,Tip/deflection pass-shot - high danger,high
+PT0004,Pass-Drop,Drop,0.85,0.9,1.0,Drop pass to trailing player,low
+PT0005,Pass-Dump,Dump,0.95,0.3,0.3,Dump pass into zone corner,very_low
+PT0006,Pass-Forehand,Forehand,0.82,0.8,0.9,Standard forehand pass,low
+PT0007,Pass-Lob,Lob,0.65,0.5,0.6,Lob/chip pass over defender,medium
+PT0008,Pass-OneTouch,One-Touch,0.72,1.1,1.2,One-touch pass - quick movement,high
+PT0009,Pass-Other,Other,0.75,0.7,0.8,Miscellaneous pass type,medium
+PT0010,Pass-ReceiverMissed,Receiver Missed,0.0,0.0,0.0,Good pass that receiver missed,n/a
+PT0011,Pass-Rim/Wrap,Rim/Wrap,0.7,0.4,0.5,Rim pass around boards,low
+PT0012,Pass-Stretch,Stretch,0.68,0.9,1.1,Long stretch pass for breakout,high
+PT0013,Pass-Tipped,Tipped,0.5,0.6,0.7,Tipped/deflected pass,medium
+PT0014,Pass-CrossIce,Cross-Ice,0.72,1.2,1.3,Cross-ice pass - opens shooting lane,high
+PT0015,Pass-Slot,Slot,0.65,1.4,1.5,Pass into slot - high danger,very_high
+PT0016,Pass-Saucer,Saucer,0.7,1.0,1.1,Saucer pass over sticks,high

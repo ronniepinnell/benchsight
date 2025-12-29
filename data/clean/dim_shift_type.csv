@@ -1,7 +1,0 @@
-shift_type_id,shift_type,shift_type_name,description
-1,faceoff,Faceoff Start,Shift started with faceoff
-2,on_the_fly,On The Fly,Line change during play
-3,stoppage,Stoppage,Shift ended at whistle
-4,period_end,Period End,Period ended
-5,goal,Goal,Shift ended with goal
-6,penalty,Penalty,Penalty called

@@ -1,144 +1,98 @@
-event_detail_2_id,event_detail_2,event_type_dependency,event_detail_dependency,subcategory,description
-1,Goal-Wrist,Goal,,shot_type,Wrist shot goal
-2,Goal-Slap,Goal,,shot_type,Slap shot goal
-3,Goal-Backhand,Goal,,shot_type,Backhand goal
-4,Goal-Tip,Goal,,shot_type,Tip/deflection goal
-5,Goal-Snap,Goal,,shot_type,Snap shot goal
-6,Goal-WrapAround,Goal,,shot_type,Wrap around goal
-7,Goal-Bat,Goal,,shot_type,Batted in goal
-8,Goal-Cradle,Goal,,shot_type,Cradled puck goal
-9,Goal-Poke,Goal,,shot_type,Poke in goal
-10,Goal-BetweenLegs,Goal,,shot_type,Between legs goal
-11,Goal-Dumpin,Goal,,shot_type,Dump in goal (lucky)
-12,Goal-Deflection,Goal,,shot_type,Deflection goal
-13,Goal-OneTimer,Goal,,shot_type,One-timer goal
-14,Goal-Rebound,Goal,,shot_type,Rebound goal
-15,Goal-Other,Goal,,shot_type,Other goal type
-16,Pass_Forehand,Pass,,pass_type,Forehand pass
-17,Pass_Backhand,Pass,,pass_type,Backhand pass
-18,Pass_Saucer,Pass,,pass_type,Saucer pass
-19,Pass_Bank,Pass,,pass_type,Bank pass off boards
-20,Pass_Drop,Pass,,pass_type,Drop pass
-21,Pass_OneTouch,Pass,,pass_type,One-touch pass
-22,Pass_CrossIce,Pass,,pass_type,Cross-ice pass
-23,Pass_Stretch,Pass,,pass_type,Long stretch pass
-24,Pass_Rim,Pass,,pass_type,Rim/wrap pass
-25,Pass_Dump,Pass,,pass_type,Dump pass
-26,Pass_Tipped,Pass,,pass_type,Tipped pass
-27,Pass_Deflected,Pass,,pass_type,Deflected pass
-28,Pass_QuickUp,Pass,,pass_type,Quick up pass
-29,Pass_GiveAndGo,Pass,,pass_type,Give and go pass
-30,Pass_Reverse,Pass,,pass_type,Reverse pass
-31,Pass_BehindNet,Pass,,pass_type,Behind net pass
-32,Pass_SlotPass,Pass,,pass_type,Pass into slot
-33,Pass_RoyalRoad,Pass,,pass_type,Cross-crease royal road
-34,Pass_Other,Pass,,pass_type,Other pass type
-35,Penalty-Boarding,Penalty,,penalty_type,Boarding penalty
-36,Penalty-Charging,Penalty,,penalty_type,Charging penalty
-37,Penalty-CrossChecking,Penalty,,penalty_type,Cross-checking penalty
-38,Penalty-DelayOfGame,Penalty,,penalty_type,Delay of game penalty
-39,Penalty-Elbowing,Penalty,,penalty_type,Elbowing penalty
-40,Penalty-GoalieInterference,Penalty,,penalty_type,Goalie interference
-41,Penalty-HighSticking,Penalty,,penalty_type,High sticking penalty
-42,Penalty-Holding,Penalty,,penalty_type,Holding penalty
-43,Penalty-Interference,Penalty,,penalty_type,Interference penalty
-44,Penalty-Hooking,Penalty,,penalty_type,Hooking penalty
-45,Penalty-Roughing,Penalty,,penalty_type,Roughing penalty
-46,Penalty-Slashing,Penalty,,penalty_type,Slashing penalty
-47,Penalty-TooManyMen,Penalty,,penalty_type,Too many men penalty
-48,Penalty-Tripping,Penalty,,penalty_type,Tripping penalty
-49,Penalty-Fighting,Penalty,,penalty_type,Fighting penalty
-50,Penalty-Misconduct,Penalty,,penalty_type,Misconduct penalty
-51,Penalty-Unsportsmanlike,Penalty,,penalty_type,Unsportsmanlike conduct
-52,Penalty-Other,Penalty,,penalty_type,Other penalty type
-53,Shot-Wrist,Shot,,shot_type,Wrist shot
-54,Shot-Slap,Shot,,shot_type,Slap shot
-55,Shot-Backhand,Shot,,shot_type,Backhand shot
-56,Shot-Snap,Shot,,shot_type,Snap shot
-57,Shot-WrapAround,Shot,,shot_type,Wrap around shot
-58,Shot-Bat,Shot,,shot_type,Batted shot
-59,Shot-Poke,Shot,,shot_type,Poke shot
-60,Shot-Tip,Shot,,shot_type,Tip/deflection
-61,Shot-OneTimer,Shot,,shot_type,One-timer shot
-62,Shot-Cradle,Shot,,shot_type,Cradle shot
-63,Shot-BetweenLegs,Shot,,shot_type,Between legs shot
-64,Shot-Dumpin,Shot,,shot_type,Dump-in shot
-65,Shot-Other,Shot,,shot_type,Other shot type
-66,Save-Glove,Save,,save_location,Glove save
-67,Save-Blocker,Save,,save_location,Blocker save
-68,Save-LeftPad,Save,,save_location,Left pad save
-69,Save-RightPad,Save,,save_location,Right pad save
-70,Save-Stick,Save,,save_location,Stick save
-71,Save-Butterfly,Save,,save_location,Butterfly save
-72,Save-Chest,Save,,save_location,Chest save
-73,Save-Scramble,Save,,save_location,Scramble save
-74,Save-Shoulder,Save,,save_location,Shoulder save
-75,Save-Skate,Save,,save_location,Skate save
-76,Save-Other,Save,,save_location,Other save type
-77,Giveaway-Misplayed,Turnover,Turnover_Giveaway,giveaway_bad,Misplayed puck
-78,Giveaway-BattleLost,Turnover,Turnover_Giveaway,giveaway_bad,Lost puck battle
-79,Giveaway-PassIntercepted,Turnover,Turnover_Giveaway,giveaway_bad,Pass intercepted
-80,Giveaway-PassMissed,Turnover,Turnover_Giveaway,giveaway_bad,Missed pass target
-81,Giveaway-PassBlocked,Turnover,Turnover_Giveaway,giveaway_bad,Pass blocked
-82,Giveaway-PassReceiverMissed,Turnover,Turnover_Giveaway,giveaway_neutral,Receiver missed good pass
-83,Giveaway-ShotBlocked,Turnover,Turnover_Giveaway,giveaway_neutral,Shot blocked turnover
-84,Giveaway-ShotMissed,Turnover,Turnover_Giveaway,giveaway_neutral,Shot missed turnover
-85,Giveaway-ZoneClearDump,Turnover,Turnover_Giveaway,giveaway_neutral,Intentional clear/dump
-86,Giveaway-AttemptedClearDump,Turnover,Turnover_Giveaway,giveaway_bad,Failed clear attempt
-87,Giveaway-ZoneMisplay,Turnover,Turnover_Giveaway,giveaway_bad,Zone entry/exit misplay
-88,Giveaway-DumpInZone,Turnover,Turnover_Giveaway,giveaway_neutral,Dump into zone
-89,Giveaway-Other,Turnover,Turnover_Giveaway,giveaway_bad,Other giveaway
-90,Takeaway-BattleWon,Turnover,Turnover_Takeaway,takeaway_good,Won puck battle
-91,Takeaway-PokeCheck,Turnover,Turnover_Takeaway,takeaway_good,Poke check steal
-92,Takeaway-PassIntercepted,Turnover,Turnover_Takeaway,takeaway_good,Intercepted pass
-93,Takeaway-PassBlocked,Turnover,Turnover_Takeaway,takeaway_good,Blocked pass
-94,Takeaway-ShotBlocked,Turnover,Turnover_Takeaway,takeaway_good,Shot block recovery
-95,Takeaway-ZoneClearDump,Turnover,Turnover_Takeaway,takeaway_neutral,Recovered clear/dump
-96,Takeaway-AttemptedClearDump,Turnover,Turnover_Takeaway,takeaway_good,Stopped clear attempt
-97,Takeaway-ForcedTurnover,Turnover,Turnover_Takeaway,takeaway_good,Forced turnover
-98,Takeaway-Other,Turnover,Turnover_Takeaway,takeaway_good,Other takeaway
-99,ZoneEntry-Rush,Zone,Zone_Entry,entry_controlled,Carried puck in
-100,ZoneEntry-Pass,Zone,Zone_Entry,entry_controlled,Pass into zone
-101,ZoneEntry-DumpIn,Zone,Zone_Entry,entry_uncontrolled,Dump and chase
-102,ZoneEntry-Chip,Zone,Zone_Entry,entry_controlled,Chip and chase
-103,ZoneEntry-FromExitClear,Zone,Zone_Entry,entry_uncontrolled,From opponent clear
-104,ZoneEntry-Lob,Zone,Zone_Entry,entry_uncontrolled,Lobbed in
-105,ZoneEntry-Breakaway,Zone,Zone_Entry,entry_controlled,Breakaway entry
-106,ZoneEntry-CausedTurnover,Zone,Zone_Entry,entry_controlled,Entry from turnover
-107,ZoneEntry-PKClear,Zone,Zone_Entry,entry_uncontrolled,PK clear recovery
-108,ZoneEntry-Shot,Zone,Zone_Entry,entry_uncontrolled,Shot into zone
-109,ZoneEntry-Other,Zone,Zone_Entry,entry_other,Other entry type
-110,ZoneExit-Rush,Zone,Zone_Exit,exit_controlled,Carried puck out
-111,ZoneExit-Pass,Zone,Zone_Exit,exit_controlled,Pass out of zone
-112,ZoneExit-Clear,Zone,Zone_Exit,exit_uncontrolled,Cleared out
-113,ZoneExit-Chip,Zone,Zone_Exit,exit_controlled,Chip out
-114,ZoneExit-Lob,Zone,Zone_Exit,exit_uncontrolled,Lobbed out
-115,ZoneExit-CausedTurnover,Zone,Zone_Exit,exit_controlled,Exit from turnover
-116,ZoneExit-PKClear,Zone,Zone_Exit,exit_uncontrolled,PK clear
-117,ZoneExit-Shot,Zone,Zone_Exit,exit_uncontrolled,Shot out of zone
-118,ZoneExit-Other,Zone,Zone_Exit,exit_other,Other exit type
-119,Zone-KeepIn,Zone,Zone_Keepin,keepin,Kept puck in zone
-120,Zone-Pinch,Zone,Zone_Keepin,keepin,Pinch to keep in
-121,Zone-Other,Zone,,zone_other,Other zone play
-122,Stoppage-Icing,Stoppage,,stoppage_type,Icing call
-123,Stoppage-Offside,Stoppage,,stoppage_type,Offside call
-124,Stoppage-Injury,Stoppage,,stoppage_type,Injury stoppage
-125,Stoppage-NetDislodged,Stoppage,,stoppage_type,Net off moorings
-126,Stoppage-PuckOutOfPlay,Stoppage,,stoppage_type,Puck left playing area
-127,Stoppage-GoalieFreeze,Stoppage,,stoppage_type,Goalie froze puck
-128,Stoppage-Timeout,Stoppage,,stoppage_type,Timeout called
-129,Stoppage-Goal,Stoppage,,stoppage_type,Goal scored
-130,Stoppage-Penalty,Stoppage,,stoppage_type,Penalty called
-131,Stoppage-PeriodEnd,Stoppage,,stoppage_type,Period ended
-132,Stoppage-Challenge,Stoppage,,stoppage_type,Coach challenge
-133,Stoppage-Other,Stoppage,,stoppage_type,Other stoppage
-134,Possession-Breakaway,Possession,,possession_type,Breakaway situation
-135,Possession-Recovery,Possession,,possession_type,Puck recovery
-136,Possession-Retrieval,Possession,,possession_type,Puck retrieval
-137,Possession-Regroup,Possession,,possession_type,Regroup play
-138,Possession-BattleWon,Possession,,possession_type,Won loose puck battle
-139,Possession-BattleLost,Possession,,possession_type,Lost loose puck battle
-140,Rebound-TeamRecovered,Rebound,,rebound_type,Team recovered rebound
-141,Rebound-OppRecovered,Rebound,,rebound_type,Opponent got rebound
-142,Rebound-ShotGenerated,Rebound,,rebound_type,Rebound shot taken
-143,Rebound-FlurryGenerated,Rebound,,rebound_type,Multiple rebound shots
+event_detail_2_id,event_detail_2_code,event_detail_2_name,is_secondary_action,context_type,description
+E20001,Deke,Deke,Yes,Modifier,Additional context for the primary event detail
+E20002,DriveMiddle,DriveMiddle,Yes,Modifier,Additional context for the primary event detail
+E20003,DumpChase,DumpChase,Yes,Modifier,Additional context for the primary event detail
+E20004,Giveaway-AttemptedZoneClear/Dump,Giveaway AttemptedZoneClear/Dump,Yes,Modifier,Additional context for the primary event detail
+E20005,Giveaway-BattleLost,Giveaway BattleLost,Yes,Quality,Additional context for the primary event detail
+E20006,Giveaway-DumpInZone,Giveaway DumpInZone,Yes,Modifier,Additional context for the primary event detail
+E20007,Giveaway-Misplayed,Giveaway Misplayed,Yes,Modifier,Additional context for the primary event detail
+E20008,Giveaway-Other,Giveaway Other,Yes,Modifier,Additional context for the primary event detail
+E20009,Giveaway-PassBlocked,Giveaway PassBlocked,Yes,Modifier,Additional context for the primary event detail
+E20010,Giveaway-PassIntercepted,Giveaway PassIntercepted,Yes,Modifier,Additional context for the primary event detail
+E20011,Giveaway-PassMissed,Giveaway PassMissed,Yes,Modifier,Additional context for the primary event detail
+E20012,Giveaway-ShotBlocked,Giveaway ShotBlocked,Yes,Modifier,Additional context for the primary event detail
+E20013,Giveaway-ShotMissed,Giveaway ShotMissed,Yes,Modifier,Additional context for the primary event detail
+E20014,Giveaway-ZoneClear/Dump,Giveaway ZoneClear/Dump,Yes,Modifier,Additional context for the primary event detail
+E20015,Giveaway-ZoneEntry/ExitMisplay,Giveaway ZoneEntry/ExitMisplay,Yes,Modifier,Additional context for the primary event detail
+E20016,Goal-Backhand,Goal Backhand,Yes,Modifier,Additional context for the primary event detail
+E20017,Goal-Poke,Goal Poke,Yes,Modifier,Additional context for the primary event detail
+E20018,Goal-Snap,Goal Snap,Yes,Modifier,Additional context for the primary event detail
+E20019,Goal-Tip,Goal Tip,Yes,Modifier,Additional context for the primary event detail
+E20020,Goal-Wrist,Goal Wrist,Yes,Modifier,Additional context for the primary event detail
+E20021,Pass-Backhand,Pass Backhand,Yes,Modifier,Additional context for the primary event detail
+E20022,Pass-Bank,Pass Bank,Yes,Modifier,Additional context for the primary event detail
+E20023,Pass-Deflected/TippedShot,Pass Deflected/TippedShot,Yes,Modifier,Additional context for the primary event detail
+E20024,Pass-Drop,Pass Drop,Yes,Modifier,Additional context for the primary event detail
+E20025,Pass-Dump,Pass Dump,Yes,Modifier,Additional context for the primary event detail
+E20026,Pass-Forehand,Pass Forehand,Yes,Modifier,Additional context for the primary event detail
+E20027,Pass-Lob,Pass Lob,Yes,Modifier,Additional context for the primary event detail
+E20028,Pass-OneTouch,Pass OneTouch,Yes,Modifier,Additional context for the primary event detail
+E20029,Pass-Other,Pass Other,Yes,Modifier,Additional context for the primary event detail
+E20030,Pass-ReceiverMissed,Pass ReceiverMissed,Yes,Modifier,Additional context for the primary event detail
+E20031,Pass-Rim/Wrap,Pass Rim/Wrap,Yes,Modifier,Additional context for the primary event detail
+E20032,Pass-Stretch,Pass Stretch,Yes,Modifier,Additional context for the primary event detail
+E20033,Pass-Tipped,Pass Tipped,Yes,Modifier,Additional context for the primary event detail
+E20034,Penalty-Hooking,Penalty Hooking,Yes,Modifier,Additional context for the primary event detail
+E20035,Penalty-Roughing,Penalty Roughing,Yes,Modifier,Additional context for the primary event detail
+E20036,Penalty-Tripping,Penalty Tripping,Yes,Modifier,Additional context for the primary event detail
+E20037,Play-AttemptedClear,Play AttemptedClear,Yes,Modifier,Additional context for the primary event detail
+E20038,Play-Deke,Play Deke,Yes,Modifier,Additional context for the primary event detail
+E20039,Play-Dump/RimInZone,Play Dump/RimInZone,Yes,Modifier,Additional context for the primary event detail
+E20040,Play-DumpChase,Play DumpChase,Yes,Modifier,Additional context for the primary event detail
+E20041,Play-PokeCheck,Play PokeCheck,Yes,Modifier,Additional context for the primary event detail
+E20042,Play-SeperateFromPuck,Play SeperateFromPuck,Yes,Modifier,Additional context for the primary event detail
+E20043,PokeCheck,PokeCheck,Yes,Modifier,Additional context for the primary event detail
+E20044,Save-Blocker,Save Blocker,Yes,Outcome,Additional context for the primary event detail
+E20045,Save-Butterfly,Save Butterfly,Yes,Outcome,Additional context for the primary event detail
+E20046,Save-Chest,Save Chest,Yes,Outcome,Additional context for the primary event detail
+E20047,Save-Glove,Save Glove,Yes,Outcome,Additional context for the primary event detail
+E20048,Save-LeftPad,Save LeftPad,Yes,Outcome,Additional context for the primary event detail
+E20049,Save-Other,Save Other,Yes,Outcome,Additional context for the primary event detail
+E20050,Save-RightPad,Save RightPad,Yes,Outcome,Additional context for the primary event detail
+E20051,Save-Shoulder,Save Shoulder,Yes,Outcome,Additional context for the primary event detail
+E20052,Save-Skate,Save Skate,Yes,Outcome,Additional context for the primary event detail
+E20053,Save-Stick,Save Stick,Yes,Outcome,Additional context for the primary event detail
+E20054,Shot-Backhand,Shot Backhand,Yes,Modifier,Additional context for the primary event detail
+E20055,Shot-Bat,Shot Bat,Yes,Modifier,Additional context for the primary event detail
+E20056,Shot-OneTime,Shot OneTime,Yes,Modifier,Additional context for the primary event detail
+E20057,Shot-Poke,Shot Poke,Yes,Modifier,Additional context for the primary event detail
+E20058,Shot-Slap,Shot Slap,Yes,Modifier,Additional context for the primary event detail
+E20059,Shot-Snap,Shot Snap,Yes,Modifier,Additional context for the primary event detail
+E20060,Shot-Tip,Shot Tip,Yes,Modifier,Additional context for the primary event detail
+E20061,Shot-WrapAround,Shot WrapAround,Yes,Modifier,Additional context for the primary event detail
+E20062,Shot-Wrist,Shot Wrist,Yes,Modifier,Additional context for the primary event detail
+E20063,Shot_Tipped,Shot Tipped,Yes,Modifier,Additional context for the primary event detail
+E20064,Stoppage-Goal,Stoppage Goal,Yes,Modifier,Additional context for the primary event detail
+E20065,Stoppage-GoalieStoppage,Stoppage GoalieStoppage,Yes,Modifier,Additional context for the primary event detail
+E20066,Stoppage-HandPass,Stoppage HandPass,Yes,Modifier,Additional context for the primary event detail
+E20067,Stoppage-Icing,Stoppage Icing,Yes,Modifier,Additional context for the primary event detail
+E20068,Stoppage-Offsides,Stoppage Offsides,Yes,Modifier,Additional context for the primary event detail
+E20069,Stoppage-Penalty,Stoppage Penalty,Yes,Modifier,Additional context for the primary event detail
+E20070,Stoppage-PeriodEnd,Stoppage PeriodEnd,Yes,Modifier,Additional context for the primary event detail
+E20071,Stoppage-PuckOutofPlay,Stoppage PuckOutofPlay,Yes,Modifier,Additional context for the primary event detail
+E20072,Takeaway-BattleWon,Takeaway BattleWon,Yes,Quality,Additional context for the primary event detail
+E20073,Takeaway-PassIntercepted,Takeaway PassIntercepted,Yes,Modifier,Additional context for the primary event detail
+E20074,Takeaway-PokeCheck,Takeaway PokeCheck,Yes,Modifier,Additional context for the primary event detail
+E20075,Zone-KeepIn,Zone KeepIn,Yes,Modifier,Additional context for the primary event detail
+E20076,Zone-Pinch,Zone Pinch,Yes,Modifier,Additional context for the primary event detail
+E20077,ZoneEntry-CausedTurnover,ZoneEntry CausedTurnover,Yes,Modifier,Additional context for the primary event detail
+E20078,ZoneEntry-Chip,ZoneEntry Chip,Yes,Modifier,Additional context for the primary event detail
+E20079,ZoneEntry-DumpIn,ZoneEntry DumpIn,Yes,Modifier,Additional context for the primary event detail
+E20080,ZoneEntry-FromExitClear,ZoneEntry FromExitClear,Yes,Modifier,Additional context for the primary event detail
+E20081,ZoneEntry-OppTeam,ZoneEntry OppTeam,Yes,Modifier,Additional context for the primary event detail
+E20082,ZoneEntry-Other,ZoneEntry Other,Yes,Modifier,Additional context for the primary event detail
+E20083,ZoneEntry-Pass,ZoneEntry Pass,Yes,Modifier,Additional context for the primary event detail
+E20084,ZoneEntry-PassMiss/Misplay,ZoneEntry PassMiss/Misplay,Yes,Modifier,Additional context for the primary event detail
+E20085,ZoneEntry-PenaltyKillClear,ZoneEntry PenaltyKillClear,Yes,Modifier,Additional context for the primary event detail
+E20086,ZoneEntry-Rush,ZoneEntry Rush,Yes,Modifier,Additional context for the primary event detail
+E20087,ZoneEntry-RushBreakaway,ZoneEntry RushBreakaway,Yes,Modifier,Additional context for the primary event detail
+E20088,ZoneExit-CausedTurnover,ZoneExit CausedTurnover,Yes,Modifier,Additional context for the primary event detail
+E20089,ZoneExit-Chip,ZoneExit Chip,Yes,Modifier,Additional context for the primary event detail
+E20090,ZoneExit-Clear,ZoneExit Clear,Yes,Modifier,Additional context for the primary event detail
+E20091,ZoneExit-Lob,ZoneExit Lob,Yes,Modifier,Additional context for the primary event detail
+E20092,ZoneExit-OppTeam,ZoneExit OppTeam,Yes,Modifier,Additional context for the primary event detail
+E20093,ZoneExit-Other,ZoneExit Other,Yes,Modifier,Additional context for the primary event detail
+E20094,ZoneExit-Pass,ZoneExit Pass,Yes,Modifier,Additional context for the primary event detail
+E20095,ZoneExit-PassMiss/Misplay,ZoneExit PassMiss/Misplay,Yes,Modifier,Additional context for the primary event detail
+E20096,ZoneExit-PenaltyKillClear,ZoneExit PenaltyKillClear,Yes,Modifier,Additional context for the primary event detail
+E20097,ZoneExit-Rush,ZoneExit Rush,Yes,Modifier,Additional context for the primary event detail

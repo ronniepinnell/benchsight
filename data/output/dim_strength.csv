@@ -1,10 +1,11 @@
-strength,home_players,away_players,is_even,is_powerplay,is_shorthanded,description
-5v5,5,5,1,0,0,Even Strength
-5v4,5,4,0,1,0,Home Power Play
-4v5,4,5,0,0,1,Home Shorthanded
-5v3,5,3,0,1,0,Home 5-on-3 PP
-3v5,3,5,0,0,1,Home 3-on-5 SH
-4v4,4,4,1,0,0,4-on-4
-4v3,4,3,0,1,0,Home 4-on-3 PP
-3v4,3,4,0,0,1,Home 3-on-4 SH
-3v3,3,3,1,0,0,3-on-3 Overtime
+strength_id,strength_code,strength_name,situation_type,xg_multiplier,description,avg_toi_pct
+STR0001,5v5,Even Strength,even,1.0,Standard 5v5 play,0.85
+STR0002,5v4,Power Play,pp,1.2,One-man advantage,0.08
+STR0003,5v3,Power Play 5v3,pp,1.5,Two-man advantage,0.01
+STR0004,4v5,Penalty Kill,pk,0.6,One-man disadvantage,0.08
+STR0005,3v5,Penalty Kill 3v5,pk,0.3,Two-man disadvantage,0.01
+STR0006,4v4,Even 4v4,even,1.1,4-on-4 hockey,0.02
+STR0007,3v3,Even 3v3,even,1.3,3-on-3 overtime hockey,0.01
+STR0008,4v3,Power Play 4v3,pp,1.35,4v3 advantage,0.005
+STR0009,3v4,Penalty Kill 3v4,pk,0.45,3v4 disadvantage,0.005
+STR0010,EN,Empty Net,special,1.8,Empty net situation,0.02

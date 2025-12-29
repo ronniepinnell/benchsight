@@ -1,0 +1,13 @@
+giveaway_type_id,giveaway_type_code,giveaway_type_name,danger_level,xga_impact,turnover_quality,zone_context,description
+GT0001,Giveaway-AttemptedZoneClear/Dump,Attempted Zone Clear/Dump,low,0.02,neutral,defensive,Intentional dump that failed to clear
+GT0002,Giveaway-BattleLost,Battle Lost,medium,0.05,neutral,any,Lost puck battle - not necessarily an error
+GT0003,Giveaway-DumpInZone,Dump In Zone,low,0.01,neutral,offensive,Dump-in that opponent retrieved
+GT0004,Giveaway-Misplayed,Misplayed,high,0.1,bad,any,Unforced handling error - dangerous
+GT0005,Giveaway-Other,Other,medium,0.05,neutral,any,Miscellaneous giveaway
+GT0006,Giveaway-PassBlocked,Pass Blocked,medium,0.06,neutral,any,Pass blocked by opponent stick/body
+GT0007,Giveaway-PassIntercepted,Pass Intercepted,very_high,0.12,bad,any,Pass read and intercepted - very dangerous
+GT0008,Giveaway-PassMissed,Pass Missed,high,0.08,bad,any,Pass missed target completely
+GT0009,Giveaway-ShotBlocked,Shot Blocked,none,0.0,neutral,offensive,Shot blocked - not truly a giveaway
+GT0010,Giveaway-ShotMissed,Shot Missed,low,0.01,neutral,offensive,Shot missed net - opponent gains possession
+GT0011,Giveaway-ZoneClear/Dump,Zone Clear/Dump,none,0.0,neutral,defensive,Successful zone clear
+GT0012,Giveaway-ZoneEntry/ExitMisplay,Zone Entry/Exit Misplay,very_high,0.15,bad,transition,Critical zone transition error

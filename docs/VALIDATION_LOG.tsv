@@ -1,0 +1,120 @@
+game_id	player_id	player_name	stat	my_value	actual_value	match	notes	correct_filter
+18969	P100117	Keegan Mantaro	goals	2	2	TRUE	event_type=Goal	player_role=event_team_player_1
+18969	P100117	Keegan Mantaro	assists	1	1	TRUE	play_detail contains Assist	play_detail LIKE Assist%
+18969	P100117	Keegan Mantaro	pass_attempts	17	17	TRUE	1 NaN is data quality issue	event_type=Pass AND player_role=event_team_player_1
+18969	P100117	Keegan Mantaro	pass_completed	11	11	TRUE		event_type=Pass AND player_role=event_team_player_1 AND event_detail=Pass_Completed
+18969	P100117	Keegan Mantaro	pass_deflected	2	2	TRUE		event_type=Pass AND player_role=event_team_player_1 AND event_detail=Pass_Deflected
+18969	P100117	Keegan Mantaro	pass_missed	3	3	TRUE		event_type=Pass AND player_role=event_team_player_1 AND event_detail=Pass_Missed
+18969	P100117	Keegan Mantaro	shots_total	7	7	TRUE	Includes goals	event_type IN (Shot Goal) AND player_role=event_team_player_1
+18969	P100117	Keegan Mantaro	sog	6	6	TRUE	Includes goals	event_type IN (Shot Goal) AND player_role=event_team_player_1 AND OnNet
+18969	P100117	Keegan Mantaro	shots_blocked	1	1	TRUE		event_type=Shot AND player_role=event_team_player_1 AND event_detail=Shot_Blocked
+18969	P100117	Keegan Mantaro	shots_missed	0	0	TRUE		event_type=Shot AND player_role=event_team_player_1 AND event_detail contains Missed
+18969	P100117	Keegan Mantaro	fo_wins	11	11	TRUE	Winner is event_team_player_1	event_type=Faceoff AND player_role=event_team_player_1
+18969	P100117	Keegan Mantaro	fo_losses	11	11	TRUE	Loser is opp_team_player_1	event_type=Faceoff AND player_role=opp_team_player_1
+18969	P100117	Keegan Mantaro	fo_total	22	22	TRUE		fo_wins + fo_losses
+18969	P100117	Keegan Mantaro	zone_entries	10	10	TRUE		player_role=event_team_player_1 AND event_detail contains Entry
+18969	P100117	Keegan Mantaro	zone_entries_rush	7	7	TRUE		event_detail_2=ZoneEntry-Rush
+18969	P100117	Keegan Mantaro	zone_entries_chip	1	1	TRUE		event_detail_2=ZoneEntry-Chip
+18969	P100117	Keegan Mantaro	zone_entries_dumpin	2	2	TRUE		event_detail_2=ZoneEntry-DumpIn
+18969	P100117	Keegan Mantaro	zone_exits	10	10	TRUE		player_role=event_team_player_1 AND event_detail contains Exit
+18969	P100117	Keegan Mantaro	zone_exits_rush	5	5	TRUE		event_detail_2=ZoneExit-Rush
+18969	P100117	Keegan Mantaro	zone_exits_chip	1	1	TRUE		event_detail_2=ZoneExit-Chip
+18969	P100117	Keegan Mantaro	zone_exits_pass	1	1	TRUE		event_detail_2=ZoneExit-Pass
+18969	P100117	Keegan Mantaro	zone_exits_passmiss	2	2	TRUE		event_detail_2=ZoneExit-PassMiss/Misplay
+18969	P100117	Keegan Mantaro	giveaways	5	5	TRUE		event_type=Turnover AND player_role=event_team_player_1 AND event_detail contains Giveaway
+18969	P100117	Keegan Mantaro	takeaways	3	3	TRUE		event_type=Turnover AND player_role=event_team_player_1 AND event_detail contains Takeaway
+18969	P100117	Keegan Mantaro	puck_retrievals	6	6	TRUE		event_type=Possession AND event_detail=PuckRetrieval AND player_role=event_team_player_1
+18969	P100117	Keegan Mantaro	puck_recoveries	4	4	TRUE		event_type=Possession AND event_detail=PuckRecovery AND player_role=event_team_player_1
+18969	P100117	Keegan Mantaro	breakaways	1	1	TRUE		event_type=Possession AND event_detail=Breakaway AND player_role=event_team_player_1
+18969	P100117	Keegan Mantaro	regroups	1	1	TRUE		event_type=Possession AND event_detail=Regroup AND player_role=event_team_player_1
+18969	P100117	Keegan Mantaro	shift_segments	38	38	TRUE	Raw shift count	COUNT from fact_shifts_player
+18969	P100117	Keegan Mantaro	logical_shifts	13	13	TRUE	Breaks on gap or period change	MAX(logical_shift_number)
+18969	P100117	Keegan Mantaro	toi_seconds	1535	1535	TRUE	Total time on ice	SUM(shift_duration)
+18969	P100117	Keegan Mantaro	toi_minutes	25.6	25.6	TRUE		toi_seconds / 60
+18969	P100117	Keegan Mantaro	stoppage_time	207	207	TRUE	Time during stoppages	SUM(stoppage_time)
+18969	P100117	Keegan Mantaro	playing_toi_seconds	1328	1328	TRUE	TOI minus stoppages	SUM(playing_duration)
+18969	P100117	Keegan Mantaro	avg_logical_shift	118.1	118.1	TRUE	Based on logical shifts	toi_seconds / logical_shifts
+18969	P100117	Keegan Mantaro	avg_logical_shift_playing	102.2	102.2	TRUE	Playing time only	playing_toi / logical_shifts
+18969	P100117	Keegan Mantaro	running_toi_final	1535	1535	TRUE		running_toi on last shift row
+18969	P100117	Keegan Mantaro	running_playing_toi_final	1328	1328	TRUE		running_playing_toi on last shift row
+18969	P100117	Keegan Mantaro	loose_puck_battles	1	1	TRUE		event_type=LoosePuck (any player_role)
+18969	P100117	Keegan Mantaro	loose_puck_wins	0	0	TRUE		event_type=LoosePuck AND player_role=event_team_player_1
+18969	P100117	Keegan Mantaro	loose_puck_losses	1	1	TRUE		event_type=LoosePuck AND player_role LIKE opp_team_player%
+18969	P100117	Keegan Mantaro	rebounds	0	0	TRUE	Rebounds are goalie stats	N/A for skaters
+18969	P100117	Keegan Mantaro	blocks	0	0	TRUE		play_detail=BlockedShot OR play_detail_2=BlockedShot
+18969	P100117	Keegan Mantaro	stick_checks	5	5	TRUE		play_detail=StickCheck OR play_detail_2=StickCheck
+18969	P100117	Keegan Mantaro	poke_checks	3	3	TRUE		play_detail=PokeCheck OR play_detail_2=PokeCheck
+18969	P100117	Keegan Mantaro	in_shot_pass_lane	3	3	TRUE		play_detail=InShotPassLane OR play_detail_2=InShotPassLane
+18969	P100117	Keegan Mantaro	backchecks	2	2	TRUE		play_detail=Backcheck OR play_detail_2=Backcheck
+18969	P100117	Keegan Mantaro	pass_targets	28	28	TRUE		event_type=Pass AND player_role=event_team_player_2
+18969	P100117	Keegan Mantaro	pass_received	19	19	TRUE		event_type=Pass AND player_role=event_team_player_2 AND event_detail=Pass_Completed
+18969	P100117	Keegan Mantaro	pass_targets_missed	3	3	TRUE		event_type=Pass AND player_role=event_team_player_2 AND event_detail=Pass_Missed
+18969	P100117	Keegan Mantaro	pass_targets_deflected	3	3	TRUE		event_type=Pass AND player_role=event_team_player_2 AND event_detail=Pass_Deflected
+18969	P100117	Keegan Mantaro	pass_targets_intercepted	2	2	TRUE		event_type=Pass AND player_role=event_team_player_2 AND event_detail=Pass_Intercepted
+18969	P100117	Keegan Mantaro	penalties	0	0	TRUE	Cross-ref: PIM=0 on NORAD	event_type=Penalty AND player_role=event_team_player_1
+18969	P100117	Keegan Mantaro	zone_entries_controlled	7	7	TRUE	Rush entries	event_detail_2 WHERE control_level=controlled
+18969	P100117	Keegan Mantaro	zone_entries_uncontrolled	3	3	TRUE	DumpIn + Chip	event_detail_2 WHERE control_level=uncontrolled
+18969	P100117	Keegan Mantaro	zone_entries_failed	0	0	TRUE		event_detail_2 WHERE control_level=failed
+18969	P100117	Keegan Mantaro	zone_exits_controlled	6	6	TRUE	Rush + Pass	event_detail_2 WHERE control_level=controlled
+18969	P100117	Keegan Mantaro	zone_exits_uncontrolled	1	1	TRUE	Chip	event_detail_2 WHERE control_level=uncontrolled
+18969	P100117	Keegan Mantaro	zone_exits_failed	2	2	TRUE	PassMiss/Misplay	event_detail_2 WHERE control_level=failed
+18969	P100117	Keegan Mantaro	zone_keepins	0	0	TRUE		event_detail contains Keepin AND player_role=event_team_player_1
+18969	P100016	Wyatt Crandall	saves	37	37	TRUE	Goalie always event_team_player_1	event_type=Save AND player_role=event_team_player_1
+18969	P100016	Wyatt Crandall	save_freeze	11	11	TRUE		event_type=Save AND event_detail=Save_Freeze
+18969	P100016	Wyatt Crandall	save_rebound	26	26	TRUE		event_type=Save AND event_detail=Save_Rebound
+18969	P100016	Wyatt Crandall	goals_against	4	4	TRUE		event_type=Goal AND player_role=opp_team_player_1
+18969	P100016	Wyatt Crandall	rebounds	26	26	TRUE		event_type=Rebound AND player_role=event_team_player_1
+18969	P100016	Wyatt Crandall	rebound_team_recovered	14	14	TRUE		event_detail=Rebound_TeamRecovered
+18969	P100016	Wyatt Crandall	rebound_opp_recovered	11	11	TRUE		event_detail=Rebound_OppTeamRecovered
+18969	P100016	Wyatt Crandall	rebound_shot_generated	1	1	TRUE		event_detail=Rebound_ShotGenerated
+18969	P100016	Wyatt Crandall	toi_seconds	3158	3158	TRUE		SUM(shift_duration)
+18969	P100016	Wyatt Crandall	toi_minutes	52.6	52.6	TRUE		toi_seconds / 60
+18969	P100016	Wyatt Crandall	shift_segments	93	93	TRUE		COUNT shifts
+18969	P100016	Wyatt Crandall	logical_shifts	3	3	TRUE	One per period for goalie	MAX(logical_shift_number)
+18969	P100016	Wyatt Crandall	shots_faced	41	41	TRUE		saves + goals_against
+18969	P100016	Wyatt Crandall	save_pct	90.2	90.2	TRUE		saves / shots_faced * 100
+18977	P100088	Hayden Smith	goals	1	2	FALSE	NORAD=2 but only 1 in tracking - data completeness issue	event_type=Goal AND player_role=event_team_player_1
+18977	P100088	Hayden Smith	assists	0	0	TRUE		play_detail LIKE Assist%
+18977	P100088	Hayden Smith	pass_attempts	18	18	TRUE		event_type=Pass AND player_role=event_team_player_1
+18977	P100088	Hayden Smith	pass_completed	12	12	TRUE		event_detail=Pass_Completed
+18977	P100088	Hayden Smith	zone_entries	20	20	TRUE		event_detail contains Entry
+18977	P100088	Hayden Smith	zone_exits	12	12	TRUE		event_detail contains Exit
+18977	P100088	Hayden Smith	giveaways	7	7	TRUE		event_detail contains Giveaway
+18977	P100088	Hayden Smith	takeaways	0	0	TRUE		event_detail contains Takeaway
+18977	P100088	Hayden Smith	toi_minutes	30.8	30.8	TRUE		SUM(shift_duration)/60
+18977	P100088	Hayden Smith	logical_shifts	14	14	TRUE		MAX(logical_shift_number)
+18977	P100088	Hayden Smith	shots_total	23	23	TRUE	Older game - no play_details	event_type=Shot AND player_role=event_team_player_1
+18977	P100088	Hayden Smith	shots_on_net_saved	16	16	TRUE		event_detail=Shot_OnNetSaved
+18977	P100088	Hayden Smith	shots_blocked	4	4	TRUE		event_detail=Shot_Blocked
+18977	P100088	Hayden Smith	shots_missed	1	1	TRUE		event_detail=Shot_Missed
+18977	P100088	Hayden Smith	shots_goal	1	1	TRUE		event_detail=Shot_Goal
+18977	P100088	Hayden Smith	shots_total	23	23	TRUE	Older game format	event_type=Shot AND player_role=event_team_player_1
+18977	P100088	Hayden Smith	shots_on_net_saved	16	16	TRUE		event_detail=Shot_OnNetSaved
+18977	P100088	Hayden Smith	shots_blocked	4	4	TRUE		event_detail=Shot_Blocked
+18977	P100088	Hayden Smith	shots_missed	1	1	TRUE		event_detail=Shot_Missed
+18977	P100088	Hayden Smith	shot_goal	1	1	TRUE		event_detail=Shot_Goal
+18977	P100088	Hayden Smith	shooting_pct	4.3	4.3	TRUE		goals / shots * 100
+18969	P100117	Keegan Mantaro	shooting_pct	28.6	28.6	TRUE		goals / shots * 100
+18969	P100117	Keegan Mantaro	faceoff_pct	50.0	50.0	TRUE		fo_wins / (fo_wins + fo_losses) * 100
+18969	P100117	Keegan Mantaro	pass_pct	64.7	64.7	TRUE		pass_completed / pass_attempts * 100
+18969	P100117	Keegan Mantaro	plus_minus	N/A	N/A	SKIP	Not in NORAD - needs calculation from tracking	Match goal times to shift times
+18969	P100117	Keegan Mantaro	plus_es	3	3	TRUE	Goals for at even strength	SUM(home_team_plus) from shifts where player on ice
+18969	P100117	Keegan Mantaro	minus_es	1	1	TRUE	Goals against at even strength	SUM(abs(home_team_minus)) from shifts where player on ice
+18969	P100117	Keegan Mantaro	plus_minus_es	2	2	TRUE	Even strength plus/minus	plus_es - minus_es
+18969	P100117	Keegan Mantaro	plus_all	3	3	TRUE	All goals for while on ice	COUNT shifts with Home Goal stop type
+18969	P100117	Keegan Mantaro	minus_all	2	2	TRUE	All goals against while on ice	COUNT shifts with Away Goal stop type
+18969	P100117	Keegan Mantaro	plus_minus_all	1	1	TRUE	All-situations plus/minus	plus_all - minus_all
+18969	P100117	Keegan Mantaro	points	3	3	TRUE		goals + assists
+18969	P100117	Keegan Mantaro	plus_en	0	0	TRUE	Goals for into empty net	COUNT Home Goal shifts where away_team_en=1
+18969	P100117	Keegan Mantaro	minus_en	0	0	TRUE	Goals against into empty net	COUNT Away Goal shifts where home_team_en=1
+18969	P100117	Keegan Mantaro	plus_minus_en	0	0	TRUE	Empty net plus/minus	plus_en - minus_en
+18969	P100117	Keegan Mantaro	corsi_for	29	29	TRUE	Shot attempts for while on ice	COUNT Shot/Goal events where shift_index in player shifts AND team_venue=home
+18969	P100117	Keegan Mantaro	corsi_against	28	28	TRUE	Shot attempts against while on ice	COUNT Shot/Goal events where shift_index in player shifts AND team_venue=away
+18969	P100117	Keegan Mantaro	corsi	1	1	TRUE	CF - CA	corsi_for - corsi_against
+18969	P100117	Keegan Mantaro	corsi_pct	50.9	50.9	TRUE	CF / (CF + CA) * 100	corsi_for / (corsi_for + corsi_against) * 100
+18969	P100117	Keegan Mantaro	fenwick_for	23	23	TRUE	Unblocked shot attempts for	CF minus blocked shots for
+18969	P100117	Keegan Mantaro	fenwick_against	21	21	TRUE	Unblocked shot attempts against	CA minus blocked shots against
+18969	P100117	Keegan Mantaro	fenwick	2	2	TRUE	FF - FA	fenwick_for - fenwick_against
+18969	P100117	Keegan Mantaro	fenwick_pct	52.3	52.3	TRUE	FF / (FF + FA) * 100	fenwick_for / (fenwick_for + fenwick_against) * 100
+18969	P100016	Wyatt Crandall	goals_against_goalie	4	4	TRUE	Excludes empty net goals	GA - empty_net_ga (when goalie pulled)
+18969	P100016	Wyatt Crandall	gaa_per_60	4.56	4.56	TRUE	Goalie-level GAA	(goals_against_goalie / toi_min) * 60

@@ -1,0 +1,12 @@
+zone_entry_type_id,zone_entry_type_code,zone_entry_type_name,control_level,fenwick_per_entry,shot_multiplier,goal_prob_multiplier,description,expected_success_rate
+ZE0001,ZoneEntry-CausedTurnover,Caused Turnover,controlled,0.65,2.0,1.4,Entry via forced turnover - high danger transition,0.85
+ZE0002,ZoneEntry-Chip,Chip,uncontrolled,0.3,1.0,0.75,Chipped puck over defender - must chase,0.55
+ZE0003,ZoneEntry-DumpIn,Dump In,uncontrolled,0.26,1.0,0.66,Strategic dump-in - requires puck retrieval,0.45
+ZE0004,ZoneEntry-FromExitClear,From Exit Clear,uncontrolled,0.22,0.9,0.6,Entry following opponent zone clear - transition play,0.4
+ZE0005,ZoneEntry-OppTeam,Opp Team,forced,0.2,0.8,0.5,Entry caused by opponent error/icing,0.35
+ZE0006,ZoneEntry-Other,Other,mixed,0.35,1.2,0.85,Miscellaneous entry type,0.5
+ZE0007,ZoneEntry-Pass,Pass,controlled,0.65,2.2,1.5,Pass entry into zone - high possession retention,0.8
+ZE0008,ZoneEntry-PassMiss/Misplay,Pass Miss/Misplay,failed,0.1,0.4,0.25,Failed entry attempt - turnover likely,0.15
+ZE0009,ZoneEntry-PenaltyKillClear,Penalty Kill Clear,uncontrolled,0.28,1.0,0.7,PK zone clear - tactical dump,0.5
+ZE0010,ZoneEntry-Rush,Rush,controlled,0.7,2.5,1.6,Rush carry-in with speed - highest danger,0.75
+ZE0011,ZoneEntry-RushBreakaway,Rush Breakaway,controlled,0.85,3.0,2.0,Breakaway opportunity - extreme high danger,0.9

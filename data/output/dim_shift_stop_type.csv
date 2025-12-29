@@ -1,0 +1,9 @@
+shift_stop_type_id,shift_stop_type_code,shift_stop_type_name,stop_category,description,shift_value_modifier
+SE0001,FACEOFF,Faceoff,structured,Shift ended at faceoff,1.0
+SE0002,ON_FLY,On the Fly,transition,Line change during play,0.9
+SE0003,GOAL_FOR,Goal For,positive,Shift ended with team goal,1.5
+SE0004,GOAL_AGAINST,Goal Against,negative,Shift ended with goal against,-1.0
+SE0005,PENALTY_TAKEN,Penalty Taken,negative,Shift ended taking penalty,-0.5
+SE0006,PENALTY_DRAWN,Penalty Drawn,positive,Shift ended drawing penalty,0.5
+SE0007,PERIOD_END,Period End,structured,Shift ended at period end,0.0
+SE0008,INJURED,Injured,safety,Shift ended due to injury,0.0

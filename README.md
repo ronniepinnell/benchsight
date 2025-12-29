@@ -1,79 +1,54 @@
-# BenchSight
+# BenchSight - Hockey Analytics Platform
 
-Beer league hockey analytics platform tracking 200+ statistics.
+A comprehensive analytics platform for the NORAD recreational hockey league.
 
-## Quick Start
+## 🚀 Quick Start
 
-```bash
-# 1. Install dependencies
-pip3 install pandas requests pytest openpyxl --break-system-packages
+1. **Read the handoff document**: `docs/HANDOFF.md`
+2. **Run validation**: `python scripts/validate_stats.py`
+3. **Check requirements**: `docs/PROJECT_REQUIREMENTS.md`
 
-# 2. Run tests (REQUIRED before upload)
-pytest tests/ -v
+## 📊 Project Status
 
-# 3. Upload to Supabase
-python PRODUCTION_ETL.py --dry-run  # Preview
-python PRODUCTION_ETL.py            # Upload
-```
+- **Stats Validated**: 115
+- **Games Tracked**: 8
+- **Last Updated**: 2024-12-28
 
-## Project Structure
-
-```
-benchsight/
-├── PRODUCTION_ETL.py          # Main upload script
-├── UPLOAD_GUIDE.md            # Upload instructions
-├── config/
-│   └── supabase_schema.json   # Schema source of truth (50 tables)
-├── data/
-│   ├── BLB_Tables.xlsx        # Master Excel workbook
-│   ├── raw/                   # Raw tracking files
-│   ├── clean/                 # Cleaned CSVs
-│   └── output/                # Upload-ready CSVs
-├── docs/
-│   ├── MASTER_HANDOFF.md      # Primary handoff document
-│   ├── CHANGELOG.md           # Version history
-│   └── ...
-├── html/                      # Dashboard previews
-├── tracker/                   # Game tracker app (v16-v19)
-├── src/                       # Source code
-├── sql/                       # Database schemas
-├── tests/                     # Test suites
-└── powerbi/                   # Power BI documentation
-```
-
-## Key Files
+## 📁 Key Files
 
 | File | Purpose |
 |------|---------|
-| `PRODUCTION_ETL.py` | Upload CSVs to Supabase |
-| `config/supabase_schema.json` | Defines valid columns per table |
-| `docs/MASTER_HANDOFF.md` | Complete project documentation |
-| `tests/test_schema_compliance.py` | Schema validation tests |
-| `tests/test_delivery_checklist.py` | Delivery verification |
+| `docs/HANDOFF.md` | Session handoff with context prompts |
+| `docs/PROJECT_REQUIREMENTS.md` | Full requirements & history |
+| `docs/VALIDATION_LOG.tsv` | 115 validated stat calculations |
+| `scripts/validate_stats.py` | Stat validation tests |
 
-## Test Suites
+## 🎯 Current Focus
+
+Rebuilding `fact_player_game_stats` with all validated counting rules.
+
+## ⚙️ Running Validation
 
 ```bash
-# All tests (82 total)
-pytest tests/ -v
-
-# Schema compliance only (25 tests)
-pytest tests/test_schema_compliance.py -v
-
-# ETL data cleaning (29 tests)  
-pytest tests/test_etl_upload.py -v
-
-# Delivery checklist (28 tests)
-pytest tests/test_delivery_checklist.py -v
+python scripts/validate_stats.py
 ```
 
-## Documentation
+Expected output: `🎉 ALL IMPLEMENTED TESTS PASSED!`
 
-- [Master Handoff](docs/MASTER_HANDOFF.md) - Complete project guide
-- [Upload Guide](UPLOAD_GUIDE.md) - Step-by-step upload
-- [Changelog](docs/CHANGELOG.md) - Version history
-- [Data Dictionary](docs/DATA_DICTIONARY.md) - Column definitions
+## 📋 Documentation
 
-## Version
+- `docs/HANDOFF.md` - Session context and quick start
+- `docs/PROJECT_REQUIREMENTS.md` - Full requirements
+- `docs/SCHEMA.md` - Database schema
+- `docs/DATA_DICTIONARY.md` - Column definitions
 
-v2.1.0 - December 28, 2025
+## 🔧 Tech Stack
+
+- Python 3.12
+- pandas
+- PostgreSQL (staging)
+- Power BI (dashboards)
+
+---
+
+*BenchSight - Making hockey data accessible*

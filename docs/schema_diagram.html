@@ -1,274 +1,264 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hockey Analytics - PostgreSQL Schema Diagram</title>
+    <title>BenchSight v5.0.0 - Schema Diagram</title>
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
+            max-width: 1400px;
+            margin: 0 auto;
             padding: 20px;
             background: #f5f5f5;
         }
-        h1 {
-            color: #333;
-            border-bottom: 3px solid #0066cc;
-            padding-bottom: 10px;
-        }
-        h2 {
-            color: #0066cc;
-            margin-top: 40px;
-        }
-        .layer {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .layer-title {
-            font-size: 1.2em;
-            font-weight: bold;
-            margin-bottom: 15px;
-            padding: 10px;
-            border-radius: 4px;
-        }
-        .stage { background: #e3f2fd; color: #1565c0; }
-        .intermediate { background: #fff3e0; color: #e65100; }
-        .datamart { background: #e8f5e9; color: #2e7d32; }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 10px 0;
-        }
-        th, td {
-            padding: 8px 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background: #f8f9fa;
-            font-weight: 600;
-        }
-        .pk { color: #d32f2f; font-weight: bold; }
-        .fk { color: #1976d2; }
+        h1, h2, h3 { color: #333; }
         .mermaid {
             background: white;
             padding: 20px;
             border-radius: 8px;
-            overflow-x: auto;
-        }
-        .flow-diagram {
-            text-align: center;
-            padding: 30px;
-            background: white;
-            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin: 20px 0;
         }
-        .flow-box {
-            display: inline-block;
-            padding: 15px 25px;
-            margin: 10px;
+        .section {
+            background: white;
+            padding: 20px;
             border-radius: 8px;
-            font-weight: bold;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .source { background: #ffebee; border: 2px solid #c62828; }
-        .stage-box { background: #e3f2fd; border: 2px solid #1565c0; }
-        .int-box { background: #fff3e0; border: 2px solid #e65100; }
-        .dm-box { background: #e8f5e9; border: 2px solid #2e7d32; }
-        .arrow {
-            display: inline-block;
-            font-size: 24px;
-            color: #666;
-            margin: 0 5px;
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 10px 0;
         }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th { background: #4a90d9; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .legend { display: flex; gap: 20px; flex-wrap: wrap; }
+        .legend-item { 
+            padding: 5px 15px; 
+            border-radius: 4px; 
+            font-size: 14px;
+        }
+        .dim { background: #e3f2fd; }
+        .fact { background: #fff3e0; }
     </style>
 </head>
 <body>
-    <h1>🏒 Hockey Analytics - PostgreSQL Schema</h1>
+    <h1>🏒 BenchSight v5.0.0 - Data Schema</h1>
     
-    <h2>Data Flow</h2>
-    <div class="flow-diagram">
-        <div class="flow-box source">Source Files<br><small>BLB_Tables.xlsx, tracking.xlsx</small></div>
-        <span class="arrow">→</span>
-        <div class="flow-box stage-box">Stage Layer<br><small>stg_* tables (18)</small></div>
-        <span class="arrow">→</span>
-        <div class="flow-box int-box">Intermediate<br><small>int_* tables (10+)</small></div>
-        <span class="arrow">→</span>
-        <div class="flow-box dm-box">Datamart<br><small>dim_*/fact_* (15)</small></div>
+    <div class="section">
+        <h2>Legend</h2>
+        <div class="legend">
+            <div class="legend-item dim">Dimension Tables (dim_) - Reference Data</div>
+            <div class="legend-item fact">Fact Tables (fact_) - Transactional Data</div>
+        </div>
     </div>
 
-    <h2>Star Schema (Datamart Layer)</h2>
-    <div class="mermaid">
+    <div class="section">
+        <h2>Entity Relationship Diagram</h2>
+        <div class="mermaid">
 erDiagram
-    dim_player ||--o{ fact_box_score : "player_id"
-    dim_player ||--o{ fact_gameroster : "player_id"
-    dim_schedule ||--o{ fact_box_score : "game_id"
-    dim_schedule ||--o{ fact_gameroster : "game_id"
-    dim_schedule ||--o{ fact_events : "game_id"
-    dim_team ||--o{ dim_schedule : "home/away_team_id"
-    dim_dates ||--o{ dim_schedule : "game_date"
-    dim_seconds ||--o{ fact_events : "time_key"
-    dim_period ||--o{ fact_events : "period"
-    dim_event_type ||--o{ fact_events : "event_type"
-    
     dim_player {
-        varchar player_id PK
-        varchar display_name
-        varchar primary_position
-        decimal skill_rating
+        string player_id PK
+        string player_full_name
     }
     
     dim_team {
-        varchar team_id PK
-        varchar team_name
-        varchar team_abbr
+        string team_id PK
+        string team_name
+        string league_id FK
     }
     
     dim_schedule {
-        integer game_id PK
-        varchar home_team
-        varchar away_team
-        date game_date
-        varchar winner
+        string game_id PK
+        string season_id FK
+        string home_team_id FK
+        string away_team_id FK
     }
     
-    dim_dates {
-        integer date_key PK
-        date full_date
-        varchar day_name
-        integer year_num
+    dim_period {
+        string period_id PK
+        string period_name
     }
     
-    dim_seconds {
-        integer time_key PK
-        integer period
-        integer minute_in_period
-        varchar time_remaining
+    dim_event_type {
+        string event_type_id PK
+        string event_type_code
+        string event_category
     }
     
-    fact_box_score {
-        varchar player_game_key PK
-        integer game_id FK
-        varchar player_id FK
-        integer goals
-        integer assists
-        integer shots
+    dim_shift_slot {
+        string slot_id PK
+        string slot_code
+    }
+    
+    dim_venue {
+        string venue_id PK
+        string venue_code
     }
     
     fact_gameroster {
-        varchar player_game_key PK
-        integer game_id FK
-        varchar player_id FK
-        integer goals
-        integer points
+        string player_game_id PK
+        string game_id FK
+        string player_id FK
+        string team_id FK
     }
     
     fact_events {
-        varchar event_key PK
-        integer game_id FK
-        integer period FK
-        integer time_key FK
-        varchar event_type FK
+        string event_id PK
+        string game_id FK
+        string event_type_id FK
+        string period_id FK
     }
-    </div>
-
-    <h2>Layer Details</h2>
     
-    <!-- STAGE LAYER -->
-    <div class="layer">
-        <div class="layer-title stage">📥 STAGE LAYER (schema: stage)</div>
-        <p>Raw data loaded from source files with minimal transformation. Tables prefixed with <code>stg_</code></p>
-        <table>
-            <tr><th>Table</th><th>Rows</th><th>Description</th><th>Key Columns</th></tr>
-            <tr><td>stg_dim_player</td><td>335</td><td>Player master</td><td><span class="pk">player_id</span>, player_full_name, skill_rating</td></tr>
-            <tr><td>stg_dim_team</td><td>26</td><td>Team reference</td><td><span class="pk">team_id</span>, team_name, team_cd</td></tr>
-            <tr><td>stg_dim_schedule</td><td>552</td><td>Game schedule</td><td><span class="pk">game_id</span>, date, home/away teams</td></tr>
-            <tr><td>stg_dim_dates</td><td>4,747</td><td>Calendar dates</td><td><span class="pk">datekey</span>, date, weekdayname, year</td></tr>
-            <tr><td>stg_dim_seconds</td><td>4,800</td><td>Time dimension</td><td><span class="pk">time_key</span>, period, minute, second</td></tr>
-            <tr><td>stg_fact_gameroster</td><td>14,239</td><td>Player game stats</td><td><span class="fk">game_id</span>, <span class="fk">player_id</span>, goals, assists</td></tr>
-            <tr><td>stg_events_{game_id}</td><td>~3,000</td><td>Game events</td><td><span class="pk">event_index</span>, <span class="fk">shift_index</span>, Type</td></tr>
-            <tr><td>stg_shifts_{game_id}</td><td>~100</td><td>Game shifts</td><td><span class="pk">shift_index</span>, Period, strength</td></tr>
-        </table>
+    fact_events_long {
+        string event_player_id PK
+        string event_id FK
+        string player_id FK
+        string period_id FK
+    }
+    
+    fact_shifts {
+        string shift_id PK
+        string game_id FK
+        string period_id FK
+    }
+    
+    fact_shifts_long {
+        string shift_player_id PK
+        string shift_id FK
+        string player_id FK
+        string slot_id FK
+        string venue_id FK
+    }
+    
+    dim_schedule ||--o{ fact_gameroster : "game"
+    dim_player ||--o{ fact_gameroster : "player"
+    dim_team ||--o{ fact_gameroster : "team"
+    
+    dim_schedule ||--o{ fact_events : "game"
+    dim_event_type ||--o{ fact_events : "type"
+    dim_period ||--o{ fact_events : "period"
+    
+    fact_events ||--o{ fact_events_long : "event"
+    dim_player ||--o{ fact_events_long : "player"
+    
+    dim_schedule ||--o{ fact_shifts : "game"
+    dim_period ||--o{ fact_shifts : "period"
+    
+    fact_shifts ||--o{ fact_shifts_long : "shift"
+    dim_player ||--o{ fact_shifts_long : "player"
+    dim_shift_slot ||--o{ fact_shifts_long : "slot"
+    dim_venue ||--o{ fact_shifts_long : "venue"
+        </div>
     </div>
 
-    <!-- INTERMEDIATE LAYER -->
-    <div class="layer">
-        <div class="layer-title intermediate">🔄 INTERMEDIATE LAYER (schema: intermediate)</div>
-        <p>Cleaned, enriched, deduplicated data. Tables prefixed with <code>int_</code></p>
-        <table>
-            <tr><th>Table</th><th>Rows</th><th>Transformations</th><th>Key Columns</th></tr>
-            <tr><td>int_dim_player</td><td>335</td><td>+ display_name, default skill_rating</td><td><span class="pk">player_id</span>, display_name, skill_rating</td></tr>
-            <tr><td>int_dim_team</td><td>26</td><td>+ team_abbr derivation</td><td><span class="pk">team_id</span>, team_name, team_abbr</td></tr>
-            <tr><td>int_dim_schedule</td><td>552</td><td>+ winner calculation</td><td><span class="pk">game_id</span>, winner, home/away_score</td></tr>
-            <tr><td>int_fact_gameroster</td><td>13,960</td><td>+ points, skill_rating join</td><td><span class="pk">player_game_key</span>, points, skill_rating</td></tr>
-            <tr><td>int_events_{game_id}</td><td>~1,500</td><td>Deduplicated by event_index</td><td><span class="pk">event_key</span>, <span class="fk">shift_key</span></td></tr>
-            <tr><td>int_event_players_{game_id}</td><td>~3,000</td><td>Player-event bridge</td><td><span class="pk">event_player_key</span>, player_role</td></tr>
-            <tr><td>int_shifts_{game_id}</td><td>~100</td><td>+ strength parsing</td><td><span class="pk">shift_key</span>, home/away_strength</td></tr>
-        </table>
+    <div class="section">
+        <h2>Data Flow Diagram</h2>
+        <div class="mermaid">
+flowchart TB
+    subgraph Source["📁 Source Data"]
+        BLB[BLB_Tables.xlsx]
+        Track[Game Tracking Files]
+    end
+    
+    subgraph Dims["📊 Dimension Tables"]
+        dim_player[dim_player<br/>337 players]
+        dim_team[dim_team<br/>26 teams]
+        dim_schedule[dim_schedule<br/>562 games]
+        dim_event_type[dim_event_type<br/>20 types]
+        dim_shift_slot[dim_shift_slot<br/>7 slots]
+        dim_period[dim_period<br/>5 periods]
+    end
+    
+    subgraph Facts["📈 Fact Tables"]
+        fact_gameroster[fact_gameroster<br/>14,471 records]
+        fact_events[fact_events<br/>5,411 events]
+        fact_events_long[fact_events_long<br/>10,352 records]
+        fact_shifts[fact_shifts<br/>476 shifts]
+        fact_shifts_long[fact_shifts_long<br/>5,513 records]
+    end
+    
+    BLB --> dim_player
+    BLB --> dim_team
+    BLB --> dim_schedule
+    BLB --> fact_gameroster
+    
+    Track --> fact_events
+    Track --> fact_shifts
+    
+    fact_events --> fact_events_long
+    fact_shifts --> fact_shifts_long
+    
+    dim_player --> fact_events_long
+    dim_player --> fact_shifts_long
+    dim_player --> fact_gameroster
+    
+    dim_event_type --> fact_events
+    dim_shift_slot --> fact_shifts_long
+    dim_period --> fact_events
+    dim_period --> fact_shifts
+        </div>
     </div>
 
-    <!-- DATAMART LAYER -->
-    <div class="layer">
-        <div class="layer-title datamart">📊 DATAMART LAYER (schema: datamart)</div>
-        <p>Final analytical tables for Power BI. Star schema design.</p>
+    <div class="section">
+        <h2>Wide vs Long Format</h2>
+        <div class="mermaid">
+flowchart LR
+    subgraph Wide["Wide Format (1 row per event/shift)"]
+        E1["fact_events<br/>event_id: E_18969_1001<br/>game_id: 18969<br/>event_type: shot"]
+        S1["fact_shifts<br/>shift_id: S_18969_1<br/>home_forward_1: 53<br/>home_forward_2: 20<br/>home_defense_1: 8"]
+    end
+    
+    subgraph Long["Long Format (1 row per player)"]
+        EL1["fact_events_long<br/>E_18969_1001_53<br/>E_18969_1001_20<br/>E_18969_1001_8"]
+        SL1["fact_shifts_long<br/>S_18969_1_home_F1<br/>S_18969_1_home_F2<br/>S_18969_1_home_D1"]
+    end
+    
+    E1 -->|"One-to-Many"| EL1
+    S1 -->|"One-to-Many"| SL1
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Table Summary</h2>
+        <h3>Dimension Tables (17)</h3>
+        <table>
+            <tr><th>Table</th><th>Rows</th><th>Primary Key</th><th>Description</th></tr>
+            <tr><td>dim_player</td><td>337</td><td>player_id</td><td>All registered players</td></tr>
+            <tr><td>dim_team</td><td>26</td><td>team_id</td><td>All teams</td></tr>
+            <tr><td>dim_schedule</td><td>562</td><td>game_id</td><td>All scheduled games</td></tr>
+            <tr><td>dim_event_type</td><td>20</td><td>event_type_id</td><td>Event types</td></tr>
+            <tr><td>dim_shift_slot</td><td>7</td><td>slot_id</td><td>Shift positions (F1,F2,F3,D1,D2,G,X)</td></tr>
+            <tr><td>dim_position</td><td>7</td><td>position_id</td><td>Player positions (C,LW,RW,F,D,G,X)</td></tr>
+            <tr><td>dim_strength</td><td>10</td><td>strength_id</td><td>Game situations (5v5, PP, etc.)</td></tr>
+            <tr><td>dim_period</td><td>5</td><td>period_id</td><td>Game periods</td></tr>
+            <tr><td>dim_zone</td><td>3</td><td>zone_id</td><td>Rink zones (O/D/N)</td></tr>
+            <tr><td>dim_venue</td><td>2</td><td>venue_id</td><td>Home/Away</td></tr>
+        </table>
         
-        <h4>Dimension Tables</h4>
+        <h3>Fact Tables (11)</h3>
         <table>
-            <tr><th>Table</th><th>Rows</th><th>Purpose</th><th>Key Columns</th></tr>
-            <tr><td>dim_player</td><td>335</td><td>Player master</td><td><span class="pk">player_id</span>, display_name, skill_rating</td></tr>
-            <tr><td>dim_team</td><td>26</td><td>Team reference</td><td><span class="pk">team_id</span>, team_name, colors</td></tr>
-            <tr><td>dim_schedule</td><td>552</td><td>Game schedule</td><td><span class="pk">game_id</span>, winner, scores</td></tr>
-            <tr><td>dim_dates</td><td>4,747</td><td>Calendar (2018-2031)</td><td><span class="pk">date_key</span>, day/month/year</td></tr>
-            <tr><td>dim_seconds</td><td>4,800</td><td>Time (20 min periods)</td><td><span class="pk">time_key</span>, period, time_remaining</td></tr>
-            <tr><td>dim_period</td><td>5</td><td>Period reference</td><td><span class="pk">period_id</span>, period_name, is_overtime</td></tr>
-            <tr><td>dim_event_type</td><td>7</td><td>Event categories</td><td><span class="pk">event_type</span>, is_shot, is_turnover</td></tr>
-            <tr><td>dim_strength</td><td>9</td><td>Game situations</td><td><span class="pk">strength</span>, is_powerplay</td></tr>
-            <tr><td>dim_position</td><td>8</td><td>Player positions</td><td><span class="pk">position_code</span>, is_forward</td></tr>
-            <tr><td>dim_skill_tier</td><td>5</td><td>Skill levels</td><td><span class="pk">tier_id</span>, min/max_rating</td></tr>
-            <tr><td>dim_venue</td><td>2</td><td>Home/Away</td><td><span class="pk">venue_code</span>, is_home</td></tr>
-            <tr><td>dim_zone</td><td>3</td><td>Rink zones</td><td><span class="pk">zone_code</span>, is_offensive</td></tr>
-        </table>
-
-        <h4>Fact Tables</h4>
-        <table>
-            <tr><th>Table</th><th>Rows</th><th>Grain</th><th>Measures</th></tr>
-            <tr><td>fact_gameroster</td><td>13,960</td><td>Player-Game</td><td>goals, assists, points, pim</td></tr>
-            <tr><td>fact_box_score</td><td>varies</td><td>Player-Game (tracked)</td><td>goals, assists, shots, faceoffs, takeaways, blocks</td></tr>
-            <tr><td>fact_events</td><td>varies</td><td>Event</td><td>event_type, event_detail, period, time</td></tr>
+            <tr><th>Table</th><th>Rows</th><th>Primary Key</th><th>Description</th></tr>
+            <tr><td>fact_gameroster</td><td>14,471</td><td>player_game_id</td><td>Player-game assignments</td></tr>
+            <tr><td>fact_events</td><td>5,411</td><td>event_id</td><td>Unique events (wide)</td></tr>
+            <tr><td>fact_events_long</td><td>10,352</td><td>event_player_id</td><td>Player-event records</td></tr>
+            <tr><td>fact_shifts</td><td>476</td><td>shift_id</td><td>Unique shifts (wide)</td></tr>
+            <tr><td>fact_shifts_long</td><td>5,513</td><td>shift_player_id</td><td>Player-shift records</td></tr>
+            <tr><td>fact_playergames</td><td>3,010</td><td>player_game_id</td><td>Player game stats</td></tr>
         </table>
     </div>
-
-    <h2>PostgreSQL Schemas</h2>
-    <pre style="background: #263238; color: #aed581; padding: 20px; border-radius: 8px; overflow-x: auto;">
--- Create schemas
-CREATE SCHEMA IF NOT EXISTS stage;
-CREATE SCHEMA IF NOT EXISTS intermediate;
-CREATE SCHEMA IF NOT EXISTS datamart;
-
--- Stage tables live in: stage.stg_*
--- Intermediate tables live in: intermediate.int_*
--- Datamart tables live in: datamart.dim_*, datamart.fact_*
-
--- Example queries:
-SELECT * FROM stage.stg_dim_player;
-SELECT * FROM intermediate.int_fact_gameroster WHERE game_id = 18969;
-SELECT * FROM datamart.fact_box_score WHERE goals > 0;
-    </pre>
 
     <script>
         mermaid.initialize({ 
             startOnLoad: true,
             theme: 'default',
-            er: {
-                diagramPadding: 20,
-                layoutDirection: 'TB',
-                minEntityWidth: 100,
-                minEntityHeight: 75,
-                entityPadding: 15
-            }
+            securityLevel: 'loose'
         });
     </script>
 </body>

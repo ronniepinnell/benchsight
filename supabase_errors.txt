@@ -1,0 +1,154 @@
+(base) ronniepinnell@Mac benchsight % python -m src.etl_orchestrator --all
+2025-12-28 18:11:14,613 - INFO - ============================================================
+2025-12-28 18:11:14,613 - INFO - BenchSight ETL Orchestrator
+2025-12-28 18:11:14,614 - INFO - Mode: overwrite
+2025-12-28 18:11:14,614 - INFO - ============================================================
+2025-12-28 18:11:14,614 - INFO - Tables: 22
+2025-12-28 18:11:14,614 - INFO - Games: ['18965', '18969', '18977', '18981', '18987', '18991', '18993', '19032']
+2025-12-28 18:11:14,614 - INFO - 
+--- Processing Dimensions ---
+2025-12-28 18:11:14,614 - ERROR - BLB_Tables.xlsx not found at /Users/ronniepinnell/Documents/Documents - Ronnie’s MacBook Pro - 1/Programming_HD/Hockey/Benchsight/git/benchsight/data/raw/BLB_Tables.xlsx
+2025-12-28 18:11:14,614 - INFO - 
+--- Processing Facts ---
+2025-12-28 18:11:14,680 - INFO -   ✓ fact_events_player: 24089 rows
+2025-12-28 18:11:14,681 - INFO - Skipping fact_gameroster - sourced from NORAD website
+2025-12-28 18:11:14,681 - INFO - Building fact_player_game_stats with validated rules...
+2025-12-28 18:11:14,969 - INFO -   ✓ fact_player_game_stats: 110 rows
+2025-12-28 18:11:14,970 - INFO - Building fact_goalie_game_stats...
+2025-12-28 18:11:15,021 - INFO -   ✓ fact_goalie_game_stats: 8 rows
+2025-12-28 18:11:15,022 - WARNING - No builder for fact_team_game_stats
+2025-12-28 18:11:15,022 - INFO - 
+============================================================
+2025-12-28 18:11:15,022 - INFO - ETL Complete in 0.4s
+2025-12-28 18:11:15,022 - INFO - Processed: 3 tables
+2025-12-28 18:11:15,022 - INFO - Errors: 0
+2025-12-28 18:11:15,022 - INFO - ============================================================
+(base) ronniepinnell@Mac benchsight % python scripts/validate_stats.py
+================================================================================
+BENCHSIGHT STATS VALIDATION
+================================================================================
+Validation file: /Users/ronniepinnell/Documents/Documents - Ronnie’s MacBook Pro - 1/Programming_HD/Hockey/Benchsight/git/benchsight/docs/VALIDATION_LOG.tsv
+Total entries: 119
+
+--------------------------------------------------------------------------------
+✅ Passed:       46
+❌ Failed:       0
+⏭️  Skipped:      72 (complex stats not yet implemented)
+⚠️  Known Issues: 1 (marked FALSE in validation log)
+📊 Total:        119
+--------------------------------------------------------------------------------
+
+🎉 ALL IMPLEMENTED TESTS PASSED!
+(base) ronniepinnell@Mac benchsight % python supabase_setup.py
+============================================================
+BENCHSIGHT SUPABASE SETUP
+============================================================
+
+Supabase URL: https://uuaowslhpgyiudmbvqze.supabase.co
+Data directory: data/output
+
+Connecting to Supabase...
+Connected!
+
+=== STEP 1: CREATE TABLES ===
+Please run the SQL in sql/create_tables.sql in the Supabase SQL Editor
+URL: https://supabase.com/dashboard/project/uuaowslhpgyiudmbvqze/sql/new
+
+Press Enter after you've created the tables...
+
+
+=== STEP 2: UPLOAD DATA ===
+Found 58 tables to upload
+  dim_comparison_type: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_event_detail: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_event_detail_2: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_event_type: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_giveaway_type: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_league: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_net_location: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_pass_type: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_period: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_play_detail: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_play_detail_2: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_player: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_player_role: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_playerurlref: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_position: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_randomnames: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_rinkboxcoord: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_rinkcoordzones: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_schedule: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_season: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_shift_slot: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_shift_start_type: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_shift_stop_type: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_shot_type: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_situation: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_stat: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_stat_type: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_stoppage_type: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_strength: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_success: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_takeaway_type: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_team: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_terminology_mapping: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_turnover_quality: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_turnover_type: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_venue: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_zone: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_zone_entry_type: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_zone_exit_type: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  fact_draft: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  fact_events: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  fact_events_player: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  fact_gameroster: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  fact_goalie_game_stats: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  fact_head_to_head: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  fact_leadership: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  fact_league_leaders_snapshot: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  fact_player_boxscore_all: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  fact_player_game_stats: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  fact_player_pair_stats: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  fact_playergames: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  fact_plays: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  fact_registration: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  fact_sequences: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  fact_shifts: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  fact_shifts_player: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  fact_team_game_stats: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+  fact_team_standings_snapshot: FAILED - {'message': '"failed to parse tree path (*)" (line 1, column
+
+=== UPLOAD COMPLETE: 0/58 tables ===
+
+Failed tables (58):
+  dim_comparison_type: {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_event_detail: {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_event_detail_2: {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_event_type: {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_giveaway_type: {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_league: {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_net_location: {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_pass_type: {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_period: {'message': '"failed to parse tree path (*)" (line 1, column
+  dim_play_detail: {'message': '"failed to parse tree path (*)" (line 1, column
+
+=== STEP 3: VERIFY UPLOAD ===
+
+Table Row Counts:
+  dim_comparison_type: ERROR - {'message': "Could not find the table 'p
+  dim_event_detail: 0 MISMATCH (CSV: 59)
+  dim_event_detail_2: 0 MISMATCH (CSV: 97)
+  dim_event_type: 0 MISMATCH (CSV: 20)
+  dim_giveaway_type: ERROR - {'message': "Could not find the table 'p
+  dim_league: 0 MISMATCH (CSV: 2)
+  dim_net_location: ERROR - {'message': "Could not find the table 'p
+  dim_pass_type: ERROR - {'message': "Could not find the table 'p
+  dim_period: 0 MISMATCH (CSV: 5)
+  dim_play_detail: 0 MISMATCH (CSV: 154)
+
+... (and more)
+
+============================================================
+SETUP COMPLETE!
+============================================================
+(base) ronniepinnell@Mac benchsight % 

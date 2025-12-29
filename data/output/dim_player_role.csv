@@ -1,8 +1,15 @@
-role_id,role_code,role_name,role_type,description
-1,event_team_player_1,Primary Event Player,event_team,Main player executing the event
-2,event_team_player_2,Secondary Event Player,event_team,"Supporting player (e.g., pass receiver)"
-3,event_team_player_3,Tertiary Event Player,event_team,Third player involved
-4,opp_team_player_1,Primary Opponent,opp_team,Main opposing player
-5,opp_team_player_2,Secondary Opponent,opp_team,Supporting opposing player
-6,opp_team_goalie,Opposing Goalie,opp_team,Opposing goaltender
-7,event_team_goalie,Event Team Goalie,event_team,Event team goaltender
+role_id,role_code,role_name,role_type,sort_order
+RL0001,event_player_1,Event Player 1,event_team,1
+RL0002,event_player_2,Event Player 2,event_team,2
+RL0003,event_player_3,Event Player 3,event_team,3
+RL0004,event_player_4,Event Player 4,event_team,4
+RL0005,event_player_5,Event Player 5,event_team,5
+RL0006,event_player_6,Event Player 6,event_team,6
+RL0007,event_goalie,Event Team Goalie,event_team,7
+RL0008,opp_player_1,Opponent Player 1,opp_team,8
+RL0009,opp_player_2,Opponent Player 2,opp_team,9
+RL0010,opp_player_3,Opponent Player 3,opp_team,10
+RL0011,opp_player_4,Opponent Player 4,opp_team,11
+RL0012,opp_player_5,Opponent Player 5,opp_team,12
+RL0013,opp_player_6,Opponent Player 6,opp_team,13
+RL0014,opp_goalie,Opponent Goalie,opp_team,14

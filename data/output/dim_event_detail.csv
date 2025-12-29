@@ -1,58 +1,60 @@
-event_detail_id,event_detail,event_type,category,is_shot_on_goal,is_goal,is_miss,is_block,is_giveaway,is_takeaway,is_controlled,is_success,danger_potential,description
-1,Faceoff,Faceoff,faceoff,False,False,False,False,False,False,False,False,,Standard faceoff
-2,Faceoff_AfterGoal,Faceoff,faceoff,False,False,False,False,False,False,False,False,,After goal
-3,Faceoff_AfterPenalty,Faceoff,faceoff,False,False,False,False,False,False,False,False,,After penalty
-4,Faceoff_AfterStoppage,Faceoff,faceoff,False,False,False,False,False,False,False,False,,After stoppage
-5,Faceoff_GameStart,Faceoff,faceoff,False,False,False,False,False,False,False,False,,Opening faceoff
-6,Faceoff_PeriodStart,Faceoff,faceoff,False,False,False,False,False,False,False,False,,Period start
-7,Goal_PenaltyShot,Goal,goal,True,True,False,False,False,False,False,True,high,Penalty shot goal
-8,Goal_Shootout,Goal,goal,True,True,False,False,False,False,False,True,high,Shootout goal
-9,Goal_Scored,Goal,goal,True,True,False,False,False,False,False,True,high,Regular goal
-10,LoosePuck_Battle,LoosePuck,possession,False,False,False,False,False,False,False,False,,Loose puck battle
-11,LoosePuck_Forecheck,LoosePuck,possession,False,False,False,False,False,False,False,False,,From forecheck
-12,Pass_Completed,Pass,completed_pass,False,False,False,False,False,False,True,True,,Completed pass
-13,Pass_Deflected,Pass,failed_pass,False,False,False,False,True,False,False,False,,Deflected pass
-14,Pass_Intercepted,Pass,failed_pass,False,False,False,False,True,False,False,False,,Intercepted
-15,Pass_Missed,Pass,failed_pass,False,False,False,False,True,False,False,False,,Missed pass
-16,Penalty_Major,Penalty,penalty,False,False,False,False,False,False,False,False,,Major penalty
-17,Penalty_Minor,Penalty,penalty,False,False,False,False,False,False,False,False,,Minor penalty
-18,Penalty_Offsetting,Penalty,penalty,False,False,False,False,False,False,False,False,,Offsetting
-19,Play_Defensive,Play,play,False,False,False,False,False,False,False,False,,Defensive play
-20,Play_Offensive,Play,play,False,False,False,False,False,False,False,False,,Offensive play
-21,Breakaway,Possession,possession,False,False,False,False,False,False,True,False,high,Breakaway
-22,Regroup,Possession,possession,False,False,False,False,False,False,True,False,,Regroup
-23,Rebound_TeamRecovered,Possession,rebound,False,False,False,False,False,False,True,True,,Team rebound
-24,PuckRecovery,Possession,recovery,False,False,False,False,False,True,True,True,,Recovery
-25,PuckRetrieval,Possession,recovery,False,False,False,False,False,True,True,True,,Retrieval
-26,Rebound_OppTeamRecovered,Rebound,rebound,False,False,False,False,True,False,False,False,,Opp rebound
-27,Rebound_ShotGenerated,Rebound,rebound,False,False,False,False,False,False,True,True,high,Shot off rebound
-28,Save_Freeze,Save,save,False,False,False,False,False,False,False,True,,Goalie freeze
-29,Save_Played,Save,save,False,False,False,False,False,False,False,True,,Goalie played
-30,Save_Rebound,Save,save,False,False,False,False,False,False,False,True,,Save rebound
-31,PenaltyShot_Missed,Shot,missed_shot,False,False,True,False,False,False,False,False,high,PS missed
-32,Shootout_Missed,Shot,missed_shot,False,False,True,False,False,False,False,False,high,SO missed
-33,Shot_Blocked,Shot,blocked_shot,False,False,False,True,False,False,False,False,medium,Blocked
-34,Shot_BlockedSameTeam,Shot,blocked_shot,False,False,False,True,False,False,False,False,,Own team block
-35,Shot_HitPost,Shot,missed_shot,False,False,True,False,False,False,False,False,high,Hit post
-36,Shot_Missed,Shot,missed_shot,False,False,True,False,False,False,False,False,low,Missed net
-37,PenaltyShot_OnNetSaved,Shot,shot_on_goal,True,False,False,False,False,False,False,False,high,PS saved
-38,Shootout_OnNetSaved,Shot,shot_on_goal,True,False,False,False,False,False,False,False,high,SO saved
-39,Shot_Goal,Shot,shot_on_goal,True,True,False,False,False,False,False,True,high,Goal
-40,Shot_OnNetSaved,Shot,shot_on_goal,True,False,False,False,False,False,False,False,medium,Saved
-41,Stoppage_Freeze,Stoppage,stoppage,False,False,False,False,False,False,False,False,,Freeze
-42,Stoppage_GameEnd,Stoppage,stoppage,False,False,False,False,False,False,False,False,,Game end
-43,Stoppage_Goal,Stoppage,stoppage,False,False,False,False,False,False,False,False,,Goal
-44,Stoppage_Other,Stoppage,stoppage,False,False,False,False,False,False,False,False,,Other
-45,Stoppage_OutofPlay,Stoppage,stoppage,False,False,False,False,False,False,False,False,,Out of play
-46,Stoppage_Penalty,Stoppage,stoppage,False,False,False,False,False,False,False,False,,Penalty
-47,Stoppage_Period,Stoppage,stoppage,False,False,False,False,False,False,False,False,,Period
-48,Stoppage_PeriodEnd,Stoppage,stoppage,False,False,False,False,False,False,False,False,,Period end
-49,Stoppage_Play,Stoppage,stoppage,False,False,False,False,False,False,False,False,,Play
-50,Turnover_Giveaway,Turnover,giveaway,False,False,False,False,True,False,False,False,,Giveaway
-51,Turnover_Takeaway,Turnover,takeaway,False,False,False,False,False,True,False,True,,Takeaway
-52,Zone_Entryfailed,Zone_Entry_Exit,zone_fail,False,False,False,False,True,False,False,False,,Failed entry
-53,Zone_ExitFailed,Zone_Entry_Exit,zone_fail,False,False,False,False,True,False,False,False,,Failed exit
-54,Zone_KeepinFailed,Zone_Entry_Exit,zone_fail,False,False,False,False,True,False,False,False,,Failed keepin
-55,Zone_Entry,Zone_Entry_Exit,zone_success,False,False,False,False,False,False,True,True,,Entry
-56,Zone_Exit,Zone_Entry_Exit,zone_success,False,False,False,False,False,False,True,True,,Exit
-57,Zone_Keepin,Zone_Entry_Exit,zone_success,False,False,False,False,False,False,True,True,,Keepin
+event_detail_id,event_detail_code,event_detail_name,parent_event_type,is_success,xg_modifier,analytics_category
+ED0001,Breakaway,Breakaway,Breakaway,Neutral,0.05,Other
+ED0002,Faceoff,Faceoff,Faceoff,Neutral,0.05,Other
+ED0003,Faceoff_AfterGoal,Faceoff AfterGoal,Faceoff,Yes,1.0,Scoring
+ED0004,Faceoff_AfterPenalty,Faceoff AfterPenalty,Faceoff,Neutral,0.05,Other
+ED0005,Faceoff_AfterStoppage,Faceoff AfterStoppage,Faceoff,Neutral,0.05,Other
+ED0006,Faceoff_GameStart,Faceoff GameStart,Faceoff,Neutral,0.05,Other
+ED0007,Faceoff_PeriodStart,Faceoff PeriodStart,Faceoff,Neutral,0.05,Other
+ED0008,Goal_Scored,Goal Scored,Goal,Yes,1.0,Scoring
+ED0009,LoosePuck_Battle,LoosePuck Battle,LoosePuck,Neutral,0.05,Other
+ED0010,Pass-Completed,Pass Completed,Pass,Yes,0.05,Passing
+ED0011,Pass-Missed,Pass Missed,Pass,No,0.0,Passing
+ED0012,Pass_Completed,Pass Completed,Pass,Yes,0.05,Passing
+ED0013,Pass_Deflected,Pass Deflected,Pass,Neutral,0.05,Passing
+ED0014,Pass_Intercepted,Pass Intercepted,Pass,No,0.05,Passing
+ED0015,Pass_Missed,Pass Missed,Pass,No,0.0,Passing
+ED0016,Penalty_Minor,Penalty Minor,Penalty,Neutral,0.05,Other
+ED0017,Play_Defensive,Play Defensive,Play,Neutral,0.05,Other
+ED0018,Play_Offensive,Play Offensive,Play,Neutral,0.05,Other
+ED0019,Possession,Possession,Possession,Neutral,0.05,Other
+ED0020,PuckRecovery,PuckRecovery,PuckRecovery,Neutral,0.05,Possession
+ED0021,PuckRetrieval,PuckRetrieval,PuckRetrieval,Neutral,0.05,Possession
+ED0022,Rebound_FlurryGenerated,Rebound FlurryGenerated,Rebound,Neutral,0.05,Goalie
+ED0023,Rebound_OppTeamRecovered,Rebound OppTeamRecovered,Rebound,Yes,0.05,Goalie
+ED0024,Rebound_ShotGenerated,Rebound ShotGenerated,Rebound,Neutral,0.05,Scoring
+ED0025,Rebound_TeamRecovered,Rebound TeamRecovered,Rebound,Yes,0.05,Goalie
+ED0026,Regroup,Regroup,Regroup,Neutral,0.05,Other
+ED0027,Save-Freeze,Save Freeze,Save,Yes,0.05,Goalie
+ED0028,Save_Freeze,Save Freeze,Save,Yes,0.05,Goalie
+ED0029,Save_Played,Save Played,Save,Neutral,0.05,Goalie
+ED0030,Save_Rebound,Save Rebound,Save,Neutral,0.05,Goalie
+ED0031,Shot-Blocked,Shot Blocked,Shot,No,0.02,Scoring
+ED0032,Shot-OnNet,Shot OnNet,Shot,Yes,0.08,Scoring
+ED0033,Shot_Blocked,Shot Blocked,Shot,No,0.02,Scoring
+ED0034,Shot_BlockedSameTeam,Shot BlockedSameTeam,Shot,No,0.02,Scoring
+ED0035,Shot_Deflected,Shot Deflected,Shot,Neutral,0.05,Scoring
+ED0036,Shot_DeflectedOnNetSaved,Shot DeflectedOnNetSaved,Shot,Yes,0.08,Scoring
+ED0037,Shot_Goal,Shot Goal,Shot,Yes,1.0,Scoring
+ED0038,Shot_Missed,Shot Missed,Shot,No,0.0,Scoring
+ED0039,Shot_MissedPost,Shot MissedPost,Shot,No,0.0,Scoring
+ED0040,Shot_OnNetSaved,Shot OnNetSaved,Shot,Yes,0.08,Scoring
+ED0041,Shot_OnNetTippedGoal,Shot OnNetTippedGoal,Shot,Yes,1.0,Scoring
+ED0042,Shot_TippedOnNetSaved,Shot TippedOnNetSaved,Shot,Yes,0.08,Scoring
+ED0043,Stoppage-Freeze,Stoppage Freeze,Stoppage,Yes,0.05,Goalie
+ED0044,Stoppage-Play,Stoppage Play,Stoppage,Neutral,0.05,Other
+ED0045,Stoppage_GameEnd,Stoppage GameEnd,Stoppage,Neutral,0.05,Other
+ED0046,Stoppage_Period,Stoppage Period,Stoppage,Neutral,0.05,Other
+ED0047,Stoppage_Play,Stoppage Play,Stoppage,Neutral,0.05,Other
+ED0048,Turnover-Giveaway,Turnover Giveaway,Turnover,No,0.05,Possession
+ED0049,Turnover-Takeaway,Turnover Takeaway,Turnover,Yes,0.05,Possession
+ED0050,Turnover_Giveaway,Turnover Giveaway,Turnover,No,0.05,Possession
+ED0051,Turnover_Takeaway,Turnover Takeaway,Turnover,Yes,0.05,Possession
+ED0052,Zone-Entry,Zone Entry,Zone,Neutral,0.05,Zone
+ED0053,Zone-Exit,Zone Exit,Zone,Neutral,0.05,Zone
+ED0054,Zone_Entry,Zone Entry,Zone,Neutral,0.05,Zone
+ED0055,Zone_Entryfailed,Zone Entryfailed,Zone,Neutral,0.05,Zone
+ED0056,Zone_Exit,Zone Exit,Zone,Neutral,0.05,Zone
+ED0057,Zone_ExitFailed,Zone ExitFailed,Zone,No,0.05,Zone
+ED0058,Zone_Keepin,Zone Keepin,Zone,Neutral,0.05,Zone
+ED0059,Zone_KeepinFailed,Zone KeepinFailed,Zone,No,0.05,Zone

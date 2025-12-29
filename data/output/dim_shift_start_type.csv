@@ -1,0 +1,6 @@
+shift_start_type_id,shift_start_type_code,shift_start_type_name,start_category,description,energy_factor
+SS0001,FACEOFF,Faceoff,structured,Shift started at faceoff,1.0
+SS0002,ON_FLY,On the Fly,transition,Line change during play,0.9
+SS0003,AFTER_GOAL,After Goal,structured,Shift after goal scored,1.0
+SS0004,AFTER_PENALTY,After Penalty,special_teams,Shift after penalty,1.1
+SS0005,PERIOD_START,Period Start,structured,Start of period,1.0

@@ -1,8 +1,0 @@
-role_id,role_code,role_name,role_type,description
-1,event_team_player_1,Primary Event Player,event_team,Main player executing the event
-2,event_team_player_2,Secondary Event Player,event_team,"Supporting player (e.g., pass receiver)"
-3,event_team_player_3,Tertiary Event Player,event_team,Third player involved
-4,opp_team_player_1,Primary Opponent,opp_team,Main opposing player
-5,opp_team_player_2,Secondary Opponent,opp_team,Supporting opposing player
-6,opp_team_goalie,Opposing Goalie,opp_team,Opposing goaltender
-7,event_team_goalie,Event Team Goalie,event_team,Event team goaltender

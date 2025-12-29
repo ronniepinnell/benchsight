@@ -1,6 +1,6 @@
-period_id,period_name,period_abbr,is_overtime,is_shootout,sort_order
-1,First Period,1st,0,0,1
-2,Second Period,2nd,0,0,2
-3,Third Period,3rd,0,0,3
-4,Overtime,OT,1,0,4
-5,Shootout,SO,0,1,5
+period_id,period_number,period_name,period_type,duration_seconds,intensity_multiplier,description
+P0001,1,First Period,regulation,1200,1.0,Opening period
+P0002,2,Second Period,regulation,1200,1.02,Middle period - often highest scoring
+P0003,3,Third Period,regulation,1200,1.05,Final period - tight games more intense
+P0004,OT,Overtime,overtime,300,1.3,Sudden death overtime - 3v3 NHL
+P0005,SO,Shootout,shootout,0,0.0,Shootout - not tracked as normal play

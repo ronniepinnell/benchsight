@@ -1,3 +1,3 @@
-venue_code,venue_name,is_home,is_away
-home,Home,1,0
-away,Away,0,1
+venue_id,venue_code,venue_name,venue_abbrev
+VN0001,home,Home,H
+VN0002,away,Away,A

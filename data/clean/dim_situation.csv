@@ -1,6 +1,0 @@
-situation_id,situation_code,situation_name,description,is_power_play,is_penalty_kill,is_even_strength
-1,EV,Even Strength,5v5 or 4v4 or 3v3,False,False,True
-2,PP,Power Play,Team has man advantage,True,False,False
-3,PK,Penalty Kill,Team is short-handed,False,True,False
-4,EN_F,Empty Net For,Goalie pulled for extra attacker,False,False,False
-5,EN_A,Empty Net Against,Opponent goalie pulled,False,False,False

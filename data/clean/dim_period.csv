@@ -1,6 +1,0 @@
-period_id,period_name,period_abbr,is_overtime,is_shootout,sort_order,_updated_timestamp,_export_timestamp
-1,First Period,1st,0,0,1,2025-12-20T00:43:12.607677,2025-12-20T01:05:41.276864
-2,Second Period,2nd,0,0,2,2025-12-20T00:43:12.607677,2025-12-20T01:05:41.276864
-3,Third Period,3rd,0,0,3,2025-12-20T00:43:12.607677,2025-12-20T01:05:41.276864
-4,Overtime,OT,1,0,4,2025-12-20T00:43:12.607677,2025-12-20T01:05:41.276864
-5,Shootout,SO,0,1,5,2025-12-20T00:43:12.607677,2025-12-20T01:05:41.276864

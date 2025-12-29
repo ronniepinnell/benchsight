@@ -1,0 +1,11 @@
+stoppage_type_id,stoppage_type_code,stoppage_type_name,stoppage_category,description
+SP0001,GOAL,Goal Scored,scoring,Play stopped for goal
+SP0002,OFFSIDE,Offside,violation,Offside violation
+SP0003,ICING,Icing,violation,Icing call
+SP0004,PENALTY,Penalty,infraction,Penalty called
+SP0005,PUCK_FROZEN,Puck Frozen,goalie,Goalie froze puck
+SP0006,PUCK_OUT,Puck Out of Play,equipment,Puck left playing surface
+SP0007,TIMEOUT,Timeout,tactical,Team timeout called
+SP0008,PERIOD_END,Period End,time,Period ended
+SP0009,INJURY,Injury,safety,Play stopped for injury
+SP0010,OTHER,Other,misc,Miscellaneous stoppage

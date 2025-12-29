@@ -1,16 +1,16 @@
-net_location_id,net_location_code,net_location_name,net_location_short,vertical_zone,horizontal_zone,description,difficulty_score,goalie_weakness_common,x_min,x_max,y_min,y_max,display_order
-1,5H,5-Hole,5H,Low,Center,Between goalie's legs,3,True,-0.5,0.5,0.0,0.5,1
-2,GL,Glove Low,GL,Low,Glove,Low glove side,2,False,-3.0,-0.5,0.0,1.5,2
-3,GH,Glove High,GH,High,Glove,High glove side (top corner),4,True,-3.0,-0.5,2.5,4.0,3
-4,GM,Glove Mid,GM,Mid,Glove,Middle glove side,2,False,-3.0,-0.5,1.5,2.5,4
-5,BL,Blocker Low,BL,Low,Blocker,Low blocker side,2,False,0.5,3.0,0.0,1.5,5
-6,BH,Blocker High,BH,High,Blocker,High blocker side (top corner),4,False,0.5,3.0,2.5,4.0,6
-7,BM,Blocker Mid,BM,Mid,Blocker,Middle blocker side,2,False,0.5,3.0,1.5,2.5,7
-8,TM,Top Middle,TM,High,Center,Top center (over shoulder),5,False,-0.5,0.5,3.0,4.0,8
-9,LM,Low Middle,LM,Low,Center,Low center (along ice),2,False,-0.5,0.5,0.0,0.5,9
-10,BODY,Body,BODY,Mid,Center,Center mass of goalie,1,False,-1.0,1.0,1.0,2.5,10
-11,PAD_L,Pad Left,PAD_L,Low,Glove,Left leg pad,1,False,-2.0,-0.5,0.0,1.0,11
-12,PAD_R,Pad Right,PAD_R,Low,Blocker,Right leg pad,1,False,0.5,2.0,0.0,1.0,12
-13,POST_G,Post Glove,POST_G,Low,Glove,Short side glove post,3,True,-3.0,-2.5,0.0,1.0,13
-14,POST_B,Post Blocker,POST_B,Low,Blocker,Short side blocker post,3,False,2.5,3.0,0.0,1.0,14
-15,CROSSBAR,Crossbar,XBAR,High,Center,Under crossbar,5,False,-2.0,2.0,3.5,4.0,15
+net_location_id,net_location_code,net_location_name,description,height_zone,side_zone,x_coord_inches,y_coord_inches,avg_save_pct,scoring_difficulty,xg_bonus,goalie_weakness_rank
+NL0001,5H,5-Hole,Between legs - butterfly weakness,low,center,0,6,0.92,medium,0.08,3
+NL0002,GL,Glove Low,Low glove side,low,glove,-28,8,0.94,hard,0.04,6
+NL0003,GH,Glove High,High glove corner - common weakness,high,glove,-32,40,0.88,easy,0.15,1
+NL0004,BL,Blocker Low,Low blocker side,low,blocker,28,8,0.93,hard,0.05,5
+NL0005,BH,Blocker High,High blocker corner,high,blocker,32,40,0.89,easy,0.12,2
+NL0006,TM,Top Middle,Over shoulder center - bar down,high,center,0,44,0.9,medium,0.1,4
+NL0007,PG,Post Glove,Short side glove post,low,glove,-36,6,0.95,very_hard,0.02,8
+NL0008,PB,Post Blocker,Short side blocker post,low,blocker,36,6,0.95,very_hard,0.02,9
+NL0009,PAD_G,Pad Glove,Glove side pad save,low,glove,-24,4,0.96,very_hard,0.01,10
+NL0010,PAD_B,Pad Blocker,Blocker side pad save,low,blocker,24,4,0.96,very_hard,0.01,11
+NL0011,CHEST,Chest,Center mass - routine save,mid,center,0,28,0.97,very_hard,0.0,12
+NL0012,STICK,Stick Side,Along ice stick save,low,center,8,2,0.94,hard,0.04,7
+NL0013,WIDE_G,Wide Glove,Missed wide glove side,miss,glove,-48,24,1.0,miss,0.0,15
+NL0014,WIDE_B,Wide Blocker,Missed wide blocker side,miss,blocker,48,24,1.0,miss,0.0,14
+NL0015,HIGH,High Miss,Missed over crossbar,miss,center,0,60,1.0,miss,0.0,13

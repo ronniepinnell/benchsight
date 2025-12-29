@@ -1,21 +1,21 @@
-event_type_id,event_type,event_category,description,is_shot,is_pass,is_possession,is_turnover,is_penalty,is_faceoff,is_zone_play,is_stoppage,is_save,is_hit,is_rebound,credits_event_player_1,credits_opp_player_1,affects_toi_playing,sort_order
-1,Shot,Offense,Any shot attempt,True,False,True,False,False,False,False,False,False,False,False,True,True,True,1
-2,Pass,Offense,Pass attempt,False,True,True,False,False,False,False,False,False,False,False,True,False,True,2
-3,Turnover,Defense,Change of possession,False,False,False,True,False,False,False,False,False,False,False,True,True,True,3
-4,Faceoff,Neutral,Faceoff event,False,False,False,False,False,True,False,False,False,False,False,True,True,True,4
-5,Zone_Entry_Exit,Transition,Zone transition,False,False,True,False,False,False,True,False,False,False,False,True,True,True,5
-6,Save,Goaltending,Goalie save,False,False,False,False,False,False,False,False,True,False,False,True,False,True,6
-7,Possession,Neutral,Puck possession,False,False,True,False,False,False,False,False,False,False,False,True,False,True,7
-8,Goal,Offense,Goal scored,True,False,False,False,False,False,False,False,False,False,False,True,True,True,8
-9,Stoppage,Neutral,Play stoppage,False,False,False,False,False,False,False,True,False,False,False,False,False,False,9
-10,DeadIce,Stop,Dead ice time,False,False,False,False,False,False,False,True,False,False,False,False,False,False,10
-11,Play,Neutral,General play,False,False,False,False,False,False,False,False,False,False,False,True,True,True,11
-12,Hit,Defense,Body check,False,False,False,False,False,False,False,False,False,True,False,True,True,True,12
-13,Rebound,Neutral,Rebound event,False,False,True,False,False,False,False,False,False,False,True,True,False,True,13
-14,Penalty,Discipline,Penalty called,False,False,False,False,True,False,False,False,False,False,False,True,False,False,14
-15,Timeout,Stop,Team timeout,False,False,False,False,False,False,False,True,False,False,False,False,False,False,15
-16,Intermission,Stop,Period break,False,False,False,False,False,False,False,True,False,False,False,False,False,False,16
-17,Clockstop,Stop,Clock stop,False,False,False,False,False,False,False,True,False,False,False,False,False,False,17
-18,GameStart,Period,Game start,False,False,False,False,False,False,False,False,False,False,False,False,False,False,18
-19,GameEnd,Period,Game end,False,False,False,False,False,False,False,False,False,False,False,False,False,False,19
-20,LoosePuck,Neutral,Loose puck,False,False,True,False,False,False,False,False,False,False,False,True,True,True,20
+event_type_id,event_type_code,event_type_name,event_category,analytics_weight,description,is_scoring_play,is_possession_play,is_zone_play,is_goalie_play,expected_success_rate,nhl_benchmark
+ET0001,Shot_Legacy,Shot (Legacy),primary,1.0,Legacy shot event,No,No,No,No,0.0,
+ET0002,GoalStoppage,Goal Stoppage,supporting,0.0,Stoppage after goal,No,No,No,No,0.0,
+ET0003,Faceoff,Faceoff,primary,0.8,Faceoff event,No,Yes,No,No,0.5,~50% win rate
+ET0004,Unknown4,Unknown,misc,0.0,Unknown event type,No,No,No,No,0.0,
+ET0005,FaceoffStart,Faceoff Start,primary,0.8,Game/period start faceoff,No,No,No,No,0.0,
+ET0006,Goal,Goal,primary,5.0,Goal scored,Yes,No,No,No,0.0,
+ET0007,Unknown7,Unknown,misc,0.0,Unknown event type,No,No,No,No,0.0,
+ET0008,LoosePuck,Loose Puck,supporting,0.3,Loose puck battle,No,Yes,No,No,0.0,
+ET0009,Pass,Pass,supporting,0.5,Pass attempt,No,Yes,No,No,0.78,~78% completion
+ET0010,Penalty,Penalty,special,-2.0,Penalty taken,No,No,No,No,0.0,
+ET0011,Unknown11,Unknown,misc,0.0,Unknown event type,No,No,No,No,0.0,
+ET0012,Play,Play,micro,0.3,Micro-play (offensive/defensive),No,No,No,No,0.0,
+ET0013,Possession,Possession,supporting,0.4,Puck movement/recovery/retrieval,No,Yes,No,No,0.0,
+ET0014,Rebound,Rebound,supporting,0.6,Rebound event,No,No,No,Yes,0.0,
+ET0015,Save,Save,goalie,0.0,Goalie save,No,No,No,Yes,0.0,
+ET0016,Shot,Shot,primary,1.0,Shot attempt,Yes,No,No,No,0.1,~10% scoring
+ET0017,Stoppage,Stoppage,neutral,0.0,Play stoppage,No,No,No,No,0.0,
+ET0018,Unknown18,Unknown,misc,0.0,Unknown event type,No,No,No,No,0.0,
+ET0019,Turnover,Turnover,negative,-1.0,Turnover (give/take),No,Yes,No,No,0.0,
+ET0020,Zone,Zone,supporting,0.6,Zone entry/exit/keepin,No,No,Yes,No,0.0,

@@ -1,0 +1,11 @@
+zone_exit_type_id,zone_exit_type_code,zone_exit_type_name,control_level,leads_to_entry_pct,possession_retained_pct,offensive_value_weight,description
+ZX0001,ZoneExit-CausedTurnover,Caused Turnover,controlled,0.9,0.95,1.5,Exit via forced turnover - immediate counter-attack
+ZX0002,ZoneExit-Chip,Chip,uncontrolled,0.4,0.35,0.6,Chipped puck out of zone - may be recovered
+ZX0003,ZoneExit-Clear,Clear,uncontrolled,0.29,0.3,0.4,Dump clear out of zone - limited possession retention
+ZX0004,ZoneExit-Lob,Lob,uncontrolled,0.25,0.2,0.35,Lob clear - opponent likely to retrieve
+ZX0005,ZoneExit-OppTeam,Opp Team,forced,0.75,0.7,1.0,Exit caused by opponent error
+ZX0006,ZoneExit-Other,Other,mixed,0.5,0.45,0.7,Miscellaneous exit type
+ZX0007,ZoneExit-Pass,Pass,controlled,0.88,0.9,1.4,Controlled pass out of zone - high possession value
+ZX0008,ZoneExit-PassMiss/Misplay,Pass Miss/Misplay,failed,0.15,0.1,0.1,Failed exit attempt - dangerous turnover
+ZX0009,ZoneExit-PenaltyKillClear,Penalty Kill Clear,uncontrolled,0.35,0.3,0.5,PK clear - tactical dump for time
+ZX0010,ZoneExit-Rush,Rush,controlled,0.92,0.95,1.6,Rush exit with possession - transition opportunity

@@ -1,4 +1,4 @@
-zone_code,zone_name,is_offensive,is_defensive,is_neutral
-OZ,Offensive Zone,True,False,0
-DZ,Defensive Zone,False,True,0
-NZ,Neutral Zone,False,False,1
+zone_id,zone_code,zone_name,zone_abbrev
+ZN0001,O,Offensive Zone,OZ
+ZN0002,D,Defensive Zone,DZ
+ZN0003,N,Neutral Zone,NZ

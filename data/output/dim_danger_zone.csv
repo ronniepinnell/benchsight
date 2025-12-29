@@ -1,4 +1,0 @@
-danger_zone_id,danger_zone_code,danger_zone_name,description,xg_multiplier,x_min,x_max,y_min,y_max
-1,HD,High Danger,Slot and crease area,1.5,-10.0,10.0,54.0,89.0
-2,MD,Medium Danger,Circle and mid-slot,1.0,-30.0,30.0,30.0,54.0
-3,LD,Low Danger,Perimeter and point,0.5,-42.5,42.5,0.0,30.0

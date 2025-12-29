@@ -1,0 +1,58 @@
+stat_id,stat_name,stat_category,stat_level,computable_now,description
+MS0001,Goals,core,player_game,yes,Goals scored
+MS0002,Primary Assists,core,player_game,yes,Primary assists
+MS0003,Secondary Assists,core,player_game,yes,Secondary assists
+MS0004,Points,core,player_game,yes,Goals + Assists
+MS0005,Penalty Minutes,core,player_game,yes,Penalty minutes
+MS0006,Time on Ice,core,player_game,yes,Total time on ice in seconds
+MS0007,Games Played,core,player_season,yes,Games played
+MS0008,Plus/Minus,core,player_game,yes,Goals for minus goals against at EV
+MS0009,Shots on Goal,shot,player_game,yes,Shots on goal
+MS0010,Missed Shots,shot,player_game,yes,Shots that missed net
+MS0011,Blocked Shots,shot,player_game,yes,Shots blocked by opponent
+MS0012,Corsi For,shot,player_onice,yes,All shot attempts for while on ice
+MS0013,Corsi Against,shot,player_onice,yes,All shot attempts against while on ice
+MS0014,Corsi %,shot,player_onice,yes,CF / (CF + CA)
+MS0015,Fenwick For,shot,player_onice,yes,Unblocked shot attempts for
+MS0016,Fenwick Against,shot,player_onice,yes,Unblocked shot attempts against
+MS0017,High-Danger Corsi For,shot,player_onice,needs_xy,Shot attempts from HD areas
+MS0018,Expected Goals,xg,player_game,needs_xy,Sum of xG for shots taken
+MS0019,On-Ice xG For,xg,player_onice,needs_xy,xG for team while on ice
+MS0020,On-Ice xG Against,xg,player_onice,needs_xy,xG against while on ice
+MS0021,Shot-Level xG,xg,event,needs_model,Probability shot becomes goal
+MS0022,Controlled Zone Entries,micro_transition,player_game,yes,OZ entries with possession
+MS0023,Dump-in Entries,micro_transition,player_game,yes,Dump and chase entries
+MS0024,Failed Entry Attempts,micro_transition,player_game,yes,Entry attempts denied
+MS0025,Controlled Zone Exits,micro_transition,player_game,yes,DZ exits with possession
+MS0026,Failed Exit Attempts,micro_transition,player_game,yes,Failed breakout attempts
+MS0027,Rush Chances,micro_transition,player_game,yes,Shots from rush sequences
+MS0028,Pass Attempts,micro_offense,player_game,yes,Total pass attempts
+MS0029,Passes Completed,micro_offense,player_game,yes,Successful passes
+MS0030,Pass Completion %,micro_offense,player_game,yes,Pass success rate
+MS0031,Slot Passes,micro_offense,player_game,needs_xy,Passes into slot area
+MS0032,Royal Road Passes,micro_offense,player_game,needs_xy,Passes crossing center of OZ
+MS0033,OZ Possession Time,micro_offense,player_game,yes,Time with puck in OZ
+MS0034,Cycle Possessions,micro_offense,team_game,yes,Sustained OZ possessions
+MS0035,Entry Denials,micro_defense,player_game,yes,OZ entries prevented
+MS0036,Takeaways,micro_defense,player_game,yes,Puck stolen from opponent
+MS0037,Giveaways,micro_defense,player_game,yes,Turnovers (excl dumps/clears)
+MS0038,Shot Blocks,micro_defense,player_game,yes,Shots blocked
+MS0039,DZ Retrievals Won,micro_defense,player_game,yes,Puck battles won in DZ
+MS0040,Faceoff Wins,faceoff,player_game,yes,Faceoffs won
+MS0041,Faceoff Losses,faceoff,player_game,yes,Faceoffs lost
+MS0042,Faceoff %,faceoff,player_game,yes,Faceoff win percentage
+MS0043,Shots Against,goalie,goalie_game,yes,Shots faced
+MS0044,Goals Against,goalie,goalie_game,yes,Goals allowed
+MS0045,Saves,goalie,goalie_game,yes,Shots saved
+MS0046,Save %,goalie,goalie_game,yes,Save percentage
+MS0047,Goals Against Avg,goalie,goalie_season,yes,Goals per 60 minutes
+MS0048,Goals Saved Above xG,goalie,goalie_game,needs_xy,Goals saved vs expected
+MS0049,High-Danger SV%,goalie,goalie_game,needs_xy,Save % on HD shots
+MS0050,Rebound Control %,goalie,goalie_game,yes,Shots without rebound
+MS0051,Corsi vs Elite Opponents,rating_aware,player_game,yes,CF when facing high-rated opponents
+MS0052,Giveaways vs Elite,rating_aware,player_game,yes,Turnovers vs strong opponents
+MS0053,With/Without You CF,lineup,pair_season,yes,CF% with vs without teammate
+MS0054,Line Corsi/60,lineup,line_game,yes,Shot attempts per 60 for line
+MS0055,OZ Start %,deployment,player_game,yes,Shifts starting in OZ
+MS0056,Shift Count,deployment,player_game,yes,Number of shifts
+MS0057,Avg Shift Length,deployment,player_game,yes,Average shift duration

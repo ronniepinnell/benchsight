@@ -1,6 +1,8 @@
-situation_id,situation_code,situation_name,description,is_power_play,is_penalty_kill,is_even_strength
-1,EV,Even Strength,5v5 or 4v4 or 3v3,False,False,True
-2,PP,Power Play,Team has man advantage,True,False,False
-3,PK,Penalty Kill,Team is short-handed,False,True,False
-4,EN_F,Empty Net For,Goalie pulled for extra attacker,False,False,False
-5,EN_A,Empty Net Against,Opponent goalie pulled,False,False,False
+situation_id,situation_code,situation_name,score_state,xg_modifier,description,strategy_mode
+SIT0001,TIED,Game Tied,neutral,1.0,Score is tied,balanced
+SIT0002,UP1,Leading by 1,leading,0.95,Leading by 1 goal,protect
+SIT0003,UP2,Leading by 2,leading,0.9,Leading by 2 goals,protect
+SIT0004,UP3,Leading by 3+,leading,0.85,Leading by 3+ goals,garbage
+SIT0005,DOWN1,Trailing by 1,trailing,1.1,Trailing by 1 goal,push
+SIT0006,DOWN2,Trailing by 2,trailing,1.2,Trailing by 2 goals,desperation
+SIT0007,DOWN3,Trailing by 3+,trailing,1.3,Trailing by 3+ goals,garbage

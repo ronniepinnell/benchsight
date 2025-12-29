@@ -1,0 +1,4 @@
+success_id,success_code,success_name,success_value
+SC0001,S,Successful,1
+SC0002,U,Unsuccessful,0
+SC0003,1,Success (1),1
