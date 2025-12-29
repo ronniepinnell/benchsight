@@ -2,6 +2,45 @@
 
 All notable changes to the BenchSight schema and data model are documented here.
 
+## [6.1.0] - 2025-12-29
+
+### Fixed - Critical ETL Bugs
+
+#### TOI Bug (Critical)
+- **Problem**: All TOI values were 0 for all players
+- **Root Cause**: Shift matching used `player_number` (jersey) instead of `player_id`
+- **Fix**: Changed to match on `player_id` column in fact_shifts_player
+
+#### fact_events_player Build Bug
+- **Problem**: Was re-saving existing file instead of building fresh
+- **Fix**: Now properly builds from tracking files and normalizes column names
+
+#### Game 18987 Venue Swap
+- **Problem**: Tracking file has home/away reversed vs roster
+- **Fix**: Added `VENUE_SWAP_GAMES` list with automatic swap handling
+
+### Added - Supabase Setup
+
+- `sql/00_drop_all.sql` - Clean DROP script for database reset
+- `sql/01_create_tables_generated.sql` - Auto-generated CREATE statements (58 tables)
+- `src/supabase_upload_clean.py` - Upload script with hybrid credential handling
+- `src/generate_schema.py` - Script to regenerate SQL from CSVs
+- `config/config_local.ini.template` - Updated with Supabase instructions
+
+### Changed
+
+- Updated TRACKED_GAMES to exclude incomplete games
+- BLB_Tables.xlsx path corrected (data/ not data/raw/)
+- Dimension loading now uses full sheet names (dim_player not player)
+
+### Validation
+
+- 46/46 implemented tests passing
+- 98.1% TOI coverage (105/107 players)
+- All key stats verified against NORAD
+
+---
+
 ## [5.4.0] - 2025-12-28
 
 ### Added - Dimension Table Enrichments (Research-Based)

@@ -1,16 +1,9 @@
-game_id,team_name,team_venue,goals_for,goals_against,assists,sog,shots_total,pass_att,pass_comp,pass_pct,giveaways,takeaways,to_diff,zone_entries,zone_exits,fow,fol,fo_pct,puck_recoveries,puck_retrievals,total_toi_minutes
-18965,Velodrome,away,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,105.2
-18965,OS Offices,home,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1.4
-18969,Velodrome,away,6,8,0,6,6,0,0,0,0,0,0,0,0,0,0,0,0,0,323.0
-18969,Platinum,home,8,6,0,8,8,0,0,0,0,0,0,0,0,0,0,0,0,0,321.9
-18977,HollowBrook,away,4,7,0,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,310.8
-18977,Velodrome,home,7,4,1,7,7,0,0,0,0,0,0,0,0,0,0,0,0,0,292.4
-18977,,,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.0
-18981,Velodrome,away,2,4,0,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,316.0
-18981,Nelson,home,4,2,1,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,322.9
-18987,Velodrome,away,2,0,0,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,316.6
-18987,Outlaws,home,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,321.8
-18991,Velodrome,away,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,440.6
-18991,Triple J,home,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,413.2
-18993,Velodrome,away,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5.5
-18993,Ace,home,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1.4
+team_game_id,game_id,team_venue,goals_for,goals_against,shots_for,shots_against,result
+TG1896900001,18969,Home,4,3,71,43,W
+TG1896900002,18969,Away,3,4,43,71,L
+TG1897700003,18977,Home,3,2,56,65,W
+TG1897700004,18977,Away,2,3,65,56,L
+TG1898100005,18981,Home,2,1,59,37,W
+TG1898100006,18981,Away,1,2,37,59,L
+TG1898700007,18987,Home,1,0,43,61,W
+TG1898700008,18987,Away,0,1,61,43,L

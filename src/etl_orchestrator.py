@@ -43,7 +43,7 @@ BASE_DIR = Path(__file__).parent.parent
 DATA_DIR = BASE_DIR / "data"
 RAW_DIR = DATA_DIR / "raw"
 OUTPUT_DIR = DATA_DIR / "output"
-BLB_FILE = RAW_DIR / "BLB_Tables.xlsx"
+BLB_FILE = DATA_DIR / "BLB_Tables.xlsx"  # Note: in data/, not data/raw/
 
 # All tables
 DIM_TABLES = [
@@ -59,8 +59,9 @@ FACT_TABLES = [
     'fact_team_game_stats'
 ]
 
-# Tracked games
-TRACKED_GAMES = ['18965', '18969', '18977', '18981', '18987', '18991', '18993', '19032']
+# Tracked games (excluding incomplete: 18965, 18991, 18993, 19032, 18955)
+# 18955 has no tracking file
+TRACKED_GAMES = ['18969', '18977', '18981', '18987']
 
 
 class ETLOrchestrator:
@@ -135,14 +136,19 @@ class ETLOrchestrator:
         
         for table in tables:
             try:
-                # Map table name to sheet name
-                sheet_name = table.replace('dim_', '')
-                
-                if sheet_name in blb.sheet_names:
-                    df = pd.read_excel(blb, sheet_name)
+                # Sheet names in BLB match table names (dim_player, dim_team, etc.)
+                # Also check for the exact table name in sheets
+                if table in blb.sheet_names:
+                    df = pd.read_excel(blb, table)
                     self._save_table(table, df)
                 else:
-                    logger.warning(f"Sheet '{sheet_name}' not found for {table}")
+                    # Try without prefix for legacy sheets
+                    sheet_name = table.replace('dim_', '')
+                    if sheet_name in blb.sheet_names:
+                        df = pd.read_excel(blb, sheet_name)
+                        self._save_table(table, df)
+                    else:
+                        logger.debug(f"Sheet for {table} not found in BLB - may be derived from tracking")
             except Exception as e:
                 logger.error(f"Error processing {table}: {e}")
                 self.stats['errors'] += 1
@@ -193,19 +199,78 @@ class ETLOrchestrator:
     
     def _build_fact_events_player(self, games):
         """Build fact_events_player (one row per player per event)."""
-        # This should already exist from earlier processing
-        existing = self.output_dir / "fact_events_player.csv"
-        if existing.exists():
-            df = pd.read_csv(existing, dtype=str)
-            if games != TRACKED_GAMES:
-                df = df[df['game_id'].isin(games)]
+        all_events = []
+        
+        for game_id in games:
+            tracking_file = RAW_DIR / "games" / game_id / f"{game_id}_tracking.xlsx"
+            if tracking_file.exists():
+                try:
+                    events = pd.read_excel(tracking_file, 'events')
+                    events['game_id'] = game_id
+                    all_events.append(events)
+                except Exception as e:
+                    logger.warning(f"Error loading events for game {game_id}: {e}")
+        
+        if all_events:
+            df = pd.concat(all_events, ignore_index=True)
+            
+            # Normalize column names
+            df = self._normalize_event_columns(df)
+            
+            # Keep all rows (one per player per event) - don't deduplicate
             self._save_table('fact_events_player', df)
-        else:
-            logger.warning("fact_events_player.csv not found - run full ETL first")
+    
+    def _normalize_event_columns(self, df):
+        """Standardize column names for events."""
+        # Map raw column names to standard names
+        column_map = {
+            'Type': 'event_type',
+            'event_type_': 'event_type',
+            'event_detail_': 'event_detail_raw',
+            'event_detail_2_': 'event_detail_2_raw',
+            'event_successful_': 'event_successful_raw',
+            'play_detail1_': 'play_detail_1_raw',
+            'play_detail2_': 'play_detail_2_raw',
+        }
+        
+        for old, new in column_map.items():
+            if old in df.columns and new not in df.columns:
+                df[new] = df[old]
+        
+        # Ensure event_type exists
+        if 'event_type' not in df.columns and 'Type' in df.columns:
+            df['event_type'] = df['Type']
+        
+        # Add player_name from roster lookup (or extract from player_id)
+        if 'player_name' not in df.columns:
+            # Try to get from roster
+            roster_file = self.output_dir / "fact_gameroster.csv"
+            if roster_file.exists():
+                roster = pd.read_csv(roster_file, dtype=str)
+                player_lookup = roster.set_index('player_id')['player_full_name'].to_dict()
+                df['player_name'] = df['player_id'].map(player_lookup)
+            else:
+                df['player_name'] = df['player_id']  # Fallback
+        
+        # Standardize play_detail columns
+        if 'play_detail' not in df.columns:
+            if 'play_detail1' in df.columns:
+                df['play_detail'] = df['play_detail1']
+            elif 'play_detail1_' in df.columns:
+                df['play_detail'] = df['play_detail1_']
+        
+        return df
     
     def _build_fact_shifts_player(self, games):
         """Build fact_shifts_player with logical shift tracking."""
         all_shifts = []
+        
+        # Load roster for player_id lookup
+        roster_file = self.output_dir / "fact_gameroster.csv"
+        roster = None
+        if roster_file.exists():
+            roster = pd.read_csv(roster_file, dtype={'game_id': str, 'player_game_number': str, 'player_id': str})
+            roster['game_id'] = roster['game_id'].astype(str)
         
         for game_id in games:
             tracking_file = RAW_DIR / "games" / game_id / f"{game_id}_tracking.xlsx"
@@ -217,12 +282,67 @@ class ETLOrchestrator:
                     # Unpivot to player-level
                     player_shifts = self._unpivot_shifts(shifts, game_id)
                     
+                    # Enrich with player_id and player_name from roster
+                    if roster is not None:
+                        player_shifts = self._enrich_shifts_with_roster(player_shifts, roster, game_id)
+                    
                     # Add logical shift tracking
                     player_shifts = self._add_logical_shifts(player_shifts)
                     
                     all_shifts.append(player_shifts)
                 except Exception as e:
                     logger.warning(f"Error loading shifts for game {game_id}: {e}")
+        
+        if all_shifts:
+            df = pd.concat(all_shifts, ignore_index=True)
+            self._save_table('fact_shifts_player', df)
+    
+    def _enrich_shifts_with_roster(self, shifts, roster, game_id):
+        """Add player_id and player_name from roster."""
+        # Create lookup from roster
+        game_roster = roster[roster['game_id'] == str(game_id)].copy()
+        
+        if game_roster.empty:
+            logger.warning(f"No roster found for game {game_id}")
+            shifts['player_id'] = None
+            shifts['player_name'] = None
+            return shifts
+        
+        # Known venue swaps (tracking file has home/away backwards)
+        VENUE_SWAP_GAMES = ['18987']
+        
+        # Map venue to team_venue format
+        game_roster['venue'] = game_roster['team_venue'].str.lower()
+        game_roster['player_number'] = game_roster['player_game_number'].astype(str)
+        
+        # Create lookup dict: (venue, player_number) -> (player_id, player_name)
+        lookup = {}
+        for _, row in game_roster.iterrows():
+            roster_venue = row['venue']
+            
+            # Handle venue swap for known games
+            if str(game_id) in VENUE_SWAP_GAMES:
+                roster_venue = 'away' if roster_venue == 'home' else 'home'
+            
+            key = (roster_venue, str(int(float(row['player_number']))) if row['player_number'] else None)
+            lookup[key] = (row['player_id'], row['player_full_name'])
+        
+        # Apply lookup
+        player_ids = []
+        player_names = []
+        for _, shift in shifts.iterrows():
+            key = (shift['venue'], str(int(shift['player_number'])) if pd.notna(shift['player_number']) else None)
+            if key in lookup:
+                player_ids.append(lookup[key][0])
+                player_names.append(lookup[key][1])
+            else:
+                player_ids.append(None)
+                player_names.append(None)
+        
+        shifts['player_id'] = player_ids
+        shifts['player_name'] = player_names
+        
+        return shifts
         
         if all_shifts:
             df = pd.concat(all_shifts, ignore_index=True)
@@ -351,7 +471,8 @@ class ETLOrchestrator:
             player_name = row['player_name']
             
             player_events = events[(events['game_id'] == game_id) & (events['player_id'] == player_id)]
-            player_shifts = shifts[(shifts['game_id'] == int(game_id)) & (shifts['player_number'].astype(str) == str(player_id).replace('P', ''))]
+            # Fix: Match on player_id directly, not player_number (jersey)
+            player_shifts = shifts[(shifts['game_id'] == int(game_id)) & (shifts['player_id'] == player_id)]
             
             stats = self._calculate_player_stats(player_events, player_shifts)
             stats['game_id'] = game_id
@@ -457,7 +578,8 @@ class ETLOrchestrator:
             player_name = goalie_events['player_name'].iloc[0]
             
             ge = events[(events['game_id'] == game_id) & (events['player_id'] == player_id)]
-            gs = shifts[(shifts['game_id'] == int(game_id)) & (shifts['slot'] == 'goalie')]
+            # Fix: Filter goalie shifts by player_id, not just slot
+            gs = shifts[(shifts['game_id'] == int(game_id)) & (shifts['player_id'] == player_id)]
             
             stats = {
                 'game_id': game_id,

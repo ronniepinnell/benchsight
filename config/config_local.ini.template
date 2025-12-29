@@ -1,10 +1,19 @@
 # =============================================================================
-# SUPABASE CONFIGURATION
+# BENCHSIGHT LOCAL CONFIGURATION
 # =============================================================================
-# Copy this file to config_local.ini and add your credentials
-# DO NOT commit config_local.ini to git!
+# 
+# Instructions:
+# 1. Copy this file to config_local.ini
+# 2. Fill in your Supabase service key
+# 3. NEVER commit config_local.ini to git
+#
+# To get your Supabase service key:
+# 1. Go to https://supabase.com/dashboard
+# 2. Select your project
+# 3. Go to Settings > API
+# 4. Copy the "service_role" key (NOT the anon key)
 # =============================================================================
 
 [supabase]
-url = https://your-project.supabase.co
-key = your-anon-key-here
+url = https://uuaowslhpgyiudmbvqze.supabase.co
+service_key = YOUR_SERVICE_KEY_HERE

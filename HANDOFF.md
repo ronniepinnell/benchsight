@@ -1,32 +1,47 @@
-# BenchSight v6.0 Handoff Document
+# BenchSight v6.1 Handoff Document
+**Last Updated:** 2024-12-29
+**Session:** ETL Fix + Supabase Setup
 
-## What Changed in v6.0
+## What Changed in v6.1
 
-### Table Consolidation
-- **REMOVED**: `fact_events_tracking`, `fact_events_long`, `fact_shifts_tracking`, `fact_shifts_long`, `fact_boxscore_*`, `fact_h2h_with_linemates`, `fact_line_vs_line`
-- **NEW**: 
-  - `fact_events` (wide) - One row per event
-  - `fact_events_player` (long) - One row per player per event
-  - `fact_shifts` (wide) - One row per shift
-  - `fact_shifts_player` (long) - One row per player per shift
-  - `fact_sequences` - Possession chains across zones
-  - `fact_plays` - Single-zone possession segments
-  - `fact_player_boxscore_all` - Basic stats from NORAD for ALL games
-  - `fact_team_standings_snapshot` - W/L/T record over time
-  - `fact_league_leaders_snapshot` - Player rankings over time
+### Critical Bug Fixes
+- **TOI Bug Fixed**: Was matching shifts on `player_number` (jersey) instead of `player_id` - all TOI was 0
+- **fact_events_player Fixed**: Was re-saving existing file instead of building from tracking data
+- **Column Normalization**: Added mapping for raw column names (Type → event_type, etc.)
+- **Game 18987 Venue Swap**: Added handling for games where tracking has home/away reversed
 
-### Stats Fixes
-- **Goals**: Properly deduplicated by event_index, only counting `event_team_player_1` role
-- **Assists**: Captured from `event_team_player_2` (A1) and `event_team_player_3` (A2)
-- **TOI**: Fixed venue swap issue for game 18987
-- **Goalie Stats**: Now properly tracked from Save events and goals_against from goal events
+### New Files
+- `sql/00_drop_all.sql` - Clean DROP script for Supabase reset
+- `sql/01_create_tables_generated.sql` - Auto-generated CREATE statements (58 tables)
+- `src/supabase_upload_clean.py` - Upload script with hybrid credential handling
+- `src/generate_schema.py` - Script to regenerate SQL from CSVs
+- `docs/SESSION_LOG.md` - Session tracking
+- `docs/BACKLOG.md` - Future tasks
 
-### New Analytics
-- **sequence_id**: Calculated at ETL time (faceoff/stoppage/turnover boundaries)
-- **play_id**: Calculated at ETL time (zone entry/exit boundaries)
-- **pass_targets**: Count of times player was target of pass (event_player_2)
-- **defender_targets**: Count of times player was defending (opp_player_1)
-- **possession_time**: Duration of possession events per player
+### Configuration
+- Credentials: Environment variable OR config/config_local.ini
+- Template: config/config_local.ini.template
+
+## Current Status
+
+### Games Processed
+| Game | Status | Notes |
+|------|--------|-------|
+| 18969 | ✅ Complete | Reference game - full validation |
+| 18977 | ✅ Complete | Older format |
+| 18981 | ✅ Complete | |
+| 18987 | ✅ Complete | Venue swap handled |
+| 18955 | ❌ Excluded | No tracking file |
+| 18965 | ❌ Excluded | Incomplete |
+| 18991 | ❌ Excluded | Incomplete |
+| 18993 | ❌ Excluded | Incomplete |
+| 19032 | ❌ Excluded | Incomplete |
+
+### Data Quality
+- **107 player-game rows** with stats
+- **98.1% TOI coverage** (105/107 players)
+- **46/46 validation tests passed**
+- **8 goalie-game rows** with stats
 
 ## Table Structure
 
