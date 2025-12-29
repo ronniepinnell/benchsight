@@ -8,7 +8,8 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 import warnings
-warnings.filterwarnings('ignore')
+warnings.filterwarnings('ignore', category=FutureWarning, module='pandas')
+warnings.filterwarnings('ignore', category=UserWarning, module='openpyxl')
 
 OUTPUT_DIR = Path('data/output')
 
@@ -289,7 +290,7 @@ def create_fact_zone_time_enhanced():
     
     try:
         zone_time = pd.read_csv(OUTPUT_DIR / 'fact_team_zone_time.csv')
-    except:
+    except (FileNotFoundError, pd.errors.EmptyDataError):
         print("  fact_team_zone_time.csv not found, skipping")
         return pd.DataFrame()
     

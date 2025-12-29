@@ -847,7 +847,7 @@ class ETLOrchestrator:
                 if player_ratings and player_id:
                     try:
                         player_rating = float(player_ratings.get(player_id, 5.0))
-                    except:
+                    except (ValueError, TypeError):
                         player_rating = 5.0
                     
                     stats['player_rating'] = player_rating
@@ -864,7 +864,7 @@ class ETLOrchestrator:
                             try:
                                 opp_r = float(player_ratings.get(opp_id, 5.0))
                                 opp_ratings.append(opp_r)
-                            except:
+                            except (ValueError, TypeError):
                                 opp_ratings.append(5.0)
                         
                         stats['opp_avg_rating'] = round(sum(opp_ratings) / len(opp_ratings), 2) if opp_ratings else 5.0
@@ -1441,8 +1441,8 @@ class ETLOrchestrator:
                                 rush_type = f'odd_man_{att_skaters}v{def_skaters}'
                             else:
                                 rush_type = f'even_{att_skaters}v{def_skaters}'
-                    except:
-                        pass
+                    except (KeyError, TypeError, ValueError) as e:
+                        pass  # Use default rush_type if determination fails
                 
                 is_goal = first_shot[type_col] == 'Goal' or 'Goal' in str(first_shot.get(detail_col, ''))
                 

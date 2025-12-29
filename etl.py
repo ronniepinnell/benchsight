@@ -20,7 +20,8 @@ from pathlib import Path
 from datetime import datetime
 import json
 import warnings
-warnings.filterwarnings('ignore')
+warnings.filterwarnings('ignore', category=FutureWarning, module='pandas')
+warnings.filterwarnings('ignore', category=UserWarning, module='openpyxl')
 
 # ============================================================
 # CONFIGURATION

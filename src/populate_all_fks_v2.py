@@ -618,7 +618,7 @@ class ComprehensiveFKPopulator:
                 for attempt in [str(period_num), f'P{period_num}', f'Period {period_num}']:
                     if attempt in match_dict or attempt.lower() in match_dict:
                         return match_dict.get(attempt) or match_dict.get(attempt.lower())
-            except:
+            except (ValueError, TypeError):
                 pass
         
         # Track unmapped values for debugging

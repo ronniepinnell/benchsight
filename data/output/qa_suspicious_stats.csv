@@ -1,0 +1,23 @@
+timestamp,game_id,player_id,player_name,category,stat,value,expected,severity,note,resolved
+2025-12-29T20:35:17.390422,18977,P100081,Lee Smith,OUTLIER,toi_seconds,0.0,<60,WARNING,Value 0.0 exceeds threshold (<60),False
+2025-12-29T20:35:17.390440,18977,P100081,Lee Smith,OUTLIER,cf_pct,0.0,<15,WARNING,Value 0.0 exceeds threshold (<15),False
+2025-12-29T20:35:17.390622,18977,P100088,Hayden Smith,OUTLIER,shots,23.0,>20,WARNING,Value 23 exceeds threshold (>20),False
+2025-12-29T20:35:17.390735,18977,P100096,Jared Wolf,OUTLIER,toi_seconds,3185.0,>2400,WARNING,Value 3185.0 exceeds threshold (>2400),False
+2025-12-29T20:35:17.391212,18977,P100198,Maxwell Donaty,OUTLIER,toi_seconds,0.0,<60,WARNING,Value 0.0 exceeds threshold (<60),False
+2025-12-29T20:35:17.391216,18977,P100198,Maxwell Donaty,OUTLIER,cf_pct,0.0,<15,WARNING,Value 0.0 exceeds threshold (<15),False
+2025-12-29T20:35:17.405610,18977,,,INCOMPLETE_GAME,data_quality,,,WARNING,"No assists tracked (6 goals, 0 assists)",False
+2025-12-29T20:35:17.407493,18981,,,INCOMPLETE_GAME,data_quality,,,WARNING,"No assists tracked (3 goals, 0 assists)",False
+2025-12-29T20:35:19.193056,18965,,,UNTRACKED_GAME,tracking_completeness,0.0,,INFO,Tracking template exists but not filled in,False
+2025-12-29T20:35:19.889108,18991,,,UNTRACKED_GAME,tracking_completeness,0.05,,INFO,Tracking template exists but not filled in,False
+2025-12-29T20:35:20.380368,19032,,,UNTRACKED_GAME,tracking_completeness,0.0,,INFO,Tracking template exists but not filled in,False
+2025-12-29T21:18:16.039642,18977,P100081,Lee Smith,OUTLIER,toi_seconds,0.0,<60,WARNING,Value 0.0 exceeds threshold (<60),False
+2025-12-29T21:18:16.039656,18977,P100081,Lee Smith,OUTLIER,cf_pct,0.0,<15,WARNING,Value 0.0 exceeds threshold (<15),False
+2025-12-29T21:18:16.039836,18977,P100088,Hayden Smith,OUTLIER,shots,23.0,>20,WARNING,Value 23 exceeds threshold (>20),False
+2025-12-29T21:18:16.039949,18977,P100096,Jared Wolf,OUTLIER,toi_seconds,3185.0,>2400,WARNING,Value 3185.0 exceeds threshold (>2400),False
+2025-12-29T21:18:16.040464,18977,P100198,Maxwell Donaty,OUTLIER,toi_seconds,0.0,<60,WARNING,Value 0.0 exceeds threshold (<60),False
+2025-12-29T21:18:16.040470,18977,P100198,Maxwell Donaty,OUTLIER,cf_pct,0.0,<15,WARNING,Value 0.0 exceeds threshold (<15),False
+2025-12-29T21:18:16.054480,18977,,,INCOMPLETE_GAME,data_quality,,,WARNING,"No assists tracked (6 goals, 0 assists)",False
+2025-12-29T21:18:16.056185,18981,,,INCOMPLETE_GAME,data_quality,,,WARNING,"No assists tracked (3 goals, 0 assists)",False
+2025-12-29T21:18:17.907597,18965,,,UNTRACKED_GAME,tracking_completeness,0.0,,INFO,Tracking template exists but not filled in,False
+2025-12-29T21:18:18.621292,18991,,,UNTRACKED_GAME,tracking_completeness,0.05,,INFO,Tracking template exists but not filled in,False
+2025-12-29T21:18:19.148227,19032,,,UNTRACKED_GAME,tracking_completeness,0.0,,INFO,Tracking template exists but not filled in,False

@@ -8,7 +8,8 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 import warnings
-warnings.filterwarnings('ignore')
+warnings.filterwarnings('ignore', category=FutureWarning, module='pandas')
+warnings.filterwarnings('ignore', category=UserWarning, module='openpyxl')
 
 OUTPUT_DIR = Path('data/output')
 
