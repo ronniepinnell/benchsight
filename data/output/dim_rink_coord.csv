@@ -1,0 +1,20 @@
+rink_coord_id,rink_coord_code,rink_coord_name,x_min,x_max,y_min,y_max
+RC0001,OZ_SLOT,Offensive Zone - Slot,54,89,-22,22
+RC0002,OZ_HIGH,Offensive Zone - High,25,54,-42,42
+RC0003,OZ_LEFT,Offensive Zone - Left Wing,54,89,22,42
+RC0004,OZ_RIGHT,Offensive Zone - Right Wing,54,89,-42,-22
+RC0005,OZ_CREASE,Offensive Zone - Crease,84,100,-4,4
+RC0006,OZ_CORNER_L,Offensive Zone - Left Corner,72,100,26,42
+RC0007,OZ_CORNER_R,Offensive Zone - Right Corner,72,100,-42,-26
+RC0008,NZ_CENTER,Neutral Zone - Center,-25,25,-22,22
+RC0009,NZ_LEFT,Neutral Zone - Left,-25,25,22,42
+RC0010,NZ_RIGHT,Neutral Zone - Right,-25,25,-42,-22
+RC0011,DZ_SLOT,Defensive Zone - Slot,-89,-54,-22,22
+RC0012,DZ_HIGH,Defensive Zone - High,-54,-25,-42,42
+RC0013,DZ_LEFT,Defensive Zone - Left Wing,-89,-54,22,42
+RC0014,DZ_RIGHT,Defensive Zone - Right Wing,-89,-54,-42,-22
+RC0015,DZ_CREASE,Defensive Zone - Crease,-100,-84,-4,4
+RC0016,DZ_CORNER_L,Defensive Zone - Left Corner,-100,-72,26,42
+RC0017,DZ_CORNER_R,Defensive Zone - Right Corner,-100,-72,-42,-26
+RC0018,OZ_BEHIND,Behind Offensive Net,89,100,-11,11
+RC0019,DZ_BEHIND,Behind Defensive Net,-100,-89,-11,11

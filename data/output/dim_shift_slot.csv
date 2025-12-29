@@ -1,8 +1,8 @@
-slot_id,slot_code,slot_name,slot_type,sort_order
-SL0001,F1,Forward 1,forward,1
-SL0002,F2,Forward 2,forward,2
-SL0003,F3,Forward 3,forward,3
-SL0004,D1,Defense 1,defense,4
-SL0005,D2,Defense 2,defense,5
-SL0006,G,Goalie,goalie,6
-SL0007,X,Extra Attacker,extra,7
+slot_id,slot_code,slot_name
+SL0001,defense_1,Defense 1
+SL0002,defense_2,Defense 2
+SL0003,forward_1,Forward 1
+SL0004,forward_2,Forward 2
+SL0005,forward_3,Forward 3
+SL0006,goalie,Goalie
+SL0007,xtra,Xtra

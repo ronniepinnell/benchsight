@@ -1,0 +1,1 @@
+shot_xy_key,game_id,event_index,event_key,player_id,player_key,team_id,team_venue,period,period_id,shot_x,shot_y,shot_rink_coord_id,shot_rink_coord_id_home,shot_rink_coord_id_away,shot_distance,shot_angle,target_x,target_y,net_location_id,shot_type,shot_result,is_goal,is_on_net,strength_id,goalie_player_id,xg,running_video_time

@@ -1,0 +1,193 @@
+erDiagram
+    %% DIMENSION TABLES
+    dim_player {
+        string player_id PK
+        string player_name
+        string position
+    }
+    
+    dim_team {
+        string team_id PK
+        string team_name
+        string team_code
+    }
+    
+    dim_schedule {
+        int game_id PK
+        string home_team_id FK
+        string away_team_id FK
+        date game_date
+        string venue_id
+    }
+    
+    dim_period {
+        string period_id PK
+        string period_number
+        string period_name
+    }
+    
+    dim_event_type {
+        string event_type_id PK
+        string event_type_code
+        string event_type_name
+    }
+    
+    dim_strength {
+        string strength_id PK
+        string strength_code
+        string strength_name
+    }
+    
+    dim_zone {
+        string zone_id PK
+        string zone_code
+        string zone_name
+    }
+    
+    dim_rink_coord {
+        string rink_coord_id PK
+        string rink_coord_code
+        float x_min
+        float x_max
+        float y_min
+        float y_max
+    }
+    
+    dim_net_location {
+        string net_location_id PK
+        string net_location_code
+        float x_pct
+        float y_pct
+    }
+
+    %% FACT TABLES - Events & Shifts
+    fact_events_player {
+        string event_key PK
+        int game_id FK
+        int event_index
+        string player_id FK
+        string event_type_id FK
+        string period_id FK
+        string team_id FK
+        string venue_id FK
+        float running_video_time
+    }
+    
+    fact_shifts_player {
+        string shift_key PK
+        int game_id FK
+        int shift_index
+        string player_id FK
+        string team_id FK
+        string strength_id FK
+        string period_id FK
+        float shift_duration
+        int goal_for
+        int goal_against
+    }
+
+    %% FACT TABLES - Sequences & Plays
+    fact_sequences {
+        string sequence_key PK
+        int game_id FK
+        string first_event_key FK
+        string last_event_key FK
+        string team_id FK
+        string play_chain
+        float video_time_start
+    }
+    
+    fact_plays {
+        string play_key PK
+        int game_id FK
+        string sequence_key FK
+        string first_event_key FK
+        string last_event_key FK
+        string team_id FK
+        string play_chain
+    }
+    
+    fact_rush_events {
+        string rush_key PK
+        int game_id FK
+        string first_event_key FK
+        string last_event_key FK
+        string team_id FK
+        string play_chain
+    }
+    
+    fact_cycle_events {
+        string cycle_key PK
+        int game_id FK
+        string first_event_key FK
+        string last_event_key FK
+        string team_id FK
+        string play_chain
+    }
+
+    %% FACT TABLES - Aggregations
+    fact_h2h {
+        int game_id FK
+        string player_1_id FK
+        string player_2_id FK
+        int shifts_together
+        string home_team_id FK
+        string away_team_id FK
+    }
+    
+    fact_wowy {
+        int game_id FK
+        string player_1_id FK
+        string player_2_id FK
+        int shifts_together
+    }
+    
+    fact_line_combos {
+        int game_id FK
+        string forward_combo
+        string defense_combo
+        int shifts
+    }
+
+    %% FACT TABLES - XY Coordinates (Schema Only)
+    fact_player_xy_long {
+        string player_xy_key PK
+        int game_id FK
+        int event_index FK
+        string player_id FK
+        int point_number
+        float x
+        float y
+        string rink_coord_id FK
+    }
+    
+    fact_shot_xy {
+        string shot_xy_key PK
+        int game_id FK
+        int event_index FK
+        string player_id FK
+        float shot_x
+        float shot_y
+        string net_location_id FK
+        string rink_coord_id FK
+    }
+
+    %% RELATIONSHIPS
+    dim_schedule ||--o{ fact_events_player : "game_id"
+    dim_schedule ||--o{ fact_shifts_player : "game_id"
+    dim_player ||--o{ fact_events_player : "player_id"
+    dim_player ||--o{ fact_shifts_player : "player_id"
+    dim_event_type ||--o{ fact_events_player : "event_type_id"
+    dim_period ||--o{ fact_events_player : "period_id"
+    dim_team ||--o{ fact_events_player : "team_id"
+    dim_strength ||--o{ fact_shifts_player : "strength_id"
+    
+    fact_events_player ||--o{ fact_sequences : "first_event_key"
+    fact_events_player ||--o{ fact_plays : "first_event_key"
+    fact_events_player ||--o{ fact_rush_events : "first_event_key"
+    
+    dim_player ||--o{ fact_h2h : "player_1_id"
+    dim_player ||--o{ fact_wowy : "player_1_id"
+    
+    dim_rink_coord ||--o{ fact_player_xy_long : "rink_coord_id"
+    dim_net_location ||--o{ fact_shot_xy : "net_location_id"

@@ -1,21 +1,21 @@
-event_type_id,event_type_code,event_type_name,event_category,analytics_weight,description,is_scoring_play,is_possession_play,is_zone_play,is_goalie_play,expected_success_rate,nhl_benchmark
-ET0001,Shot_Legacy,Shot (Legacy),primary,1.0,Legacy shot event,No,No,No,No,0.0,
-ET0002,GoalStoppage,Goal Stoppage,supporting,0.0,Stoppage after goal,No,No,No,No,0.0,
-ET0003,Faceoff,Faceoff,primary,0.8,Faceoff event,No,Yes,No,No,0.5,~50% win rate
-ET0004,Unknown4,Unknown,misc,0.0,Unknown event type,No,No,No,No,0.0,
-ET0005,FaceoffStart,Faceoff Start,primary,0.8,Game/period start faceoff,No,No,No,No,0.0,
-ET0006,Goal,Goal,primary,5.0,Goal scored,Yes,No,No,No,0.0,
-ET0007,Unknown7,Unknown,misc,0.0,Unknown event type,No,No,No,No,0.0,
-ET0008,LoosePuck,Loose Puck,supporting,0.3,Loose puck battle,No,Yes,No,No,0.0,
-ET0009,Pass,Pass,supporting,0.5,Pass attempt,No,Yes,No,No,0.78,~78% completion
-ET0010,Penalty,Penalty,special,-2.0,Penalty taken,No,No,No,No,0.0,
-ET0011,Unknown11,Unknown,misc,0.0,Unknown event type,No,No,No,No,0.0,
-ET0012,Play,Play,micro,0.3,Micro-play (offensive/defensive),No,No,No,No,0.0,
-ET0013,Possession,Possession,supporting,0.4,Puck movement/recovery/retrieval,No,Yes,No,No,0.0,
-ET0014,Rebound,Rebound,supporting,0.6,Rebound event,No,No,No,Yes,0.0,
-ET0015,Save,Save,goalie,0.0,Goalie save,No,No,No,Yes,0.0,
-ET0016,Shot,Shot,primary,1.0,Shot attempt,Yes,No,No,No,0.1,~10% scoring
-ET0017,Stoppage,Stoppage,neutral,0.0,Play stoppage,No,No,No,No,0.0,
-ET0018,Unknown18,Unknown,misc,0.0,Unknown event type,No,No,No,No,0.0,
-ET0019,Turnover,Turnover,negative,-1.0,Turnover (give/take),No,Yes,No,No,0.0,
-ET0020,Zone,Zone,supporting,0.6,Zone entry/exit/keepin,No,No,Yes,No,0.0,
+event_type_id,event_type_code,event_type_name
+ET0001,Clockstop,Clockstop
+ET0002,DeadIce,DeadIce
+ET0003,Faceoff,Faceoff
+ET0004,GameEnd,GameEnd
+ET0005,GameStart,GameStart
+ET0006,Goal,Goal
+ET0007,Intermission,Intermission
+ET0008,LoosePuck,LoosePuck
+ET0009,Pass,Pass
+ET0010,Penalty,Penalty
+ET0011,Penalty_Delayed,Penalty Delayed
+ET0012,Play,Play
+ET0013,Possession,Possession
+ET0014,Rebound,Rebound
+ET0015,Save,Save
+ET0016,Shot,Shot
+ET0017,Stoppage,Stoppage
+ET0018,Timeout,Timeout
+ET0019,Turnover,Turnover
+ET0020,Zone_Entry_Exit,Zone Entry Exit

@@ -1,8 +1,6 @@
-situation_id,situation_code,situation_name,score_state,xg_modifier,description,strategy_mode
-SIT0001,TIED,Game Tied,neutral,1.0,Score is tied,balanced
-SIT0002,UP1,Leading by 1,leading,0.95,Leading by 1 goal,protect
-SIT0003,UP2,Leading by 2,leading,0.9,Leading by 2 goals,protect
-SIT0004,UP3,Leading by 3+,leading,0.85,Leading by 3+ goals,garbage
-SIT0005,DOWN1,Trailing by 1,trailing,1.1,Trailing by 1 goal,push
-SIT0006,DOWN2,Trailing by 2,trailing,1.2,Trailing by 2 goals,desperation
-SIT0007,DOWN3,Trailing by 3+,trailing,1.3,Trailing by 3+ goals,garbage
+situation_id,situation_code,situation_name
+SIT0001,Away EmptyNet,Away EmptyNet
+SIT0002,Away PowerPlay,Away PowerPlay
+SIT0003,Full Strength,Full Strength
+SIT0004,Home EmptyNet,Home EmptyNet
+SIT0005,Home PowerPlay,Home PowerPlay

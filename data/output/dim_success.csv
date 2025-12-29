@@ -1,4 +1,7 @@
-success_id,success_code,success_name,success_value
-SC0001,S,Successful,1
-SC0002,U,Unsuccessful,0
-SC0003,1,Success (1),1
+success_id,success_code,success_name
+SC0001,s,Successful
+SC0002,u,Unsuccessful
+SC0003,S,Successful
+SC0004,U,Unsuccessful
+SC0005,1,True
+SC0006,0,False
