@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BenchSight Schema Diagram</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 { color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+        h2 { color: #555; margin-top: 30px; }
+        .diagram-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+        .mermaid { text-align: center; }
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .stat-card h3 { margin: 0; font-size: 2em; color: #007bff; }
+        .stat-card p { margin: 5px 0 0; color: #666; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #f8f9fa; }
+        tr:hover { background: #f5f5f5; }
+        .tag { 
+            display: inline-block; 
+            padding: 2px 8px; 
+            border-radius: 4px; 
+            font-size: 0.8em; 
+            margin: 2px;
+        }
+        .tag-dim { background: #d4edda; color: #155724; }
+        .tag-fact { background: #cce5ff; color: #004085; }
+        .tag-complete { background: #d4edda; color: #155724; }
+        .tag-pending { background: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <h1>🏒 BenchSight Schema Diagram</h1>
+    <p>Generated: December 29, 2024 | Status: 75% Complete</p>
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>40</h3>
+            <p>Dimension Tables</p>
+        </div>
+        <div class="stat-card">
+            <h3>37</h3>
+            <p>Fact Tables</p>
+        </div>
+        <div class="stat-card">
+            <h3>77.8%</h3>
+            <p>FK Fill Rate</p>
+        </div>
+        <div class="stat-card">
+            <h3>54</h3>
+            <p>Validations Passing</p>
+        </div>
+    </div>
+
+    <h2>📊 Data Model Overview</h2>
+    <div class="diagram-container">
+        <div class="mermaid">
+erDiagram
+    dim_player ||--o{ fact_events_player : "player_id"
+    dim_player ||--o{ fact_shifts_player : "player_id"
+    dim_player ||--o{ fact_player_game_stats : "player_id"
+    dim_player ||--o{ fact_h2h : "player_id"
+    
+    dim_schedule ||--o{ fact_events : "game_id"
+    dim_schedule ||--o{ fact_shifts : "game_id"
+    dim_schedule ||--o{ fact_player_game_stats : "game_id"
+    
+    dim_team ||--o{ fact_events : "team_id"
+    dim_team ||--o{ fact_line_combos : "team_id"
+    
+    dim_event_type ||--o{ fact_events : "event_type_id"
+    dim_period ||--o{ fact_events : "period_id"
+    
+    dim_player {
+        string player_id PK
+        string player_full_name
+        string position
+        int skill_rating
+    }
+    
+    dim_schedule {
+        string game_id PK
+        date date
+        string home_team_id FK
+        string away_team_id FK
+    }
+    
+    dim_team {
+        string team_id PK
+        string team_name
+    }
+    
+    fact_events {
+        string event_key PK
+        string game_id FK
+        int event_index
+        string event_type_id FK
+    }
+    
+    fact_player_game_stats {
+        string player_game_key PK
+        string game_id FK
+        string player_id FK
+        int goals
+        int assists
+        int toi_seconds
+    }
+        </div>
+    </div>
+
+    <h2>🔄 ETL Pipeline Flow</h2>
+    <div class="diagram-container">
+        <div class="mermaid">
+flowchart LR
+    subgraph Sources["📁 Source Files"]
+        TRACK[/"tracking.xlsx"/]
+        VIDEO[/"video_times.xlsx"/]
+        BLB[/"BLB_Tables.xlsx"/]
+    end
+    
+    subgraph ETL["🔄 ETL Pipeline"]
+        LOAD["Load"]
+        TRANS["Transform"]
+        FK["FK Populate"]
+        VAL["Validate"]
+    end
+    
+    subgraph Output["📊 Output"]
+        DIM[("Dim Tables")]
+        FACT[("Fact Tables")]
+    end
+    
+    TRACK --> LOAD
+    VIDEO --> LOAD
+    BLB --> LOAD
+    LOAD --> TRANS
+    TRANS --> FK
+    FK --> VAL
+    VAL --> DIM
+    VAL --> FACT
+        </div>
+    </div>
+
+    <h2>📋 Table Inventory</h2>
+    
+    <h3>Core Dimension Tables</h3>
+    <table>
+        <tr><th>Table</th><th>Rows</th><th>Primary Key</th><th>Status</th></tr>
+        <tr><td>dim_player</td><td>298</td><td>player_id</td><td><span class="tag tag-complete">✓ Complete</span></td></tr>
+        <tr><td>dim_team</td><td>10</td><td>team_id</td><td><span class="tag tag-complete">✓ Complete</span></td></tr>
+        <tr><td>dim_schedule</td><td>723</td><td>game_id</td><td><span class="tag tag-complete">✓ Complete</span></td></tr>
+        <tr><td>dim_season</td><td>16</td><td>season_id</td><td><span class="tag tag-complete">✓ Complete</span></td></tr>
+        <tr><td>dim_event_type</td><td>28</td><td>event_type_id</td><td><span class="tag tag-complete">✓ Complete</span></td></tr>
+        <tr><td>dim_event_detail</td><td>111</td><td>event_detail_id</td><td><span class="tag tag-complete">✓ Complete</span></td></tr>
+        <tr><td>dim_strength</td><td>18</td><td>strength_id</td><td><span class="tag tag-complete">✓ Complete</span></td></tr>
+        <tr><td>dim_zone</td><td>3</td><td>zone_id</td><td><span class="tag tag-complete">✓ Complete</span></td></tr>
+    </table>
+
+    <h3>Core Fact Tables</h3>
+    <table>
+        <tr><th>Table</th><th>Rows</th><th>FK Fill %</th><th>Status</th></tr>
+        <tr><td>fact_events</td><td>5,833</td><td>99%</td><td><span class="tag tag-complete">✓ Complete</span></td></tr>
+        <tr><td>fact_events_player</td><td>11,635</td><td>96%</td><td><span class="tag tag-complete">✓ Complete</span></td></tr>
+        <tr><td>fact_shifts_player</td><td>4,626</td><td>100%</td><td><span class="tag tag-complete">✓ Complete</span></td></tr>
+        <tr><td>fact_player_game_stats</td><td>107</td><td>100%</td><td><span class="tag tag-complete">✓ Complete</span></td></tr>
+        <tr><td>fact_h2h</td><td>684</td><td>100%</td><td><span class="tag tag-complete">✓ Complete</span></td></tr>
+        <tr><td>fact_wowy</td><td>641</td><td>100%</td><td><span class="tag tag-complete">✓ Complete</span></td></tr>
+        <tr><td>fact_line_combos</td><td>332</td><td>100%</td><td><span class="tag tag-complete">✓ Complete</span></td></tr>
+    </table>
+
+    <h2>📈 Implementation Progress</h2>
+    <div class="diagram-container">
+        <div class="mermaid">
+gantt
+    title BenchSight Implementation Progress
+    dateFormat  YYYY-MM-DD
+    
+    section Phase 1 - Foundation
+    Dimension Tables       :done, 2024-12-01, 14d
+    Fact Tables           :done, 2024-12-15, 7d
+    
+    section Phase 2 - Analytics
+    Core Stats            :done, 2024-12-22, 3d
+    H2H/WOWY             :done, 2024-12-25, 2d
+    FK Population        :done, 2024-12-27, 2d
+    
+    section Phase 3 - Deploy
+    Supabase DDL         :active, 2024-12-30, 1d
+    Data Upload          :2024-12-31, 1d
+    Power BI             :2025-01-02, 2d
+        </div>
+    </div>
+
+    <div class="info-box">
+        <strong>Next Steps:</strong>
+        <ol>
+            <li>Deploy to Supabase (run DDL + upload CSVs)</li>
+            <li>Connect Power BI to Supabase</li>
+            <li>Add more test games (currently 4 of 10)</li>
+            <li>Implement xG model</li>
+        </ol>
+    </div>
+
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose'
+        });
+    </script>
+</body>
+</html>

@@ -1,6 +1,10 @@
-shift_start_type_id,shift_start_type_code,shift_start_type_name,start_category,description,energy_factor
-SS0001,FACEOFF,Faceoff,structured,Shift started at faceoff,1.0
-SS0002,ON_FLY,On the Fly,transition,Line change during play,0.9
-SS0003,AFTER_GOAL,After Goal,structured,Shift after goal scored,1.0
-SS0004,AFTER_PENALTY,After Penalty,special_teams,Shift after penalty,1.1
-SS0005,PERIOD_START,Period Start,structured,Start of period,1.0
+shift_start_type_id,shift_start_type_code,shift_start_type_name,start_category,description,energy_factor,old_equiv
+SS0001,FACEOFF,Faceoff,structured,Shift started at faceoff,1.0,OtherFaceoff
+SS0002,ON_FLY,On the Fly,transition,Line change during play,0.9,
+SS0003,AFTER_GOAL,After Goal,structured,Shift after goal scored,1.0,FaceoffAfterGoal
+SS0004,AFTER_PENALTY,After Penalty,special_teams,Shift after penalty,1.1,FaceoffAfterPenalty
+SS0005,PERIOD_START,Period Start,structured,Start of period,1.0,PeriodStart
+SS0006,INTERMISSION,,structured,,0.0,Intermission
+SS0007,DEADICE_STOPPAGE,,structured,,0.0,DeadIce/Stoppage
+SS0008,GAMESTART,GameStart,other,Auto-added from tracking data,1.0,GameStart
+SS0009,DELAYEDPENALTY,DelayedPenalty,other,Auto-added from tracking data,1.0,DelayedPenalty

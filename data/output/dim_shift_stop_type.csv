@@ -1,9 +1,29 @@
-shift_stop_type_id,shift_stop_type_code,shift_stop_type_name,stop_category,description,shift_value_modifier
-SE0001,FACEOFF,Faceoff,structured,Shift ended at faceoff,1.0
-SE0002,ON_FLY,On the Fly,transition,Line change during play,0.9
-SE0003,GOAL_FOR,Goal For,positive,Shift ended with team goal,1.5
-SE0004,GOAL_AGAINST,Goal Against,negative,Shift ended with goal against,-1.0
-SE0005,PENALTY_TAKEN,Penalty Taken,negative,Shift ended taking penalty,-0.5
-SE0006,PENALTY_DRAWN,Penalty Drawn,positive,Shift ended drawing penalty,0.5
-SE0007,PERIOD_END,Period End,structured,Shift ended at period end,0.0
-SE0008,INJURED,Injured,safety,Shift ended due to injury,0.0
+shift_stop_type_id,shift_stop_type_code,shift_stop_type_name,stop_category,description,shift_value_modifier,old_equiv,table,type
+SE0001,FACEOFF,Faceoff,structured,Shift ended at faceoff,1,,both,explicit
+SE0002,ON_FLY,On the Fly,transition,Line change during play,0.9,,both,explicit
+SE0003,GOAL_HOME,Home Goal,structured,Shift ended with home team goal,0,Home Goal,wide,explicit
+SE0004,GOAL_AWAY,Away Goal,structured,Shift ended with away team goal,0,Away Goal,wide,explicit
+SE0005,PENALTY_HOME,Penalty Taken,structured,Shift ended taking penalty,0,Home Penalty,wide,explicit
+SE0006,PENALTY_AWAY,Penalty Drawn,structured,Shift ended drawing penalty,0,Away Penalty,wide,explicit
+SE0007,PERIOD_END,Period End,structured,Shift ended at period end,0,Period End,wide,explicit
+SE0008,INJURED,Injured,safety,Shift ended due to injury,0,,both,explicit
+SE0009,GAME_END,Game End,structured,,0,GameEnd,both,explicit
+SE0010,ICING_HOME,Home Icing,structured,,0,Home Icing,wide,explicit
+SE0011,ICING_AWAY,Away Icing ,structured,,0,Away Icing,wide,explicit
+SE0012,OFFSIDES_HOME,Home Offsides,structured,,0,Home Offside,wide,explicit
+SE0013,OFFSIDES_AWAY,Away Offsides,structured,,0,Away Offside,wide,explicit
+SE0014,PUCK_OUT_OF_PLAY,Puck out of Play,structured,,0,Puck Out of Play: Puck in Netting,wide,explicit
+SE0015,GOALIE_STOPPAGE_HOME,Home goalie stop (after away SOG),structured,,0,Home Goalie Stopped (after Away SOG),wide,explicit
+SE0016,GOALIE_STOPPAGE_AWAY,Away goalie stop (after home SOG),structured,,0,Away Goalie Stopped (after Home SOG),wide,explicit
+SE0017,PLAY,Stoppage due to a play not categorized ,structured,,0,High Stick,both,explicit
+SE0018,GOAL_FOR,Goal For,positive,Shift ended with team goal,1.5,,long,calculated
+SE0019,GOAL_AGAINST,Goal Against,negative,Shift ended with goal against,-1,,long,calculated
+SE0020,PENALTY_TAKEN,Penalty Taken,negative,Shift ended taking penalty,-0.5,,long,calculated
+SE0021,PENALTY_DRAWN,Penalty Drawn,positive,Shift ended drawing penalty,0.5,,long,calculated
+SE0022,ICING_FOR,For Icing,negative,,-0.5,,long,calculated
+SE0023,ICING_AGAINST,Against Icing ,positive,,0.5,,long,calculated
+SE0024,OFFSIDES_FOR,For Offsides,negative,,-0.5,,long,calculated
+SE0025,OFFSIDES_AGAINST,Against Offsides,positive,,0.5,,long,calculated
+SE0026,GOALIE_STOPPAGE_FOR,For goalie stop (after Against SOG),negative,,-0.75,,long,calculated
+SE0027,GOALIE_STOPPAGE_AGAINST,Against goalie stop (after For SOG),positive,,0.75,,long,calculated
+SE0028,OFFSET_PENALTIES,,structured,,0,Offset Penalty,both,explicit

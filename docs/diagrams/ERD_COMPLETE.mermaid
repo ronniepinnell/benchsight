@@ -1,0 +1,254 @@
+erDiagram
+    %% ============================================
+    %% BENCHSIGHT ENTITY RELATIONSHIP DIAGRAM
+    %% Generated: December 29, 2024
+    %% 88 Tables (44 Dimension + 44 Fact)
+    %% ============================================
+
+    %% === CORE DIMENSION TABLES ===
+    dim_player {
+        string player_id PK
+        string first_name
+        string last_name
+        string position_id FK
+        int player_rating
+        string team_id FK
+    }
+
+    dim_team {
+        string team_id PK
+        string team_name
+        string team_code
+        string league_id FK
+    }
+
+    dim_season {
+        string season_id PK
+        string season_name
+        date start_date
+        date end_date
+    }
+
+    dim_venue {
+        string venue_id PK
+        string venue_name
+        string venue_code
+    }
+
+    dim_position {
+        string position_id PK
+        string position_name
+        string position_code
+    }
+
+    dim_period {
+        string period_id PK
+        string period_name
+        int period_number
+    }
+
+    dim_zone {
+        string zone_id PK
+        string zone_name
+        string zone_code
+    }
+
+    dim_event_type {
+        string event_type_id PK
+        string event_type_name
+    }
+
+    dim_event_detail {
+        string event_detail_id PK
+        string event_detail_name
+    }
+
+    dim_strength {
+        string strength_id PK
+        string strength_name
+        string strength_code
+    }
+
+    %% === RINK COORDINATE DIMENSIONS ===
+    dim_rink_coord {
+        string rink_coord_id PK
+        string rink_coord_code
+        float x_min
+        float x_max
+        float y_min
+        float y_max
+    }
+
+    dim_rinkcoordzones {
+        string box_id PK
+        float x_min
+        float x_max
+        float y_min
+        float y_max
+        string danger
+        string zone
+        string side
+    }
+
+    dim_rinkboxcoord {
+        string box_id PK
+        float x_min
+        float x_max
+        float y_min
+        float y_max
+        string danger
+        string zone
+    }
+
+    %% === CORE FACT TABLES ===
+    fact_events {
+        string event_key PK
+        int game_id FK
+        int event_index
+        string event_type FK
+        string event_detail FK
+        int period FK
+        float video_time
+        string success
+    }
+
+    fact_events_player {
+        string event_player_key PK
+        int game_id FK
+        int event_index
+        string player_id FK
+        string player_role
+        string event_type
+        string event_team_zone FK
+    }
+
+    fact_shifts {
+        string shift_key PK
+        int game_id FK
+        string player_id FK
+        int shift_number
+        float start_time
+        float end_time
+        float duration
+    }
+
+    fact_player_game_stats {
+        string player_game_key PK
+        int game_id FK
+        string player_id FK
+        string team_id FK
+        int goals
+        int assists
+        int points
+        int sog
+        float toi_seconds
+        float game_score
+        float xg_for
+        float xg_against
+        float cf_pct
+    }
+
+    fact_team_game_stats {
+        string team_game_key PK
+        int game_id FK
+        string team_id FK
+        int goals_for
+        int goals_against
+        int shots_for
+        int shots_against
+    }
+
+    fact_goalie_game_stats {
+        string goalie_game_key PK
+        int game_id FK
+        string player_id FK
+        int saves
+        int goals_against
+        float save_pct
+    }
+
+    %% === ADVANCED ANALYTICS TABLES ===
+    fact_h2h {
+        string h2h_key PK
+        int game_id FK
+        string player_1_id FK
+        string player_2_id FK
+        int shifts_together
+        float toi_together
+        float cf_pct
+    }
+
+    fact_wowy {
+        string wowy_key PK
+        int game_id FK
+        string player_1_id FK
+        string player_2_id FK
+        int shifts_together
+        float cf_pct_together
+        float cf_pct_apart
+        float cf_pct_delta
+    }
+
+    fact_line_combos {
+        string combo_key PK
+        int game_id FK
+        string forward_combo
+        string defense_combo
+        int shifts
+        float toi_together
+        float cf_pct
+    }
+
+    fact_shot_xy {
+        string shot_xy_key PK
+        int game_id FK
+        string player_id FK
+        float shot_x
+        float shot_y
+        string shot_rink_coord_id FK
+        float xg
+    }
+
+    fact_sequences {
+        string sequence_key PK
+        int game_id FK
+        int sequence_number
+        string start_event
+        string end_event
+    }
+
+    fact_plays {
+        string play_key PK
+        int game_id FK
+        int play_number
+        string zone FK
+    }
+
+    %% === RELATIONSHIPS ===
+    dim_player ||--o{ fact_player_game_stats : "plays in"
+    dim_player ||--o{ fact_events_player : "involved in"
+    dim_player ||--o{ fact_shifts : "has shifts"
+    dim_player ||--o{ fact_h2h : "paired with"
+    dim_player ||--o{ fact_wowy : "compared with"
+    dim_player ||--o{ fact_goalie_game_stats : "tends goal"
+    dim_player ||--o{ fact_shot_xy : "shoots"
+
+    dim_team ||--o{ fact_team_game_stats : "plays"
+    dim_team ||--o{ fact_player_game_stats : "roster"
+    dim_team ||--o{ dim_player : "employs"
+
+    dim_venue ||--o{ fact_events : "hosts"
+    dim_period ||--o{ fact_events : "during"
+    dim_zone ||--o{ fact_events : "in zone"
+    dim_zone ||--o{ fact_plays : "in zone"
+
+    dim_event_type ||--o{ fact_events : "categorizes"
+    dim_event_detail ||--o{ fact_events : "details"
+    dim_strength ||--o{ fact_events : "at strength"
+
+    dim_rink_coord ||--o{ fact_shot_xy : "located at"
+    dim_rinkcoordzones ||--o{ fact_shot_xy : "danger zone"
+
+    fact_events ||--o{ fact_events_player : "involves"
+    fact_events ||--o{ fact_sequences : "part of"
+    fact_events ||--o{ fact_plays : "part of"

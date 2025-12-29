@@ -1,0 +1,5 @@
+danger_zone_id,danger_zone_code,danger_zone_name,xg_base,description
+DZ001,high_danger,High Danger (Slot),0.2,"Within 15 feet of net, prime scoring area"
+DZ002,medium_danger,Medium Danger (Circles),0.08,"Hash marks to circles, good scoring position"
+DZ003,low_danger,Low Danger (Perimeter),0.03,"Outside circles, perimeter shots"
+DZ004,unknown,Unknown,0.09,Location not tracked

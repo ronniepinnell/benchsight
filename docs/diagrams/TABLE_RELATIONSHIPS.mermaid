@@ -1,0 +1,74 @@
+flowchart LR
+    subgraph DIMENSIONS["📦 DIMENSION TABLES"]
+        direction TB
+        P["dim_player<br/>180 players"]
+        T["dim_team<br/>8 teams"]
+        V["dim_venue<br/>2 venues"]
+        E["dim_event_type<br/>15 types"]
+        Z["dim_zone<br/>3 zones"]
+        R["dim_rinkcoordzones<br/>84 zones"]
+    end
+    
+    subgraph FACTS["📊 FACT TABLES"]
+        direction TB
+        
+        subgraph Events["Play-by-Play"]
+            FE["fact_events<br/>10K+ rows"]
+            FEP["fact_events_player<br/>60K+ rows"]
+        end
+        
+        subgraph Stats["Box Scores"]
+            FPS["fact_player_game_stats<br/>317 columns<br/>107 rows"]
+            FTS["fact_team_game_stats"]
+            FGS["fact_goalie_game_stats"]
+        end
+        
+        subgraph Pairings["Player Pairings"]
+            H2H["fact_h2h<br/>684 pairs"]
+            WOWY["fact_wowy<br/>641 pairs"]
+            LC["fact_line_combos<br/>332 combos"]
+        end
+        
+        subgraph Shifts["Ice Time"]
+            FS["fact_shifts"]
+            FSP["fact_shifts_player"]
+        end
+        
+        subgraph XY["Coordinates"]
+            SXY["fact_shot_xy<br/>⚠️ Empty"]
+            PXY["fact_player_xy<br/>⚠️ Empty"]
+        end
+    end
+    
+    %% Relationships
+    P --> |"player_id"| FPS
+    P --> |"player_id"| FEP
+    P --> |"player_id"| FS
+    P --> |"player_1_id<br/>player_2_id"| H2H
+    P --> |"player_1_id<br/>player_2_id"| WOWY
+    
+    T --> |"team_id"| FPS
+    T --> |"team_id"| FTS
+    T --> |"team_id"| LC
+    T --> |"team_id"| P
+    
+    V --> |"venue_id"| FE
+    
+    E --> |"event_type"| FE
+    Z --> |"zone"| FE
+    
+    R --> |"rink_coord_id"| SXY
+    
+    FE --> |"event_index"| FEP
+    FE --> |"event_key"| Stats
+    
+    FS --> |"shift_data"| FPS
+
+    %% Styling
+    classDef dim fill:#e8f5e9,stroke:#2e7d32
+    classDef fact fill:#e3f2fd,stroke:#1565c0
+    classDef warning fill:#fff3e0,stroke:#ef6c00
+    
+    class P,T,V,E,Z,R dim
+    class FE,FEP,FPS,FTS,FGS,H2H,WOWY,LC,FS,FSP fact
+    class SXY,PXY warning

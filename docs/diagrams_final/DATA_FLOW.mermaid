@@ -1,0 +1,81 @@
+flowchart LR
+    subgraph INPUT["📥 INPUT SOURCES"]
+        excel["Excel Tracking<br/>_tracking.xlsx"]
+        blb["BLB_Tables.xlsx<br/>Master Data"]
+        roster["roster.json<br/>Game Rosters"]
+        video["video_times.xlsx<br/>Video Sync"]
+    end
+    
+    subgraph STAGE["🔄 STAGING"]
+        stage_events["Stage Events"]
+        stage_shifts["Stage Shifts"]
+        stage_players["Stage Players"]
+        stage_teams["Stage Teams"]
+    end
+    
+    subgraph TRANSFORM["⚙️ TRANSFORMATION"]
+        calc_stats["Calculate Stats<br/>317 columns"]
+        calc_h2h["Calculate H2H<br/>Player pairs"]
+        calc_wowy["Calculate WOWY<br/>With/Without"]
+        calc_lines["Calculate Lines<br/>Combinations"]
+        calc_xg["Calculate xG<br/>Expected Goals"]
+    end
+    
+    subgraph OUTPUT["📤 OUTPUT (88 TABLES)"]
+        subgraph dims["44 Dimensions"]
+            dim_out["dim_player<br/>dim_team<br/>dim_schedule<br/>dim_rinkcoordzones<br/>..."]
+        end
+        subgraph facts["44 Facts"]
+            fact_out["fact_player_game_stats<br/>fact_events<br/>fact_h2h<br/>fact_wowy<br/>..."]
+        end
+    end
+    
+    subgraph CONSUME["📊 CONSUMERS"]
+        powerbi["Power BI<br/>Dashboards"]
+        supabase["Supabase<br/>PostgreSQL"]
+        csv["CSV Export"]
+    end
+    
+    excel --> stage_events
+    excel --> stage_shifts
+    blb --> stage_players
+    blb --> stage_teams
+    roster --> stage_players
+    video --> stage_events
+    
+    stage_events --> calc_stats
+    stage_shifts --> calc_stats
+    stage_players --> calc_stats
+    stage_events --> calc_h2h
+    stage_shifts --> calc_h2h
+    stage_events --> calc_wowy
+    stage_shifts --> calc_wowy
+    stage_events --> calc_lines
+    stage_events --> calc_xg
+    
+    calc_stats --> fact_out
+    calc_h2h --> fact_out
+    calc_wowy --> fact_out
+    calc_lines --> fact_out
+    calc_xg --> fact_out
+    stage_players --> dim_out
+    stage_teams --> dim_out
+    
+    dim_out --> powerbi
+    fact_out --> powerbi
+    dim_out --> supabase
+    fact_out --> supabase
+    dim_out --> csv
+    fact_out --> csv
+    
+    classDef inputStyle fill:#c8e6c9,stroke:#2e7d32
+    classDef stageStyle fill:#fff9c4,stroke:#f9a825
+    classDef transformStyle fill:#bbdefb,stroke:#1976d2
+    classDef outputStyle fill:#e1bee7,stroke:#7b1fa2
+    classDef consumeStyle fill:#ffccbc,stroke:#e64a19
+    
+    class excel,blb,roster,video inputStyle
+    class stage_events,stage_shifts,stage_players,stage_teams stageStyle
+    class calc_stats,calc_h2h,calc_wowy,calc_lines,calc_xg transformStyle
+    class dim_out,fact_out outputStyle
+    class powerbi,supabase,csv consumeStyle

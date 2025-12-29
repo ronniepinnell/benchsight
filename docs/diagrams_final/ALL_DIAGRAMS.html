@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BenchSight - All Diagrams</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 { color: #1a237e; text-align: center; }
+        h2 { color: #283593; border-bottom: 2px solid #3f51b5; padding-bottom: 10px; }
+        .diagram-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .mermaid {
+            display: flex;
+            justify-content: center;
+        }
+        .nav {
+            background: #1a237e;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .nav a {
+            color: white;
+            text-decoration: none;
+            margin-right: 20px;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+        .nav a:hover {
+            background: #3f51b5;
+        }
+        .note {
+            background: #fff3e0;
+            padding: 10px;
+            border-left: 4px solid #ff9800;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🏒 BenchSight Schema & Diagrams</h1>
+    
+    <div class="nav">
+        <a href="#schema">Schema Relationships</a>
+        <a href="#dataflow">Data Flow</a>
+        <a href="#stats">Stat Categories</a>
+    </div>
+    
+    <!-- SCHEMA RELATIONSHIPS -->
+    <div id="schema" class="diagram-section">
+        <h2>📦 Schema Relationships</h2>
+        <p>88 tables: 44 dimensions (blue) + 44 facts (orange). Yellow = needs XY data.</p>
+        <pre class="mermaid">
+flowchart TB
+    subgraph DIMS["DIMENSIONS (44)"]
+        direction TB
+        dim_player["dim_player<br/>211 players"]
+        dim_team["dim_team<br/>18 teams"]
+        dim_schedule["dim_schedule<br/>10 games"]
+        dim_rinkcoordzones["dim_rinkcoordzones<br/>84 zones"]
+        dim_event_type["dim_event_type"]
+    end
+    
+    subgraph FACTS["FACTS (44)"]
+        direction TB
+        fact_player_game_stats["fact_player_game_stats<br/>317 columns"]
+        fact_events["fact_events<br/>11K+ events"]
+        fact_h2h["fact_h2h<br/>684 pairs"]
+        fact_wowy["fact_wowy<br/>641 pairs"]
+        fact_line_combos["fact_line_combos<br/>332 combos"]
+        fact_shot_xy["fact_shot_xy<br/>⚠️ Needs XY"]
+    end
+    
+    dim_player --> fact_player_game_stats
+    dim_player --> fact_h2h
+    dim_player --> fact_wowy
+    dim_schedule --> fact_events
+    dim_schedule --> fact_player_game_stats
+    dim_schedule --> fact_h2h
+    dim_schedule --> fact_wowy
+    dim_schedule --> fact_line_combos
+    dim_rinkcoordzones -.-> fact_shot_xy
+    dim_event_type --> fact_events
+    
+    classDef dimStyle fill:#e3f2fd,stroke:#1565c0
+    classDef factStyle fill:#fff3e0,stroke:#ef6c00
+    classDef warnStyle fill:#ffebee,stroke:#c62828
+    
+    class dim_player,dim_team,dim_schedule,dim_rinkcoordzones,dim_event_type dimStyle
+    class fact_player_game_stats,fact_events,fact_h2h,fact_wowy,fact_line_combos factStyle
+    class fact_shot_xy warnStyle
+        </pre>
+    </div>
+    
+    <!-- DATA FLOW -->
+    <div id="dataflow" class="diagram-section">
+        <h2>🔄 Data Flow Pipeline</h2>
+        <pre class="mermaid">
+flowchart LR
+    subgraph INPUT["📥 INPUT"]
+        excel["Excel Tracking"]
+        blb["BLB Tables"]
+        roster["Rosters"]
+    end
+    
+    subgraph PROCESS["⚙️ PROCESS"]
+        calc["Calculate<br/>317 Stats"]
+        h2h["H2H Analysis"]
+        wowy["WOWY Analysis"]
+    end
+    
+    subgraph OUTPUT["📤 OUTPUT"]
+        dims["44 Dimensions"]
+        facts["44 Facts"]
+    end
+    
+    subgraph CONSUME["📊 CONSUME"]
+        pbi["Power BI"]
+        supa["Supabase"]
+    end
+    
+    excel --> calc
+    blb --> calc
+    roster --> calc
+    calc --> facts
+    calc --> h2h
+    calc --> wowy
+    h2h --> facts
+    wowy --> facts
+    blb --> dims
+    dims --> pbi
+    facts --> pbi
+    dims --> supa
+    facts --> supa
+    
+    classDef inputStyle fill:#c8e6c9,stroke:#2e7d32
+    classDef processStyle fill:#bbdefb,stroke:#1565c0
+    classDef outputStyle fill:#e1bee7,stroke:#7b1fa2
+    classDef consumeStyle fill:#ffccbc,stroke:#e64a19
+    
+    class excel,blb,roster inputStyle
+    class calc,h2h,wowy processStyle
+    class dims,facts outputStyle
+    class pbi,supa consumeStyle
+        </pre>
+    </div>
+    
+    <!-- STAT CATEGORIES -->
+    <div id="stats" class="diagram-section">
+        <h2>📊 317 Player Stat Categories</h2>
+        <pre class="mermaid">
+mindmap
+  root((317 Stats))
+    Core
+      goals
+      assists
+      points
+      shots
+    Time
+      toi_seconds
+      shift_count
+      avg_shift
+    Possession
+      cf_pct
+      ff_pct
+      corsi
+    xG
+      xg_for
+      xg_against
+      xg_diff
+    Danger
+      high_danger
+      medium_danger
+      low_danger
+    Performance
+      game_score
+      rating_delta
+      performance_index
+    Advanced
+      h2h_stats
+      wowy_delta
+      rush_stats
+        </pre>
+        <div class="note">
+            <strong>Note:</strong> 48 columns remain at zero due to missing source data (XY coordinates, score state, special teams tags).
+        </div>
+    </div>
+    
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: { curve: 'basis' }
+        });
+    </script>
+</body>
+</html>

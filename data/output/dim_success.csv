@@ -1,7 +1,3 @@
-success_id,success_code,success_name
-SC0001,s,Successful
-SC0002,u,Unsuccessful
-SC0003,S,Successful
-SC0004,U,Unsuccessful
-SC0005,1,True
-SC0006,0,False
+success_id,success_code,success_name,potential_values
+SC0001,s,Successful,"s,S,1"
+SC0002,u,Unsuccessful,"u,U,0"

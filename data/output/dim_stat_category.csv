@@ -1,0 +1,14 @@
+stat_category_id,category_code,category_name,description
+SC001,counting,Counting Stats,"Basic counting statistics (G, A, SOG, etc.)"
+SC002,time,Time Stats,Time on ice and shift metrics
+SC003,percentage,Percentage Stats,"Rate and percentage metrics (SH%, FO%, etc.)"
+SC004,per_60,Per-60 Rates,Statistics normalized to per 60 minutes
+SC005,possession,Possession Stats,"Corsi, Fenwick, zone time"
+SC006,micro,Micro Stats,Detailed play-by-play actions
+SC007,transition,Transition Stats,"Zone entries, exits, breakouts"
+SC008,defender,Defender Stats,Statistics from defensive perspective
+SC009,rating,Rating Adjusted,Stats adjusted for opponent/teammate quality
+SC010,composite,Composite Ratings,"Combined metrics (OFF, DEF, WAR)"
+SC011,xg,Expected Goals,xG model outputs
+SC012,goalie,Goalie Stats,Goaltender specific metrics
+SC013,beer_league,Beer League,Recreational hockey specific metrics

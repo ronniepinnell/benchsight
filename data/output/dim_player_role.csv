@@ -1,15 +1,15 @@
-role_id,role_code,role_name,role_type,sort_order
-RL0001,event_player_1,Event Player 1,event_team,1
-RL0002,event_player_2,Event Player 2,event_team,2
-RL0003,event_player_3,Event Player 3,event_team,3
-RL0004,event_player_4,Event Player 4,event_team,4
-RL0005,event_player_5,Event Player 5,event_team,5
-RL0006,event_player_6,Event Player 6,event_team,6
-RL0007,event_goalie,Event Team Goalie,event_team,7
-RL0008,opp_player_1,Opponent Player 1,opp_team,8
-RL0009,opp_player_2,Opponent Player 2,opp_team,9
-RL0010,opp_player_3,Opponent Player 3,opp_team,10
-RL0011,opp_player_4,Opponent Player 4,opp_team,11
-RL0012,opp_player_5,Opponent Player 5,opp_team,12
-RL0013,opp_player_6,Opponent Player 6,opp_team,13
-RL0014,opp_goalie,Opponent Goalie,opp_team,14
+role_id,role_code,role_name,role_type,sort_order,potential_values
+RL0001,event_player_1,Event Player 1,event_team,1,"event_player_1,event_team_player_1,player_1"
+RL0002,event_player_2,Event Player 2,event_team,2,"event_player_2,event_team_player_2,player_2"
+RL0003,event_player_3,Event Player 3,event_team,3,"event_player_3,event_team_player_3,player_3"
+RL0004,event_player_4,Event Player 4,event_team,4,"event_player_4,event_team_player_4,player_4"
+RL0005,event_player_5,Event Player 5,event_team,5,"event_player_5,event_team_player_5,player_5"
+RL0006,event_player_6,Event Player 6,event_team,6,"event_player_6,event_team_player_6,player_6"
+RL0007,event_goalie,Event Team Goalie,event_team,7,"event_goalie,event_team_goalie"
+RL0008,opp_player_1,Opponent Player 1,opp_team,8,"opp_player_1,opp_team_player_1"
+RL0009,opp_player_2,Opponent Player 2,opp_team,9,"opp_player_2,opp_team_player_2"
+RL0010,opp_player_3,Opponent Player 3,opp_team,10,"opp_player_3,opp_team_player_3"
+RL0011,opp_player_4,Opponent Player 4,opp_team,11,"opp_player_4,opp_team_player_4"
+RL0012,opp_player_5,Opponent Player 5,opp_team,12,"opp_player_5,opp_team_player_5"
+RL0013,opp_player_6,Opponent Player 6,opp_team,13,"opp_player_6,opp_team_player_6"
+RL0014,opp_goalie,Opponent Goalie,opp_team,14,"opp_goalie,opp_team_goalie"

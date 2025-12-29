@@ -1,0 +1,103 @@
+flowchart TB
+    subgraph DIMENSIONS["📦 DIMENSION TABLES (44)"]
+        subgraph CORE_DIMS["Core Entities"]
+            dim_player["dim_player<br/>211 players"]
+            dim_team["dim_team<br/>18 teams"]
+            dim_season["dim_season"]
+            dim_venue["dim_venue"]
+            dim_schedule["dim_schedule<br/>10 games"]
+        end
+        
+        subgraph EVENT_DIMS["Event Classification"]
+            dim_event_type["dim_event_type"]
+            dim_event_detail["dim_event_detail"]
+            dim_event_detail_2["dim_event_detail_2"]
+            dim_play_detail["dim_play_detail"]
+        end
+        
+        subgraph RINK_DIMS["Rink Coordinates"]
+            dim_rink_coord["dim_rink_coord<br/>12 zones"]
+            dim_rinkcoordzones["dim_rinkcoordzones<br/>84 zones"]
+            dim_rinkboxcoord["dim_rinkboxcoord<br/>24 boxes"]
+        end
+        
+        subgraph PLAY_DIMS["Play Types"]
+            dim_shot_type["dim_shot_type"]
+            dim_pass_type["dim_pass_type"]
+            dim_zone_entry_type["dim_zone_entry_type"]
+            dim_zone_exit_type["dim_zone_exit_type"]
+            dim_turnover_type["dim_turnover_type"]
+        end
+        
+        subgraph OTHER_DIMS["Other Dimensions"]
+            dim_zone["dim_zone"]
+            dim_period["dim_period"]
+            dim_strength["dim_strength"]
+            dim_position["dim_position"]
+        end
+    end
+    
+    subgraph FACTS["📊 FACT TABLES (44)"]
+        subgraph CORE_FACTS["Core Facts"]
+            fact_events["fact_events<br/>11K+ events"]
+            fact_events_player["fact_events_player<br/>Player-event bridge"]
+            fact_shifts["fact_shifts<br/>Shift data"]
+            fact_shifts_player["fact_shifts_player"]
+        end
+        
+        subgraph STATS_FACTS["Statistics"]
+            fact_player_game_stats["fact_player_game_stats<br/>317 columns<br/>107 rows"]
+            fact_team_game_stats["fact_team_game_stats"]
+            fact_goalie_game_stats["fact_goalie_game_stats"]
+        end
+        
+        subgraph ADVANCED_FACTS["Advanced Analytics"]
+            fact_h2h["fact_h2h<br/>684 pairs"]
+            fact_wowy["fact_wowy<br/>641 pairs"]
+            fact_line_combos["fact_line_combos<br/>332 combos"]
+        end
+        
+        subgraph XY_FACTS["XY Location"]
+            fact_shot_xy["fact_shot_xy<br/>⚠️ Needs XY data"]
+            fact_player_xy_long["fact_player_xy_long<br/>⚠️ Needs XY data"]
+        end
+    end
+    
+    %% Relationships
+    dim_player --> fact_player_game_stats
+    dim_player --> fact_events_player
+    dim_player --> fact_h2h
+    dim_player --> fact_wowy
+    
+    dim_team --> fact_team_game_stats
+    dim_team --> fact_player_game_stats
+    
+    dim_schedule --> fact_events
+    dim_schedule --> fact_player_game_stats
+    dim_schedule --> fact_h2h
+    dim_schedule --> fact_wowy
+    dim_schedule --> fact_line_combos
+    
+    dim_event_type --> fact_events
+    dim_zone --> fact_events
+    
+    dim_rinkcoordzones -.->|"When XY available"| fact_shot_xy
+    dim_rinkboxcoord -.->|"When XY available"| fact_shot_xy
+    
+    fact_events --> fact_events_player
+    
+    classDef dimStyle fill:#e1f5fe,stroke:#0288d1
+    classDef factStyle fill:#fff3e0,stroke:#f57c00
+    classDef warningStyle fill:#ffebee,stroke:#c62828
+    
+    class dim_player,dim_team,dim_season,dim_venue,dim_schedule dimStyle
+    class dim_event_type,dim_event_detail,dim_event_detail_2,dim_play_detail dimStyle
+    class dim_rink_coord,dim_rinkcoordzones,dim_rinkboxcoord dimStyle
+    class dim_shot_type,dim_pass_type,dim_zone_entry_type,dim_zone_exit_type,dim_turnover_type dimStyle
+    class dim_zone,dim_period,dim_strength,dim_position dimStyle
+    
+    class fact_events,fact_events_player,fact_shifts,fact_shifts_player factStyle
+    class fact_player_game_stats,fact_team_game_stats,fact_goalie_game_stats factStyle
+    class fact_h2h,fact_wowy,fact_line_combos factStyle
+    
+    class fact_shot_xy,fact_player_xy_long warningStyle
