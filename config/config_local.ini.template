@@ -1,0 +1,10 @@
+# =============================================================================
+# SUPABASE CONFIGURATION
+# =============================================================================
+# Copy this file to config_local.ini and add your credentials
+# DO NOT commit config_local.ini to git!
+# =============================================================================
+
+[supabase]
+url = https://your-project.supabase.co
+key = your-anon-key-here

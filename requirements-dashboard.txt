@@ -1,0 +1,13 @@
+# Dashboard Requirements
+dash>=2.14.0
+dash-bootstrap-components>=1.5.0
+plotly>=5.18.0
+pandas>=2.0.0
+numpy>=1.24.0
+sqlalchemy>=2.0.0
+gunicorn>=21.0.0
+
+# For development
+jupyter>=1.0.0
+seaborn>=0.12.0
+matplotlib>=3.7.0

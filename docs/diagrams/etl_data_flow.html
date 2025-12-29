@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BenchSight ETL Data Flow</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 40px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h1 { color: #1a1a2e; border-bottom: 3px solid #4a90d9; padding-bottom: 10px; }
+        h2 { color: #16213e; margin-top: 30px; }
+        .flow { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
+        .box { padding: 15px 25px; border-radius: 8px; font-weight: 600; }
+        .source { background: #e8f5e9; border: 2px solid #4caf50; color: #2e7d32; }
+        .process { background: #e3f2fd; border: 2px solid #2196f3; color: #1565c0; }
+        .output { background: #fff3e0; border: 2px solid #ff9800; color: #e65100; }
+        .db { background: #f3e5f5; border: 2px solid #9c27b0; color: #6a1b9a; }
+        .arrow { font-size: 24px; color: #666; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #4a90d9; color: white; }
+        tr:hover { background: #f5f5f5; }
+        .status { padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .pass { background: #c8e6c9; color: #2e7d32; }
+        .ready { background: #bbdefb; color: #1565c0; }
+        code { background: #f5f5f5; padding: 2px 6px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏒 BenchSight ETL Data Flow</h1>
+        
+        <h2>Pipeline Overview</h2>
+        <div class="flow">
+            <div class="box source">BLB_Tables.xlsx</div>
+            <span class="arrow">→</span>
+            <div class="box process">ETL Transform</div>
+            <span class="arrow">→</span>
+            <div class="box output">51 CSVs</div>
+            <span class="arrow">→</span>
+            <div class="box db">Supabase</div>
+        </div>
+        
+        <div class="flow">
+            <div class="box source">Game Tracking</div>
+            <span class="arrow">→</span>
+            <div class="box process">combine_tracking.py</div>
+            <span class="arrow">→</span>
+            <div class="box output">fact_events_*.csv</div>
+            <span class="arrow">→</span>
+            <div class="box db">Supabase</div>
+        </div>
+
+        <h2>ETL Process</h2>
+        <table>
+            <tr><th>Step</th><th>Script</th><th>Input</th><th>Output</th></tr>
+            <tr><td>1. Load</td><td><code>UPLOAD_TO_SUPABASE.py</code></td><td>data/output/*.csv</td><td>Clean DataFrames</td></tr>
+            <tr><td>2. Clean</td><td>clean_dataframe()</td><td>Raw columns</td><td>Stripped names, no junk</td></tr>
+            <tr><td>3. Transform</td><td>clean_value()</td><td>Mixed types</td><td>Proper types + NULLs</td></tr>
+            <tr><td>4. Upload</td><td>upload_batch()</td><td>Records</td><td>Supabase rows</td></tr>
+        </table>
+
+        <h2>Error Handling</h2>
+        <table>
+            <tr><th>Issue</th><th>Detection</th><th>Solution</th></tr>
+            <tr><td>NULL values</td><td>is_null() checks 20+ patterns</td><td>Returns None</td></tr>
+            <tr><td>Type mismatch</td><td>Supabase error response</td><td>Retry with string conversion</td></tr>
+            <tr><td>Encoding</td><td>UnicodeDecodeError</td><td>Try UTF-8 → Latin-1 → CP1252</td></tr>
+            <tr><td>Timeout</td><td>requests.Timeout</td><td>Retry up to 3x</td></tr>
+            <tr><td>Duplicates</td><td>duplicate key error</td><td>Prefer: merge-duplicates</td></tr>
+        </table>
+
+        <h2>Test Coverage</h2>
+        <table>
+            <tr><th>Test Class</th><th>Tests</th><th>Status</th></tr>
+            <tr><td>TestIsNull</td><td>6</td><td><span class="status pass">PASS</span></td></tr>
+            <tr><td>TestCleanValue</td><td>12</td><td><span class="status pass">PASS</span></td></tr>
+            <tr><td>TestCleanDataframe</td><td>3</td><td><span class="status pass">PASS</span></td></tr>
+            <tr><td>TestTransformRecords</td><td>3</td><td><span class="status pass">PASS</span></td></tr>
+            <tr><td>TestLoadCSVSafe</td><td>3</td><td><span class="status pass">PASS</span></td></tr>
+            <tr><td>TestEdgeCases</td><td>6</td><td><span class="status pass">PASS</span></td></tr>
+            <tr><td><strong>Total</strong></td><td><strong>33</strong></td><td><span class="status pass">ALL PASS</span></td></tr>
+        </table>
+
+        <h2>Quick Commands</h2>
+        <pre style="background:#1a1a2e;color:#fff;padding:20px;border-radius:8px;">
+# Upload all data to Supabase
+python3 UPLOAD_TO_SUPABASE.py
+
+# Run tests
+python3 -m pytest tests/test_etl_upload.py -v
+
+# Check CSV counts
+ls -la data/output/*.csv | wc -l
+        </pre>
+    </div>
+</body>
+</html>

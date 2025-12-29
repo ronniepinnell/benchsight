@@ -1,0 +1,4970 @@
+[
+  {
+    "gid": "19022",
+    "date": "2025-11-23",
+    "home": "Ace",
+    "away": "Nelson",
+    "homeColor": "#CA0527",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "19021",
+    "date": "2025-11-23",
+    "home": "Amos",
+    "away": "OS Offices",
+    "homeColor": "#641C28",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "19020",
+    "date": "2025-11-23",
+    "home": "HollowBrook",
+    "away": "Velodrome",
+    "homeColor": "#4D2640",
+    "awayColor": "#9C47E4",
+    "video": ""
+  },
+  {
+    "gid": "19019",
+    "date": "2025-11-23",
+    "home": "Platinum",
+    "away": "Orphans",
+    "homeColor": "#919294",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "19018",
+    "date": "2025-11-23",
+    "home": "Outlaws",
+    "away": "Triple J",
+    "homeColor": "#02007B",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "19017",
+    "date": "2025-11-16",
+    "home": "Triple J",
+    "away": "Orphans",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "19016",
+    "date": "2025-11-16",
+    "home": "Amos",
+    "away": "HollowBrook",
+    "homeColor": "#641C28",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "19015",
+    "date": "2025-11-16",
+    "home": "Ace",
+    "away": "Outlaws",
+    "homeColor": "#CA0527",
+    "awayColor": "#02007B",
+    "video": ""
+  },
+  {
+    "gid": "19014",
+    "date": "2025-11-16",
+    "home": "Platinum",
+    "away": "Velodrome",
+    "homeColor": "#919294",
+    "awayColor": "#9C47E4",
+    "video": ""
+  },
+  {
+    "gid": "19013",
+    "date": "2025-11-16",
+    "home": "Nelson",
+    "away": "OS Offices",
+    "homeColor": "#F3C323",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "19012",
+    "date": "2025-11-09",
+    "home": "Nelson",
+    "away": "Platinum",
+    "homeColor": "#F3C323",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "19011",
+    "date": "2025-11-09",
+    "home": "Outlaws",
+    "away": "Orphans",
+    "homeColor": "#02007B",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "19010",
+    "date": "2025-11-09",
+    "home": "Ace",
+    "away": "HollowBrook",
+    "homeColor": "#CA0527",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "19009",
+    "date": "2025-11-09",
+    "home": "OS Offices",
+    "away": "Velodrome",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#9C47E4",
+    "video": ""
+  },
+  {
+    "gid": "19008",
+    "date": "2025-11-09",
+    "home": "Amos",
+    "away": "Triple J",
+    "homeColor": "#641C28",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "19007",
+    "date": "2025-11-02",
+    "home": "Amos",
+    "away": "Velodrome",
+    "homeColor": "#641C28",
+    "awayColor": "#9C47E4",
+    "video": ""
+  },
+  {
+    "gid": "19006",
+    "date": "2025-11-02",
+    "home": "Ace",
+    "away": "Platinum",
+    "homeColor": "#CA0527",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "19005",
+    "date": "2025-11-02",
+    "home": "Nelson",
+    "away": "Triple J",
+    "homeColor": "#F3C323",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "19004",
+    "date": "2025-11-02",
+    "home": "HollowBrook",
+    "away": "Orphans",
+    "homeColor": "#4D2640",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "19003",
+    "date": "2025-11-02",
+    "home": "Outlaws",
+    "away": "OS Offices",
+    "homeColor": "#02007B",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "19002",
+    "date": "2025-10-26",
+    "home": "Ace",
+    "away": "OS Offices",
+    "homeColor": "#CA0527",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "19001",
+    "date": "2025-10-26",
+    "home": "Outlaws",
+    "away": "Platinum",
+    "homeColor": "#02007B",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "19000",
+    "date": "2025-10-26",
+    "home": "HollowBrook",
+    "away": "Triple J",
+    "homeColor": "#4D2640",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "18999",
+    "date": "2025-10-26",
+    "home": "Amos",
+    "away": "Nelson",
+    "homeColor": "#641C28",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "18998",
+    "date": "2025-10-26",
+    "home": "Orphans",
+    "away": "Velodrome",
+    "homeColor": "#000000",
+    "awayColor": "#9C47E4",
+    "video": ""
+  },
+  {
+    "gid": "18997",
+    "date": "2025-10-19",
+    "home": "Platinum",
+    "away": "Triple J",
+    "homeColor": "#919294",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "18996",
+    "date": "2025-10-19",
+    "home": "HollowBrook",
+    "away": "OS Offices",
+    "homeColor": "#4D2640",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "18995",
+    "date": "2025-10-19",
+    "home": "Nelson",
+    "away": "Outlaws",
+    "homeColor": "#F3C323",
+    "awayColor": "#02007B",
+    "video": ""
+  },
+  {
+    "gid": "18994",
+    "date": "2025-10-19",
+    "home": "Amos",
+    "away": "Orphans",
+    "homeColor": "#641C28",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "18993",
+    "date": "2025-10-19",
+    "home": "Ace",
+    "away": "Velodrome",
+    "homeColor": "#CA0527",
+    "awayColor": "#9C47E4",
+    "video": ""
+  },
+  {
+    "gid": "18992",
+    "date": "2025-10-12",
+    "home": "Amos",
+    "away": "Outlaws",
+    "homeColor": "#641C28",
+    "awayColor": "#02007B",
+    "video": ""
+  },
+  {
+    "gid": "18991",
+    "date": "2025-10-12",
+    "home": "Triple J",
+    "away": "Velodrome",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#9C47E4",
+    "video": ""
+  },
+  {
+    "gid": "18990",
+    "date": "2025-10-12",
+    "home": "Platinum",
+    "away": "OS Offices",
+    "homeColor": "#919294",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "18989",
+    "date": "2025-10-12",
+    "home": "HollowBrook",
+    "away": "Nelson",
+    "homeColor": "#4D2640",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "18988",
+    "date": "2025-10-12",
+    "home": "Ace",
+    "away": "Orphans",
+    "homeColor": "#CA0527",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "18987",
+    "date": "2025-10-05",
+    "home": "Outlaws",
+    "away": "Velodrome",
+    "homeColor": "#02007B",
+    "awayColor": "#9C47E4",
+    "video": ""
+  },
+  {
+    "gid": "18986",
+    "date": "2025-10-05",
+    "home": "Nelson",
+    "away": "Orphans",
+    "homeColor": "#F3C323",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "18985",
+    "date": "2025-10-05",
+    "home": "OS Offices",
+    "away": "Triple J",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "18984",
+    "date": "2025-10-05",
+    "home": "Ace",
+    "away": "Amos",
+    "homeColor": "#CA0527",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "18983",
+    "date": "2025-10-05",
+    "home": "HollowBrook",
+    "away": "Platinum",
+    "homeColor": "#4D2640",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "18982",
+    "date": "2025-09-28",
+    "home": "OS Offices",
+    "away": "Orphans",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "18981",
+    "date": "2025-09-28",
+    "home": "Nelson",
+    "away": "Velodrome",
+    "homeColor": "#F3C323",
+    "awayColor": "#9C47E4",
+    "video": ""
+  },
+  {
+    "gid": "18980",
+    "date": "2025-09-28",
+    "home": "Amos",
+    "away": "Platinum",
+    "homeColor": "#641C28",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "18979",
+    "date": "2025-09-28",
+    "home": "HollowBrook",
+    "away": "Outlaws",
+    "homeColor": "#4D2640",
+    "awayColor": "#02007B",
+    "video": ""
+  },
+  {
+    "gid": "18978",
+    "date": "2025-09-28",
+    "home": "Ace",
+    "away": "Triple J",
+    "homeColor": "#CA0527",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "18977",
+    "date": "2025-09-14",
+    "home": "Velodrome",
+    "away": "HollowBrook",
+    "homeColor": "#9C47E4",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "18976",
+    "date": "2025-09-14",
+    "home": "Ace",
+    "away": "Nelson",
+    "homeColor": "#CA0527",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "18975",
+    "date": "2025-09-14",
+    "home": "Amos",
+    "away": "OS Offices",
+    "homeColor": "#641C28",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "18974",
+    "date": "2025-09-14",
+    "home": "Outlaws",
+    "away": "Triple J",
+    "homeColor": "#02007B",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "18973",
+    "date": "2025-09-14",
+    "home": "Platinum",
+    "away": "Orphans",
+    "homeColor": "#919294",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "18972",
+    "date": "2025-09-07",
+    "home": "Amos",
+    "away": "HollowBrook",
+    "homeColor": "#641C28",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "18971",
+    "date": "2025-09-07",
+    "home": "Triple J",
+    "away": "Orphans",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "18970",
+    "date": "2025-09-07",
+    "home": "Ace",
+    "away": "Outlaws",
+    "homeColor": "#CA0527",
+    "awayColor": "#02007B",
+    "video": ""
+  },
+  {
+    "gid": "18969",
+    "date": "2025-09-07",
+    "home": "Platinum",
+    "away": "Velodrome",
+    "homeColor": "#919294",
+    "awayColor": "#9C47E4",
+    "video": ""
+  },
+  {
+    "gid": "18968",
+    "date": "2025-09-07",
+    "home": "Nelson",
+    "away": "OS Offices",
+    "homeColor": "#F3C323",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "18967",
+    "date": "2025-08-24",
+    "home": "Ace",
+    "away": "HollowBrook",
+    "homeColor": "#CA0527",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "18966",
+    "date": "2025-08-24",
+    "home": "Nelson",
+    "away": "Platinum",
+    "homeColor": "#F3C323",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "18965",
+    "date": "2025-08-24",
+    "home": "Velodrome",
+    "away": "OS Offices",
+    "homeColor": "#9C47E4",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "18964",
+    "date": "2025-08-24",
+    "home": "Outlaws",
+    "away": "Orphans",
+    "homeColor": "#02007B",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "18963",
+    "date": "2025-08-24",
+    "home": "Amos",
+    "away": "Triple J",
+    "homeColor": "#641C28",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "18962",
+    "date": "2025-08-17",
+    "home": "Nelson",
+    "away": "Triple J",
+    "homeColor": "#F3C323",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "18961",
+    "date": "2025-08-17",
+    "home": "Ace",
+    "away": "Platinum",
+    "homeColor": "#CA0527",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "18960",
+    "date": "2025-08-17",
+    "home": "HollowBrook",
+    "away": "Orphans",
+    "homeColor": "#4D2640",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "18959",
+    "date": "2025-08-17",
+    "home": "Amos",
+    "away": "Velodrome",
+    "homeColor": "#641C28",
+    "awayColor": "#9C47E4",
+    "video": ""
+  },
+  {
+    "gid": "18958",
+    "date": "2025-08-17",
+    "home": "Outlaws",
+    "away": "OS Offices",
+    "homeColor": "#02007B",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "18957",
+    "date": "2025-08-10",
+    "home": "Outlaws",
+    "away": "Platinum",
+    "homeColor": "#02007B",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "18956",
+    "date": "2025-08-10",
+    "home": "HollowBrook",
+    "away": "Triple J",
+    "homeColor": "#4D2640",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "18955",
+    "date": "2025-08-10",
+    "home": "Velodrome",
+    "away": "Orphans",
+    "homeColor": "#9C47E4",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "18954",
+    "date": "2025-08-10",
+    "home": "Ace",
+    "away": "OS Offices",
+    "homeColor": "#CA0527",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "18953",
+    "date": "2025-08-10",
+    "home": "Amos",
+    "away": "Nelson",
+    "homeColor": "#641C28",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "18619",
+    "date": "2025-07-13",
+    "home": "Red",
+    "away": "Green",
+    "homeColor": "#CA0527",
+    "awayColor": "#04c946",
+    "video": ""
+  },
+  {
+    "gid": "18051",
+    "date": "2025-03-09",
+    "home": "HollowBrook",
+    "away": "Orphans",
+    "homeColor": "#4D2640",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "18050",
+    "date": "2025-03-09",
+    "home": "Nelson",
+    "away": "Ace",
+    "homeColor": "#F3C323",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "18049",
+    "date": "2025-03-09",
+    "home": "Amos",
+    "away": "Triple J",
+    "homeColor": "#641C28",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "18048",
+    "date": "2025-03-09",
+    "home": "OS Offices",
+    "away": "Platinum",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "18046",
+    "date": "2025-03-02",
+    "home": "Nelson",
+    "away": "Outlaws",
+    "homeColor": "#F3C323",
+    "awayColor": "#02007B",
+    "video": ""
+  },
+  {
+    "gid": "18045",
+    "date": "2025-03-02",
+    "home": "Amos",
+    "away": "Orphans",
+    "homeColor": "#641C28",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "18044",
+    "date": "2025-03-02",
+    "home": "OS Offices",
+    "away": "Ace",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "18043",
+    "date": "2025-03-02",
+    "home": "Platinum",
+    "away": "Triple J",
+    "homeColor": "#919294",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "18041",
+    "date": "2025-02-23",
+    "home": "Amos",
+    "away": "HollowBrook",
+    "homeColor": "#641C28",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "18040",
+    "date": "2025-02-23",
+    "home": "OS Offices",
+    "away": "Outlaws",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#02007B",
+    "video": ""
+  },
+  {
+    "gid": "18039",
+    "date": "2025-02-23",
+    "home": "Platinum",
+    "away": "Orphans",
+    "homeColor": "#919294",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "18038",
+    "date": "2025-02-23",
+    "home": "Triple J",
+    "away": "Ace",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "18036",
+    "date": "2025-02-09",
+    "home": "OS Offices",
+    "away": "Nelson",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "18035",
+    "date": "2025-02-09",
+    "home": "Platinum",
+    "away": "HollowBrook",
+    "homeColor": "#919294",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "18034",
+    "date": "2025-02-09",
+    "home": "Triple J",
+    "away": "Outlaws",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#02007B",
+    "video": ""
+  },
+  {
+    "gid": "18033",
+    "date": "2025-02-09",
+    "home": "Ace",
+    "away": "Orphans",
+    "homeColor": "#CA0527",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "18031",
+    "date": "2025-02-02",
+    "home": "Platinum",
+    "away": "Amos",
+    "homeColor": "#919294",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "18030",
+    "date": "2025-02-02",
+    "home": "Triple J",
+    "away": "Nelson",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "18029",
+    "date": "2025-02-02",
+    "home": "Ace",
+    "away": "HollowBrook",
+    "homeColor": "#CA0527",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "18028",
+    "date": "2025-02-02",
+    "home": "Orphans",
+    "away": "Outlaws",
+    "homeColor": "#000000",
+    "awayColor": "#02007B",
+    "video": ""
+  },
+  {
+    "gid": "18025",
+    "date": "2025-01-26",
+    "home": "Ace",
+    "away": "Amos",
+    "homeColor": "#CA0527",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "18024",
+    "date": "2025-01-26",
+    "home": "Orphans",
+    "away": "Nelson",
+    "homeColor": "#000000",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "18023",
+    "date": "2025-01-26",
+    "home": "Outlaws",
+    "away": "HollowBrook",
+    "homeColor": "#02007B",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "18021",
+    "date": "2025-01-12",
+    "home": "Ace",
+    "away": "Platinum",
+    "homeColor": "#CA0527",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "18020",
+    "date": "2025-01-12",
+    "home": "Orphans",
+    "away": "OS Offices",
+    "homeColor": "#000000",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "18019",
+    "date": "2025-01-12",
+    "home": "Outlaws",
+    "away": "Amos",
+    "homeColor": "#02007B",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "18018",
+    "date": "2025-01-12",
+    "home": "HollowBrook",
+    "away": "Nelson",
+    "homeColor": "#4D2640",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "18016",
+    "date": "2025-01-05",
+    "home": "Orphans",
+    "away": "Triple J",
+    "homeColor": "#000000",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "18015",
+    "date": "2025-01-05",
+    "home": "Outlaws",
+    "away": "Platinum",
+    "homeColor": "#02007B",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "18014",
+    "date": "2025-01-05",
+    "home": "HollowBrook",
+    "away": "OS Offices",
+    "homeColor": "#4D2640",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "18013",
+    "date": "2025-01-05",
+    "home": "Nelson",
+    "away": "Amos",
+    "homeColor": "#F3C323",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "18011",
+    "date": "2024-12-22",
+    "home": "Outlaws",
+    "away": "Ace",
+    "homeColor": "#02007B",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "18010",
+    "date": "2024-12-22",
+    "home": "HollowBrook",
+    "away": "Triple J",
+    "homeColor": "#4D2640",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "18009",
+    "date": "2024-12-22",
+    "home": "Nelson",
+    "away": "Platinum",
+    "homeColor": "#F3C323",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "18008",
+    "date": "2024-12-22",
+    "home": "Amos",
+    "away": "OS Offices",
+    "homeColor": "#641C28",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "18006",
+    "date": "2024-12-15",
+    "home": "HollowBrook",
+    "away": "Orphans",
+    "homeColor": "#4D2640",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "18005",
+    "date": "2024-12-15",
+    "home": "Nelson",
+    "away": "Ace",
+    "homeColor": "#F3C323",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "18004",
+    "date": "2024-12-15",
+    "home": "Amos",
+    "away": "Triple J",
+    "homeColor": "#641C28",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "18003",
+    "date": "2024-12-15",
+    "home": "OS Offices",
+    "away": "Platinum",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "18001",
+    "date": "2025-03-16",
+    "home": "Nelson",
+    "away": "Outlaws",
+    "homeColor": "#F3C323",
+    "awayColor": "#02007B",
+    "video": ""
+  },
+  {
+    "gid": "18000",
+    "date": "2025-03-16",
+    "home": "Amos",
+    "away": "Orphans",
+    "homeColor": "#641C28",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "17999",
+    "date": "2025-03-16",
+    "home": "OS Offices",
+    "away": "Ace",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "17998",
+    "date": "2025-03-16",
+    "home": "Platinum",
+    "away": "Triple J",
+    "homeColor": "#919294",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "17996",
+    "date": "2024-11-24",
+    "home": "Amos",
+    "away": "HollowBrook",
+    "homeColor": "#641C28",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "17995",
+    "date": "2024-11-24",
+    "home": "OS Offices",
+    "away": "Outlaws",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#02007B",
+    "video": ""
+  },
+  {
+    "gid": "17994",
+    "date": "2024-11-24",
+    "home": "Platinum",
+    "away": "Orphans",
+    "homeColor": "#919294",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "17993",
+    "date": "2024-11-24",
+    "home": "Triple J",
+    "away": "Ace",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "17991",
+    "date": "2024-11-17",
+    "home": "OS Offices",
+    "away": "Nelson",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "17990",
+    "date": "2024-11-17",
+    "home": "Platinum",
+    "away": "HollowBrook",
+    "homeColor": "#919294",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "17989",
+    "date": "2024-11-17",
+    "home": "Triple J",
+    "away": "Outlaws",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#02007B",
+    "video": ""
+  },
+  {
+    "gid": "17988",
+    "date": "2024-11-17",
+    "home": "Ace",
+    "away": "Orphans",
+    "homeColor": "#CA0527",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "17986",
+    "date": "2024-11-10",
+    "home": "Platinum",
+    "away": "Amos",
+    "homeColor": "#919294",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "17985",
+    "date": "2024-11-10",
+    "home": "Triple J",
+    "away": "Nelson",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "17984",
+    "date": "2024-11-10",
+    "home": "Ace",
+    "away": "HollowBrook",
+    "homeColor": "#CA0527",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "17983",
+    "date": "2024-11-10",
+    "home": "Orphans",
+    "away": "Outlaws",
+    "homeColor": "#000000",
+    "awayColor": "#02007B",
+    "video": ""
+  },
+  {
+    "gid": "17981",
+    "date": "2024-11-03",
+    "home": "Triple J",
+    "away": "OS Offices",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "17980",
+    "date": "2024-11-03",
+    "home": "Ace",
+    "away": "Amos",
+    "homeColor": "#CA0527",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "17979",
+    "date": "2024-11-03",
+    "home": "Orphans",
+    "away": "Nelson",
+    "homeColor": "#000000",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "17978",
+    "date": "2024-11-03",
+    "home": "Outlaws",
+    "away": "HollowBrook",
+    "homeColor": "#02007B",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "17976",
+    "date": "2024-10-27",
+    "home": "Ace",
+    "away": "Platinum",
+    "homeColor": "#CA0527",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "17975",
+    "date": "2024-10-27",
+    "home": "Orphans",
+    "away": "OS Offices",
+    "homeColor": "#000000",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "17974",
+    "date": "2024-10-27",
+    "home": "Outlaws",
+    "away": "Amos",
+    "homeColor": "#02007B",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "17973",
+    "date": "2024-10-27",
+    "home": "HollowBrook",
+    "away": "Nelson",
+    "homeColor": "#4D2640",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "17971",
+    "date": "2024-10-20",
+    "home": "Orphans",
+    "away": "Triple J",
+    "homeColor": "#000000",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "17970",
+    "date": "2024-10-20",
+    "home": "Outlaws",
+    "away": "Platinum",
+    "homeColor": "#02007B",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "17969",
+    "date": "2024-10-20",
+    "home": "HollowBrook",
+    "away": "OS Offices",
+    "homeColor": "#4D2640",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "17968",
+    "date": "2024-10-20",
+    "home": "Nelson",
+    "away": "Amos",
+    "homeColor": "#F3C323",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "17966",
+    "date": "2024-10-13",
+    "home": "Outlaws",
+    "away": "Ace",
+    "homeColor": "#02007B",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "17965",
+    "date": "2024-10-13",
+    "home": "HollowBrook",
+    "away": "Triple J",
+    "homeColor": "#4D2640",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "17964",
+    "date": "2024-10-13",
+    "home": "Nelson",
+    "away": "Platinum",
+    "homeColor": "#F3C323",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "17963",
+    "date": "2024-10-13",
+    "home": "Amos",
+    "away": "OS Offices",
+    "homeColor": "#641C28",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "17961",
+    "date": "2024-10-06",
+    "home": "HollowBrook",
+    "away": "Orphans",
+    "homeColor": "#4D2640",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "17960",
+    "date": "2024-10-06",
+    "home": "Nelson",
+    "away": "Ace",
+    "homeColor": "#F3C323",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "17959",
+    "date": "2024-10-06",
+    "home": "Amos",
+    "away": "Triple J",
+    "homeColor": "#641C28",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "17958",
+    "date": "2024-10-06",
+    "home": "OS Offices",
+    "away": "Platinum",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "17956",
+    "date": "2024-09-29",
+    "home": "Nelson",
+    "away": "Outlaws",
+    "homeColor": "#F3C323",
+    "awayColor": "#02007B",
+    "video": ""
+  },
+  {
+    "gid": "17955",
+    "date": "2024-12-29",
+    "home": "Amos",
+    "away": "Orphans",
+    "homeColor": "#641C28",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "17954",
+    "date": "2024-09-29",
+    "home": "OS Offices",
+    "away": "Ace",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "17953",
+    "date": "2024-09-29",
+    "home": "Platinum",
+    "away": "Triple J",
+    "homeColor": "#919294",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "17951",
+    "date": "2024-09-22",
+    "home": "Amos",
+    "away": "HollowBrook",
+    "homeColor": "#641C28",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "17950",
+    "date": "2024-09-22",
+    "home": "OS Offices",
+    "away": "Outlaws",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#02007B",
+    "video": ""
+  },
+  {
+    "gid": "17949",
+    "date": "2024-09-22",
+    "home": "Platinum",
+    "away": "Orphans",
+    "homeColor": "#919294",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "17948",
+    "date": "2024-09-22",
+    "home": "Triple J",
+    "away": "Ace",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "17946",
+    "date": "2024-09-15",
+    "home": "OS Offices",
+    "away": "Nelson",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "17945",
+    "date": "2024-09-15",
+    "home": "Platinum",
+    "away": "HollowBrook",
+    "homeColor": "#919294",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "17944",
+    "date": "2024-09-15",
+    "home": "Triple J",
+    "away": "Outlaws",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#02007B",
+    "video": ""
+  },
+  {
+    "gid": "17943",
+    "date": "2024-09-15",
+    "home": "Ace",
+    "away": "Orphans",
+    "homeColor": "#CA0527",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "17941",
+    "date": "2024-09-08",
+    "home": "Platinum",
+    "away": "Amos",
+    "homeColor": "#919294",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "17940",
+    "date": "2024-09-08",
+    "home": "Triple J",
+    "away": "Nelson",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "17939",
+    "date": "2024-09-08",
+    "home": "Ace",
+    "away": "HollowBrook",
+    "homeColor": "#CA0527",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "17938",
+    "date": "2024-09-08",
+    "home": "Orphans",
+    "away": "Outlaws",
+    "homeColor": "#000000",
+    "awayColor": "#02007B",
+    "video": ""
+  },
+  {
+    "gid": "17936",
+    "date": "2024-09-01",
+    "home": "Triple J",
+    "away": "OS Offices",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "17935",
+    "date": "2024-09-01",
+    "home": "Ace",
+    "away": "Amos",
+    "homeColor": "#CA0527",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "17934",
+    "date": "2024-09-01",
+    "home": "Orphans",
+    "away": "Nelson",
+    "homeColor": "#000000",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "17933",
+    "date": "2024-09-01",
+    "home": "Outlaws",
+    "away": "HollowBrook",
+    "homeColor": "#02007B",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "17931",
+    "date": "2024-08-25",
+    "home": "Ace",
+    "away": "Platinum",
+    "homeColor": "#CA0527",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "17930",
+    "date": "2024-08-25",
+    "home": "Orphans",
+    "away": "OS Offices",
+    "homeColor": "#000000",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "17929",
+    "date": "2024-08-25",
+    "home": "Outlaws",
+    "away": "Amos",
+    "homeColor": "#02007B",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "17928",
+    "date": "2024-08-25",
+    "home": "HollowBrook",
+    "away": "Nelson",
+    "homeColor": "#4D2640",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "17926",
+    "date": "2024-08-18",
+    "home": "Orphans",
+    "away": "Triple J",
+    "homeColor": "#000000",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "17925",
+    "date": "2024-08-18",
+    "home": "Outlaws",
+    "away": "Platinum",
+    "homeColor": "#02007B",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "17924",
+    "date": "2024-08-18",
+    "home": "HollowBrook",
+    "away": "OS Offices",
+    "homeColor": "#4D2640",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "17923",
+    "date": "2024-08-18",
+    "home": "Nelson",
+    "away": "Amos",
+    "homeColor": "#F3C323",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "17921",
+    "date": "2024-08-11",
+    "home": "Outlaws",
+    "away": "Ace",
+    "homeColor": "#02007B",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "17920",
+    "date": "2024-08-11",
+    "home": "HollowBrook",
+    "away": "Triple J",
+    "homeColor": "#4D2640",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "17919",
+    "date": "2024-08-11",
+    "home": "Nelson",
+    "away": "Platinum",
+    "homeColor": "#F3C323",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "17918",
+    "date": "2024-08-11",
+    "home": "Amos",
+    "away": "OS Offices",
+    "homeColor": "#641C28",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "16895",
+    "date": "2024-04-21",
+    "home": "Triple J",
+    "away": "OS Offices",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "16894",
+    "date": "2024-04-21",
+    "home": "HollowBrook",
+    "away": "Ace",
+    "homeColor": "#4D2640",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "16893",
+    "date": "2024-04-21",
+    "home": "Platinum",
+    "away": "Nelson",
+    "homeColor": "#919294",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "16892",
+    "date": "2024-04-21",
+    "home": "Amos",
+    "away": "Orphans",
+    "homeColor": "#641C28",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "16891",
+    "date": "2024-04-14",
+    "home": "OS Offices",
+    "away": "Ace",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "16890",
+    "date": "2024-04-21",
+    "home": "Platinum",
+    "away": "Amos",
+    "homeColor": "#919294",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "16889",
+    "date": "2024-04-14",
+    "home": "Nelson",
+    "away": "Orphans",
+    "homeColor": "#F3C323",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "16888",
+    "date": "2024-04-14",
+    "home": "Triple J",
+    "away": "HollowBrook",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "16887",
+    "date": "2024-04-07",
+    "home": "Orphans",
+    "away": "OS Offices",
+    "homeColor": "#000000",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "16886",
+    "date": "2024-04-07",
+    "home": "HollowBrook",
+    "away": "Platinum",
+    "homeColor": "#4D2640",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "16885",
+    "date": "2024-04-07",
+    "home": "Nelson",
+    "away": "Ace",
+    "homeColor": "#F3C323",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "16884",
+    "date": "2024-04-07",
+    "home": "Triple J",
+    "away": "Amos",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "16883",
+    "date": "2024-03-24",
+    "home": "Orphans",
+    "away": "Triple J",
+    "homeColor": "#000000",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "16882",
+    "date": "2024-02-24",
+    "home": "OS Offices",
+    "away": "Platinum",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "16881",
+    "date": "2024-03-24",
+    "home": "Nelson",
+    "away": "HollowBrook",
+    "homeColor": "#F3C323",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "16880",
+    "date": "2024-03-17",
+    "home": "Amos",
+    "away": "Ace",
+    "homeColor": "#641C28",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "16875",
+    "date": "2024-03-10",
+    "home": "Triple J",
+    "away": "HollowBrook",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "16874",
+    "date": "2024-03-31",
+    "home": "Ace",
+    "away": "OS Offices",
+    "homeColor": "#CA0527",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "16873",
+    "date": "2024-03-24",
+    "home": "Platinum",
+    "away": "Amos",
+    "homeColor": "#919294",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "16872",
+    "date": "2024-03-17",
+    "home": "Nelson",
+    "away": "Orphans",
+    "homeColor": "#F3C323",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "16871",
+    "date": "2024-03-10",
+    "home": "Amos",
+    "away": "Orphans",
+    "homeColor": "#641C28",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "16870",
+    "date": "2024-03-03",
+    "home": "Triple J",
+    "away": "OS Offices",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "16869",
+    "date": "2024-03-03",
+    "home": "Ace",
+    "away": "HollowBrook",
+    "homeColor": "#CA0527",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "16868",
+    "date": "2024-03-03",
+    "home": "Platinum",
+    "away": "Nelson",
+    "homeColor": "#919294",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "16867",
+    "date": "2024-02-25",
+    "home": "HollowBrook",
+    "away": "Amos",
+    "homeColor": "#4D2640",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "16866",
+    "date": "2024-02-25",
+    "home": "Nelson",
+    "away": "OS Offices",
+    "homeColor": "#F3C323",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "16865",
+    "date": "2024-02-25",
+    "home": "Triple J",
+    "away": "Platinum",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "16864",
+    "date": "2024-02-25",
+    "home": "Ace",
+    "away": "Orphans",
+    "homeColor": "#CA0527",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "16863",
+    "date": "2024-02-18",
+    "home": "HollowBrook",
+    "away": "Platinum",
+    "homeColor": "#4D2640",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "16862",
+    "date": "2024-02-11",
+    "home": "Ace",
+    "away": "Nelson",
+    "homeColor": "#CA0527",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "16861",
+    "date": "2024-02-04",
+    "home": "Triple J",
+    "away": "Amos",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "16860",
+    "date": "2024-02-04",
+    "home": "Orphans",
+    "away": "OS Offices",
+    "homeColor": "#000000",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "16859",
+    "date": "2024-01-28",
+    "home": "OS Offices",
+    "away": "Platinum",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "16858",
+    "date": "2024-02-11",
+    "home": "Nelson",
+    "away": "HollowBrook",
+    "homeColor": "#F3C323",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "16857",
+    "date": "2024-02-04",
+    "home": "Ace",
+    "away": "Amos",
+    "homeColor": "#CA0527",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "16856",
+    "date": "2024-01-28",
+    "home": "Orphans",
+    "away": "Triple J",
+    "homeColor": "#000000",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "16855",
+    "date": "2024-01-21",
+    "home": "Amos",
+    "away": "Nelson",
+    "homeColor": "#641C28",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "16854",
+    "date": "2024-01-21",
+    "home": "Platinum",
+    "away": "Orphans",
+    "homeColor": "#919294",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "16853",
+    "date": "2024-01-21",
+    "home": "OS Offices",
+    "away": "HollowBrook",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "16852",
+    "date": "2024-01-21",
+    "home": "Triple J",
+    "away": "Ace",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "16851",
+    "date": "2024-01-07",
+    "home": "Platinum",
+    "away": "Ace",
+    "homeColor": "#919294",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "16850",
+    "date": "2024-01-07",
+    "home": "Nelson",
+    "away": "Triple J",
+    "homeColor": "#F3C323",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "16849",
+    "date": "2024-01-07",
+    "home": "Amos",
+    "away": "OS Offices",
+    "homeColor": "#641C28",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "16847",
+    "date": "2024-01-07",
+    "home": "OS Offices",
+    "away": "Nelson",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "16846",
+    "date": "2023-12-31",
+    "home": "HollowBrook",
+    "away": "Amos",
+    "homeColor": "#4D2640",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "16845",
+    "date": "2023-12-24",
+    "home": "Orphans",
+    "away": "Ace",
+    "homeColor": "#000000",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "16844",
+    "date": "2023-12-17",
+    "home": "Triple J",
+    "away": "Platinum",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "16843",
+    "date": "2023-12-10",
+    "home": "Nelson",
+    "away": "Triple J",
+    "homeColor": "#F3C323",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "16842",
+    "date": "2023-12-24",
+    "home": "Amos",
+    "away": "OS Offices",
+    "homeColor": "#641C28",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "16841",
+    "date": "2023-12-17",
+    "home": "Orphans",
+    "away": "HollowBrook",
+    "homeColor": "#000000",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "16840",
+    "date": "2023-12-10",
+    "home": "Platinum",
+    "away": "Ace",
+    "homeColor": "#919294",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "16839",
+    "date": "2023-12-03",
+    "home": "Nelson",
+    "away": "Ace",
+    "homeColor": "#F3C323",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "16838",
+    "date": "2023-12-03",
+    "home": "Amos",
+    "away": "Triple J",
+    "homeColor": "#641C28",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "16837",
+    "date": "2023-12-03",
+    "home": "Orphans",
+    "away": "OS Offices",
+    "homeColor": "#000000",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "16836",
+    "date": "2023-12-03",
+    "home": "HollowBrook",
+    "away": "Platinum",
+    "homeColor": "#4D2640",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "16834",
+    "date": "2023-11-26",
+    "home": "Amos",
+    "away": "Ace",
+    "homeColor": "#641C28",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "16833",
+    "date": "2023-11-19",
+    "home": "Orphans",
+    "away": "Triple J",
+    "homeColor": "#000000",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "16832",
+    "date": "2023-11-19",
+    "home": "OS Offices",
+    "away": "Platinum",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "16831",
+    "date": "2023-11-12",
+    "home": "Platinum",
+    "away": "Orphans",
+    "homeColor": "#919294",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "16830",
+    "date": "2023-12-31",
+    "home": "Ace",
+    "away": "Triple J",
+    "homeColor": "#CA0527",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "16829",
+    "date": "2023-12-24",
+    "home": "OS Offices",
+    "away": "HollowBrook",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "16828",
+    "date": "2023-12-17",
+    "home": "Amos",
+    "away": "Nelson",
+    "homeColor": "#641C28",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "16827",
+    "date": "2023-12-10",
+    "home": "Platinum",
+    "away": "Amos",
+    "homeColor": "#919294",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "16826",
+    "date": "2023-12-03",
+    "home": "Nelson",
+    "away": "Orphans",
+    "homeColor": "#F3C323",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "16824",
+    "date": "2023-11-26",
+    "home": "Ace",
+    "away": "OS Offices",
+    "homeColor": "#CA0527",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "16823",
+    "date": "2023-11-19",
+    "home": "Ace",
+    "away": "HollowBrook",
+    "homeColor": "#CA0527",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "16822",
+    "date": "2023-11-12",
+    "home": "Platinum",
+    "away": "Nelson",
+    "homeColor": "#919294",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "16821",
+    "date": "2023-11-05",
+    "home": "Amos",
+    "away": "Orphans",
+    "homeColor": "#641C28",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "16820",
+    "date": "2023-10-29",
+    "home": "Triple J",
+    "away": "OS Offices",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "16819",
+    "date": "2023-11-05",
+    "home": "HollowBrook",
+    "away": "Amos",
+    "homeColor": "#4D2640",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "16818",
+    "date": "2023-10-29",
+    "home": "Ace",
+    "away": "Orphans",
+    "homeColor": "#CA0527",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "16817",
+    "date": "2023-10-22",
+    "home": "Triple J",
+    "away": "Platinum",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "16816",
+    "date": "2023-11-05",
+    "home": "OS Offices",
+    "away": "Nelson",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "16815",
+    "date": "2023-10-29",
+    "home": "OS Offices",
+    "away": "Amos",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "16813",
+    "date": "2023-10-22",
+    "home": "Ace",
+    "away": "Platinum",
+    "homeColor": "#CA0527",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "16812",
+    "date": "2023-10-15",
+    "home": "Nelson",
+    "away": "Triple J",
+    "homeColor": "#F3C323",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "16811",
+    "date": "2023-10-08",
+    "home": "Triple J",
+    "away": "Platinum",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "16810",
+    "date": "2023-10-15",
+    "home": "Orphans",
+    "away": "OS Offices",
+    "homeColor": "#000000",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "16809",
+    "date": "2023-10-08",
+    "home": "Amos",
+    "away": "HollowBrook",
+    "homeColor": "#641C28",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "16807",
+    "date": "2023-10-08",
+    "home": "Ace",
+    "away": "Amos",
+    "homeColor": "#CA0527",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "16806",
+    "date": "2023-10-01",
+    "home": "Orphans",
+    "away": "Triple J",
+    "homeColor": "#000000",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "16805",
+    "date": "2023-10-08",
+    "home": "OS Offices",
+    "away": "Platinum",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "16804",
+    "date": "2023-10-01",
+    "home": "HollowBrook",
+    "away": "Nelson",
+    "homeColor": "#4D2640",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "16803",
+    "date": "2023-09-24",
+    "home": "OS Offices",
+    "away": "Triple J",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "16802",
+    "date": "2023-10-08",
+    "home": "HollowBrook",
+    "away": "Ace",
+    "homeColor": "#4D2640",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "16801",
+    "date": "2023-10-01",
+    "home": "Amos",
+    "away": "Nelson",
+    "homeColor": "#641C28",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "16800",
+    "date": "2023-09-24",
+    "home": "Platinum",
+    "away": "Orphans",
+    "homeColor": "#919294",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "16799",
+    "date": "2023-10-01",
+    "home": "Nelson",
+    "away": "Orphans",
+    "homeColor": "#F3C323",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "16798",
+    "date": "2023-09-24",
+    "home": "HollowBrook",
+    "away": "Triple J",
+    "homeColor": "#4D2640",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "16797",
+    "date": "2023-09-17",
+    "home": "OS Offices",
+    "away": "Ace",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "16796",
+    "date": "2023-10-01",
+    "home": "Platinum",
+    "away": "Amos",
+    "homeColor": "#919294",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "16795",
+    "date": "2023-09-24",
+    "home": "Platinum",
+    "away": "Nelson",
+    "homeColor": "#919294",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "16794",
+    "date": "2023-09-17",
+    "home": "Amos",
+    "away": "Orphans",
+    "homeColor": "#641C28",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "16793",
+    "date": "2023-09-10",
+    "home": "Triple J",
+    "away": "Ace",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "16791",
+    "date": "2023-09-03",
+    "home": "Orphans",
+    "away": "Ace",
+    "homeColor": "#000000",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "16790",
+    "date": "2023-09-03",
+    "home": "Triple J",
+    "away": "Platinum",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "16789",
+    "date": "2023-09-10",
+    "home": "OS Offices",
+    "away": "Nelson",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "16788",
+    "date": "2023-09-03",
+    "home": "HollowBrook",
+    "away": "Amos",
+    "homeColor": "#4D2640",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "16787",
+    "date": "2023-08-27",
+    "home": "HollowBrook",
+    "away": "Orphans",
+    "homeColor": "#4D2640",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "16786",
+    "date": "2023-08-27",
+    "home": "Ace",
+    "away": "Platinum",
+    "homeColor": "#CA0527",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "16785",
+    "date": "2023-09-03",
+    "home": "Nelson",
+    "away": "Triple J",
+    "homeColor": "#F3C323",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "16784",
+    "date": "2023-08-27",
+    "home": "Amos",
+    "away": "OS Offices",
+    "homeColor": "#641C28",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "16783",
+    "date": "2023-08-20",
+    "home": "Amos",
+    "away": "Triple J",
+    "homeColor": "#641C28",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "16782",
+    "date": "2023-08-27",
+    "home": "Orphans",
+    "away": "OS Offices",
+    "homeColor": "#000000",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "16781",
+    "date": "2023-08-20",
+    "home": "HollowBrook",
+    "away": "Ace",
+    "homeColor": "#4D2640",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "16780",
+    "date": "2023-08-20",
+    "home": "Platinum",
+    "away": "Nelson",
+    "homeColor": "#919294",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "16779",
+    "date": "2023-08-13",
+    "home": "HollowBrook",
+    "away": "Nelson",
+    "homeColor": "#4D2640",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "16778",
+    "date": "2023-08-13",
+    "home": "OS Offices",
+    "away": "Triple J",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "16777",
+    "date": "2023-08-13",
+    "home": "Orphans",
+    "away": "Platinum",
+    "homeColor": "#000000",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "16776",
+    "date": "2023-08-13",
+    "home": "Ace",
+    "away": "Amos",
+    "homeColor": "#CA0527",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "15169",
+    "date": "2023-04-16",
+    "home": "Platinum",
+    "away": "HollowBrook",
+    "homeColor": "#919294",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "15168",
+    "date": "2023-04-09",
+    "home": "Amos",
+    "away": "Nelson",
+    "homeColor": "#641C28",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "15167",
+    "date": "2023-04-02",
+    "home": "Canada",
+    "away": "Triple J",
+    "homeColor": "#B21A18",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "15166",
+    "date": "2023-03-26",
+    "home": "Triple J",
+    "away": "Orphans",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "15165",
+    "date": "2023-03-26",
+    "home": "Platinum",
+    "away": "OS Offices",
+    "homeColor": "#919294",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "15164",
+    "date": "2023-03-26",
+    "home": "HollowBrook",
+    "away": "Nelson",
+    "homeColor": "#4D2640",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "15163",
+    "date": "2023-04-16",
+    "home": "Amos",
+    "away": "Canada",
+    "homeColor": "#641C28",
+    "awayColor": "#B21A18",
+    "video": ""
+  },
+  {
+    "gid": "15162",
+    "date": "2023-04-09",
+    "home": "Triple J",
+    "away": "Amos",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "15161",
+    "date": "2023-04-02",
+    "home": "Canada",
+    "away": "Nelson",
+    "homeColor": "#B21A18",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "15160",
+    "date": "2023-03-26",
+    "home": "Orphans",
+    "away": "Platinum",
+    "homeColor": "#000000",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "15159",
+    "date": "2023-03-19",
+    "home": "HollowBrook",
+    "away": "OS Offices",
+    "homeColor": "#4D2640",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "15158",
+    "date": "2023-03-12",
+    "home": "HollowBrook",
+    "away": "Triple J",
+    "homeColor": "#4D2640",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "15157",
+    "date": "2023-03-19",
+    "home": "OS Offices",
+    "away": "Amos",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "15156",
+    "date": "2023-03-12",
+    "home": "Canada",
+    "away": "Platinum",
+    "homeColor": "#B21A18",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "15155",
+    "date": "2023-03-12",
+    "home": "Orphans",
+    "away": "Nelson",
+    "homeColor": "#000000",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "15154",
+    "date": "2023-03-05",
+    "home": "Orphans",
+    "away": "Canada",
+    "homeColor": "#000000",
+    "awayColor": "#B21A18",
+    "video": ""
+  },
+  {
+    "gid": "15153",
+    "date": "2023-03-05",
+    "home": "OS Offices",
+    "away": "Triple J",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "15152",
+    "date": "2023-03-12",
+    "home": "HollowBrook",
+    "away": "Amos",
+    "homeColor": "#4D2640",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "15151",
+    "date": "2023-03-05",
+    "home": "Nelson",
+    "away": "Platinum",
+    "homeColor": "#F3C323",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "15150",
+    "date": "2023-02-26",
+    "home": "Platinum",
+    "away": "Triple J",
+    "homeColor": "#919294",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "15149",
+    "date": "2023-03-12",
+    "home": "OS Offices",
+    "away": "Nelson",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "15148",
+    "date": "2023-03-05",
+    "home": "Canada",
+    "away": "HollowBrook",
+    "homeColor": "#B21A18",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "15147",
+    "date": "2023-02-26",
+    "home": "Orphans",
+    "away": "Amos",
+    "homeColor": "#000000",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "15146",
+    "date": "2023-02-19",
+    "home": "Amos",
+    "away": "Platinum",
+    "homeColor": "#641C28",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "15145",
+    "date": "2023-02-19",
+    "home": "Triple J",
+    "away": "Nelson",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "15144",
+    "date": "2023-02-19",
+    "home": "OS Offices",
+    "away": "Canada",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#B21A18",
+    "video": ""
+  },
+  {
+    "gid": "15143",
+    "date": "2023-02-19",
+    "home": "HollowBrook",
+    "away": "Orphans",
+    "homeColor": "#4D2640",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "15142",
+    "date": "2023-02-26",
+    "home": "Platinum",
+    "away": "HollowBrook",
+    "homeColor": "#919294",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "15141",
+    "date": "2023-02-19",
+    "home": "Nelson",
+    "away": "Amos",
+    "homeColor": "#F3C323",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "15140",
+    "date": "2023-02-12",
+    "home": "Canada",
+    "away": "Triple J",
+    "homeColor": "#B21A18",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "15139",
+    "date": "2023-02-05",
+    "home": "OS Offices",
+    "away": "Orphans",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "15138",
+    "date": "2023-02-19",
+    "home": "Platinum",
+    "away": "OS Offices",
+    "homeColor": "#919294",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "15137",
+    "date": "2023-02-12",
+    "home": "HollowBrook",
+    "away": "Nelson",
+    "homeColor": "#4D2640",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "15136",
+    "date": "2023-02-05",
+    "home": "Canada",
+    "away": "Amos",
+    "homeColor": "#B21A18",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "15135",
+    "date": "2023-01-29",
+    "home": "Triple J",
+    "away": "Orphans",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "15134",
+    "date": "2023-01-22",
+    "home": "Nelson",
+    "away": "Canada",
+    "homeColor": "#F3C323",
+    "awayColor": "#B21A18",
+    "video": ""
+  },
+  {
+    "gid": "15133",
+    "date": "2023-01-22",
+    "home": "Orphans",
+    "away": "Platinum",
+    "homeColor": "#000000",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "15132",
+    "date": "2023-01-22",
+    "home": "HollowBrook",
+    "away": "OS Offices",
+    "homeColor": "#4D2640",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "15131",
+    "date": "2023-01-22",
+    "home": "Amos",
+    "away": "Triple J",
+    "homeColor": "#641C28",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "15126",
+    "date": "2023-01-08",
+    "home": "OS Offices",
+    "away": "Triple J",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "15125",
+    "date": "2023-01-08",
+    "home": "Amos",
+    "away": "HollowBrook",
+    "homeColor": "#641C28",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "15124",
+    "date": "2023-01-08",
+    "home": "Nelson",
+    "away": "Platinum",
+    "homeColor": "#F3C323",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "15123",
+    "date": "2023-01-08",
+    "home": "Orphans",
+    "away": "Canada",
+    "homeColor": "#000000",
+    "awayColor": "#B21A18",
+    "video": ""
+  },
+  {
+    "gid": "15122",
+    "date": "2023-01-08",
+    "home": "Nelson",
+    "away": "OS Offices",
+    "homeColor": "#F3C323",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "15121",
+    "date": "2023-01-01",
+    "home": "Canada",
+    "away": "HollowBrook",
+    "homeColor": "#B21A18",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "15120",
+    "date": "2022-12-25",
+    "home": "Amos",
+    "away": "Orphans",
+    "homeColor": "#641C28",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "15119",
+    "date": "2022-12-18",
+    "home": "Platinum",
+    "away": "Triple J",
+    "homeColor": "#919294",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "15118",
+    "date": "2022-12-11",
+    "home": "Triple J",
+    "away": "Nelson",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "15117",
+    "date": "2022-12-25",
+    "home": "OS Offices",
+    "away": "Canada",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#B21A18",
+    "video": ""
+  },
+  {
+    "gid": "15116",
+    "date": "2022-12-18",
+    "home": "HollowBrook",
+    "away": "Orphans",
+    "homeColor": "#4D2640",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "15115",
+    "date": "2022-12-11",
+    "home": "Amos",
+    "away": "Platinum",
+    "homeColor": "#641C28",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "15114",
+    "date": "2022-12-04",
+    "home": "Amos",
+    "away": "Nelson",
+    "homeColor": "#641C28",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "15113",
+    "date": "2022-12-04",
+    "home": "Triple J",
+    "away": "Canada",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#B21A18",
+    "video": ""
+  },
+  {
+    "gid": "15112",
+    "date": "2022-12-04",
+    "home": "OS Offices",
+    "away": "Orphans",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "15111",
+    "date": "2022-12-04",
+    "home": "Platinum",
+    "away": "HollowBrook",
+    "homeColor": "#919294",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "15110",
+    "date": "2022-12-04",
+    "home": "HollowBrook",
+    "away": "Nelson",
+    "homeColor": "#4D2640",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "15109",
+    "date": "2022-11-27",
+    "home": "Amos",
+    "away": "Canada",
+    "homeColor": "#641C28",
+    "awayColor": "#B21A18",
+    "video": ""
+  },
+  {
+    "gid": "15108",
+    "date": "2022-11-20",
+    "home": "Triple J",
+    "away": "Orphans",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "15107",
+    "date": "2022-11-20",
+    "home": "Platinum",
+    "away": "OS Offices",
+    "homeColor": "#919294",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "15106",
+    "date": "2022-12-04",
+    "home": "Orphans",
+    "away": "Platinum",
+    "homeColor": "#000000",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "15105",
+    "date": "2022-11-27",
+    "home": "HollowBrook",
+    "away": "OS Offices",
+    "homeColor": "#4D2640",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "15104",
+    "date": "2022-11-20",
+    "home": "Triple J",
+    "away": "Amos",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "15103",
+    "date": "2022-11-13",
+    "home": "Nelson",
+    "away": "Canada",
+    "homeColor": "#F3C323",
+    "awayColor": "#B21A18",
+    "video": ""
+  },
+  {
+    "gid": "15102",
+    "date": "2022-11-06",
+    "home": "Canada",
+    "away": "Platinum",
+    "homeColor": "#B21A18",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "15101",
+    "date": "2022-11-13",
+    "home": "Orphans",
+    "away": "Nelson",
+    "homeColor": "#000000",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "15100",
+    "date": "2022-11-06",
+    "home": "HollowBrook",
+    "away": "Triple J",
+    "homeColor": "#4D2640",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "15099",
+    "date": "2022-11-20",
+    "home": "OS Offices",
+    "away": "Amos",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "15098",
+    "date": "2022-11-13",
+    "home": "HollowBrook",
+    "away": "Amos",
+    "homeColor": "#4D2640",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "15097",
+    "date": "2022-11-06",
+    "home": "Nelson",
+    "away": "Platinum",
+    "homeColor": "#F3C323",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "15096",
+    "date": "2022-10-30",
+    "home": "Orphans",
+    "away": "Canada",
+    "homeColor": "#000000",
+    "awayColor": "#B21A18",
+    "video": ""
+  },
+  {
+    "gid": "15095",
+    "date": "2022-10-30",
+    "home": "OS Offices",
+    "away": "Triple J",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "15094",
+    "date": "2022-11-06",
+    "home": "Canada",
+    "away": "HollowBrook",
+    "homeColor": "#B21A18",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "15093",
+    "date": "2022-10-30",
+    "home": "Orphans",
+    "away": "Amos",
+    "homeColor": "#000000",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "15092",
+    "date": "2022-10-23",
+    "home": "Platinum",
+    "away": "Triple J",
+    "homeColor": "#919294",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "15091",
+    "date": "2022-11-13",
+    "home": "Nelson",
+    "away": "OS Offices",
+    "homeColor": "#F3C323",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "15090",
+    "date": "2022-11-06",
+    "home": "Canada",
+    "away": "OS Offices",
+    "homeColor": "#B21A18",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "15089",
+    "date": "2022-10-30",
+    "home": "HollowBrook",
+    "away": "Orphans",
+    "homeColor": "#4D2640",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "15088",
+    "date": "2022-10-23",
+    "home": "Platinum",
+    "away": "Amos",
+    "homeColor": "#919294",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "15087",
+    "date": "2022-10-16",
+    "home": "Triple J",
+    "away": "Nelson",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "15086",
+    "date": "2022-10-09",
+    "home": "Triple J",
+    "away": "Canada",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#B21A18",
+    "video": ""
+  },
+  {
+    "gid": "15085",
+    "date": "2022-10-30",
+    "home": "OS Offices",
+    "away": "Orphans",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "15084",
+    "date": "2022-10-23",
+    "home": "Platinum",
+    "away": "HollowBrook",
+    "homeColor": "#919294",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "15083",
+    "date": "2022-10-16",
+    "home": "Nelson",
+    "away": "Amos",
+    "homeColor": "#F3C323",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "15082",
+    "date": "2022-10-09",
+    "home": "Canada",
+    "away": "Amos",
+    "homeColor": "#B21A18",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "15081",
+    "date": "2022-10-02",
+    "home": "Triple J",
+    "away": "Orphans",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "15080",
+    "date": "2022-10-02",
+    "home": "Platinum",
+    "away": "OS Offices",
+    "homeColor": "#919294",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "15079",
+    "date": "2022-10-23",
+    "home": "Nelson",
+    "away": "HollowBrook",
+    "homeColor": "#F3C323",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "15078",
+    "date": "2022-10-16",
+    "home": "HollowBrook",
+    "away": "OS Offices",
+    "homeColor": "#4D2640",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "15077",
+    "date": "2022-10-09",
+    "home": "Amos",
+    "away": "Triple J",
+    "homeColor": "#641C28",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "15076",
+    "date": "2022-10-02",
+    "home": "Nelson",
+    "away": "Canada",
+    "homeColor": "#F3C323",
+    "awayColor": "#B21A18",
+    "video": ""
+  },
+  {
+    "gid": "15075",
+    "date": "2022-09-25",
+    "home": "Orphans",
+    "away": "Platinum",
+    "homeColor": "#000000",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "15074",
+    "date": "2022-09-25",
+    "home": "Orphans",
+    "away": "Nelson",
+    "homeColor": "#000000",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "15073",
+    "date": "2022-09-18",
+    "home": "Triple J",
+    "away": "HollowBrook",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "15072",
+    "date": "2022-10-02",
+    "home": "Amos",
+    "away": "OS Offices",
+    "homeColor": "#641C28",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "15071",
+    "date": "2022-09-25",
+    "home": "Canada",
+    "away": "Platinum",
+    "homeColor": "#B21A18",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "15070",
+    "date": "2022-09-18",
+    "home": "Nelson",
+    "away": "Platinum",
+    "homeColor": "#F3C323",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "15069",
+    "date": "2022-09-11",
+    "home": "Orphans",
+    "away": "Canada",
+    "homeColor": "#000000",
+    "awayColor": "#B21A18",
+    "video": ""
+  },
+  {
+    "gid": "15068",
+    "date": "2022-09-11",
+    "home": "OS Offices",
+    "away": "Triple J",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "15067",
+    "date": "2022-09-18",
+    "home": "Amos",
+    "away": "HollowBrook",
+    "homeColor": "#641C28",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "15066",
+    "date": "2022-09-11",
+    "home": "Amos",
+    "away": "Orphans",
+    "homeColor": "#641C28",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "15065",
+    "date": "2022-09-04",
+    "home": "Platinum",
+    "away": "Triple J",
+    "homeColor": "#919294",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "15064",
+    "date": "2022-09-25",
+    "home": "Nelson",
+    "away": "OS Offices",
+    "homeColor": "#F3C323",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "15063",
+    "date": "2022-09-18",
+    "home": "Canada",
+    "away": "HollowBrook",
+    "homeColor": "#B21A18",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "15062",
+    "date": "2022-09-11",
+    "home": "Orphans",
+    "away": "HollowBrook",
+    "homeColor": "#000000",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "15061",
+    "date": "2022-09-04",
+    "home": "Amos",
+    "away": "Platinum",
+    "homeColor": "#641C28",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "15060",
+    "date": "2022-08-28",
+    "home": "Triple J",
+    "away": "Nelson",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "15059",
+    "date": "2022-08-28",
+    "home": "OS Offices",
+    "away": "Canada",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#B21A18",
+    "video": ""
+  },
+  {
+    "gid": "14169",
+    "date": "2022-08-21",
+    "home": "Triple J",
+    "away": "Canada",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#B21A18",
+    "video": ""
+  },
+  {
+    "gid": "14168",
+    "date": "2022-09-04",
+    "home": "OS Offices",
+    "away": "Orphans",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "14167",
+    "date": "2022-08-28",
+    "home": "Platinum",
+    "away": "HollowBrook",
+    "homeColor": "#919294",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "14166",
+    "date": "2022-08-21",
+    "home": "Nelson",
+    "away": "Amos",
+    "homeColor": "#F3C323",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "14165",
+    "date": "2022-08-14",
+    "home": "Triple J",
+    "away": "Orphans",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "14164",
+    "date": "2022-08-14",
+    "home": "Platinum",
+    "away": "OS Offices",
+    "homeColor": "#919294",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "14163",
+    "date": "2022-08-14",
+    "home": "Nelson",
+    "away": "HollowBrook",
+    "homeColor": "#F3C323",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "14162",
+    "date": "2022-08-14",
+    "home": "Canada",
+    "away": "Amos",
+    "homeColor": "#B21A18",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "13498",
+    "date": "2022-03-13",
+    "home": "OS Offices",
+    "away": "HollowBrook",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "13497",
+    "date": "2022-03-06",
+    "home": "Triple J",
+    "away": "Platinum",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "13496",
+    "date": "2022-03-06",
+    "home": "Canada",
+    "away": "Orphans",
+    "homeColor": "#B21A18",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "13495",
+    "date": "2022-03-20",
+    "home": "Nelson",
+    "away": "Amos",
+    "homeColor": "#F3C323",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "13494",
+    "date": "2022-03-13",
+    "home": "Amos",
+    "away": "Platinum",
+    "homeColor": "#641C28",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "13493",
+    "date": "2022-03-06",
+    "home": "Nelson",
+    "away": "HollowBrook",
+    "homeColor": "#F3C323",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "13492",
+    "date": "2022-02-27",
+    "home": "Canada",
+    "away": "Triple J",
+    "homeColor": "#B21A18",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "13491",
+    "date": "2022-02-27",
+    "home": "Orphans",
+    "away": "OS Offices",
+    "homeColor": "#000000",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "13490",
+    "date": "2022-02-20",
+    "home": "Orphans",
+    "away": "OS Offices",
+    "homeColor": "#000000",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "13489",
+    "date": "2022-03-06",
+    "home": "Amos",
+    "away": "Canada",
+    "homeColor": "#641C28",
+    "awayColor": "#B21A18",
+    "video": ""
+  },
+  {
+    "gid": "13488",
+    "date": "2022-02-27",
+    "home": "Triple J",
+    "away": "HollowBrook",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "13487",
+    "date": "2022-02-20",
+    "home": "Platinum",
+    "away": "Nelson",
+    "homeColor": "#919294",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "13486",
+    "date": "2022-02-13",
+    "home": "Triple J",
+    "away": "Orphans",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "13485",
+    "date": "2022-03-06",
+    "home": "HollowBrook",
+    "away": "Platinum",
+    "homeColor": "#4D2640",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "13484",
+    "date": "2022-02-27",
+    "home": "OS Offices",
+    "away": "Amos",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "13482",
+    "date": "2022-02-20",
+    "home": "Canada",
+    "away": "HollowBrook",
+    "homeColor": "#B21A18",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "13481",
+    "date": "2022-02-13",
+    "home": "Orphans",
+    "away": "Amos",
+    "homeColor": "#000000",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "13480",
+    "date": "2022-02-06",
+    "home": "Platinum",
+    "away": "OS Offices",
+    "homeColor": "#919294",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "13479",
+    "date": "2022-02-06",
+    "home": "Nelson",
+    "away": "Triple J",
+    "homeColor": "#F3C323",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "13478",
+    "date": "2022-02-06",
+    "home": "OS Offices",
+    "away": "HollowBrook",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "13477",
+    "date": "2022-01-30",
+    "home": "Triple J",
+    "away": "Platinum",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "13476",
+    "date": "2022-01-30",
+    "home": "Orphans",
+    "away": "Canada",
+    "homeColor": "#000000",
+    "awayColor": "#B21A18",
+    "video": ""
+  },
+  {
+    "gid": "13475",
+    "date": "2022-01-30",
+    "home": "Amos",
+    "away": "Nelson",
+    "homeColor": "#641C28",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "13474",
+    "date": "2022-01-23",
+    "home": "Canada",
+    "away": "OS Offices",
+    "homeColor": "#B21A18",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "13473",
+    "date": "2022-01-23",
+    "home": "Triple J",
+    "away": "HollowBrook",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "13472",
+    "date": "2022-01-23",
+    "home": "Amos",
+    "away": "Platinum",
+    "homeColor": "#641C28",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "13471",
+    "date": "2022-01-23",
+    "home": "Orphans",
+    "away": "Nelson",
+    "homeColor": "#000000",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "13466",
+    "date": "2022-01-09",
+    "home": "Nelson",
+    "away": "Platinum",
+    "homeColor": "#F3C323",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "13465",
+    "date": "2022-01-09",
+    "home": "Amos",
+    "away": "OS Offices",
+    "homeColor": "#641C28",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "13464",
+    "date": "2022-01-09",
+    "home": "Orphans",
+    "away": "HollowBrook",
+    "homeColor": "#000000",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "13463",
+    "date": "2022-01-09",
+    "home": "Canada",
+    "away": "Triple J",
+    "homeColor": "#B21A18",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "13462",
+    "date": "2021-12-19",
+    "home": "Canada",
+    "away": "Platinum",
+    "homeColor": "#B21A18",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "13461",
+    "date": "2021-12-19",
+    "home": "OS Offices",
+    "away": "Orphans",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "13460",
+    "date": "2022-01-02",
+    "home": "HollowBrook",
+    "away": "Nelson",
+    "homeColor": "#4D2640",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "13459",
+    "date": "2021-12-26",
+    "home": "Triple J",
+    "away": "Amos",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "13458",
+    "date": "2021-12-19",
+    "home": "Nelson",
+    "away": "OS Offices",
+    "homeColor": "#F3C323",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "13457",
+    "date": "2021-12-12",
+    "home": "Orphans",
+    "away": "Triple J",
+    "homeColor": "#000000",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "13456",
+    "date": "2021-12-12",
+    "home": "Amos",
+    "away": "Canada",
+    "homeColor": "#641C28",
+    "awayColor": "#B21A18",
+    "video": ""
+  },
+  {
+    "gid": "13455",
+    "date": "2021-12-19",
+    "home": "Platinum",
+    "away": "HollowBrook",
+    "homeColor": "#919294",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "13454",
+    "date": "2021-12-12",
+    "home": "Orphans",
+    "away": "Amos",
+    "homeColor": "#000000",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "13453",
+    "date": "2021-12-05",
+    "home": "OS Offices",
+    "away": "Platinum",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "13452",
+    "date": "2021-12-05",
+    "home": "Nelson",
+    "away": "Triple J",
+    "homeColor": "#F3C323",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "13451",
+    "date": "2021-12-05",
+    "home": "Canada",
+    "away": "HollowBrook",
+    "homeColor": "#B21A18",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "13450",
+    "date": "2021-11-21",
+    "home": "Platinum",
+    "away": "Triple J",
+    "homeColor": "#919294",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "13449",
+    "date": "2021-11-21",
+    "home": "Orphans",
+    "away": "Canada",
+    "homeColor": "#000000",
+    "awayColor": "#B21A18",
+    "video": ""
+  },
+  {
+    "gid": "13448",
+    "date": "2021-11-28",
+    "home": "HollowBrook",
+    "away": "OS Offices",
+    "homeColor": "#4D2640",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "13447",
+    "date": "2021-11-21",
+    "home": "Amos",
+    "away": "Nelson",
+    "homeColor": "#641C28",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "13446",
+    "date": "2021-11-14",
+    "home": "HollowBrook",
+    "away": "Triple J",
+    "homeColor": "#4D2640",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "13445",
+    "date": "2021-12-05",
+    "home": "Platinum",
+    "away": "Amos",
+    "homeColor": "#919294",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "13444",
+    "date": "2021-11-28",
+    "home": "Nelson",
+    "away": "Orphans",
+    "homeColor": "#F3C323",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "13443",
+    "date": "2021-11-21",
+    "home": "OS Offices",
+    "away": "Canada",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#B21A18",
+    "video": ""
+  },
+  {
+    "gid": "13442",
+    "date": "2021-11-14",
+    "home": "Canada",
+    "away": "Nelson",
+    "homeColor": "#B21A18",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "13441",
+    "date": "2021-11-07",
+    "home": "Orphans",
+    "away": "Platinum",
+    "homeColor": "#000000",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "13440",
+    "date": "2021-11-07",
+    "home": "Triple J",
+    "away": "OS Offices",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "13439",
+    "date": "2021-11-07",
+    "home": "Amos",
+    "away": "HollowBrook",
+    "homeColor": "#641C28",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "13438",
+    "date": "2021-10-31",
+    "home": "Platinum",
+    "away": "Nelson",
+    "homeColor": "#919294",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "13437",
+    "date": "2021-10-31",
+    "home": "Triple J",
+    "away": "Canada",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#B21A18",
+    "video": ""
+  },
+  {
+    "gid": "13436",
+    "date": "2021-11-21",
+    "home": "OS Offices",
+    "away": "Amos",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "13435",
+    "date": "2021-11-14",
+    "home": "HollowBrook",
+    "away": "Orphans",
+    "homeColor": "#4D2640",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "13434",
+    "date": "2021-11-07",
+    "home": "Amos",
+    "away": "Triple J",
+    "homeColor": "#641C28",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "13433",
+    "date": "2021-10-31",
+    "home": "Nelson",
+    "away": "HollowBrook",
+    "homeColor": "#F3C323",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "13432",
+    "date": "2021-10-24",
+    "home": "Platinum",
+    "away": "Canada",
+    "homeColor": "#919294",
+    "awayColor": "#B21A18",
+    "video": ""
+  },
+  {
+    "gid": "13431",
+    "date": "2021-10-24",
+    "home": "Orphans",
+    "away": "OS Offices",
+    "homeColor": "#000000",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "13430",
+    "date": "2021-10-24",
+    "home": "OS Offices",
+    "away": "Nelson",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "13428",
+    "date": "2021-10-17",
+    "home": "Triple J",
+    "away": "Orphans",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "13427",
+    "date": "2021-10-24",
+    "home": "HollowBrook",
+    "away": "Platinum",
+    "homeColor": "#4D2640",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "13426",
+    "date": "2021-10-17",
+    "home": "Amos",
+    "away": "Orphans",
+    "homeColor": "#641C28",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "13425",
+    "date": "2021-10-10",
+    "home": "Nelson",
+    "away": "Triple J",
+    "homeColor": "#F3C323",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "13424",
+    "date": "2021-10-17",
+    "home": "HollowBrook",
+    "away": "Canada",
+    "homeColor": "#4D2640",
+    "awayColor": "#B21A18",
+    "video": ""
+  },
+  {
+    "gid": "13423",
+    "date": "2021-10-10",
+    "home": "Platinum",
+    "away": "OS Offices",
+    "homeColor": "#919294",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "13244",
+    "date": "2021-03-03",
+    "home": "Canada",
+    "away": "Orphans",
+    "homeColor": "#B21A18",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "13243",
+    "date": "2021-10-03",
+    "home": "OS Offices",
+    "away": "HollowBrook",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "13242",
+    "date": "2021-10-03",
+    "home": "Nelson",
+    "away": "Amos",
+    "homeColor": "#F3C323",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "13241",
+    "date": "2021-10-02",
+    "home": "Triple J",
+    "away": "Platinum",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "10826",
+    "date": "2025-01-26",
+    "home": "Triple J",
+    "away": "OS Offices",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "10074",
+    "date": "2025-04-13",
+    "home": "Platinum",
+    "away": "HollowBrook",
+    "homeColor": "#919294",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "10073",
+    "date": "2025-04-13",
+    "home": "Nelson",
+    "away": "Triple J",
+    "homeColor": "#F3C323",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "10072",
+    "date": "2025-03-23",
+    "home": "Nelson",
+    "away": "Ace",
+    "homeColor": "#F3C323",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "10071",
+    "date": "2025-03-23",
+    "home": "OS Offices",
+    "away": "Outlaws",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#02007B",
+    "video": ""
+  },
+  {
+    "gid": "10070",
+    "date": "2025-03-23",
+    "home": "Triple J",
+    "away": "Orphans",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "10069",
+    "date": "2025-03-30",
+    "home": "Platinum",
+    "away": "Ace",
+    "homeColor": "#919294",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "10068",
+    "date": "2025-03-30",
+    "home": "HollowBrook",
+    "away": "Outlaws",
+    "homeColor": "#4D2640",
+    "awayColor": "#02007B",
+    "video": ""
+  },
+  {
+    "gid": "10067",
+    "date": "2025-03-30",
+    "home": "Amos",
+    "away": "Orphans",
+    "homeColor": "#641C28",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "10066",
+    "date": "2025-04-06",
+    "home": "Platinum",
+    "away": "Nelson",
+    "homeColor": "#919294",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "10065",
+    "date": "2025-04-06",
+    "home": "HollowBrook",
+    "away": "OS Offices",
+    "homeColor": "#4D2640",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "10064",
+    "date": "2025-04-06",
+    "home": "Amos",
+    "away": "Triple J",
+    "homeColor": "#641C28",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "10063",
+    "date": "2025-04-27",
+    "home": "HollowBrook",
+    "away": "Triple J",
+    "homeColor": "#4D2640",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "10062",
+    "date": "2022-04-17",
+    "home": "Canada",
+    "away": "Orphans",
+    "homeColor": "#B21A18",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "10061",
+    "date": "2022-03-27",
+    "home": "Canada",
+    "away": "Orphans",
+    "homeColor": "#B21A18",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "10060",
+    "date": "2023-05-04",
+    "home": "Triple J",
+    "away": "Orphans",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "10059",
+    "date": "2023-05-02",
+    "home": "Triple J",
+    "away": "Platinum",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "10058",
+    "date": "2023-04-25",
+    "home": "Platinum",
+    "away": "Orphans",
+    "homeColor": "#919294",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "10057",
+    "date": "2023-04-16",
+    "home": "Canada",
+    "away": "Platinum",
+    "homeColor": "#B21A18",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "10056",
+    "date": "2022-05-01",
+    "home": "Triple J",
+    "away": "Platinum",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "10055",
+    "date": "2022-04-24",
+    "home": "Canada",
+    "away": "Platinum",
+    "homeColor": "#B21A18",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "10054",
+    "date": "2022-04-17",
+    "home": "Triple J",
+    "away": "Platinum",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "10053",
+    "date": "2022-03-20",
+    "home": "Platinum",
+    "away": "Canada",
+    "homeColor": "#919294",
+    "awayColor": "#B21A18",
+    "video": ""
+  },
+  {
+    "gid": "10052",
+    "date": "2024-05-02",
+    "home": "OS Offices",
+    "away": "Platinum",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "10051",
+    "date": "2024-04-28",
+    "home": "OS Offices",
+    "away": "Triple J",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "10050",
+    "date": "2023-04-23",
+    "home": "OS Offices",
+    "away": "Platinum",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "10049",
+    "date": "2022-04-10",
+    "home": "OS Offices",
+    "away": "Triple J",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "10048",
+    "date": "2022-04-03",
+    "home": "OS Offices",
+    "away": "Platinum",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "10047",
+    "date": "2022-03-27",
+    "home": "Triple J",
+    "away": "OS Offices",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "10046",
+    "date": "2024-05-05",
+    "home": "Nelson",
+    "away": "Triple J",
+    "homeColor": "#F3C323",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "10045",
+    "date": "2024-04-28",
+    "home": "Orphans",
+    "away": "Nelson",
+    "homeColor": "#000000",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "10044",
+    "date": "2023-04-30",
+    "home": "Triple J",
+    "away": "Nelson",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "10043",
+    "date": "2023-04-27",
+    "home": "Nelson",
+    "away": "OS Offices",
+    "homeColor": "#F3C323",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "10042",
+    "date": "2023-04-23",
+    "home": "Nelson",
+    "away": "Orphans",
+    "homeColor": "#F3C323",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "10041",
+    "date": "2023-04-16",
+    "home": "Orphans",
+    "away": "Nelson",
+    "homeColor": "#000000",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "10040",
+    "date": "2022-04-10",
+    "home": "Canada",
+    "away": "Nelson",
+    "homeColor": "#B21A18",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "10039",
+    "date": "2022-04-03",
+    "home": "Nelson",
+    "away": "Orphans",
+    "homeColor": "#F3C323",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "10038",
+    "date": "2022-03-27",
+    "home": "Nelson",
+    "away": "Platinum",
+    "homeColor": "#F3C323",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "10037",
+    "date": "2022-03-20",
+    "home": "OS Offices",
+    "away": "Nelson",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "10036",
+    "date": "2024-05-09",
+    "home": "HollowBrook",
+    "away": "OS Offices",
+    "homeColor": "#4D2640",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "10035",
+    "date": "2024-05-02",
+    "home": "Nelson",
+    "away": "HollowBrook",
+    "homeColor": "#F3C323",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "10034",
+    "date": "2024-01-07",
+    "home": "Orphans",
+    "away": "HollowBrook",
+    "homeColor": "#000000",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "10033",
+    "date": "2023-11-12",
+    "home": "Nelson",
+    "away": "HollowBrook",
+    "homeColor": "#F3C323",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "10032",
+    "date": "2023-11-05",
+    "home": "Triple J",
+    "away": "HollowBrook",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "10031",
+    "date": "2023-10-15",
+    "home": "Orphans",
+    "away": "HollowBrook",
+    "homeColor": "#000000",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "10030",
+    "date": "2023-09-10",
+    "home": "OS Offices",
+    "away": "HollowBrook",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "10029",
+    "date": "2023-05-07",
+    "home": "Triple J",
+    "away": "HollowBrook",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "10028",
+    "date": "2023-05-02",
+    "home": "HollowBrook",
+    "away": "Orphans",
+    "homeColor": "#4D2640",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "10027",
+    "date": "2023-04-25",
+    "home": "HollowBrook",
+    "away": "Triple J",
+    "homeColor": "#4D2640",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "10026",
+    "date": "2023-04-23",
+    "home": "Canada",
+    "away": "HollowBrook",
+    "homeColor": "#B21A18",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "10025",
+    "date": "2023-04-16",
+    "home": "HollowBrook",
+    "away": "Triple J",
+    "homeColor": "#4D2640",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "10024",
+    "date": "2022-04-24",
+    "home": "Triple J",
+    "away": "HollowBrook",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "10023",
+    "date": "2022-04-17",
+    "home": "Nelson",
+    "away": "HollowBrook",
+    "homeColor": "#F3C323",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "10022",
+    "date": "2022-04-10",
+    "home": "Orphans",
+    "away": "HollowBrook",
+    "homeColor": "#000000",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "10021",
+    "date": "2022-04-03",
+    "home": "Canada",
+    "away": "HollowBrook",
+    "homeColor": "#B21A18",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "10020",
+    "date": "2022-03-20",
+    "home": "HollowBrook",
+    "away": "Orphans",
+    "homeColor": "#4D2640",
+    "awayColor": "#000000",
+    "video": ""
+  },
+  {
+    "gid": "10019",
+    "date": "2024-05-12",
+    "home": "HollowBrook",
+    "away": "Amos",
+    "homeColor": "#4D2640",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "10018",
+    "date": "2024-05-11",
+    "home": "OS Offices",
+    "away": "Amos",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "10017",
+    "date": "2024-05-08",
+    "home": "Amos",
+    "away": "Nelson",
+    "homeColor": "#641C28",
+    "awayColor": "#F3C323",
+    "video": ""
+  },
+  {
+    "gid": "10016",
+    "date": "2024-05-05",
+    "home": "Platinum",
+    "away": "Amos",
+    "homeColor": "#919294",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "10015",
+    "date": "2024-04-30",
+    "home": "Orphans",
+    "away": "Amos",
+    "homeColor": "#000000",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "10014",
+    "date": "2024-04-28",
+    "home": "Amos",
+    "away": "HollowBrook",
+    "homeColor": "#641C28",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "10013",
+    "date": "2023-04-30",
+    "home": "Platinum",
+    "away": "Amos",
+    "homeColor": "#919294",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "10012",
+    "date": "2023-04-27",
+    "home": "Canada",
+    "away": "Amos",
+    "homeColor": "#B21A18",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "10011",
+    "date": "2023-04-23",
+    "home": "Triple J",
+    "away": "Amos",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "10010",
+    "date": "2023-04-16",
+    "home": "Amos",
+    "away": "OS Offices",
+    "homeColor": "#641C28",
+    "awayColor": "#2C8A5E",
+    "video": ""
+  },
+  {
+    "gid": "10009",
+    "date": "2022-04-17",
+    "home": "OS Offices",
+    "away": "Amos",
+    "homeColor": "#2C8A5E",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "10008",
+    "date": "2022-04-10",
+    "home": "Amos",
+    "away": "Platinum",
+    "homeColor": "#641C28",
+    "awayColor": "#919294",
+    "video": ""
+  },
+  {
+    "gid": "10007",
+    "date": "2022-04-03",
+    "home": "Triple J",
+    "away": "Amos",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "10006",
+    "date": "2022-03-27",
+    "home": "Amos",
+    "away": "HollowBrook",
+    "homeColor": "#641C28",
+    "awayColor": "#4D2640",
+    "video": ""
+  },
+  {
+    "gid": "10005",
+    "date": "2022-03-20",
+    "home": "Amos",
+    "away": "Triple J",
+    "homeColor": "#641C28",
+    "awayColor": "#4EB9E5",
+    "video": ""
+  },
+  {
+    "gid": "10004",
+    "date": "2021-10-17",
+    "home": "Canada",
+    "away": "Amos",
+    "homeColor": "#B21A18",
+    "awayColor": "#641C28",
+    "video": ""
+  },
+  {
+    "gid": "10003",
+    "date": "2024-04-30",
+    "home": "Triple J",
+    "away": "Ace",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "10002",
+    "date": "2023-10-15",
+    "home": "Platinum",
+    "away": "Ace",
+    "homeColor": "#919294",
+    "awayColor": "#CA0527",
+    "video": ""
+  },
+  {
+    "gid": "10001",
+    "date": "2023-10-08",
+    "home": "Ace",
+    "away": "Nelson",
+    "homeColor": "#CA0527",
+    "awayColor": "#F3C323",
+    "video": ""
+  }
+]

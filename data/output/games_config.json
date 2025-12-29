@@ -1,0 +1,1402 @@
+{
+  "18955": {
+    "gid": "18955",
+    "date": "2025-08-10",
+    "homeTeam": "Velodrome",
+    "awayTeam": "Orphans",
+    "homeColor": "#9C47E4",
+    "awayColor": "#000000",
+    "videoUrl": "",
+    "homeRoster": [
+      {
+        "n": "9",
+        "name": "Ronnie Pinnell",
+        "pos": "D",
+        "skill": 4
+      },
+      {
+        "n": "14",
+        "name": "Nick Ciampoli",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "22",
+        "name": "Robert Mayfield",
+        "pos": "D",
+        "skill": 3
+      },
+      {
+        "n": "24",
+        "name": "Jennifer Valente",
+        "pos": "F",
+        "skill": 2
+      },
+      {
+        "n": "39",
+        "name": "Wyatt Crandall",
+        "pos": "G",
+        "skill": 5
+      },
+      {
+        "n": "42",
+        "name": "Garrett Ashcroft",
+        "pos": "F",
+        "skill": 5
+      },
+      {
+        "n": "55",
+        "name": "James Rynearson",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "61",
+        "name": "Kaitlyn Shain",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "70",
+        "name": "Sam Downs",
+        "pos": "F",
+        "skill": 6
+      },
+      {
+        "n": "75",
+        "name": "Nicole Downs",
+        "pos": "F",
+        "skill": 2
+      },
+      {
+        "n": "84",
+        "name": "Maxwell Donaty",
+        "pos": "D",
+        "skill": 5
+      },
+      {
+        "n": "87",
+        "name": "Josh Cronk",
+        "pos": "D",
+        "skill": 5
+      },
+      {
+        "n": "91",
+        "name": "Kevin White",
+        "pos": "F",
+        "skill": 4
+      }
+    ],
+    "awayRoster": [
+      {
+        "n": "1",
+        "name": "Michael Gipson",
+        "pos": "G",
+        "skill": 5
+      },
+      {
+        "n": "3",
+        "name": "Ryan Case",
+        "pos": "F",
+        "skill": 5
+      },
+      {
+        "n": "4",
+        "name": "Greg Hoyt",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "5",
+        "name": "Matt Rocco",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "6",
+        "name": "Matt Vivian",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "7",
+        "name": "Marc Smith",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "9",
+        "name": "Joshua Parmiter",
+        "pos": "D",
+        "skill": 5
+      },
+      {
+        "n": "10",
+        "name": "Wayne Kohut",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "11",
+        "name": "Ross Thompson",
+        "pos": "F",
+        "skill": 6
+      },
+      {
+        "n": "12",
+        "name": "Daniel Heck",
+        "pos": "D",
+        "skill": 4
+      },
+      {
+        "n": "13",
+        "name": "Dean Porter",
+        "pos": "D",
+        "skill": 4
+      },
+      {
+        "n": "14",
+        "name": "Austin Webb",
+        "pos": "F",
+        "skill": 5
+      },
+      {
+        "n": "15",
+        "name": "Chad Ferguson",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "16",
+        "name": "Chuck Webb",
+        "pos": "F",
+        "skill": 2
+      }
+    ]
+  },
+  "18965": {
+    "gid": "18965",
+    "date": "2025-08-24",
+    "homeTeam": "Velodrome",
+    "awayTeam": "OS Offices",
+    "homeColor": "#9C47E4",
+    "awayColor": "#2C8A5E",
+    "videoUrl": "",
+    "homeRoster": [
+      {
+        "n": "5",
+        "name": "Jesse Theken",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "7",
+        "name": "Guy Girardeau",
+        "pos": "D",
+        "skill": 3
+      },
+      {
+        "n": "8",
+        "name": "Nicholas Lang",
+        "pos": "F",
+        "skill": 5
+      },
+      {
+        "n": "9",
+        "name": "Peter Husak",
+        "pos": "F",
+        "skill": 2
+      },
+      {
+        "n": "13",
+        "name": "Josh Theken",
+        "pos": "F",
+        "skill": 5
+      },
+      {
+        "n": "17",
+        "name": "Tyler Kettner",
+        "pos": "F",
+        "skill": 5
+      },
+      {
+        "n": "19",
+        "name": "Josh Gulledge",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "26",
+        "name": "Erika Tunning",
+        "pos": "F",
+        "skill": 2
+      },
+      {
+        "n": "38",
+        "name": "Casey Lang",
+        "pos": "G",
+        "skill": 4
+      },
+      {
+        "n": "46",
+        "name": "Mitchell Liebl",
+        "pos": "F",
+        "skill": 5
+      },
+      {
+        "n": "71",
+        "name": "Darren Rojas",
+        "pos": "D",
+        "skill": 3
+      },
+      {
+        "n": "74",
+        "name": "Kyle Meetze",
+        "pos": "D",
+        "skill": 3
+      },
+      {
+        "n": "83",
+        "name": "Jeremy Lindemann",
+        "pos": "D",
+        "skill": 4
+      },
+      {
+        "n": "92",
+        "name": "TJ Liebl",
+        "pos": "D",
+        "skill": 6
+      },
+      {
+        "n": "94",
+        "name": "Chris Tunning",
+        "pos": "F",
+        "skill": 4
+      }
+    ],
+    "awayRoster": [
+      {
+        "n": "9",
+        "name": "Ronnie Pinnell",
+        "pos": "D",
+        "skill": 4
+      },
+      {
+        "n": "14",
+        "name": "Nick Ciampoli",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "22",
+        "name": "Robert Mayfield",
+        "pos": "D",
+        "skill": 3
+      },
+      {
+        "n": "24",
+        "name": "Jennifer Valente",
+        "pos": "F",
+        "skill": 2
+      },
+      {
+        "n": "39",
+        "name": "Wyatt Crandall",
+        "pos": "G",
+        "skill": 5
+      },
+      {
+        "n": "42",
+        "name": "Garrett Ashcroft",
+        "pos": "F",
+        "skill": 5
+      },
+      {
+        "n": "49",
+        "name": "Galen Wood",
+        "pos": "F",
+        "skill": 5
+      },
+      {
+        "n": "52",
+        "name": "Hayden Perea",
+        "pos": "D",
+        "skill": 4
+      },
+      {
+        "n": "55",
+        "name": "James Rynearson",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "61",
+        "name": "Kaitlyn Shain",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "70",
+        "name": "Sam Downs",
+        "pos": "F",
+        "skill": 6
+      },
+      {
+        "n": "75",
+        "name": "Nicole Downs",
+        "pos": "F",
+        "skill": 2
+      },
+      {
+        "n": "84",
+        "name": "Maxwell Donaty",
+        "pos": "D",
+        "skill": 5
+      },
+      {
+        "n": "87",
+        "name": "Josh Cronk",
+        "pos": "D",
+        "skill": 5
+      },
+      {
+        "n": "91",
+        "name": "Kevin White",
+        "pos": "F",
+        "skill": 4
+      }
+    ]
+  },
+  "18969": {
+    "gid": "18969",
+    "date": "2025-09-07",
+    "homeTeam": "Platinum",
+    "awayTeam": "Velodrome",
+    "homeColor": "#919294",
+    "awayColor": "#9C47E4",
+    "videoUrl": "",
+    "homeRoster": [
+      {
+        "n": "3",
+        "name": "Alex Considine",
+        "pos": "D",
+        "skill": 4
+      },
+      {
+        "n": "8",
+        "name": "Jesse Chambless",
+        "pos": "D",
+        "skill": 5
+      },
+      {
+        "n": "12",
+        "name": "Karen Zietlow",
+        "pos": "F",
+        "skill": 2
+      },
+      {
+        "n": "21",
+        "name": "Andrew Marshall",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "34",
+        "name": "Chris Dube",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "45",
+        "name": "Keegan Mantaro",
+        "pos": "D",
+        "skill": 6
+      },
+      {
+        "n": "47",
+        "name": "Josh Simonds",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "53",
+        "name": "Chris Premo",
+        "pos": "F",
+        "skill": 5
+      },
+      {
+        "n": "78",
+        "name": "Matt Quinn",
+        "pos": "D",
+        "skill": 3
+      },
+      {
+        "n": "82",
+        "name": "JoLyn Maly",
+        "pos": "F",
+        "skill": 2
+      },
+      {
+        "n": "86",
+        "name": "Joshua Blumberg",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "20",
+        "name": "John Thien",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "99",
+        "name": "Francis Forte",
+        "pos": "G",
+        "skill": 5
+      }
+    ],
+    "awayRoster": [
+      {
+        "n": "9",
+        "name": "Ronnie Pinnell",
+        "pos": "D",
+        "skill": 4
+      },
+      {
+        "n": "14",
+        "name": "Nick Ciampoli",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "22",
+        "name": "Robert Mayfield",
+        "pos": "D",
+        "skill": 3
+      },
+      {
+        "n": "39",
+        "name": "Wyatt Crandall",
+        "pos": "G",
+        "skill": 5
+      },
+      {
+        "n": "42",
+        "name": "Garrett Ashcroft",
+        "pos": "F",
+        "skill": 5
+      },
+      {
+        "n": "49",
+        "name": "Galen Wood",
+        "pos": "F",
+        "skill": 5
+      },
+      {
+        "n": "52",
+        "name": "Hayden Perea",
+        "pos": "D",
+        "skill": 4
+      },
+      {
+        "n": "55",
+        "name": "James Rynearson",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "61",
+        "name": "Kaitlyn Shain",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "70",
+        "name": "Sam Downs",
+        "pos": "F",
+        "skill": 6
+      },
+      {
+        "n": "75",
+        "name": "Nicole Downs",
+        "pos": "F",
+        "skill": 2
+      },
+      {
+        "n": "84",
+        "name": "Maxwell Donaty",
+        "pos": "D",
+        "skill": 5
+      },
+      {
+        "n": "91",
+        "name": "Kevin White",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "93",
+        "name": "Pat Major",
+        "pos": "D",
+        "skill": 3
+      }
+    ]
+  },
+  "18977": {
+    "gid": "18977",
+    "date": "2025-09-14",
+    "homeTeam": "Velodrome",
+    "awayTeam": "HollowBrook",
+    "homeColor": "#9C47E4",
+    "awayColor": "#4D2640",
+    "videoUrl": "",
+    "homeRoster": [
+      {
+        "n": "9",
+        "name": "Ronnie Pinnell",
+        "pos": "D",
+        "skill": 4
+      },
+      {
+        "n": "14",
+        "name": "Nick Ciampoli",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "22",
+        "name": "Robert Mayfield",
+        "pos": "D",
+        "skill": 3
+      },
+      {
+        "n": "24",
+        "name": "Jennifer Valente",
+        "pos": "F",
+        "skill": 2
+      },
+      {
+        "n": "39",
+        "name": "Wyatt Crandall",
+        "pos": "G",
+        "skill": 5
+      },
+      {
+        "n": "42",
+        "name": "Garrett Ashcroft",
+        "pos": "F",
+        "skill": 5
+      },
+      {
+        "n": "49",
+        "name": "Galen Wood",
+        "pos": "F",
+        "skill": 5
+      },
+      {
+        "n": "52",
+        "name": "Hayden Perea",
+        "pos": "D",
+        "skill": 4
+      },
+      {
+        "n": "61",
+        "name": "Kaitlyn Shain",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "70",
+        "name": "Sam Downs",
+        "pos": "F",
+        "skill": 6
+      },
+      {
+        "n": "75",
+        "name": "Nicole Downs",
+        "pos": "F",
+        "skill": 2
+      },
+      {
+        "n": "87",
+        "name": "Josh Cronk",
+        "pos": "D",
+        "skill": 5
+      },
+      {
+        "n": "91",
+        "name": "Kevin White",
+        "pos": "F",
+        "skill": 4
+      }
+    ],
+    "awayRoster": [
+      {
+        "n": "2",
+        "name": "Noel Black",
+        "pos": "D",
+        "skill": 4
+      },
+      {
+        "n": "5",
+        "name": "Kevin Moore",
+        "pos": "D",
+        "skill": 3
+      },
+      {
+        "n": "8",
+        "name": "Bert Loper",
+        "pos": "F",
+        "skill": 2
+      },
+      {
+        "n": "11",
+        "name": "Ty Smith",
+        "pos": "F",
+        "skill": 6
+      },
+      {
+        "n": "13",
+        "name": "Nathan Watts",
+        "pos": "F",
+        "skill": 5
+      },
+      {
+        "n": "18",
+        "name": "Todd Heffner",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "19",
+        "name": "Hayden Smith",
+        "pos": "F",
+        "skill": 5
+      },
+      {
+        "n": "22",
+        "name": "Steve Smith",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "26",
+        "name": "Nate Flint",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "27",
+        "name": "Beau Kelly",
+        "pos": "D",
+        "skill": 4
+      },
+      {
+        "n": "40",
+        "name": "Kirk Moore",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "99",
+        "name": "Jared Wolf",
+        "pos": "G",
+        "skill": 4
+      }
+    ]
+  },
+  "18981": {
+    "gid": "18981",
+    "date": "2025-09-28",
+    "homeTeam": "Nelson",
+    "awayTeam": "Velodrome",
+    "homeColor": "#F3C323",
+    "awayColor": "#9C47E4",
+    "videoUrl": "",
+    "homeRoster": [
+      {
+        "n": "3",
+        "name": "Michelle Freddolino",
+        "pos": "F",
+        "skill": 2
+      },
+      {
+        "n": "7",
+        "name": "Bobby Dickinson",
+        "pos": "F",
+        "skill": 2
+      },
+      {
+        "n": "8",
+        "name": "Marko Somersalmi",
+        "pos": "D",
+        "skill": 4
+      },
+      {
+        "n": "10",
+        "name": "Kyle Popovich",
+        "pos": "F",
+        "skill": 5
+      },
+      {
+        "n": "15",
+        "name": "Andy Alm",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "16",
+        "name": "Zachary Coleman",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "23",
+        "name": "Eric Larson",
+        "pos": "D",
+        "skill": 3
+      },
+      {
+        "n": "31",
+        "name": "Thane Gilmore",
+        "pos": "G",
+        "skill": 3
+      },
+      {
+        "n": "37",
+        "name": "Eric Elliott",
+        "pos": "F",
+        "skill": 5
+      },
+      {
+        "n": "44",
+        "name": "Joe Lopez",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "79",
+        "name": "Brock Lofgren",
+        "pos": "F",
+        "skill": 6
+      },
+      {
+        "n": "80",
+        "name": "Samuel Yetsko",
+        "pos": "D",
+        "skill": 5
+      }
+    ],
+    "awayRoster": [
+      {
+        "n": "9",
+        "name": "Ronnie Pinnell",
+        "pos": "D",
+        "skill": 4
+      },
+      {
+        "n": "14",
+        "name": "Nick Ciampoli",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "22",
+        "name": "Robert Mayfield",
+        "pos": "D",
+        "skill": 3
+      },
+      {
+        "n": "24",
+        "name": "Jennifer Valente",
+        "pos": "F",
+        "skill": 2
+      },
+      {
+        "n": "39",
+        "name": "Wyatt Crandall",
+        "pos": "G",
+        "skill": 5
+      },
+      {
+        "n": "42",
+        "name": "Garrett Ashcroft",
+        "pos": "F",
+        "skill": 5
+      },
+      {
+        "n": "49",
+        "name": "Galen Wood",
+        "pos": "F",
+        "skill": 5
+      },
+      {
+        "n": "52",
+        "name": "Hayden Perea",
+        "pos": "D",
+        "skill": 4
+      },
+      {
+        "n": "61",
+        "name": "Kaitlyn Shain",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "70",
+        "name": "Sam Downs",
+        "pos": "F",
+        "skill": 6
+      },
+      {
+        "n": "75",
+        "name": "Nicole Downs",
+        "pos": "F",
+        "skill": 2
+      },
+      {
+        "n": "84",
+        "name": "Maxwell Donaty",
+        "pos": "D",
+        "skill": 5
+      },
+      {
+        "n": "87",
+        "name": "Josh Cronk",
+        "pos": "D",
+        "skill": 5
+      },
+      {
+        "n": "91",
+        "name": "Kevin White",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "93",
+        "name": "Pat Major",
+        "pos": "D",
+        "skill": 3
+      }
+    ]
+  },
+  "18987": {
+    "gid": "18987",
+    "date": "2025-10-05",
+    "homeTeam": "Outlaws",
+    "awayTeam": "Velodrome",
+    "homeColor": "#02007B",
+    "awayColor": "#9C47E4",
+    "videoUrl": "",
+    "homeRoster": [
+      {
+        "n": "3",
+        "name": "Cesar Shinall",
+        "pos": "D",
+        "skill": 4
+      },
+      {
+        "n": "4",
+        "name": "Trevor Chavez",
+        "pos": "D",
+        "skill": 5
+      },
+      {
+        "n": "12",
+        "name": "Ryan Kiehl",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "13",
+        "name": "Christopher Mihlon",
+        "pos": "F",
+        "skill": 5
+      },
+      {
+        "n": "18",
+        "name": "Colin Brewster",
+        "pos": "D",
+        "skill": 3
+      },
+      {
+        "n": "25",
+        "name": "Kennen Newsham",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "30",
+        "name": "Graham Peters",
+        "pos": "G",
+        "skill": 5
+      },
+      {
+        "n": "44",
+        "name": "Taylor Rogalsky",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "56",
+        "name": "Colby Rasplicka",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "68",
+        "name": "Brody Keene",
+        "pos": "D",
+        "skill": 5
+      },
+      {
+        "n": "77",
+        "name": "Samson Leifer",
+        "pos": "F",
+        "skill": 6
+      },
+      {
+        "n": "80",
+        "name": "Richie Villanueva",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "89",
+        "name": "Steve Klyn",
+        "pos": "F",
+        "skill": 2
+      },
+      {
+        "n": "91",
+        "name": "Philip Kerchner",
+        "pos": "F",
+        "skill": 2
+      }
+    ],
+    "awayRoster": [
+      {
+        "n": "9",
+        "name": "Ronnie Pinnell",
+        "pos": "D",
+        "skill": 4
+      },
+      {
+        "n": "14",
+        "name": "Nick Ciampoli",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "22",
+        "name": "Robert Mayfield",
+        "pos": "D",
+        "skill": 3
+      },
+      {
+        "n": "24",
+        "name": "Jennifer Valente",
+        "pos": "F",
+        "skill": 2
+      },
+      {
+        "n": "39",
+        "name": "Wyatt Crandall",
+        "pos": "G",
+        "skill": 5
+      },
+      {
+        "n": "42",
+        "name": "Garrett Ashcroft",
+        "pos": "F",
+        "skill": 5
+      },
+      {
+        "n": "55",
+        "name": "James Rynearson",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "61",
+        "name": "Kaitlyn Shain",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "70",
+        "name": "Sam Downs",
+        "pos": "F",
+        "skill": 6
+      },
+      {
+        "n": "75",
+        "name": "Nicole Downs",
+        "pos": "F",
+        "skill": 2
+      },
+      {
+        "n": "84",
+        "name": "Maxwell Donaty",
+        "pos": "D",
+        "skill": 5
+      },
+      {
+        "n": "91",
+        "name": "Kevin White",
+        "pos": "F",
+        "skill": 4
+      }
+    ]
+  },
+  "18991": {
+    "gid": "18991",
+    "date": "2025-10-12",
+    "homeTeam": "Triple J",
+    "awayTeam": "Velodrome",
+    "homeColor": "#4EB9E5",
+    "awayColor": "#9C47E4",
+    "videoUrl": "",
+    "homeRoster": [
+      {
+        "n": "1",
+        "name": "Rick Haenke",
+        "pos": "G",
+        "skill": 5
+      },
+      {
+        "n": "10",
+        "name": "Lucy Spreter",
+        "pos": "F",
+        "skill": 2
+      },
+      {
+        "n": "16",
+        "name": "Ryan Lewis",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "19",
+        "name": "Brian Myers",
+        "pos": "D",
+        "skill": 4
+      },
+      {
+        "n": "21",
+        "name": "Matt Lee",
+        "pos": "F",
+        "skill": 5
+      },
+      {
+        "n": "37",
+        "name": "Bob Colby",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "41",
+        "name": "Brad Hogan",
+        "pos": "D",
+        "skill": 4
+      },
+      {
+        "n": "57",
+        "name": "Jason Mantaro",
+        "pos": "D",
+        "skill": 5
+      },
+      {
+        "n": "69",
+        "name": "Jon Schuepbach",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "71",
+        "name": "Zach DeBlois",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "73",
+        "name": "Mike Flood",
+        "pos": "F",
+        "skill": 5
+      },
+      {
+        "n": "90",
+        "name": "Laura Hogan",
+        "pos": "F",
+        "skill": 2
+      }
+    ],
+    "awayRoster": [
+      {
+        "n": "9",
+        "name": "Ronnie Pinnell",
+        "pos": "D",
+        "skill": 4
+      },
+      {
+        "n": "14",
+        "name": "Nick Ciampoli",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "22",
+        "name": "Robert Mayfield",
+        "pos": "D",
+        "skill": 3
+      },
+      {
+        "n": "24",
+        "name": "Jennifer Valente",
+        "pos": "F",
+        "skill": 2
+      },
+      {
+        "n": "39",
+        "name": "Wyatt Crandall",
+        "pos": "G",
+        "skill": 5
+      },
+      {
+        "n": "55",
+        "name": "James Rynearson",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "61",
+        "name": "Kaitlyn Shain",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "70",
+        "name": "Sam Downs",
+        "pos": "F",
+        "skill": 6
+      },
+      {
+        "n": "75",
+        "name": "Nicole Downs",
+        "pos": "F",
+        "skill": 2
+      },
+      {
+        "n": "84",
+        "name": "Maxwell Donaty",
+        "pos": "D",
+        "skill": 5
+      },
+      {
+        "n": "87",
+        "name": "Josh Cronk",
+        "pos": "D",
+        "skill": 5
+      },
+      {
+        "n": "91",
+        "name": "Kevin White",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "93",
+        "name": "Pat Major",
+        "pos": "D",
+        "skill": 3
+      }
+    ]
+  },
+  "18993": {
+    "gid": "18993",
+    "date": "2025-10-19",
+    "homeTeam": "Ace",
+    "awayTeam": "Velodrome",
+    "homeColor": "#CA0527",
+    "awayColor": "#9C47E4",
+    "videoUrl": "",
+    "homeRoster": [
+      {
+        "n": "0",
+        "name": "Alyssa Richards",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "7",
+        "name": "John Storms",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "16",
+        "name": "Joe Diberardinis",
+        "pos": "F",
+        "skill": 5
+      },
+      {
+        "n": "18",
+        "name": "Ethan Kalbfleisch",
+        "pos": "F",
+        "skill": 5
+      },
+      {
+        "n": "20",
+        "name": "John Morrow",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "27",
+        "name": "Austin Storm",
+        "pos": "F",
+        "skill": 6
+      },
+      {
+        "n": "31",
+        "name": "Ian Gustafson",
+        "pos": "G",
+        "skill": 3
+      },
+      {
+        "n": "35",
+        "name": "Josh Engle",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "57",
+        "name": "Lee Chiarizia",
+        "pos": "D",
+        "skill": 4
+      },
+      {
+        "n": "65",
+        "name": "Nick Zellmann",
+        "pos": "D",
+        "skill": 6
+      },
+      {
+        "n": "69",
+        "name": "Nora Wilson",
+        "pos": "D",
+        "skill": 4
+      },
+      {
+        "n": "72",
+        "name": "Owen Kalbfleisch",
+        "pos": "D",
+        "skill": 5
+      },
+      {
+        "n": "81",
+        "name": "Kevin Kalbfleisch",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "88",
+        "name": "John Liersemann",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "98",
+        "name": "Shane Arnold",
+        "pos": "F",
+        "skill": 2
+      }
+    ],
+    "awayRoster": [
+      {
+        "n": "9",
+        "name": "Ronnie Pinnell",
+        "pos": "D",
+        "skill": 4
+      },
+      {
+        "n": "14",
+        "name": "Nick Ciampoli",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "22",
+        "name": "Robert Mayfield",
+        "pos": "D",
+        "skill": 3
+      },
+      {
+        "n": "24",
+        "name": "Jennifer Valente",
+        "pos": "F",
+        "skill": 2
+      },
+      {
+        "n": "42",
+        "name": "Garrett Ashcroft",
+        "pos": "F",
+        "skill": 5
+      },
+      {
+        "n": "49",
+        "name": "Galen Wood",
+        "pos": "F",
+        "skill": 5
+      },
+      {
+        "n": "55",
+        "name": "James Rynearson",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "61",
+        "name": "Kaitlyn Shain",
+        "pos": "F",
+        "skill": 3
+      },
+      {
+        "n": "70",
+        "name": "Sam Downs",
+        "pos": "F",
+        "skill": 6
+      },
+      {
+        "n": "75",
+        "name": "Nicole Downs",
+        "pos": "F",
+        "skill": 2
+      },
+      {
+        "n": "84",
+        "name": "Maxwell Donaty",
+        "pos": "D",
+        "skill": 5
+      },
+      {
+        "n": "91",
+        "name": "Kevin White",
+        "pos": "F",
+        "skill": 4
+      },
+      {
+        "n": "93",
+        "name": "Pat Major",
+        "pos": "D",
+        "skill": 3
+      },
+      {
+        "n": "FA",
+        "name": "Francis Forte",
+        "pos": "G",
+        "skill": 5
+      }
+    ]
+  }
+}

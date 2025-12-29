@@ -1,0 +1,22 @@
+turnover_type_id,turnover_type,turnover_category,is_giveaway,is_takeaway,is_bad_turnover,is_neutral_turnover,description,penalty_weight
+1,Misplayed,Giveaway_Bad,True,False,True,False,Misplayed puck leading to turnover,1.0
+2,BattleLost,Giveaway_Bad,True,False,True,False,Lost puck battle,0.8
+3,PassIntercepted,Giveaway_Bad,True,False,True,False,Pass intercepted by opponent,1.0
+4,PassMissed,Giveaway_Bad,True,False,True,False,Missed pass to teammate,0.9
+5,PassBlocked,Giveaway_Bad,True,False,True,False,Pass blocked by defender,0.7
+6,PassReceiverMissed,Giveaway_Bad,True,False,False,True,Good pass but receiver missed,0.3
+7,ShotBlocked,Giveaway_Neutral,True,False,False,True,Shot blocked leading to change,0.2
+8,ShotMissed,Giveaway_Neutral,True,False,False,True,Shot missed leading to change,0.2
+9,ZoneClearDump,Giveaway_Neutral,True,False,False,True,Intentional clear/dump out of zone,0.0
+10,AttemptedZoneClearDump,Giveaway_Neutral,True,False,False,True,Attempted but failed clear/dump,0.4
+11,ZoneEntryExitMisplay,Giveaway_Bad,True,False,True,False,Misplay during zone transition,0.9
+12,DumpInZone,Giveaway_Neutral,True,False,False,True,Intentional dump into zone,0.0
+13,GiveawayOther,Giveaway_Bad,True,False,True,False,Other giveaway,0.5
+14,TakeawayBattleWon,Takeaway_Good,False,True,False,False,Won puck battle,1.0
+15,TakeawayPokeCheck,Takeaway_Good,False,True,False,False,Stole puck with poke check,1.0
+16,TakeawayPassIntercepted,Takeaway_Good,False,True,False,False,Intercepted opponent pass,1.0
+17,TakeawayPassBlocked,Takeaway_Good,False,True,False,False,Blocked opponent pass,0.8
+18,TakeawayShotBlocked,Takeaway_Good,False,True,False,False,Blocked shot creating turnover,0.7
+19,TakeawayZoneClearDump,Takeaway_Neutral,False,True,False,True,Recovered opponent clear/dump,0.3
+20,TakeawayAttemptedClearDump,Takeaway_Good,False,True,False,False,Stopped opponent clear attempt,0.8
+21,TakeawayOther,Takeaway_Good,False,True,False,False,Other takeaway,0.5

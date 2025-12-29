@@ -1,192 +1,192 @@
-index,player_full_name,player_id,season_id,season,restricted,email,position,norad_experience,CAF,highest_beer_league_played,skill_rating,age,referred_by,notes,sub_yn,drafted_team_name,drafted_team_id,player_season_registration_id
-0,Ty Smith,P100084,N20252026F,20252026,Y,ty0214@gmail.com,Forward,6,No,"Big Bear, C4, Birds of War",6,30,-,,N,HollowBrook,N10003,R_N20252026FP100084
-1,TJ Liebl,P100166,N20252026F,20252026,N,tj.liebl23@gmail.com,Forward,0,No,"Campbell League, Pikas",6,36,"Rick Haenke, Thane Gilmore, Gary Buck",Wants to play with wife Kimberly Liebl,N,OS Offices,N10005,R_N20252026FP100166
-2,Ross Thompson,P100082,N20252026F,20252026,N,rossjames7@gmail.com,Forward,5,No,Advanced CSAHL,6,34,-,,N,Orphans,N10006,R_N20252026FP100082
-3,Nick Zellmann,P100184,N20252026F,20252026,N,nickzellmann@gmail.com,Defense,0,No,B league monument sinBins,6,26,Keegan Mantaro,,N,Ace,N10002,R_N20252026FP100184
-4,Samson Leifer,P100185,N20252026F,20252026,N,samsonleifer4@gmail.com,Forward,0,No,B league monument,6,22,Friends,,N,Outlaws,N10007,R_N20252026FP100185
-5,Keegan Mantaro,P100117,N20252026F,20252026,N,keeganmantaro@gmail.com,Forward,1,No,Campbell; Platinum,6,26,-,,N,Platinum,N10008,R_N20252026FP100117
-6,Brock Lofgren,P100066,N20252026F,20252026,N,brockster13@yahoo.com,Forward,2,No,NORAD,6,32,-,,N,Nelson,N10004,R_N20252026FP100066
-7,Zach Schirm,P100186,N20252026F,20252026,N,schirm175@icloud.com,Forward,0,No,"Campbell, advanced",6,23,Owen Kalbfleisch,,Y,Free Agent,N10026,R_N20252026FP100186
-8,Simon Kurtz,P100187,N20252026F,20252026,N,kurtz.w.simon@gmail.com,Defense,0,No,"B League monument, Mountaineers",6,24,Owen Kalbfleisch,,N,Free Agent,N10026,R_N20252026FP100187
-9,Austin Storm,P100026,N20252026F,20252026,N,stormhockey2795@gmail.com,Forward,2,No,Ace Level 6,6,29,-,,N,Ace,N10002,R_N20252026FP100026
-10,Sam Downs,P100001,N20252026F,20252026,N,downsthethird@gmail.com,Forward,10+,No,B - Platinum Group,6,39,-,Wants to play with wife Nicole Downs,N,Velodrome,N10010,R_N20252026FP100001
-11,Logan Dineen,P100188,N20252026F,20252026,N,in2hockey@icloud.com,Forward,0,No,Monument B league,6,24,Internet,,N,Free Agent,N10026,R_N20252026FP100188
-12,Garret Orth,P100189,N20252026F,20252026,N,garret.orth@hotmail.com,Forward,0,No,,5,28,Jared Wolf,,N,HollowBrook,N10003,R_N20252026FP100189
-13,Anthony Mandt,P100190,N20252026F,20252026,N,mandt2123@gmail.com,Forward,0,No,Hawaii Hockey Club A Division,5,35,Chris Premo,,N,Free Agent,N10026,R_N20252026FP100190
-14,Austin Webb,P100051,N20252026F,20252026,Y,austinwebb4848@gmail.com,Forward,4,No,No other teams,5,27,-,,N,Orphans,N10006,R_N20252026FP100051
-15,Michael Gipson,P100118,N20252026F,20252026,N,goaliegipper30@gmail.com,Goalie,2,No,Beer league campbell,5,49,-,,N,Orphans,N10006,R_N20252026FP100118
-16,Peter Dowling,P100191,N20252026F,20252026,N,phdowling@gmail.com,Defense,1,Yes,N/A - played with base team in Germany last season,5,42,-,,N,Triple J,N10009,R_N20252026FP100191
-17,Christopher Premo,P100192,N20252026F,20252026,N,crpremo@yahoo.com,Forward,0,No,B,5,40,Sam Downs,,N,Platinum,N10008,R_N20252026FP100192
-18,Ryan Case,P100193,N20252026F,20252026,N,ryca7143@colorado.edu,Forward,0,No,Competitive AAA hockey and High School hockey,5,28,Beau Kelly,,N,Orphans,N10006,R_N20252026FP100193
-19,Mitchell Liebl,P100194,N20252026F,20252026,N,mitchliebl@msn.com,Forward,0,No,CSAHL Advanced Pikas,5,39,TJ Liebl,,N,OS Offices,N10005,R_N20252026FP100194
-20,Joshua Parmiter,P100053,N20252026F,20252026,Y,joshuaparmiter@gmail.com,Forward,4-5,No,,5,36,-,,N,Orphans,N10006,R_N20252026FP100053
-21,Matt Lee,P100019,N20252026F,20252026,Y,mhlee22118@gmail.com,Forward,1,No,CSAHL Advanced,5,36,-,,N,Triple J,N10009,R_N20252026FP100019
-22,Kyle Popovich,P100078,N20252026F,20252026,Y,popovichk312@gmail.com,Forward,3,No,Juniors,5,40,-,,N,Nelson,N10004,R_N20252026FP100078
-23,Chad Miller,P100042,N20252026F,20252026,N,chadmiller@pga.com,Forward,7,No,Norad,5,50,-,,N,AMOS,N10001,R_N20252026FP100042
-24,Owen Kalbfleisch,P100017,N20252026F,20252026,N,oakalbfkeisch@gmail.com,Forward,4,No,B league,5,22,-,"All Kalbfleischs want to play together, but know that may not work",N,Ace,N10002,R_N20252026FP100017
-25,Joseph Tartaglia,P100195,N20252026F,20252026,N,joeytart84@gmail.com,Defense,0,Yes,C league,5,39,Billy Gaetcher,,N,Free Agent,N10026,R_N20252026FP100195
-26,Graham Peters,P100009,N20252026F,20252026,N,graham.peters18@gmail.com,Goalie,2,Yes,,5,36,-,,N,Outlaws,N10007,R_N20252026FP100009
-27,Andrew McIlhany,P100083,N20252026F,20252026,N,drewdoclimb@gmail.com,Defense,5,No,,5,26,-,,N,AMOS,N10001,R_N20252026FP100083
-28,Jason Mantaro,P100007,N20252026F,20252026,Y,jasonmantaro@gmail.com,Defense,3,No,Campbell,5,55,-,,N,Triple J,N10009,R_N20252026FP100007
-29,Galen Wood,P100161,N20252026F,20252026,N,galenjwood@gmail.com,Forward,0,Yes,A in Korea,5,30,Was a sub last year,,N,Velodrome,N10010,R_N20252026FP100161
-30,Tyler Tennant,P100196,N20252026F,20252026,N,tylerjtennant@gmail.com,Forward,0,No,,5,34,Robert Mayfield,,N,Free Agent,N10026,R_N20252026FP100196
-31,Dustin Fritz,P100028,N20252026F,20252026,Y,dfritz85@aol.com,Forward,2,No,Platinum,5,40,-,,N,Platinum,N10008,R_N20252026FP100028
-32,Ian Ward,P100067,N20252026F,20252026,N,gingygoalie13033@gmail.com,Goalie,3,No,Intermediate league: Angry Dolphins (Rick Greene),5,23,-,,N,Platinum,N10008,R_N20252026FP100067
-33,Matthew D’Addario,P100131,N20252026F,20252026,Y,matthew.daddario@icloud.com,Defense,18,No,,5,50,-,,N,AMOS,N10001,R_N20252026FP100131
-34,Samuel Yetsko,P100197,N20252026F,20252026,N,samuellyetsko@gmail.com,Defense,0,Yes,"A/B1 New Mexico Hockey League, played for 5 teams since Jan 2023",5,26,Friends,,N,Nelson,N10004,R_N20252026FP100197
-35,Maxwell Donaty,P100198,N20252026F,20252026,N,maxwelldonaty@aol.com,Defense,0,No,First Beer League,5,22,Internet,,N,Velodrome,N10010,R_N20252026FP100198
-36,Rick Haenke,P100020,N20252026F,20252026,N,rhaenke3@gmail.com,Goalie,2,No,A league with High Life,5,42,-,,N,Triple J,N10009,R_N20252026FP100020
-37,Hayden Smith,P100088,N20252026F,20252026,Y,hrs0214@gmail.com,Forward,5,No,Norad,5,28,-,,N,HollowBrook,N10003,R_N20252026FP100088
-38,Josh Theken,P100037,N20252026F,20252026,Y,thekenj2002@yahoo.com,Forward,35,No,none,5,46,-,,N,OS Offices,N10005,R_N20252026FP100037
-39,Ethan Kalbfleisch,P100199,N20252026F,20252026,N,ethankalbfleisch@gmail.com,Forward,5,No,B,5,25,-,"All Kalbfleischs want to play together, but know that may not work",N,Ace,N10002,R_N20252026FP100199
-40,Nicholas Lang,P100200,N20252026F,20252026,N,nicholas.lang@yahoo.com,Forward,0,No,Campbell - Pikas,5,32,Casey Lang,Wants to play with wife Casey Lang,N,OS Offices,N10005,R_N20252026FP100200
-41,Garrett Ashcroft,P100201,N20252026F,20252026,N,gcashcroft5420@gmail.com,Forward,3,No,B division Monument,5,33,-,,N,Velodrome,N10010,R_N20252026FP100201
-42,Francis Forte,P100202,N20252026F,20252026,N,francis.forte@usahockey.org,Goalie,0,No,,5,25,-,,Y,Free Agent,N10026,R_N20252026FP100202
-43,Mike Flood,P100021,N20252026F,20252026,N,mikeflood85@gmail.com,Forward,1,No,Norad,5,39,-,,N,Triple J,N10009,R_N20252026FP100021
-44,Brody Keene,P100128,N20252026F,20252026,N,brodykeene@yahoo.com,Forward,1,Yes,Only norad summer league currently,5,21,-,,N,Outlaws,N10007,R_N20252026FP100128
-45,Christopher Mihlon,P100031,N20252026F,20252026,Y,chris.mihlon@gmail.com,Forward,1,Yes,Club college. CNU captains,5,35,-,,N,Outlaws,N10007,R_N20252026FP100031
-46,Trevor Chavez,P100032,N20252026F,20252026,Y,trevor.james4@yahoo.com,Defense,2,No,Monument B,5,31,-,,N,Outlaws,N10007,R_N20252026FP100032
-47,Nathan Watts,P100047,N20252026F,20252026,N,nawatts578@gmail.com,Forward,1,No,"Roller Hockey: Premier, Morning Sherwoods",5,27,-,,N,HollowBrook,N10003,R_N20252026FP100047
-48,Wyatt Crandall,P100016,N20252026F,20252026,N,wyatt.crandall99@outlook.com,Goalie,5,No,Advanced,5,29,-,,N,Velodrome,N10010,R_N20252026FP100016
-49,Hunter Winegarner,P100104,N20252026F,20252026,N,hunter.winegarner@gmail.com,Forward,1,Yes,No other team,5,41,-,,N,Free Agent,N10026,R_N20252026FP100104
-50,Eric Elliott,P100119,N20252026F,20252026,N,ea-elliott@hotmail.com,Forward,3,No,B,5,40,-,,N,Nelson,N10004,R_N20252026FP100119
-51,Jesse Chambless,P100030,N20252026F,20252026,Y,jesse@thechamblessteam.com,Defense,5?,No,B,5,44,-,,N,Platinum,N10008,R_N20252026FP100030
-52,Camden Rusk,P100203,N20252026F,20252026,N,thompsonc11@comcast.net,Defense,0,Yes,"Ashburn Ice House League, C/D League, Control Freaks/Zamponies",5,28,"Cole Maetzold, Tom Frederick",,N,Free Agent,N10026,R_N20252026FP100203
-53,Tyler Myers,P100204,N20252026F,20252026,N,tjmyers8464@yahoo.com,Forward,0,No,Monument b league Monday nights and Campbell advanced,5,35,Friends,,N,Free Agent,N10026,R_N20252026FP100204
-54,Josh Cronk,P100159,N20252026F,20252026,N,cronk.josh@gmail.com,Forward,0,No,C,5,31,Friends,,N,Velodrome,N10010,R_N20252026FP100159
-55,Justin Bell,P100150,N20252026F,20252026,N,chiefsgoalie37@gmail.com,Goalie,0,No,"A League, Car Corp Crofton Maryland",5,27,Friends,,N,AMOS,N10001,R_N20252026FP100150
-56,nick henry,P100109,N20252026F,20252026,Y,nick_henry7@yahoo.com,Forward,6,No,na,5,43,-,,N,AMOS,N10001,R_N20252026FP100109
-57,Tyler Kettner,P100044,N20252026F,20252026,Y,tkettner17@gmail.com,Forward,5,No,OfficeScapes - NORAD,5,33,-,,N,OS Offices,N10005,R_N20252026FP100044
-58,Scott Purdy,P100003,N20252026F,20252026,N,scottpurdy5@gmail.com,Goalie,2,No,Campbell League,5,51,-,,N,HollowBrook,N10003,R_N20252026FP100003
-59,John Thomason,P100168,N20252026F,20252026,N,jdt@ssgyms.com,Forward,1,Yes,Warriors B,5,48,-,,N,Free Agent,N10026,R_N20252026FP100168
-60,Joe Diberardinis,P100139,N20252026F,20252026,Y,joe.dibo1316@gmail.com,Forward,2,No,NORAD only,5,36,-,,N,Ace,N10002,R_N20252026FP100139
-61,Gary Buck,P100062,N20252026F,20252026,Y,allpucks@hotmail.com,Forward,2,No,Campbell,5,37,-,,N,Nelson,N10004,R_N20252026FP100062
-62,Sebastian Rivera,P100085,N20252026F,20252026,N,sebrivera31@gmail.com,Goalie,1,No,A,5,24,-,,N,Free Agent,N10026,R_N20252026FP100085
-63,Kelly Kaim,P100205,N20252026F,20252026,N,kmping@gmail.com,Defense,0,Yes,B,4,41,Kaitlyn Shain,,N,Nelson,N10004,R_N20252026FP100205
-64,Kevin White,P100002,N20252026F,20252026,N,kw84rw9@yahoo.com,Forward,1,No,JJJ,4,40,-,,N,Velodrome,N10010,R_N20252026FP100002
-65,Hayden Perea,P100070,N20252026F,20252026,N,haydenperea51@yahoo.com,Defense,1,No,,4,28,-,,N,Velodrome,N10010,R_N20252026FP100070
-66,Brad Hogan,P100206,N20252026F,20252026,N,mintgreenbinder@msn.com,Defense,10,No,High school,4,49,-,,N,AMOS,N10001,R_N20252026FP100206
-67,Joey Vara,P100172,N20252026F,20252026,N,jvara33@gmail.com,Forward,0,No,C,4,32,Wyatt Crandall,,N,Platinum,N10008,R_N20252026FP100172
-68,Kevin Kalbfleisch,P100112,N20252026F,20252026,N,kk417049@gmail.com,Forward,25,No,Norad,4,54,-,"All Kalbfleischs want to play together, but know that may not work",N,Ace,N10002,R_N20252026FP100112
-69,Colby Rasplicka,P100099,N20252026F,20252026,N,crasplic@gmail.com,Forward,2,No,Just This,4,30,-,,N,Outlaws,N10007,R_N20252026FP100099
-70,Marc Smith,P100052,N20252026F,20252026,Y,mjsmith8@yahoo.com,Forward,16,No,NORAD,4,45,-,,N,Orphans,N10006,R_N20252026FP100052
-71,Jared Wolf,P100096,N20252026F,20252026,Y,jarwolf1@gmail.com,Forward,3,No,Roller - Don Cherry Poppers,4,30,-,,N,HollowBrook,N10003,R_N20252026FP100096
-72,Beau Kelly,P100086,N20252026F,20252026,Y,beaugkelly@gmail.com,Defense,4,No,,4,35,-,,N,HollowBrook,N10003,R_N20252026FP100086
-73,Kent McIlhany,P100116,N20252026F,20252026,Y,maccba@msn.com,Defense,25,No,Over 40,4,57,-,,N,AMOS,N10001,R_N20252026FP100116
-74,Nate Flint,P100100,N20252026F,20252026,Y,coffee.04jars@icloud.com,Forward,8,No,,4,37,-,,N,HollowBrook,N10003,R_N20252026FP100100
-75,Erick Sauer,P100207,N20252026F,20252026,N,ericksauer@gmail.com,Forward,0,No,"B league, Monument Ice, Team Orange",4,43,Friends,,N,Outlaws,N10007,R_N20252026FP100207
-76,Jeremy Lindemann,P100120,N20252026F,20252026,N,jlindema17@gmail.com,Defense,6,No,B league monument,4,41,-,,N,OS Offices,N10005,R_N20252026FP100120
-77,Lee Chiarizia,P100142,N20252026F,20252026,Y,delicron@gmail.com,Forward,4,Yes,Just NORAD here,4,46,-,,N,Ace,N10002,R_N20252026FP100142
-78,Nick Ciampoli,P100132,N20252026F,20252026,Y,nciampoli27@gmail.com,Forward,10,No,C,4,37,-,,N,Velodrome,N10010,R_N20252026FP100132
-79,William Gagnon-Robitaille,P100208,N20252026F,20252026,N,ltruehartl@gmail.com,Forward,0,Yes,Midget B / Diablos de Pont-Rouge,4,28,"Jacob Trivers, Taylor Rogalsky, Chris Chapman",,N,AMOS,N10001,R_N20252026FP100208
-80,Alyssa Richards,P100209,N20252026F,20252026,N,alyssarichards3@gmail.com,Forward,0,No,C2 at Monument Ice Rinks and C2/C3 in AHA in Minnesot,4,26,Jake Winger,,N,Ace,N10002,R_N20252026FP100209
-81,Clint Atkins,P100098,N20252026F,20252026,N,blitz.atkins@gmail.com,Defense,2,No,USA Warrior Hockey,4,51,-,,N,Orphans,N10006,R_N20252026FP100098
-82,Josh Simonds,P100210,N20252026F,20252026,N,andrewj.simonds@gmail.com,Forward,0,No,"Campbell League, High Life",4,37,Dustin Fritz,,N,Nelson,N10004,R_N20252026FP100210
-83,Robert Martin,P100121,N20252026F,20252026,Y,waldo_cf18@hotmail.com,Forward,17,No,Monument C - Llamakaze,4,59,-,,N,AMOS,N10001,R_N20252026FP100121
-84,Zach DeBlois,P100008,N20252026F,20252026,Y,zacharydeblois1@gmail.com,Forward,3,No,Intermediate,4,28,-,,N,Triple J,N10009,R_N20252026FP100008
-85,alex Considine,P100023,N20252026F,20252026,Y,aconsidine3@gmail.com,Defense,2,Yes,Shearwater Flyers Base Team,4,49,-,,N,Platinum,N10008,R_N20252026FP100023
-86,Chad Ferguson,P100055,N20252026F,20252026,Y,ferguson.chad@outlook.com,Forward,4,No,NORAD,4,35,-,,N,Orphans,N10006,R_N20252026FP100055
-87,Brian Myers,P100089,N20252026F,20252026,N,myer2040@yahoo.com,Defense,6,No,CSAHL intermediate,4,46,-,,N,Triple J,N10009,R_N20252026FP100089
-88,Bob Colby,P100006,N20252026F,20252026,Y,bcolby37@yahoo.com,Forward,10,No,yup,4,52,-,,N,Triple J,N10009,R_N20252026FP100006
-89,Joe Lopez,P100079,N20252026F,20252026,Y,lopez.joes@gmail.com,Forward,3,No,Colorado Springs adult league,4,46,-,,N,Nelson,N10004,R_N20252026FP100079
-90,Josh Twitchell,P100065,N20252026F,20252026,Y,mjtwitchell@gmail.com,Forward,13,No,NORAD League,4,43,-,,N,Nelson,N10004,R_N20252026FP100065
-91,Josh Gulledge,P100050,N20252026F,20252026,Y,jgulledge19@gmail.com,Forward,6,No,,4,34,-,,N,OS Offices,N10005,R_N20252026FP100050
-92,Jake Winger,P100011,N20252026F,20252026,N,wingerjake28@gmail.com,Forward,1,No,NORAD,4,27,-,,N,Free Agent,N10026,R_N20252026FP100011
-93,Noel Black,P100211,N20252026F,20252026,N,darksandal@gmail.com,Defense,0,No,,4,52,Friends,,N,HollowBrook,N10003,R_N20252026FP100211
-94,Daniel Heck,P100054,N20252026F,20252026,Y,hecksco@msn.com,Defense,15,No,Berkeley Bears Midget AA,4,57,-,,N,Orphans,N10006,R_N20252026FP100054
-95,Jesse Theken,P100040,N20252026F,20252026,Y,jctheken@gmail.com,Forward,9,No,NORAD,4,50,-,,N,OS Offices,N10005,R_N20252026FP100040
-96,Ian Wilson,P100160,N20252026F,20252026,N,iwilsot@proton.me,Defense,0 (summer),No,CSAHL Intermediate Division,4,32,Was a sub last year,,N,Ace,N10002,R_N20252026FP100160
-97,Jason Judge,P100010,N20252026F,20252026,Y,jason.judge22@gmail.com,Defense,5,No,CSAHL intermediate... Patriots,4,47,-,,N,Triple J,N10009,R_N20252026FP100010
-98,John Liersemann,P100212,N20252026F,20252026,N,lierseja@yahoo.com,Forward,0,No,Dunn Roofing and Monarch Hockey - LAHPA - Breakaway Tournaments mid to upper divisions,4,42,Internet,,N,Ace,N10002,R_N20252026FP100212
-99,Tim Kuhl,P100035,N20252026F,20252026,Y,tkuhl15@gmail.com,Defense,2.5 years,No,"Bravo warrior league, Colorado Springs police department",4,34,-,,N,Outlaws,N10007,R_N20252026FP100035
-100,Zachary Coleman,P100164,N20252026F,20252026,N,zachhcoleman@gmail.com,Forward,0,Yes,Intramural hockey RMC,4,31,-,,N,Platinum,N10008,R_N20252026FP100164
-101,Andre Wright,P100141,N20252026F,20252026,N,wright.andre@gmail.com,Forward,1,No,ERHL intermediate,4,41,-,,N,Free Agent,N10026,R_N20252026FP100141
-102,Casey Lang,P100151,N20252026F,20252026,N,caseyschwartz_37@yahoo.com,Goalie,0 (summer),No,Monument C - Buk,4,31,Was a sub last year,,N,OS Offices,N10005,R_N20252026FP100151
-103,Andrew Marshall,P100025,N20252026F,20252026,Y,drewmarsh01@yahoo.com,Defense,8,No,A/Gold,4,46,-,,N,Platinum,N10008,R_N20252026FP100025
-104,Marko Somersalmi,P100074,N20252026F,20252026,Y,cofinn78@gmail.com,Defense,6,No,Monument >45/ NOtRAD (yellow),4,47,-,,N,Nelson,N10004,R_N20252026FP100074
-105,Chris Dube,P100022,N20252026F,20252026,Y,chris.a.dube@gmail.com,Forward,1,Yes,NORAD,4,40,-,,N,Platinum,N10008,R_N20252026FP100022
-106,Matt levine,P100129,N20252026F,20252026,Y,mjl19usn@gmail.com,Forward,1,No,"Campbell league, wardeques",4,47,-,,N,AMOS,N10001,R_N20252026FP100129
-107,Ronnie Pinnell,P100105,N20252026F,20252026,N,ronnie.pinnell@gmail.com,Defense,1,No,C @ Monument. Only played a few games due to scheduling. Aside from NORAD I played in Ohio which was a little slower than NORAD,4,35,-,,N,Velodrome,N10010,R_N20252026FP100105
-108,Jim O'Donnell,P100213,N20252026F,20252026,N,yojimbo@usa.net,Forward,8,No,Campbell,4,64,-,,N,Free Agent,N10026,R_N20252026FP100213
-109,Ryan Kiehl,P100214,N20252026F,20252026,N,kiehlrj05@gmail.com,Forward,0,No,B tier,4,30,Lee Smith,,N,Outlaws,N10007,R_N20252026FP100214
-110,Chris Tunning,P100069,N20252026F,20252026,N,tunningc@gmail.com,Forward,1,Yes,Intermediate,4,42,-,,N,OS Offices,N10005,R_N20252026FP100069
-111,Cesar Shinall,P100004,N20252026F,20252026,N,cesar.shinall@gmail.com,Forward,1,No,C,4,26,-,,N,Outlaws,N10007,R_N20252026FP100004
-112,Todd Heffner,P100123,N20252026F,20252026,N,heffnertodd@gmail.com,Forward,8,No,Campbell League,4,51,-,,N,HollowBrook,N10003,R_N20252026FP100123
-113,Dean Porter,P100056,N20252026F,20252026,N,3runninghuskies@gmail.com,Defense,6,No,Monument c1,4,54,-,,N,Orphans,N10006,R_N20252026FP100056
-114,Noah Seibert,P100215,N20252026F,20252026,N,bigcountry3875@gmail.com,Forward,0,No,D League,4,28,"Zach DeBlois, Brad & Laura Hogan",,N,Triple J,N10009,R_N20252026FP100215
-115,Taylor Rogalsky,P100033,N20252026F,20252026,Y,rogalsky.17@gmail.com,Defense,1,Yes,Women's A Division,3,32,-,,N,Outlaws,N10007,R_N20252026FP100033
-116,Ryan Michels,P100216,N20252026F,20252026,N,ryan30michels@gmail.com,Goalie,0,No,I've played in both intermediate and advanced beer leagues,3,24,Internet,,N,Free Agent,N10026,R_N20252026FP100216
-117,Vince Harned,P100157,N20252026F,20252026,N,vince.harned@outlook.com,Forward,1,No,Monument Ice Rink C,3,30,"Nate Clyncke, Alice Burley",,N,Outlaws,N10007,R_N20252026FP100157
-118,Andrew Kell,P100076,N20252026F,20252026,N,ak_kell@hotmail.com,Defense,2,No,,3,27,-,,N,Free Agent,N10026,R_N20252026FP100076
-119,Josh Engle,P100154,N20252026F,20252026,N,joshdengle1@gmail.com,Defense,2,No,"Monument D and C, currently playing D with Moose Puckles and a private C level drop in on Friday nights.",3,44,-,,N,Ace,N10002,R_N20252026FP100154
-120,Phil Campbell,P100217,N20252026F,20252026,N,campbell.philip@me.com,Forward,0,No,E1 @ Monument,3,35,Will & Lucy Spreter,,N,Free Agent,N10026,R_N20252026FP100217
-121,Hal Jordan,P100012,N20252026F,20252026,Y,halmohhh@comcast.net,Defense,24,No,Bud Light,3,57,-,,N,Triple J,N10009,R_N20252026FP100012
-122,Chad Folden,P100218,N20252026F,20252026,N,chadfolden@gmail.com,Forward,15,No,Intermediate,3,49,Friends,,N,Free Agent,N10026,R_N20252026FP100218
-123,Wayne Kohut,P100058,N20252026F,20252026,Y,wayner_kohut@msn.com,Forward,22,No,beer league,3,63,-,,N,Orphans,N10006,R_N20252026FP100058
-124,Darren Reck,P100102,N20252026F,20252026,N,cdnflyer717@hotmail.com,Forward,6,Yes,Canadian Base Intersection League,3,56,-,,N,AMOS,N10001,R_N20252026FP100102
-125,Warren Williams,P100092,N20252026F,20252026,N,warrenmci@aim.com,Defense,8,No,campbell advanced,3,67,-,,N,Triple J,N10009,R_N20252026FP100092
-126,John Morrow,P100219,N20252026F,20252026,N,halifaxjohn25@gmail.com,Forward,25,Yes,"Halifax Military League ""A"" Div",3,45,-,,N,Ace,N10002,R_N20252026FP100219
-127,Brian Merryman,P100220,N20252026F,20252026,N,teamgoboat@yahoo.com,Goalie,0,No,C1 - Whalers,3,49,Friends,,N,Free Agent,N10026,R_N20252026FP100220
-128,John Thien,P100024,N20252026F,20252026,Y,w13spy@gmail.com,Forward,6,Yes,,3,50,-,,N,Platinum,N10008,R_N20252026FP100024
-129,Kimberly Liebl,P100221,N20252026F,20252026,N,k.cieplik4@gmail.com,Forward,0,No,Novice CASHA - Wardiques,3,36,TJ Liebl,Wants to play with husband TJ Liebl,N,OS Offices,N10005,R_N20252026FP100221
-130,Nate Clyncke,P100125,N20252026F,20252026,Y,nathan.clyncke@gmail.com,Forward,15,No,NORAD,3,59,-,,N,AMOS,N10001,R_N20252026FP100125
-131,Kirk Moore,P100049,N20252026F,20252026,N,kirk@moorei.com,Forward,10,No,Colorado Springs Adult Hockey League,3,63,-,Wants to play with brother Kevin Moore,N,HollowBrook,N10003,R_N20252026FP100049
-132,Kevin Moore,P100038,N20252026F,20252026,N,info@moorepromo.com,Defense,6,No,Intermediate CSAHA,3,61,-,Wants to play with brother Kirk Moore,N,HollowBrook,N10003,R_N20252026FP100038
-133,Andy Alm,P100071,N20252026F,20252026,N,aaandrew.alm@gmail.com,Forward,11,No,College Division 2 in 1980,3,65,-,,N,Free Agent,N10026,R_N20252026FP100071
-134,Ryan Spradlin,P100029,N20252026F,20252026,Y,ryanspradlin@gmail.com,Defense,6,No,Beeeeeeer,3,47,-,,N,Platinum,N10008,R_N20252026FP100029
-135,Joshua Blumberg,P100222,N20252026F,20252026,N,jblumberg20@gmail.com,Forward,0,No,"D-League, Mouse Rats",3,32,Cesar Shinall,,N,Platinum,N10008,R_N20252026FP100222
-136,Darren Rojas,P100046,N20252026F,20252026,Y,darren_rojas@comcast.net,Forward,7,Yes,C league in Monument; Puck Uglies,3,63,-,,N,OS Offices,N10005,R_N20252026FP100046
-137,Richie Villanueva,P100223,N20252026F,20252026,N,richie@nuvill.com,Forward,0,No,"D2 Level Intermediate, Monument, MouseRats",3,43,"Trevor Chavez, Cesar Shinall, Brody Keene",,N,Outlaws,N10007,R_N20252026FP100223
-138,Greg Hoyt,P100059,N20252026F,20252026,Y,greg@fivehoyts.com,Forward,18,No,,3,55,-,,N,Orphans,N10006,R_N20252026FP100059
-139,Kyle Meetze,P100103,N20252026F,20252026,N,kyle.meetze@gmail.com,Forward,2,No,C,3,54,-,,N,OS Offices,N10005,R_N20252026FP100103
-140,Colin Brewster,P100034,N20252026F,20252026,Y,cabrewster12@gmail.com,Defense,1,Yes,Winnipeg Old Timers Regionals,3,49,-,,N,Outlaws,N10007,R_N20252026FP100034
-141,Matt Vivian,P100073,N20252026F,20252026,N,mattviv@gmail.com,Forward,6,No,Norad,3,39,-,,N,Orphans,N10006,R_N20252026FP100073
-142,Ian Barr,P100068,N20252026F,20252026,Y,barrian180@gmail.com,Forward,5,No,C intermediate,3,43,-,,N,Nelson,N10004,R_N20252026FP100068
-143,Steve Smith,P100097,N20252026F,20252026,Y,stevenmsmith2@gmail.com,Forward,18,No,Norad - Hollowbrook,3,55,-,,N,HollowBrook,N10003,R_N20252026FP100097
-144,LEE SMITH,P100081,N20252026F,20252026,Y,hollowbrook@comcast.net,Defense,26,No,norad,3,58,-,,N,HollowBrook,N10003,R_N20252026FP100081
-145,Kaitlyn Shain,P100224,N20252026F,20252026,N,k.b.shain@gmail.com,Forward,3,No,B Monument,3,40,Friends,,N,Velodrome,N10010,R_N20252026FP100224
-146,Matt Quinn,P100107,N20252026F,20252026,N,matquinn1@gmail.com,Defense,10+,No,NORAD,3,60,-,,N,Platinum,N10008,R_N20252026FP100107
-147,John Storms,P100153,N20252026F,20252026,Y,johnstorms16@yahoo.com,Forward,1,Yes,NORAD,3,52,-,,N,Ace,N10002,R_N20252026FP100153
-148,Guy Girardeau,P100036,N20252026F,20252026,Y,tewkster@tewkster.com,Defense,8,Yes,B League in Monument,3,57,-,,N,OS Offices,N10005,R_N20252026FP100036
-149,Thane Gilmore,P100138,N20252026F,20252026,N,phangraph@gmail.com,Goalie,4,No,B,3,53,-,,N,Free Agent,N10026,R_N20252026FP100138
-150,Dan Maddock,P100013,N20252026F,20252026,N,siouxhockeyfan@hotmail.com,Defense,1,No,C,3,52,-,,N,AMOS,N10001,R_N20252026FP100013
-151,Pat Major,P100093,N20252026F,20252026,N,atvhound@gmail.com,Defense,2,No,Norad,3,49,-,,N,Velodrome,N10010,R_N20252026FP100093
-152,Ryan Lewis,P100094,N20252026F,20252026,N,r.lewis1010@yahoo.com,Forward,1,Yes,"Monument, Novice, Mid Ice Crisis",3,30,-,,N,Free Agent,N10026,R_N20252026FP100094
-153,Will Spreter,P100178,N20252026F,20252026,N,will.spreter@gmail.com,Forward,0 (summer),Yes,Novice,3,41,Friends,,N,Triple J,N10009,R_N20252026FP100178
-154,Eric Larson,P100061,N20252026F,20252026,Y,ericlarson96@hotmail.com,Defense,8,No,Monument Over 45; B League Northern Virginia,3,51,-,,N,Nelson,N10004,R_N20252026FP100061
-155,James Rynearson,P100064,N20252026F,20252026,N,jk.rynearson@gmail.com,Forward,2,No,High School,3,38,-,,N,Velodrome,N10010,R_N20252026FP100064
-156,Matt Rocco,P100063,N20252026F,20252026,N,mjrocco@comcast.net,Forward,2,No,,3,47,-,,N,Orphans,N10006,R_N20252026FP100063
-157,Ian Gustafson,P100133,N20252026F,20252026,Y,itgust31@gmail.com,Goalie,13,No,Monument B,3,35,-,,N,Ace,N10002,R_N20252026FP100133
-158,Robert Mayfield,P100108,N20252026F,20252026,N,rmayfield@gmail.com,Defense,1,No,Intermediate/Mondays at Robson,3,40,-,,N,Velodrome,N10010,R_N20252026FP100108
-159,Jon Schuepbach,P100014,N20252026F,20252026,Y,jschuepb@gmail.com,Forward,4,No,Monument C leage,3,56,-,,N,Triple J,N10009,R_N20252026FP100014
-160,Thane Gilmore,P100138,N20252026F,20252026,N,phangraph@gmail.com,Forward,4,No,c,3,53,-,,N,Free Agent,N10026,R_N20252026FP100138
-161,Mark Miquelon,P100114,N20252026F,20252026,Y,miquelon15@yahoo.com,Forward,14,No,Monument C and Over 45,3,60,-,,N,AMOS,N10001,R_N20252026FP100114
-162,Zoe Sailer,P100169,N20252026F,20252026,N,zoesailer16@gmail.com,Forward,0 (summer),No,UCCS ACHA D3 club team,2,21,Sam Downs,,N,Free Agent,N10026,R_N20252026FP100169
-163,Erika Tunning,P100176,N20252026F,20252026,N,hegerel@gmail.com,Forward,0 (summer),No,"Robson Intermediate, Patriots",2,39,Chris Tunning,,N,OS Offices,N10005,R_N20252026FP100176
-164,Anthony Marquez,P100162,N20252026F,20252026,N,crimsona97@gmail.com,Forward,0 (summer),No,,2,27,Ryan Lewis,,N,Free Agent,N10026,R_N20252026FP100162
-165,Jeff Vanderbilt,P100225,N20252026F,20252026,N,vanderbilt4040@yahoo.com,Defense,0,Yes,Big Rookies - Monument,2,43,Big Rookies at Monument,,N,Free Agent,N10026,R_N20252026FP100225
-166,Chuck Webb,P100095,N20252026F,20252026,N,rwai1@icloud.com,Forward,6,No,No other current leagues.,2,57,-,,N,Orphans,N10006,R_N20252026FP100095
-167,Derrick joseph,P100226,N20252026F,20252026,N,derrickj416@gmail.com,Forward,0,Yes,,2,45,Friends,,N,AMOS,N10001,R_N20252026FP100226
-168,Ginger Gillings,P100227,N20252026F,20252026,N,gingergillings@gmail.com,Defense,17,No,"Monument intermediate, 15 years ago",2,50,-,,Y,Free Agent,N10026,R_N20252026FP100227
-169,Michelle Freddolino,P100111,N20252026F,20252026,N,mefreddo@gmail.com,Forward,1,No,WACH/PPWHF Timberwolves (Level C),2,54,-,,N,Nelson,N10004,R_N20252026FP100111
-170,Anu Kalbfleisch,P100130,N20252026F,20252026,N,kalbfleisch.co@comcast.net,Forward,23,No,Norad,2,56,-,,N,Ace,N10002,R_N20252026FP100130
-171,Stephanie Courtney,P100180,N20252026F,20252026,N,smc89711@gmail.com,Forward,0 (summer),No,D - Crab Traps/ Wolves,2,46,Summer League,,N,Free Agent,N10026,R_N20252026FP100180
-172,Richard Ruge,P100228,N20252026F,20252026,N,richard.ruge@gmail.com,Forward,3,No,"Over 45 league @Monument, Red Team, 3 years",2,62,,,N,Free Agent,N10026,R_N20252026FP100228
-173,Laura Kellar,P100229,N20252026F,20252026,N,lzinsmaster11@yahoo.com,Defense,0,No,Women’s WACH A division,2,46,Kaitlyn Shain,,N,Free Agent,N10026,R_N20252026FP100229
-174,Jennifer Valente,P100230,N20252026F,20252026,N,jennifervalente2@gmail.com,Forward,0,No,Monument ice rink sunday novice. Team Storybook Brewing.,2,30,Robert Mayfield,,N,Velodrome,N10010,R_N20252026FP100230
-175,Steven Klyn,P100231,N20252026F,20252026,N,usafhawkeye@earthlink.net,Forward,15,No,NORAD league,2,60,-,,N,Outlaws,N10007,R_N20252026FP100231
-176,Philip Kerchner,P100232,N20252026F,20252026,N,pjkerchner@comcast.net,Forward,0,No,Csaha intermediate,2,52,Friends,,N,Outlaws,N10007,R_N20252026FP100232
-177,Sean Kenyon,P100015,N20252026F,20252026,N,goaliebosssub@gmail.com,Forward,3,No,Norad,2,36,-,,N,Free Agent,N10026,R_N20252026FP100015
-178,Karen Zietlow,P100027,N20252026F,20252026,Y,karen_zietlow@hotmail.com,Forward,8,No,Monument B,2,56,-,,N,Platinum,N10008,R_N20252026FP100027
-179,Peter Husak,P100048,N20252026F,20252026,Y,phusak@osschools.com,Forward,23,No,OS Offices,2,60,-,,N,OS Offices,N10005,R_N20252026FP100048
-180,Laura Hogan,P100233,N20252026F,20252026,N,hockeyhogans@gmail.com,Forward,2,No,"Monument Novice League - Soft Dump in the Corner, Hogans' Zeros, Hot Wings",2,51,-,,N,AMOS,N10001,R_N20252026FP100233
-181,JoLyn Maly,P100110,N20252026F,20252026,N,maly.jolyn@gmail.com,Forward,17,No,Beer league,2,54,-,,N,Platinum,N10008,R_N20252026FP100110
-182,Lucy Spreter,P100183,N20252026F,20252026,N,lucy.soreter@gmail.com,Forward,0 (summer),No,Novice,2,52,Summer League,,N,Triple J,N10009,R_N20252026FP100183
-183,Bert Loper,P100091,N20252026F,20252026,Y,bert.loper67@yahoo.com,Forward,1,No,Intermediate/CSAHA Cerial Killers,2,58,-,,N,HollowBrook,N10003,R_N20252026FP100091
-184,Eilleen Cox,P100140,N20252026F,20252026,N,eilleenloveshockey@yahoo.com,Forward,1,No,Intermediate,2,30,-,,N,Free Agent,N10026,R_N20252026FP100140
-185,Bobby Dickinson,P100072,N20252026F,20252026,Y,bobbyd120@comcast.net,Forward,16,Yes,C / over 45,2,51,-,,N,Nelson,N10004,R_N20252026FP100072
-186,Nicole Downs,P100039,N20252026F,20252026,N,nicolemariedowns@gmail.com,Forward,3,No,Monument Novice,2,44,-,Wants to play with husband Sam Downs,N,Velodrome,N10010,R_N20252026FP100039
-187,John-Michael Sebben,P100005,N20252026F,20252026,Y,jmsebben12@gmail.com,Forward,2,No,Novice,2,39,-,,N,Triple J,N10009,R_N20252026FP100005
-188,Erich Groezinger,P100127,N20252026F,20252026,N,erichgroezinger@gmail.com,Forward,2,No,norad,2,32,-,,N,HollowBrook,N10003,R_N20252026FP100127
-189,Mark Haverkate,P100060,N20252026F,20252026,Y,mark@havrk8.com,Forward,22,No,NCHL,2,70,-,,N,Orphans,N10006,R_N20252026FP100060
-190,Shane Arnold,P100181,N20252026F,20252026,N,lxshanexl88@gmail.com,Forward,0 (summer),No,CSAH Intermediate Patriots,2,58,Summer League,,N,Ace,N10002,R_N20252026FP100181
+player_season_registration_id,player_full_name,player_id,season_id,season,restricted,email,position,norad_experience,CAF,highest_beer_league_played,skill_rating,age,referred_by,notes,sub_yn,drafted_team_name,drafted_team_id
+R_N20252026FP100084,Ty Smith,P100084,N20252026F,20252026,True,ty0214@gmail.com,Forward,6,False,"Big Bear, C4, Birds of War",6,30,-,,False,HollowBrook,N10003
+R_N20252026FP100166,TJ Liebl,P100166,N20252026F,20252026,False,tj.liebl23@gmail.com,Forward,0,False,"Campbell League, Pikas",6,36,"Rick Haenke, Thane Gilmore, Gary Buck",Wants to play with wife Kimberly Liebl,False,OS Offices,N10005
+R_N20252026FP100082,Ross Thompson,P100082,N20252026F,20252026,False,rossjames7@gmail.com,Forward,5,False,Advanced CSAHL,6,34,-,,False,Orphans,N10006
+R_N20252026FP100184,Nick Zellmann,P100184,N20252026F,20252026,False,nickzellmann@gmail.com,Defense,0,False,B league monument sinBins,6,26,Keegan Mantaro,,False,Ace,N10002
+R_N20252026FP100185,Samson Leifer,P100185,N20252026F,20252026,False,samsonleifer4@gmail.com,Forward,0,False,B league monument,6,22,Friends,,False,Outlaws,N10007
+R_N20252026FP100117,Keegan Mantaro,P100117,N20252026F,20252026,False,keeganmantaro@gmail.com,Forward,1,False,Campbell; Platinum,6,26,-,,False,Platinum,N10008
+R_N20252026FP100066,Brock Lofgren,P100066,N20252026F,20252026,False,brockster13@yahoo.com,Forward,2,False,NORAD,6,32,-,,False,Nelson,N10004
+R_N20252026FP100186,Zach Schirm,P100186,N20252026F,20252026,False,schirm175@icloud.com,Forward,0,False,"Campbell, advanced",6,23,Owen Kalbfleisch,,True,Free Agent,N10026
+R_N20252026FP100187,Simon Kurtz,P100187,N20252026F,20252026,False,kurtz.w.simon@gmail.com,Defense,0,False,"B League monument, Mountaineers",6,24,Owen Kalbfleisch,,False,Free Agent,N10026
+R_N20252026FP100026,Austin Storm,P100026,N20252026F,20252026,False,stormhockey2795@gmail.com,Forward,2,False,Ace Level 6,6,29,-,,False,Ace,N10002
+R_N20252026FP100001,Sam Downs,P100001,N20252026F,20252026,False,downsthethird@gmail.com,Forward,10+,False,B - Platinum Group,6,39,-,Wants to play with wife Nicole Downs,False,Velodrome,N10010
+R_N20252026FP100188,Logan Dineen,P100188,N20252026F,20252026,False,in2hockey@icloud.com,Forward,0,False,Monument B league,6,24,Internet,,False,Free Agent,N10026
+R_N20252026FP100189,Garret Orth,P100189,N20252026F,20252026,False,garret.orth@hotmail.com,Forward,0,False,,5,28,Jared Wolf,,False,HollowBrook,N10003
+R_N20252026FP100190,Anthony Mandt,P100190,N20252026F,20252026,False,mandt2123@gmail.com,Forward,0,False,Hawaii Hockey Club A Division,5,35,Chris Premo,,False,Free Agent,N10026
+R_N20252026FP100051,Austin Webb,P100051,N20252026F,20252026,True,austinwebb4848@gmail.com,Forward,4,False,No other teams,5,27,-,,False,Orphans,N10006
+R_N20252026FP100118,Michael Gipson,P100118,N20252026F,20252026,False,goaliegipper30@gmail.com,Goalie,2,False,Beer league campbell,5,49,-,,False,Orphans,N10006
+R_N20252026FP100191,Peter Dowling,P100191,N20252026F,20252026,False,phdowling@gmail.com,Defense,1,True,N/A - played with base team in Germany last season,5,42,-,,False,Triple J,N10009
+R_N20252026FP100192,Christopher Premo,P100192,N20252026F,20252026,False,crpremo@yahoo.com,Forward,0,False,B,5,40,Sam Downs,,False,Platinum,N10008
+R_N20252026FP100193,Ryan Case,P100193,N20252026F,20252026,False,ryca7143@colorado.edu,Forward,0,False,Competitive AAA hockey and High School hockey,5,28,Beau Kelly,,False,Orphans,N10006
+R_N20252026FP100194,Mitchell Liebl,P100194,N20252026F,20252026,False,mitchliebl@msn.com,Forward,0,False,CSAHL Advanced Pikas,5,39,TJ Liebl,,False,OS Offices,N10005
+R_N20252026FP100053,Joshua Parmiter,P100053,N20252026F,20252026,True,joshuaparmiter@gmail.com,Forward,4-5,False,,5,36,-,,False,Orphans,N10006
+R_N20252026FP100019,Matt Lee,P100019,N20252026F,20252026,True,mhlee22118@gmail.com,Forward,1,False,CSAHL Advanced,5,36,-,,False,Triple J,N10009
+R_N20252026FP100078,Kyle Popovich,P100078,N20252026F,20252026,True,popovichk312@gmail.com,Forward,3,False,Juniors,5,40,-,,False,Nelson,N10004
+R_N20252026FP100042,Chad Miller,P100042,N20252026F,20252026,False,chadmiller@pga.com,Forward,7,False,Norad,5,50,-,,False,AMOS,N10001
+R_N20252026FP100017,Owen Kalbfleisch,P100017,N20252026F,20252026,False,oakalbfkeisch@gmail.com,Forward,4,False,B league,5,22,-,"All Kalbfleischs want to play together, but know that may not work",False,Ace,N10002
+R_N20252026FP100195,Joseph Tartaglia,P100195,N20252026F,20252026,False,joeytart84@gmail.com,Defense,0,True,C league,5,39,Billy Gaetcher,,False,Free Agent,N10026
+R_N20252026FP100009,Graham Peters,P100009,N20252026F,20252026,False,graham.peters18@gmail.com,Goalie,2,True,,5,36,-,,False,Outlaws,N10007
+R_N20252026FP100083,Andrew McIlhany,P100083,N20252026F,20252026,False,drewdoclimb@gmail.com,Defense,5,False,,5,26,-,,False,AMOS,N10001
+R_N20252026FP100007,Jason Mantaro,P100007,N20252026F,20252026,True,jasonmantaro@gmail.com,Defense,3,False,Campbell,5,55,-,,False,Triple J,N10009
+R_N20252026FP100161,Galen Wood,P100161,N20252026F,20252026,False,galenjwood@gmail.com,Forward,0,True,A in Korea,5,30,Was a sub last year,,False,Velodrome,N10010
+R_N20252026FP100196,Tyler Tennant,P100196,N20252026F,20252026,False,tylerjtennant@gmail.com,Forward,0,False,,5,34,Robert Mayfield,,False,Free Agent,N10026
+R_N20252026FP100028,Dustin Fritz,P100028,N20252026F,20252026,True,dfritz85@aol.com,Forward,2,False,Platinum,5,40,-,,False,Platinum,N10008
+R_N20252026FP100067,Ian Ward,P100067,N20252026F,20252026,False,gingygoalie13033@gmail.com,Goalie,3,False,Intermediate league: Angry Dolphins (Rick Greene),5,23,-,,False,Platinum,N10008
+R_N20252026FP100131,Matthew D’Addario,P100131,N20252026F,20252026,True,matthew.daddario@icloud.com,Defense,18,False,,5,50,-,,False,AMOS,N10001
+R_N20252026FP100197,Samuel Yetsko,P100197,N20252026F,20252026,False,samuellyetsko@gmail.com,Defense,0,True,"A/B1 New Mexico Hockey League, played for 5 teams since Jan 2023",5,26,Friends,,False,Nelson,N10004
+R_N20252026FP100198,Maxwell Donaty,P100198,N20252026F,20252026,False,maxwelldonaty@aol.com,Defense,0,False,First Beer League,5,22,Internet,,False,Velodrome,N10010
+R_N20252026FP100020,Rick Haenke,P100020,N20252026F,20252026,False,rhaenke3@gmail.com,Goalie,2,False,A league with High Life,5,42,-,,False,Triple J,N10009
+R_N20252026FP100088,Hayden Smith,P100088,N20252026F,20252026,True,hrs0214@gmail.com,Forward,5,False,Norad,5,28,-,,False,HollowBrook,N10003
+R_N20252026FP100037,Josh Theken,P100037,N20252026F,20252026,True,thekenj2002@yahoo.com,Forward,35,False,,5,46,-,,False,OS Offices,N10005
+R_N20252026FP100199,Ethan Kalbfleisch,P100199,N20252026F,20252026,False,ethankalbfleisch@gmail.com,Forward,5,False,B,5,25,-,"All Kalbfleischs want to play together, but know that may not work",False,Ace,N10002
+R_N20252026FP100200,Nicholas Lang,P100200,N20252026F,20252026,False,nicholas.lang@yahoo.com,Forward,0,False,Campbell - Pikas,5,32,Casey Lang,Wants to play with wife Casey Lang,False,OS Offices,N10005
+R_N20252026FP100201,Garrett Ashcroft,P100201,N20252026F,20252026,False,gcashcroft5420@gmail.com,Forward,3,False,B division Monument,5,33,-,,False,Velodrome,N10010
+R_N20252026FP100202,Francis Forte,P100202,N20252026F,20252026,False,francis.forte@usahockey.org,Goalie,0,False,,5,25,-,,True,Free Agent,N10026
+R_N20252026FP100021,Mike Flood,P100021,N20252026F,20252026,False,mikeflood85@gmail.com,Forward,1,False,Norad,5,39,-,,False,Triple J,N10009
+R_N20252026FP100128,Brody Keene,P100128,N20252026F,20252026,False,brodykeene@yahoo.com,Forward,1,True,Only norad summer league currently,5,21,-,,False,Outlaws,N10007
+R_N20252026FP100031,Christopher Mihlon,P100031,N20252026F,20252026,True,chris.mihlon@gmail.com,Forward,1,True,Club college. CNU captains,5,35,-,,False,Outlaws,N10007
+R_N20252026FP100032,Trevor Chavez,P100032,N20252026F,20252026,True,trevor.james4@yahoo.com,Defense,2,False,Monument B,5,31,-,,False,Outlaws,N10007
+R_N20252026FP100047,Nathan Watts,P100047,N20252026F,20252026,False,nawatts578@gmail.com,Forward,1,False,"Roller Hockey: Premier, Morning Sherwoods",5,27,-,,False,HollowBrook,N10003
+R_N20252026FP100016,Wyatt Crandall,P100016,N20252026F,20252026,False,wyatt.crandall99@outlook.com,Goalie,5,False,Advanced,5,29,-,,False,Velodrome,N10010
+R_N20252026FP100104,Hunter Winegarner,P100104,N20252026F,20252026,False,hunter.winegarner@gmail.com,Forward,1,True,No other team,5,41,-,,False,Free Agent,N10026
+R_N20252026FP100119,Eric Elliott,P100119,N20252026F,20252026,False,ea-elliott@hotmail.com,Forward,3,False,B,5,40,-,,False,Nelson,N10004
+R_N20252026FP100030,Jesse Chambless,P100030,N20252026F,20252026,True,jesse@thechamblessteam.com,Defense,5?,False,B,5,44,-,,False,Platinum,N10008
+R_N20252026FP100203,Camden Rusk,P100203,N20252026F,20252026,False,thompsonc11@comcast.net,Defense,0,True,"Ashburn Ice House League, C/D League, Control Freaks/Zamponies",5,28,"Cole Maetzold, Tom Frederick",,False,Free Agent,N10026
+R_N20252026FP100204,Tyler Myers,P100204,N20252026F,20252026,False,tjmyers8464@yahoo.com,Forward,0,False,Monument b league Monday nights and Campbell advanced,5,35,Friends,,False,Free Agent,N10026
+R_N20252026FP100159,Josh Cronk,P100159,N20252026F,20252026,False,cronk.josh@gmail.com,Forward,0,False,C,5,31,Friends,,False,Velodrome,N10010
+R_N20252026FP100150,Justin Bell,P100150,N20252026F,20252026,False,chiefsgoalie37@gmail.com,Goalie,0,False,"A League, Car Corp Crofton Maryland",5,27,Friends,,False,AMOS,N10001
+R_N20252026FP100109,nick henry,P100109,N20252026F,20252026,True,nick_henry7@yahoo.com,Forward,6,False,,5,43,-,,False,AMOS,N10001
+R_N20252026FP100044,Tyler Kettner,P100044,N20252026F,20252026,True,tkettner17@gmail.com,Forward,5,False,OfficeScapes - NORAD,5,33,-,,False,OS Offices,N10005
+R_N20252026FP100003,Scott Purdy,P100003,N20252026F,20252026,False,scottpurdy5@gmail.com,Goalie,2,False,Campbell League,5,51,-,,False,HollowBrook,N10003
+R_N20252026FP100168,John Thomason,P100168,N20252026F,20252026,False,jdt@ssgyms.com,Forward,1,True,Warriors B,5,48,-,,False,Free Agent,N10026
+R_N20252026FP100139,Joe Diberardinis,P100139,N20252026F,20252026,True,joe.dibo1316@gmail.com,Forward,2,False,NORAD only,5,36,-,,False,Ace,N10002
+R_N20252026FP100062,Gary Buck,P100062,N20252026F,20252026,True,allpucks@hotmail.com,Forward,2,False,Campbell,5,37,-,,False,Nelson,N10004
+R_N20252026FP100085,Sebastian Rivera,P100085,N20252026F,20252026,False,sebrivera31@gmail.com,Goalie,1,False,A,5,24,-,,False,Free Agent,N10026
+R_N20252026FP100205,Kelly Kaim,P100205,N20252026F,20252026,False,kmping@gmail.com,Defense,0,True,B,4,41,Kaitlyn Shain,,False,Nelson,N10004
+R_N20252026FP100002,Kevin White,P100002,N20252026F,20252026,False,kw84rw9@yahoo.com,Forward,1,False,JJJ,4,40,-,,False,Velodrome,N10010
+R_N20252026FP100070,Hayden Perea,P100070,N20252026F,20252026,False,haydenperea51@yahoo.com,Defense,1,False,,4,28,-,,False,Velodrome,N10010
+R_N20252026FP100206,Brad Hogan,P100206,N20252026F,20252026,False,mintgreenbinder@msn.com,Defense,10,False,High school,4,49,-,,False,AMOS,N10001
+R_N20252026FP100172,Joey Vara,P100172,N20252026F,20252026,False,jvara33@gmail.com,Forward,0,False,C,4,32,Wyatt Crandall,,False,Platinum,N10008
+R_N20252026FP100112,Kevin Kalbfleisch,P100112,N20252026F,20252026,False,kk417049@gmail.com,Forward,25,False,Norad,4,54,-,"All Kalbfleischs want to play together, but know that may not work",False,Ace,N10002
+R_N20252026FP100099,Colby Rasplicka,P100099,N20252026F,20252026,False,crasplic@gmail.com,Forward,2,False,Just This,4,30,-,,False,Outlaws,N10007
+R_N20252026FP100052,Marc Smith,P100052,N20252026F,20252026,True,mjsmith8@yahoo.com,Forward,16,False,NORAD,4,45,-,,False,Orphans,N10006
+R_N20252026FP100096,Jared Wolf,P100096,N20252026F,20252026,True,jarwolf1@gmail.com,Forward,3,False,Roller - Don Cherry Poppers,4,30,-,,False,HollowBrook,N10003
+R_N20252026FP100086,Beau Kelly,P100086,N20252026F,20252026,True,beaugkelly@gmail.com,Defense,4,False,,4,35,-,,False,HollowBrook,N10003
+R_N20252026FP100116,Kent McIlhany,P100116,N20252026F,20252026,True,maccba@msn.com,Defense,25,False,Over 40,4,57,-,,False,AMOS,N10001
+R_N20252026FP100100,Nate Flint,P100100,N20252026F,20252026,True,coffee.04jars@icloud.com,Forward,8,False,,4,37,-,,False,HollowBrook,N10003
+R_N20252026FP100207,Erick Sauer,P100207,N20252026F,20252026,False,ericksauer@gmail.com,Forward,0,False,"B league, Monument Ice, Team Orange",4,43,Friends,,False,Outlaws,N10007
+R_N20252026FP100120,Jeremy Lindemann,P100120,N20252026F,20252026,False,jlindema17@gmail.com,Defense,6,False,B league monument,4,41,-,,False,OS Offices,N10005
+R_N20252026FP100142,Lee Chiarizia,P100142,N20252026F,20252026,True,delicron@gmail.com,Forward,4,True,Just NORAD here,4,46,-,,False,Ace,N10002
+R_N20252026FP100132,Nick Ciampoli,P100132,N20252026F,20252026,True,nciampoli27@gmail.com,Forward,10,False,C,4,37,-,,False,Velodrome,N10010
+R_N20252026FP100208,William Gagnon-Robitaille,P100208,N20252026F,20252026,False,ltruehartl@gmail.com,Forward,0,True,Midget B / Diablos de Pont-Rouge,4,28,"Jacob Trivers, Taylor Rogalsky, Chris Chapman",,False,AMOS,N10001
+R_N20252026FP100209,Alyssa Richards,P100209,N20252026F,20252026,False,alyssarichards3@gmail.com,Forward,0,False,C2 at Monument Ice Rinks and C2/C3 in AHA in Minnesot,4,26,Jake Winger,,False,Ace,N10002
+R_N20252026FP100098,Clint Atkins,P100098,N20252026F,20252026,False,blitz.atkins@gmail.com,Defense,2,False,USA Warrior Hockey,4,51,-,,False,Orphans,N10006
+R_N20252026FP100210,Josh Simonds,P100210,N20252026F,20252026,False,andrewj.simonds@gmail.com,Forward,0,False,"Campbell League, High Life",4,37,Dustin Fritz,,False,Nelson,N10004
+R_N20252026FP100121,Robert Martin,P100121,N20252026F,20252026,True,waldo_cf18@hotmail.com,Forward,17,False,Monument C - Llamakaze,4,59,-,,False,AMOS,N10001
+R_N20252026FP100008,Zach DeBlois,P100008,N20252026F,20252026,True,zacharydeblois1@gmail.com,Forward,3,False,Intermediate,4,28,-,,False,Triple J,N10009
+R_N20252026FP100023,alex Considine,P100023,N20252026F,20252026,True,aconsidine3@gmail.com,Defense,2,True,Shearwater Flyers Base Team,4,49,-,,False,Platinum,N10008
+R_N20252026FP100055,Chad Ferguson,P100055,N20252026F,20252026,True,ferguson.chad@outlook.com,Forward,4,False,NORAD,4,35,-,,False,Orphans,N10006
+R_N20252026FP100089,Brian Myers,P100089,N20252026F,20252026,False,myer2040@yahoo.com,Defense,6,False,CSAHL intermediate,4,46,-,,False,Triple J,N10009
+R_N20252026FP100006,Bob Colby,P100006,N20252026F,20252026,True,bcolby37@yahoo.com,Forward,10,False,yup,4,52,-,,False,Triple J,N10009
+R_N20252026FP100079,Joe Lopez,P100079,N20252026F,20252026,True,lopez.joes@gmail.com,Forward,3,False,Colorado Springs adult league,4,46,-,,False,Nelson,N10004
+R_N20252026FP100065,Josh Twitchell,P100065,N20252026F,20252026,True,mjtwitchell@gmail.com,Forward,13,False,NORAD League,4,43,-,,False,Nelson,N10004
+R_N20252026FP100050,Josh Gulledge,P100050,N20252026F,20252026,True,jgulledge19@gmail.com,Forward,6,False,,4,34,-,,False,OS Offices,N10005
+R_N20252026FP100011,Jake Winger,P100011,N20252026F,20252026,False,wingerjake28@gmail.com,Forward,1,False,NORAD,4,27,-,,False,Free Agent,N10026
+R_N20252026FP100211,Noel Black,P100211,N20252026F,20252026,False,darksandal@gmail.com,Defense,0,False,,4,52,Friends,,False,HollowBrook,N10003
+R_N20252026FP100054,Daniel Heck,P100054,N20252026F,20252026,True,hecksco@msn.com,Defense,15,False,Berkeley Bears Midget AA,4,57,-,,False,Orphans,N10006
+R_N20252026FP100040,Jesse Theken,P100040,N20252026F,20252026,True,jctheken@gmail.com,Forward,9,False,NORAD,4,50,-,,False,OS Offices,N10005
+R_N20252026FP100160,Ian Wilson,P100160,N20252026F,20252026,False,iwilsot@proton.me,Defense,0 (summer),False,CSAHL Intermediate Division,4,32,Was a sub last year,,False,Ace,N10002
+R_N20252026FP100010,Jason Judge,P100010,N20252026F,20252026,True,jason.judge22@gmail.com,Defense,5,False,CSAHL intermediate... Patriots,4,47,-,,False,Triple J,N10009
+R_N20252026FP100212,John Liersemann,P100212,N20252026F,20252026,False,lierseja@yahoo.com,Forward,0,False,Dunn Roofing and Monarch Hockey - LAHPA - Breakaway Tournaments mid to upper divisions,4,42,Internet,,False,Ace,N10002
+R_N20252026FP100035,Tim Kuhl,P100035,N20252026F,20252026,True,tkuhl15@gmail.com,Defense,2.5 years,False,"Bravo warrior league, Colorado Springs police department",4,34,-,,False,Outlaws,N10007
+R_N20252026FP100164,Zachary Coleman,P100164,N20252026F,20252026,False,zachhcoleman@gmail.com,Forward,0,True,Intramural hockey RMC,4,31,-,,False,Platinum,N10008
+R_N20252026FP100141,Andre Wright,P100141,N20252026F,20252026,False,wright.andre@gmail.com,Forward,1,False,ERHL intermediate,4,41,-,,False,Free Agent,N10026
+R_N20252026FP100151,Casey Lang,P100151,N20252026F,20252026,False,caseyschwartz_37@yahoo.com,Goalie,0 (summer),False,Monument C - Buk,4,31,Was a sub last year,,False,OS Offices,N10005
+R_N20252026FP100025,Andrew Marshall,P100025,N20252026F,20252026,True,drewmarsh01@yahoo.com,Defense,8,False,A/Gold,4,46,-,,False,Platinum,N10008
+R_N20252026FP100074,Marko Somersalmi,P100074,N20252026F,20252026,True,cofinn78@gmail.com,Defense,6,False,Monument >45/ NOtRAD (yellow),4,47,-,,False,Nelson,N10004
+R_N20252026FP100022,Chris Dube,P100022,N20252026F,20252026,True,chris.a.dube@gmail.com,Forward,1,True,NORAD,4,40,-,,False,Platinum,N10008
+R_N20252026FP100129,Matt levine,P100129,N20252026F,20252026,True,mjl19usn@gmail.com,Forward,1,False,"Campbell league, wardeques",4,47,-,,False,AMOS,N10001
+R_N20252026FP100105,Ronnie Pinnell,P100105,N20252026F,20252026,False,ronnie.pinnell@gmail.com,Defense,1,False,C @ Monument. Only played a few games due to scheduling. Aside from NORAD I played in Ohio which was a little slower than NORAD,4,35,-,,False,Velodrome,N10010
+R_N20252026FP100213,Jim O'Donnell,P100213,N20252026F,20252026,False,yojimbo@usa.net,Forward,8,False,Campbell,4,64,-,,False,Free Agent,N10026
+R_N20252026FP100214,Ryan Kiehl,P100214,N20252026F,20252026,False,kiehlrj05@gmail.com,Forward,0,False,B tier,4,30,Lee Smith,,False,Outlaws,N10007
+R_N20252026FP100069,Chris Tunning,P100069,N20252026F,20252026,False,tunningc@gmail.com,Forward,1,True,Intermediate,4,42,-,,False,OS Offices,N10005
+R_N20252026FP100004,Cesar Shinall,P100004,N20252026F,20252026,False,cesar.shinall@gmail.com,Forward,1,False,C,4,26,-,,False,Outlaws,N10007
+R_N20252026FP100123,Todd Heffner,P100123,N20252026F,20252026,False,heffnertodd@gmail.com,Forward,8,False,Campbell League,4,51,-,,False,HollowBrook,N10003
+R_N20252026FP100056,Dean Porter,P100056,N20252026F,20252026,False,3runninghuskies@gmail.com,Defense,6,False,Monument c1,4,54,-,,False,Orphans,N10006
+R_N20252026FP100215,Noah Seibert,P100215,N20252026F,20252026,False,bigcountry3875@gmail.com,Forward,0,False,D League,4,28,"Zach DeBlois, Brad & Laura Hogan",,False,Triple J,N10009
+R_N20252026FP100033,Taylor Rogalsky,P100033,N20252026F,20252026,True,rogalsky.17@gmail.com,Defense,1,True,Women's A Division,3,32,-,,False,Outlaws,N10007
+R_N20252026FP100216,Ryan Michels,P100216,N20252026F,20252026,False,ryan30michels@gmail.com,Goalie,0,False,I've played in both intermediate and advanced beer leagues,3,24,Internet,,False,Free Agent,N10026
+R_N20252026FP100157,Vince Harned,P100157,N20252026F,20252026,False,vince.harned@outlook.com,Forward,1,False,Monument Ice Rink C,3,30,"Nate Clyncke, Alice Burley",,False,Outlaws,N10007
+R_N20252026FP100076,Andrew Kell,P100076,N20252026F,20252026,False,ak_kell@hotmail.com,Defense,2,False,,3,27,-,,False,Free Agent,N10026
+R_N20252026FP100154,Josh Engle,P100154,N20252026F,20252026,False,joshdengle1@gmail.com,Defense,2,False,"Monument D and C, currently playing D with Moose Puckles and a private C level drop in on Friday nights.",3,44,-,,False,Ace,N10002
+R_N20252026FP100217,Phil Campbell,P100217,N20252026F,20252026,False,campbell.philip@me.com,Forward,0,False,E1 @ Monument,3,35,Will & Lucy Spreter,,False,Free Agent,N10026
+R_N20252026FP100012,Hal Jordan,P100012,N20252026F,20252026,True,halmohhh@comcast.net,Defense,24,False,Bud Light,3,57,-,,False,Triple J,N10009
+R_N20252026FP100218,Chad Folden,P100218,N20252026F,20252026,False,chadfolden@gmail.com,Forward,15,False,Intermediate,3,49,Friends,,False,Free Agent,N10026
+R_N20252026FP100058,Wayne Kohut,P100058,N20252026F,20252026,True,wayner_kohut@msn.com,Forward,22,False,beer league,3,63,-,,False,Orphans,N10006
+R_N20252026FP100102,Darren Reck,P100102,N20252026F,20252026,False,cdnflyer717@hotmail.com,Forward,6,True,Canadian Base Intersection League,3,56,-,,False,AMOS,N10001
+R_N20252026FP100092,Warren Williams,P100092,N20252026F,20252026,False,warrenmci@aim.com,Defense,8,False,campbell advanced,3,67,-,,False,Triple J,N10009
+R_N20252026FP100219,John Morrow,P100219,N20252026F,20252026,False,halifaxjohn25@gmail.com,Forward,25,True,"Halifax Military League ""A"" Div",3,45,-,,False,Ace,N10002
+R_N20252026FP100220,Brian Merryman,P100220,N20252026F,20252026,False,teamgoboat@yahoo.com,Goalie,0,False,C1 - Whalers,3,49,Friends,,False,Free Agent,N10026
+R_N20252026FP100024,John Thien,P100024,N20252026F,20252026,True,w13spy@gmail.com,Forward,6,True,,3,50,-,,False,Platinum,N10008
+R_N20252026FP100221,Kimberly Liebl,P100221,N20252026F,20252026,False,k.cieplik4@gmail.com,Forward,0,False,Novice CASHA - Wardiques,3,36,TJ Liebl,Wants to play with husband TJ Liebl,False,OS Offices,N10005
+R_N20252026FP100125,Nate Clyncke,P100125,N20252026F,20252026,True,nathan.clyncke@gmail.com,Forward,15,False,NORAD,3,59,-,,False,AMOS,N10001
+R_N20252026FP100049,Kirk Moore,P100049,N20252026F,20252026,False,kirk@moorei.com,Forward,10,False,Colorado Springs Adult Hockey League,3,63,-,Wants to play with brother Kevin Moore,False,HollowBrook,N10003
+R_N20252026FP100038,Kevin Moore,P100038,N20252026F,20252026,False,info@moorepromo.com,Defense,6,False,Intermediate CSAHA,3,61,-,Wants to play with brother Kirk Moore,False,HollowBrook,N10003
+R_N20252026FP100071,Andy Alm,P100071,N20252026F,20252026,False,aaandrew.alm@gmail.com,Forward,11,False,College Division 2 in 1980,3,65,-,,False,Free Agent,N10026
+R_N20252026FP100029,Ryan Spradlin,P100029,N20252026F,20252026,True,ryanspradlin@gmail.com,Defense,6,False,Beeeeeeer,3,47,-,,False,Platinum,N10008
+R_N20252026FP100222,Joshua Blumberg,P100222,N20252026F,20252026,False,jblumberg20@gmail.com,Forward,0,False,"D-League, Mouse Rats",3,32,Cesar Shinall,,False,Platinum,N10008
+R_N20252026FP100046,Darren Rojas,P100046,N20252026F,20252026,True,darren_rojas@comcast.net,Forward,7,True,C league in Monument; Puck Uglies,3,63,-,,False,OS Offices,N10005
+R_N20252026FP100223,Richie Villanueva,P100223,N20252026F,20252026,False,richie@nuvill.com,Forward,0,False,"D2 Level Intermediate, Monument, MouseRats",3,43,"Trevor Chavez, Cesar Shinall, Brody Keene",,False,Outlaws,N10007
+R_N20252026FP100059,Greg Hoyt,P100059,N20252026F,20252026,True,greg@fivehoyts.com,Forward,18,False,,3,55,-,,False,Orphans,N10006
+R_N20252026FP100103,Kyle Meetze,P100103,N20252026F,20252026,False,kyle.meetze@gmail.com,Forward,2,False,C,3,54,-,,False,OS Offices,N10005
+R_N20252026FP100034,Colin Brewster,P100034,N20252026F,20252026,True,cabrewster12@gmail.com,Defense,1,True,Winnipeg Old Timers Regionals,3,49,-,,False,Outlaws,N10007
+R_N20252026FP100073,Matt Vivian,P100073,N20252026F,20252026,False,mattviv@gmail.com,Forward,6,False,Norad,3,39,-,,False,Orphans,N10006
+R_N20252026FP100068,Ian Barr,P100068,N20252026F,20252026,True,barrian180@gmail.com,Forward,5,False,C intermediate,3,43,-,,False,Nelson,N10004
+R_N20252026FP100097,Steve Smith,P100097,N20252026F,20252026,True,stevenmsmith2@gmail.com,Forward,18,False,Norad - Hollowbrook,3,55,-,,False,HollowBrook,N10003
+R_N20252026FP100081,LEE SMITH,P100081,N20252026F,20252026,True,hollowbrook@comcast.net,Defense,26,False,norad,3,58,-,,False,HollowBrook,N10003
+R_N20252026FP100224,Kaitlyn Shain,P100224,N20252026F,20252026,False,k.b.shain@gmail.com,Forward,3,False,B Monument,3,40,Friends,,False,Velodrome,N10010
+R_N20252026FP100107,Matt Quinn,P100107,N20252026F,20252026,False,matquinn1@gmail.com,Defense,10+,False,NORAD,3,60,-,,False,Platinum,N10008
+R_N20252026FP100153,John Storms,P100153,N20252026F,20252026,True,johnstorms16@yahoo.com,Forward,1,True,NORAD,3,52,-,,False,Ace,N10002
+R_N20252026FP100036,Guy Girardeau,P100036,N20252026F,20252026,True,tewkster@tewkster.com,Defense,8,True,B League in Monument,3,57,-,,False,OS Offices,N10005
+R_N20252026FP100138,Thane Gilmore,P100138,N20252026F,20252026,False,phangraph@gmail.com,Goalie,4,False,B,3,53,-,,False,Free Agent,N10026
+R_N20252026FP100013,Dan Maddock,P100013,N20252026F,20252026,False,siouxhockeyfan@hotmail.com,Defense,1,False,C,3,52,-,,False,AMOS,N10001
+R_N20252026FP100093,Pat Major,P100093,N20252026F,20252026,False,atvhound@gmail.com,Defense,2,False,Norad,3,49,-,,False,Velodrome,N10010
+R_N20252026FP100094,Ryan Lewis,P100094,N20252026F,20252026,False,r.lewis1010@yahoo.com,Forward,1,True,"Monument, Novice, Mid Ice Crisis",3,30,-,,False,Free Agent,N10026
+R_N20252026FP100178,Will Spreter,P100178,N20252026F,20252026,False,will.spreter@gmail.com,Forward,0 (summer),True,Novice,3,41,Friends,,False,Triple J,N10009
+R_N20252026FP100061,Eric Larson,P100061,N20252026F,20252026,True,ericlarson96@hotmail.com,Defense,8,False,Monument Over 45; B League Northern Virginia,3,51,-,,False,Nelson,N10004
+R_N20252026FP100064,James Rynearson,P100064,N20252026F,20252026,False,jk.rynearson@gmail.com,Forward,2,False,High School,3,38,-,,False,Velodrome,N10010
+R_N20252026FP100063,Matt Rocco,P100063,N20252026F,20252026,False,mjrocco@comcast.net,Forward,2,False,,3,47,-,,False,Orphans,N10006
+R_N20252026FP100133,Ian Gustafson,P100133,N20252026F,20252026,True,itgust31@gmail.com,Goalie,13,False,Monument B,3,35,-,,False,Ace,N10002
+R_N20252026FP100108,Robert Mayfield,P100108,N20252026F,20252026,False,rmayfield@gmail.com,Defense,1,False,Intermediate/Mondays at Robson,3,40,-,,False,Velodrome,N10010
+R_N20252026FP100014,Jon Schuepbach,P100014,N20252026F,20252026,True,jschuepb@gmail.com,Forward,4,False,Monument C leage,3,56,-,,False,Triple J,N10009
+R_N20252026FP100138,Thane Gilmore,P100138,N20252026F,20252026,False,phangraph@gmail.com,Forward,4,False,c,3,53,-,,False,Free Agent,N10026
+R_N20252026FP100114,Mark Miquelon,P100114,N20252026F,20252026,True,miquelon15@yahoo.com,Forward,14,False,Monument C and Over 45,3,60,-,,False,AMOS,N10001
+R_N20252026FP100169,Zoe Sailer,P100169,N20252026F,20252026,False,zoesailer16@gmail.com,Forward,0 (summer),False,UCCS ACHA D3 club team,2,21,Sam Downs,,False,Free Agent,N10026
+R_N20252026FP100176,Erika Tunning,P100176,N20252026F,20252026,False,hegerel@gmail.com,Forward,0 (summer),False,"Robson Intermediate, Patriots",2,39,Chris Tunning,,False,OS Offices,N10005
+R_N20252026FP100162,Anthony Marquez,P100162,N20252026F,20252026,False,crimsona97@gmail.com,Forward,0 (summer),False,,2,27,Ryan Lewis,,False,Free Agent,N10026
+R_N20252026FP100225,Jeff Vanderbilt,P100225,N20252026F,20252026,False,vanderbilt4040@yahoo.com,Defense,0,True,Big Rookies - Monument,2,43,Big Rookies at Monument,,False,Free Agent,N10026
+R_N20252026FP100095,Chuck Webb,P100095,N20252026F,20252026,False,rwai1@icloud.com,Forward,6,False,No other current leagues.,2,57,-,,False,Orphans,N10006
+R_N20252026FP100226,Derrick joseph,P100226,N20252026F,20252026,False,derrickj416@gmail.com,Forward,0,True,,2,45,Friends,,False,AMOS,N10001
+R_N20252026FP100227,Ginger Gillings,P100227,N20252026F,20252026,False,gingergillings@gmail.com,Defense,17,False,"Monument intermediate, 15 years ago",2,50,-,,True,Free Agent,N10026
+R_N20252026FP100111,Michelle Freddolino,P100111,N20252026F,20252026,False,mefreddo@gmail.com,Forward,1,False,WACH/PPWHF Timberwolves (Level C),2,54,-,,False,Nelson,N10004
+R_N20252026FP100130,Anu Kalbfleisch,P100130,N20252026F,20252026,False,kalbfleisch.co@comcast.net,Forward,23,False,Norad,2,56,-,,False,Ace,N10002
+R_N20252026FP100180,Stephanie Courtney,P100180,N20252026F,20252026,False,smc89711@gmail.com,Forward,0 (summer),False,D - Crab Traps/ Wolves,2,46,Summer League,,False,Free Agent,N10026
+R_N20252026FP100228,Richard Ruge,P100228,N20252026F,20252026,False,richard.ruge@gmail.com,Forward,3,False,"Over 45 league @Monument, Red Team, 3 years",2,62,,,False,Free Agent,N10026
+R_N20252026FP100229,Laura Kellar,P100229,N20252026F,20252026,False,lzinsmaster11@yahoo.com,Defense,0,False,Women’s WACH A division,2,46,Kaitlyn Shain,,False,Free Agent,N10026
+R_N20252026FP100230,Jennifer Valente,P100230,N20252026F,20252026,False,jennifervalente2@gmail.com,Forward,0,False,Monument ice rink sunday novice. Team Storybook Brewing.,2,30,Robert Mayfield,,False,Velodrome,N10010
+R_N20252026FP100231,Steven Klyn,P100231,N20252026F,20252026,False,usafhawkeye@earthlink.net,Forward,15,False,NORAD league,2,60,-,,False,Outlaws,N10007
+R_N20252026FP100232,Philip Kerchner,P100232,N20252026F,20252026,False,pjkerchner@comcast.net,Forward,0,False,Csaha intermediate,2,52,Friends,,False,Outlaws,N10007
+R_N20252026FP100015,Sean Kenyon,P100015,N20252026F,20252026,False,goaliebosssub@gmail.com,Forward,3,False,Norad,2,36,-,,False,Free Agent,N10026
+R_N20252026FP100027,Karen Zietlow,P100027,N20252026F,20252026,True,karen_zietlow@hotmail.com,Forward,8,False,Monument B,2,56,-,,False,Platinum,N10008
+R_N20252026FP100048,Peter Husak,P100048,N20252026F,20252026,True,phusak@osschools.com,Forward,23,False,OS Offices,2,60,-,,False,OS Offices,N10005
+R_N20252026FP100233,Laura Hogan,P100233,N20252026F,20252026,False,hockeyhogans@gmail.com,Forward,2,False,"Monument Novice League - Soft Dump in the Corner, Hogans' Zeros, Hot Wings",2,51,-,,False,AMOS,N10001
+R_N20252026FP100110,JoLyn Maly,P100110,N20252026F,20252026,False,maly.jolyn@gmail.com,Forward,17,False,Beer league,2,54,-,,False,Platinum,N10008
+R_N20252026FP100183,Lucy Spreter,P100183,N20252026F,20252026,False,lucy.soreter@gmail.com,Forward,0 (summer),False,Novice,2,52,Summer League,,False,Triple J,N10009
+R_N20252026FP100091,Bert Loper,P100091,N20252026F,20252026,True,bert.loper67@yahoo.com,Forward,1,False,Intermediate/CSAHA Cerial Killers,2,58,-,,False,HollowBrook,N10003
+R_N20252026FP100140,Eilleen Cox,P100140,N20252026F,20252026,False,eilleenloveshockey@yahoo.com,Forward,1,False,Intermediate,2,30,-,,False,Free Agent,N10026
+R_N20252026FP100072,Bobby Dickinson,P100072,N20252026F,20252026,True,bobbyd120@comcast.net,Forward,16,True,C / over 45,2,51,-,,False,Nelson,N10004
+R_N20252026FP100039,Nicole Downs,P100039,N20252026F,20252026,False,nicolemariedowns@gmail.com,Forward,3,False,Monument Novice,2,44,-,Wants to play with husband Sam Downs,False,Velodrome,N10010
+R_N20252026FP100005,John-Michael Sebben,P100005,N20252026F,20252026,True,jmsebben12@gmail.com,Forward,2,False,Novice,2,39,-,,False,Triple J,N10009
+R_N20252026FP100127,Erich Groezinger,P100127,N20252026F,20252026,False,erichgroezinger@gmail.com,Forward,2,False,norad,2,32,-,,False,HollowBrook,N10003
+R_N20252026FP100060,Mark Haverkate,P100060,N20252026F,20252026,True,mark@havrk8.com,Forward,22,False,NCHL,2,70,-,,False,Orphans,N10006
+R_N20252026FP100181,Shane Arnold,P100181,N20252026F,20252026,False,lxshanexl88@gmail.com,Forward,0 (summer),False,CSAH Intermediate Patriots,2,58,Summer League,,False,Ace,N10002

@@ -1,0 +1,6 @@
+# BenchSight Admin Portal Requirements
+# Install with: pip install -r requirements.txt
+
+flask>=2.0.0
+pandas>=1.5.0
+openpyxl>=3.0.0

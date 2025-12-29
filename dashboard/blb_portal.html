@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BLB Hockey Analytics Portal</title>
+<style>
+:root{--bg:#0a0e14;--panel:#12171f;--card:#1a2029;--border:#2d3640;--accent:#58a6ff;--success:#3fb950;--warn:#d29922;--danger:#f85149;--text:#e6edf3;--muted:#8b949e}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.header{background:linear-gradient(135deg,#1a1f2e 0%,#0d1117 100%);border-bottom:1px solid var(--border);padding:20px 40px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:16px}
+.logo h1{font-size:28px;background:linear-gradient(135deg,#58a6ff,#a371f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo span{font-size:12px;color:var(--muted)}
+.nav{display:flex;gap:20px}
+.nav a{color:var(--text);text-decoration:none;padding:8px 16px;border-radius:6px;font-size:13px;transition:all 0.2s}
+.nav a:hover{background:var(--card)}
+.nav a.active{background:var(--accent);color:#000}
+.container{max-width:1400px;margin:0 auto;padding:30px 40px}
+.hero{background:linear-gradient(135deg,rgba(88,166,255,0.1),rgba(163,113,247,0.1));border:1px solid var(--border);border-radius:16px;padding:40px;margin-bottom:30px;display:flex;justify-content:space-between;align-items:center}
+.hero-text h2{font-size:32px;margin-bottom:12px}
+.hero-text p{color:var(--muted);font-size:14px;max-width:500px;line-height:1.6}
+.hero-stats{display:flex;gap:30px}
+.stat-card{text-align:center;padding:20px 30px;background:var(--card);border-radius:12px;border:1px solid var(--border)}
+.stat-card .num{font-size:36px;font-weight:700;color:var(--accent)}
+.stat-card .label{font-size:11px;color:var(--muted);text-transform:uppercase;margin-top:4px}
+.section{margin-bottom:40px}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.section-header h3{font-size:18px}
+.section-header .actions{display:flex;gap:10px}
+.btn{background:var(--card);border:1px solid var(--border);color:var(--text);padding:10px 20px;border-radius:8px;cursor:pointer;font-size:13px;transition:all 0.2s;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.btn:hover{background:var(--border);transform:translateY(-1px)}
+.btn.primary{background:linear-gradient(135deg,var(--accent),#3b82f6);border:none;color:#fff}
+.btn.success{background:var(--success);border-color:var(--success);color:#000}
+.btn.warn{background:var(--warn);border-color:var(--warn);color:#000}
+.games-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px}
+.game-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:all 0.2s}
+.game-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,0.3)}
+.game-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.game-header .id{font-family:monospace;font-size:18px;font-weight:700;color:var(--accent)}
+.game-header .status{padding:4px 10px;border-radius:20px;font-size:10px;font-weight:600}
+.status.complete{background:rgba(63,185,80,0.2);color:var(--success)}
+.status.partial{background:rgba(210,153,34,0.2);color:var(--warn)}
+.status.missing{background:rgba(248,81,73,0.2);color:var(--danger)}
+.game-body{padding:20px}
+.game-teams{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.team{display:flex;align-items:center;gap:8px}
+.team-logo{width:32px;height:32px;border-radius:6px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:12px}
+.team-name{font-size:13px;font-weight:600}
+.game-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.game-stat{text-align:center;padding:10px;background:var(--panel);border-radius:8px}
+.game-stat .val{font-size:18px;font-weight:700}
+.game-stat .lbl{font-size:9px;color:var(--muted);text-transform:uppercase}
+.progress-bar{height:8px;background:var(--panel);border-radius:4px;overflow:hidden;margin-bottom:12px}
+.progress-fill{height:100%;border-radius:4px;transition:width 0.3s}
+.issues{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.issue{padding:4px 10px;background:rgba(248,81,73,0.1);border:1px solid rgba(248,81,73,0.3);border-radius:4px;font-size:10px;color:var(--danger)}
+.game-actions{display:flex;gap:8px}
+.game-actions .btn{flex:1;justify-content:center;padding:10px}
+.quick-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:40px}
+.quick-action{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:all 0.2s;text-decoration:none;color:var(--text)}
+.quick-action:hover{border-color:var(--accent);transform:translateY(-2px)}
+.quick-action .icon{font-size:32px;margin-bottom:12px}
+.quick-action h4{font-size:14px;margin-bottom:6px}
+.quick-action p{font-size:11px;color:var(--muted)}
+.dashboards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.dashboard-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:all 0.2s;text-decoration:none}
+.dashboard-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.dashboard-preview{height:160px;background:linear-gradient(135deg,var(--panel),var(--card));display:flex;align-items:center;justify-content:center;font-size:48px}
+.dashboard-info{padding:16px 20px}
+.dashboard-info h4{font-size:14px;margin-bottom:4px;color:var(--text)}
+.dashboard-info p{font-size:11px;color:var(--muted)}
+.footer{border-top:1px solid var(--border);padding:30px 40px;text-align:center;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <h1>🏒 BLB Hockey Analytics</h1>
+    <span>v2.0 | Velodrome Season 2024-25</span>
+  </div>
+  <div class="nav">
+    <a href="#" class="active">Home</a>
+    <a href="#games">Games</a>
+    <a href="#dashboards">Dashboards</a>
+    <a href="#tracker">Tracker</a>
+    <a href="#settings">Settings</a>
+  </div>
+</div>
+
+<div class="container">
+  
+  <div class="hero">
+    <div class="hero-text">
+      <h2>Welcome to BLB Analytics</h2>
+      <p>Track every play, analyze every moment. Your comprehensive hockey analytics platform for detailed event tracking, player performance, and game insights.</p>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-card">
+        <div class="num" id="totalEvents">12,380</div>
+        <div class="label">Events Tracked</div>
+      </div>
+      <div class="stat-card">
+        <div class="num" id="totalGames">8</div>
+        <div class="label">Games</div>
+      </div>
+      <div class="stat-card">
+        <div class="num" id="totalShifts">770</div>
+        <div class="label">Shifts</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="quick-actions">
+    <a class="quick-action" href="tracker_v14.html">
+      <div class="icon">🎯</div>
+      <h4>Track New Game</h4>
+      <p>Start tracking a new game with the event tracker</p>
+    </a>
+    <a class="quick-action" href="#continue">
+      <div class="icon">▶️</div>
+      <h4>Continue Tracking</h4>
+      <p>Resume tracking an incomplete game</p>
+    </a>
+    <a class="quick-action" href="dashboard_shots.html">
+      <div class="icon">📊</div>
+      <h4>View Dashboards</h4>
+      <p>Explore analytics and visualizations</p>
+    </a>
+    <a class="quick-action" href="#etl">
+      <div class="icon">⚡</div>
+      <h4>Run ETL Pipeline</h4>
+      <p>Process and publish tracking data</p>
+    </a>
+  </div>
+  
+  <div class="section">
+    <div class="section-header">
+      <h3>🏆 Game Tracking Status</h3>
+      <div class="actions">
+        <button class="btn" onclick="refreshStatus()">🔄 Refresh</button>
+        <button class="btn primary" onclick="openTracker()">+ Track New Game</button>
+      </div>
+    </div>
+    <div class="games-grid" id="gamesGrid">
+      <!-- Games populated by JS -->
+    </div>
+  </div>
+  
+  <div class="section">
+    <div class="section-header">
+      <h3>📈 Analytics Dashboards</h3>
+    </div>
+    <div class="dashboards-grid">
+      <a class="dashboard-card" href="dashboard_shots.html">
+        <div class="dashboard-preview">🎯</div>
+        <div class="dashboard-info">
+          <h4>Shot Charts</h4>
+          <p>Visualize shot locations, quality, and outcomes</p>
+        </div>
+      </a>
+      <a class="dashboard-card" href="dashboard_players.html">
+        <div class="dashboard-preview">👤</div>
+        <div class="dashboard-info">
+          <h4>Player Stats</h4>
+          <p>Individual player performance metrics</p>
+        </div>
+      </a>
+      <a class="dashboard-card" href="dashboard_flow.html">
+        <div class="dashboard-preview">📈</div>
+        <div class="dashboard-info">
+          <h4>Game Flow</h4>
+          <p>Momentum, possession, and event timelines</p>
+        </div>
+      </a>
+      <a class="dashboard-card" href="dashboard_zones.html">
+        <div class="dashboard-preview">🗺️</div>
+        <div class="dashboard-info">
+          <h4>Zone Analysis</h4>
+          <p>Entry/exit success, time on attack</p>
+        </div>
+      </a>
+      <a class="dashboard-card" href="dashboard_team.html">
+        <div class="dashboard-preview">🏒</div>
+        <div class="dashboard-info">
+          <h4>Team Overview</h4>
+          <p>Season stats and team comparisons</p>
+        </div>
+      </a>
+      <a class="dashboard-card" href="dashboard_advanced.html">
+        <div class="dashboard-preview">🧠</div>
+        <div class="dashboard-info">
+          <h4>Advanced Metrics</h4>
+          <p>xG, Corsi, Fenwick, and more</p>
+        </div>
+      </a>
+    </div>
+  </div>
+  
+</div>
+
+<div class="footer">
+  BLB Hockey Analytics © 2024 | Built for Velodrome Hockey
+</div>
+
+<script>
+// Game data - would be loaded from server/files in production
+const GAMES_DATA = {
+  "18955": {game_id:"18955",home:"Orphans",away:"Velodrome",date:"2024-08-11",events:0,shifts:0,completion:0,status:"missing",issues:["No tracking file"]},
+  "18965": {game_id:"18965",home:"OS Offices",away:"Velodrome",date:"2024-09-08",events:3244,shifts:98,completion:85,status:"partial",issues:["Missing XY data"]},
+  "18969": {game_id:"18969",home:"Platinum",away:"Velodrome",date:"2024-09-15",events:2076,shifts:98,completion:75,status:"partial",issues:["Missing XY data"]},
+  "18977": {game_id:"18977",home:"Velodrome",away:"HollowBrook",date:"2024-09-22",events:2526,shifts:88,completion:95,status:"complete",issues:[]},
+  "18981": {game_id:"18981",home:"Nelson",away:"Velodrome",date:"2024-10-06",events:2424,shifts:106,completion:90,status:"complete",issues:[]},
+  "18987": {game_id:"18987",home:"Velodrome",away:"Outlaws",date:"2024-10-13",events:1585,shifts:106,completion:80,status:"partial",issues:["Missing XY data"]},
+  "18991": {game_id:"18991",home:"Triple J",away:"Velodrome",date:"2024-10-20",events:523,shifts:78,completion:25,status:"partial",issues:["Incomplete - only partial game"]},
+  "18993": {game_id:"18993",home:"Velodrome",away:"Platinum",date:"2024-10-27",events:1,shifts:98,completion:0,status:"missing",issues:["No events tracked"]},
+  "19032": {game_id:"19032",home:"Velodrome",away:"Nelson",date:"2024-11-24",events:1,shifts:98,completion:0,status:"missing",issues:["No events tracked"]}
+};
+
+function renderGames() {
+  const grid = document.getElementById('gamesGrid');
+  let totalEvents = 0, totalShifts = 0;
+  
+  grid.innerHTML = Object.values(GAMES_DATA).map(g => {
+    totalEvents += g.events;
+    totalShifts += g.shifts;
+    
+    const statusClass = g.status === 'complete' ? 'complete' : (g.events > 100 ? 'partial' : 'missing');
+    const statusText = g.status === 'complete' ? 'Complete' : (g.events > 100 ? 'Partial' : 'Not Tracked');
+    const progressColor = g.completion >= 80 ? 'var(--success)' : (g.completion >= 30 ? 'var(--warn)' : 'var(--danger)');
+    
+    return `
+      <div class="game-card">
+        <div class="game-header">
+          <span class="id">#${g.game_id}</span>
+          <span class="status ${statusClass}">${statusText}</span>
+        </div>
+        <div class="game-body">
+          <div class="game-teams">
+            <div class="team">
+              <div class="team-logo">${g.home.slice(0,2).toUpperCase()}</div>
+              <span class="team-name">${g.home}</span>
+            </div>
+            <span style="color:var(--muted)">vs</span>
+            <div class="team">
+              <div class="team-logo">${g.away.slice(0,2).toUpperCase()}</div>
+              <span class="team-name">${g.away}</span>
+            </div>
+          </div>
+          <div class="game-stats">
+            <div class="game-stat"><div class="val">${g.events.toLocaleString()}</div><div class="lbl">Events</div></div>
+            <div class="game-stat"><div class="val">${g.shifts}</div><div class="lbl">Shifts</div></div>
+            <div class="game-stat"><div class="val">${g.completion}%</div><div class="lbl">Complete</div></div>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:${g.completion}%;background:${progressColor}"></div>
+          </div>
+          ${g.issues.length ? `<div class="issues">${g.issues.map(i => `<span class="issue">${i}</span>`).join('')}</div>` : ''}
+          <div class="game-actions">
+            ${g.completion < 100 ? `<a class="btn warn" href="tracker_v14.html?game=${g.game_id}">Continue</a>` : ''}
+            <a class="btn" href="dashboard_shots.html?game=${g.game_id}">View</a>
+            <a class="btn" href="tracker_v14.html?game=${g.game_id}&edit=1">Edit</a>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  document.getElementById('totalEvents').textContent = totalEvents.toLocaleString();
+  document.getElementById('totalShifts').textContent = totalShifts.toLocaleString();
+  document.getElementById('totalGames').textContent = Object.keys(GAMES_DATA).length;
+}
+
+function openTracker() {
+  window.location.href = 'tracker_v14.html';
+}
+
+function refreshStatus() {
+  // In production, this would fetch fresh data
+  renderGames();
+}
+
+// Initialize
+renderGames();
+</script>
+</body>
+</html>

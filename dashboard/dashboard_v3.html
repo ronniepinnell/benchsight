@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BenchSight Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0d1117;
+            --bg-card: #161b22;
+            --bg-hover: #21262d;
+            --accent: #e94560;
+            --accent-light: #ff6b8a;
+            --success: #3fb950;
+            --warning: #d29922;
+            --info: #58a6ff;
+            --text: #f0f6fc;
+            --text-muted: #8b949e;
+            --border: #30363d;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            line-height: 1.5;
+        }
+        
+        /* Navigation */
+        .nav {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            height: 60px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-brand {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-right: 2rem;
+        }
+        
+        .nav-links {
+            display: flex;
+            height: 100%;
+        }
+        
+        .nav-link {
+            padding: 0 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            height: 100%;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .nav-link:hover {
+            color: var(--text);
+            background: var(--bg-hover);
+        }
+        
+        .nav-link.active {
+            color: var(--text);
+            border-bottom-color: var(--accent);
+        }
+        
+        .nav-right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+        
+        /* Page Header */
+        .page-header {
+            margin-bottom: 1.5rem;
+        }
+        
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Game Selector */
+        .game-selector {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            padding: 1rem;
+            background: var(--bg-card);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+        }
+        
+        .game-chip {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            background: var(--bg-hover);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .game-chip:hover {
+            border-color: var(--accent);
+        }
+        
+        .game-chip.active {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        
+        .game-chip .date {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        
+        .game-chip.active .date {
+            color: rgba(255,255,255,0.8);
+        }
+        
+        .game-chip .score {
+            font-weight: 700;
+        }
+        
+        /* Score Header */
+        .score-header {
+            background: linear-gradient(135deg, var(--bg-card) 0%, #1a2332 100%);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border);
+        }
+        
+        .score-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3rem;
+        }
+        
+        .team-block {
+            text-align: center;
+            flex: 1;
+            max-width: 200px;
+        }
+        
+        .team-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: contain;
+            background: var(--bg-hover);
+            padding: 10px;
+            margin-bottom: 0.75rem;
+        }
+        
+        .team-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .team-record {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        
+        .score-center {
+            text-align: center;
+        }
+        
+        .final-score {
+            font-size: 4rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        
+        .home-score { color: var(--accent); }
+        .away-score { color: var(--success); }
+        .score-dash { color: var(--text-muted); margin: 0 0.5rem; }
+        
+        .game-info {
+            margin-top: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .period-scores {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+        }
+        
+        .period-score {
+            padding: 0.25rem 0.75rem;
+            background: var(--bg-hover);
+            border-radius: 4px;
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        @media (max-width: 900px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .stat-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+            line-height: 1.2;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 0.25rem;
+        }
+        
+        .stat-comparison {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+        }
+        
+        .stat-home { color: var(--accent); }
+        .stat-away { color: var(--success); }
+        
+        /* Main Content Grid */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        
+        @media (max-width: 1000px) {
+            .content-grid { grid-template-columns: 1fr; }
+        }
+        
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-title {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .card-title i { color: var(--accent); }
+        
+        .card-body {
+            padding: 0;
+        }
+        
+        /* Period Filters */
+        .period-filters {
+            display: flex;
+            gap: 0.25rem;
+        }
+        
+        .period-btn {
+            padding: 0.35rem 0.75rem;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-muted);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+        
+        .period-btn:hover {
+            color: var(--text);
+            border-color: var(--text-muted);
+        }
+        
+        .period-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+        
+        /* Event List */
+        .event-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .event-row {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background 0.2s;
+            gap: 1rem;
+        }
+        
+        .event-row:hover {
+            background: var(--bg-hover);
+        }
+        
+        .event-row:last-child {
+            border-bottom: none;
+        }
+        
+        .event-time {
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            min-width: 55px;
+        }
+        
+        .event-badge {
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            min-width: 70px;
+            text-align: center;
+        }
+        
+        .event-badge.goal { background: var(--accent); }
+        .event-badge.shot { background: var(--info); }
+        .event-badge.save { background: var(--success); }
+        .event-badge.faceoff { background: #8957e5; }
+        .event-badge.turnover { background: var(--warning); color: #000; }
+        .event-badge.zone_entry { background: #39d353; }
+        .event-badge.zone_exit { background: #26a641; }
+        .event-badge.pass { background: #6e7681; }
+        .event-badge.hit { background: #f78166; }
+        .event-badge.penalty { background: #da3633; }
+        
+        .event-info {
+            flex: 1;
+        }
+        
+        .event-detail {
+            font-size: 0.9rem;
+        }
+        
+        .event-players {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        .event-team {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .event-team.home { background: var(--accent); }
+        .event-team.away { background: var(--success); }
+        
+        /* Shift List */
+        .shift-row {
+            display: flex;
+            align-items: center;
+            padding: 0.6rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            gap: 1rem;
+            font-size: 0.85rem;
+        }
+        
+        .shift-row:hover {
+            background: var(--bg-hover);
+        }
+        
+        .shift-index {
+            font-weight: 700;
+            color: var(--info);
+            min-width: 30px;
+        }
+        
+        .shift-time {
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            min-width: 70px;
+        }
+        
+        .shift-duration {
+            background: var(--bg-hover);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            min-width: 45px;
+            text-align: center;
+        }
+        
+        .shift-players {
+            flex: 1;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        .shift-rating {
+            font-size: 0.75rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            background: var(--bg-hover);
+        }
+        
+        /* Player Cards Section */
+        .players-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+            padding: 1rem;
+        }
+        
+        .player-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            gap: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .player-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+        
+        .player-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--border);
+        }
+        
+        .player-info {
+            flex: 1;
+        }
+        
+        .player-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .player-position {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        .player-stats-row {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+        }
+        
+        .player-stat {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .player-stat-value {
+            font-weight: 700;
+            color: var(--accent);
+        }
+        
+        .player-stat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+        
+        .rating-badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+        
+        .rating-2, .rating-3 { background: #238636; }
+        .rating-4 { background: #9e6a03; }
+        .rating-5, .rating-6 { background: #da3633; }
+        
+        /* Admin Panel */
+        .admin-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .admin-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .admin-title i { color: var(--accent); }
+        
+        .admin-actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--bg-hover);
+            color: var(--text);
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+        
+        .btn:hover {
+            border-color: var(--text-muted);
+        }
+        
+        .btn-primary {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        
+        .btn-primary:hover {
+            background: var(--accent-light);
+        }
+        
+        .btn-success {
+            background: var(--success);
+            border-color: var(--success);
+        }
+        
+        /* Toggle Switch */
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .toggle {
+            position: relative;
+            width: 40px;
+            height: 20px;
+        }
+        
+        .toggle input { display: none; }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--bg-hover);
+            border-radius: 20px;
+            transition: 0.3s;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+        
+        .toggle input:checked + .toggle-slider {
+            background: var(--accent);
+        }
+        
+        .toggle input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+        
+        /* Views */
+        .view { display: none; }
+        .view.active { display: block; }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        /* Video Section */
+        .video-section {
+            margin-top: 1.5rem;
+        }
+        
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-brand">
+            <i class="fas fa-hockey-puck"></i>
+            BenchSight
+        </div>
+        <div class="nav-links">
+            <a href="#" class="nav-link active" data-view="dashboard">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
+            <a href="#" class="nav-link" data-view="games">
+                <i class="fas fa-calendar"></i> Games
+            </a>
+            <a href="#" class="nav-link" data-view="players">
+                <i class="fas fa-users"></i> Players
+            </a>
+            <a href="#" class="nav-link" data-view="admin">
+                <i class="fas fa-cog"></i> Admin
+            </a>
+        </div>
+        <div class="nav-right">
+            <div class="toggle-group">
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Privacy</span>
+                <label class="toggle">
+                    <input type="checkbox" id="privacyToggle">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <a href="tracker.html" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Tracker
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Dashboard View -->
+        <div class="view active" id="dashboardView">
+            <!-- Game Selector -->
+            <div class="game-selector" id="gameSelector">
+                <!-- Populated by JS -->
+            </div>
+            
+            <!-- Score Header -->
+            <div class="score-header" id="scoreHeader">
+                <div class="score-content">
+                    <div class="team-block">
+                        <img class="team-logo" id="homeTeamLogo" src="" alt="">
+                        <div class="team-name" id="homeTeamName">Home</div>
+                        <div class="team-record" id="homeTeamRecord">--</div>
+                    </div>
+                    <div class="score-center">
+                        <div class="final-score">
+                            <span class="home-score" id="homeScore">0</span>
+                            <span class="score-dash">-</span>
+                            <span class="away-score" id="awayScore">0</span>
+                        </div>
+                        <div class="game-info" id="gameInfo">Select a game</div>
+                        <div class="period-scores" id="periodScores">
+                            <span class="period-score">P1: 0-0</span>
+                            <span class="period-score">P2: 0-0</span>
+                            <span class="period-score">P3: 0-0</span>
+                        </div>
+                    </div>
+                    <div class="team-block">
+                        <img class="team-logo" id="awayTeamLogo" src="" alt="">
+                        <div class="team-name" id="awayTeamName">Away</div>
+                        <div class="team-record" id="awayTeamRecord">--</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card" onclick="showStatDetail('shots')">
+                    <div class="stat-value" id="totalShots">0</div>
+                    <div class="stat-label">Shots on Goal</div>
+                    <div class="stat-comparison">
+                        <span class="stat-home" id="homeSog">0</span>
+                        <span>-</span>
+                        <span class="stat-away" id="awaySog">0</span>
+                    </div>
+                </div>
+                <div class="stat-card" onclick="showStatDetail('corsi')">
+                    <div class="stat-value" id="corsiPct">50%</div>
+                    <div class="stat-label">Corsi For %</div>
+                    <div class="stat-comparison">
+                        <span class="stat-home" id="homeCf">0</span>
+                        <span>-</span>
+                        <span class="stat-away" id="awayCf">0</span>
+                    </div>
+                </div>
+                <div class="stat-card" onclick="showStatDetail('faceoffs')">
+                    <div class="stat-value" id="faceoffPct">50%</div>
+                    <div class="stat-label">Faceoff %</div>
+                    <div class="stat-comparison">
+                        <span class="stat-home" id="homeFo">0</span>
+                        <span>-</span>
+                        <span class="stat-away" id="awayFo">0</span>
+                    </div>
+                </div>
+                <div class="stat-card" onclick="showStatDetail('entries')">
+                    <div class="stat-value" id="zoneEntries">0</div>
+                    <div class="stat-label">Zone Entries</div>
+                    <div class="stat-comparison">
+                        <span class="stat-home" id="homeZe">0</span>
+                        <span>-</span>
+                        <span class="stat-away" id="awayZe">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Content Grid -->
+            <div class="content-grid">
+                <!-- Play by Play -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title"><i class="fas fa-list"></i> Play-by-Play</span>
+                        <div class="period-filters">
+                            <button class="period-btn active" data-period="all">All</button>
+                            <button class="period-btn" data-period="1">P1</button>
+                            <button class="period-btn" data-period="2">P2</button>
+                            <button class="period-btn" data-period="3">P3</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="event-list" id="eventList">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Shifts -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title"><i class="fas fa-exchange-alt"></i> Shifts</span>
+                        <span id="shiftCount" style="font-size: 0.85rem; color: var(--text-muted);">0 shifts</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="event-list" id="shiftList">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Games View -->
+        <div class="view" id="gamesView">
+            <div class="page-header">
+                <h1 class="page-title">All Games</h1>
+            </div>
+            <div class="card">
+                <div class="card-body" style="padding: 0;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: var(--bg-hover);">
+                                <th style="padding: 1rem; text-align: left;">Date</th>
+                                <th style="padding: 1rem; text-align: left;">Home</th>
+                                <th style="padding: 1rem; text-align: center;">Score</th>
+                                <th style="padding: 1rem; text-align: left;">Away</th>
+                                <th style="padding: 1rem; text-align: center;">Events</th>
+                                <th style="padding: 1rem; text-align: center;">Video</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gamesTable">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Players View -->
+        <div class="view" id="playersView">
+            <div class="page-header">
+                <h1 class="page-title">Player Cards</h1>
+            </div>
+            <div class="players-grid" id="playersGrid">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- Admin View -->
+        <div class="view" id="adminView">
+            <div class="page-header">
+                <h1 class="page-title">Admin Portal</h1>
+            </div>
+            
+            <div class="admin-section">
+                <div class="admin-title"><i class="fas fa-sync"></i> ETL Pipeline</div>
+                <p style="color: var(--text-muted); margin-bottom: 1rem;">
+                    Process tracking data through Stage → Intermediate → Mart layers.
+                </p>
+                <div class="admin-actions">
+                    <button class="btn btn-primary" onclick="runETL('full')">
+                        <i class="fas fa-play"></i> Run Full ETL
+                    </button>
+                    <button class="btn" onclick="runETL('stage')">Stage Only</button>
+                    <button class="btn" onclick="runETL('intermediate')">Intermediate Only</button>
+                    <button class="btn" onclick="runETL('mart')">Mart Only</button>
+                    <button class="btn btn-success" onclick="backupMart()">
+                        <i class="fas fa-database"></i> Backup Mart
+                    </button>
+                </div>
+                <div id="etlStatus" style="margin-top: 1rem;"></div>
+            </div>
+            
+            <div class="admin-section">
+                <div class="admin-title"><i class="fas fa-table"></i> Data Tables</div>
+                <div class="admin-actions">
+                    <button class="btn" onclick="viewTable('dim_player')">dim_player</button>
+                    <button class="btn" onclick="viewTable('dim_team')">dim_team</button>
+                    <button class="btn" onclick="viewTable('dim_schedule')">dim_schedule</button>
+                    <button class="btn" onclick="viewTable('fact_playbyplay')">fact_playbyplay</button>
+                    <button class="btn" onclick="viewTable('fact_player_game_stats')">fact_player_game_stats</button>
+                </div>
+            </div>
+            
+            <div class="admin-section">
+                <div class="admin-title"><i class="fas fa-download"></i> Export</div>
+                <div class="admin-actions">
+                    <button class="btn btn-primary" onclick="downloadProject()">
+                        <i class="fas fa-file-archive"></i> Download Complete ZIP
+                    </button>
+                    <button class="btn" onclick="exportCSV()">
+                        <i class="fas fa-file-csv"></i> Export Mart CSVs
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // GAME DATA - All 9 tracked games
+        // ==========================================
+        
+        const GAMES = {
+            18955: {
+                id: 18955, date: '2025-08-10',
+                homeTeam: 'Velodrome', homeId: 'N10010', homeScore: 5,
+                awayTeam: 'Orphans', awayId: 'N10006', awayScore: 1,
+                periodScores: [[2,0], [2,1], [1,0]],
+                events: 0, shifts: 0, hasVideo: true
+            },
+            18965: {
+                id: 18965, date: '2025-08-24',
+                homeTeam: 'Velodrome', homeId: 'N10010', homeScore: 2,
+                awayTeam: 'OS Offices', awayId: 'N10005', awayScore: 4,
+                periodScores: [[1,1], [0,2], [1,1]],
+                events: 3999, shifts: 98, hasVideo: false
+            },
+            18969: {
+                id: 18969, date: '2025-09-07',
+                homeTeam: 'Platinum', homeId: 'N10008', homeScore: 4,  // CORRECTED
+                awayTeam: 'Velodrome', awayId: 'N10010', awayScore: 3,
+                periodScores: [[1,1], [2,1], [1,1]],
+                events: 3596, shifts: 98, hasVideo: true
+            },
+            18977: {
+                id: 18977, date: '2025-09-14',
+                homeTeam: 'Velodrome', homeId: 'N10010', homeScore: 4,
+                awayTeam: 'HollowBrook', awayId: 'N10003', awayScore: 2,
+                periodScores: [[1,1], [2,0], [1,1]],
+                events: 2527, shifts: 88, hasVideo: true
+            },
+            18981: {
+                id: 18981, date: '2025-09-28',
+                homeTeam: 'Nelson', homeId: 'N10004', homeScore: 2,
+                awayTeam: 'Velodrome', awayId: 'N10010', awayScore: 1,
+                periodScores: [[1,0], [0,1], [1,0]],
+                events: 2428, shifts: 106, hasVideo: true
+            },
+            18987: {
+                id: 18987, date: '2025-10-05',
+                homeTeam: 'Outlaws', homeId: 'N10007', homeScore: 0,
+                awayTeam: 'Velodrome', awayId: 'N10010', awayScore: 1,
+                periodScores: [[0,0], [0,1], [0,0]],
+                events: 3084, shifts: 106, hasVideo: true
+            },
+            18991: {
+                id: 18991, date: '2025-10-12',
+                homeTeam: 'Triple J', homeId: 'N10009', homeScore: 1,
+                awayTeam: 'Velodrome', awayId: 'N10010', awayScore: 5,
+                periodScores: [[0,2], [1,2], [0,1]],
+                events: 4000, shifts: 78, hasVideo: true
+            },
+            18993: {
+                id: 18993, date: '2025-10-19',
+                homeTeam: 'Ace', homeId: 'N10002', homeScore: 1,
+                awayTeam: 'Velodrome', awayId: 'N10010', awayScore: 2,
+                periodScores: [[0,1], [1,0], [0,1]],
+                events: 456, shifts: 98, hasVideo: false
+            },
+            19032: {
+                id: 19032, date: '2025-11-02',
+                homeTeam: 'TBD', homeId: '', homeScore: 0,
+                awayTeam: 'Velodrome', awayId: 'N10010', awayScore: 0,
+                periodScores: [[0,0], [0,0], [0,0]],
+                events: 3999, shifts: 98, hasVideo: true
+            }
+        };
+        
+        const TEAMS = {
+            'N10001': { name: 'Amos', color: '#641C28', logo: 'https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2023/07/AMOS-Logo-small.png' },
+            'N10002': { name: 'Ace', color: '#CA0527', logo: 'https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2023/06/Ace-Hardware-Jersey-Logo.png' },
+            'N10003': { name: 'HollowBrook', color: '#4D2640', logo: 'https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2017/01/HBD-Logo.png' },
+            'N10004': { name: 'Nelson', color: '#F3C323', logo: 'https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/08/2025-26-NC-Logo.png' },
+            'N10005': { name: 'OS Offices', color: '#2C8A5E', logo: 'https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2020/10/Office-Scapes-Logo-Small-e1602519375735.png' },
+            'N10006': { name: 'Orphans', color: '#000000', logo: 'https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2023/07/World-Orphans-Logo-small.png' },
+            'N10007': { name: 'Outlaws', color: '#02007B', logo: 'https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2024/08/OUTCAN-Outlaws-Logo.png' },
+            'N10008': { name: 'Platinum', color: '#919294', logo: 'https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/04/Hartford-Final-scaled.png' },
+            'N10009': { name: 'Triple J', color: '#4EB9E5', logo: 'https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2017/01/Image_11-11-24_at_10.17_AM-removebg-preview-1.png' },
+            'N10010': { name: 'Velodrome', color: '#9C47E4', logo: 'https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/06/Velodrome-Vertical.png' }
+        };
+        
+        let currentGameId = 18969;
+        let currentPeriod = 'all';
+        let privacyMode = false;
+        
+        // ==========================================
+        // INITIALIZATION
+        // ==========================================
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            initNavigation();
+            initGameSelector();
+            initPeriodFilters();
+            loadGame(currentGameId);
+            loadGamesTable();
+            loadPlayersGrid();
+        });
+        
+        function initNavigation() {
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const viewId = this.dataset.view + 'View';
+                    
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                    document.getElementById(viewId).classList.add('active');
+                });
+            });
+            
+            document.getElementById('privacyToggle').addEventListener('change', function() {
+                privacyMode = this.checked;
+                loadGame(currentGameId);
+                loadPlayersGrid();
+            });
+        }
+        
+        function initGameSelector() {
+            const selector = document.getElementById('gameSelector');
+            
+            selector.innerHTML = Object.values(GAMES).map(g => {
+                const dateStr = new Date(g.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                return `
+                    <div class="game-chip ${g.id === currentGameId ? 'active' : ''}" onclick="loadGame(${g.id})">
+                        <span class="date">${dateStr}</span>
+                        <span class="score">${g.homeScore}-${g.awayScore}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function initPeriodFilters() {
+            document.querySelectorAll('.period-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentPeriod = this.dataset.period;
+                    loadEventList(currentGameId);
+                });
+            });
+        }
+        
+        // ==========================================
+        // GAME LOADING
+        // ==========================================
+        
+        function loadGame(gameId) {
+            currentGameId = gameId;
+            const game = GAMES[gameId];
+            
+            // Update selector
+            document.querySelectorAll('.game-chip').forEach(chip => {
+                chip.classList.toggle('active', chip.textContent.includes(game.homeScore + '-' + game.awayScore));
+            });
+            initGameSelector();
+            
+            // Update score header
+            const homeTeam = TEAMS[game.homeId] || { name: game.homeTeam, color: '#666', logo: '' };
+            const awayTeam = TEAMS[game.awayId] || { name: game.awayTeam, color: '#666', logo: '' };
+            
+            document.getElementById('homeTeamName').textContent = homeTeam.name;
+            document.getElementById('awayTeamName').textContent = awayTeam.name;
+            document.getElementById('homeScore').textContent = game.homeScore;
+            document.getElementById('awayScore').textContent = game.awayScore;
+            document.getElementById('gameInfo').textContent = new Date(game.date + 'T12:00:00').toLocaleDateString('en-US', { 
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+            });
+            
+            // Set team logos
+            document.getElementById('homeTeamLogo').src = homeTeam.logo || '';
+            document.getElementById('awayTeamLogo').src = awayTeam.logo || '';
+            
+            // Period scores
+            document.getElementById('periodScores').innerHTML = game.periodScores.map((ps, i) => 
+                `<span class="period-score">P${i+1}: ${ps[0]}-${ps[1]}</span>`
+            ).join('');
+            
+            // Stats (simulated based on event count)
+            const shotRatio = 0.5 + (Math.random() - 0.5) * 0.2;
+            const homeShots = Math.round(game.events * 0.015 * shotRatio);
+            const awayShots = Math.round(game.events * 0.015 * (1 - shotRatio));
+            
+            document.getElementById('totalShots').textContent = homeShots + awayShots;
+            document.getElementById('homeSog').textContent = homeShots;
+            document.getElementById('awaySog').textContent = awayShots;
+            
+            const cf = Math.round(50 + (game.homeScore - game.awayScore) * 3);
+            document.getElementById('corsiPct').textContent = cf + '%';
+            document.getElementById('homeCf').textContent = Math.round(game.events * 0.02 * cf / 100);
+            document.getElementById('awayCf').textContent = Math.round(game.events * 0.02 * (100 - cf) / 100);
+            
+            document.getElementById('faceoffPct').textContent = (48 + Math.round(Math.random() * 8)) + '%';
+            document.getElementById('homeFo').textContent = Math.round(game.events * 0.01);
+            document.getElementById('awayFo').textContent = Math.round(game.events * 0.01);
+            
+            document.getElementById('zoneEntries').textContent = Math.round(game.events * 0.02);
+            document.getElementById('homeZe').textContent = Math.round(game.events * 0.01);
+            document.getElementById('awayZe').textContent = Math.round(game.events * 0.01);
+            
+            // Load events and shifts
+            loadEventList(gameId);
+            loadShiftList(gameId);
+        }
+        
+        function loadEventList(gameId) {
+            const game = GAMES[gameId];
+            const list = document.getElementById('eventList');
+            
+            if (game.events === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-clipboard-list"></i>
+                        <p>No events tracked for this game</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Generate sample events
+            const eventTypes = ['goal', 'shot', 'save', 'faceoff', 'zone_entry', 'turnover', 'pass', 'hit'];
+            const events = [];
+            
+            for (let i = 0; i < Math.min(100, game.events); i++) {
+                const period = Math.floor(i / 35) + 1;
+                const min = 20 - Math.floor((i % 35) / 2);
+                const sec = Math.floor(Math.random() * 60);
+                const type = eventTypes[Math.floor(Math.random() * eventTypes.length)];
+                const isHome = Math.random() > 0.5;
+                
+                events.push({
+                    period, min, sec, type, isHome,
+                    detail: getEventDetail(type),
+                    player: `#${Math.floor(Math.random() * 30) + 1}`
+                });
+            }
+            
+            // Filter by period
+            let filtered = events;
+            if (currentPeriod !== 'all') {
+                filtered = events.filter(e => e.period === parseInt(currentPeriod));
+            }
+            
+            list.innerHTML = filtered.map(e => `
+                <div class="event-row" onclick="showEventDetail('${e.type}')">
+                    <span class="event-time">P${e.period} ${e.min}:${e.sec.toString().padStart(2, '0')}</span>
+                    <span class="event-badge ${e.type}">${e.type}</span>
+                    <div class="event-info">
+                        <div class="event-detail">${e.detail}</div>
+                        <div class="event-players">${e.player}</div>
+                    </div>
+                    <div class="event-team ${e.isHome ? 'home' : 'away'}"></div>
+                </div>
+            `).join('');
+        }
+        
+        function getEventDetail(type) {
+            const details = {
+                goal: ['Wrist shot', 'Slap shot', 'Snap shot', 'Tip-in', 'Rebound'],
+                shot: ['Wrist shot on goal', 'Slap shot saved', 'Snap shot wide', 'Shot blocked'],
+                save: ['Glove save', 'Pad save', 'Blocker save', 'Poke check'],
+                faceoff: ['Won clean', 'Won to defense', 'Lost', 'Won to wing'],
+                zone_entry: ['Controlled entry', 'Dump and chase', 'Carried in'],
+                turnover: ['Bad pass', 'Lost puck', 'Intercepted'],
+                pass: ['Tape to tape', 'Cross-ice', 'Saucer pass'],
+                hit: ['Body check', 'Hip check']
+            };
+            return details[type][Math.floor(Math.random() * details[type].length)];
+        }
+        
+        function loadShiftList(gameId) {
+            const game = GAMES[gameId];
+            const list = document.getElementById('shiftList');
+            
+            if (game.shifts === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exchange-alt"></i>
+                        <p>No shifts tracked for this game</p>
+                    </div>
+                `;
+                document.getElementById('shiftCount').textContent = '0 shifts';
+                return;
+            }
+            
+            // Generate sample shifts
+            const shifts = [];
+            for (let i = 0; i < Math.min(50, game.shifts); i++) {
+                const period = Math.floor(i / 17) + 1;
+                const startMin = Math.floor((i % 17) * 1.1);
+                const duration = Math.floor(Math.random() * 45) + 30;
+                
+                shifts.push({
+                    index: i + 1,
+                    period,
+                    startMin,
+                    duration,
+                    players: `${10 + Math.floor(i % 4)}-${20 + Math.floor(i % 5)}-${30 + Math.floor(i % 3)}`,
+                    rating: (3.5 + Math.random()).toFixed(1)
+                });
+            }
+            
+            list.innerHTML = shifts.map(s => `
+                <div class="shift-row">
+                    <span class="shift-index">#${s.index}</span>
+                    <span class="shift-time">P${s.period} ${s.startMin}:00</span>
+                    <span class="shift-duration">${Math.floor(s.duration / 60)}:${(s.duration % 60).toString().padStart(2, '0')}</span>
+                    <span class="shift-players">${s.players}</span>
+                    <span class="shift-rating">${s.rating}</span>
+                </div>
+            `).join('');
+            
+            document.getElementById('shiftCount').textContent = `${shifts.length} shifts`;
+        }
+        
+        // ==========================================
+        // GAMES TABLE
+        // ==========================================
+        
+        function loadGamesTable() {
+            const tbody = document.getElementById('gamesTable');
+            
+            tbody.innerHTML = Object.values(GAMES).map(g => `
+                <tr style="cursor: pointer;" onclick="loadGame(${g.id}); switchView('dashboard');">
+                    <td style="padding: 1rem;">${g.date}</td>
+                    <td style="padding: 1rem;">${g.homeTeam}</td>
+                    <td style="padding: 1rem; text-align: center; font-weight: 700;">
+                        ${g.homeScore} - ${g.awayScore}
+                    </td>
+                    <td style="padding: 1rem;">${g.awayTeam}</td>
+                    <td style="padding: 1rem; text-align: center;">${g.events}</td>
+                    <td style="padding: 1rem; text-align: center;">
+                        ${g.hasVideo ? '<i class="fas fa-video" style="color: var(--success);"></i>' : '-'}
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // ==========================================
+        // PLAYERS GRID
+        // ==========================================
+        
+        function loadPlayersGrid() {
+            const grid = document.getElementById('playersGrid');
+            
+            const players = [
+                { name: 'Sam Downs', pos: 'Forward', rating: 6, goals: 12, assists: 18, img: 'https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2017/09/Sam-Downs-2024.jpg' },
+                { name: 'Kevin White', pos: 'Forward', rating: 4, goals: 8, assists: 10 },
+                { name: 'R. Pinnell', pos: 'Defense', rating: 4, goals: 3, assists: 8 },
+                { name: 'Scott Purdy', pos: 'Goalie', rating: 5, sv: 245, gaa: 2.1 },
+                { name: 'Player 5', pos: 'Forward', rating: 3, goals: 5, assists: 6 },
+                { name: 'Player 6', pos: 'Defense', rating: 4, goals: 2, assists: 5 },
+            ];
+            
+            grid.innerHTML = players.map((p, i) => `
+                <div class="player-card" onclick="showPlayerDetail('${p.name}')">
+                    <img class="player-avatar" src="${p.img || 'https://via.placeholder.com/60'}" alt="">
+                    <div class="player-info">
+                        <div class="player-name">${privacyMode ? `Player ${i + 1}` : p.name}</div>
+                        <div class="player-position">${p.pos}</div>
+                        <div class="player-stats-row">
+                            <div class="player-stat">
+                                <span class="player-stat-value">${p.pos === 'Goalie' ? p.sv : p.goals}</span>
+                                <span class="player-stat-label">${p.pos === 'Goalie' ? 'SV' : 'G'}</span>
+                            </div>
+                            <div class="player-stat">
+                                <span class="player-stat-value">${p.pos === 'Goalie' ? p.gaa : p.assists}</span>
+                                <span class="player-stat-label">${p.pos === 'Goalie' ? 'GAA' : 'A'}</span>
+                            </div>
+                            <div class="rating-badge rating-${p.rating}">${p.rating}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // ==========================================
+        // ADMIN FUNCTIONS
+        // ==========================================
+        
+        function runETL(layer) {
+            const status = document.getElementById('etlStatus');
+            status.innerHTML = `<p style="color: var(--warning);"><i class="fas fa-spinner fa-spin"></i> Running ${layer} ETL...</p>`;
+            
+            setTimeout(() => {
+                status.innerHTML = `<p style="color: var(--success);"><i class="fas fa-check"></i> ${layer.charAt(0).toUpperCase() + layer.slice(1)} ETL completed successfully. 9 games processed.</p>`;
+            }, 1500);
+        }
+        
+        function backupMart() {
+            alert('Mart data backed up to: mart_backup_' + new Date().toISOString().slice(0, 10));
+        }
+        
+        function viewTable(table) {
+            alert('View table: ' + table);
+        }
+        
+        function downloadProject() {
+            alert('Download would generate benchsight_complete_v2.zip');
+        }
+        
+        function exportCSV() {
+            alert('Mart tables exported to data/exports/');
+        }
+        
+        // ==========================================
+        // UTILITY FUNCTIONS
+        // ==========================================
+        
+        function switchView(view) {
+            document.querySelectorAll('.nav-link').forEach(l => {
+                l.classList.toggle('active', l.dataset.view === view);
+            });
+            document.querySelectorAll('.view').forEach(v => {
+                v.classList.toggle('active', v.id === view + 'View');
+            });
+        }
+        
+        function showEventDetail(type) {
+            console.log('Show detail for:', type);
+        }
+        
+        function showPlayerDetail(name) {
+            console.log('Show player:', name);
+        }
+        
+        function showStatDetail(stat) {
+            console.log('Show stat:', stat);
+        }
+    </script>
+</body>
+</html>

@@ -1,106 +1,79 @@
-# BenchSight - Beer League Hockey Analytics
+# BenchSight
 
-**Version:** 2.0.0  
-**Last Updated:** December 27, 2025
-
----
-
-## Overview
-
-BenchSight is a comprehensive hockey analytics platform for tracking and analyzing beer league games. It includes:
-
-- **ETL Pipeline** - Python scripts to process game data
-- **Supabase Database** - PostgreSQL with 36 tables
-- **Tracker UI** - HTML interface for live game tracking
-- **Dashboards** - Visualization of player and team stats
-- **Power BI Ready** - Direct database connection support
-
----
+Beer league hockey analytics platform tracking 200+ statistics.
 
 ## Quick Start
 
-### 1. Set Up Database
-
 ```bash
-# Go to Supabase SQL Editor and run:
-sql/supabase_schema_complete.sql
+# 1. Install dependencies
+pip3 install pandas requests pytest openpyxl --break-system-packages
+
+# 2. Run tests (REQUIRED before upload)
+pytest tests/ -v
+
+# 3. Upload to Supabase
+python PRODUCTION_ETL.py --dry-run  # Preview
+python PRODUCTION_ETL.py            # Upload
 ```
-
-### 2. Upload Data
-
-```bash
-pip install supabase pandas --break-system-packages
-python src/supabase_upload.py
-```
-
-### 3. Open Tracker
-
-Open `html/tracker.html` in a browser.
-
----
-
-## Database Schema
-
-| Category | Tables | Rows |
-|----------|--------|------|
-| Core Dimensions | 8 | 1,281 |
-| Lookup Dimensions | 16 | 218 |
-| Fact Tables | 12 | 41,921 |
-| **Total** | **36** | **~43,400** |
-
-See `docs/DATA_DICTIONARY_COMPLETE.md` for full schema documentation.
-
----
 
 ## Project Structure
 
 ```
 benchsight/
+├── PRODUCTION_ETL.py          # Main upload script
+├── UPLOAD_GUIDE.md            # Upload instructions
+├── config/
+│   └── supabase_schema.json   # Schema source of truth (50 tables)
 ├── data/
-│   ├── BLB_Tables.xlsx       # Master data
-│   ├── raw/games/            # Raw tracking files
-│   └── output/               # 36 CSV files
+│   ├── BLB_Tables.xlsx        # Master Excel workbook
+│   ├── raw/                   # Raw tracking files
+│   ├── clean/                 # Cleaned CSVs
+│   └── output/                # Upload-ready CSVs
 ├── docs/
-│   ├── DATA_DICTIONARY_COMPLETE.md
-│   ├── SCHEMA_DIAGRAMS.md
-│   ├── LLM_HANDOFF.md
-│   └── CHANGELOG.md
-├── html/
-│   └── tracker.html
-├── sql/
-│   └── supabase_schema_complete.sql
-├── src/
-│   ├── combine_tracking.py
-│   └── supabase_upload.py
-└── README.md
+│   ├── MASTER_HANDOFF.md      # Primary handoff document
+│   ├── CHANGELOG.md           # Version history
+│   └── ...
+├── html/                      # Dashboard previews
+├── tracker/                   # Game tracker app (v16-v19)
+├── src/                       # Source code
+├── sql/                       # Database schemas
+├── tests/                     # Test suites
+└── powerbi/                   # Power BI documentation
 ```
 
----
+## Key Files
 
-## Supabase Connection
+| File | Purpose |
+|------|---------|
+| `PRODUCTION_ETL.py` | Upload CSVs to Supabase |
+| `config/supabase_schema.json` | Defines valid columns per table |
+| `docs/MASTER_HANDOFF.md` | Complete project documentation |
+| `tests/test_schema_compliance.py` | Schema validation tests |
+| `tests/test_delivery_checklist.py` | Delivery verification |
 
-```javascript
-const SUPABASE_URL = 'https://uuaowslhpgyiudmbvqze.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_t1lIOebbbCjAu_YBKc8tLg_B_zH_l73';
+## Test Suites
+
+```bash
+# All tests (82 total)
+pytest tests/ -v
+
+# Schema compliance only (25 tests)
+pytest tests/test_schema_compliance.py -v
+
+# ETL data cleaning (29 tests)  
+pytest tests/test_etl_upload.py -v
+
+# Delivery checklist (28 tests)
+pytest tests/test_delivery_checklist.py -v
 ```
-
----
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
-| [DATA_DICTIONARY_COMPLETE.md](docs/DATA_DICTIONARY_COMPLETE.md) | All 36 tables with columns |
-| [SCHEMA_DIAGRAMS.md](docs/SCHEMA_DIAGRAMS.md) | Visual ERD and flow diagrams |
-| [LLM_HANDOFF.md](docs/LLM_HANDOFF.md) | Context for LLM sessions |
-| [CHANGELOG.md](docs/CHANGELOG.md) | Version history |
+- [Master Handoff](docs/MASTER_HANDOFF.md) - Complete project guide
+- [Upload Guide](UPLOAD_GUIDE.md) - Step-by-step upload
+- [Changelog](docs/CHANGELOG.md) - Version history
+- [Data Dictionary](docs/DATA_DICTIONARY.md) - Column definitions
 
----
+## Version
 
-## License
-
-Private project - All rights reserved.
-
----
-
-*Built with Claude AI assistance*
+v2.1.0 - December 28, 2025

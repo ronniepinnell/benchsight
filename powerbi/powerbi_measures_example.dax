@@ -1,0 +1,50 @@
+-- Example DAX measures for BenchSight / BLB datamart.
+
+-- Base measures on fact_box_player
+Goals := SUM( fact_box_player[goals] )
+
+Assists := SUM( fact_box_player[assists] )
+
+Points := [Goals] + [Assists]
+
+Shots := SUM( fact_box_player[shots] )
+
+TOI Seconds := SUM( fact_box_player[toi_seconds] )
+
+TOI Minutes := DIVIDE([TOI Seconds], 60.0)
+
+Goals per 60 :=
+VAR toi_sec = [TOI Seconds]
+RETURN IF( toi_sec > 0,
+    [Goals] * 3600 / toi_sec,
+    BLANK()
+)
+
+Corsi For := SUM( fact_box_player[corsi_for] )
+
+Corsi Against := SUM( fact_box_player[corsi_against] )
+
+Corsi % :=
+VAR cf = [Corsi For]
+VAR ca = [Corsi Against]
+VAR total = cf + ca
+RETURN IF( total > 0, cf / total, BLANK() )
+
+xG For := SUM( fact_box_player[xg_for] )
+
+xG Against := SUM( fact_box_player[xg_against] )
+
+xG % :=
+VAR xgf = [xG For]
+VAR xga = [xG Against]
+VAR total = xgf + xga
+RETURN IF( total > 0, xgf / total, BLANK() )
+
+-- Example microstat rate:
+Controlled Entries per 60 :=
+VAR toi_sec = [TOI Seconds]
+VAR entries = SUM( fact_box_player[controlled_entries] )
+RETURN IF( toi_sec > 0,
+    entries * 3600 / toi_sec,
+    BLANK()
+)
