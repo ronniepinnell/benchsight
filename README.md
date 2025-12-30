@@ -1,103 +1,99 @@
 # BenchSight Hockey Analytics Platform
 
-## Status: 98% Complete | 131 Tests Passing | 100% Goal Accuracy
-
-A comprehensive hockey analytics ETL pipeline for the NORAD recreational hockey league.
+**Version:** 2.0  
+**Status:** 85% Production Ready  
+**Date:** December 30, 2025
 
 ---
 
-## 🚀 Quick Start
+## Overview
+
+BenchSight is a comprehensive hockey analytics platform for the NORAD recreational hockey league. It processes game tracking data through an ETL pipeline and stores it in a Supabase PostgreSQL database.
+
+## Quick Start
 
 ```bash
-# Install dependencies
-pip install pandas numpy openpyxl xlrd
+# 1. Setup config
+cp config/config_local.ini.example config/config_local.ini
+# Edit with your Supabase credentials
 
-# Run full ETL pipeline
-python etl.py
-python src/etl_orchestrator.py --all
-python src/enhance_all_stats.py
-python scripts/build_qa_facts.py
+# 2. Create schema in Supabase SQL Editor
+# Run: sql/05_FINAL_COMPLETE_SCHEMA.sql
 
-# Validate
-python scripts/qa_dynamic.py
+# 3. Load all data
+python scripts/load_all_tables.py --upsert
+
+# 4. Verify
+python -m pytest tests/ -v
 ```
 
 ---
 
-## 📊 What's Included
+## Documentation
 
-| Component | Count | Description |
-|-----------|-------|-------------|
-| **Stat Columns** | 317 | Per player-game |
-| **Tables** | 45 | 25 dim + 17 fact + 3 QA |
-| **Validation Tests** | 131 | All passing |
-| **Games Loaded** | 4 | Verified against official |
+| Role | Start Here |
+|------|------------|
+| **Tracker Dev** | `docs/handoffs/TRACKER_DEV_HANDOFF.md` |
+| **Dashboard Dev** | `docs/handoffs/DASHBOARD_DEV_HANDOFF.md` |
+| **Portal Dev** | `docs/handoffs/PORTAL_DEV_HANDOFF.md` |
+| **Project Manager** | `docs/handoffs/PROJECT_MANAGER_HANDOFF.md` |
 
----
+### HTML Versions
+Open `docs/html/` in a browser for formatted documentation.
 
-## 📁 Key Documentation
-
-| Document | Purpose |
-|----------|---------|
-| `docs/handoff/COMPLETE_HANDOFF.md` | Full project overview |
-| `docs/handoff/NEXT_SESSION_PROMPT.md` | Prompt for next chat |
-| `docs/handoff/HONEST_ASSESSMENT.md` | Status report |
-| `docs/handoff/GOALS_ROADMAP.md` | Short/mid/long-term goals |
-| `docs/diagrams/SCHEMA_DIAGRAM.md` | Database ERD |
-| `docs/diagrams/ETL_FLOW.md` | Pipeline flow |
-| `docs/diagrams/ARCHITECTURE.md` | System architecture |
-| `docs/diagrams/DIAGRAMS_PREVIEW.html` | Visual diagrams (open in browser) |
+### Claude Prompts
+Use prompts from `prompts/` to start new Claude chats with full context.
 
 ---
 
-## ✅ Goal Verification
+## Project Structure
 
-All goals verified against noradhockey.com:
-
-| Game | Official | Ours | Status |
-|------|----------|------|--------|
-| 18969 | 7 | 7 | ✅ |
-| 18977 | 6 | 6 | ✅ |
-| 18981 | 3 | 3 | ✅ |
-| 18987 | 1 | 1 | ✅ |
-| **Total** | **17** | **17** | **100%** |
-
----
-
-## 🎯 Next Step: Supabase Deployment
-
-DDL ready in `sql/01_create_tables_generated.sql`
-
-1. Create Supabase project
-2. Run DDL to create tables
-3. Import CSVs from `data/output/`
-4. Verify row counts
+```
+benchsight/
+├── config/              # Configuration
+├── data/output/         # 96 CSV files
+├── sql/                 # Database scripts
+├── scripts/             # Loaders
+├── src/                 # ETL code
+├── tests/               # 326 tests
+├── docs/                # Documentation
+│   ├── handoffs/        # Role guides
+│   ├── guides/          # How-tos
+│   └── html/            # HTML docs
+├── dashboard/           # Prototypes
+└── prompts/             # Claude prompts
+```
 
 ---
 
-## 📈 Stats Categories
+## Key Commands
 
-- **Scoring**: Goals, assists, points, shooting %
-- **Possession**: Corsi, Fenwick, CF%, FF%
-- **Time**: TOI, shift counts, avg shift length
-- **Faceoffs**: Wins, losses, %, by zone
-- **Advanced**: Game score, xG, rating adjustments
-- **Per-60**: All stats normalized to 60 minutes
+```bash
+# Load data
+python scripts/load_all_tables.py --upsert
 
----
+# Run tests  
+python -m pytest tests/ -v
 
-## 🔧 Tech Stack
-
-- Python 3.12 + pandas
-- Supabase (PostgreSQL)
-- Power BI / HTML dashboards
+# Check config
+python scripts/flexible_loader_with_logging.py --show-config
+```
 
 ---
 
-## 📞 Contact
+## Status
 
-Project Owner: Ronnie (NORAD League)
+✅ Database Schema (96 tables)  
+✅ ETL Pipeline  
+✅ Data Loader  
+✅ Logging System  
+✅ Test Suite (326 passing)  
+🔄 Tracker (prototype)  
+🔄 Dashboard (prototype)  
+❌ Admin Portal (planned)
 
 ---
 
-*BenchSight - NHL-caliber analytics for beer league hockey*
+## Contact
+
+Supabase: https://supabase.com/dashboard/project/uuaowslhpgyiudmbvqze

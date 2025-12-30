@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCHEMA OVERVIEW</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #34495e; margin-top: 30px; }
+        h3 { color: #7f8c8d; }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', monospace;
+        }
+        pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        pre code {
+            background: none;
+            color: inherit;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th { background: #3498db; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        a { color: #3498db; }
+        hr { border: none; border-top: 1px solid #ddd; margin: 30px 0; }
+        .success { color: #27ae60; }
+        .warning { color: #f39c12; }
+        .error { color: #e74c3c; }
+    </style>
+</head>
+<body>
+<h1>BenchSight Database Schema</h1>
+<strong>Version:</strong> 2.0  
+<strong>Date:</strong> December 30, 2025  
+<strong>Tables:</strong> 96  
+<strong>Total Columns:</strong> ~1,900
+<hr>
+<h2>Schema Design: Star Schema</h2>
+<pre><code>                    ┌─────────────────┐
+                    │   DIMENSIONS    │
+                    │   (44 tables)   │
+                    └────────┬────────┘
+                             │
+        ┌────────────────────┼────────────────────┐
+        │                    │                    │
+        ▼                    ▼                    ▼
+┌───────────────┐  ┌───────────────┐  ┌───────────────┐
+│  dim_player   │  │   dim_team    │  │ dim_schedule  │
+│  (337 rows)   │  │   (26 rows)   │  │  (562 rows)   │
+└───────────────┘  └───────────────┘  └───────────────┘
+        │                    │                    │
+        └────────────────────┼────────────────────┘
+                             │
+                    ┌────────┴────────┐
+                    │     FACTS       │
+                    │   (51 tables)   │
+                    └─────────────────┘</code></pre>
+<hr>
+<h2>Table Categories</h2>
+<h3>Dimension Tables (44)</h3>
+Reference/lookup data that rarely changes.
+<td> Table </td> Rows <td> Description </td>
+<td>-------</td>------<td>-------------</td>
+<td> dim_player </td> 337 <td> Player information </td>
+<td> dim_team </td> 26 <td> Team information </td>
+<td> dim_schedule </td> 562 <td> Game schedule </td>
+<td> dim_season </td> 9 <td> Season definitions </td>
+<td> dim_event_type </td> ~15 <td> Event type lookups </td>
+<td> dim_event_detail </td> ~30 <td> Event detail lookups </td>
+<td> dim_play_detail </td> ~10 <td> Play context </td>
+<td> dim_zone </td> 3 <td> Zone definitions </td>
+<td> dim_period </td> 5 <td> Period definitions </td>
+<td> dim_situation </td> ~6 <td> Game situations </td>
+<td> dim_strength </td> ~10 <td> Strength states </td>
+<td> ... </td> ... <td> 33 more dimension tables </td>
+<h3>Fact Tables (51)</h3>
+Metrics, events, and analytical data.
+<td> Table </td> Rows <td> Description </td>
+<td>-------</td>------<td>-------------</td>
+<td> fact_events </td> 5,833 <td> All game events </td>
+<td> fact_events_player </td> 11,635 <td> Player involvement in events </td>
+<td> fact_shifts </td> 672 <td> All shifts </td>
+<td> fact_shifts_player </td> 4,626 <td> Players on shifts </td>
+<td> fact_player_game_stats </td> 107 <td> Per-game player stats </td>
+<td> fact_team_game_stats </td> 8 <td> Per-game team stats </td>
+<td> fact_goalie_game_stats </td> 8 <td> Goalie stats </td>
+<td> fact_h2h </td> 684 <td> Head-to-head matchups </td>
+<td> fact_wowy </td> 641 <td> With/Without analysis </td>
+<td> fact_line_combos </td> 332 <td> Line combinations </td>
+<td> fact_sequences </td> 1,088 <td> Possession sequences </td>
+<td> fact_plays </td> 2,714 <td> Plays within sequences </td>
+<td> fact_player_boxscore_all </td> 14,473 <td> Complete boxscores </td>
+<td> ... </td> ... <td> 38 more fact tables </td>
+<h3>Logging Tables (5)</h3>
+ETL and system logs.
+<td> Table </td> Description <td>
+</td>-------<td>-------------</td>
+<td> log_etl_runs </td> ETL run tracking <td>
+</td> log_etl_tables <td> Per-table load details </td>
+<td> log_errors </td> Error tracking <td>
+</td> log_data_changes <td> Audit trail </td>
+<td> log_test_results </td> Test results <td>
+<hr>
+<h2>Key Relationships</h2>
+<h3>Primary Keys</h3>
+</td> Table <td> Primary Key </td> Format <td>
+</td>-------<td>-------------</td>--------<td>
+</td> dim_player <td> player_id </td> P001, P002... <td>
+</td> dim_team <td> team_id </td> T001, T002... <td>
+</td> dim_schedule <td> game_id </td> 18969, 18977... <td>
+</td> fact_events <td> event_key </td> EV1896900001 <td>
+</td> fact_shifts <td> shift_key </td> 18969_1 <td>
+</td> fact_events_player <td> event_player_key </td> EV1896900001_1 <td>
+</td> fact_shifts_player <td> shift_player_key </td> 18969_1_P001 <td>
+</td> fact_player_game_stats <td> player_game_key </td> 18969_P001 <td>
+<h3>Foreign Key Relationships</h3>
+<pre><code>dim_player (player_id)
+    ├── fact_events_player.player_id
+    ├── fact_shifts_player.player_id
+    ├── fact_player_game_stats.player_id
+    ├── fact_h2h.player_id
+    └── fact_wowy.player_id
+<p>dim_team (team_id)
+    ├── dim_schedule.home_team_id
+    ├── dim_schedule.away_team_id
+    ├── fact_events.home_team_id
+    └── fact_team_game_stats.team_id</p>
+<p>dim_schedule (game_id)
+    ├── fact_events.game_id
+    ├── fact_shifts.game_id
+    └── fact_player_game_stats.game_id</p>
+<p>fact_shifts (shift_key)
+    └── fact_events.shift_key</p>
+<p>fact_events (event_key)
+    └── fact_events_player.event_key</code></pre></p>
+<hr>
+<h2>Core Table Schemas</h2>
+<h3>dim_player (28 columns)</h3>
+<pre><code>player_id TEXT PRIMARY KEY,
+player_first_name TEXT,
+player_last_name TEXT,
+player_full_name TEXT,
+player_primary_position TEXT,
+current_skill_rating INTEGER,
+player_hand TEXT,
+birth_year INTEGER,
+player_gender TEXT,
+-- ... more columns</code></pre>
+<h3>dim_team (15 columns)</h3>
+<pre><code>team_id TEXT PRIMARY KEY,
+team_name TEXT,
+long_team_name TEXT,
+team_cd TEXT,
+team_color1 TEXT,
+team_color2 TEXT,
+team_logo TEXT,
+team_url TEXT,
+-- ... more columns</code></pre>
+<h3>dim_schedule (44 columns)</h3>
+<pre><code>game_id TEXT PRIMARY KEY,
+season INTEGER,
+date DATE,
+game_time TEXT,
+home_team_name TEXT,
+away_team_name TEXT,
+home_team_id TEXT,
+away_team_id TEXT,
+home_total_goals INTEGER,
+away_total_goals INTEGER,
+video_url TEXT,
+video_start_time DECIMAL,
+-- ... more columns</code></pre>
+<h3>fact_events (54 columns)</h3>
+<pre><code>event_key TEXT PRIMARY KEY,
+game_id TEXT,
+shift_key TEXT,
+"period" DECIMAL,
+event_index DECIMAL,
+event_type TEXT,
+event_detail TEXT,
+event_successful TEXT,
+"Type" TEXT,
+running_video_time DECIMAL,
+time_start_total_seconds DECIMAL,
+-- ... more columns</code></pre>
+<h3>fact_shifts (63 columns)</h3>
+<pre><code>shift_key TEXT PRIMARY KEY,
+game_id TEXT,
+shift_index INTEGER,
+"Period" DECIMAL,
+shift_duration DECIMAL,
+strength TEXT,
+situation TEXT,
+home_forward_1 DECIMAL,
+home_forward_2 DECIMAL,
+-- ... more columns (player numbers, stats)</code></pre>
+<h3>fact_player_game_stats (317 columns)</h3>
+<pre><code>player_game_key TEXT PRIMARY KEY,
+game_id TEXT,
+player_id TEXT,
+goals INTEGER,
+assists INTEGER,
+points INTEGER,
+shots INTEGER,
+toi_minutes DECIMAL,
+-- ... 309 more stat columns</code></pre>
+<hr>
+<h2>Naming Conventions</h2>
+<h3>Tables</h3>
+<ul>
+<li><code>dim_<em></code> - Dimension tables</li>
+<li><code>fact_</em></code> - Fact tables</li>
+<li><code>log_<em></code> - Logging tables</li>
+<li><code>v_</em></code> - Views</li>
+<li><code>staging_<em></code> - Staging tables</li>
+</ul>
+<h3>Columns</h3>
+<ul>
+<li><code></em>_id</code> - Foreign key or identifier</li>
+<li><code><em>_key</code> - Primary key (composite)</li>
+<li><code></em>_name</code> - Display name</li>
+<li><code><em>_at</code> - Timestamp</li>
+<li><code></em>_url</code> - URL/link</li>
+<li><code>is_*</code> - Boolean flag</li>
+</ul>
+<h3>IDs</h3>
+<ul>
+<li>Player IDs: P001, P002...</li>
+<li>Team IDs: T001, T002...</li>
+<li>Event Type IDs: EVT001, EVT002...</li>
+<li>Period IDs: P1, P2, P3, OT, SO</li>
+</ul>
+<hr>
+<h2>SQL Files</h2>
+</td> File <td> Purpose </td>
+<td>------</td>---------<td>
+</td> 05_FINAL_COMPLETE_SCHEMA.sql <td> Create all 96 tables </td>
+<td> 02_CREATE_LOGGING_TABLES.sql </td> Create logging tables <td>
+</td> 06_TRUNCATE_ALL_DATA.sql <td> Clear all data </td>
+<hr>
+<h2>Views</h2>
+<td> View </td> Purpose <td>
+</td>------<td>---------</td>
+<td> v_recent_runs </td> Last 50 ETL runs <td>
+</td> v_daily_run_stats <td> Daily statistics </td>
+<td> v_table_load_stats </td> Per-table metrics <td>
+</td> v_unresolved_errors <td> Open errors </td>
+<td> v_test_pass_rate </td> Test results <td>
+</td> v_recent_changes <td> Recent data changes </td>
+<hr>
+<h2>Functions</h2>
+<td> Function </td> Purpose <td>
+</td>----------<td>---------</td>
+<td> get_all_table_counts() </td> Row counts for all tables <td>
+</td> get_run_summary(run_id) <td> Full run summary </td>
+<td> cleanup_old_logs(days) </td> Delete old logs <td>
+</td> resolve_error(id, user, notes) <td> Mark error resolved </td>
+<td> truncate_all_facts() </td> Clear fact tables |
+<p></p>
+</body>
+</html>

@@ -31,10 +31,20 @@ except ImportError:
     print("Please install supabase: pip install supabase")
     sys.exit(1)
 
-# Configuration
-DATA_DIR = Path(__file__).parent.parent / "data" / "output"
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://uuaowslhpgyiudmbvqze.supabase.co")
-SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")
+# Try to load from config file
+try:
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent.parent))
+    from config.config_loader import load_config
+    _cfg = load_config()
+    DATA_DIR = _cfg.data_dir
+    SUPABASE_URL = _cfg.supabase_url
+    SUPABASE_KEY = _cfg.supabase_service_key
+except ImportError:
+    # Fallback to defaults/environment
+    DATA_DIR = Path(__file__).parent.parent / "data" / "output"
+    SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
+    SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")
 
 # Table definitions
 TABLE_CATEGORIES = {

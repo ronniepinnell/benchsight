@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DASHBOARD DEV HANDOFF</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #34495e; margin-top: 30px; }
+        h3 { color: #7f8c8d; }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', monospace;
+        }
+        pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        pre code {
+            background: none;
+            color: inherit;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th { background: #3498db; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        a { color: #3498db; }
+        hr { border: none; border-top: 1px solid #ddd; margin: 30px 0; }
+        .success { color: #27ae60; }
+        .warning { color: #f39c12; }
+        .error { color: #e74c3c; }
+    </style>
+</head>
+<body>
+<h1>Dashboard Developer Handoff</h1>
+<strong>Role:</strong> Dashboard Developer  
+<strong>Version:</strong> 2.0  
+<strong>Date:</strong> December 30, 2025
+<hr>
+<h2>Your Mission</h2>
+<p>Build an interactive hockey analytics dashboard that provides:
+1. Real-time stats and visualizations from Supabase
+2. Video integration for every play, event, and shift
+3. Deep drill-down from team → line → player → individual events
+4. Comparative analytics (H2H, WOWY, line combos)</p>
+<hr>
+<h2>Quick Start</h2>
+<h3>1. Get the Codebase</h3>
+<pre><code>unzip benchsight_COMPLETE_FULL.zip
+cd benchsight_COMPLETE_FULL</code></pre>
+<h3>2. Review Existing Prototypes</h3>
+<pre><code>dashboard/
+├── dashboard_v1.html          # Basic stats
+├── dashboard_v2_game_select.html
+├── power_bi_dashboard.html    # Power BI style
+├── shot_chart.html            # Shot visualization
+└── game_review_<em>.html         # Game review prototypes</code></pre>
+<h3>3. Connect to Supabase</h3>
+<pre><code>import { createClient } from '@supabase/supabase-js';
+<p>const supabase = createClient(
+  'https://uuaowslhpgyiudmbvqze.supabase.co',
+  'YOUR_ANON_KEY'  // Public read-only key
+);</code></pre></p>
+<hr>
+<h2>Data Architecture Overview</h2>
+<h3>Fact Tables (Metrics & Events)</h3>
+<td> Table </td> Rows <td> Purpose </td> Key Columns <td>
+</td>-------<td>------</td>---------<td>-------------</td>
+<td> <code>fact_player_game_stats</code> </td> 107 <td> Per-game player stats </td> goals, assists, shots, toi <td>
+</td> <code>fact_team_game_stats</code> <td> 8 </td> Per-game team stats <td> shots, goals, possession </td>
+<td> <code>fact_goalie_game_stats</code> </td> 8 <td> Goalie performance </td> saves, ga, sv_pct <td>
+</td> <code>fact_events</code> <td> 5,833 </td> Individual plays <td> event_type, timing, zone </td>
+<td> <code>fact_events_player</code> </td> 11,635 <td> Player involvement </td> player_id, role <td>
+</td> <code>fact_shifts</code> <td> 672 </td> Ice time periods <td> duration, strength </td>
+<td> <code>fact_shifts_player</code> </td> 4,626 <td> Players on shifts </td> toi, plus_minus <td>
+</td> <code>fact_h2h</code> <td> 684 </td> Head-to-head matchups <td> player pairs </td>
+<td> <code>fact_wowy</code> </td> 641 <td> With/Without analysis </td> on/off splits <td>
+</td> <code>fact_player_boxscore_all</code> <td> 14,473 </td> Complete boxscores <td> all stats </td>
+<td> <code>fact_line_combos</code> </td> 332 <td> Line combinations </td> toi, goals <td>
+</td> <code>fact_sequences</code> <td> 1,088 </td> Possession sequences <td> duration, result </td>
+<td> <code>fact_plays</code> </td> 2,714 <td> Play-by-play </td> sequence context <td>
+</td> <code>fact_scoring_chances</code> <td> 451 </td> Scoring chances <td> danger level </td>
+<td> <code>fact_shot_danger</code> </td> 435 <td> Shot quality </td> xG potential <td>
+<h3>Dimension Tables (Lookups)</h3>
+</td> Table <td> Purpose </td>
+<td>-------</td>---------<td>
+</td> <code>dim_player</code> <td> Player info (337 players) </td>
+<td> <code>dim_team</code> </td> Team info (26 teams) <td>
+</td> <code>dim_schedule</code> <td> Game schedule (562 games) </td>
+<td> <code>dim_season</code> </td> Season info <td>
+</td> <code>dim_event_type</code> <td> Event type lookups </td>
+<td> <code>dim_zone</code> </td> Zone definitions <td>
+</td> <code>dim_situation</code> <td> Game situations (PP, PK, EV) </td>
+<td> <code>dim_strength</code> </td> Strength states (5v5, 5v4, etc.) <td>
+<hr>
+<h2>Key Queries</h2>
+<h3>Player Stats for a Game</h3>
+<pre><code>async function getPlayerGameStats(gameId) {
+  const { data, error } = await supabase
+    .from('fact_player_game_stats')
+    .select(<code>
+      player_id,
+      player_name,
+      goals,
+      assists,
+      points,
+      shots,
+      sog,
+      shooting_pct,
+      toi_minutes,
+      fo_pct,
+      hits,
+      blocks,
+      giveaways,
+      takeaways,
+      plus_minus
+    </code>)
+    .eq('game_id', gameId)
+    .order('points', { ascending: false });
+    
+  return data;
+}</code></pre>
+<h3>Team Stats Comparison</h3>
+<pre><code>async function getTeamComparison(gameId) {
+  const { data } = await supabase
+    .from('fact_team_game_stats')
+    .select('</em>')
+    .eq('game_id', gameId);
+    
+  // Returns home and away team stats
+  return {
+    home: data.find(t => t.venue === 'Home'),
+    away: data.find(t => t.venue === 'Away')
+  };
+}</code></pre>
+<h3>Events with Video Timing</h3>
+<pre><code>async function getEventsWithVideo(gameId) {
+  // Get game video info
+  const { data: game } = await supabase
+    .from('dim_schedule')
+    .select('video_url, video_start_time')
+    .eq('game_id', gameId)
+    .single();
+    
+  // Get events
+  const { data: events } = await supabase
+    .from('fact_events')
+    .select(<code>
+      event_key,
+      event_index,
+      period,
+      event_type,
+      event_detail,
+      event_successful,
+      running_video_time,
+      time_start_total_seconds,
+      home_team,
+      away_team,
+      zone_id
+    </code>)
+    .eq('game_id', gameId)
+    .order('event_index');
+    
+  // Add video URLs
+  return events.map(e => ({
+    ...e,
+    videoUrl: buildVideoUrl(game.video_url, e.running_video_time)
+  }));
+}
+<p>function buildVideoUrl(baseUrl, seconds) {
+  // YouTube format
+  if (baseUrl.includes('youtube')) {
+    return <code>${baseUrl}&t=${Math.floor(seconds)}s</code>;
+  }
+  // Vimeo format
+  if (baseUrl.includes('vimeo')) {
+    return <code>${baseUrl}#t=${Math.floor(seconds)}s</code>;
+  }
+  return baseUrl;
+}</code></pre></p>
+<h3>Player Head-to-Head</h3>
+<pre><code>async function getH2H(gameId, playerId) {
+  const { data } = await supabase
+    .from('fact_h2h')
+    .select(<code>
+      player_id,
+      opp_player_id,
+      player_name,
+      opp_player_name,
+      toi_together,
+      goals_for,
+      goals_against,
+      shots_for,
+      shots_against,
+      xg_for,
+      xg_against
+    </code>)
+    .eq('game_id', gameId)
+    .eq('player_id', playerId);
+    
+  return data;
+}</code></pre>
+<h3>WOWY (With Or Without You)</h3>
+<pre><code>async function getWOWY(gameId, playerId) {
+  const { data } = await supabase
+    .from('fact_wowy')
+    .select(<code>
+      player_id,
+      teammate_id,
+      player_name,
+      teammate_name,
+      toi_with,
+      toi_without,
+      goals_with,
+      goals_without,
+      cf_pct_with,
+      cf_pct_without
+    </code>)
+    .eq('game_id', gameId)
+    .eq('player_id', playerId);
+    
+  return data;
+}</code></pre>
+<h3>Line Combinations</h3>
+<pre><code>async function getLineCombos(gameId) {
+  const { data } = await supabase
+    .from('fact_line_combos')
+    .select(<code>
+      line_id,
+      player_1_name,
+      player_2_name,
+      player_3_name,
+      toi_minutes,
+      goals_for,
+      goals_against,
+      shots_for,
+      shots_against,
+      cf_pct
+    </code>)
+    .eq('game_id', gameId)
+    .order('toi_minutes', { ascending: false });
+    
+  return data;
+}</code></pre>
+<hr>
+<h2>Video Integration</h2>
+<h3>CRITICAL: Video Pop-up Component</h3>
+<p>Every event, shift, and play should have a video link:</p>
+<pre><code>// Video Player Component
+function VideoPopup({ videoUrl, startTime, endTime, title }) {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  const url = buildVideoUrl(videoUrl, startTime);
+  
+  return (
+    <>
+      <button onClick={() => setIsOpen(true)}>▶ Watch</button>
+      
+      {isOpen && (
+        <div className="video-modal">
+          <h3>{title}</h3>
+          <iframe 
+            src={url}
+            width="800" 
+            height="450"
+            allowFullScreen
+          />
+          <div className="video-controls">
+            <button onClick={() => seekTo(startTime)}>Start</button>
+            <button onClick={() => seekTo(endTime)}>End</button>
+          </div>
+          <button onClick={() => setIsOpen(false)}>Close</button>
+        </div>
+      )}
+    </>
+  );
+}</code></pre>
+<h3>Multiple Camera Angles</h3>
+<pre><code>async function getVideoAngles(gameId) {
+  const { data } = await supabase
+    .from('fact_video')
+    .select('<em>')
+    .eq('game_id', gameId);
+    
+  // Returns multiple angles: Main, Goal Cam, Blue Line, etc.
+  return data;
+}
+<p>// In your video popup
+function MultiAngleVideoPopup({ gameId, startTime }) {
+  const [angles, setAngles] = useState([]);
+  const [selectedAngle, setSelectedAngle] = useState(0);
+  
+  useEffect(() => {
+    getVideoAngles(gameId).then(setAngles);
+  }, [gameId]);
+  
+  return (
+    <div className="multi-angle-video">
+      <div className="angle-selector">
+        {angles.map((angle, i) => (
+          <button 
+            key={i}
+            className={i === selectedAngle ? 'active' : ''}
+            onClick={() => setSelectedAngle(i)}
+          >
+            {angle.angle_name}
+          </button>
+        ))}
+      </div>
+      <iframe src={buildVideoUrl(angles[selectedAngle]?.url, startTime)} />
+    </div>
+  );
+}</code></pre></p>
+<hr>
+<h2>Dashboard Layout Recommendations</h2>
+<h3>Main Dashboard Hierarchy</h3>
+<pre><code>LEVEL 1: LEAGUE OVERVIEW
+├── Season standings
+├── League leaders
+├── Recent games
+└── Upcoming schedule
+<p>LEVEL 2: GAME DASHBOARD
+├── Score & Game Info
+├── Team comparison (shots, possession, etc.)
+├── Period-by-period breakdown
+├── Key events timeline
+└── Drill down to...</p>
+<p>LEVEL 3: TEAM GAME VIEW
+├── Player stats table
+├── Line combinations
+├── Special teams
+├── Shot chart
+└── Drill down to...</p>
+<p>LEVEL 4: PLAYER GAME VIEW
+├── Individual stats
+├── Shift-by-shift
+├── Event log
+├── H2H matchups
+├── WOWY splits
+└── Drill down to...</p>
+<p>LEVEL 5: EVENT/SHIFT DETAIL
+├── Full event info
+├── Players involved
+├── Video clip
+├── Linked events
+└── Context (sequence, play)</code></pre></p>
+<h3>Component Structure</h3>
+<pre><code>┌─────────────────────────────────────────────────────────────────┐
+│  HEADER: Game Selector </td> Team Logos <td> Score </td> Period/Time      │
+├───────────────────────────────┬─────────────────────────────────┤
+│                               │                                 │
+│     TEAM COMPARISON           │      SHOT CHART                 │
+│     (Side-by-side stats)      │      (Interactive rink)         │
+│                               │                                 │
+├───────────────────────────────┼─────────────────────────────────┤
+│                               │                                 │
+│     PLAYER STATS TABLE        │      EVENT TIMELINE             │
+│     (Sortable, clickable)     │      (Goals, penalties, etc.)   │
+│                               │                                 │
+├───────────────────────────────┴─────────────────────────────────┤
+│                                                                 │
+│     DETAIL PANEL (expands on click)                            │
+│     Player card <td> Shift log </td> Video <td> H2H </td> WOWY               │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘</code></pre>
+<hr>
+<h2>Visualization Components</h2>
+<h3>Shot Chart</h3>
+<pre><code>// Shot locations from fact_shot_xy (if populated)
+// Or derive from fact_events with zone info
+<p>async function getShotData(gameId) {
+  const { data } = await supabase
+    .from('fact_events')
+    .select(<code>
+      event_key,
+      event_type,
+      event_detail,
+      event_successful,
+      zone_id,
+      running_video_time,
+      home_team,
+      away_team
+    </code>)
+    .eq('game_id', gameId)
+    .in('event_type', ['Shot', 'Goal']);
+    
+  return data;
+}</p>
+<p>// Render on SVG rink
+function ShotChart({ shots }) {
+  return (
+    <svg viewBox="0 0 200 85" className="rink">
+      {/</em> Rink outline <em>/}
+      <rect x="0" y="0" width="200" height="85" fill="#fff" stroke="#000"/>
+      {/</em> Center line <em>/}
+      <line x1="100" y1="0" x2="100" y2="85" stroke="red"/>
+      {/</em> Goal creases <em>/}
+      <circle cx="11" cy="42.5" r="6" fill="lightblue"/>
+      <circle cx="189" cy="42.5" r="6" fill="lightblue"/>
+      
+      {/</em> Shots <em>/}
+      {shots.map(shot => (
+        <circle
+          key={shot.event_key}
+          cx={shot.x}
+          cy={shot.y}
+          r={shot.event_type === 'Goal' ? 5 : 3}
+          fill={shot.event_type === 'Goal' ? 'green' : 'gray'}
+          onClick={() => showShotDetail(shot)}
+        />
+      ))}
+    </svg>
+  );
+}</code></pre></p>
+<h3>Event Timeline</h3>
+<pre><code>function EventTimeline({ events, periodLength = 1200 }) {
+  const periods = [1, 2, 3];
+  
+  return (
+    <div className="timeline">
+      {periods.map(period => (
+        <div key={period} className="period-track">
+          <span>P{period}</span>
+          <div className="track">
+            {events
+              .filter(e => e.period === period)
+              .map(event => (
+                <div
+                  key={event.event_key}
+                  className={<code>event-marker ${event.event_type.toLowerCase()}</code>}
+                  style={{
+                    left: <code>${(event.time_start_total_seconds / periodLength) </em> 100}%</code>
+                  }}
+                  title={<code>${event.event_type}: ${event.event_detail}</code>}
+                  onClick={() => showEventDetail(event)}
+                />
+              ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}</code></pre>
+<h3>Player Comparison Radar</h3>
+<pre><code>function PlayerRadar({ player1Stats, player2Stats }) {
+  const categories = [
+    { key: 'goals_per_60', label: 'Goals/60' },
+    { key: 'assists_per_60', label: 'Assists/60' },
+    { key: 'shots_per_60', label: 'Shots/60' },
+    { key: 'hits_per_60', label: 'Hits/60' },
+    { key: 'cf_pct', label: 'CF%' },
+    { key: 'xgf_pct', label: 'xGF%' }
+  ];
+  
+  // Normalize to 0-100 scale
+  // Draw radar chart with both players
+  // Use Chart.js or D3 for rendering
+}</code></pre>
+<hr>
+<h2>Dashboard Features Checklist</h2>
+<h3>Must Have ✅</h3>
+<ul>
+<li>[ ] Game selector dropdown</li>
+<li>[ ] Team stats comparison</li>
+<li>[ ] Player stats table (sortable)</li>
+<li>[ ] Shot chart visualization</li>
+<li>[ ] Goal/penalty timeline</li>
+<li>[ ] Video links for all events</li>
+<li>[ ] Period-by-period breakdown</li>
+</ul>
+<h3>Should Have 🔶</h3>
+<ul>
+<li>[ ] Player drill-down panels</li>
+<li>[ ] H2H matchup view</li>
+<li>[ ] WOWY splits display</li>
+<li>[ ] Line combination stats</li>
+<li>[ ] Shift-by-shift view</li>
+<li>[ ] Goalie stats card</li>
+<li>[ ] Scoring chance quality</li>
+</ul>
+<h3>Nice to Have 💫</h3>
+<ul>
+<li>[ ] Animated play sequences</li>
+<li>[ ] Heat maps</li>
+<li>[ ] Expected goals (xG) display</li>
+<li>[ ] Zone entry/exit tracking</li>
+<li>[ ] Momentum charts</li>
+<li>[ ] Predictive analytics</li>
+<li>[ ] Export to PDF/image</li>
+</ul>
+<hr>
+<h2>Data Refresh Strategy</h2>
+<h3>Real-time Updates (if tracking live)</h3>
+<pre><code>// Subscribe to changes
+const subscription = supabase
+  .channel('game-updates')
+  .on('postgres_changes', {
+    event: 'INSERT',
+    schema: 'public',
+    table: 'fact_events',
+    filter: <code>game_id=eq.${gameId}</code>
+  }, payload => {
+    // Add new event to state
+    addEvent(payload.new);
+  })
+  .subscribe();
+<p>// Cleanup
+return () => supabase.removeChannel(subscription);</code></pre></p>
+<h3>Polling (simpler approach)</h3>
+<pre><code>useEffect(() => {
+  const interval = setInterval(() => {
+    refreshData();
+  }, 30000); // Every 30 seconds
+  
+  return () => clearInterval(interval);
+}, []);</code></pre>
+<hr>
+<h2>Inspiration & Reference</h2>
+<h3>NHL-style dashboards to emulate:</h3>
+<ul>
+<li>Natural Stat Trick (naturalstattrick.com)</li>
+<li>Evolving Hockey (evolving-hockey.com)</li>
+<li>Money Puck (moneypuck.com)</li>
+<li>Hockey Reference (hockey-reference.com)</li>
+</ul>
+<h3>Key Features from Pros:</h3>
+<strong>Natural Stat Trick:</strong>
+<ul>
+<li>Clean data tables</li>
+<li>Shot attempt charts</li>
+<li>Line combination tool</li>
+<li>H2H matchup finder</li>
+</ul>
+<strong>Evolving Hockey:</strong>
+<ul>
+<li>Player cards with radar charts</li>
+<li>RAPM breakdowns</li>
+<li>Contract projections</li>
+<li>WAR calculations</li>
+</ul>
+<strong>Money Puck:</strong>
+<ul>
+<li>Real-time win probability</li>
+<li>Expected goals charts</li>
+<li>Shot quality breakdowns</li>
+<li>Goalie performance</li>
+</ul>
+<hr>
+<h2>Performance Tips</h2>
+<h3>1. Aggregate on Server</h3>
+<pre><code>// BAD: Fetch all events, calculate in browser
+const events = await supabase.from('fact_events').select('<em>');
+const shots = events.filter(e => e.event_type === 'Shot').length;
+<p>// GOOD: Use database aggregation
+const { data } = await supabase
+  .from('fact_events')
+  .select('event_type', { count: 'exact' })
+  .eq('game_id', gameId)
+  .eq('event_type', 'Shot');</code></pre></p>
+<h3>2. Use Views for Complex Queries</h3>
+<p>Create Supabase views for commonly used aggregations:</p>
+<pre><code>-- In Supabase SQL Editor
+CREATE VIEW v_game_summary AS
+SELECT 
+  game_id,
+  COUNT(</em>) FILTER (WHERE event_type = 'Shot') as total_shots,
+  COUNT(<em>) FILTER (WHERE event_type = 'Goal') as total_goals,
+  COUNT(</em>) FILTER (WHERE event_type = 'Hit') as total_hits
+FROM fact_events
+GROUP BY game_id;</code></pre>
+<h3>3. Lazy Load Details</h3>
+<pre><code>// Load summary first
+const summary = await getGameSummary(gameId);
+<p>// Load details only when user clicks
+const loadPlayerDetails = async (playerId) => {
+  setLoading(true);
+  const details = await getPlayerDetails(gameId, playerId);
+  setPlayerDetails(details);
+  setLoading(false);
+};</code></pre></p>
+<hr>
+<h2>Testing Your Dashboard</h2>
+<h3>Test Games</h3>
+<td> Game ID </td> Description <td> Events </td> Shifts <td>
+</td>---------<td>-------------</td>--------<td>--------</td>
+<td> 18969 </td> Full game, validated <td> 5,833 </td> 672 <td>
+</td> 18977 <td> Full game </td> Similar <td> Similar </td>
+<td> 18981 </td> Full game <td> Similar </td> Similar <td>
+</td> 18987 <td> Full game </td> Similar <td> Similar </td>
+<h3>Validation Checks</h3>
+<pre><code>// Verify goals match official score
+async function validateGoals(gameId) {
+  const { data: events } = await supabase
+    .from('fact_events')
+    .select('<em>')
+    .eq('game_id', gameId)
+    .eq('event_type', 'Goal');
+    
+  const { data: schedule } = await supabase
+    .from('dim_schedule')
+    .select('home_total_goals, away_total_goals')
+    .eq('game_id', gameId)
+    .single();
+    
+  const homeGoals = events.filter(e => e.team_venue === 'Home').length;
+  const awayGoals = events.filter(e => e.team_venue === 'Away').length;
+  
+  console.assert(homeGoals === schedule.home_total_goals);
+  console.assert(awayGoals === schedule.away_total_goals);
+}</code></pre>
+<hr>
+<h2>Resources</h2>
+<ul>
+<li>Prototype Dashboards: <code>dashboard/</code> folder</li>
+<li>Schema: <code>sql/05_FINAL_COMPLETE_SCHEMA.sql</code></li>
+<li>Sample Data: All <code>data/output/</em>.csv</code> files</li>
+<li>Inspiration: <code>docs/INSPIRATION_AND_RESEARCH.md</code></li>
+<li>Supabase JS Docs: https://supabase.com/docs/reference/javascript</li>
+</ul>
+<hr>
+<h2>Questions?</h2>
+<p>See <code>prompts/dashboard_dev_prompt.md</code> for a prompt to start a new Claude chat with full context.
+</p>
+</body>
+</html>

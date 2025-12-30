@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FUTURE IDEAS BLUEPRINT</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #34495e; margin-top: 30px; }
+        h3 { color: #7f8c8d; }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', monospace;
+        }
+        pre {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        pre code {
+            background: none;
+            color: inherit;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th { background: #3498db; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        a { color: #3498db; }
+        hr { border: none; border-top: 1px solid #ddd; margin: 30px 0; }
+        .success { color: #27ae60; }
+        .warning { color: #f39c12; }
+        .error { color: #e74c3c; }
+    </style>
+</head>
+<body>
+<h1>BenchSight Future Ideas & Blueprint</h1>
+<strong>Version:</strong> 1.0  
+<strong>Date:</strong> December 30, 2025
+<hr>
+<h2>Table of Contents</h2>
+<p>1. <a href="#missing-metrics-to-add">Missing Metrics to Add</a>
+2. <a href="#power-play--penalty-kill-stats">Power Play / Penalty Kill Stats</a>
+3. <a href="#advanced-analytics-roadmap">Advanced Analytics Roadmap</a>
+4. <a href="#mlai-integration">ML/AI Integration</a>
+5. <a href="#cvtracking-data">CV/Tracking Data</a>
+6. <a href="#nhl-data-integration">NHL Data Integration</a>
+7. <a href="#technical-improvements">Technical Improvements</a>
+8. <a href="#uiux-enhancements">UI/UX Enhancements</a></p>
+<hr>
+<h2>Missing Metrics to Add</h2>
+<h3>Priority 1: Power Play / Penalty Kill (NOT CURRENTLY IMPLEMENTED)</h3>
+<strong>Current State:</strong>
+<ul>
+<li>✅ <code>dim_situation</code> has PP/PK situations defined</li>
+<li>✅ <code>dim_strength</code> has strength states (5v4, 4v5, etc.)</li>
+<li>✅ <code>fact_shifts</code> tracks <code>situation</code>, <code>strength</code>, <code>home_team_pp</code>, <code>home_team_pk</code></li>
+<li>✅ <code>fact_player_game_stats</code> has <code>shorthanded_goals</code></li>
+<li>❌ NO aggregated PP/PK success metrics</li>
+</ul>
+<strong>Metrics to Add:</strong>
+<p>#### Team Level (<code>fact_team_game_stats</code>)
+<pre><code>pp_opportunities      -- Number of power plays
+pp_goals              -- Goals scored on PP
+pp_pct                -- PP% = pp_goals / pp_opportunities
+pp_toi                -- Time on power play (seconds)
+pp_shots              -- Shots on PP
+pp_xg                 -- Expected goals on PP</p>
+<p>pk_opportunities      -- Times shorthanded
+pk_goals_against      -- Goals allowed on PK
+pk_pct                -- PK% = 1 - (pk_goals_against / pk_opportunities)
+pk_toi                -- Time on penalty kill (seconds)
+pk_shots_against      -- Shots against on PK
+shg                   -- Shorthanded goals scored
+sha                   -- Shorthanded goals against</code></pre></p>
+<p>#### Player Level (<code>fact_player_game_stats</code>)
+<pre><code>pp_toi                -- PP time on ice
+pp_goals              -- PP goals
+pp_assists            -- PP assists (PP1, PP2)
+pp_points             -- PP points
+pp_shots              -- Shots on PP
+pp_cf_pct             -- Corsi % on PP</p>
+<p>pk_toi                -- PK time on ice
+pk_goals_against      -- Goals against on PK
+pk_blocks             -- Blocks on PK
+pk_cf_pct             -- Corsi % on PK
+shg                   -- Shorthanded goals
+sha                   -- Shorthanded assists</code></pre></p>
+<p>#### Implementation SQL
+<pre><code>-- Calculate PP stats from shifts
+SELECT 
+    game_id,
+    team_id,
+    COUNT(DISTINCT shift_key) FILTER (WHERE situation LIKE '%PowerPlay%') as pp_opportunities,
+    SUM(CASE WHEN situation LIKE '%PowerPlay%' THEN home_goals ELSE 0 END) as pp_goals,
+    SUM(CASE WHEN situation LIKE '%PowerPlay%' THEN shift_duration ELSE 0 END) as pp_toi
+FROM fact_shifts
+GROUP BY game_id, team_id;</code></pre></p>
+<hr>
+<h2>Power Play / Penalty Kill Stats</h2>
+<h3>Full Implementation Plan</h3>
+<p>#### Step 1: Add columns to <code>fact_team_game_stats</code></p>
+<pre><code><h1>In ETL, add to team stats calculation</h1>
+def calculate_pp_pk_stats(shifts_df, events_df):
+    """Calculate power play and penalty kill statistics"""
+    
+    # PP opportunities = unique PP shifts
+    pp_shifts = shifts_df[shifts_df['situation'].str.contains('PowerPlay')]
+    pp_opportunities = pp_shifts.groupby(['game_id', 'team_id']).size()
+    
+    # PP goals from events during PP shifts
+    pp_goals = events_df[
+        (events_df['event_type'] == 'Goal') & 
+        (events_df['shift_key'].isin(pp_shifts['shift_key']))
+    ].groupby(['game_id', 'team_id']).size()
+    
+    # PP%
+    pp_pct = (pp_goals / pp_opportunities * 100).round(1)
+    
+    return {
+        'pp_opportunities': pp_opportunities,
+        'pp_goals': pp_goals,
+        'pp_pct': pp_pct
+    }</code></pre>
+<p>#### Step 2: Add columns to <code>fact_player_game_stats</code></p>
+<pre><code>def calculate_player_pp_stats(shifts_player_df, events_player_df):
+    """Calculate player-level PP/PK stats"""
+    
+    # PP TOI
+    pp_toi = shifts_player_df[
+        shifts_player_df['situation'].str.contains('PowerPlay')
+    ].groupby(['game_id', 'player_id'])['shift_duration'].sum()
+    
+    # PP goals/assists from events
+    pp_goals = events_player_df[
+        (events_player_df['event_type'] == 'Goal') &
+        (events_player_df['is_pp'] == True)
+    ].groupby(['game_id', 'player_id']).size()
+    
+    return {
+        'pp_toi': pp_toi,
+        'pp_goals': pp_goals
+    }</code></pre>
+<p>#### Step 3: Create new view for PP/PK leaderboards</p>
+<pre><code>CREATE VIEW v_pp_leaders AS
+SELECT 
+    player_name,
+    SUM(pp_goals) as total_pp_goals,
+    SUM(pp_assists) as total_pp_assists,
+    SUM(pp_points) as total_pp_points,
+    SUM(pp_toi) / 60 as total_pp_minutes,
+    ROUND(SUM(pp_goals)::numeric / NULLIF(SUM(pp_toi) / 3600, 0), 2) as pp_goals_per_60
+FROM fact_player_game_stats
+GROUP BY player_id, player_name
+ORDER BY total_pp_points DESC;</code></pre>
+<hr>
+<h2>Advanced Analytics Roadmap</h2>
+<h3>Phase 1: Basic Advanced Stats (Q1)</h3>
+<ul>
+<li>[ ] PP/PK success metrics</li>
+<li>[ ] Individual expected goals (ixG)</li>
+<li>[ ] Goals Above Expected (GAE)</li>
+<li>[ ] High-danger scoring chances</li>
+</ul>
+<h3>Phase 2: Possession Metrics (Q2)</h3>
+<ul>
+<li>[ ] Zone time percentages</li>
+<li>[ ] Controlled entry/exit rates</li>
+<li>[ ] Possession time per shift</li>
+<li>[ ] Cycle time in offensive zone</li>
+</ul>
+<h3>Phase 3: Player Impact (Q3)</h3>
+<ul>
+<li>[ ] RAPM (Regularized Adjusted Plus-Minus)</li>
+<li>[ ] WAR (Wins Above Replacement)</li>
+<li>[ ] Defensive impact metrics</li>
+<li>[ ] Goalie Quality Starts</li>
+</ul>
+<h3>Phase 4: Predictive Analytics (Q4)</h3>
+<ul>
+<li>[ ] Win probability model</li>
+<li>[ ] Player projection system</li>
+<li>[ ] Line optimization algorithm</li>
+<li>[ ] Game outcome predictions</li>
+</ul>
+<hr>
+<h2>ML/AI Integration</h2>
+<h3>Expected Goals (xG) Model</h3>
+<strong>Current State:</strong> xG columns exist but are mostly 0 (no model trained)
+<strong>Implementation Plan:</strong>
+<p>1. <strong>Data Collection</strong>
+<ul>
+<li>Shot location (x, y coordinates)</li>
+<li>Shot type (wrist, slap, snap, backhand)</li>
+<li>Shot distance from net</li>
+<li>Shot angle</li>
+<li>Is rebound (yes/no)</li>
+<li>Is rush (yes/no)</li>
+<li>Game state (score differential)</li>
+<li>Strength state (5v5, PP, PK)</li>
+</ul></p>
+<p>2. <strong>Model Training</strong>
+   <pre><code>   from sklearn.ensemble import GradientBoostingClassifier
+   
+   features = ['distance', 'angle', 'shot_type', 'is_rebound', 
+               'is_rush', 'score_diff', 'strength']
+   
+   model = GradientBoostingClassifier()
+   model.fit(X_train[features], y_train['is_goal'])
+   
+   # Predict xG
+   shots['xg'] = model.predict_proba(shots[features])[:, 1]
+   ``<code></p>
+<p>3. <strong>Integration</strong>
+<ul>
+<li>Add xG to </code>fact_events<code> for each shot</li>
+<li>Aggregate to player/team level</li>
+<li>Create xG leaderboards</li>
+</ul></p>
+<h3>Player Similarity Model</h3>
+<p>Find players with similar playing styles:
+</code></pre>python
+from sklearn.metrics.pairwise import cosine_similarity</p>
+<h1>Feature vector per player</h1>
+features = ['goals_per_60', 'assists_per_60', 'shots_per_60', 
+            'hits_per_60', 'blocks_per_60', 'cf_pct']
+<p>player_vectors = player_stats[features].values
+similarity_matrix = cosine_similarity(player_vectors)</p>
+<h1>Find most similar players</h1>
+def find_similar_players(player_id, top_n=5):
+    idx = player_index[player_id]
+    similarities = similarity_matrix[idx]
+    top_indices = similarities.argsort()[-top_n-1:-1][::-1]
+    return players.iloc[top_indices]
+<pre><code>
+<h3>Line Optimization</h3>
+<p>Optimize line combinations using WOWY data:
+</code></pre>python
+from scipy.optimize import linear_sum_assignment</p>
+<p>def optimize_lines(wowy_matrix, players):
+    """Find optimal line combinations"""
+    # Build synergy matrix from WOWY
+    synergy = wowy_matrix.pivot(
+        index='player_1_id', 
+        columns='player_2_id', 
+        values='cf_pct_delta'
+    )
+    
+    # Use Hungarian algorithm to maximize total synergy
+    row_ind, col_ind = linear_sum_assignment(-synergy.values)
+    
+    return optimal_pairings
+<pre><code>
+<hr></p>
+<h2>CV/Tracking Data</h2>
+<h3>Tables Ready for CV Data (Currently Empty)</h3>
+<td> Table </td> Purpose <td> Status </td>
+<td>-------</td>---------<td>--------</td>
+<td> </code>fact_player_xy_long<code> </td> Player positions over time <td> Schema ready </td>
+<td> </code>fact_player_xy_wide<code> </td> Player positions (wide format) <td> Schema ready </td>
+<td> </code>fact_puck_xy_long<code> </td> Puck positions over time <td> Schema ready </td>
+<td> </code>fact_puck_xy_wide<code> </td> Puck positions (wide format) <td> Schema ready </td>
+<td> </code>fact_shot_xy<code> </td> Shot coordinates <td> Schema ready </td>
+<h3>CV Integration Plan</h3>
+<p>1. <strong>Video Processing Pipeline</strong>
+   </code>`<code>
+   Game Video → Frame Extraction → Object Detection → Position Tracking → Database
+   </code>`<code></p>
+<p>2. <strong>Required Data Format</strong>
+   </code>`<code>csv
+   game_id,frame_number,timestamp,player_id,x,y,team,jersey_number
+   18969,1500,125.5,P100023,45.2,22.1,home,17
+   </code>`<code></p>
+<p>3. <strong>Metrics from Tracking</strong>
+<ul>
+<li>Player speed</li>
+<li>Distance skated</li>
+<li>Space creation</li>
+<li>Defensive positioning</li>
+<li>Passing lanes</li>
+</ul></p>
+<hr>
+<h2>NHL Data Integration</h2>
+<h3>API Integration</h3>
+</code></pre>python
+import requests
+<p>def fetch_nhl_game(nhl_game_id):
+    """Fetch game data from NHL API"""
+    url = f"https://statsapi.web.nhl.com/api/v1/game/{nhl_game_id}/feed/live"
+    response = requests.get(url)
+    return response.json()</p>
+<p>def map_to_benchsight_schema(nhl_data):
+    """Transform NHL data to BenchSight format"""
+    events = []
+    for play in nhl_data['liveData']['plays']['allPlays']:
+        events.append({
+            'event_type': play['result']['event'],
+            'period': play['about']['period'],
+            'time': play['about']['periodTime'],
+            # ... map other fields
+        })
+    return events
+</code>`<code></p>
+<h3>Use Cases</h3>
+<p>1. <strong>Benchmarking</strong> - Compare rec league stats to NHL averages
+2. <strong>Context</strong> - "Your CF% of 55% would rank top-10 in NHL"
+3. <strong>Learning</strong> - Show NHL video of similar plays
+4. <strong>Scouting</strong> - Compare rec players to NHL player archetypes</p>
+<hr>
+<h2>Technical Improvements</h2>
+<h3>Performance Optimization</h3>
+<p>1. <strong>Database Indexes</strong>
+   </code>`<code>sql
+   CREATE INDEX idx_events_game_type ON fact_events(game_id, event_type);
+   CREATE INDEX idx_shifts_game_period ON fact_shifts(game_id, period);
+   CREATE INDEX idx_wowy_players ON fact_wowy(player_1_id, player_2_id);
+   </code>`<code></p>
+<p>2. <strong>Materialized Views</strong>
+   </code>`<code>sql
+   CREATE MATERIALIZED VIEW mv_player_season_stats AS
+   SELECT player_id, SUM(goals), SUM(assists), ...
+   FROM fact_player_game_stats
+   GROUP BY player_id;
+   </code>``</p>
+<p>3. <strong>Caching Layer</strong>
+<ul>
+<li>Redis for frequently accessed data</li>
+<li>CDN for static assets</li>
+</ul></p>
+<h3>Data Quality</h3>
+<p>1. <strong>Automated Validation</strong>
+<ul>
+<li>Run tests after every ETL</li>
+<li>Alert on anomalies</li>
+<li>Track data quality scores</li>
+</ul></p>
+<p>2. <strong>Reconciliation</strong>
+<ul>
+<li>Compare to noradhockey.com nightly</li>
+<li>Flag discrepancies</li>
+<li>Auto-correct where possible</li>
+</ul></p>
+<hr>
+<h2>UI/UX Enhancements</h2>
+<h3>Mobile App</h3>
+<ul>
+<li>React Native or Flutter</li>
+<li>Push notifications for game updates</li>
+<li>Offline mode for tracking</li>
+</ul>
+<h3>Real-time Features</h3>
+<ul>
+<li>Live game tracking</li>
+<li>WebSocket updates</li>
+<li>Live leaderboards</li>
+</ul>
+<h3>Gamification</h3>
+<ul>
+<li>Achievements (First Hat Trick, etc.)</li>
+<li>Season challenges</li>
+<li>Player rankings</li>
+</ul>
+<h3>Social Features</h3>
+<ul>
+<li>Share highlights</li>
+<li>Comment on plays</li>
+<li>Team chat</li>
+</ul>
+<hr>
+<h2>Priority Matrix</h2>
+<td> Feature </td> Impact <td> Effort </td> Priority <td>
+</td>---------<td>--------</td>--------<td>----------</td>
+<td> PP/PK Stats </td> High <td> Low </td> <strong>P1</strong> <td>
+</td> xG Model <td> High </td> Medium <td> P2 </td>
+<td> CV Tracking </td> High <td> High </td> P3 <td>
+</td> NHL Integration <td> Medium </td> Medium <td> P3 </td>
+<td> Mobile App </td> Medium <td> High </td> P4 <td>
+</td> Real-time <td> Medium </td> High <td> P4 </td>
+<hr>
+<h2>Timeline Estimate</h2>
+<td> Quarter </td> Focus <td>
+</td>---------<td>-------</td>
+<td> Q1 2025 </td> PP/PK stats, Data validation, Portal MVP <td>
+</td> Q2 2025 <td> xG model, Dashboard polish, More games </td>
+<td> Q3 2025 </td> CV integration pilot, NHL benchmarking <td>
+</td> Q4 2025 <td> Mobile app, Real-time tracking </td>
+
+</body>
+</html>

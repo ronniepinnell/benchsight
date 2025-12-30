@@ -1,0 +1,57 @@
+# ============================================================
+# BENCHSIGHT CONFIGURATION
+# ============================================================
+# 
+# SETUP INSTRUCTIONS:
+# 1. Copy this file to: config_local.ini
+# 2. Fill in your Supabase credentials below
+# 3. NEVER commit config_local.ini to git (it contains secrets)
+#
+# To get your credentials:
+# 1. Go to https://supabase.com/dashboard
+# 2. Select your project
+# 3. Go to Settings > API
+# 4. Copy the Project URL and service_role key (NOT anon key)
+#
+# ============================================================
+
+[supabase]
+# Your Supabase project URL (found in Settings > API)
+url = https://YOUR_PROJECT_ID.supabase.co
+
+# Service role key (found in Settings > API > service_role)
+# WARNING: This key has full database access - keep it secret!
+service_key = your-service-role-key-here
+
+# Optional: anon key for client-side operations (less privileged)
+anon_key = your-anon-key-here
+
+[paths]
+# Data directory (relative to project root)
+data_dir = data/output
+
+# Raw data directory
+raw_dir = data/raw
+
+# Log directory
+log_dir = logs
+
+[loader]
+# Batch size for Supabase inserts (max 1000)
+batch_size = 500
+
+# Enable verbose logging
+verbose = true
+
+# Default operation: replace, upsert, or append
+default_operation = upsert
+
+[etl]
+# Games to process (comma-separated, or 'all')
+games = 18969,18977,18981,18987
+
+# Enable tracking data processing
+process_tracking = true
+
+# Enable stats enhancement
+enhance_stats = true

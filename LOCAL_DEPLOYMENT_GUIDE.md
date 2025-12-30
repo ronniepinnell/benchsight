@@ -58,25 +58,43 @@ python -c "from supabase import create_client; print('Supabase OK')"
 
 ---
 
-## Step 4: Set Environment Variables
+## Step 4: Configure Supabase Credentials
 
-### Option A: Export directly (temporary)
+### Option A: Edit Config File (Recommended)
+
 ```bash
-export SUPABASE_URL="https://uuaowslhpgyiudmbvqze.supabase.co"
+# Edit the config file
+nano config/config_local.ini
+```
+
+Update with your credentials:
+```ini
+[supabase]
+url = https://YOUR_PROJECT_ID.supabase.co
+service_key = your-service-role-key-here
+```
+
+Verify configuration:
+```bash
+python scripts/flexible_loader_with_logging.py --show-config
+```
+
+### Option B: Environment Variables
+
+```bash
+export SUPABASE_URL="https://YOUR_PROJECT_ID.supabase.co"
 export SUPABASE_SERVICE_KEY="your-service-role-key-here"
 ```
 
-### Option B: Create .env file (persistent)
+### Option C: Create .env file
+
 ```bash
-# Create .env file in project root
 cat > .env << 'EOF'
-SUPABASE_URL=https://uuaowslhpgyiudmbvqze.supabase.co
+SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co
 SUPABASE_SERVICE_KEY=your-service-role-key-here
 EOF
 
-# Load it
 source .env
-# Or add to your shell profile
 ```
 
 ### Option C: Edit config file

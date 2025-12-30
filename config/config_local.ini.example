@@ -1,0 +1,20 @@
+# ============================================================
+# BENCHSIGHT LOCAL CONFIGURATION
+# ============================================================
+# 
+# SETUP: Copy this file to config_local.ini and fill in your credentials
+#   cp config/config_local.ini.example config/config_local.ini
+#
+# ============================================================
+
+[supabase]
+# Your Supabase project URL (from Settings > API)
+url = https://YOUR_PROJECT_ID.supabase.co
+
+# Service role key (from Settings > API > service_role)
+# WARNING: Keep this secret! Never commit to git.
+service_key = eyJhbGciOiJIUzI1...your-key-here
+
+[loader]
+batch_size = 500
+verbose = true
