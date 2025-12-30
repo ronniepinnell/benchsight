@@ -1,0 +1,23 @@
+column,type,nullable,description,source,formula,filter_context,tolerance,depends_on,used_by
+goalie_game_key,VARCHAR(20),NO,Primary key,CALCULATED,f'GK{game_id}{goalie_sequence:05d}',Per goalie per game (2 per game),Exactly 2 per tracked game,game_id,
+game_id,INT,NO,Game identifier,EXPLICIT,From source data,,,,Joins
+player_id,VARCHAR(10),NO,Goalie player identifier,LOOKUP,"fact_gameroster.player_id WHERE player_position=""Goalie""",,,fact_gameroster,dim_player join
+player_name,VARCHAR(100),NO,Goalie name,LOOKUP,fact_gameroster.player_full_name,,,player_id,Display
+team_name,VARCHAR(50),NO,Team name,LOOKUP,fact_gameroster.team_name,,,player_id,Team aggregations
+saves,INT,NO,Total saves,CALCULATED,shots_against - goals_against (BLB data) OR from tracking save events,Goalie team,"10-50 per game, typical 20-35","shots_against, goals_against OR fact_events_player Save events",save_pct
+goals_against,INT,NO,Goals allowed (excludes empty net if tracked),CALCULATED,Opponent goals when goalie on ice (from dim_schedule or tracking),"Opponent goals, goalie on ice","0-10 per game, typical 2-5",dim_schedule.score OR fact_events Goal events,"save_pct, gaa"
+shots_against,INT,NO,Shots faced,CALCULATED,saves + goals_against,Same row,"15-55 per game, typical 25-40","saves, goals_against",save_pct
+save_pct,"DECIMAL(5,2)",NO,Save percentage,CALCULATED,"ROUND(saves / shots_against * 100, 1)",Same row,"70-100%, typical 85-95%, FLAG if <70%","saves, shots_against",
+toi_seconds,INT,NO,Time on ice in seconds,CALCULATED,Game length (2700 for 45min) - empty_net_time,Full game minus pulled time,2400-2700 seconds,"Game duration, empty net time",GAA calculation
+empty_net_ga,INT,NO,Goals against when pulled (informational),CALCULATED,COUNT opponent goals WHERE goalie pulled (home/away_team_en = 1),Opponent goals when shift.team_en = 1,0-3,"fact_events.empty_net_goal, fact_shifts",Adjusted GA stats
+saves_rebound,INT,NO,Saves resulting in rebound,CALCULATED,"COUNT(fact_events_player) WHERE:
+  - event_type = ""Save""
+  - player_team = goalie_team
+  - event_detail CONTAINS ""Rebound""",Team save events with Rebound in event_detail,10-60 per game,fact_events_player.event_detail,rebound_control_pct
+saves_freeze,INT,NO,Saves where goalie froze puck,CALCULATED,"COUNT WHERE event_detail CONTAINS ""Freeze""",Team save events with Freeze in event_detail,10-40 per game,fact_events_player.event_detail,rebound_control_pct
+saves_glove,INT,NO,Glove saves,CALCULATED,"COUNT WHERE event_detail_2 CONTAINS ""Glove""",Team save events with Glove in event_detail_2,5-30 per game,fact_events_player.event_detail_2,
+saves_blocker,INT,NO,Blocker saves,CALCULATED,"COUNT WHERE event_detail_2 CONTAINS ""Blocker""",Team save events with Blocker in event_detail_2,2-20 per game,fact_events_player.event_detail_2,
+saves_left_pad,INT,NO,Left pad saves,CALCULATED,"COUNT WHERE event_detail_2 CONTAINS ""LeftPad""",Team save events with LeftPad in event_detail_2,5-30 per game,fact_events_player.event_detail_2,
+saves_right_pad,INT,NO,Right pad saves,CALCULATED,"COUNT WHERE event_detail_2 CONTAINS ""RightPad""",Team save events with RightPad in event_detail_2,5-30 per game,fact_events_player.event_detail_2,
+rebound_control_pct,"DECIMAL(5,2)",YES,Rebound control rate (freeze percentage),CALCULATED,"ROUND(saves_freeze / (saves_freeze + saves_rebound) * 100, 1)",Same row,"0-100%, typical 25-45%","saves_freeze, saves_rebound",
+total_save_events,INT,YES,Total save events from tracking (for reference),CALCULATED,"COUNT(fact_events_player) WHERE event_type=""Save"" AND player_team=goalie_team",All team save events,Compare to saves column,fact_events_player,Validation

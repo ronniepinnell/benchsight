@@ -1,0 +1,12 @@
+column,type,nullable,description,source,formula,filter_context,tolerance,depends_on,used_by
+shift_key,VARCHAR(20),NO,Primary key for shift,CALCULATED,f'SH{game_id}{shift_index:05d}',Per shift,,"game_id, shift_index","fact_shifts_player.shift_key, fact_events.shift_key"
+game_id,INT,NO,Game identifier,EXPLICIT,From tracking filename,,,tracking filename,All calculations
+shift_index,INT,NO,Shift sequence number in game,EXPLICIT,From tracking: shift_index column,,1-170 per game,tracking data,shift_key
+period,INT,NO,Period number,EXPLICIT,From tracking: period column,,1-4,tracking data,Period stats
+shift_start_total_seconds,INT,NO,Shift start in total game seconds,CALCULATED,(period-1)*900 + shift_start_min*60 + shift_start_sec,,0-2700+,"period, shift_start_min, shift_start_sec","TOI calculation, shift duration"
+shift_end_total_seconds,INT,NO,Shift end in total game seconds,CALCULATED,(period-1)*900 + shift_end_min*60 + shift_end_sec,,0-2700+,"period, shift_end_min, shift_end_sec","TOI calculation, shift duration"
+shift_duration_seconds,INT,NO,Shift length in seconds,CALCULATED,shift_end_total_seconds - shift_start_total_seconds,,5-180 seconds typical,"shift_start_total_seconds, shift_end_total_seconds","Player TOI, avg_shift"
+home_team_en,BOOLEAN,YES,Home team empty net flag (goalie pulled),EXPLICIT,From tracking: home_team_en column (1=goalie pulled),,0 or 1,tracking data,Empty net goal detection for away team scoring
+away_team_en,BOOLEAN,YES,Away team empty net flag (goalie pulled),EXPLICIT,From tracking: away_team_en column (1=goalie pulled),,0 or 1,tracking data,Empty net goal detection for home team scoring
+home_1 to home_6,INT,YES,Home team players on ice (jersey numbers),EXPLICIT,From tracking: home_1 through home_6 columns,,1-99 or null,tracking data,"fact_shifts_player, H2H, WOWY calculations"
+away_1 to away_6,INT,YES,Away team players on ice (jersey numbers),EXPLICIT,From tracking: away_1 through away_6 columns,,1-99 or null,tracking data,"fact_shifts_player, H2H, WOWY calculations"

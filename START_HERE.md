@@ -1,19 +1,15 @@
 # 🚨🚨🚨 STOP - READ THIS FIRST 🚨🚨🚨
 
-## CRITICAL BUG: DO NOT RUN ETL SCRIPTS
+## ✅ ETL BUG FIXED (2025-12-29)
 
-**The ETL scripts (etl.py, etl_orchestrator.py, enhance_all_stats.py) have a bug that DESTROYS your data.**
+**The column-stripping bug has been fixed!** 
 
-| Before ETL | After ETL | Lost |
-|------------|-----------|------|
-| 317 columns | 224 columns | 93 columns |
-| All FKs ✅ | FKs GONE ❌ | home_team_id, away_team_id, etc. |
+The ETL scripts now preserve enhanced columns when rebuilding. You can safely run:
+- `etl.py`
+- `etl_orchestrator.py`  
+- `enhance_all_stats.py`
 
-### ⚠️ STEP 1 FOR NEW SESSION: FIX THIS BUG
-
-See `docs/KNOWN_BUGS.md` for full details.
-
-**Your current data in `data/output/` is CORRECT. Don't run ETL until bug is fixed.**
+The fix in `src/etl_orchestrator.py` merges new calculated stats with existing enhanced columns.
 
 ---
 
@@ -42,14 +38,14 @@ See `docs/KNOWN_BUGS.md` for full details.
 
 | Step | File | Purpose |
 |------|------|---------|
-| 1 | `docs/KNOWN_BUGS.md` | **FIX BUG FIRST** |
+| 1 | `docs/KNOWN_BUGS.md` | Review bug status |
 | 2 | `docs/handoff/COMPLETE_HANDOFF.md` | Full context |
 | 3 | `docs/DOCUMENTATION_HUB.html` | **OPEN IN BROWSER** |
-| 4 | `docs/SUPABASE_DEPLOYMENT.md` | Deploy after bug fixed |
+| 4 | `docs/SUPABASE_DEPLOYMENT.md` | Deploy to Supabase |
 
 ---
 
-## 🚀 AFTER BUG IS FIXED: Supabase Commands
+## 🚀 READY FOR SUPABASE DEPLOYMENT
 
 ```bash
 # Test connection
@@ -72,9 +68,9 @@ python scripts/supabase_loader.py --rebuild
 
 | Item | Status |
 |------|--------|
-| Data columns | 317 ✅ (don't run ETL!) |
+| Data columns | 317 ✅ |
 | Goals verified | 17/17 ✅ |
 | FKs present | All ✅ |
 | Tests passing | 131 ✅ |
-| ETL Bug | 🔴 OPEN - FIX FIRST |
-| Supabase | ⏳ After bug fix |
+| ETL Bug | ✅ FIXED |
+| Supabase | ⏳ Ready to deploy |

@@ -2,42 +2,36 @@
 
 ## BUG-001: ETL Scripts Strip Columns (CRITICAL)
 
-**Status:** 🔴 OPEN - MUST FIX BEFORE RUNNING ETL
+**Status:** ✅ FIXED (2025-12-29)
 
 **Problem:**
-Running the ETL pipeline strips columns from fact_player_game_stats:
+Running the ETL pipeline was stripping columns from fact_player_game_stats:
 - Before ETL: 317 columns
 - After ETL: 224 columns
 - Lost: 93 columns including critical FKs
 
-**Lost Columns Include:**
-- home_team_id
-- away_team_id  
-- venue_id
-- team_id
-- game_score
-- game_score_per_60
-- clutch_goals
-- odd_man_rushes
-- breakaway_attempts
-- And 84 more...
+**Root Cause:**
+The `_build_fact_player_game_stats` method in `src/etl_orchestrator.py` was rebuilding
+the DataFrame from scratch, overwriting enhanced columns from `enhance_all_stats.py`.
 
-**Affected Scripts:**
-- `etl.py`
-- `src/etl_orchestrator.py`
-- `src/enhance_all_stats.py` (likely culprit)
+**Fix Applied:**
+Modified `_build_fact_player_game_stats` to:
+1. Load existing fact_player_game_stats.csv if it exists
+2. Preserve enhanced columns that aren't recalculated
+3. Merge new calculated stats with existing enhanced columns
 
-**Current Workaround:**
-DO NOT RUN ETL. The data in `data/output/` is correct with 317 columns.
-
-**To Fix:**
-1. Audit `src/enhance_all_stats.py` for column dropping logic
-2. Check for any `df = df[columns]` or similar filtering
-3. Ensure all original columns pass through
-4. Test on copy of data first
-
-**To Restore if ETL Run Accidentally:**
-Restore `data/output/` from `benchsight_combined_6.zip` backup
+**Verification:**
+```bash
+# Test that ETL preserves columns
+python -c "
+from src.etl_orchestrator import ETLOrchestrator
+orchestrator = ETLOrchestrator()
+orchestrator.run(tables=['fact_player_game_stats'])
+import pandas as pd
+df = pd.read_csv('data/output/fact_player_game_stats.csv')
+print(f'Columns: {len(df.columns)} (should be 317)')
+"
+```
 
 ---
 

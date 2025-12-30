@@ -1,0 +1,24 @@
+stat_name,stat_level,min_allowed,max_allowed,typical_min,typical_max,severity,description,validation_rule
+zone_entry_control_pct,player,0,100,30,70,ERROR,Zone entry control %,"Must be 0-100, FLAG if outside typical range"
+fo_pct,player,0,100,40,60,ERROR,Faceoff win %,Must be 0-100
+pass_pct,player,0,100,50,80,WARNING,Pass completion %,FLAG if 0% with >10 attempts (tracking issue)
+shooting_pct,player,0,100,5,30,WARNING,Shooting %,FLAG if >50% (statistical anomaly)
+save_pct,goalie,0,100,80,98,ERROR,Goalie save %,FLAG if <70% (data issue likely)
+cf_pct,player,0,100,40,60,WARNING,Corsi for %,Must be 0-100
+team_shots,team,20,120,40,80,WARNING,Team shots (Corsi) per game,"40-80 typical, represents all shot attempts"
+team_sog,team,10,70,20,45,WARNING,Team SOG per game,Should be < shots (Corsi)
+team_goals,team,0,20,2,8,ERROR,Team goals per game,MUST match dim_schedule official score
+team_faceoffs,team,25,80,35,55,WARNING,Total faceoffs per game,Both teams should have same fo_total
+team_passes,team,50,350,100,200,WARNING,Team passes per game,FLAG if pass_completed = 0 (tracking issue)
+player_shots,player,0,35,0,15,WARNING,Player shots per game,FLAG if >30 (outlier)
+player_goals,player,0,6,0,2,ERROR,Player goals per game,VALIDATE against BLB records
+player_assists,player,0,6,0,2,WARNING,Player assists per game,"Compare to BLB, may be under-tracked"
+player_zone_entries,player,0,25,0,12,ERROR,Player zone entries per game,FLAG if >20
+logical_shifts,player,3,25,8,16,WARNING,Logical shifts per player,FLAG if outside 5-20 range
+toi_seconds,player,0,3600,300,1500,WARNING,TOI in seconds,Max = game length
+avg_shift_seconds,player,20,300,45,120,WARNING,Average shift length,FLAG if <30 or >180
+goalie_saves,goalie,5,60,15,40,WARNING,Goalie saves per game,Validate against shots_against - goals_against
+goalie_ga,goalie,0,12,1,5,WARNING,Goals against per game,MUST match opponent score from dim_schedule
+goalies_per_game,game,2,2,2,2,ERROR,Goalies per tracked game,MUST be exactly 2 per game
+events_per_game,game,500,2000,1000,1500,WARNING,Events per tracked game,FLAG if <500 (incomplete tracking)
+shifts_per_game,game,100,300,140,200,WARNING,Shifts per game,FLAG if <100

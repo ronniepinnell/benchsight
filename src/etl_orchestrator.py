@@ -561,7 +561,12 @@ class ETLOrchestrator:
         return pd.concat(result, ignore_index=True) if result else df
     
     def _build_fact_player_game_stats(self, games):
-        """Build player game stats using VALIDATED counting rules."""
+        """Build player game stats using VALIDATED counting rules.
+        
+        IMPORTANT: This method now preserves existing enhanced columns!
+        If fact_player_game_stats.csv already exists with additional columns
+        (e.g., from enhance_all_stats.py), those columns will be preserved.
+        """
         logger.info("Building fact_player_game_stats with validated rules...")
         
         # Load events
@@ -588,6 +593,23 @@ class ETLOrchestrator:
                     break
             if rating_col:
                 player_ratings = dim_player.set_index('player_id')[rating_col].to_dict()
+        
+        # =================================================================
+        # BUG FIX: Load existing enhanced columns to preserve them
+        # =================================================================
+        existing_file = self.output_dir / "fact_player_game_stats.csv"
+        existing_enhanced_cols = {}
+        existing_df = None
+        if existing_file.exists():
+            try:
+                existing_df = pd.read_csv(existing_file)
+                existing_col_count = len(existing_df.columns)
+                logger.info(f"  Found existing fact_player_game_stats with {existing_col_count} columns")
+                if existing_col_count > 100:  # Has enhanced columns
+                    logger.info(f"  Will preserve {existing_col_count} enhanced columns")
+            except Exception as e:
+                logger.warning(f"  Could not load existing file: {e}")
+                existing_df = None
         
         if games != TRACKED_GAMES:
             events = events[events['game_id'].isin(games)]
@@ -621,10 +643,38 @@ class ETLOrchestrator:
         
         if stats_rows:
             df = pd.DataFrame(stats_rows)
+            
+            # =================================================================
+            # BUG FIX: Merge with existing enhanced columns
+            # =================================================================
+            if existing_df is not None and len(existing_df.columns) > len(df.columns):
+                logger.info(f"  Merging: new {len(df.columns)} cols with existing {len(existing_df.columns)} cols")
+                
+                # Identify columns that exist in existing_df but not in new df
+                new_cols = set(df.columns)
+                enhanced_cols = [c for c in existing_df.columns if c not in new_cols]
+                
+                if enhanced_cols:
+                    # Convert game_id to same type for merge
+                    existing_df['game_id'] = existing_df['game_id'].astype(str)
+                    df['game_id'] = df['game_id'].astype(str)
+                    
+                    # Merge on player_game_key (preferred) or game_id + player_id
+                    merge_cols = ['player_game_key'] if 'player_game_key' in existing_df.columns else ['game_id', 'player_id']
+                    
+                    # Get just the enhanced columns + merge keys from existing
+                    enhanced_subset = existing_df[merge_cols + enhanced_cols].copy()
+                    
+                    # Merge
+                    df = df.merge(enhanced_subset, on=merge_cols, how='left')
+                    logger.info(f"  Preserved {len(enhanced_cols)} enhanced columns, total: {len(df.columns)}")
+            
             # Reorder columns - keys first
             key_cols = ['player_game_key', 'game_id', 'player_id', 'player_name']
             other_cols = [c for c in df.columns if c not in key_cols]
             df = df[key_cols + other_cols]
+            
+            logger.info(f"  Final column count: {len(df.columns)}")
             self._save_table('fact_player_game_stats', df)
     
     def _calculate_player_stats(self, events, shifts, all_game_events=None, all_game_shifts=None, 

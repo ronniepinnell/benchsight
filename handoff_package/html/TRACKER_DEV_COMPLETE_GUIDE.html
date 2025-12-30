@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracker Developer Guide</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #1a365d; border-bottom: 3px solid #3182ce; padding-bottom: 10px; }
+        h2 { color: #2c5282; margin-top: 30px; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; }
+        h3 { color: #2d3748; }
+        code {
+            background: #edf2f7;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background: #1a202c;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background: #edf2f7;
+            font-weight: 600;
+        }
+        tr:hover { background: #f7fafc; }
+        .nav {
+            background: #1a365d;
+            padding: 15px 20px;
+            margin: -40px -40px 30px -40px;
+            border-radius: 8px 8px 0 0;
+        }
+        .nav a {
+            color: white;
+            text-decoration: none;
+            margin-right: 20px;
+        }
+        .nav a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="nav">
+            <a href="index.html">Home</a>
+            <a href="MASTER_INSTRUCTIONS.html">Master Instructions</a>
+            <a href="TRACKER_DEV_COMPLETE_GUIDE.html">Tracker Dev</a>
+            <a href="DASHBOARD_DEV_COMPLETE_GUIDE.html">Dashboard Dev</a>
+            <a href="SCHEMA_AND_ERD.html">Schema</a>
+        </nav>
+        <h1 id="benchsight-game-tracker-complete-developer-guide">BenchSight Game Tracker - Complete Developer Guide</h1>
+<h2 id="overview">Overview</h2>
+<p>This guide provides everything needed to develop the BenchSight game tracker interface. It includes event logic, validation lists, linking patterns for predictive suggestions, XY coordinate requirements, and ETL integration instructions.</p>
+<hr />
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#1-event-types--validation-lists">Event Types &amp; Validation Lists</a></li>
+<li><a href="#2-event-detail-hierarchies">Event Detail Hierarchies</a></li>
+<li><a href="#3-event-linking-patterns-for-predictions">Event Linking Patterns (For Predictions)</a></li>
+<li><a href="#4-shift-data-structure">Shift Data Structure</a></li>
+<li><a href="#5-xy-coordinate-requirements">XY Coordinate Requirements</a></li>
+<li><a href="#6-player-role-logic">Player Role Logic</a></li>
+<li><a href="#7-adding-games-to-etl">Adding Games to ETL</a></li>
+<li><a href="#8-folder-structure">Folder Structure</a></li>
+<li><a href="#9-data-validation-rules">Data Validation Rules</a></li>
+</ol>
+<hr />
+<h2 id="1-event-types-validation-lists">1. Event Types &amp; Validation Lists</h2>
+<h3 id="primary-event-types-event_type_-column">Primary Event Types (event_type_ column)</h3>
+<pre><code>Faceoff              - Puck drop to start/resume play
+Shot                 - Any shot attempt (on goal, blocked, missed)
+Pass                 - Puck transfer between teammates
+Goal                 - Puck crosses goal line (also tracked as Shot with detail)
+Turnover             - Loss of puck possession (Giveaway/Takeaway)
+Zone_Entry_Exit      - Puck crosses blue line
+Penalty              - Infraction called
+PenaltyShot_Shootout - Penalty shot or shootout attempt
+Stoppage             - Play stoppage (whistle)
+Hit                  - Body check
+Possession           - Player gains control of puck
+LoosePuck            - Contested puck (no clear possession)
+Save                 - Goalie stop
+TeamPossessionChange - Possession switches teams
+Rebound              - Puck loose after save
+DeadIce              - No play (between whistle and faceoff)
+Play                 - Offensive/Defensive play classification
+Timeout              - Team timeout
+Intermission         - Period break
+Clockstop            - Clock stoppage
+GameStart            - Game begins
+GameEnd              - Game ends
+Penalty_Delayed      - Delayed penalty call
+Zone_Change          - Zone transition marker
+</code></pre>
+<h3 id="success-indicator-event_successful_-column">Success Indicator (event_successful_ column)</h3>
+<pre><code>s = Successful (pass completed, shot on goal, zone entry maintained)
+u = Unsuccessful (pass incomplete, shot missed/blocked, entry failed)
+</code></pre>
+<hr />
+<h2 id="2-event-detail-hierarchies">2. Event Detail Hierarchies</h2>
+<h3 id="shot-details-event_detail_">Shot Details (event_detail_)</h3>
+<pre><code>SHOT OUTCOMES:
+Shot_OnNetSaved        - Shot on goal, saved by goalie
+Shot_Missed            - Shot missed the net entirely
+Shot_Blocked           - Shot blocked by defending player
+Shot_BlockedSameTeam   - Shot blocked by teammate
+Shot_Deflected         - Shot deflected (not on net)
+Shot_DeflectedOnNet    - Shot deflected, went on net
+Shot_Tipped            - Shot tipped (not on net)
+Shot_TippedOnNetSaved  - Tipped shot saved
+Shot_OnNetGoal         - Shot on net = GOAL
+Shot_OnNetTippedGoal   - Tipped shot = GOAL
+Shot_OnNetDeflectedGoal- Deflected shot = GOAL
+Shot_Goal              - Direct goal
+Shot_MissedPost        - Hit post/crossbar
+
+SHOT TYPES (event_detail_2_):
+Shot-Wrist, Shot-Slap, Shot-Backhand, Shot-Snap, Shot-WrapAround
+Shot-Bat, Shot-Cradle, Shot-Poke, Shot-BetweenLegs, Shot-Tip, Shot-Other
+Shot-Deflection, Shot-Dumpin, Shot-OneTime
+</code></pre>
+<h3 id="save-details-event_detail_2_">Save Details (event_detail_2_)</h3>
+<pre><code>SAVE LOCATION:
+Save-Glove, Save-Blocker, Save-LeftPad, Save-RightPad
+Save-Stick, Save-Scramble, Save-Butterfly, Save-Chest
+Save-Shoulder, Save-Skate, Save-Other
+
+SAVE RESULT (event_detail_):
+Save_Rebound   - Save resulted in rebound
+Save_Freeze    - Goalie covered/froze puck
+Save_Played    - Save played to corner/boards
+</code></pre>
+<h3 id="pass-details-event_detail_">Pass Details (event_detail_)</h3>
+<pre><code>PASS OUTCOMES:
+Pass_Completed    - Successful pass
+Pass_Missed       - Pass missed target
+Pass_Deflected    - Pass deflected
+Pass_Intercepted  - Pass intercepted by opponent
+
+PASS TYPES (event_detail_2_):
+Pass-Stretch, Pass-Rim/Wrap, Pass-Backhand, Pass-Forehand
+Pass-Bank, Pass-Dump, Pass-Tipped, Pass-Lob, Pass-Drop
+Pass-Deflected/TippedShot, Pass-ReceiverMissed, Pass-OneTouch
+Pass-SecondTouch, Pass-QuickUp, Pass-GiveAndGo, Pass-Reverse, Pass-Other
+</code></pre>
+<h3 id="turnover-details-event_detail_">Turnover Details (event_detail_)</h3>
+<pre><code>GIVEAWAYS (team loses puck):
+Giveaway-Misplayed, Giveaway-BattleLost, Giveaway-PassIntercepted
+Giveaway-PassMissed, Giveaway-PassBlocked, Giveaway-PassReceiverMissed
+Giveaway-ShotBlocked, Giveaway-ShotMissed, Giveaway-ZoneClear/Dump
+Giveaway-AttemptedZoneClear/Dump, Giveaway-ZoneEntry/ExitMisplay
+Giveaway-DumpInZone, Giveaway-Other
+
+TAKEAWAYS (team gains puck):
+Takeaway-BattleWon, Takeaway-PokeCheck, Takeaway-PassIntercepted
+Takeaway-PassBlocked, Takeaway-ShotBlocked, Takeaway-ZoneClear/Dump
+Takeaway-AttemptedZoneClear/Dump, Takeaway-Other
+</code></pre>
+<h3 id="zone-entryexit-details-event_detail_2_">Zone Entry/Exit Details (event_detail_2_)</h3>
+<pre><code>ZONE ENTRY TYPES:
+ZoneEntry-Rush          - Controlled carry into zone
+ZoneEntry-Pass          - Pass into zone
+ZoneEntry-DumpIn        - Dump and chase
+ZoneEntry-Chip          - Chip puck in
+ZoneEntry-FromExitClear - Entry from opponent's clearing attempt
+ZoneEntry-PassMiss/Misplay
+ZoneEntry-OppTeam       - Opponent caused entry
+ZoneEntry-Lob, ZoneEntry-RushBreakaway
+ZoneEntry-CausedTurnover, ZoneEntry-PenaltyKillClear, ZoneEntry-Other
+
+ZONE EXIT TYPES:
+ZoneExit-Rush, ZoneExit-Pass, ZoneExit-Clear, ZoneExit-Chip
+ZoneExit-PassMiss/Misplay, ZoneExit-OppTeam, ZoneExit-Lob
+ZoneExit-CausedTurnover, ZoneExit-PenaltyKillClear, ZoneExit-Other
+
+ZONE KEEPIN:
+Zone-KeepIn, Zone-Pinch, Zone-KeepinFailed, Zone-Other
+</code></pre>
+<h3 id="faceoff-details-event_detail_">Faceoff Details (event_detail_)</h3>
+<pre><code>Faceoff_GameStart, Faceoff_AfterGoal, Faceoff_PeriodStart
+Faceoff_AfterPenalty, Faceoff_AfterStoppage
+</code></pre>
+<h3 id="stoppage-details-event_detail_">Stoppage Details (event_detail_)</h3>
+<pre><code>STOPPAGE TYPES:
+Stoppage_Period, Stoppage_Play, Stoppage_Other, Stoppage_GameEnd
+
+STOPPAGE REASONS (shift_stop_type column):
+Period Start, Period End, Puck Out of Play, Injury
+Home Penalty, Away Penalty, Home Goalie Stoppage, Away Goalie Stoppage
+Home Offside, Away Offside, Home Icing, Away Icing
+Clock Problem, Puck Frozen, Puck in Crowd, Puck in Netting, Puck in Benches
+Goalie Stopped (after SOG), Referee or Linesperson, High Stick
+Objects on Ice, Hand Pass, Premature Substitution, Skater Puck Frozen
+Net Dislodged Offensive Skater, TV timeout, Home Timeout, Visitor Timeout
+Player Injury, Official Injury, Rink Repair, Ice problem, Player Equipment
+Video Review, Home Goal, Away Goal, DeadIce/Stoppage, Offset Penalty, GameEnd
+</code></pre>
+<h3 id="play-details-play_detail1_-column">Play Details (play_detail1_ column)</h3>
+<pre><code>OFFENSIVE PLAYS:
+AssistPrimary, AssistSecondary, AssistTertiary (for goal attribution)
+AttemptedBlockedShot, AttemptedBreakOutClear, AttemptedBreakOutPass
+AttemptedBreakOutRush, AttemptedEntryDumpIn, AttemptedEntryPass
+AttemptedEntryRush, AttemptedKeepin, AttemptedPass, AttemptedShot
+AttemptedTip/Deflection, Backcheck, BeatDeke, BeatFake, BeatMiddle
+BeatSpeed, BeatWide, BlockedShot, BoxOut, Breakout, CededZoneEntry
+CededZoneExit, Chip, ClearingAttempt, Contain, CrashNet, CutBack
+Cycle, DeflectedShot, Deke, Delay, DelayedOffside, DriveCorner
+DriveMiddle, DriveNetMiddle, DriveNetWide, DriveWide, Dump/RimInZone
+DumpChase, DumpInAttempt, EndToEndRush, FakeShot, ForcedDumpin/Clear
+ForcedLostPossession, ForcedMissedPass, ForcedMissedShot, ForcedTurnover
+ForceWide, Forecheck, ForecedOutside, FrontofNet, GapControl, GiveAndGo
+InShotPassLane, LoosePuckBattleLost, LoosePuckBattleWon, LostPuck
+ManOnMan, MisplayedPuck, OpenIceDeke, Other, PassDeflected, PassForTip
+PassIntercepted, PenaltyKillClear, PokeCheck, Pressure, QuickUp
+ReceiverMissed, Regroup, RegroupClear, RegroupDumpin, Reverse
+SeperateFromPuck, Speed, StickCheck, StoppedDeke, Surf, Tracker
+Wheel, Zone, ZoneEntryDenial, ZoneExitDenial, ZoneKeepin
+</code></pre>
+<hr />
+<h2 id="3-event-linking-patterns-for-predictions">3. Event Linking Patterns (For Predictions)</h2>
+<h3 id="high-confidence-predictions-always-suggest">High-Confidence Predictions (ALWAYS suggest)</h3>
+<table>
+<thead>
+<tr>
+<th>Current Event</th>
+<th>Next Event</th>
+<th>Confidence</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Stoppage →</td>
+<td>DeadIce</td>
+<td>100%</td>
+<td>Always follows stoppage</td>
+</tr>
+<tr>
+<td>DeadIce →</td>
+<td>Faceoff</td>
+<td>100%</td>
+<td>Always follows dead ice</td>
+</tr>
+<tr>
+<td>Goal →</td>
+<td>Stoppage</td>
+<td>100%</td>
+<td>Play stops after goal</td>
+</tr>
+<tr>
+<td>Penalty →</td>
+<td>Stoppage</td>
+<td>95%</td>
+<td>Usually stops play</td>
+</tr>
+<tr>
+<td>Save_Freeze →</td>
+<td>Stoppage</td>
+<td>95%</td>
+<td>Goalie freezes = whistle</td>
+</tr>
+</tbody>
+</table>
+<h3 id="medium-confidence-predictions-suggest-as-primary-option">Medium-Confidence Predictions (SUGGEST as primary option)</h3>
+<table>
+<thead>
+<tr>
+<th>Current Event</th>
+<th>Next Event</th>
+<th>Confidence</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Shot →</td>
+<td>Save</td>
+<td>70%</td>
+<td>Most shots are saved</td>
+</tr>
+<tr>
+<td>Save_Rebound →</td>
+<td>Rebound</td>
+<td>90%</td>
+<td>Rebound event follows</td>
+</tr>
+<tr>
+<td>Rebound →</td>
+<td>Possession</td>
+<td>60%</td>
+<td>Someone gets the puck</td>
+</tr>
+<tr>
+<td>Rebound →</td>
+<td>Shot</td>
+<td>30%</td>
+<td>Quick second shot</td>
+</tr>
+<tr>
+<td>Faceoff →</td>
+<td>Possession</td>
+<td>50%</td>
+<td>Winner gains possession</td>
+</tr>
+<tr>
+<td>Faceoff →</td>
+<td>Pass</td>
+<td>25%</td>
+<td>Clean win to pass</td>
+</tr>
+<tr>
+<td>Zone_Entry (success) →</td>
+<td>Possession</td>
+<td>60%</td>
+<td>Entry = possession</td>
+</tr>
+<tr>
+<td>Zone_Entry (success) →</td>
+<td>Pass</td>
+<td>30%</td>
+<td>Entry leads to pass</td>
+</tr>
+<tr>
+<td>Zone_Entry (fail) →</td>
+<td>Turnover</td>
+<td>80%</td>
+<td>Failed entry = turnover</td>
+</tr>
+<tr>
+<td>Turnover →</td>
+<td>Possession</td>
+<td>60%</td>
+<td>Opponent gains control</td>
+</tr>
+<tr>
+<td>Turnover →</td>
+<td>Zone_Entry_Exit</td>
+<td>25%</td>
+<td>Leads to zone change</td>
+</tr>
+</tbody>
+</table>
+<h3 id="event-transition-matrix-from-actual-data-analysis">Event Transition Matrix (from actual data analysis)</h3>
+<pre><code>TOP 30 MOST COMMON TRANSITIONS:
+225x  Possession → Pass           (Possession usually leads to pass)
+135x  Turnover → Possession       (After turnover, new team has puck)
+109x  Zone_Entry_Exit → Possession (After entry, control the puck)
+108x  Pass → Possession           (After pass, receiver has puck)
+106x  Possession → Zone_Entry_Exit (With puck, advance zones)
+ 82x  Pass → Zone_Entry_Exit      (Pass into new zone)
+ 60x  Possession → Shot           (Control leads to shot)
+ 58x  Shot → Save                 (Most shots saved)
+ 55x  Zone_Entry_Exit → Turnover  (Entry contested, puck lost)
+ 54x  Pass → Turnover             (Pass intercepted/missed)
+ 44x  Possession → Turnover       (Lost the puck)
+ 44x  Stoppage → DeadIce          (Whistle = dead ice)
+ 42x  DeadIce → Faceoff           (Dead ice = faceoff)
+ 39x  Save → Rebound              (Save creates rebound)
+ 37x  Rebound → Possession        (Rebound recovered)
+ 36x  Zone_Entry_Exit → Pass      (Enter zone, make pass)
+ 34x  Turnover → Zone_Entry_Exit  (Turnover leads to zone change)
+ 26x  Zone_Entry_Exit → Shot      (Entry leads to shot)
+ 23x  Pass → Pass                 (Quick passing)
+ 22x  Shot → Possession           (Shot recovered)
+ 22x  Pass → Shot                 (Pass for shot)
+ 21x  Faceoff → Possession        (Faceoff won = possession)
+ 19x  Zone_Entry_Exit → Zone_Entry_Exit (Quick zone changes)
+ 19x  Save → Stoppage             (Freeze/whistle)
+ 18x  Play → Possession           (Play leads to possession)
+</code></pre>
+<h3 id="linked-event-index-usage">Linked Event Index Usage</h3>
+<p>The <code>linked_event_index</code> column connects related events:</p>
+<pre><code>ASSIST LINKING:
+- When recording AssistPrimary/AssistSecondary in play_detail1_
+- linked_event_index points to the Goal event
+
+SHOT-SAVE CHAINS:
+- Save event's linked_event_index points to the Shot event
+- Allows tracking shot → save → rebound → shot sequences
+
+TURNOVER CHAINS:
+- Giveaway linked to subsequent Takeaway
+- Tracks possession changes
+</code></pre>
+<h3 id="prediction-algorithm-pseudocode">Prediction Algorithm Pseudocode</h3>
+<pre><code class="language-javascript">function suggestNextEvent(currentEvent) {
+  const suggestions = [];
+
+  // Always-true rules
+  if (currentEvent.type === 'Stoppage') {
+    return [{ type: 'DeadIce', confidence: 1.0 }];
+  }
+  if (currentEvent.type === 'DeadIce') {
+    return [{ type: 'Faceoff', confidence: 1.0 }];
+  }
+  if (currentEvent.type === 'Goal') {
+    return [{ type: 'Stoppage', confidence: 1.0, detail: 'Stoppage-Goal' }];
+  }
+
+  // Shot outcomes
+  if (currentEvent.type === 'Shot') {
+    suggestions.push({ type: 'Save', confidence: 0.7 });
+    suggestions.push({ type: 'Possession', confidence: 0.15 }); // blocked/missed
+    suggestions.push({ type: 'Goal', confidence: 0.10 });
+    suggestions.push({ type: 'Turnover', confidence: 0.05 });
+  }
+
+  // Save outcomes
+  if (currentEvent.type === 'Save') {
+    if (currentEvent.detail === 'Save_Freeze') {
+      return [{ type: 'Stoppage', confidence: 0.95 }];
+    }
+    suggestions.push({ type: 'Rebound', confidence: 0.65 });
+    suggestions.push({ type: 'Stoppage', confidence: 0.30 });
+    suggestions.push({ type: 'Possession', confidence: 0.05 });
+  }
+
+  // Rebound outcomes
+  if (currentEvent.type === 'Rebound') {
+    suggestions.push({ type: 'Possession', confidence: 0.50 });
+    suggestions.push({ type: 'Shot', confidence: 0.35 });
+    suggestions.push({ type: 'Turnover', confidence: 0.15 });
+  }
+
+  // Possession outcomes
+  if (currentEvent.type === 'Possession') {
+    suggestions.push({ type: 'Pass', confidence: 0.50 });
+    suggestions.push({ type: 'Zone_Entry_Exit', confidence: 0.25 });
+    suggestions.push({ type: 'Shot', confidence: 0.15 });
+    suggestions.push({ type: 'Turnover', confidence: 0.10 });
+  }
+
+  // Pass outcomes
+  if (currentEvent.type === 'Pass') {
+    if (currentEvent.successful === 's') {
+      suggestions.push({ type: 'Possession', confidence: 0.40 });
+      suggestions.push({ type: 'Zone_Entry_Exit', confidence: 0.30 });
+      suggestions.push({ type: 'Shot', confidence: 0.20 });
+      suggestions.push({ type: 'Pass', confidence: 0.10 });
+    } else {
+      suggestions.push({ type: 'Turnover', confidence: 0.70 });
+      suggestions.push({ type: 'Possession', confidence: 0.30 });
+    }
+  }
+
+  // Zone entry outcomes
+  if (currentEvent.type === 'Zone_Entry_Exit') {
+    if (currentEvent.successful === 's') {
+      suggestions.push({ type: 'Possession', confidence: 0.45 });
+      suggestions.push({ type: 'Pass', confidence: 0.30 });
+      suggestions.push({ type: 'Shot', confidence: 0.15 });
+      suggestions.push({ type: 'Play', confidence: 0.10 });
+    } else {
+      suggestions.push({ type: 'Turnover', confidence: 0.80 });
+      suggestions.push({ type: 'Zone_Entry_Exit', confidence: 0.20 });
+    }
+  }
+
+  // Turnover outcomes
+  if (currentEvent.type === 'Turnover') {
+    suggestions.push({ type: 'Possession', confidence: 0.55 });
+    suggestions.push({ type: 'Zone_Entry_Exit', confidence: 0.25 });
+    suggestions.push({ type: 'Pass', confidence: 0.15 });
+    suggestions.push({ type: 'LoosePuck', confidence: 0.05 });
+  }
+
+  // Faceoff outcomes
+  if (currentEvent.type === 'Faceoff') {
+    suggestions.push({ type: 'Possession', confidence: 0.50 });
+    suggestions.push({ type: 'Pass', confidence: 0.25 });
+    suggestions.push({ type: 'Zone_Entry_Exit', confidence: 0.15 });
+    suggestions.push({ type: 'Turnover', confidence: 0.10 });
+  }
+
+  return suggestions.sort((a, b) =&gt; b.confidence - a.confidence);
+}
+</code></pre>
+<hr />
+<h2 id="4-shift-data-structure">4. Shift Data Structure</h2>
+<h3 id="shift-columns">Shift Columns</h3>
+<pre><code>IDENTIFIERS:
+shift_index       - Unique shift number within game (1, 2, 3...)
+Period            - Period number (1, 2, 3, OT)
+game_id           - Game identifier
+
+TIMING:
+shift_start_min, shift_start_sec  - Start time (countdown clock)
+shift_end_min, shift_end_sec      - End time (countdown clock)
+shift_start_total_seconds         - Start in total game seconds
+shift_end_total_seconds           - End in total game seconds
+shift_duration                    - Length in seconds
+
+SHIFT BOUNDARIES:
+shift_start_type  - What started the shift (GameStart, OtherFaceoff, etc.)
+shift_stop_type   - What ended the shift (reason for whistle)
+stoppage_time     - Duration of stoppage (seconds)
+
+HOME PLAYERS ON ICE:
+home_forward_1, home_forward_2, home_forward_3  - Forward jersey numbers
+home_defense_1, home_defense_2                   - Defense jersey numbers
+home_xtra                                        - Extra attacker (if any)
+home_goalie                                      - Goalie jersey number
+
+AWAY PLAYERS ON ICE:
+away_forward_1, away_forward_2, away_forward_3
+away_defense_1, away_defense_2
+away_xtra
+away_goalie
+
+GAME STATE:
+home_team_strength, away_team_strength  - Number of skaters (5, 4, 3)
+home_team_en, away_team_en              - Empty net flags (1 = pulled goalie)
+home_team_pk, home_team_pp              - Penalty kill/power play flags
+away_team_pk, away_team_pp
+situation                                - Full Strength, Power Play, etc.
+strength                                 - 5v5, 5v4, 4v5, 4v4, etc.
+
+SCORE:
+home_goals, away_goals                  - Running score
+
+ZONE TIME:
+home_ozone_start, home_ozone_end        - Offensive zone time
+home_dzone_start, home_dzone_end        - Defensive zone time
+home_nzone_start, home_nzone_end        - Neutral zone time
+</code></pre>
+<hr />
+<h2 id="5-xy-coordinate-requirements">5. XY Coordinate Requirements</h2>
+<h3 id="coordinate-system">Coordinate System</h3>
+<pre><code>RINK DIMENSIONS (standard NHL):
+- Length: 200 feet (0 to 200)
+- Width: 85 feet (0 to 85)
+
+COORDINATE ORIGIN:
+- (0, 0) = Bottom-left corner of rink
+- X increases left to right (along length)
+- Y increases bottom to top (along width)
+
+KEY LOCATIONS:
+- Center ice: (100, 42.5)
+- Home goal line: x = 11 (or x = 189 depending on period)
+- Away goal line: x = 189 (or x = 11 depending on period)
+- Blue lines: x = 75 and x = 125
+- Goal crease center: (11, 42.5) and (189, 42.5)
+</code></pre>
+<h3 id="required-xy-data-points">Required XY Data Points</h3>
+<h4 id="per-event">Per Event:</h4>
+<pre><code class="language-javascript">{
+  event_index: 1001,
+  puck_x: 145.5,        // Puck X coordinate
+  puck_y: 38.2,         // Puck Y coordinate
+  puck_zone: 'ozone',   // Derived: ozone, dzone, nzone
+  puck_slot: true,      // Is puck in slot area?
+  shot_distance: 22.5,  // For shots: distance to goal
+  shot_angle: 15.3,     // For shots: angle to goal center
+}
+</code></pre>
+<h4 id="per-player-on-ice-at-event-time">Per Player (on-ice at event time):</h4>
+<pre><code class="language-javascript">{
+  player_id: 'P100192',
+  player_x: 140.0,
+  player_y: 35.0,
+  player_zone: 'ozone',
+  distance_to_puck: 8.5,
+  distance_to_net: 30.2,
+}
+</code></pre>
+<h3 id="xy-data-file-format">XY Data File Format</h3>
+<p>Create <code>{game_id}_xy.csv</code> or include in events sheet:</p>
+<pre><code class="language-csv">event_index,puck_x,puck_y,player_id,player_x,player_y
+1001,145.5,38.2,P100192,140.0,35.0
+1001,145.5,38.2,P100025,138.5,45.0
+1001,145.5,38.2,P100001,175.0,42.5
+...
+</code></pre>
+<h3 id="zone-definitions">Zone Definitions</h3>
+<pre><code class="language-javascript">function getZone(x, teamVenue, period) {
+  // Adjust for period (teams switch sides)
+  const homeAttacksRight = (period % 2 === 1);
+
+  if (x &lt; 75) {
+    return homeAttacksRight 
+      ? (teamVenue === 'Home' ? 'dzone' : 'ozone')
+      : (teamVenue === 'Home' ? 'ozone' : 'dzone');
+  } else if (x &gt; 125) {
+    return homeAttacksRight
+      ? (teamVenue === 'Home' ? 'ozone' : 'dzone')
+      : (teamVenue === 'Home' ? 'dzone' : 'ozone');
+  }
+  return 'nzone';
+}
+</code></pre>
+<h3 id="shot-quality-zones">Shot Quality Zones</h3>
+<pre><code class="language-javascript">const SHOT_ZONES = {
+  // High danger (slot)
+  HIGH_DANGER: { xMin: 0, xMax: 30, yMin: 22, yMax: 63 },
+
+  // Medium danger (circles)
+  MEDIUM_DANGER_LEFT: { xMin: 20, xMax: 50, yMin: 0, yMax: 25 },
+  MEDIUM_DANGER_RIGHT: { xMin: 20, xMax: 50, yMin: 60, yMax: 85 },
+
+  // Low danger (point/perimeter)
+  LOW_DANGER: { xMin: 50, xMax: 75 }
+};
+
+function getShotDanger(x, y) {
+  const distFromGoal = Math.sqrt(x*x + (y-42.5)**2);
+  if (distFromGoal &lt; 25 &amp;&amp; Math.abs(y - 42.5) &lt; 20) return 'high';
+  if (distFromGoal &lt; 45) return 'medium';
+  return 'low';
+}
+</code></pre>
+<hr />
+<h2 id="6-player-role-logic">6. Player Role Logic</h2>
+<h3 id="critical-player-role-determines-stat-credit">CRITICAL: Player Role Determines Stat Credit</h3>
+<pre><code>event_team_player_1 = PRIMARY ACTOR
+  - Gets credit for: shots, goals, faceoff wins, passes, zone entries
+  - This is the player who performed the action
+
+opp_team_player_1 = OPPONENT ACTOR  
+  - Gets credit for: faceoff losses, defensive plays
+  - This is the opposing player involved
+
+event_team_player_2 through event_team_player_6 = SUPPORTING PLAYERS
+  - On ice but not primary actor
+  - Used for H2H/WOWY calculations
+
+opp_team_player_2 through opp_team_player_6 = OPPONENT SUPPORTING
+  - Opposing players on ice
+</code></pre>
+<h3 id="role-assignment-example">Role Assignment Example</h3>
+<pre><code class="language-javascript">// Faceoff
+{
+  event_type: 'Faceoff',
+  event_team_player_1: 53,  // WINNER (gets fo_wins stat)
+  opp_team_player_1: 70,    // LOSER (gets fo_losses stat)
+}
+
+// Shot
+{
+  event_type: 'Shot',
+  event_team_player_1: 21,  // SHOOTER (gets shots stat)
+  // Other players are just on-ice
+}
+
+// Goal with Assist
+{
+  event_type: 'Goal',
+  event_team_player_1: 21,  // SCORER (gets goals stat)
+  play_detail1: null,
+}
+// Separate assist event:
+{
+  event_type: 'Pass',  // or similar
+  event_team_player_1: 12,  // ASSISTER
+  play_detail1: 'AssistPrimary',
+  linked_event_index: [goal_event_index]
+}
+</code></pre>
+<hr />
+<h2 id="7-adding-games-to-etl">7. Adding Games to ETL</h2>
+<h3 id="step-1-create-game-folder">Step 1: Create Game Folder</h3>
+<pre><code>data/raw/games/{game_id}/
+├── {game_id}_tracking.xlsx    # REQUIRED: Main tracking file
+├── {game_id}_video_times.xlsx # OPTIONAL: Video sync data
+├── roster.json                # OPTIONAL: Pre-loaded roster
+├── xy/                        # OPTIONAL: XY coordinate files
+│   └── {game_id}_xy.csv
+├── events/                    # OPTIONAL: Pre-processed events
+├── shots/                     # OPTIONAL: Shot charts
+└── !info.rtf                  # OPTIONAL: Game notes
+</code></pre>
+<h3 id="step-2-tracking-file-structure">Step 2: Tracking File Structure</h3>
+<p>The <code>{game_id}_tracking.xlsx</code> must contain these sheets:</p>
+<pre><code>REQUIRED SHEETS:
+- events        # All game events
+- shifts        # All shift data
+- game_rosters  # Player roster for the game
+
+OPTIONAL SHEETS:
+- Rules         # Event type rules
+- Lists         # Validation dropdown lists
+- examples      # Example data
+</code></pre>
+<h3 id="step-3-run-etl-pipeline">Step 3: Run ETL Pipeline</h3>
+<pre><code class="language-bash"># Full ETL run
+python etl.py
+
+# Or step by step:
+python etl.py                    # Transform raw to output
+python scripts/fix_data_integrity.py  # Fix keys/FKs
+python scripts/fix_final_data.py      # Final cleanup
+python scripts/etl_validation.py      # Validate
+pytest tests/                          # Run tests
+</code></pre>
+<h3 id="step-4-updating-existing-games">Step 4: Updating Existing Games</h3>
+<p>To update a game that's already been processed:</p>
+<pre><code class="language-bash"># 1. Update the tracking file in data/raw/games/{game_id}/
+
+# 2. Re-run ETL (it will overwrite existing output)
+python etl.py
+
+# 3. Re-run data integrity fixes
+python scripts/fix_data_integrity.py
+
+# 4. Re-validate
+python scripts/etl_validation.py
+</code></pre>
+<h3 id="step-5-upload-to-supabase">Step 5: Upload to Supabase</h3>
+<pre><code class="language-bash">python upload.py  # Uploads all CSV files to Supabase
+</code></pre>
+<hr />
+<h2 id="8-folder-structure">8. Folder Structure</h2>
+<pre><code>benchsight/
+├── etl.py                    # Main ETL pipeline
+├── upload.py                 # Supabase uploader
+├── requirements.txt          # Python dependencies
+│
+├── data/
+│   ├── raw/
+│   │   └── games/
+│   │       ├── 18969/        # One folder per game
+│   │       │   ├── 18969_tracking.xlsx
+│   │       │   ├── roster.json
+│   │       │   └── xy/
+│   │       ├── 18977/
+│   │       └── ...
+│   │
+│   └── output/               # ETL output (CSV files)
+│       ├── dim_player.csv
+│       ├── dim_team.csv
+│       ├── dim_schedule.csv
+│       ├── fact_events.csv
+│       ├── fact_events_player.csv
+│       ├── fact_shifts.csv
+│       ├── fact_shifts_player.csv
+│       ├── fact_player_game_stats.csv
+│       ├── fact_team_game_stats.csv
+│       ├── fact_goalie_game_stats.csv
+│       ├── fact_h2h.csv
+│       ├── fact_wowy.csv
+│       └── data_dictionary/
+│
+├── src/                      # ETL source modules
+│   ├── loaders.py
+│   ├── transforms.py
+│   └── validators.py
+│
+├── scripts/                  # Utility scripts
+│   ├── fix_data_integrity.py
+│   ├── fix_final_data.py
+│   ├── etl_validation.py
+│   └── generate_data_dictionary.py
+│
+├── tracker/                  # Game tracker HTML files
+│   └── tracker_v19.html
+│
+├── config/                   # Configuration files
+│   └── supabase_config.json
+│
+└── tests/                    # Test files
+    └── test_etl.py
+</code></pre>
+<hr />
+<h2 id="9-data-validation-rules">9. Data Validation Rules</h2>
+<h3 id="required-fields-by-event-type">Required Fields by Event Type</h3>
+<pre><code class="language-javascript">const REQUIRED_FIELDS = {
+  'Faceoff': ['event_team_player_1', 'opp_team_player_1', 'event_detail'],
+  'Shot': ['event_team_player_1', 'event_detail', 'event_detail_2'],
+  'Pass': ['event_team_player_1', 'event_successful'],
+  'Goal': ['event_team_player_1'],
+  'Save': ['event_detail', 'event_detail_2'],  // result + location
+  'Zone_Entry_Exit': ['event_team_player_1', 'event_detail', 'event_successful'],
+  'Turnover': ['event_team_player_1', 'event_detail'],
+  'Penalty': ['event_team_player_1', 'event_detail'],
+};
+</code></pre>
+<h3 id="value-ranges">Value Ranges</h3>
+<pre><code class="language-javascript">const VALUE_RANGES = {
+  period: [1, 2, 3, 4],  // 4 = OT
+  player_game_number: [1, 99],
+  event_start_min: [0, 20],  // 20 for overtime
+  event_start_sec: [0, 59],
+  shift_duration: [1, 300],  // Max 5 minutes
+};
+</code></pre>
+<h3 id="cross-validation-rules">Cross-Validation Rules</h3>
+<pre><code class="language-javascript">const CROSS_VALIDATION = [
+  // Faceoff winner/loser must be different teams
+  { rule: 'faceoff_teams_differ', 
+    check: (e) =&gt; e.event_team_player_1_team !== e.opp_team_player_1_team },
+
+  // Goals must have corresponding save (except empty net)
+  { rule: 'goal_has_preceding_shot',
+    check: (events, goalEvent) =&gt; {
+      const prevEvent = events.find(e =&gt; e.event_index === goalEvent.event_index - 1);
+      return prevEvent?.event_type === 'Shot' || goalEvent.empty_net;
+    }},
+
+  // Assists must link to goal
+  { rule: 'assist_links_to_goal',
+    check: (e) =&gt; !e.play_detail1?.includes('Assist') || e.linked_event_index },
+];
+</code></pre>
+<hr />
+<h2 id="quick-reference-card">Quick Reference Card</h2>
+<h3 id="most-common-event-sequences">Most Common Event Sequences</h3>
+<pre><code>GOAL SEQUENCE:
+Possession → Pass(s) → Pass(AssistPrimary) → Shot(Goal) → Stoppage → DeadIce → Faceoff
+
+SAVE SEQUENCE:
+Possession → Shot(OnNet) → Save(Rebound) → Rebound → [Possession|Shot|Stoppage]
+
+TURNOVER SEQUENCE:
+Possession → Pass(u) → Turnover(Giveaway) → Possession(other team)
+
+ZONE ENTRY SEQUENCE:
+Zone_Entry_Exit(Entry,s) → Possession → [Pass|Shot|Turnover]
+Zone_Entry_Exit(Entry,u) → Turnover → Possession(other team)
+
+PERIOD START:
+GameStart/Intermission → DeadIce → Faceoff(PeriodStart) → Possession
+</code></pre>
+<h3 id="keyboard-shortcuts-suggested">Keyboard Shortcuts (Suggested)</h3>
+<pre><code>F = Faceoff         S = Shot          P = Pass
+G = Goal            V = Save          T = Turnover
+Z = Zone Entry      D = DeadIce       X = Stoppage
+R = Rebound         H = Hit           O = Possession
+1-6 = Player 1-6    Tab = Next field  Enter = Save event
+</code></pre>
+<hr />
+<p><em>Document Version: 1.0 | Last Updated: December 2024</em></p>
+    </div>
+</body>
+</html>

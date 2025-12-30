@@ -1,0 +1,137 @@
+{
+  "timestamp": "2025-12-29T22:31:34.932030",
+  "summary": {
+    "games_validated": 4,
+    "goals_correct": 4,
+    "goals_mismatch": 0,
+    "player_goal_errors": 4,
+    "player_assist_errors": 9,
+    "critical_errors": 0,
+    "warnings": 11
+  },
+  "errors": [
+    {
+      "game_id": 18969,
+      "severity": "WARNING",
+      "category": "PLAYER_GOALS",
+      "message": "Goal mismatch for Chris Dube",
+      "expected": "0",
+      "actual": "1",
+      "player": "Chris Dube"
+    },
+    {
+      "game_id": 18969,
+      "severity": "WARNING",
+      "category": "PLAYER_GOALS",
+      "message": "Goal mismatch for Josh Simonds",
+      "expected": "1",
+      "actual": "0",
+      "player": "Josh Simonds"
+    },
+    {
+      "game_id": 18969,
+      "severity": "INFO",
+      "category": "PLAYER_ASSISTS",
+      "message": "Assist mismatch for Alex Considine",
+      "expected": "0",
+      "actual": "1",
+      "player": "Alex Considine"
+    },
+    {
+      "game_id": 18969,
+      "severity": "WARNING",
+      "category": "PLAYER_ASSISTS",
+      "message": "Assist mismatch for Chris Premo",
+      "expected": "2",
+      "actual": "0",
+      "player": "Chris Premo"
+    },
+    {
+      "game_id": 18977,
+      "severity": "WARNING",
+      "category": "PLAYER_GOALS",
+      "message": "Goal mismatch for Nathan Watts",
+      "expected": "0",
+      "actual": "1",
+      "player": "Nathan Watts"
+    },
+    {
+      "game_id": 18977,
+      "severity": "WARNING",
+      "category": "PLAYER_GOALS",
+      "message": "Goal mismatch for Hayden Smith",
+      "expected": "2",
+      "actual": "1",
+      "player": "Hayden Smith"
+    },
+    {
+      "game_id": 18977,
+      "severity": "WARNING",
+      "category": "PLAYER_ASSISTS",
+      "message": "Assist mismatch for Ty Smith",
+      "expected": "1",
+      "actual": "0",
+      "player": "Ty Smith"
+    },
+    {
+      "game_id": 18977,
+      "severity": "WARNING",
+      "category": "PLAYER_ASSISTS",
+      "message": "Assist mismatch for Nathan Watts",
+      "expected": "1",
+      "actual": "0",
+      "player": "Nathan Watts"
+    },
+    {
+      "game_id": 18977,
+      "severity": "WARNING",
+      "category": "PLAYER_ASSISTS",
+      "message": "Assist mismatch for Sam Downs",
+      "expected": "3",
+      "actual": "0",
+      "player": "Sam Downs"
+    },
+    {
+      "game_id": 18977,
+      "severity": "WARNING",
+      "category": "PLAYER_ASSISTS",
+      "message": "Assist mismatch for Nicole Downs",
+      "expected": "2",
+      "actual": "0",
+      "player": "Nicole Downs"
+    },
+    {
+      "game_id": 18977,
+      "severity": "WARNING",
+      "category": "PLAYER_ASSISTS",
+      "message": "Assist mismatch for Kevin White",
+      "expected": "1",
+      "actual": "0",
+      "player": "Kevin White"
+    },
+    {
+      "game_id": 18981,
+      "severity": "WARNING",
+      "category": "PLAYER_ASSISTS",
+      "message": "Assist mismatch for Samuel Yetsko",
+      "expected": "1",
+      "actual": "0",
+      "player": "Samuel Yetsko"
+    },
+    {
+      "game_id": 18987,
+      "severity": "INFO",
+      "category": "PLAYER_ASSISTS",
+      "message": "Assist mismatch for Kevin White",
+      "expected": "0",
+      "actual": "1",
+      "player": "Kevin White"
+    }
+  ],
+  "tracked_games": [
+    18969,
+    18977,
+    18981,
+    18987
+  ]
+}

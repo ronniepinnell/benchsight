@@ -1,0 +1,16 @@
+column,type,nullable,description,source,formula,filter_context,tolerance,depends_on,used_by
+event_key,VARCHAR(20),NO,Primary key for event,CALCULATED,f'EV{game_id}{event_index:05d}',Per event,,"game_id, event_index","fact_events_player.event_key, fact_linked_events.event_key"
+game_id,INT,NO,Game identifier from filename,EXPLICIT,"Extracted from tracking filename (e.g., Game_18969_...xlsx → 18969)",,,tracking filename,All game-level aggregations
+event_index,INT,NO,Sequential event number within game,EXPLICIT,From tracking: event_index column,,1 to ~1500 per game,tracking data,"event_key, event ordering"
+shift_index,INT,YES,Current shift number when event occurred,EXPLICIT,From tracking: shift_index column,,1 to ~170 per game,tracking data,"shift_key, linking events to shifts"
+shift_key,VARCHAR(20),YES,Foreign key to fact_shifts,CALCULATED,f'SH{game_id}{shift_index:05d}',,,"game_id, shift_index",Shift-event joins
+period,INT,NO,"Period number (1, 2, 3, OT)",EXPLICIT,From tracking: period_ column,,1-4,tracking data,Period-level aggregations
+event_start_total_seconds,INT,YES,Event start time in total game seconds,CALCULATED,(period-1)*900 + event_start_min*60 + event_start_sec,,0-2700+,"period, event_start_min, event_start_sec","Event ordering, time-based filtering"
+event_type,VARCHAR(30),NO,Primary event type classification,EXPLICIT,From tracking: event_type_ or Type column,,Must be in dim_event_type,tracking data,"ALL stat calculations - Shot, Goal, Faceoff, Pass, Turnover, Zone_Entry_Exit, Save, etc."
+event_detail,VARCHAR(50),YES,Detailed event outcome/result,EXPLICIT,From tracking: event_detail_ column,,Must be in dim_event_detail,tracking data,"SOG (Shot_OnNetSaved, Shot_Goal), save type (Save_Freeze, Save_Rebound), turnover type"
+event_detail_2,VARCHAR(50),YES,"Secondary event detail (zone entry type, save location)",EXPLICIT,From tracking: event_detail_2_ column,,Must be in dim_event_detail_2,tracking data,"Zone entry type (ZoneEntry-Rush/Pass/Dump), goalie save location (Glove/Blocker/Pad)"
+event_successful,VARCHAR(1),YES,"Success indicator: s=success, u=unsuccessful",EXPLICIT,From tracking: event_successful_ column,,s or u only,tracking data,"Pass completion (s=completed), shot results"
+event_team_player_1,INT,YES,Primary actor jersey number (CRITICAL: gets stat credit),EXPLICIT,From tracking: event_team_player_1 column,,1-99,tracking data,"ALL primary stats - shots, goals, faceoff wins, passes, zone entries"
+opp_team_player_1,INT,YES,Primary opponent actor jersey number,EXPLICIT,From tracking: opp_team_player_1 column,,1-99,tracking data,"Faceoff losses (this is the loser), opponent stats"
+linked_event_index,INT,YES,"Links to related event (e.g., assist linked to goal)",EXPLICIT,From tracking: linked_event_index column,,,tracking data,"Assist attribution, shot-save chains, fact_linked_events"
+empty_net_goal,BOOLEAN,YES,Flag if goal scored on empty net,CALCULATED,True if event_type=Goal AND opposing goalie was pulled (shift.team_en=1 or goalie isna),Goal events only,,"event_type, fact_shifts.home_team_en/away_team_en","Goalie GA (exclude EN), team stats"

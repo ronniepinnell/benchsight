@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Strategy</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #1a365d; border-bottom: 3px solid #3182ce; padding-bottom: 10px; }
+        h2 { color: #2c5282; margin-top: 30px; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; }
+        h3 { color: #2d3748; }
+        code {
+            background: #edf2f7;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.9em;
+        }
+        pre {
+            background: #1a202c;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background: #edf2f7;
+            font-weight: 600;
+        }
+        tr:hover { background: #f7fafc; }
+        .nav {
+            background: #1a365d;
+            padding: 15px 20px;
+            margin: -40px -40px 30px -40px;
+            border-radius: 8px 8px 0 0;
+        }
+        .nav a {
+            color: white;
+            text-decoration: none;
+            margin-right: 20px;
+        }
+        .nav a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="nav">
+            <a href="index.html">Home</a>
+            <a href="MASTER_INSTRUCTIONS.html">Master Instructions</a>
+            <a href="TRACKER_DEV_COMPLETE_GUIDE.html">Tracker Dev</a>
+            <a href="DASHBOARD_DEV_COMPLETE_GUIDE.html">Dashboard Dev</a>
+            <a href="SCHEMA_AND_ERD.html">Schema</a>
+        </nav>
+        <h1 id="benchsight-project-strategy">BenchSight Project Strategy</h1>
+<h2 id="vision">Vision</h2>
+<p>BenchSight aims to be the <strong>definitive analytics platform</strong> for NORAD recreational hockey, providing NHL-caliber statistics and insights for amateur players and teams.</p>
+<hr />
+<h2 id="strategic-pillars">Strategic Pillars</h2>
+<h3 id="1-data-quality-first">1. Data Quality First</h3>
+<p><strong>Principle:</strong> Accurate data is the foundation. No feature launches until data quality meets thresholds.</p>
+<p><strong>Targets:</strong>
+- Goals: ≥98% accuracy vs ground truth
+- Assists: ≥95% accuracy
+- All percentages: Valid ranges (0-100%)
+- No duplicate credits</p>
+<p><strong>Actions:</strong>
+- Continuous validation against noradhockey.com
+- Automated quality gates in ETL
+- Manual review for outliers</p>
+<h3 id="2-tracker-reliability">2. Tracker Reliability</h3>
+<p><strong>Principle:</strong> The tracker is the data entry point. If it's unreliable, everything downstream suffers.</p>
+<p><strong>Targets:</strong>
+- 100% roster loading success
+- Zero data loss from crashes
+- &lt;2 second event save time
+- Works offline (queue and sync)</p>
+<p><strong>Actions:</strong>
+- Prioritize stability over features
+- Add comprehensive error handling
+- Implement local storage backup</p>
+<h3 id="3-progressive-enhancement">3. Progressive Enhancement</h3>
+<p><strong>Principle:</strong> Start simple, add complexity only when base is solid.</p>
+<p><strong>Roadmap:</strong></p>
+<pre><code>Phase 1: Basic Stats (Current)
+├── Goals, Assists, Points
+├── Shots, SOG, Shooting%
+├── Faceoffs, Passes
+└── TOI, Shifts
+
+Phase 2: Advanced Stats
+├── Zone Entries/Exits
+├── Controlled Entry %
+├── H2H Matchups
+└── WOWY Analysis
+
+Phase 3: Positional Data
+├── XY Coordinates
+├── Shot Maps
+├── Heat Maps
+└── Player Positioning
+
+Phase 4: Predictive Analytics
+├── Expected Goals (xG)
+├── Win Probability
+├── Player Impact Models
+└── Game Predictions
+</code></pre>
+<h3 id="4-user-centric-design">4. User-Centric Design</h3>
+<p><strong>Principle:</strong> Analytics are only valuable if users understand and use them.</p>
+<p><strong>Personas:</strong>
+1. <strong>Player:</strong> Wants to see personal stats, compare to peers
+2. <strong>Coach:</strong> Wants team insights, line optimization
+3. <strong>League Admin:</strong> Wants standings, leaders, records
+4. <strong>Stats Nerd:</strong> Wants advanced metrics, raw data access</p>
+<p><strong>Actions:</strong>
+- Start with player/coach use cases
+- Progressive disclosure of complexity
+- Mobile-first design</p>
+<hr />
+<h2 id="competitive-advantages">Competitive Advantages</h2>
+<h3 id="1-granular-tracking">1. Granular Tracking</h3>
+<p>Unlike box score services, BenchSight tracks:
+- Every event with timestamps
+- All players on ice per event
+- Zone context for all plays
+- XY coordinates (planned)</p>
+<h3 id="2-rec-league-focus">2. Rec League Focus</h3>
+<p>Most analytics tools target NHL/pro level. BenchSight is:
+- Designed for 2-period games
+- Handles rec league pace
+- Accounts for player variety
+- Affordable (Supabase free tier)</p>
+<h3 id="3-open-data-model">3. Open Data Model</h3>
+<ul>
+<li>All calculations documented</li>
+<li>Data dictionary available</li>
+<li>Export capabilities</li>
+<li>API access (via Supabase)</li>
+</ul>
+<hr />
+<h2 id="risk-mitigation">Risk Mitigation</h2>
+<h3 id="technical-risks">Technical Risks</h3>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Likelihood</th>
+<th>Impact</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tracker instability</td>
+<td>High</td>
+<td>High</td>
+<td>Prioritize Phase 1 fixes</td>
+</tr>
+<tr>
+<td>Data quality issues</td>
+<td>Medium</td>
+<td>High</td>
+<td>Continuous validation</td>
+</tr>
+<tr>
+<td>Supabase limits</td>
+<td>Low</td>
+<td>Medium</td>
+<td>Monitor usage, plan upgrade</td>
+</tr>
+<tr>
+<td>Schema changes</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>Version migrations</td>
+</tr>
+</tbody>
+</table>
+<h3 id="organizational-risks">Organizational Risks</h3>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Likelihood</th>
+<th>Impact</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Key person dependency</td>
+<td>High</td>
+<td>High</td>
+<td>Documentation, handoffs</td>
+</tr>
+<tr>
+<td>Scope creep</td>
+<td>High</td>
+<td>Medium</td>
+<td>Stick to phase roadmap</td>
+</tr>
+<tr>
+<td>User adoption</td>
+<td>Medium</td>
+<td>High</td>
+<td>Focus on player value</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="success-metrics">Success Metrics</h2>
+<h3 id="phase-1-foundation">Phase 1 (Foundation)</h3>
+<ul>
+<li>[ ] 293+ tests passing</li>
+<li>[ ] &lt;5% variance on all stats vs ground truth</li>
+<li>[ ] Tracker saves 100% of events</li>
+<li>[ ] Full data dictionary</li>
+</ul>
+<h3 id="phase-2-growth">Phase 2 (Growth)</h3>
+<ul>
+<li>[ ] 10+ games processed</li>
+<li>[ ] 50%+ players checking stats</li>
+<li>[ ] Basic dashboard deployed</li>
+<li>[ ] Zero critical bugs</li>
+</ul>
+<h3 id="phase-3-scale">Phase 3 (Scale)</h3>
+<ul>
+<li>[ ] Full season tracked</li>
+<li>[ ] League standings automated</li>
+<li>[ ] Advanced stats adopted</li>
+<li>[ ] Positive NPS from users</li>
+</ul>
+<h3 id="phase-4-innovation">Phase 4 (Innovation)</h3>
+<ul>
+<li>[ ] xG model deployed</li>
+<li>[ ] Real-time game tracking</li>
+<li>[ ] Mobile app launched</li>
+<li>[ ] Other leagues interested</li>
+</ul>
+<hr />
+<h2 id="resource-allocation">Resource Allocation</h2>
+<h3 id="current-state">Current State</h3>
+<ul>
+<li>1 part-time developer (ETL/Backend)</li>
+<li>Volunteer trackers (game data entry)</li>
+<li>Supabase free tier</li>
+</ul>
+<h3 id="ideal-state">Ideal State</h3>
+<ul>
+<li>1 tracker developer (HTML/JS)</li>
+<li>1 dashboard developer (React/Vue)</li>
+<li>1 data engineer (Python/SQL)</li>
+<li>Supabase Pro tier</li>
+</ul>
+<h3 id="budget-considerations">Budget Considerations</h3>
+<ul>
+<li>Supabase Pro: ~$25/month</li>
+<li>Domain/hosting: ~$15/month</li>
+<li>Total: ~$40/month sustainable</li>
+</ul>
+<hr />
+<h2 id="timeline">Timeline</h2>
+<h3 id="q1-2025-jan-mar">Q1 2025 (Jan-Mar)</h3>
+<ul>
+<li>Fix tracker reliability</li>
+<li>Complete data quality validation</li>
+<li>Basic dashboard MVP</li>
+</ul>
+<h3 id="q2-2025-apr-jun">Q2 2025 (Apr-Jun)</h3>
+<ul>
+<li>XY coordinate capture</li>
+<li>Shot maps and heat maps</li>
+<li>Player comparison tools</li>
+</ul>
+<h3 id="q3-2025-jul-sep">Q3 2025 (Jul-Sep)</h3>
+<ul>
+<li>Full season retrospective</li>
+<li>xG model training</li>
+<li>Mobile optimization</li>
+</ul>
+<h3 id="q4-2025-oct-dec">Q4 2025 (Oct-Dec)</h3>
+<ul>
+<li>Real-time tracking pilot</li>
+<li>Advanced analytics suite</li>
+<li>Expansion planning</li>
+</ul>
+<hr />
+<h2 id="decision-framework">Decision Framework</h2>
+<h3 id="when-to-add-features">When to Add Features</h3>
+<p>✅ Add feature if:
+- Data quality targets met
+- User need validated
+- Development capacity available
+- Doesn't break existing functionality</p>
+<p>❌ Don't add feature if:
+- Data quality below threshold
+- Nice-to-have vs must-have
+- Introduces technical debt
+- Users haven't asked for it</p>
+<h3 id="when-to-fix-vs-build">When to Fix vs Build</h3>
+<ul>
+<li><strong>Fix first</strong> if stability &lt;95%</li>
+<li><strong>Build first</strong> if stability &gt;95% AND user need urgent</li>
+</ul>
+<h3 id="when-to-automate">When to Automate</h3>
+<ul>
+<li>If task done &gt;3x manually</li>
+<li>If task is error-prone</li>
+<li>If task blocks development</li>
+</ul>
+<hr />
+<h2 id="communication-plan">Communication Plan</h2>
+<h3 id="internal">Internal</h3>
+<ul>
+<li>Weekly status updates</li>
+<li>Decision log maintained</li>
+<li>Handoff docs always current</li>
+</ul>
+<h3 id="external-users">External (Users)</h3>
+<ul>
+<li>Release notes per version</li>
+<li>Known issues transparent</li>
+<li>Feedback channel open</li>
+</ul>
+<hr />
+<h2 id="conclusion">Conclusion</h2>
+<p>BenchSight's strategy is <strong>boring by design</strong>: prioritize reliability, validate constantly, add features progressively. The goal isn't to build the most advanced analytics platform—it's to build one that <strong>actually works</strong> for a recreational hockey league.</p>
+<hr />
+<p><em>Document Version: 1.0 | Last Updated: December 2024</em></p>
+    </div>
+</body>
+</html>
