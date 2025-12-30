@@ -42,7 +42,7 @@ Portal ←→ Supabase API ←→ PostgreSQL Database
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
-| Database | Supabase | 96 tables + logs |
+| Database | Supabase | 98 tables + logs |
 | ETL | `etl.py` | Process raw → CSV |
 | Loader | `scripts/load_all_tables.py` | CSV → Supabase |
 | Logs | `logs/` + `log_*` tables | Audit trail |
@@ -533,7 +533,7 @@ async function createTable(sql) {
 ### Data Loader Commands
 
 ```bash
-# Load ALL tables (96 tables)
+# Load ALL tables (98 tables)
 python scripts/load_all_tables.py
 
 # Load with upsert (handles duplicates)
@@ -621,7 +621,7 @@ TRUNCATE TABLE fact_shifts CASCADE;
 
 ```sql
 -- Run sql/05_FINAL_COMPLETE_SCHEMA.sql
--- This drops and recreates all 96 tables
+-- This drops and recreates all 98 tables
 ```
 
 ### Useful Admin Queries

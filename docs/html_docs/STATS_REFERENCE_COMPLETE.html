@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STATS_REFERENCE_COMPLETE - BenchSight</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #34495e; margin-top: 30px; }
+        h3 { color: #7f8c8d; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: 'Monaco', 'Menlo', monospace; }
+        pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        pre code { background: none; color: inherit; }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #3498db; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        a { color: #3498db; }
+        blockquote { border-left: 4px solid #3498db; margin: 0; padding-left: 20px; color: #666; }
+        .nav { background: #2c3e50; padding: 10px; margin-bottom: 20px; border-radius: 5px; }
+        .nav a { color: white; margin-right: 15px; text-decoration: none; }
+        .nav a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="INDEX.html">Index</a>
+        <a href="DEPLOYMENT_GUIDE.html">Deploy</a>
+        <a href="STATS_REFERENCE_COMPLETE.html">Stats</a>
+        <a href="DATA_DICTIONARY.html">Data Dict</a>
+    </div>
+<h1>BenchSight Complete Stats Reference</h1>
+
+<strong>All 317 player game stats with formulas, context, and benchmarks</strong>
+
+<p>---</p>
+
+<h2>Scoring Stats</h2>
+
+<table>
+<tr><th>Column</th><th>Description</th><th>Formula</th><th>Good</th><th>Bad</th></tr>
+<tr><td><code>assists</code></td><td>Total assists (primary + secondary)</td><td>A1 + A2</td><td>1+/game</td><td>0/game</td></tr>
+<tr><td><code>assists_per_60_playing</code></td><td>Assists Per 60 Playing</td><td></td><td></td><td></td></tr>
+<tr><th><code>assists_rating_adj</code></th><th>Assists Rating Adj</th><th></th><th></th><th></th></tr>
+<tr><th><code>breakaway_goals</code></th><th>Breakaway Goals</th><th></th><th></th><th></th></tr>
+<tr><th><code>clutch_goals</code></th><th>Clutch Goals</th><th></th><th></th><th></th></tr>
+<tr><th><code>def_goals_against</code></th><th>Def Goals Against</th><th></th><th></th><th></th></tr>
+<tr><th><code>empty_net_goals_for</code></th><th>Empty Net Goals For</th><th></th><th></th><th></th></tr>
+<tr><th><code>first_period_points</code></th><th>First Period Points</th><th></th><th></th><th></th></tr>
+<tr><th><code>goals</code></th><th>Goals scored by player</th><th>COUNT(Goal events where event_player_1 = player)</th><th>1+/game</th><th>0/game</th></tr>
+<tr><th><code>goals_leading</code></th><th>Goals Leading</th><th></th><th></th><th></th></tr>
+<tr><th><code>goals_per_60_playing</code></th><th>Goals Per 60 Playing</th><th></th><th></th><th></th></tr>
+<tr><th><code>goals_rating_adj</code></th><th>Goals Rating Adj</th><th></th><th></th><th></th></tr>
+<tr><th><code>goals_tied</code></th><th>Goals Tied</th><th></th><th></th><th></th></tr>
+<tr><th><code>goals_trailing</code></th><th>Goals Trailing</th><th></th><th></th><th></th></tr>
+<tr><th><code>odd_man_rush_goals</code></th><th>Odd Man Rush Goals</th><th></th><th></th><th></th></tr>
+<tr><th><code>points</code></th><th>Total offensive production</th><th>goals + assists</th><th>2+/game</th><th>0/game</th></tr>
+<tr><th><code>points_per_60_playing</code></th><th>Points Per 60 Playing</th><th></th><th></th><th></th></tr>
+<tr><th><code>points_rating_adj</code></th><th>Points Rating Adj</th><th></th><th></th><th></th></tr>
+<tr><th><code>primary_assists</code></th><th>Last pass before goal</th><th>COUNT where event_player_2</th><th>1+/game</th><th>0</th></tr>
+<tr><th><code>rush_goals</code></th><th>Rush Goals</th><th></th><th></th><th></th></tr>
+<tr><th><code>second_period_points</code></th><th>Second Period Points</th><th></th><th></th><th></th></tr>
+<tr><th><code>secondary_assists</code></th><th>Second-to-last pass</th><th>COUNT where event_player_3</th><th>0.5+/game</th><th>0</th></tr>
+<tr><th><code>shorthanded_goals</code></th><th>Shorthanded Goals</th><th></th><th></th><th></th></tr>
+<tr><th><code>third_period_points</code></th><th>Third Period Points</th><th></th><th></th><th></th></tr>
+</table>
+
+<h2>Shooting Stats</h2>
+
+<table>
+<tr><th>Column</th><th>Description</th><th>Formula</th><th>Good</th><th>Bad</th></tr>
+<tr><td><code>def_blocked_shots</code></td><td>Def Blocked Shots</td><td></td><td></td><td></td></tr>
+<tr><td><code>def_shots_against</code></td><td>Def Shots Against</td><td></td><td></td><td></td></tr>
+<tr><th><code>first_period_shots</code></th><th>First Period Shots</th><th></th><th></th><th></th></tr>
+<tr><th><code>odd_man_rush_shots</code></th><th>Odd Man Rush Shots</th><th></th><th></th><th></th></tr>
+<tr><th><code>rush_shots</code></th><th>Rush Shots</th><th></th><th></th><th></th></tr>
+<tr><th><code>second_period_shots</code></th><th>Second Period Shots</th><th></th><th></th><th></th></tr>
+<tr><th><code>shooting_pct</code></th><th>Goal conversion rate</th><th>(goals / sog) * 100</th><th>12%+</th><th>&lt;8%</th></tr>
+<tr><th><code>shot_quality_avg</code></th><th>Shot Quality Avg</th><th></th><th></th><th></th></tr>
+<tr><th><code>shot_success_rate</code></th><th>Shot Success Rate</th><th></th><th></th><th></th></tr>
+<tr><th><code>shots</code></th><th>All shot attempts</th><th>sog + shots_blocked + shots_missed</th><th>5+/game</th><th>&lt;2/game</th></tr>
+<tr><th><code>shots_blocked</code></th><th>Shots stopped by defenders</th><th>COUNT(shots blocked by opponent)</th><th>N/A</th><th>N/A</th></tr>
+<tr><th><code>shots_leading</code></th><th>Shots Leading</th><th></th><th></th><th></th></tr>
+<tr><th><code>shots_missed</code></th><th>Shots that missed net</th><th>COUNT(shots off target)</th><th>Low ratio</th><th>High ratio</th></tr>
+<tr><th><code>shots_per_60_playing</code></th><th>Shots Per 60 Playing</th><th></th><th></th><th></th></tr>
+<tr><th><code>shots_successful</code></th><th>Shots Successful</th><th></th><th></th><th></th></tr>
+<tr><th><code>shots_tied</code></th><th>Shots Tied</th><th></th><th></th><th></th></tr>
+<tr><th><code>shots_trailing</code></th><th>Shots Trailing</th><th></th><th></th><th></th></tr>
+<tr><th><code>shots_unsuccessful</code></th><th>Shots Unsuccessful</th><th></th><th></th><th></th></tr>
+<tr><th><code>sog</code></th><th>Shots on net</th><th>COUNT(shots reaching goalie)</th><th>4+/game</th><th>&lt;2/game</th></tr>
+<tr><th><code>third_period_shots</code></th><th>Third Period Shots</th><th></th><th></th><th></th></tr>
+<tr><th><code>times_targeted_shots</code></th><th>Times Targeted Shots</th><th></th><th></th><th></th></tr>
+<tr><th><code>xg_per_shot</code></th><th>Xg Per Shot</th><th></th><th></th><th></th></tr>
+</table>
+
+<h2>Passing Stats</h2>
+
+<table>
+<tr><th>Column</th><th>Description</th><th>Formula</th><th>Good</th><th>Bad</th></tr>
+<tr><td><code>breakout_pass_attempts</code></td><td>Breakout Pass Attempts</td><td></td><td></td><td></td></tr>
+<tr><td><code>cross_ice_passes_received</code></td><td>Cross Ice Passes Received</td><td></td><td></td><td></td></tr>
+<tr><th><code>def_pass_deflected</code></th><th>Def Pass Deflected</th><th></th><th></th><th></th></tr>
+<tr><th><code>def_pass_intercepted</code></th><th>Def Pass Intercepted</th><th></th><th></th><th></th></tr>
+<tr><th><code>pass_attempts</code></th><th>Total passes tried</th><th>COUNT(all passes)</th><th>20+/game</th><th>&lt;10/game</th></tr>
+<tr><th><code>pass_completed</code></th><th>Passes that connected</th><th>COUNT(successful passes)</th><th>High volume</th><th>Low volume</th></tr>
+<tr><th><code>pass_for_tip</code></th><th>Pass For Tip</th><th></th><th></th><th></th></tr>
+<tr><th><code>pass_pct</code></th><th>Pass accuracy</th><th>(pass_completed / pass_attempts) * 100</th><th>75%+</th><th>&lt;60%</th></tr>
+<tr><th><code>pass_reception_rate</code></th><th>Pass Reception Rate</th><th></th><th></th><th></th></tr>
+<tr><th><code>pass_success_rate</code></th><th>Pass Success Rate</th><th></th><th></th><th></th></tr>
+<tr><th><code>passes_deflected</code></th><th>Passes Deflected</th><th></th><th></th><th></th></tr>
+<tr><th><code>passes_intercepted</code></th><th>Passes Intercepted</th><th></th><th></th><th></th></tr>
+<tr><th><code>passes_missed_target</code></th><th>Passes Missed Target</th><th></th><th></th><th></th></tr>
+<tr><th><code>passes_received_successful</code></th><th>Passes Received Successful</th><th></th><th></th><th></th></tr>
+<tr><th><code>passes_received_unsuccessful</code></th><th>Passes Received Unsuccessful</th><th></th><th></th><th></th></tr>
+<tr><th><code>passes_successful</code></th><th>Passes Successful</th><th></th><th></th><th></th></tr>
+<tr><th><code>passes_unsuccessful</code></th><th>Passes Unsuccessful</th><th></th><th></th><th></th></tr>
+<tr><th><code>reverse_passes</code></th><th>Reverse Passes</th><th></th><th></th><th></th></tr>
+<tr><th><code>slot_passes_received</code></th><th>Slot Passes Received</th><th></th><th></th><th></th></tr>
+<tr><th><code>times_pass_target</code></th><th>Times Pass Target</th><th></th><th></th><th></th></tr>
+<tr><th><code>times_targeted_passes</code></th><th>Times Targeted Passes</th><th></th><th></th><th></th></tr>
+<tr><th><code>zone_exit_pass</code></th><th>Zone Exit Pass</th><th></th><th></th><th></th></tr>
+</table>
+
+<h2>Faceoff Stats</h2>
+
+<table>
+<tr><th>Column</th><th>Description</th><th>Formula</th><th>Good</th><th>Bad</th></tr>
+<tr><td><code>def_forced_turnovers</code></td><td>Def Forced Turnovers</td><td></td><td></td><td></td></tr>
+<tr><td><code>fo_losses</code></td><td>Draws lost</td><td>COUNT(faceoffs lost)</td><td>Low count</td><td>High count</td></tr>
+<tr><th><code>fo_losses_dz</code></th><th>Fo Losses Dz</th><th></th><th></th><th></th></tr>
+<tr><th><code>fo_losses_nz</code></th><th>Fo Losses Nz</th><th></th><th></th><th></th></tr>
+<tr><th><code>fo_losses_oz</code></th><th>Fo Losses Oz</th><th></th><th></th><th></th></tr>
+<tr><th><code>fo_pct</code></th><th>Draw win rate</th><th>(fo_wins / fo_total) * 100</th><th>55%+</th><th>&lt;45%</th></tr>
+<tr><th><code>fo_pct_dz</code></th><th>Fo Pct Dz</th><th></th><th></th><th></th></tr>
+<tr><th><code>fo_pct_nz</code></th><th>Fo Pct Nz</th><th></th><th></th><th></th></tr>
+<tr><th><code>fo_pct_oz</code></th><th>Fo Pct Oz</th><th></th><th></th><th></th></tr>
+<tr><th><code>fo_total</code></th><th>Total draws taken</th><th>fo_wins + fo_losses</th><th>N/A</th><th>N/A</th></tr>
+<tr><th><code>fo_wins</code></th><th>Draws won</th><th>COUNT(faceoffs won)</th><th>High count</th><th>Low count</th></tr>
+<tr><th><code>fo_wins_dz</code></th><th>Fo Wins Dz</th><th></th><th></th><th></th></tr>
+<tr><th><code>fo_wins_nz</code></th><th>Fo Wins Nz</th><th></th><th></th><th></th></tr>
+<tr><th><code>fo_wins_oz</code></th><th>Fo Wins Oz</th><th></th><th></th><th></th></tr>
+<tr><th><code>force_wide</code></th><th>Force Wide</th><th></th><th></th><th></th></tr>
+<tr><th><code>late_game_performance</code></th><th>Late Game Performance</th><th></th><th></th><th></th></tr>
+<tr><th><code>performance_index</code></th><th>Performance Index</th><th></th><th></th><th></th></tr>
+<tr><th><code>rating_performance_delta</code></th><th>Rating Performance Delta</th><th></th><th></th><th></th></tr>
+</table>
+
+<h2>Time on Ice Stats</h2>
+
+<table>
+<tr><th>Column</th><th>Description</th><th>Formula</th><th>Good</th><th>Bad</th></tr>
+<tr><td><code>avg_playing_shift</code></td><td>Avg Playing Shift</td><td></td><td></td><td></td></tr>
+<tr><td><code>avg_shift</code></td><td>Average shift duration</td><td>toi_seconds / shift_count</td><td>45-75 sec</td><td>&gt;90 sec</td></tr>
+<tr><th><code>avg_shift_too_long</code></th><th>Avg Shift Too Long</th><th></th><th></th><th></th></tr>
+<tr><th><code>def_times_beat_deke</code></th><th>Def Times Beat Deke</th><th></th><th></th><th></th></tr>
+<tr><th><code>def_times_beat_speed</code></th><th>Def Times Beat Speed</th><th></th><th></th><th></th></tr>
+<tr><th><code>def_times_beat_total</code></th><th>Def Times Beat Total</th><th></th><th></th><th></th></tr>
+<tr><th><code>logical_shifts</code></th><th>True shift changes (not period breaks)</th><th>COUNT(actual line changes)</th><th>N/A</th><th>N/A</th></tr>
+<tr><th><code>playing_toi_minutes</code></th><th>Playing Toi Minutes</th><th></th><th></th><th></th></tr>
+<tr><th><code>playing_toi_seconds</code></th><th>Active playing time</th><th>toi_seconds - stoppage_seconds</th><th>High % of TOI</th><th>Low % of TOI</th></tr>
+<tr><th><code>shift_count</code></th><th>Number of shifts taken</th><th>COUNT(shifts)</th><th>N/A</th><th>N/A</th></tr>
+<tr><th><code>shift_length_warning</code></th><th>Shift Length Warning</th><th></th><th></th><th></th></tr>
+<tr><th><code>times_attacked</code></th><th>Times Attacked</th><th></th><th></th><th></th></tr>
+<tr><th><code>times_attacked_successfully</code></th><th>Times Attacked Successfully</th><th></th><th></th><th></th></tr>
+<tr><th><code>times_attacked_unsuccessfully</code></th><th>Times Attacked Unsuccessfully</th><th></th><th></th><th></th></tr>
+<tr><th><code>times_ep3</code></th><th>Times Ep3</th><th></th><th></th><th></th></tr>
+<tr><th><code>times_ep4</code></th><th>Times Ep4</th><th></th><th></th><th></th></tr>
+<tr><th><code>times_ep5</code></th><th>Times Ep5</th><th></th><th></th><th></th></tr>
+<tr><th><code>times_opp2</code></th><th>Times Opp2</th><th></th><th></th><th></th></tr>
+<tr><th><code>times_opp3</code></th><th>Times Opp3</th><th></th><th></th><th></th></tr>
+<tr><th><code>times_opp4</code></th><th>Times Opp4</th><th></th><th></th><th></th></tr>
+<tr><th><code>times_target_dz</code></th><th>Times Target Dz</th><th></th><th></th><th></th></tr>
+<tr><th><code>times_target_nz</code></th><th>Times Target Nz</th><th></th><th></th><th></th></tr>
+<tr><th><code>times_target_oz</code></th><th>Times Target Oz</th><th></th><th></th><th></th></tr>
+<tr><th><code>times_targeted_as_defender</code></th><th>Times Targeted As Defender</th><th></th><th></th><th></th></tr>
+<tr><th><code>times_targeted_by_opp</code></th><th>Times Targeted By Opp</th><th></th><th></th><th></th></tr>
+<tr><th><code>times_targeted_entries</code></th><th>Times Targeted Entries</th><th></th><th></th><th></th></tr>
+<tr><th><code>toi_minutes</code></th><th>Total ice time in minutes</th><th>toi_seconds / 60</th><th>25+</th><th>&lt;10</th></tr>
+<tr><th><code>toi_seconds</code></th><th>Total ice time in seconds</th><th>SUM(shift durations)</th><th>1500+</th><th>&lt;600</th></tr>
+<tr><th><code>toi_vs_team_avg</code></th><th>Toi Vs Team Avg</th><th></th><th></th><th></th></tr>
+</table>
+
+<h2>Per-60 Rate Stats</h2>
+
+<table>
+<tr><th>Column</th><th>Description</th><th>Formula</th><th>Good</th><th>Bad</th></tr>
+<tr><td><code>assists_per_60</code></td><td>Assist rate per 60 min</td><td>(assists / toi_minutes) * 60</td><td>2+</td><td>0</td></tr>
+<tr><td><code>danger_creation_rate</code></td><td>Danger Creation Rate</td><td></td><td></td><td></td></tr>
+<tr><th><code>defensive_success_rate</code></th><th>Defensive Success Rate</th><th></th><th></th><th></th></tr>
+<tr><th><code>game_score_per_60</code></th><th>Game Score Per 60</th><th></th><th></th><th></th></tr>
+<tr><th><code>goals_per_60</code></th><th>Goal rate per 60 min</th><th>(goals / toi_minutes) * 60</th><th>2+</th><th>0</th></tr>
+<tr><th><code>involvement_rate</code></th><th>Involvement Rate</th><th></th><th></th><th></th></tr>
+<tr><th><code>overall_success_rate</code></th><th>Overall Success Rate</th><th></th><th></th><th></th></tr>
+<tr><th><code>play_success_rate</code></th><th>Play Success Rate</th><th></th><th></th><th></th></tr>
+<tr><th><code>points_per_60</code></th><th>Point rate per 60 min</th><th>(points / toi_minutes) * 60</th><th>3+</th><th>&lt;1</th></tr>
+<tr><th><code>shots_per_60</code></th><th>Shot rate per 60 min</th><th>(shots / toi_minutes) * 60</th><th>10+</th><th>&lt;5</th></tr>
+</table>
+
+<h2>Zone Transition Stats</h2>
+
+<table>
+<tr><th>Column</th><th>Description</th><th>Formula</th><th>Good</th><th>Bad</th></tr>
+<tr><td><code>ceded_exits</code></td><td>Ceded Exits</td><td></td><td></td><td></td></tr>
+<tr><td><code>def_exits_denied</code></td><td>Def Exits Denied</td><td></td><td></td><td></td></tr>
+<tr><th><code>def_zone_clears</code></th><th>Def Zone Clears</th><th></th><th></th><th></th></tr>
+<tr><th><code>exits_successful</code></th><th>Exits Successful</th><th></th><th></th><th></th></tr>
+<tr><th><code>exits_unsuccessful</code></th><th>Exits Unsuccessful</th><th></th><th></th><th></th></tr>
+<tr><th><code>zone_entries</code></th><th>Times entered O-zone</th><th>COUNT(offensive zone entries)</th><th>5+/game</th><th>&lt;2/game</th></tr>
+<tr><th><code>zone_entries_controlled</code></th><th>Entries with possession</th><th>zone_entry_carry + zone_entry_pass</th><th>70%+</th><th>&lt;50%</th></tr>
+<tr><th><code>zone_entries_uncontrolled</code></th><th>Zone Entries Uncontrolled</th><th></th><th></th><th></th></tr>
+<tr><th><code>zone_entry_carry</code></th><th>Controlled entries w/ puck</th><th>COUNT(zone entries via carry)</th><th>High %</th><th>Low %</th></tr>
+<tr><th><code>zone_entry_control_pct</code></th><th>Controlled entry rate</th><th>(controlled / total) * 100</th><th>70%+</th><th>&lt;50%</th></tr>
+<tr><th><code>zone_entry_denials</code></th><th>Zone Entry Denials</th><th></th><th></th><th></th></tr>
+<tr><th><code>zone_entry_denials_success</code></th><th>Zone Entry Denials Success</th><th></th><th></th><th></th></tr>
+<tr><th><code>zone_entry_dump</code></th><th>Uncontrolled entries</th><th>COUNT(dump and chase entries)</th><th>Low %</th><th>High %</th></tr>
+<tr><th><code>zone_entry_pass</code></th><th>Entries via pass</th><th>COUNT(zone entries via pass)</th><th>N/A</th><th>N/A</th></tr>
+<tr><th><code>zone_entry_success_rate</code></th><th>Zone Entry Success Rate</th><th></th><th></th><th></th></tr>
+<tr><th><code>zone_exit_carry</code></th><th>Zone Exit Carry</th><th></th><th></th><th></th></tr>
+<tr><th><code>zone_exit_clear</code></th><th>Zone Exit Clear</th><th></th><th></th><th></th></tr>
+<tr><th><code>zone_exit_control_pct</code></th><th>Zone Exit Control Pct</th><th></th><th></th><th></th></tr>
+<tr><th><code>zone_exit_denials</code></th><th>Zone Exit Denials</th><th></th><th></th><th></th></tr>
+<tr><th><code>zone_exit_dump</code></th><th>Zone Exit Dump</th><th></th><th></th><th></th></tr>
+<tr><th><code>zone_exit_success_rate</code></th><th>Zone Exit Success Rate</th><th></th><th></th><th></th></tr>
+<tr><th><code>zone_exits</code></th><th>Times exited D-zone</th><th>COUNT(defensive zone exits)</th><th>5+/game</th><th>&lt;2/game</th></tr>
+<tr><th><code>zone_exits_controlled</code></th><th>Zone Exits Controlled</th><th></th><th></th><th></th></tr>
+<tr><th><code>zone_exits_uncontrolled</code></th><th>Zone Exits Uncontrolled</th><th></th><th></th><th></th></tr>
+<tr><th><code>zone_keepins</code></th><th>Zone Keepins</th><th></th><th></th><th></th></tr>
+<tr><th><code>zone_starts_dz_pct</code></th><th>Zone Starts Dz Pct</th><th></th><th></th><th></th></tr>
+<tr><th><code>zone_starts_oz_pct</code></th><th>Zone Starts Oz Pct</th><th></th><th></th><th></th></tr>
+</table>
+
+<h2>Turnover Stats</h2>
+
+<table>
+<tr><th>Column</th><th>Description</th><th>Formula</th><th>Good</th><th>Bad</th></tr>
+<tr><td><code>def_takeaways</code></td><td>Def Takeaways</td><td></td><td></td><td></td></tr>
+<tr><td><code>give_and_go</code></td><td>Give And Go</td><td></td><td></td><td></td></tr>
+<tr><th><code>giveaway_rate_per_60</code></th><th>Giveaway Rate Per 60</th><th></th><th></th><th></th></tr>
+<tr><th><code>giveaways</code></th><th>Times lost puck to opponent</th><th>COUNT(turnovers committed)</th><th>&lt;3/game</th><th>5+/game</th></tr>
+<tr><th><code>giveaways_bad</code></th><th>Turnovers leading to chances</th><th>COUNT(costly turnovers)</th><th>0/game</th><th>2+/game</th></tr>
+<tr><th><code>giveaways_good</code></th><th>Giveaways Good</th><th></th><th></th><th></th></tr>
+<tr><th><code>giveaways_neutral</code></th><th>Giveaways Neutral</th><th></th><th></th><th></th></tr>
+<tr><th><code>takeaway_rate_per_60</code></th><th>Takeaway Rate Per 60</th><th></th><th></th><th></th></tr>
+<tr><th><code>takeaways</code></th><th>Times stole puck</th><th>COUNT(turnovers forced)</th><th>3+/game</th><th>&lt;1/game</th></tr>
+<tr><th><code>turnover_diff_adjusted</code></th><th>Net turnover impact</th><th>takeaways - giveaways_bad</th><th>Positive</th><th>Negative</th></tr>
+<tr><th><code>turnover_recoveries</code></th><th>Turnover Recoveries</th><th></th><th></th><th></th></tr>
+<tr><th><code>turnovers_dz</code></th><th>Turnovers Dz</th><th></th><th></th><th></th></tr>
+<tr><th><code>turnovers_nz</code></th><th>Turnovers Nz</th><th></th><th></th><th></th></tr>
+<tr><th><code>turnovers_oz</code></th><th>Turnovers Oz</th><th></th><th></th><th></th></tr>
+</table>
+
+<h2>Possession Stats (Corsi/Fenwick)</h2>
+
+<table>
+<tr><th>Column</th><th>Description</th><th>Formula</th><th>Good</th><th>Bad</th></tr>
+<tr><td><code>cf_pct</code></td><td>Share of shot attempts</td><td>(CF / (CF + CA)) * 100</td><td>55%+</td><td>&lt;45%</td></tr>
+<tr><td><code>cf_pct_rating_adj</code></td><td>Cf Pct Rating Adj</td><td></td><td></td><td></td></tr>
+<tr><th><code>corsi_against</code></th><th>Shot attempts against</th><th>opponent shot attempts while on ice</th><th>Low</th><th>High</th></tr>
+<tr><th><code>corsi_for</code></th><th>Shot attempts for while on ice</th><th>sog + shots_blocked + shots_missed (team)</th><th>High</th><th>Low</th></tr>
+<tr><th><code>fenwick_against</code></th><th>Unblocked attempts against</th><th>opponent unblocked attempts</th><th>Low</th><th>High</th></tr>
+<tr><th><code>fenwick_for</code></th><th>Unblocked attempts for</th><th>sog + shots_missed (excludes blocked)</th><th>High</th><th>Low</th></tr>
+<tr><th><code>ff_pct</code></th><th>Share of unblocked attempts</th><th>(FF / (FF + FA)) * 100</th><th>55%+</th><th>&lt;45%</th></tr>
+</table>
+
+<h2>Plus/Minus Stats</h2>
+
+<table>
+<tr><th>Column</th><th>Description</th><th>Formula</th><th>Good</th><th>Bad</th></tr>
+<tr><td><code>minus_en_adj</code></td><td>Minus En Adj</td><td></td><td></td><td></td></tr>
+<tr><td><code>minus_ev</code></td><td>ES goals against</td><td>goals against at ES while on ice</td><td>Low</td><td>High</td></tr>
+<tr><th><code>minus_total</code></th><th>Minus Total</th><th></th><th></th><th></th></tr>
+<tr><th><code>plus_en_adj</code></th><th>Plus En Adj</th><th></th><th></th><th></th></tr>
+<tr><th><code>plus_ev</code></th><th>ES goals for</th><th>goals for at ES while on ice</th><th>High</th><th>Low</th></tr>
+<tr><th><code>plus_minus_en_adj</code></th><th>Plus Minus En Adj</th><th></th><th></th><th></th></tr>
+<tr><th><code>plus_minus_ev</code></th><th>Plus Minus Ev</th><th></th><th></th><th></th></tr>
+<tr><th><code>plus_minus_rating_adj</code></th><th>Plus Minus Rating Adj</th><th></th><th></th><th></th></tr>
+<tr><th><code>plus_minus_total</code></th><th>Net goal differential</th><th>goals_for - goals_against (on ice)</th><th>Positive</th><th>Negative</th></tr>
+<tr><th><code>plus_total</code></th><th>Plus Total</th><th></th><th></th><th></th></tr>
+</table>
+
+<h2>Expected Goals (xG) Stats</h2>
+
+<table>
+<tr><th>Column</th><th>Description</th><th>Formula</th><th>Good</th><th>Bad</th></tr>
+<tr><td><code>expected_vs_rating</code></td><td>Expected Vs Rating</td><td></td><td></td><td></td></tr>
+<tr><td><code>goals_above_expected</code></td><td>Finishing vs expectation</td><td>actual_goals - xg_for</td><td>Positive</td><td>Negative</td></tr>
+<tr><th><code>xg_against</code></th><th>Expected goals conceded</th><th>SUM(shot probabilities) against</th><th>Low</th><th>High</th></tr>
+<tr><th><code>xg_diff</code></th><th>Net expected goal impact</th><th>xg_for - xg_against</th><th>Positive</th><th>Negative</th></tr>
+<tr><th><code>xg_for</code></th><th>Expected goals from shot quality</th><th>SUM(shot probabilities) for team</th><th>High</th><th>Low</th></tr>
+<tr><th><code>xg_pct</code></th><th>Xg Pct</th><th></th><th></th><th></th></tr>
+</table>
+
+<h2>Scoring Chance / Danger Stats</h2>
+
+<table>
+<tr><th>Column</th><th>Description</th><th>Formula</th><th>Good</th><th>Bad</th></tr>
+<tr><td><code>high_danger_chances</code></td><td>Best opportunities</td><td>shots from prime areas</td><td>2+/game</td><td>0/game</td></tr>
+<tr><td><code>scoring_chances</code></td><td>Quality opportunities</td><td>high + medium danger shots</td><td>5+/game</td><td>&lt;2/game</td></tr>
+<tr><th><code>shots_high_danger</code></th><th>Premium scoring chances</th><th>shots from slot/crease</th><th>3+/game</th><th>0/game</th></tr>
+<tr><th><code>shots_low_danger</code></th><th>Low quality chances</th><th>shots from perimeter</th><th>N/A</th><th>N/A</th></tr>
+<tr><th><code>shots_medium_danger</code></th><th>Moderate chances</th><th>shots from mid-range</th><th>N/A</th><th>N/A</th></tr>
+</table>
+
+<h2>Micro Stats (Detailed Play Tracking)</h2>
+
+<table>
+<tr><th>Column</th><th>Description</th><th>Formula</th><th>Good</th><th>Bad</th></tr>
+<tr><td><code>backchecks</code></td><td>Defensive effort</td><td>COUNT(defensive hustle plays)</td><td>3+/game</td><td>0/game</td></tr>
+<tr><td><code>block_attempts</code></td><td>Block Attempts</td><td></td><td></td><td></td></tr>
+<tr><th><code>blocked_shots_play</code></th><th>Shots blocked by player</th><th>COUNT(blocked shots)</th><th>2+/game (D)</th><th>N/A</th></tr>
+<tr><th><code>blocks</code></th><th>Blocks</th><th></th><th></th><th></th></tr>
+<tr><th><code>box_outs</code></th><th>Box Outs</th><th></th><th></th><th></th></tr>
+<tr><th><code>breakout_clear_attempts</code></th><th>Breakout Clear Attempts</th><th></th><th></th><th></th></tr>
+<tr><th><code>breakout_rush_attempts</code></th><th>Breakout Rush Attempts</th><th></th><th></th><th></th></tr>
+<tr><th><code>breakouts</code></th><th>Successful DZ exits</th><th>COUNT(zone exit plays)</th><th>5+/game (D)</th><th>&lt;2/game</th></tr>
+<tr><th><code>breakouts_success</code></th><th>Breakouts Success</th><th></th><th></th><th></th></tr>
+<tr><th><code>chips</code></th><th>Chips</th><th></th><th></th><th></th></tr>
+<tr><th><code>contains</code></th><th>Contains</th><th></th><th></th><th></th></tr>
+<tr><th><code>crash_net</code></th><th>Crease presence</th><th>COUNT(drives to crease)</th><th>2+/game</th><th>0/game</th></tr>
+<tr><th><code>cycle_plays</code></th><th>Sustained OZ pressure</th><th>COUNT(board cycle possessions)</th><th>3+/game</th><th>0/game</th></tr>
+<tr><th><code>deke_attempts</code></th><th>Dekes attempted</th><th>COUNT(all deke tries)</th><th>N/A</th><th>N/A</th></tr>
+<tr><th><code>dekes_beat_defender</code></th><th>Dekes Beat Defender</th><th></th><th></th><th></th></tr>
+<tr><th><code>dekes_successful</code></th><th>Dekes that worked</th><th>COUNT(dekes beating defender)</th><th>2+/game</th><th>0/game</th></tr>
+<tr><th><code>drives_corner</code></th><th>Drives Corner</th><th></th><th></th><th></th></tr>
+<tr><th><code>drives_corner_success</code></th><th>Drives Corner Success</th><th></th><th></th><th></th></tr>
+<tr><th><code>drives_middle</code></th><th>Drives Middle</th><th></th><th></th><th></th></tr>
+<tr><th><code>drives_middle_success</code></th><th>Drives Middle Success</th><th></th><th></th><th></th></tr>
+<tr><th><code>drives_net</code></th><th>Drives Net</th><th></th><th></th><th></th></tr>
+<tr><th><code>drives_wide</code></th><th>Drives Wide</th><th></th><th></th><th></th></tr>
+<tr><th><code>drives_wide_success</code></th><th>Drives Wide Success</th><th></th><th></th><th></th></tr>
+<tr><th><code>forechecks</code></th><th>OZ pressure plays</th><th>COUNT(forecheck pressures)</th><th>5+/game (F)</th><th>&lt;2/game</th></tr>
+<tr><th><code>loose_puck_losses</code></th><th>Loose Puck Losses</th><th></th><th></th><th></th></tr>
+<tr><th><code>loose_puck_wins</code></th><th>Battle victories</th><th>COUNT(50/50 puck wins)</th><th>3+/game</th><th>&lt;1/game</th></tr>
+<tr><th><code>lost_puck</code></th><th>Lost Puck</th><th></th><th></th><th></th></tr>
+<tr><th><code>poke_checks</code></th><th>Defensive stick work</th><th>COUNT(stick pokes)</th><th>2+/game</th><th>N/A</th></tr>
+<tr><th><code>pressures</code></th><th>Pressures</th><th></th><th></th><th></th></tr>
+<tr><th><code>puck_battle_wins</code></th><th>Puck Battle Wins</th><th></th><th></th><th></th></tr>
+<tr><th><code>puck_battles</code></th><th>Puck Battles</th><th></th><th></th><th></th></tr>
+<tr><th><code>puck_possession_index</code></th><th>Puck Possession Index</th><th></th><th></th><th></th></tr>
+<tr><th><code>puck_recoveries</code></th><th>Retrieved loose pucks</th><th>COUNT(puck retrieval wins)</th><th>3+/game</th><th>&lt;1/game</th></tr>
+<tr><th><code>puck_retrievals</code></th><th>Puck Retrievals</th><th></th><th></th><th></th></tr>
+<tr><th><code>puck_touches_estimated</code></th><th>Puck Touches Estimated</th><th></th><th></th><th></th></tr>
+<tr><th><code>screens</code></th><th>Blocked goalie vision</th><th>COUNT(net-front screens)</th><th>2+/game</th><th>0/game</th></tr>
+<tr><th><code>separate_from_puck</code></th><th>Separate From Puck</th><th></th><th></th><th></th></tr>
+<tr><th><code>stick_checks</code></th><th>Defensive disruption</th><th>COUNT(stick lifts/holds)</th><th>2+/game</th><th>N/A</th></tr>
+<tr><th><code>stopped_deke</code></th><th>Stopped Deke</th><th></th><th></th><th></th></tr>
+<tr><th><code>surf_plays</code></th><th>Surf Plays</th><th></th><th></th><th></th></tr>
+<tr><th><code>tip_attempts</code></th><th>Tip Attempts</th><th></th><th></th><th></th></tr>
+</table>
+
+<h2>Defensive Stats</h2>
+
+<table>
+<tr><th>Column</th><th>Description</th><th>Formula</th><th>Good</th><th>Bad</th></tr>
+<tr><td><code>def_battles_lost</code></td><td>Def Battles Lost</td><td></td><td></td><td></td></tr>
+<tr><td><code>def_battles_won</code></td><td>Def Battles Won</td><td></td><td></td><td></td></tr>
+<tr><th><code>def_body_checks</code></th><th>Def Body Checks</th><th></th><th></th><th></th></tr>
+<tr><th><code>def_coverage_assignments</code></th><th>Def Coverage Assignments</th><th></th><th></th><th></th></tr>
+<tr><th><code>def_entries_allowed</code></th><th>Def Entries Allowed</th><th></th><th></th><th></th></tr>
+<tr><th><code>def_interceptions</code></th><th>Def Interceptions</th><th></th><th></th><th></th></tr>
+<tr><th><code>def_poke_checks</code></th><th>Def Poke Checks</th><th></th><th></th><th></th></tr>
+<tr><th><code>def_stick_checks</code></th><th>Def Stick Checks</th><th></th><th></th><th></th></tr>
+</table>
+
+<h2>Success Rate Stats</h2>
+
+<table>
+<tr><th>Column</th><th>Description</th><th>Formula</th><th>Good</th><th>Bad</th></tr>
+<tr><td><code>entries_successful</code></td><td>Entries Successful</td><td></td><td></td><td></td></tr>
+<tr><td><code>entries_unsuccessful</code></td><td>Entries Unsuccessful</td><td></td><td></td><td></td></tr>
+<tr><th><code>plays_successful</code></th><th>Plays Successful</th><th></th><th></th><th></th></tr>
+<tr><th><code>plays_unsuccessful</code></th><th>Plays Unsuccessful</th><th></th><th></th><th></th></tr>
+<tr><th><code>total_successful_plays</code></th><th>Total Successful Plays</th><th></th><th></th><th></th></tr>
+<tr><th><code>total_unsuccessful_plays</code></th><th>Total Unsuccessful Plays</th><th></th><th></th><th></th></tr>
+</table>
+
+<h2>Situational Stats</h2>
+
+<table>
+<tr><th>Column</th><th>Description</th><th>Formula</th><th>Good</th><th>Bad</th></tr>
+<tr><td><code>clutch_factor</code></td><td>Clutch Factor</td><td></td><td></td><td></td></tr>
+<tr><td><code>period_3_dropoff</code></td><td>Period 3 Dropoff</td><td></td><td></td><td></td></tr>
+</table>
+
+<h2>Composite Ratings</h2>
+
+<table>
+<tr><th>Column</th><th>Description</th><th>Formula</th><th>Good</th><th>Bad</th></tr>
+<tr><td><code>complete_player_score</code></td><td>Complete Player Score</td><td></td><td></td><td></td></tr>
+<tr><td><code>defensive_rating</code></td><td>Overall defensive impact</td><td>composite of D-stats</td><td>7+/10</td><td>&lt;4/10</td></tr>
+<tr><th><code>effective_game_rating</code></th><th>Effective Game Rating</th><th></th><th></th><th></th></tr>
+<tr><th><code>efficiency_score</code></th><th>Efficiency Score</th><th></th><th></th><th></th></tr>
+<tr><th><code>game_score</code></th><th>Single-game performance</th><th>weighted sum per NHL formula</th><th>2+</th><th>&lt;0</th></tr>
+<tr><th><code>game_score_rating</code></th><th>Game Score Rating</th><th></th><th></th><th></th></tr>
+<tr><th><code>hustle_rating</code></th><th>Hustle Rating</th><th></th><th></th><th></th></tr>
+<tr><th><code>impact_score</code></th><th>Total game impact</th><th>weighted composite of all stats</th><th>8+</th><th>&lt;4</th></tr>
+<tr><th><code>offensive_rating</code></th><th>Overall offensive impact</th><th>composite of O-stats</th><th>7+/10</th><th>&lt;4/10</th></tr>
+<tr><th><code>physical_rating</code></th><th>Physical Rating</th><th></th><th></th><th></th></tr>
+<tr><th><code>player_rating</code></th><th>Player Rating</th><th></th><th></th><th></th></tr>
+<tr><th><code>playing_at_rating</code></th><th>Playing At Rating</th><th></th><th></th><th></th></tr>
+<tr><th><code>playmaking_rating</code></th><th>Playmaking Rating</th><th></th><th></th><th></th></tr>
+<tr><th><code>shooting_rating</code></th><th>Shooting Rating</th><th></th><th></th><th></th></tr>
+<tr><th><code>sub_equity_score</code></th><th>Sub Equity Score</th><th></th><th></th><th></th></tr>
+<tr><th><code>two_way_rating</code></th><th>Overall player rating</th><th>(offensive + defensive) / 2</th><th>7+/10</th><th>&lt;4/10</th></tr>
+<tr><th><code>war_estimate</code></th><th>Value over replacement</th><th>estimated wins above replacement</th><th>0.1+/game</th><th>Negative</th></tr>
+</table>
+
+<h2>Quality of Competition/Teammates</h2>
+
+<table>
+<tr><th>Column</th><th>Description</th><th>Formula</th><th>Good</th><th>Bad</th></tr>
+<tr><td><code>opp_avg_rating</code></td><td>Quality of competition</td><td>AVG(opponent ratings faced)</td><td>N/A</td><td>N/A</td></tr>
+<tr><td><code>qoc_rating</code></td><td>Difficulty of matchups</td><td>quality of competition index</td><td>High (if succeeding)</td><td>N/A</td></tr>
+<tr><th><code>qot_rating</code></th><th>Linemate quality</th><th>quality of teammates index</th><th>N/A</th><th>N/A</th></tr>
+</table>
+
+<h2>Other Stats</h2>
+
+<table>
+<tr><th>Column</th><th>Description</th><th>Formula</th><th>Good</th><th>Bad</th></tr>
+<tr><td><code>2on0_rushes</code></td><td>2On0 Rushes</td><td></td><td></td><td></td></tr>
+<tr><td><code>2on1_rushes</code></td><td>2On1 Rushes</td><td></td><td></td><td></td></tr>
+<tr><th><code>3on2_rushes</code></th><th>3On2 Rushes</th><th></th><th></th><th></th></tr>
+<tr><th><code>away_team_id</code></th><th>Away Team Id</th><th></th><th></th><th></th></tr>
+<tr><th><code>beat_middle</code></th><th>Beat Middle</th><th></th><th></th><th></th></tr>
+<tr><th><code>beat_wide</code></th><th>Beat Wide</th><th></th><th></th><th></th></tr>
+<tr><th><code>breakaway_attempts</code></th><th>Breakaway Attempts</th><th></th><th></th><th></th></tr>
+<tr><th><code>ceded_entries</code></th><th>Ceded Entries</th><th></th><th></th><th></th></tr>
+<tr><th><code>counter_attacks</code></th><th>Counter Attacks</th><th></th><th></th><th></th></tr>
+<tr><th><code>cutbacks</code></th><th>Cutbacks</th><th></th><th></th><th></th></tr>
+<tr><th><code>defensive_assignments</code></th><th>Defensive Assignments</th><th></th><th></th><th></th></tr>
+<tr><th><code>defensive_contribution</code></th><th>Defensive Contribution</th><th></th><th></th><th></th></tr>
+<tr><th><code>delays</code></th><th>Delays</th><th></th><th></th><th></th></tr>
+<tr><th><code>dump_and_chase</code></th><th>Dump And Chase</th><th></th><th></th><th></th></tr>
+<tr><th><code>dump_recoveries</code></th><th>Dump Recoveries</th><th></th><th></th><th></th></tr>
+<tr><th><code>fatigue_indicator</code></th><th>Fatigue Indicator</th><th></th><th></th><th></th></tr>
+<tr><th><code>front_of_net</code></th><th>Front Of Net</th><th></th><th></th><th></th></tr>
+<tr><th><code>game_id</code></th><th>Game Id</th><th></th><th></th><th></th></tr>
+<tr><th><code>got_beat_middle</code></th><th>Got Beat Middle</th><th></th><th></th><th></th></tr>
+<tr><th><code>got_beat_wide</code></th><th>Got Beat Wide</th><th></th><th></th><th></th></tr>
+<tr><th><code>hits</code></th><th>Hits</th><th></th><th></th><th></th></tr>
+<tr><th><code>home_team_id</code></th><th>Home Team Id</th><th></th><th></th><th></th></tr>
+<tr><th><code>in_lane</code></th><th>In Lane</th><th></th><th></th><th></th></tr>
+<tr><th><code>man_on_man</code></th><th>Man On Man</th><th></th><th></th><th></th></tr>
+<tr><th><code>odd_man_rushes</code></th><th>Odd Man Rushes</th><th></th><th></th><th></th></tr>
+<tr><th><code>offensive_contribution</code></th><th>Offensive Contribution</th><th></th><th></th><th></th></tr>
+<tr><th><code>on_ice_sh_pct</code></th><th>On Ice Sh Pct</th><th></th><th></th><th></th></tr>
+<tr><th><code>on_ice_sv_pct</code></th><th>On Ice Sv Pct</th><th></th><th></th><th></th></tr>
+<tr><th><code>pdo</code></th><th>Pdo</th><th></th><th></th><th></th></tr>
+<tr><th><code>pdo_5v5</code></th><th>Pdo 5V5</th><th></th><th></th><th></th></tr>
+<tr><th><code>player_game_key</code></th><th>Player Game Key</th><th></th><th></th><th></th></tr>
+<tr><th><code>player_id</code></th><th>Player Id</th><th></th><th></th><th></th></tr>
+<tr><th><code>player_name</code></th><th>Player Name</th><th></th><th></th><th></th></tr>
+<tr><th><code>quick_ups</code></th><th>Quick Ups</th><th></th><th></th><th></th></tr>
+<tr><th><code>rebound_recoveries</code></th><th>Rebound Recoveries</th><th></th><th></th><th></th></tr>
+<tr><th><code>retrievals</code></th><th>Retrievals</th><th></th><th></th><th></th></tr>
+<tr><th><code>rush_entries</code></th><th>Rush Entries</th><th></th><th></th><th></th></tr>
+<tr><th><code>second_touches</code></th><th>Second Touches</th><th></th><th></th><th></th></tr>
+<tr><th><code>skill_diff</code></th><th>Skill Diff</th><th></th><th></th><th></th></tr>
+<tr><th><code>stoppage_seconds</code></th><th>Stoppage Seconds</th><th></th><th></th><th></th></tr>
+<tr><th><code>support_plays</code></th><th>Support Plays</th><th></th><th></th><th></th></tr>
+<tr><th><code>total_on_ice_events</code></th><th>Total On Ice Events</th><th></th><th></th><th></th></tr>
+<tr><th><code>transition_plays</code></th><th>Transition Plays</th><th></th><th></th><th></th></tr>
+</table>
+
+<p>---</p>
+
+<h2>Summary</h2>
+
+<strong>Total columns:</strong> 317
+
+<table>
+<tr><th>Category</th><th>Count</th></tr>
+<tr><td>Scoring Stats</td><td>24</td></tr>
+<tr><td>Shooting Stats</td><td>22</td></tr>
+<tr><th>Passing Stats</th><th>22</th></tr>
+<tr><th>Faceoff Stats</th><th>18</th></tr>
+<tr><th>Time on Ice Stats</th><th>29</th></tr>
+<tr><th>Per-60 Rate Stats</th><th>10</th></tr>
+<tr><th>Zone Transition Stats</th><th>27</th></tr>
+<tr><th>Turnover Stats</th><th>14</th></tr>
+<tr><th>Possession Stats (Corsi/Fenwick)</th><th>7</th></tr>
+<tr><th>Plus/Minus Stats</th><th>10</th></tr>
+<tr><th>Expected Goals (xG) Stats</th><th>6</th></tr>
+<tr><th>Scoring Chance / Danger Stats</th><th>5</th></tr>
+<tr><th>Micro Stats (Detailed Play Tracking)</th><th>41</th></tr>
+<tr><th>Defensive Stats</th><th>8</th></tr>
+<tr><th>Success Rate Stats</th><th>6</th></tr>
+<tr><th>Situational Stats</th><th>2</th></tr>
+<tr><th>Composite Ratings</th><th>17</th></tr>
+<tr><th>Quality of Competition/Teammates</th><th>3</th></tr>
+<tr><th>Other Stats</th><th>43</th></tr>
+</table>
+<p>---</p>
+
+<h2>Goalie Game Stats (<code>fact_goalie_game_stats</code>)</h2>
+
+<table>
+<tr><th>Column</th><th>Description</th><th>Good</th><th>Bad</th></tr>
+<tr><td><code>goalie_game_key</code></td><td>Primary key</td><td>-</td><td>-</td></tr>
+<tr><td><code>game_id</code></td><td>Game identifier</td><td>-</td><td>-</td></tr>
+<tr><th><code>player_id</code></th><th>Goalie player ID</th><th>-</th><th>-</th></tr>
+<tr><th><code>player_name</code></th><th>Goalie name</th><th>-</th><th>-</th></tr>
+<tr><th><code>team_id</code></th><th>Team ID</th><th>-</th><th>-</th></tr>
+<tr><th><code>shots_against</code></th><th>Total shots faced</th><th>N/A</th><th>N/A</th></tr>
+<tr><th><code>goals_against</code></th><th>Goals allowed</th><th>Low</th><th>High</th></tr>
+<tr><th><code>saves</code></th><th>Shots stopped</th><th>High</th><th>Low</th></tr>
+<tr><th><code>save_pct</code></th><th>Save percentage</th><th>90%+</th><th>&lt;85%</th></tr>
+<tr><th><code>toi_seconds</code></th><th>Time on ice</th><th>N/A</th><th>N/A</th></tr>
+<tr><th><code>toi_minutes</code></th><th>Time on ice (min)</th><th>N/A</th><th>N/A</th></tr>
+<tr><th><code>gaa</code></th><th>Goals against average</th><th>&lt;3.0</th><th>&gt;5.0</th></tr>
+<tr><th><code>wins</code></th><th>Games won</th><th>High</th><th>Low</th></tr>
+<tr><th><code>losses</code></th><th>Games lost</th><th>Low</th><th>High</th></tr>
+<tr><th><code>shutouts</code></th><th>Clean sheets</th><th>Any</th><th>0</th></tr>
+<tr><th><code>high_danger_saves</code></th><th>Saves from slot</th><th>High</th><th>Low</th></tr>
+<tr><th><code>high_danger_goals_against</code></th><th>Goals from slot</th><th>Low</th><th>High</th></tr>
+<tr><th><code>high_danger_save_pct</code></th><th>HD save %</th><th>85%+</th><th>&lt;75%</th></tr>
+<tr><th><code>expected_goals_against</code></th><th>xGA</th><th>N/A</th><th>N/A</th></tr>
+<tr><th><code>goals_saved_above_expected</code></th><th>Performance vs xG</th><th>Positive</th><th>Negative</th></tr>
+</table>
+
+<p>---</p>
+
+<h2>Team Game Stats (<code>fact_team_game_stats</code>)</h2>
+
+<table>
+<tr><th>Column</th><th>Description</th><th>Good</th><th>Bad</th></tr>
+<tr><td><code>team_game_key</code></td><td>Primary key</td><td>-</td><td>-</td></tr>
+<tr><td><code>game_id</code></td><td>Game identifier</td><td>-</td><td>-</td></tr>
+<tr><th><code>team_id</code></th><th>Team ID</th><th>-</th><th>-</th></tr>
+<tr><th><code>team_name</code></th><th>Team name</th><th>-</th><th>-</th></tr>
+<tr><th><code>is_home</code></th><th>Home team flag</th><th>-</th><th>-</th></tr>
+<tr><th><code>goals_for</code></th><th>Goals scored</th><th>High</th><th>Low</th></tr>
+<tr><th><code>goals_against</code></th><th>Goals allowed</th><th>Low</th><th>High</th></tr>
+<tr><th><code>shots_for</code></th><th>Shots taken</th><th>High</th><th>Low</th></tr>
+<tr><th><code>shots_against</code></th><th>Shots faced</th><th>Low</th><th>High</th></tr>
+<tr><th><code>shot_pct</code></th><th>Team shooting %</th><th>12%+</th><th>&lt;8%</th></tr>
+<tr><th><code>save_pct</code></th><th>Team save %</th><th>90%+</th><th>&lt;85%</th></tr>
+<tr><th><code>corsi_for</code></th><th>Shot attempts for</th><th>High</th><th>Low</th></tr>
+<tr><th><code>corsi_against</code></th><th>Shot attempts against</th><th>Low</th><th>High</th></tr>
+<tr><th><code>cf_pct</code></th><th>Corsi %</th><th>55%+</th><th>&lt;45%</th></tr>
+<tr><th><code>fenwick_for</code></th><th>Unblocked attempts</th><th>High</th><th>Low</th></tr>
+<tr><th><code>fenwick_against</code></th><th>Unblocked against</th><th>Low</th><th>High</th></tr>
+<tr><th><code>ff_pct</code></th><th>Fenwick %</th><th>55%+</th><th>&lt;45%</th></tr>
+<tr><th><code>faceoff_wins</code></th><th>Faceoffs won</th><th>High</th><th>Low</th></tr>
+<tr><th><code>faceoff_losses</code></th><th>Faceoffs lost</th><th>Low</th><th>High</th></tr>
+<tr><th><code>fo_pct</code></th><th>Faceoff %</th><th>55%+</th><th>&lt;45%</th></tr>
+<tr><th><code>power_play_goals</code></th><th>PP goals</th><th>High</th><th>Low</th></tr>
+<tr><th><code>power_play_opportunities</code></th><th>PP chances</th><th>N/A</th><th>N/A</th></tr>
+<tr><th><code>pp_pct</code></th><th>Power play %</th><th>25%+</th><th>&lt;15%</th></tr>
+<tr><th><code>penalty_kill_goals_against</code></th><th>PK goals against</th><th>Low</th><th>High</th></tr>
+<tr><th><code>times_shorthanded</code></th><th>Penalties taken</th><th>Low</th><th>High</th></tr>
+<tr><th><code>pk_pct</code></th><th>Penalty kill %</th><th>85%+</th><th>&lt;75%</th></tr>
+<tr><th><code>hits</code></th><th>Total hits</th><th>Context</th><th>Context</th></tr>
+<tr><th><code>blocks</code></th><th>Blocked shots</th><th>High</th><th>Low</th></tr>
+<tr><th><code>giveaways</code></th><th>Turnovers</th><th>Low</th><th>High</th></tr>
+<tr><th><code>takeaways</code></th><th>Forced turnovers</th><th>High</th><th>Low</th></tr>
+<tr><th><code>xg_for</code></th><th>Expected goals</th><th>High</th><th>Low</th></tr>
+<tr><th><code>xg_against</code></th><th>Expected goals against</th><th>Low</th><th>High</th></tr>
+<tr><th><code>xg_diff</code></th><th>xG differential</th><th>Positive</th><th>Negative</th></tr>
+<tr><th><code>pdo</code></th><th>SH% + SV%</th><th>100 (luck neutral)</th><th>N/A</th></tr>
+</table>
+
+</body></html>

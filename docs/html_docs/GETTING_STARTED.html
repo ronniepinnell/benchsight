@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GETTING_STARTED - BenchSight</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; line-height: 1.6; color: #333; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #34495e; margin-top: 30px; }
+        h3 { color: #7f8c8d; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: Monaco, monospace; }
+        pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        pre code { background: none; color: inherit; }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #3498db; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        a { color: #3498db; }
+        .nav { background: #2c3e50; padding: 10px; margin-bottom: 20px; border-radius: 5px; }
+        .nav a { color: white; margin-right: 15px; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="INDEX.html">Index</a>
+        <a href="GETTING_STARTED.html">Get Started</a>
+        <a href="DEPLOYMENT_GUIDE.html">Deploy</a>
+        <a href="CODE_ARCHITECTURE.html">Architecture</a>
+        <a href="VALIDATION_GUIDE.html">Validation</a>
+        <a href="STATS_REFERENCE_COMPLETE.html">Stats</a>
+    </div>
+<h1>Getting Started with BenchSight</h1>
+
+<h2>For All Roles</h2>
+
+<h3>1. Understand the Project</h3>
+<p>- Read <code>README.md</code> for project overview</p>
+<p>- Read <code>docs/HONEST_ASSESSMENT.md</code> for current status</p>
+<p>- Browse <code>docs/html_docs/</code> for formatted documentation</p>
+
+<h3>2. Explore the Data</h3>
+<p>- <code>data/output/</code> contains 96 CSV files</p>
+<p>- <code>docs/DATA_DICTIONARY.md</code> explains every table/column</p>
+<p>- <code>docs/STATS_REFERENCE_COMPLETE.md</code> explains all 317 stats</p>
+
+<h3>3. View Prototypes</h3>
+<p>- <code>tracker/tracker_v19.html</code> - Event tracking interface</p>
+<p>- <code>dashboard/dashboard.html</code> - Analytics dashboard</p>
+
+<p>---</p>
+
+<h2>For Developers</h2>
+
+<h3>Setup</h3>
+<pre><code><h1>Clone/extract project</h1>
+<p>cd benchsight</p>
+
+<h1>Install dependencies</h1>
+<p>pip install pandas supabase openpyxl</p>
+
+<h1>Configure Supabase</h1>
+<p>cp config/config_local.ini.example config/config_local.ini</p>
+<h1>Edit with your credentials</h1>
+</code></pre>
+
+<h3>Run ETL</h3>
+<pre><code>./run_etl.sh --status           # Check status
+<p>./run_etl.sh --game 18969       # Process game</p>
+<p>./run_etl.sh --export           # Export CSVs</p>
+</code></pre>
+
+<h3>Deploy to Supabase</h3>
+<pre><code>./run_deploy.sh                 # Deploy all
+<p>./run_deploy.sh --dry-run       # Preview</p>
+</code></pre>
+
+<h3>Run Tests</h3>
+<pre><code>python -m pytest tests/ -v
+</code></pre>
+
+<p>---</p>
+
+<h2>For Dashboard Developers</h2>
+
+<p>1. Read <code>docs/handoffs/DASHBOARD_DEV_HANDOFF.md</code></p>
+<p>2. Study <code>dashboard/*.html</code> prototypes</p>
+<p>3. Key tables:</p>
+<p>   - <code>fact_player_game_stats</code> - All player stats</p>
+<p>   - <code>fact_team_game_stats</code> - Team stats</p>
+<p>   - <code>dim_player</code>, <code>dim_team</code> - Lookups</p>
+
+<p>---</p>
+
+<h2>For Tracker Developers</h2>
+
+<p>1. Read <code>docs/handoffs/TRACKER_DEV_HANDOFF.md</code></p>
+<p>2. Study <code>tracker/tracker_v19.html</code></p>
+<p>3. Key tables:</p>
+<p>   - <code>fact_events</code> - All tracked events</p>
+<p>   - <code>dim_event_type</code>, <code>dim_event_detail</code> - Event categories</p>
+
+<p>---</p>
+
+<h2>For Portal Developers</h2>
+
+<p>1. Read <code>docs/handoffs/PORTAL_DEV_HANDOFF.md</code></p>
+<p>2. Key tables:</p>
+<p>   - <code>dim_player</code>, <code>dim_team</code> - Master data</p>
+<p>   - <code>fact_registration</code> - Player registrations</p>
+<p>   - <code>dim_schedule</code> - Game schedule</p>
+
+<p>---</p>
+
+<h2>For Supabase/Backend Developers</h2>
+
+<p>1. Read <code>docs/DEPLOYMENT_GUIDE.md</code></p>
+<p>2. Key files:</p>
+<p>   - <code>sql/01_CREATE_ALL_TABLES.sql</code> - Create schema</p>
+<p>   - <code>sql/02_TYPE_FIXES.sql</code> - Fix types</p>
+<p>   - <code>scripts/flexible_loader.py</code> - Load data</p>
+
+<p>---</p>
+
+<h2>For Project Managers</h2>
+
+<p>1. Read <code>docs/handoffs/PROJECT_MANAGER_HANDOFF.md</code></p>
+<p>2. Read <code>docs/HONEST_ASSESSMENT.md</code></p>
+<p>3. Review <code>docs/FUTURE_IDEAS_BLUEPRINT.md</code></p>
+
+<p>---</p>
+
+<h2>Quick Reference</h2>
+
+<p>| Task | Command/File |</p>
+<p>|------|--------------|</p>
+<p>| View all tables | <code>docs/DATA_DICTIONARY.md</code> |</p>
+<p>| View all stats | <code>docs/STATS_REFERENCE_COMPLETE.md</code> |</p>
+<p>| Deploy data | <code>./run_deploy.sh</code> |</p>
+<p>| Run ETL | <code>./run_etl.sh</code> |</p>
+<p>| Run tests | <code>pytest tests/ -v</code> |</p>
+<p>| View HTML docs | <code>docs/html_docs/INDEX.html</code> |</p>
+
+</body></html>

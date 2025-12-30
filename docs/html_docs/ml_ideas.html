@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ml_ideas - BenchSight</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #34495e; margin-top: 30px; }
+        h3 { color: #7f8c8d; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: 'Monaco', 'Menlo', monospace; }
+        pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        pre code { background: none; color: inherit; }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #3498db; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        a { color: #3498db; }
+        blockquote { border-left: 4px solid #3498db; margin: 0; padding-left: 20px; color: #666; }
+        .nav { background: #2c3e50; padding: 10px; margin-bottom: 20px; border-radius: 5px; }
+        .nav a { color: white; margin-right: 15px; text-decoration: none; }
+        .nav a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="INDEX.html">Index</a>
+        <a href="DEPLOYMENT_GUIDE.html">Deploy</a>
+        <a href="STATS_REFERENCE_COMPLETE.html">Stats</a>
+        <a href="DATA_DICTIONARY.html">Data Dict</a>
+    </div>
+<h1>ML Ideas for BenchSight</h1>
+
+<p>This file lists example machine learning projects that can be built on</p>
+<p>top of the datamart. When the user asks for ML help, use this as a</p>
+<p>starting point.</p>
+
+<h2>1. Expected Goals (xG) Model</h2>
+
+<strong>Goal:</strong> Estimate the probability that a shot becomes a goal.
+
+<strong>Level:</strong> Event-level (shots only).
+
+<strong>Candidate Features:</strong>
+
+<p>- Shot location:</p>
+<p>  - <code>distance_from_net</code> (from XY + rink coords).</p>
+<p>  - <code>shot_angle</code> relative to net center.</p>
+<p>- Shot type:</p>
+<p>  - From <code>event_detail_1/2</code> (slap, wrist, backhand, tip, etc.).</p>
+<p>- Pre-shot context:</p>
+<p>  - Seconds since last event.</p>
+<p>  - Was there a cross-ice pass?</p>
+<p>  - Was it off the rush vs cycle?</p>
+<p>  - Odd-man rush flag.</p>
+<p>- Traffic:</p>
+<p>  - Number of defenders between shooter and net.</p>
+<p>  - Number of teammates near the net (if approximated).</p>
+<p>- Goalie context:</p>
+<p>  - Goalie rating (from dim_players).</p>
+<p>  - Shot against a tired line? (shift length).</p>
+<p>- Score &amp; game state:</p>
+<p>  - Score differential.</p>
+<p>  - Period, time remaining.</p>
+<p>  - Strength (5v5, PP, PK, EN).</p>
+
+<strong>Possible labels:</strong>
+
+<p>- 1 if goal, 0 if any non-goal shot on target / attempt, or</p>
+<p>- 1 if goal, 0 if missed/blocked/saved (depending on definition).</p>
+
+<strong>Implementation hints:</strong>
+
+<p>- Start with logistic regression / XGBoost.</p>
+<p>- Use <code>fact_events</code> filtered to shot events joined to XY tables.</p>
+
+<h2>2. Player Microstat Profiles &amp; Comps</h2>
+
+<strong>Goal:</strong> Describe players by their microstats and find similar players.
+
+<strong>Features:</strong>
+
+<p>- Rates per 60:</p>
+<p>  - Controlled zone entries/exits.</p>
+<p>  - Entries with shot.</p>
+<p>  - Pass completions (by lane / zone).</p>
+<p>  - Turnovers &amp; takeaways (non-dump/clear).</p>
+<p>  - Quality pass chains leading to xG.</p>
+<p>- On-ice impact:</p>
+<p>  - Corsi/Fenwick on-ice per 60.</p>
+<p>  - xG for and against per 60.</p>
+<p>- Role indicators:</p>
+<p>  - OZ vs DZ starts.</p>
+<p>  - PK/PP usage.</p>
+<p>  - Line-mate and matchup profiles.</p>
+
+<strong>Methods:</strong>
+
+<p>- Standardize features per league/season.</p>
+<p>- Use PCA or UMAP for dimensionality reduction.</p>
+<p>- kNN or cosine similarity for comps.</p>
+
+<h2>3. Line Combo &amp; Matchup Models</h2>
+
+<strong>Goal:</strong> Quantify how different forward/defense combos perform together
+<p>vs specific opponent lines.</p>
+
+<strong>Features:</strong>
+
+<p>- On-ice line IDs for both teams (from shift data).</p>
+<p>- Outcome metrics:</p>
+<p>  - Goals, xG, shots, Corsi, microstat counts while both lines are on ice.</p>
+<p>- Context:</p>
+<p>  - Deployment (zone start, score state).</p>
+<p>  - Time-on-ice together.</p>
+
+<strong>Approach:</strong>
+
+<p>- Build a <code>fact_line_matchups</code> derived table summarizing these interactions.</p>
+<p>- Use regression / hierarchical models to estimate adjusted impacts.</p>
+
+<h2>4. Game-State &amp; Win-Probability Models</h2>
+
+<strong>Goal:</strong> Given current score, time, and stats, estimate win probability.
+
+<strong>Features:</strong>
+
+<p>- Score differential &amp; time remaining.</p>
+<p>- Shot/xG differential so far.</p>
+<p>- Penalty state (PP/PK).</p>
+<p>- On-ice personnel strengths (ratings).</p>
+
+<strong>Approach:</strong>
+
+<p>- Train on many games (NHL data if available) and apply to BLB games.</p>
+<p>- Use logistic regression, gradient boosting, or time-series models.</p>
+
+<h2>5. Computer Vision Extensions (Future)</h2>
+
+<strong>Goal:</strong> Auto-track player and puck positions from video and feed into
+<p>the same pipeline.</p>
+
+<strong>Outline:</strong>
+
+<p>- Use pose estimation / object detection models (e.g., YOLO, Detectron2,</p>
+<p>  OpenCV-based pipelines).</p>
+<p>- Map video coordinates to rink coordinates using homography.</p>
+<p>- Reconstruct trajectories and event times, link to existing events_table</p>
+<p>  via timestamps.</p>
+<p>- Compute speed, acceleration, gap control, lane usage, etc.</p>
+
+<p>These vision features can feed into xG models and new microstats such as:</p>
+
+<p>- Maximum speed in a rush.</p>
+<p>- Gap distance at shot release.</p>
+<p>- Time-to-close by defenders.</p>
+
+<p>Use this doc as a menu when the user wants to explore ML directions.</p>
+
+</body></html>

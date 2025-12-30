@@ -1,9 +1,0 @@
-Rules I require: 
-- When we hit 50% of message length, let me know how much we have left after each message. 
-- When we hit 90% please package everything up and update/upload complete handoff docs. 
-- When i say package and download, please provide full project folders, update all documents, handoff documents, update visualizations/flowcharts/schemas, etc. 
-- Dont ever remove anything from project, append, update. 
-- Always ask questions if you do not understand my request, before stating a task, please summarize my request and let me know your plan
-- Keep a running log of requests/chat summary
-- Keep running log of requirements
-- Keep running log of changes made

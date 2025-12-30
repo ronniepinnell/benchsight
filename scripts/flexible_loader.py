@@ -46,32 +46,94 @@ except ImportError:
     SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
     SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")
 
-# Table definitions
+# Table definitions - ALL 96 TABLES
 TABLE_CATEGORIES = {
-    "dims": ["dim_player", "dim_team", "dim_schedule"],
-    "core_facts": ["fact_shifts", "fact_events", "fact_events_player", "fact_shifts_player"],
-    "stats_facts": ["fact_player_game_stats", "fact_team_game_stats", "fact_goalie_game_stats"],
-    "analytics_facts": ["fact_h2h", "fact_wowy"],
+    "dims": [
+        "dim_comparison_type", "dim_composite_rating", "dim_danger_zone", "dim_event_detail",
+        "dim_event_detail_2", "dim_event_type", "dim_giveaway_type", "dim_league",
+        "dim_micro_stat", "dim_net_location", "dim_pass_type", "dim_period",
+        "dim_play_detail", "dim_play_detail_2", "dim_player", "dim_player_role",
+        "dim_playerurlref", "dim_position", "dim_randomnames", "dim_rink_coord",
+        "dim_rinkboxcoord", "dim_rinkcoordzones", "dim_schedule", "dim_season",
+        "dim_shift_slot", "dim_shift_start_type", "dim_shift_stop_type", "dim_shot_type",
+        "dim_situation", "dim_stat", "dim_stat_category", "dim_stat_type",
+        "dim_stoppage_type", "dim_strength", "dim_success", "dim_takeaway_type",
+        "dim_team", "dim_terminology_mapping", "dim_turnover_quality", "dim_turnover_type",
+        "dim_venue", "dim_zone", "dim_zone_entry_type", "dim_zone_exit_type",
+    ],
+    "core_facts": [
+        "fact_shifts", "fact_events", "fact_events_player", "fact_shifts_player",
+        "fact_events_long", "fact_shifts_long", "fact_events_tracking", "fact_shifts_tracking",
+        "fact_linked_events", "fact_event_chains", "fact_player_event_chains",
+    ],
+    "stats_facts": [
+        "fact_player_game_stats", "fact_team_game_stats", "fact_goalie_game_stats",
+        "fact_player_period_stats", "fact_player_stats_long", "fact_player_micro_stats",
+        "fact_player_boxscore_all", "fact_player_game_position", "fact_gameroster",
+        "fact_playergames", "fact_game_status",
+    ],
+    "analytics_facts": [
+        "fact_h2h", "fact_wowy", "fact_head_to_head", "fact_line_combos",
+        "fact_matchup_summary", "fact_player_pair_stats", "fact_shift_quality",
+        "fact_shift_quality_logical", "fact_shift_players",
+    ],
+    "zone_facts": [
+        "fact_cycle_events", "fact_rush_events", "fact_possession_time",
+        "fact_team_zone_time", "fact_scoring_chances", "fact_shot_danger",
+    ],
+    "tracking_facts": [
+        "fact_player_xy_long", "fact_player_xy_wide", "fact_puck_xy_long",
+        "fact_puck_xy_wide", "fact_shot_xy",
+    ],
+    "other_facts": [
+        "fact_plays", "fact_sequences", "fact_video", "fact_draft",
+        "fact_registration", "fact_leadership", "fact_league_leaders_snapshot",
+        "fact_team_standings_snapshot", "fact_suspicious_stats",
+    ],
+    "qa": [
+        "qa_suspicious_stats",
+    ],
 }
 
 # Load order (respects FK dependencies)
 LOAD_ORDER = [
-    # Dimensions first
-    "dim_player",
-    "dim_team", 
-    "dim_schedule",
-    # Core facts
-    "fact_shifts",
-    "fact_events",
-    "fact_events_player",
-    "fact_shifts_player",
+    # Dimensions first (44 tables) - no dependencies
+    "dim_comparison_type", "dim_composite_rating", "dim_danger_zone", "dim_event_detail",
+    "dim_event_detail_2", "dim_event_type", "dim_giveaway_type", "dim_league",
+    "dim_micro_stat", "dim_net_location", "dim_pass_type", "dim_period",
+    "dim_play_detail", "dim_play_detail_2", "dim_player", "dim_player_role",
+    "dim_playerurlref", "dim_position", "dim_randomnames", "dim_rink_coord",
+    "dim_rinkboxcoord", "dim_rinkcoordzones", "dim_schedule", "dim_season",
+    "dim_shift_slot", "dim_shift_start_type", "dim_shift_stop_type", "dim_shot_type",
+    "dim_situation", "dim_stat", "dim_stat_category", "dim_stat_type",
+    "dim_stoppage_type", "dim_strength", "dim_success", "dim_takeaway_type",
+    "dim_team", "dim_terminology_mapping", "dim_turnover_quality", "dim_turnover_type",
+    "dim_venue", "dim_zone", "dim_zone_entry_type", "dim_zone_exit_type",
+    # Core facts - shifts and events
+    "fact_shifts", "fact_events", "fact_events_player", "fact_shifts_player",
+    "fact_events_long", "fact_shifts_long", "fact_events_tracking", "fact_shifts_tracking",
+    "fact_linked_events", "fact_event_chains", "fact_player_event_chains",
     # Stats facts
-    "fact_player_game_stats",
-    "fact_team_game_stats",
-    "fact_goalie_game_stats",
+    "fact_player_game_stats", "fact_team_game_stats", "fact_goalie_game_stats",
+    "fact_player_period_stats", "fact_player_stats_long", "fact_player_micro_stats",
+    "fact_player_boxscore_all", "fact_player_game_position", "fact_gameroster",
+    "fact_playergames", "fact_game_status",
     # Analytics facts
-    "fact_h2h",
-    "fact_wowy",
+    "fact_h2h", "fact_wowy", "fact_head_to_head", "fact_line_combos",
+    "fact_matchup_summary", "fact_player_pair_stats", "fact_shift_quality",
+    "fact_shift_quality_logical", "fact_shift_players",
+    # Zone/possession facts
+    "fact_cycle_events", "fact_rush_events", "fact_possession_time",
+    "fact_team_zone_time", "fact_scoring_chances", "fact_shot_danger",
+    # Tracking/XY facts
+    "fact_player_xy_long", "fact_player_xy_wide", "fact_puck_xy_long",
+    "fact_puck_xy_wide", "fact_shot_xy",
+    # Other facts
+    "fact_plays", "fact_sequences", "fact_video", "fact_draft",
+    "fact_registration", "fact_leadership", "fact_league_leaders_snapshot",
+    "fact_team_standings_snapshot", "fact_suspicious_stats",
+    # QA tables
+    "qa_suspicious_stats",
 ]
 
 # Delete order (reverse of load order)
@@ -130,8 +192,25 @@ class BenchSightLoader:
         if game_id:
             result = self.supabase.table(table_name).delete().eq('game_id', game_id).execute()
         else:
-            # Truncate by deleting all
-            result = self.supabase.table(table_name).delete().neq('id', -999999).execute()
+            # Get the first column (primary key) from CSV to use for delete filter
+            csv_path = self.data_dir / f"{table_name}.csv"
+            if csv_path.exists():
+                import csv
+                with open(csv_path, 'r') as f:
+                    reader = csv.reader(f)
+                    first_col = next(reader)[0]
+                # Delete all by filtering on first column not being an impossible value
+                result = self.supabase.table(table_name).delete().neq(first_col, '___IMPOSSIBLE_VALUE___').execute()
+            else:
+                # Fallback: try common primary key patterns
+                for pk_col in [f'{table_name}_key', f'{table_name.replace("fact_", "").replace("dim_", "")}_id', 'id']:
+                    try:
+                        result = self.supabase.table(table_name).delete().neq(pk_col, '___IMPOSSIBLE___').execute()
+                        break
+                    except:
+                        continue
+                else:
+                    result = type('obj', (object,), {'data': []})()
         return len(result.data) if result.data else 0
     
     def delete_game_data(self, game_id: int) -> Dict[str, int]:
@@ -326,7 +405,7 @@ def main():
     parser.add_argument('--scope', choices=['table', 'category', 'game', 'full'], required=True,
                         help='Scope of the load operation')
     parser.add_argument('--table', help='Table name (for scope=table)')
-    parser.add_argument('--category', choices=['dims', 'core_facts', 'stats_facts', 'analytics_facts', 'all_facts', 'all'],
+    parser.add_argument('--category', choices=['dims', 'core_facts', 'stats_facts', 'analytics_facts', 'zone_facts', 'tracking_facts', 'other_facts', 'qa', 'all_facts', 'all'],
                         help='Category name (for scope=category)')
     parser.add_argument('--game-id', type=int, help='Game ID (for scope=game or to filter other scopes)')
     parser.add_argument('--operation', choices=['replace', 'append', 'upsert'], default='upsert',
@@ -375,7 +454,12 @@ def main():
     
     # Execute based on scope
     if args.scope == 'full':
-        result = loader.full_refresh()
+        if args.operation == 'replace':
+            # Full replace: delete all then load
+            result = loader.full_refresh()
+        else:
+            # Append or upsert: just load all tables without deleting
+            result = loader.load_category('all', args.operation)
     elif args.scope == 'game':
         if not args.game_id:
             print("Error: --game-id required for scope=game")

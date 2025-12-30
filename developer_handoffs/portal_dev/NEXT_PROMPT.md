@@ -1,91 +1,114 @@
-# BenchSight Portal Admin Developer - Next Prompt
+# BenchSight Portal Developer - Session Prompt
 
-Copy and paste this prompt to start or continue portal development.
-
----
-
-## PROMPT START
-
-I'm building an admin portal for BenchSight, a hockey analytics platform. The portal provides UI access to operations currently done via command line.
-
-### System Overview
-- **Database:** Supabase PostgreSQL at `https://uuaowslhpgyiudmbvqze.supabase.co`
-- **ETL Pipeline:** Python scripts that transform raw tracking data
-- **Current State:** All operations done via bash/terminal
-
-### Portal Features Needed
-
-**1. ETL Pipeline Control**
-- Run Full ETL (etl.py → fix_data_integrity.py → fix_final_data.py)
-- Run Validation Only
-- Run Tests (pytest)
-- View real-time logs
-- See execution history
-
-**2. Database Table Viewer**
-- Browse all 12 tables
-- Filter/search data
-- Download as CSV
-- View row counts
-
-**3. Data Upload**
-- Upload CSV to specific table
-- Upload new tracking file (xlsx)
-- Bulk upload all CSVs
-
-**4. Validation Dashboard**
-- Run data quality checks
-- View errors/warnings
-- Ground truth comparison
-
-**5. Documentation Hub**
-- View all docs
-- Download data dictionaries
-- Access guides
-
-**6. System Health**
-- Supabase connection status
-- Table statistics
-- Recent activity
-
-**7. Game Management**
-- List all games
-- Add/delete/reprocess games
-
-### Tech Stack Preference
-[React/Vue/Svelte] for frontend
-[FastAPI/Flask/Node] for backend
-
-### What I Need Help With Today
-[DESCRIBE YOUR SPECIFIC TASK]
+Copy and paste this prompt to start your session:
 
 ---
 
-## PROMPT END
+I'm the Portal/Admin Developer for BenchSight, a hockey analytics platform. The portal provides admin tools for managing teams, players, schedules, and system operations.
 
----
+## Project Context
 
-## Quick Reference
+- **Database:** Supabase PostgreSQL (98 tables total)
+- **Portal manages:** Dimension tables (CRUD) + system operations
+- **Portal reads:** Fact tables (for reports/dashboards)
 
-### Scripts to Execute
-```bash
-# Full ETL
-python etl.py
-python scripts/fix_data_integrity.py
-python scripts/fix_final_data.py
-python scripts/etl_validation.py
+## Tables I Manage (CRUD Operations)
 
-# Tests
-pytest tests/ -v --tb=short
+### Core Master Data
+| Table | Rows | Operations | Key Columns |
+|-------|------|------------|-------------|
+| `dim_player` | 337 | Create, Read, Update, Deactivate | player_id, player_name, jersey_number, position, primary_team_id, is_active |
+| `dim_team` | 26 | Create, Read, Update, Deactivate | team_id, team_name, team_abbrev, is_active |
+| `dim_schedule` | 562 | Create, Read, Update, Delete | game_id, game_date, game_time, home_team_id, away_team_id, venue_id |
+| `dim_venue` | varies | Create, Read, Update | venue_id, venue_name, address |
+| `dim_season` | varies | Create, Read, Update | season_id, season_name, start_date, end_date |
+| `dim_league` | varies | Create, Read, Update | league_id, league_name |
+
+### Game Roster Management
+| Table | Operations | Purpose |
+|-------|------------|---------|
+| `fact_gameroster` | Create, Read, Update, Delete | Assign players to games |
+| `fact_registration` | Create, Read, Update | Player season registrations |
+| `fact_draft` | Create, Read, Update | Draft assignments |
+
+### Reference Data (Read-mostly, occasional updates)
+| Table | Purpose |
+|-------|---------|
+| `dim_position` | Player positions (C, LW, RW, D, G) |
+| `dim_player_role` | Player roles |
+| `dim_event_type` | Event type definitions |
+| `dim_event_detail` | Event detail definitions |
+| `dim_shot_type` | Shot type definitions |
+| `dim_pass_type` | Pass type definitions |
+| `dim_zone` | Zone definitions (DZ, NZ, OZ) |
+| `dim_strength` | Game strength (EV, PP, PK) |
+| + 30 more dimension tables |
+
+### System Status Tables
+| Table | Purpose |
+|-------|---------|
+| `fact_game_status` | Track game processing status |
+| `qa_suspicious_stats` | Data quality flags |
+| `fact_league_leaders_snapshot` | Leaderboard snapshots |
+| `fact_team_standings_snapshot` | Standings snapshots |
+
+## Tables I Read (Reports/Dashboards)
+
+| Table | Purpose |
+|-------|---------|
+| `fact_player_game_stats` | Player performance (317 columns) |
+| `fact_team_game_stats` | Team performance |
+| `fact_goalie_game_stats` | Goalie performance |
+| `fact_events` | Event counts per game |
+| `fact_shifts` | Shift counts per game |
+| All 51 fact tables | Various reports |
+
+## Portal Features
+
+1. **Team Management** - Add/edit teams, view rosters
+2. **Player Management** - Add/edit players, assign to teams
+3. **Schedule Management** - Create games, set matchups
+4. **Game Roster** - Assign players to specific games
+5. **Standings** - View/edit standings
+6. **System Health** - ETL status, data quality, table stats
+7. **Reports** - League leaders, team comparisons
+8. **Data Export** - Download CSVs
+
+## Key Documentation
+
+- UI wireframes: `docs/WIREFRAMES_AND_PAGES.md`
+- Supabase CRUD: `docs/SUPABASE_INTEGRATION_GUIDE.md`
+- All 98 tables: `docs/DATA_DICTIONARY.md`
+- Current prototype: `portal/`
+
+## Example Queries
+
+```javascript
+// Create new player
+const { data, error } = await supabase
+  .from('dim_player')
+  .insert({
+    player_name: 'John Smith',
+    jersey_number: 17,
+    position: 'C',
+    primary_team_id: 5,
+    is_active: true
+  })
+
+// Update team
+await supabase
+  .from('dim_team')
+  .update({ team_name: 'Blue Thunder' })
+  .eq('team_id', 5)
+
+// Get all players with team names
+const { data } = await supabase
+  .from('dim_player')
+  .select(`*, dim_team (team_name)`)
+  .eq('is_active', true)
+  .order('player_name')
 ```
 
-### Tables (12 total)
-```
-Dimensions: dim_player, dim_team, dim_schedule
-Facts: fact_events, fact_events_player, fact_shifts, 
-       fact_shifts_player, fact_player_game_stats,
-       fact_team_game_stats, fact_goalie_game_stats,
-       fact_h2h, fact_wowy
-```
+## My Specific Task Today
 
-*Last Updated: December 2024*
+[DESCRIBE YOUR TASK]

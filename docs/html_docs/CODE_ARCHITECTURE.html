@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CODE_ARCHITECTURE - BenchSight</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; line-height: 1.6; color: #333; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #34495e; margin-top: 30px; }
+        h3 { color: #7f8c8d; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: Monaco, monospace; }
+        pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        pre code { background: none; color: inherit; }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #3498db; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        a { color: #3498db; }
+        .nav { background: #2c3e50; padding: 10px; margin-bottom: 20px; border-radius: 5px; }
+        .nav a { color: white; margin-right: 15px; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="INDEX.html">Index</a>
+        <a href="GETTING_STARTED.html">Get Started</a>
+        <a href="DEPLOYMENT_GUIDE.html">Deploy</a>
+        <a href="CODE_ARCHITECTURE.html">Architecture</a>
+        <a href="VALIDATION_GUIDE.html">Validation</a>
+        <a href="STATS_REFERENCE_COMPLETE.html">Stats</a>
+    </div>
+<h1>BenchSight Code Architecture</h1>
+
+<h2>Directory Structure</h2>
+
+<pre><code>benchsight/
+<p>├── src/                    # Core ETL code</p>
+<p>│   ├── main.py            # CLI entry point</p>
+<p>│   ├── pipeline/          # ETL orchestration</p>
+<p>│   │   └── orchestrator.py</p>
+<p>│   ├── ingestion/         # Data loading</p>
+<p>│   │   ├── blb_loader.py  # BLB_Tables.xlsx loader</p>
+<p>│   │   ├── game_loader.py # Game tracking loader</p>
+<p>│   │   └── xy_loader.py   # XY coordinate loader</p>
+<p>│   ├── transformation/    # Data transforms</p>
+<p>│   ├── database/          # DB connections</p>
+<p>│   ├── models/            # Data models</p>
+<p>│   ├── loading/           # Data loading utilities</p>
+<p>│   ├── analytics/         # Stats calculations</p>
+<p>│   └── utils/             # Helpers</p>
+<p>│       ├── logger.py</p>
+<p>│       └── config_loader.py</p>
+<p>│</p>
+<p>├── scripts/               # Standalone scripts</p>
+<p>│   ├── flexible_loader.py # Supabase deployment</p>
+<p>│   ├── validate_*.py      # Validation scripts</p>
+<p>│   ├── qa_*.py            # QA scripts</p>
+<p>│   └── verify_delivery.py # Pre-package verification</p>
+<p>│</p>
+<p>├── sql/                   # SQL files</p>
+<p>│   ├── 01_CREATE_ALL_TABLES.sql</p>
+<p>│   ├── 02_TYPE_FIXES.sql</p>
+<p>│   └── 03_TRUNCATE_DATA.sql</p>
+<p>│</p>
+<p>├── data/</p>
+<p>│   ├── raw/games/         # Source tracking files</p>
+<p>│   ├── output/            # Generated CSVs (96 tables)</p>
+<p>│   └── BLB_Tables.xlsx    # Master reference data</p>
+<p>│</p>
+<p>├── config/</p>
+<p>│   ├── config_local.ini   # Your credentials</p>
+<p>│   └── *.example          # Example configs</p>
+<p>│</p>
+<p>├── tests/                 # Test suite</p>
+<p>├── docs/                  # Documentation</p>
+<p>├── tracker/               # Tracker HTML prototypes</p>
+<p>├── dashboard/             # Dashboard HTML prototypes</p>
+<p>└── developer_handoffs/    # Role-specific guides</p>
+</code></pre>
+
+<h2>Data Flow</h2>
+
+<pre><code>1. RAW DATA
+<p>   data/raw/games/{game_id}/BLB_*.xlsx</p>
+<p>   data/BLB_Tables.xlsx</p>
+   
+<p>2. ETL PIPELINE (src/main.py)</p>
+<p>   → Stage Layer (raw loading)</p>
+<p>   → Intermediate Layer (transforms)</p>
+<p>   → Datamart Layer (star schema)</p>
+   
+<p>3. OUTPUT</p>
+<p>   data/output/*.csv (96 files)</p>
+   
+<p>4. DEPLOYMENT (scripts/flexible_loader.py)</p>
+<p>   → Supabase tables</p>
+</code></pre>
+
+<h2>Key Classes</h2>
+
+<h3>PipelineOrchestrator (src/pipeline/orchestrator.py)</h3>
+<p>Main ETL coordinator. Handles:</p>
+<p>- Game processing order</p>
+<p>- Layer dependencies</p>
+<p>- Error handling</p>
+
+<h3>BLBLoader (src/ingestion/blb_loader.py)</h3>
+<p>Loads BLB_Tables.xlsx reference data:</p>
+<p>- Player registry</p>
+<p>- Team definitions</p>
+<p>- Schedule</p>
+
+<h3>GameLoader (src/ingestion/game_loader.py)</h3>
+<p>Loads game tracking files:</p>
+<p>- Events (shots, passes, etc.)</p>
+<p>- Shifts (player ice time)</p>
+
+<h3>FlexibleLoader (scripts/flexible_loader.py)</h3>
+<p>Deploys data to Supabase:</p>
+<p>- Replace/Append/Upsert modes</p>
+<p>- Category filtering</p>
+<p>- Dry run support</p>
+
+<h2>Configuration</h2>
+
+<h3>config/config_local.ini</h3>
+<pre><code>[supabase]
+<p>url = https://YOUR_PROJECT.supabase.co</p>
+<p>service_key = YOUR_SERVICE_ROLE_KEY</p>
+
+<p>[loader]</p>
+<p>batch_size = 500</p>
+</code></pre>
+
+<h2>Logging</h2>
+
+<p>Uses structured logging via <code>src/utils/logger.py</code>:</p>
+<pre><code>from src.utils.logger import get_logger
+<p>logger = get_logger(__name__)</p>
+<p>logger.info(&quot;Processing game 18969&quot;)</p>
+</code></pre>
+
+<h2>Error Handling</h2>
+
+<p>- ETL errors logged to console</p>
+<p>- Failed games tracked in status</p>
+<p>- Validation errors stored in reports</p>
+
+<h2>Extending the Code</h2>
+
+<h3>Adding a New Stat</h3>
+<p>1. Add column to <code>fact_player_game_stats</code></p>
+<p>2. Add calculation to stats module</p>
+<p>3. Add to <code>STATS_REFERENCE_COMPLETE.md</code></p>
+<p>4. Add test to <code>test_stats_calculations.py</code></p>
+<p>5. Run <code>sql/01_CREATE_ALL_TABLES.sql</code> to add column</p>
+
+<h3>Adding a New Table</h3>
+<p>1. Create CSV in <code>data/output/</code></p>
+<p>2. Add CREATE TABLE to <code>sql/01_CREATE_ALL_TABLES.sql</code></p>
+<p>3. Add to <code>TABLE_CATEGORIES</code> in <code>flexible_loader.py</code></p>
+<p>4. Add to <code>DATA_DICTIONARY.md</code></p>
+
+</body></html>

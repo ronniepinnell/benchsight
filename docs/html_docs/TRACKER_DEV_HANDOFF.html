@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRACKER_DEV_HANDOFF - BenchSight</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; line-height: 1.6; color: #333; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #34495e; margin-top: 30px; }
+        h3 { color: #7f8c8d; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; }
+        pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        pre code { background: none; color: inherit; }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #3498db; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        a { color: #3498db; }
+        .nav { background: #2c3e50; padding: 10px; margin-bottom: 20px; border-radius: 5px; }
+        .nav a { color: white; margin-right: 15px; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="INDEX.html">Index</a>
+        <a href="DEPLOYMENT_GUIDE.html">Deploy</a>
+        <a href="STATS_REFERENCE_COMPLETE.html">Stats</a>
+    </div>
+<h1>Tracker Developer Handoff</h1>
+
+<strong>Role:</strong> Game Tracker Developer  
+<strong>Version:</strong> 2.0  
+<strong>Date:</strong> December 30, 2025
+
+<p>---</p>
+
+<h2>Your Mission</h2>
+
+<p>Build an interactive web-based hockey game tracker that allows users to:</p>
+<p>1. Load existing game data from Supabase</p>
+<p>2. Track live game events and shifts in real-time</p>
+<p>3. Write data back to Supabase (save drafts, publish final)</p>
+<p>4. Validate data quality before publishing</p>
+
+<p>---</p>
+
+<h2>Quick Start</h2>
+
+<h3>1. Get the Codebase</h3>
+<pre><code>unzip benchsight_COMPLETE_FULL.zip
+<p>cd benchsight_COMPLETE_FULL</p>
+</code></pre>
+
+<h3>2. Understand the Data Model</h3>
+<p>- Events are individual plays (shots, passes, goals, etc.)</p>
+<p>- Shifts are time periods when specific players are on ice</p>
+<p>- Each event belongs to a shift</p>
+<p>- Events can be linked (shot → save → rebound)</p>
+
+<h3>3. Key Files to Review</h3>
+<p>- <code>developer_handoffs/tracker_dev/</code> - Existing tracker docs</p>
+<p>- <code>dashboard/tracker_*.html</code> - Prototype tracker UIs</p>
+<p>- <code>data/output/dim_*.csv</code> - All dimension tables (lookups)</p>
+<p>- <code>data/output/fact_events.csv</code> - Event structure</p>
+<p>- <code>data/output/fact_shifts.csv</code> - Shift structure</p>
+
+<p>---</p>
+
+<h2>Data Architecture</h2>
+
+<h3>Core Tables You&#x27;ll Write To</h3>
+
+<p>| Table | Purpose | Primary Key |</p>
+<p>|-------|---------|-------------|</p>
+<p>| <code>fact_events</code> | All game events | <code>event_key</code> |</p>
+<p>| <code>fact_shifts</code> | All shifts | <code>shift_key</code> |</p>
+<p>| <code>fact_events_player</code> | Event-player junction | <code>event_player_key</code> |</p>
+<p>| <code>fact_shifts_player</code> | Shift-player junction | <code>shift_player_key</code> |</p>
+<p>| <code>staging_events</code> | Draft events before publish | (use for saves) |</p>
+<p>| <code>staging_shifts</code> | Draft shifts before publish | (use for saves) |</p>
+
+<h3>Key Generation Patterns</h3>
+
+<pre><code>// Event Key: EV{game_id}{event_index padded to 5 digits}
+<p>const eventKey = <code>EV${gameId}${String(eventIndex).padStart(5, &#x27;0&#x27;)}</code>;</p>
+<p>// Example: EV1896900001, EV1896900002</p>
+
+<p>// Shift Key: {game_id}_{shift_index}</p>
+<p>const shiftKey = <code>${gameId}_${shiftIndex}</code>;</p>
+<p>// Example: 18969_1, 18969_2</p>
+
+<p>// Event Player Key: {event_key}_{player_index}</p>
+<p>const eventPlayerKey = <code>${eventKey}_${playerIndex}</code>;</p>
+<p>// Example: EV1896900001_1, EV1896900001_2</p>
+
+<p>// Shift Player Key: {shift_key}_{player_id}</p>
+<p>const shiftPlayerKey = <code>${shiftKey}_${playerId}</code>;</p>
+<p>// Example: 18969_1_P001</p>
+</code></pre>
+
+<p>---</p>
+
+<h2>Dimension Tables Reference</h2>
+
+<h3>CRITICAL: Load These On Startup</h3>
+
+<p>These tables provide dropdowns, validation, and ID lookups:</p>
+
+<p>#### Event Types (<code>dim_event_type</code>)</p>
+<p>| event_type_id | event_type |</p>
+<p>|---------------|------------|</p>
+<p>| EVT001 | Shot |</p>
+<p>| EVT002 | Pass |</p>
+<p>| EVT003 | Faceoff |</p>
+<p>| EVT004 | Goal |</p>
+<p>| EVT005 | Save |</p>
+<p>| EVT006 | Hit |</p>
+<p>| EVT007 | Block |</p>
+<p>| EVT008 | Turnover |</p>
+<p>| EVT009 | Takeaway |</p>
+<p>| EVT010 | Zone Entry |</p>
+<p>| EVT011 | Zone Exit |</p>
+<p>| ... | ... |</p>
+
+<p>#### Event Details (<code>dim_event_detail</code>)</p>
+<p>Provides detail options based on event type:</p>
+<p>| event_detail_id | event_detail | parent_event_type |</p>
+<p>|-----------------|--------------|-------------------|</p>
+<p>| ED001 | Wrist Shot | Shot |</p>
+<p>| ED002 | Slap Shot | Shot |</p>
+<p>| ED003 | Snap Shot | Shot |</p>
+<p>| ED004 | Backhand | Shot |</p>
+<p>| ED005 | Tip-in | Shot |</p>
+<p>| ED006 | Saucer Pass | Pass |</p>
+<p>| ED007 | Tape to Tape | Pass |</p>
+<p>| ... | ... | ... |</p>
+
+<p>#### Play Details (<code>dim_play_detail</code>, <code>dim_play_detail_2</code>)</p>
+<pre><code>-- Used for play context
+<p>SELECT * FROM dim_play_detail;</p>
+<p>-- Examples: Rush, Cycle, Power Play, Penalty Kill, Breakaway, Odd-Man Rush</p>
+
+<p>SELECT * FROM dim_play_detail_2;</p>
+<p>-- Examples: 2-on-1, 3-on-2, Rebound, Cross-ice, One-timer</p>
+</code></pre>
+
+<p>#### Shot Types (<code>dim_shot_type</code>)</p>
+<p>| shot_type_id | shot_type |</p>
+<p>|--------------|-----------|</p>
+<p>| ST001 | Wrist |</p>
+<p>| ST002 | Slap |</p>
+<p>| ST003 | Snap |</p>
+<p>| ST004 | Backhand |</p>
+<p>| ST005 | Deflection |</p>
+<p>| ST006 | Wrap-around |</p>
+
+<p>#### Pass Types (<code>dim_pass_type</code>)</p>
+<p>| pass_type_id | pass_type |</p>
+<p>|--------------|-----------|</p>
+<p>| PT001 | Direct |</p>
+<p>| PT002 | Saucer |</p>
+<p>| PT003 | Bank |</p>
+<p>| PT004 | Cross-ice |</p>
+<p>| PT005 | Drop |</p>
+<p>| PT006 | Behind-back |</p>
+
+<p>#### Zones (<code>dim_zone</code>)</p>
+<p>| zone_id | zone_name |</p>
+<p>|---------|-----------|</p>
+<p>| OZ | Offensive Zone |</p>
+<p>| NZ | Neutral Zone |</p>
+<p>| DZ | Defensive Zone |</p>
+
+<p>#### Success Outcomes (<code>dim_success</code>)</p>
+<p>| success_id | success_value |</p>
+<p>|------------|---------------|</p>
+<p>| s | Successful |</p>
+<p>| u | Unsuccessful |</p>
+
+<p>#### Player Roles (<code>dim_player_role</code>)</p>
+<p>| role_id | role_name | role_abrev |</p>
+<p>|---------|-----------|------------|</p>
+<p>| R001 | Shooter | SH |</p>
+<p>| R002 | Passer | PA |</p>
+<p>| R003 | Receiver | RC |</p>
+<p>| R004 | Blocker | BL |</p>
+<p>| R005 | Hitter | HT |</p>
+<p>| R006 | Target | TG |</p>
+
+<p>#### Periods (<code>dim_period</code>)</p>
+<p>| period_id | period_name | period_number |</p>
+<p>|-----------|-------------|---------------|</p>
+<p>| P1 | 1st Period | 1 |</p>
+<p>| P2 | 2nd Period | 2 |</p>
+<p>| P3 | 3rd Period | 3 |</p>
+<p>| OT | Overtime | 4 |</p>
+<p>| SO | Shootout | 5 |</p>
+
+<p>#### Situations (<code>dim_situation</code>)</p>
+<p>| situation_id | situation |</p>
+<p>|--------------|-----------|</p>
+<p>| EV | Even Strength |</p>
+<p>| PP | Power Play |</p>
+<p>| PK | Penalty Kill |</p>
+<p>| EN | Empty Net |</p>
+<p>| 4v4 | 4-on-4 |</p>
+<p>| 3v3 | 3-on-3 |</p>
+
+<p>#### Strength (<code>dim_strength</code>)</p>
+<p>| strength_id | strength |</p>
+<p>|-------------|----------|</p>
+<p>| 5v5 | 5-on-5 |</p>
+<p>| 5v4 | 5-on-4 |</p>
+<p>| 4v5 | 4-on-5 |</p>
+<p>| 5v3 | 5-on-3 |</p>
+<p>| 3v5 | 3-on-5 |</p>
+<p>| 4v4 | 4-on-4 |</p>
+<p>| 3v3 | 3-on-3 |</p>
+<p>| 6v5 | 6-on-5 |</p>
+<p>| 6v4 | 6-on-4 |</p>
+
+<p>---</p>
+
+<h2>Event Structure</h2>
+
+<h3>fact_events Columns</h3>
+
+<pre><code>const eventRecord = {
+<p>  // Keys</p>
+<p>  event_key: &quot;EV1896900001&quot;,           // PRIMARY KEY</p>
+<p>  game_id: &quot;18969&quot;,</p>
+<p>  shift_key: &quot;18969_1&quot;,                // Links to fact_shifts</p>
+  
+<p>  // Timing</p>
+<p>  period: 1,</p>
+<p>  event_index: 1,</p>
+<p>  event_start_min: 19,</p>
+<p>  event_start_sec: 45,</p>
+<p>  event_end_min: 19,</p>
+<p>  event_end_sec: 43,</p>
+<p>  time_start_total_seconds: 15,        // Seconds into period</p>
+<p>  time_end_total_seconds: 17,</p>
+  
+<p>  // Video timing (CRITICAL for dashboard)</p>
+<p>  running_video_time: 125.5,           // Seconds from video start</p>
+<p>  event_running_start: 125.5,</p>
+<p>  event_running_end: 127.5,</p>
+  
+<p>  // Event classification</p>
+<p>  event_type: &quot;Shot&quot;,</p>
+<p>  event_detail: &quot;Wrist Shot&quot;,</p>
+<p>  event_detail_2: null,</p>
+<p>  event_successful: &quot;s&quot;,               // &#x27;s&#x27; or &#x27;u&#x27;</p>
+<p>  Type: &quot;Shot&quot;,                        // Legacy field</p>
+  
+<p>  // Play context</p>
+<p>  play_detail1: &quot;Rush&quot;,</p>
+<p>  play_detail_2: &quot;2-on-1&quot;,</p>
+<p>  play_detail_successful: &quot;s&quot;,</p>
+  
+<p>  // Zone info</p>
+<p>  event_team_zone: &quot;OZ&quot;,</p>
+<p>  home_team_zone: &quot;DZ&quot;,</p>
+<p>  away_team_zone: &quot;OZ&quot;,</p>
+  
+<p>  // Team context</p>
+<p>  team_venue: &quot;Away&quot;,</p>
+<p>  team_venue_abv: &quot;A&quot;,</p>
+<p>  home_team: &quot;Storm&quot;,</p>
+<p>  away_team: &quot;Lightning&quot;,</p>
+<p>  home_team_id: &quot;T001&quot;,</p>
+<p>  away_team_id: &quot;T002&quot;,</p>
+  
+<p>  // Linking</p>
+<p>  linked_event_index: null,            // For shot→save→rebound chains</p>
+<p>  sequence_index: 1,                   // Possession sequence</p>
+<p>  play_index: 1,                       // Play within sequence</p>
+  
+<p>  // IDs for joins</p>
+<p>  period_id: &quot;P1&quot;,</p>
+<p>  venue_id: &quot;H&quot;,</p>
+<p>  event_type_id: &quot;EVT001&quot;,</p>
+<p>  event_detail_id: &quot;ED001&quot;,</p>
+<p>  success_id: &quot;s&quot;,</p>
+<p>  zone_id: &quot;OZ&quot;,</p>
+<p>  play_detail_id: &quot;PD001&quot;,</p>
+  
+<p>  // Special</p>
+<p>  empty_net_goal: 0</p>
+<p>};</p>
+</code></pre>
+
+<h3>fact_events_player Columns</h3>
+
+<p>Each event can have multiple players involved:</p>
+
+<pre><code>const eventPlayerRecord = {
+<p>  // Keys</p>
+<p>  event_player_key: &quot;EV1896900001_1&quot;,  // PRIMARY KEY</p>
+<p>  event_key: &quot;EV1896900001&quot;,           // FK to fact_events</p>
+<p>  game_id: &quot;18969&quot;,</p>
+  
+<p>  // Player info</p>
+<p>  player_id: &quot;P001&quot;,</p>
+<p>  player_name: &quot;John Smith&quot;,</p>
+<p>  player_number: 17,</p>
+<p>  role_abrev: &quot;SH&quot;,                    // Shooter</p>
+  
+<p>  // Same timing as parent event</p>
+<p>  period: 1,</p>
+<p>  event_index: 1,</p>
+<p>  // ... all timing fields ...</p>
+  
+<p>  // Same event info</p>
+<p>  event_type: &quot;Shot&quot;,</p>
+<p>  Type: &quot;Shot&quot;,</p>
+<p>  // ... all event classification fields ...</p>
+  
+<p>  // Team context for this player</p>
+<p>  player_team_id: &quot;T002&quot;,</p>
+<p>  shift_key: &quot;18969_1&quot;</p>
+<p>};</p>
+</code></pre>
+
+<p>---</p>
+
+<h2>Linked Events Logic</h2>
+
+<h3>CRITICAL: How Events Chain Together</h3>
+
+<p>Events are linked via <code>linked_event_index</code>. The pattern:</p>
+
+<pre><code>Event 1 (Shot) → Event 2 (Save) → Event 3 (Rebound) → Event 4 (Shot)...
+</code></pre>
+
+<h3>Shot → Save → Rebound Chain</h3>
+
+<pre><code>// EVENT 1: SHOT
+<p>{</p>
+<p>  event_key: &quot;EV1896900001&quot;,</p>
+<p>  event_index: 1,</p>
+<p>  event_type: &quot;Shot&quot;,</p>
+<p>  linked_event_index: null,  // First in chain</p>
+  
+<p>  // Players:</p>
+<p>  // event_player_1: Shooter (team A)</p>
+<p>  // opp_player_1: Goalie (team B)</p>
+<p>  // event_player_2-6: Other attackers</p>
+<p>  // opp_player_2-6: Other defenders</p>
+<p>}</p>
+
+<p>// EVENT 2: SAVE (linked to shot)</p>
+<p>{</p>
+<p>  event_key: &quot;EV1896900002&quot;,</p>
+<p>  event_index: 2,</p>
+<p>  event_type: &quot;Save&quot;,</p>
+<p>  linked_event_index: 1,     // Links back to shot</p>
+  
+<p>  // Players SWAP:</p>
+<p>  // event_player_1: Goalie (was opp_player_1)</p>
+<p>  // opp_player_1: Shooter (was event_player_1)</p>
+<p>  // Other players swap sides too</p>
+<p>}</p>
+
+<p>// EVENT 3: REBOUND (only goalie involved)</p>
+<p>{</p>
+<p>  event_key: &quot;EV1896900003&quot;,</p>
+<p>  event_index: 3,</p>
+<p>  event_type: &quot;Rebound&quot;,</p>
+<p>  linked_event_index: 2,     // Links to save</p>
+  
+<p>  // Players:</p>
+<p>  // event_player_1: Goalie ONLY</p>
+<p>  // No other players</p>
+<p>}</p>
+</code></pre>
+
+<h3>Player Role Rules by Event Type</h3>
+
+<p>| Event Type | event_player_1 | opp_player_1 | Notes |</p>
+<p>|------------|----------------|--------------|-------|</p>
+<p>| <strong>Shot</strong> | Shooter | Goalie | Other players optional |</p>
+<p>| <strong>Save</strong> | Goalie | Shooter | Roles swap from shot |</p>
+<p>| <strong>Rebound</strong> | Goalie | - | Goalie only |</p>
+<p>| <strong>Goal</strong> | Scorer | Goalie | Assists are player_2, player_3 |</p>
+<p>| <strong>Pass</strong> | Passer | - | Receiver is event_player_2 |</p>
+<p>| <strong>Hit</strong> | Hitter | Target | - |</p>
+<p>| <strong>Block</strong> | Blocker | Shooter | - |</p>
+<p>| <strong>Faceoff</strong> | Winner | Loser | - |</p>
+<p>| <strong>Turnover</strong> | Player losing puck | - | - |</p>
+<p>| <strong>Takeaway</strong> | Player gaining puck | Lost by | - |</p>
+<p>| <strong>Stoppage</strong> | Last event_player_1 | - | Inherit from previous |</p>
+
+<h3>Same Players, Different Events</h3>
+
+<p>Within a linked chain, typically:</p>
+<p>- Same players maintain same roles</p>
+<p>- Same <code>play_detail</code> and <code>play_detail_2</code></p>
+<p>- Only changes: <code>event_type</code>, <code>event_detail</code>, <code>event_detail_2</code>, <code>success</code></p>
+
+<p>---</p>
+
+<h2>Shift Structure</h2>
+
+<h3>fact_shifts Columns</h3>
+
+<pre><code>const shiftRecord = {
+<p>  // Keys</p>
+<p>  shift_key: &quot;18969_1&quot;,                // PRIMARY KEY</p>
+<p>  game_id: &quot;18969&quot;,</p>
+<p>  shift_index: 1,</p>
+  
+<p>  // Timing</p>
+<p>  Period: 1,                           // Note: uppercase P</p>
+<p>  shift_start_min: 20,</p>
+<p>  shift_start_sec: 0,</p>
+<p>  shift_end_min: 19,</p>
+<p>  shift_end_sec: 15,</p>
+<p>  shift_duration: 45,                  // Seconds</p>
+<p>  shift_start_total_seconds: 0,</p>
+<p>  shift_end_total_seconds: 45,</p>
+  
+<p>  // Video timing</p>
+<p>  running_video_time: 60.0,</p>
+<p>  shift_start_running_time: 60.0,</p>
+<p>  shift_end_running_time: 105.0,</p>
+  
+<p>  // Start/Stop types</p>
+<p>  shift_start_type: &quot;Faceoff&quot;,</p>
+<p>  shift_stop_type: &quot;Whistle&quot;,</p>
+<p>  shift_start_type_id: &quot;SS001&quot;,</p>
+<p>  shift_stop_type_id: &quot;ST001&quot;,</p>
+  
+<p>  // Players on ice (by position)</p>
+<p>  home_forward_1: 17,                  // Jersey numbers</p>
+<p>  home_forward_2: 23,</p>
+<p>  home_forward_3: 9,</p>
+<p>  home_defense_1: 4,</p>
+<p>  home_defense_2: 77,</p>
+<p>  home_goalie: 35,</p>
+<p>  home_xtra: null,                     // Extra attacker if pulled goalie</p>
+  
+<p>  away_forward_1: 11,</p>
+<p>  away_forward_2: 19,</p>
+<p>  away_forward_3: 88,</p>
+<p>  away_defense_1: 2,</p>
+<p>  away_defense_2: 6,</p>
+<p>  away_goalie: 30,</p>
+<p>  away_xtra: null,</p>
+  
+<p>  // Strength/Situation</p>
+<p>  home_team_strength: 5,</p>
+<p>  away_team_strength: 5,</p>
+<p>  strength: &quot;5v5&quot;,</p>
+<p>  situation: &quot;EV&quot;,</p>
+<p>  strength_id: &quot;5v5&quot;,</p>
+<p>  situation_id: &quot;EV&quot;,</p>
+  
+<p>  // Team info</p>
+<p>  home_team: &quot;Storm&quot;,</p>
+<p>  away_team: &quot;Lightning&quot;,</p>
+<p>  home_team_id: &quot;T001&quot;,</p>
+<p>  away_team_id: &quot;T002&quot;,</p>
+  
+<p>  // Zone time (accumulated during shift)</p>
+<p>  home_ozone_start: 0,</p>
+<p>  home_ozone_end: 20,</p>
+<p>  home_dzone_start: 0,</p>
+<p>  home_dzone_end: 15,</p>
+<p>  home_nzone_start: 0,</p>
+<p>  home_nzone_end: 10,</p>
+  
+<p>  // Goals during shift</p>
+<p>  home_goals: 0,</p>
+<p>  away_goals: 0,</p>
+  
+<p>  // Plus/Minus during shift</p>
+<p>  home_team_plus: 0,</p>
+<p>  home_team_minus: 0,</p>
+<p>  away_team_plus: 0,</p>
+<p>  away_team_minus: 0,</p>
+  
+<p>  // Special teams</p>
+<p>  home_team_en: 0,                     // Empty net</p>
+<p>  away_team_en: 0,</p>
+<p>  home_team_pk: 0,                     // Penalty kill</p>
+<p>  home_team_pp: 0,                     // Power play</p>
+<p>  away_team_pp: 0,</p>
+<p>  away_team_pk: 0,</p>
+  
+<p>  // Period reference</p>
+<p>  period_id: &quot;P1&quot;,</p>
+<p>  period_start_total_running_seconds: 0</p>
+<p>};</p>
+</code></pre>
+
+<p>---</p>
+
+<h2>Video Integration</h2>
+
+<h3>CRITICAL: Video Time Sync</h3>
+
+<p>Every event and shift has video timing columns:</p>
+
+<pre><code>// Event video timing
+<p>running_video_time: 125.5,    // Seconds from video start</p>
+<p>event_running_start: 125.5,   // When event starts</p>
+<p>event_running_end: 127.5,     // When event ends</p>
+
+<p>// Shift video timing</p>
+<p>running_video_time: 60.0,</p>
+<p>shift_start_running_time: 60.0,</p>
+<p>shift_end_running_time: 105.0,</p>
+</code></pre>
+
+<h3>Building Video URLs</h3>
+
+<p>Get video URL from <code>dim_schedule</code>:</p>
+
+<pre><code>// From dim_schedule
+<p>const gameVideo = {</p>
+<p>  video_id: &quot;abc123xyz&quot;,</p>
+<p>  video_url: &quot;https://youtube.com/watch?v=abc123xyz&quot;,</p>
+<p>  video_start_time: 0  // Offset if video doesn&#x27;t start at puck drop</p>
+<p>};</p>
+
+<p>// Build timestamped URL</p>
+<p>function getVideoUrl(baseUrl, seconds) {</p>
+<p>  // YouTube format</p>
+<p>  return <code>${baseUrl}&amp;t=${Math.floor(seconds)}s</code>;</p>
+<p>  // Example: https://youtube.com/watch?v=abc123xyz&amp;t=125s</p>
+<p>}</p>
+
+<p>// For an event</p>
+<p>const eventVideoUrl = getVideoUrl(gameVideo.video_url, event.running_video_time);</p>
+</code></pre>
+
+<h3>Multiple Camera Angles</h3>
+
+<p>Check <code>fact_video</code> for additional angles:</p>
+
+<pre><code>SELECT * FROM fact_video WHERE game_id = &#x27;18969&#x27;;
+</code></pre>
+
+<p>May have: Main, Goal Cam, Blue Line, etc.</p>
+
+<p>---</p>
+
+<h2>Supabase Integration</h2>
+
+<h3>Reading Data</h3>
+
+<pre><code>import { createClient } from &#x27;@supabase/supabase-js&#x27;;
+
+<p>const supabase = createClient(</p>
+<p>  &#x27;https://uuaowslhpgyiudmbvqze.supabase.co&#x27;,</p>
+<p>  &#x27;YOUR_ANON_KEY&#x27;  // Use anon key for reads</p>
+<p>);</p>
+
+<p>// Load dimension tables on startup</p>
+<p>async function loadDimensions() {</p>
+<p>  const { data: eventTypes } = await supabase</p>
+<p>    .from(&#x27;dim_event_type&#x27;)</p>
+<p>    .select(&#x27;*&#x27;);</p>
+    
+<p>  const { data: players } = await supabase</p>
+<p>    .from(&#x27;dim_player&#x27;)</p>
+<p>    .select(&#x27;player_id, player_full_name, player_primary_position&#x27;);</p>
+    
+<p>  const { data: teams } = await supabase</p>
+<p>    .from(&#x27;dim_team&#x27;)</p>
+<p>    .select(&#x27;team_id, team_name&#x27;);</p>
+    
+<p>  // ... load all needed dims</p>
+<p>  return { eventTypes, players, teams };</p>
+<p>}</p>
+
+<p>// Load game data</p>
+<p>async function loadGame(gameId) {</p>
+<p>  const { data: events } = await supabase</p>
+<p>    .from(&#x27;fact_events&#x27;)</p>
+<p>    .select(&#x27;*&#x27;)</p>
+<p>    .eq(&#x27;game_id&#x27;, gameId)</p>
+<p>    .order(&#x27;event_index&#x27;);</p>
+    
+<p>  const { data: shifts } = await supabase</p>
+<p>    .from(&#x27;fact_shifts&#x27;)</p>
+<p>    .select(&#x27;*&#x27;)</p>
+<p>    .eq(&#x27;game_id&#x27;, gameId)</p>
+<p>    .order(&#x27;shift_index&#x27;);</p>
+    
+<p>  return { events, shifts };</p>
+<p>}</p>
+</code></pre>
+
+<h3>Writing Data</h3>
+
+<pre><code>// Use SERVICE_ROLE key for writes (keep secret!)
+<p>const supabaseAdmin = createClient(</p>
+<p>  &#x27;https://uuaowslhpgyiudmbvqze.supabase.co&#x27;,</p>
+<p>  &#x27;SERVICE_ROLE_KEY&#x27;</p>
+<p>);</p>
+
+<p>// Save draft to staging</p>
+<p>async function saveDraft(events, shifts, gameId) {</p>
+<p>  // Clear existing staging for this game</p>
+<p>  await supabaseAdmin</p>
+<p>    .from(&#x27;staging_events&#x27;)</p>
+<p>    .delete()</p>
+<p>    .eq(&#x27;game_id&#x27;, gameId);</p>
+    
+<p>  // Insert new staging data</p>
+<p>  const { error } = await supabaseAdmin</p>
+<p>    .from(&#x27;staging_events&#x27;)</p>
+<p>    .insert(events);</p>
+    
+<p>  if (error) throw error;</p>
+  
+<p>  // Same for shifts</p>
+<p>  await supabaseAdmin</p>
+<p>    .from(&#x27;staging_shifts&#x27;)</p>
+<p>    .delete()</p>
+<p>    .eq(&#x27;game_id&#x27;, gameId);</p>
+    
+<p>  await supabaseAdmin</p>
+<p>    .from(&#x27;staging_shifts&#x27;)</p>
+<p>    .insert(shifts);</p>
+<p>}</p>
+
+<p>// Publish final (move from staging to production)</p>
+<p>async function publishGame(gameId) {</p>
+<p>  // Get from staging</p>
+<p>  const { data: events } = await supabaseAdmin</p>
+<p>    .from(&#x27;staging_events&#x27;)</p>
+<p>    .select(&#x27;*&#x27;)</p>
+<p>    .eq(&#x27;game_id&#x27;, gameId);</p>
+    
+<p>  // Delete existing in production</p>
+<p>  await supabaseAdmin</p>
+<p>    .from(&#x27;fact_events&#x27;)</p>
+<p>    .delete()</p>
+<p>    .eq(&#x27;game_id&#x27;, gameId);</p>
+    
+<p>  // Insert to production</p>
+<p>  await supabaseAdmin</p>
+<p>    .from(&#x27;fact_events&#x27;)</p>
+<p>    .upsert(events);</p>
+    
+<p>  // Clear staging</p>
+<p>  await supabaseAdmin</p>
+<p>    .from(&#x27;staging_events&#x27;)</p>
+<p>    .delete()</p>
+<p>    .eq(&#x27;game_id&#x27;, gameId);</p>
+<p>}</p>
+</code></pre>
+
+<p>---</p>
+
+<h2>Workflow States</h2>
+
+<h3>Game Tracking Workflow</h3>
+
+<pre><code>1. NEW GAME
+<p>   - Create game_id</p>
+<p>   - Set up roster from dim_player</p>
+<p>   - Initialize empty events/shifts</p>
+   
+<p>2. TRACKING (Draft)</p>
+<p>   - Add events as they happen</p>
+<p>   - Auto-create shifts on changes</p>
+<p>   - Save to staging_* tables</p>
+<p>   - Can edit, delete, reorder</p>
+   
+<p>3. REVIEW</p>
+<p>   - Validate all events</p>
+<p>   - Check linked events</p>
+<p>   - Verify timing</p>
+<p>   - Compare to video</p>
+   
+<p>4. PUBLISH</p>
+<p>   - Move staging → production</p>
+<p>   - Lock for editing</p>
+<p>   - Generate stats</p>
+</code></pre>
+
+<h3>Save Modes</h3>
+
+<pre><code>const SAVE_MODES = {
+<p>  DRAFT: &#x27;draft&#x27;,      // Save to staging, can edit</p>
+<p>  PARTIAL: &#x27;partial&#x27;,  // Save incomplete game</p>
+<p>  FINAL: &#x27;final&#x27;       // Publish to production</p>
+<p>};</p>
+
+<p>async function saveGame(gameId, events, shifts, mode) {</p>
+<p>  switch(mode) {</p>
+<p>    case SAVE_MODES.DRAFT:</p>
+<p>      await saveDraft(events, shifts, gameId);</p>
+<p>      break;</p>
+<p>    case SAVE_MODES.PARTIAL:</p>
+<p>      await saveDraft(events, shifts, gameId);</p>
+<p>      // Mark as partial in game status</p>
+<p>      await updateGameStatus(gameId, &#x27;partial&#x27;);</p>
+<p>      break;</p>
+<p>    case SAVE_MODES.FINAL:</p>
+<p>      await validateGame(events, shifts);</p>
+<p>      await publishGame(gameId);</p>
+<p>      await updateGameStatus(gameId, &#x27;complete&#x27;);</p>
+<p>      break;</p>
+<p>  }</p>
+<p>}</p>
+</code></pre>
+
+<p>---</p>
+
+<h2>Data Validation</h2>
+
+<h3>Before Publishing</h3>
+
+<pre><code>function validateGame(events, shifts) {
+<p>  const errors = [];</p>
+  
+<p>  // 1. Check all events have required fields</p>
+<p>  events.forEach(e =&gt; {</p>
+<p>    if (!e.event_type) errors.push(<code>Event ${e.event_index}: missing event_type</code>);</p>
+<p>    if (!e.period) errors.push(<code>Event ${e.event_index}: missing period</code>);</p>
+<p>    if (!e.shift_key) errors.push(<code>Event ${e.event_index}: not assigned to shift</code>);</p>
+<p>  });</p>
+  
+<p>  // 2. Check event timing is within shift</p>
+<p>  events.forEach(e =&gt; {</p>
+<p>    const shift = shifts.find(s =&gt; s.shift_key === e.shift_key);</p>
+<p>    if (shift) {</p>
+<p>      if (e.time_start_total_seconds &lt; shift.shift_start_total_seconds ||</p>
+<p>          e.time_end_total_seconds &gt; shift.shift_end_total_seconds) {</p>
+<p>        errors.push(<code>Event ${e.event_index}: timing outside shift</code>);</p>
+<p>      }</p>
+<p>    }</p>
+<p>  });</p>
+  
+<p>  // 3. Check linked events are valid</p>
+<p>  events.forEach(e =&gt; {</p>
+<p>    if (e.linked_event_index) {</p>
+<p>      const linked = events.find(ev =&gt; ev.event_index === e.linked_event_index);</p>
+<p>      if (!linked) {</p>
+<p>        errors.push(<code>Event ${e.event_index}: invalid linked_event_index</code>);</p>
+<p>      }</p>
+<p>    }</p>
+<p>  });</p>
+  
+<p>  // 4. Check goals have at least scorer</p>
+<p>  events.filter(e =&gt; e.event_type === &#x27;Goal&#x27;).forEach(e =&gt; {</p>
+<p>    // Should have event_player entries</p>
+<p>  });</p>
+  
+<p>  return errors;</p>
+<p>}</p>
+</code></pre>
+
+<p>---</p>
+
+<h2>UI Recommendations</h2>
+
+<h3>Event Entry Form</h3>
+
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+<p>│ EVENT ENTRY                                    [Period: 1]  │</p>
+<p>├─────────────────────────────────────────────────────────────┤</p>
+<p>│                                                             │</p>
+<p>│  Time: [19]:[45] - [19]:[43]     Video: [▶ 2:05]           │</p>
+<p>│                                                             │</p>
+<p>│  Type: [Shot ▼]  Detail: [Wrist ▼]  Success: [✓]           │</p>
+<p>│                                                             │</p>
+<p>│  Play: [Rush ▼]  Detail: [2-on-1 ▼]                        │</p>
+<p>│                                                             │</p>
+<p>│  Zone: [OZ ▼]   Team: [Away ▼]                             │</p>
+<p>│                                                             │</p>
+<p>│  ─── PLAYERS ───────────────────────────────────────────── │</p>
+<p>│                                                             │</p>
+<p>│  Event Player 1: [#17 Smith ▼] (Shooter)                   │</p>
+<p>│  Event Player 2: [#23 Jones ▼] (Passer)                    │</p>
+<p>│  Opp Player 1:   [#35 Johnson ▼] (Goalie)                  │</p>
+<p>│                                                             │</p>
+<p>│  [Link to Previous] [Save] [Next Event →]                  │</p>
+<p>│                                                             │</p>
+<p>└─────────────────────────────────────────────────────────────┘</p>
+</code></pre>
+
+<h3>Keyboard Shortcuts</h3>
+
+<p>| Key | Action |</p>
+<p>|-----|--------|</p>
+<p>| S | Shot |</p>
+<p>| P | Pass |</p>
+<p>| G | Goal |</p>
+<p>| F | Faceoff |</p>
+<p>| H | Hit |</p>
+<p>| Space | Success toggle |</p>
+<p>| Enter | Save &amp; Next |</p>
+<p>| ← → | Navigate events |</p>
+<p>| Ctrl+S | Save draft |</p>
+<p>| Ctrl+Z | Undo |</p>
+
+<p>---</p>
+
+<h2>Testing Your Implementation</h2>
+
+<h3>Test Data</h3>
+
+<p>Use game 18969 as reference:</p>
+<p>- 5,833 events</p>
+<p>- 672 shifts</p>
+<p>- 4 periods</p>
+<p>- Final score: Available in dim_schedule</p>
+
+<h3>Validation Queries</h3>
+
+<pre><code>-- Check event counts by type
+<p>SELECT event_type, COUNT(*) </p>
+<p>FROM fact_events </p>
+<p>WHERE game_id = &#x27;18969&#x27;</p>
+<p>GROUP BY event_type;</p>
+
+<p>-- Check linked events</p>
+<p>SELECT e1.event_index, e1.event_type, e2.event_index as linked_to, e2.event_type as linked_type</p>
+<p>FROM fact_events e1</p>
+<p>LEFT JOIN fact_events e2 ON e1.linked_event_index = e2.event_index AND e1.game_id = e2.game_id</p>
+<p>WHERE e1.game_id = &#x27;18969&#x27; AND e1.linked_event_index IS NOT NULL</p>
+<p>LIMIT 20;</p>
+
+<p>-- Check events per shift</p>
+<p>SELECT shift_key, COUNT(*) as events</p>
+<p>FROM fact_events</p>
+<p>WHERE game_id = &#x27;18969&#x27;</p>
+<p>GROUP BY shift_key</p>
+<p>ORDER BY COUNT(*) DESC;</p>
+</code></pre>
+
+<p>---</p>
+
+<h2>Common Pitfalls</h2>
+
+<p>1. <strong>Forgetting to link events</strong> - Shot-Save-Rebound must be linked</p>
+<p>2. <strong>Wrong player roles</strong> - Goalie/Shooter swap on Save</p>
+<p>3. <strong>Video time drift</strong> - Sync video to game clock regularly</p>
+<p>4. <strong>Missing shift assignment</strong> - Every event needs a shift_key</p>
+<p>5. <strong>Duplicate keys</strong> - Ensure unique event_key generation</p>
+<p>6. <strong>Time zone issues</strong> - Store all times in game time (period:min:sec)</p>
+
+<p>---</p>
+
+<h2>Resources</h2>
+
+<p>- Prototype Tracker: <code>dashboard/tracker_v4_final_WORKING.html</code></p>
+<p>- Schema: <code>sql/05_FINAL_COMPLETE_SCHEMA.sql</code></p>
+<p>- Sample Data: <code>data/output/fact_events.csv</code></p>
+<p>- Dimension Tables: <code>data/output/dim_*.csv</code></p>
+
+<p>---</p>
+
+<h2>Questions?</h2>
+
+<p>See <code>prompts/tracker_dev_prompt.md</code> for a prompt to start a new Claude chat with full context.</p>
+
+</body></html>

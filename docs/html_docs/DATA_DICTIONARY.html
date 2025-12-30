@@ -1,0 +1,2884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DATA_DICTIONARY - BenchSight</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #34495e; margin-top: 30px; }
+        h3 { color: #7f8c8d; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: 'Monaco', 'Menlo', monospace; }
+        pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        pre code { background: none; color: inherit; }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #3498db; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        a { color: #3498db; }
+        blockquote { border-left: 4px solid #3498db; margin: 0; padding-left: 20px; color: #666; }
+        .nav { background: #2c3e50; padding: 10px; margin-bottom: 20px; border-radius: 5px; }
+        .nav a { color: white; margin-right: 15px; text-decoration: none; }
+        .nav a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="INDEX.html">Index</a>
+        <a href="DEPLOYMENT_GUIDE.html">Deploy</a>
+        <a href="STATS_REFERENCE_COMPLETE.html">Stats</a>
+        <a href="DATA_DICTIONARY.html">Data Dict</a>
+    </div>
+<h1>BenchSight Data Dictionary</h1>
+
+<strong>Generated:</strong> 2025-12-30 14:19
+
+<strong>Total Tables:</strong> 96 (44 dimensions, 51 facts, 1 QA)
+
+<p>---</p>
+
+<h2>Quick Reference</h2>
+
+<table>
+<tr><th>Category</th><th>Tables</th><th>Description</th></tr>
+<tr><td>dim_*</td><td>44</td><td>Dimension/lookup tables</td></tr>
+<tr><td>fact_*</td><td>51</td><td>Fact/transactional tables</td></tr>
+<tr><th>qa_*</th><th>1</th><th>Quality assurance tables</th></tr>
+</table>
+
+<h2>Table of Contents</h2>
+
+<h3>Dimensions</h3>
+<p>- <a href="#dim-comparison-type">dim_comparison_type</a></p>
+<p>- <a href="#dim-composite-rating">dim_composite_rating</a></p>
+<p>- <a href="#dim-danger-zone">dim_danger_zone</a></p>
+<p>- <a href="#dim-event-detail">dim_event_detail</a></p>
+<p>- <a href="#dim-event-detail-2">dim_event_detail_2</a></p>
+<p>- <a href="#dim-event-type">dim_event_type</a></p>
+<p>- <a href="#dim-giveaway-type">dim_giveaway_type</a></p>
+<p>- <a href="#dim-league">dim_league</a></p>
+<p>- <a href="#dim-micro-stat">dim_micro_stat</a></p>
+<p>- <a href="#dim-net-location">dim_net_location</a></p>
+<p>- <a href="#dim-pass-type">dim_pass_type</a></p>
+<p>- <a href="#dim-period">dim_period</a></p>
+<p>- <a href="#dim-play-detail">dim_play_detail</a></p>
+<p>- <a href="#dim-play-detail-2">dim_play_detail_2</a></p>
+<p>- <a href="#dim-player">dim_player</a></p>
+<p>- <a href="#dim-player-role">dim_player_role</a></p>
+<p>- <a href="#dim-playerurlref">dim_playerurlref</a></p>
+<p>- <a href="#dim-position">dim_position</a></p>
+<p>- <a href="#dim-randomnames">dim_randomnames</a></p>
+<p>- <a href="#dim-rink-coord">dim_rink_coord</a></p>
+<p>- <a href="#dim-rinkboxcoord">dim_rinkboxcoord</a></p>
+<p>- <a href="#dim-rinkcoordzones">dim_rinkcoordzones</a></p>
+<p>- <a href="#dim-schedule">dim_schedule</a></p>
+<p>- <a href="#dim-season">dim_season</a></p>
+<p>- <a href="#dim-shift-slot">dim_shift_slot</a></p>
+<p>- <a href="#dim-shift-start-type">dim_shift_start_type</a></p>
+<p>- <a href="#dim-shift-stop-type">dim_shift_stop_type</a></p>
+<p>- <a href="#dim-shot-type">dim_shot_type</a></p>
+<p>- <a href="#dim-situation">dim_situation</a></p>
+<p>- <a href="#dim-stat">dim_stat</a></p>
+<p>- <a href="#dim-stat-category">dim_stat_category</a></p>
+<p>- <a href="#dim-stat-type">dim_stat_type</a></p>
+<p>- <a href="#dim-stoppage-type">dim_stoppage_type</a></p>
+<p>- <a href="#dim-strength">dim_strength</a></p>
+<p>- <a href="#dim-success">dim_success</a></p>
+<p>- <a href="#dim-takeaway-type">dim_takeaway_type</a></p>
+<p>- <a href="#dim-team">dim_team</a></p>
+<p>- <a href="#dim-terminology-mapping">dim_terminology_mapping</a></p>
+<p>- <a href="#dim-turnover-quality">dim_turnover_quality</a></p>
+<p>- <a href="#dim-turnover-type">dim_turnover_type</a></p>
+<p>- <a href="#dim-venue">dim_venue</a></p>
+<p>- <a href="#dim-zone">dim_zone</a></p>
+<p>- <a href="#dim-zone-entry-type">dim_zone_entry_type</a></p>
+<p>- <a href="#dim-zone-exit-type">dim_zone_exit_type</a></p>
+
+<h3>Facts</h3>
+<p>- <a href="#fact-cycle-events">fact_cycle_events</a></p>
+<p>- <a href="#fact-draft">fact_draft</a></p>
+<p>- <a href="#fact-event-chains">fact_event_chains</a></p>
+<p>- <a href="#fact-events">fact_events</a></p>
+<p>- <a href="#fact-events-long">fact_events_long</a></p>
+<p>- <a href="#fact-events-player">fact_events_player</a></p>
+<p>- <a href="#fact-events-tracking">fact_events_tracking</a></p>
+<p>- <a href="#fact-game-status">fact_game_status</a></p>
+<p>- <a href="#fact-gameroster">fact_gameroster</a></p>
+<p>- <a href="#fact-goalie-game-stats">fact_goalie_game_stats</a></p>
+<p>- <a href="#fact-h2h">fact_h2h</a></p>
+<p>- <a href="#fact-head-to-head">fact_head_to_head</a></p>
+<p>- <a href="#fact-leadership">fact_leadership</a></p>
+<p>- <a href="#fact-league-leaders-snapshot">fact_league_leaders_snapshot</a></p>
+<p>- <a href="#fact-line-combos">fact_line_combos</a></p>
+<p>- <a href="#fact-linked-events">fact_linked_events</a></p>
+<p>- <a href="#fact-matchup-summary">fact_matchup_summary</a></p>
+<p>- <a href="#fact-player-boxscore-all">fact_player_boxscore_all</a></p>
+<p>- <a href="#fact-player-event-chains">fact_player_event_chains</a></p>
+<p>- <a href="#fact-player-game-position">fact_player_game_position</a></p>
+<p>- <a href="#fact-player-game-stats">fact_player_game_stats</a></p>
+<p>- <a href="#fact-player-micro-stats">fact_player_micro_stats</a></p>
+<p>- <a href="#fact-player-pair-stats">fact_player_pair_stats</a></p>
+<p>- <a href="#fact-player-period-stats">fact_player_period_stats</a></p>
+<p>- <a href="#fact-player-stats-long">fact_player_stats_long</a></p>
+<p>- <a href="#fact-player-xy-long">fact_player_xy_long</a></p>
+<p>- <a href="#fact-player-xy-wide">fact_player_xy_wide</a></p>
+<p>- <a href="#fact-playergames">fact_playergames</a></p>
+<p>- <a href="#fact-plays">fact_plays</a></p>
+<p>- <a href="#fact-possession-time">fact_possession_time</a></p>
+<p>- <a href="#fact-puck-xy-long">fact_puck_xy_long</a></p>
+<p>- <a href="#fact-puck-xy-wide">fact_puck_xy_wide</a></p>
+<p>- <a href="#fact-registration">fact_registration</a></p>
+<p>- <a href="#fact-rush-events">fact_rush_events</a></p>
+<p>- <a href="#fact-scoring-chances">fact_scoring_chances</a></p>
+<p>- <a href="#fact-sequences">fact_sequences</a></p>
+<p>- <a href="#fact-shift-players">fact_shift_players</a></p>
+<p>- <a href="#fact-shift-quality">fact_shift_quality</a></p>
+<p>- <a href="#fact-shift-quality-logical">fact_shift_quality_logical</a></p>
+<p>- <a href="#fact-shifts">fact_shifts</a></p>
+<p>- <a href="#fact-shifts-long">fact_shifts_long</a></p>
+<p>- <a href="#fact-shifts-player">fact_shifts_player</a></p>
+<p>- <a href="#fact-shifts-tracking">fact_shifts_tracking</a></p>
+<p>- <a href="#fact-shot-danger">fact_shot_danger</a></p>
+<p>- <a href="#fact-shot-xy">fact_shot_xy</a></p>
+<p>- <a href="#fact-suspicious-stats">fact_suspicious_stats</a></p>
+<p>- <a href="#fact-team-game-stats">fact_team_game_stats</a></p>
+<p>- <a href="#fact-team-standings-snapshot">fact_team_standings_snapshot</a></p>
+<p>- <a href="#fact-team-zone-time">fact_team_zone_time</a></p>
+<p>- <a href="#fact-video">fact_video</a></p>
+<p>- <a href="#fact-wowy">fact_wowy</a></p>
+
+<h3>QA</h3>
+<p>- <a href="#qa-suspicious-stats">qa_suspicious_stats</a></p>
+
+<p>---</p>
+
+<h2>Dimension Tables</h2>
+
+<h3>dim_comparison_type</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>comparison_type_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>comparison_type_code</td><td>TEXT</td><td></td></tr>
+<tr><th>comparison_type_name</th><th>TEXT</th><th></th></tr>
+<tr><th>description</th><th>TEXT</th><th></th></tr>
+<tr><th>analysis_scope</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_composite_rating</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>rating_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>rating_code</td><td>NUMERIC</td><td></td></tr>
+<tr><th>rating_name</th><th>NUMERIC</th><th></th></tr>
+<tr><th>description</th><th>TEXT</th><th></th></tr>
+<tr><th>scale_min</th><th>TEXT</th><th></th></tr>
+<tr><th>scale_max</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_danger_zone</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>danger_zone_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>danger_zone_code</td><td>TEXT</td><td></td></tr>
+<tr><th>danger_zone_name</th><th>TEXT</th><th></th></tr>
+<tr><th>xg_base</th><th>TEXT</th><th></th></tr>
+<tr><th>description</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_event_detail</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>event_detail_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>event_detail_code</td><td>TEXT</td><td></td></tr>
+<tr><th>event_detail_name</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_event_detail_2</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>event_detail_2_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>event_detail_2_code</td><td>TEXT</td><td></td></tr>
+<tr><th>event_detail_2_name</th><th>TEXT</th><th></th></tr>
+<tr><th>is_secondary_action</th><th>BOOLEAN</th><th></th></tr>
+<tr><th>context_type</th><th>TEXT</th><th></th></tr>
+<tr><th>description</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_event_type</h3>
+<p>_Types of tracked events (Shot, Pass, etc.)_</p>
+
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>event_type_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>event_type_code</td><td>TEXT</td><td></td></tr>
+<tr><th>event_type_name</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_giveaway_type</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>giveaway_type_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>giveaway_type_code</td><td>TEXT</td><td></td></tr>
+<tr><th>giveaway_type_name</th><th>TEXT</th><th></th></tr>
+<tr><th>danger_level</th><th>TEXT</th><th></th></tr>
+<tr><th>xga_impact</th><th>TEXT</th><th></th></tr>
+<tr><th>turnover_quality</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_context</th><th>TEXT</th><th></th></tr>
+<tr><th>description</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_league</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>league_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>league</td><td>TEXT</td><td></td></tr>
+</table>
+
+<h3>dim_micro_stat</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>micro_stat_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>stat_code</td><td>TEXT</td><td></td></tr>
+<tr><th>stat_name</th><th>TEXT</th><th></th></tr>
+<tr><th>category</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_net_location</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>net_location_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>net_location_code</td><td>TEXT</td><td></td></tr>
+<tr><th>net_location_name</th><th>TEXT</th><th></th></tr>
+<tr><th>x_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>y_pct</th><th>NUMERIC</th><th></th></tr>
+</table>
+
+<h3>dim_pass_type</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>pass_type_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>pass_type_code</td><td>TEXT</td><td></td></tr>
+<tr><th>pass_type_name</th><th>TEXT</th><th></th></tr>
+<tr><th>expected_completion_rate</th><th>TEXT</th><th></th></tr>
+<tr><th>danger_value</th><th>TEXT</th><th></th></tr>
+<tr><th>xa_modifier</th><th>TEXT</th><th></th></tr>
+<tr><th>description</th><th>TEXT</th><th></th></tr>
+<tr><th>skill_required</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_period</h3>
+<p>_Game periods (1, 2, 3, OT)_</p>
+
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>period_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>period_number</td><td>INTEGER</td><td></td></tr>
+<tr><th>period_name</th><th>TEXT</th><th></th></tr>
+<tr><th>period_type</th><th>TEXT</th><th></th></tr>
+<tr><th>duration_seconds</th><th>INTEGER</th><th></th></tr>
+<tr><th>intensity_multiplier</th><th>TEXT</th><th></th></tr>
+<tr><th>description</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_play_detail</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>play_detail_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>play_detail_code</td><td>TEXT</td><td></td></tr>
+<tr><th>play_detail_name</th><th>TEXT</th><th></th></tr>
+<tr><th>play_category</th><th>TEXT</th><th></th></tr>
+<tr><th>skill_level</th><th>TEXT</th><th></th></tr>
+<tr><th>description</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_play_detail_2</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>play_detail_2_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>play_detail_2_code</td><td>TEXT</td><td></td></tr>
+<tr><th>play_detail_2_name</th><th>TEXT</th><th></th></tr>
+<tr><th>is_secondary_play</th><th>BOOLEAN</th><th></th></tr>
+<tr><th>description</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_player</h3>
+<p>_All players in the league with biographical info_</p>
+
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>index</td><td>INTEGER</td><td></td></tr>
+<tr><td>player_first_name</td><td>TEXT</td><td></td></tr>
+<tr><th>player_last_name</th><th>TEXT</th><th></th></tr>
+<tr><th>player_full_name</th><th>TEXT</th><th></th></tr>
+<tr><th>player_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>player_primary_position</th><th>TEXT</th><th></th></tr>
+<tr><th>current_skill_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>player_hand</th><th>TEXT</th><th></th></tr>
+<tr><th>birth_year</th><th>TEXT</th><th></th></tr>
+<tr><th>player_gender</th><th>TEXT</th><th></th></tr>
+<tr><th>highest_beer_league</th><th>TEXT</th><th></th></tr>
+<tr><th>player_rating_ly</th><th>NUMERIC</th><th></th></tr>
+<tr><th>player_notes</th><th>TEXT</th><th></th></tr>
+<tr><th>player_leadership</th><th>TEXT</th><th></th></tr>
+<tr><th>player_norad</th><th>TEXT</th><th></th></tr>
+<tr><th>player_csaha</th><th>TEXT</th><th></th></tr>
+<tr><th>player_norad_primary_number</th><th>INTEGER</th><th></th></tr>
+<tr><th>player_csah_primary_number</th><th>INTEGER</th><th></th></tr>
+<tr><th>player_norad_current_team</th><th>TEXT</th><th></th></tr>
+<tr><th>player_csah_current_team</th><th>TEXT</th><th></th></tr>
+<tr><th>player_norad_current_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>player_csah_current_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>other_url</th><th>TEXT</th><th></th></tr>
+<tr><th>player_url</th><th>TEXT</th><th></th></tr>
+<tr><th>player_image</th><th>TEXT</th><th></th></tr>
+<tr><th>random_player_first_name</th><th>TEXT</th><th></th></tr>
+<tr><th>random_player_last_name</th><th>TEXT</th><th></th></tr>
+<tr><th>random_player_full_name</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_player_role</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>role_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>role_code</td><td>TEXT</td><td></td></tr>
+<tr><th>role_name</th><th>TEXT</th><th></th></tr>
+<tr><th>role_type</th><th>TEXT</th><th></th></tr>
+<tr><th>sort_order</th><th>TEXT</th><th></th></tr>
+<tr><th>potential_values</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_playerurlref</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>n_player_url</td><td>TEXT</td><td></td></tr>
+<tr><td>player_full_name</td><td>TEXT</td><td></td></tr>
+<tr><th>n_player_id_2</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_position</h3>
+<p>_Player positions (Forward, Defense, Goalie)_</p>
+
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>position_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>position_code</td><td>TEXT</td><td></td></tr>
+<tr><th>position_name</th><th>TEXT</th><th></th></tr>
+<tr><th>position_type</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_randomnames</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>random_full_name</td><td>TEXT</td><td></td></tr>
+<tr><td>random_first_name</td><td>TEXT</td><td></td></tr>
+<tr><th>random_last_name</th><th>TEXT</th><th></th></tr>
+<tr><th>gender</th><th>TEXT</th><th></th></tr>
+<tr><th>name_used</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_rink_coord</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>rink_coord_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>rink_coord_code</td><td>TEXT</td><td></td></tr>
+<tr><th>rink_coord_name</th><th>TEXT</th><th></th></tr>
+<tr><th>x_min</th><th>TEXT</th><th></th></tr>
+<tr><th>x_max</th><th>TEXT</th><th></th></tr>
+<tr><th>y_min</th><th>TEXT</th><th></th></tr>
+<tr><th>y_max</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_rinkboxcoord</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>box_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>box_id_rev</td><td>TEXT</td><td></td></tr>
+<tr><th>x_min</th><th>TEXT</th><th></th></tr>
+<tr><th>x_max</th><th>TEXT</th><th></th></tr>
+<tr><th>y_min</th><th>TEXT</th><th></th></tr>
+<tr><th>y_max</th><th>TEXT</th><th></th></tr>
+<tr><th>area</th><th>TEXT</th><th></th></tr>
+<tr><th>x_description</th><th>TEXT</th><th></th></tr>
+<tr><th>y_description</th><th>TEXT</th><th></th></tr>
+<tr><th>danger</th><th>TEXT</th><th></th></tr>
+<tr><th>zone</th><th>TEXT</th><th></th></tr>
+<tr><th>side</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_rinkcoordzones</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>box_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>box_id_rev</td><td>TEXT</td><td></td></tr>
+<tr><th>x_min</th><th>TEXT</th><th></th></tr>
+<tr><th>x_max</th><th>TEXT</th><th></th></tr>
+<tr><th>y_min</th><th>TEXT</th><th></th></tr>
+<tr><th>y_max</th><th>TEXT</th><th></th></tr>
+<tr><th>y_description</th><th>TEXT</th><th></th></tr>
+<tr><th>x_description</th><th>TEXT</th><th></th></tr>
+<tr><th>danger</th><th>TEXT</th><th></th></tr>
+<tr><th>slot</th><th>TEXT</th><th></th></tr>
+<tr><th>zone</th><th>TEXT</th><th></th></tr>
+<tr><th>side</th><th>TEXT</th><th></th></tr>
+<tr><th>dotside</th><th>TEXT</th><th></th></tr>
+<tr><th>depth</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_schedule</h3>
+<p>_Game schedule with dates, teams, scores_</p>
+
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>season</td><td>TEXT</td><td></td></tr>
+<tr><th>season_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>game_url</th><th>TEXT</th><th></th></tr>
+<tr><th>home_team_game_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>away_team_game_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>date</th><th>TIMESTAMP</th><th></th></tr>
+<tr><th>game_time</th><th>TEXT</th><th></th></tr>
+<tr><th>home_team_name</th><th>TEXT</th><th></th></tr>
+<tr><th>away_team_name</th><th>TEXT</th><th></th></tr>
+<tr><th>home_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>away_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>head_to_head_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>game_type</th><th>TEXT</th><th></th></tr>
+<tr><th>playoff_round</th><th>TEXT</th><th></th></tr>
+<tr><th>last_period_type</th><th>TEXT</th><th></th></tr>
+<tr><th>period_length</th><th>TEXT</th><th></th></tr>
+<tr><th>ot_period_length</th><th>TEXT</th><th></th></tr>
+<tr><th>shootout_rounds</th><th>TEXT</th><th></th></tr>
+<tr><th>home_total_goals</th><th>INTEGER</th><th></th></tr>
+<tr><th>away_total_goals</th><th>INTEGER</th><th></th></tr>
+<tr><th>home_team_period1_goals</th><th>INTEGER</th><th></th></tr>
+<tr><th>home_team_period2_goals</th><th>INTEGER</th><th></th></tr>
+<tr><th>home_team_period3_goals</th><th>INTEGER</th><th></th></tr>
+<tr><th>home_team_periodOT_goals</th><th>INTEGER</th><th></th></tr>
+<tr><th>away_team_period1_goals</th><th>INTEGER</th><th></th></tr>
+<tr><th>away_team_period2_goals</th><th>INTEGER</th><th></th></tr>
+<tr><th>away_team_period3_goals</th><th>INTEGER</th><th></th></tr>
+<tr><th>away_team_periodOT_goals</th><th>INTEGER</th><th></th></tr>
+<tr><th>home_team_seeding</th><th>TEXT</th><th></th></tr>
+<tr><th>away_team_seeding</th><th>TEXT</th><th></th></tr>
+<tr><th>home_team_w</th><th>TEXT</th><th></th></tr>
+<tr><th>home_team_l</th><th>TEXT</th><th></th></tr>
+<tr><th>home_team_t</th><th>TEXT</th><th></th></tr>
+<tr><th>home_team_pts</th><th>TEXT</th><th></th></tr>
+<tr><th>away_team_w</th><th>TEXT</th><th></th></tr>
+<tr><th>away_team_l</th><th>TEXT</th><th></th></tr>
+<tr><th>away_team_t</th><th>TEXT</th><th></th></tr>
+<tr><th>away_team_pts</th><th>TEXT</th><th></th></tr>
+<tr><th>video_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>video_start_time</th><th>TEXT</th><th></th></tr>
+<tr><th>video_end_time</th><th>TEXT</th><th></th></tr>
+<tr><th>video_title</th><th>TEXT</th><th></th></tr>
+<tr><th>video_url</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_season</h3>
+<p>_Season definitions_</p>
+
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>index</td><td>INTEGER</td><td></td></tr>
+<tr><td>season_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>season</th><th>TEXT</th><th></th></tr>
+<tr><th>session</th><th>TEXT</th><th></th></tr>
+<tr><th>norad</th><th>TEXT</th><th></th></tr>
+<tr><th>csah</th><th>TEXT</th><th></th></tr>
+<tr><th>league_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>league</th><th>TEXT</th><th></th></tr>
+<tr><th>start_date</th><th>TIMESTAMP</th><th></th></tr>
+</table>
+
+<h3>dim_shift_slot</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>slot_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>slot_code</td><td>TEXT</td><td></td></tr>
+<tr><th>slot_name</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_shift_start_type</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>shift_start_type_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>shift_start_type_code</td><td>TEXT</td><td></td></tr>
+<tr><th>shift_start_type_name</th><th>TEXT</th><th></th></tr>
+<tr><th>start_category</th><th>TEXT</th><th></th></tr>
+<tr><th>description</th><th>TEXT</th><th></th></tr>
+<tr><th>energy_factor</th><th>TEXT</th><th></th></tr>
+<tr><th>old_equiv</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_shift_stop_type</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>shift_stop_type_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>shift_stop_type_code</td><td>TEXT</td><td></td></tr>
+<tr><th>shift_stop_type_name</th><th>TEXT</th><th></th></tr>
+<tr><th>stop_category</th><th>TEXT</th><th></th></tr>
+<tr><th>description</th><th>TEXT</th><th></th></tr>
+<tr><th>shift_value_modifier</th><th>TEXT</th><th></th></tr>
+<tr><th>old_equiv</th><th>TEXT</th><th></th></tr>
+<tr><th>table</th><th>TEXT</th><th></th></tr>
+<tr><th>type</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_shot_type</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>shot_type_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>shot_type_code</td><td>TEXT</td><td></td></tr>
+<tr><th>shot_type_name</th><th>TEXT</th><th></th></tr>
+<tr><th>is_goal</th><th>BOOLEAN</th><th></th></tr>
+<tr><th>xg_modifier</th><th>TEXT</th><th></th></tr>
+<tr><th>accuracy_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>power_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>deception_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>typical_distance</th><th>TEXT</th><th></th></tr>
+<tr><th>description</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_situation</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>situation_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>situation_code</td><td>TEXT</td><td></td></tr>
+<tr><th>situation_name</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_stat</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>stat_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>stat_code</td><td>TEXT</td><td></td></tr>
+<tr><th>stat_name</th><th>TEXT</th><th></th></tr>
+<tr><th>category</th><th>TEXT</th><th></th></tr>
+<tr><th>description</th><th>TEXT</th><th></th></tr>
+<tr><th>formula</th><th>TEXT</th><th></th></tr>
+<tr><th>player_role</th><th>TEXT</th><th></th></tr>
+<tr><th>computable_now</th><th>TEXT</th><th></th></tr>
+<tr><th>benchmark_elite</th><th>TEXT</th><th></th></tr>
+<tr><th>nhl_avg_per_game</th><th>NUMERIC</th><th></th></tr>
+<tr><th>nhl_elite_threshold</th><th>TEXT</th><th></th></tr>
+<tr><th>nhl_min_threshold</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_stat_category</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>stat_category_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>category_code</td><td>TEXT</td><td></td></tr>
+<tr><th>category_name</th><th>TEXT</th><th></th></tr>
+<tr><th>description</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_stat_type</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>stat_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>stat_name</td><td>TEXT</td><td></td></tr>
+<tr><th>stat_category</th><th>TEXT</th><th></th></tr>
+<tr><th>stat_level</th><th>TEXT</th><th></th></tr>
+<tr><th>computable_now</th><th>TEXT</th><th></th></tr>
+<tr><th>description</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_stoppage_type</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>stoppage_type_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>stoppage_type_code</td><td>TEXT</td><td></td></tr>
+<tr><th>stoppage_type_name</th><th>TEXT</th><th></th></tr>
+<tr><th>stoppage_category</th><th>TEXT</th><th></th></tr>
+<tr><th>description</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_strength</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>strength_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>strength_code</td><td>TEXT</td><td></td></tr>
+<tr><th>strength_name</th><th>TEXT</th><th></th></tr>
+<tr><th>situation_type</th><th>TEXT</th><th></th></tr>
+<tr><th>xg_multiplier</th><th>TEXT</th><th></th></tr>
+<tr><th>description</th><th>TEXT</th><th></th></tr>
+<tr><th>avg_toi_pct</th><th>NUMERIC</th><th></th></tr>
+</table>
+
+<h3>dim_success</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>success_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>success_code</td><td>TEXT</td><td></td></tr>
+<tr><th>success_name</th><th>TEXT</th><th></th></tr>
+<tr><th>potential_values</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_takeaway_type</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>takeaway_type_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>takeaway_type_code</td><td>TEXT</td><td></td></tr>
+<tr><th>takeaway_type_name</th><th>TEXT</th><th></th></tr>
+<tr><th>skill_level</th><th>TEXT</th><th></th></tr>
+<tr><th>xgf_impact</th><th>TEXT</th><th></th></tr>
+<tr><th>value_weight</th><th>TEXT</th><th></th></tr>
+<tr><th>transition_potential</th><th>TEXT</th><th></th></tr>
+<tr><th>description</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_team</h3>
+<p>_All teams with team details_</p>
+
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>index</td><td>INTEGER</td><td></td></tr>
+<tr><td>team_name</td><td>TEXT</td><td></td></tr>
+<tr><th>team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>norad_team</th><th>TEXT</th><th></th></tr>
+<tr><th>csah_team</th><th>TEXT</th><th></th></tr>
+<tr><th>league_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>league</th><th>TEXT</th><th></th></tr>
+<tr><th>long_team_name</th><th>TEXT</th><th></th></tr>
+<tr><th>team_cd</th><th>TEXT</th><th></th></tr>
+<tr><th>team_color1</th><th>TEXT</th><th></th></tr>
+<tr><th>team_color2</th><th>TEXT</th><th></th></tr>
+<tr><th>team_color3</th><th>TEXT</th><th></th></tr>
+<tr><th>team_color4</th><th>TEXT</th><th></th></tr>
+<tr><th>team_logo</th><th>TEXT</th><th></th></tr>
+<tr><th>team_url</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_terminology_mapping</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>dimension</td><td>TEXT</td><td></td></tr>
+<tr><td>old_value</td><td>TEXT</td><td></td></tr>
+<tr><th>new_value</th><th>TEXT</th><th></th></tr>
+<tr><th>match_type</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_turnover_quality</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>turnover_quality_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>turnover_quality_code</td><td>TEXT</td><td></td></tr>
+<tr><th>turnover_quality_name</th><th>TEXT</th><th></th></tr>
+<tr><th>description</th><th>TEXT</th><th></th></tr>
+<tr><th>counts_against</th><th>INTEGER</th><th></th></tr>
+</table>
+
+<h3>dim_turnover_type</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>turnover_type_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>turnover_type_code</td><td>TEXT</td><td></td></tr>
+<tr><th>turnover_type_name</th><th>TEXT</th><th></th></tr>
+<tr><th>category</th><th>TEXT</th><th></th></tr>
+<tr><th>quality</th><th>TEXT</th><th></th></tr>
+<tr><th>weight</th><th>TEXT</th><th></th></tr>
+<tr><th>description</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_context</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_danger_multiplier</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_venue</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>venue_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>venue_code</td><td>TEXT</td><td></td></tr>
+<tr><th>venue_name</th><th>TEXT</th><th></th></tr>
+<tr><th>venue_abbrev</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_zone</h3>
+<p>_Rink zones (Offensive, Neutral, Defensive)_</p>
+
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>zone_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>zone_code</td><td>TEXT</td><td></td></tr>
+<tr><th>zone_name</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_abbrev</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_zone_entry_type</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>zone_entry_type_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>zone_entry_type_code</td><td>TEXT</td><td></td></tr>
+<tr><th>zone_entry_type_name</th><th>TEXT</th><th></th></tr>
+<tr><th>control_level</th><th>TEXT</th><th></th></tr>
+<tr><th>fenwick_per_entry</th><th>TEXT</th><th></th></tr>
+<tr><th>shot_multiplier</th><th>TEXT</th><th></th></tr>
+<tr><th>goal_prob_multiplier</th><th>TEXT</th><th></th></tr>
+<tr><th>description</th><th>TEXT</th><th></th></tr>
+<tr><th>expected_success_rate</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>dim_zone_exit_type</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>zone_exit_type_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>zone_exit_type_code</td><td>TEXT</td><td></td></tr>
+<tr><th>zone_exit_type_name</th><th>TEXT</th><th></th></tr>
+<tr><th>control_level</th><th>TEXT</th><th></th></tr>
+<tr><th>leads_to_entry_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>possession_retained_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>offensive_value_weight</th><th>TEXT</th><th></th></tr>
+<tr><th>description</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h2>Fact Tables</h2>
+
+<h3>fact_cycle_events</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>cycle_start_event_index</td><td>INTEGER</td><td></td></tr>
+<tr><th>cycle_end_event_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>pass_count</th><th>INTEGER</th><th></th></tr>
+<tr><th>is_cycle</th><th>BOOLEAN</th><th></th></tr>
+<tr><th>home_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>away_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+</table>
+
+<h3>fact_draft</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>team_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>skill_rating</td><td>NUMERIC</td><td></td></tr>
+<tr><th>round</th><th>TEXT</th><th></th></tr>
+<tr><th>player_full_name</th><th>TEXT</th><th></th></tr>
+<tr><th>player_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>team_name</th><th>TEXT</th><th></th></tr>
+<tr><th>restricted</th><th>TEXT</th><th></th></tr>
+<tr><th>overall_draft_round</th><th>TEXT</th><th></th></tr>
+<tr><th>overall_draft_position</th><th>TEXT</th><th></th></tr>
+<tr><th>unrestricted_draft_position</th><th>TEXT</th><th></th></tr>
+<tr><th>season</th><th>TEXT</th><th></th></tr>
+<tr><th>season_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>league</th><th>TEXT</th><th></th></tr>
+<tr><th>player_draft_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>league_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+</table>
+
+<h3>fact_event_chains</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>chain_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>entry_event_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>shot_event_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>events_to_shot</th><th>TEXT</th><th></th></tr>
+<tr><th>entry_type</th><th>TEXT</th><th></th></tr>
+<tr><th>shot_result</th><th>TEXT</th><th></th></tr>
+<tr><th>is_goal</th><th>BOOLEAN</th><th></th></tr>
+<tr><th>zone</th><th>TEXT</th><th></th></tr>
+<tr><th>sequence_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>zone_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>zone_entry_type_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>shot_result_type_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>home_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>away_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+</table>
+
+<h3>fact_events</h3>
+<p>_All tracked game events_</p>
+
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>event_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>period</th><th>TEXT</th><th></th></tr>
+<tr><th>event_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>linked_event_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>sequence_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>play_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>event_type</th><th>TEXT</th><th></th></tr>
+<tr><th>tracking_event_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>event_start_min</th><th>TEXT</th><th></th></tr>
+<tr><th>event_start_sec</th><th>TEXT</th><th></th></tr>
+<tr><th>event_end_min</th><th>TEXT</th><th></th></tr>
+<tr><th>event_end_sec</th><th>TEXT</th><th></th></tr>
+<tr><th>role_abrev</th><th>TEXT</th><th></th></tr>
+<tr><th>event_team_zone</th><th>TEXT</th><th></th></tr>
+<tr><th>home_team_zone</th><th>TEXT</th><th></th></tr>
+<tr><th>away_team_zone</th><th>TEXT</th><th></th></tr>
+<tr><th>team_venue</th><th>TEXT</th><th></th></tr>
+<tr><th>team_venue_abv</th><th>TEXT</th><th></th></tr>
+<tr><th>side_of_puck</th><th>TEXT</th><th></th></tr>
+<tr><th>play_detail1</th><th>TEXT</th><th></th></tr>
+<tr><th>play_detail_2</th><th>TEXT</th><th></th></tr>
+<tr><th>play_detail_successful</th><th>TEXT</th><th></th></tr>
+<tr><th>pressured_pressurer</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_change_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>home_team</th><th>TEXT</th><th></th></tr>
+<tr><th>away_team</th><th>TEXT</th><th></th></tr>
+<tr><th>Type</th><th>TEXT</th><th></th></tr>
+<tr><th>event_detail</th><th>TEXT</th><th></th></tr>
+<tr><th>event_detail_2</th><th>TEXT</th><th></th></tr>
+<tr><th>event_successful</th><th>TEXT</th><th></th></tr>
+<tr><th>shift_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>duration</th><th>INTEGER</th><th></th></tr>
+<tr><th>time_start_total_seconds</th><th>TEXT</th><th></th></tr>
+<tr><th>time_end_total_seconds</th><th>TEXT</th><th></th></tr>
+<tr><th>running_intermission_duration</th><th>INTEGER</th><th></th></tr>
+<tr><th>period_start_total_running_seconds</th><th>TEXT</th><th></th></tr>
+<tr><th>running_video_time</th><th>TEXT</th><th></th></tr>
+<tr><th>event_running_start</th><th>TEXT</th><th></th></tr>
+<tr><th>event_running_end</th><th>TEXT</th><th></th></tr>
+<tr><th>period_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>venue_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>event_type_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>event_detail_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>event_detail_2_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>success_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>play_detail_success_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>zone_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>play_detail_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>play_detail_2_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>home_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>away_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>shift_key</th><th>TEXT</th><th>Primary key</th></tr>
+<tr><th>empty_net_goal</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>fact_events_long</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>event_player_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>event_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><th>game_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>player_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>player_name</th><th>TEXT</th><th></th></tr>
+<tr><th>event_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>player_role</th><th>TEXT</th><th></th></tr>
+<tr><th>role_number</th><th>INTEGER</th><th></th></tr>
+<tr><th>event_type</th><th>TEXT</th><th></th></tr>
+<tr><th>player_game_number</th><th>INTEGER</th><th></th></tr>
+<tr><th>player_team</th><th>TEXT</th><th></th></tr>
+<tr><th>period</th><th>TEXT</th><th></th></tr>
+<tr><th>event_detail</th><th>TEXT</th><th></th></tr>
+<tr><th>event_detail_2</th><th>TEXT</th><th></th></tr>
+<tr><th>event_successful</th><th>TEXT</th><th></th></tr>
+<tr><th>play_detail1</th><th>TEXT</th><th></th></tr>
+<tr><th>play_detail_2</th><th>TEXT</th><th></th></tr>
+<tr><th>play_detail_successful</th><th>TEXT</th><th></th></tr>
+<tr><th>team_venue</th><th>TEXT</th><th></th></tr>
+<tr><th>side_of_puck</th><th>TEXT</th><th></th></tr>
+<tr><th>play_detail</th><th>TEXT</th><th></th></tr>
+<tr><th>period_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>venue_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>event_type_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>event_detail_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>event_detail_2_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>success_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>play_detail_success_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>play_detail_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>play_detail_2_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>role_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>player_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+</table>
+
+<h3>fact_events_player</h3>
+<p>_Events with player attribution_</p>
+
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>event_player_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>event_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><th>game_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>player_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>event_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>player_role</th><th>TEXT</th><th></th></tr>
+<tr><th>role_number</th><th>INTEGER</th><th></th></tr>
+<tr><th>period</th><th>TEXT</th><th></th></tr>
+<tr><th>event_type</th><th>TEXT</th><th></th></tr>
+<tr><th>player_game_number</th><th>INTEGER</th><th></th></tr>
+<tr><th>linked_event_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>tracking_event_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>event_start_min</th><th>TEXT</th><th></th></tr>
+<tr><th>event_start_sec</th><th>TEXT</th><th></th></tr>
+<tr><th>event_end_min</th><th>TEXT</th><th></th></tr>
+<tr><th>event_end_sec</th><th>TEXT</th><th></th></tr>
+<tr><th>role_abrev</th><th>TEXT</th><th></th></tr>
+<tr><th>event_team_zone</th><th>TEXT</th><th></th></tr>
+<tr><th>home_team_zone</th><th>TEXT</th><th></th></tr>
+<tr><th>away_team_zone</th><th>TEXT</th><th></th></tr>
+<tr><th>team_venue</th><th>TEXT</th><th></th></tr>
+<tr><th>team_venue_abv</th><th>TEXT</th><th></th></tr>
+<tr><th>side_of_puck</th><th>TEXT</th><th></th></tr>
+<tr><th>sequence_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>play_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>play_detail1</th><th>TEXT</th><th></th></tr>
+<tr><th>play_detail_2</th><th>TEXT</th><th></th></tr>
+<tr><th>play_detail_successful</th><th>TEXT</th><th></th></tr>
+<tr><th>pressured_pressurer</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_change_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>home_team</th><th>TEXT</th><th></th></tr>
+<tr><th>away_team</th><th>TEXT</th><th></th></tr>
+<tr><th>Type</th><th>TEXT</th><th></th></tr>
+<tr><th>event_detail</th><th>TEXT</th><th></th></tr>
+<tr><th>event_detail_2</th><th>TEXT</th><th></th></tr>
+<tr><th>event_successful</th><th>TEXT</th><th></th></tr>
+<tr><th>shift_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>duration</th><th>INTEGER</th><th></th></tr>
+<tr><th>time_start_total_seconds</th><th>TEXT</th><th></th></tr>
+<tr><th>time_end_total_seconds</th><th>TEXT</th><th></th></tr>
+<tr><th>running_intermission_duration</th><th>INTEGER</th><th></th></tr>
+<tr><th>period_start_total_running_seconds</th><th>TEXT</th><th></th></tr>
+<tr><th>running_video_time</th><th>TEXT</th><th></th></tr>
+<tr><th>event_running_start</th><th>TEXT</th><th></th></tr>
+<tr><th>event_running_end</th><th>TEXT</th><th></th></tr>
+<tr><th>player_team</th><th>TEXT</th><th></th></tr>
+<tr><th>player_name</th><th>TEXT</th><th></th></tr>
+<tr><th>play_detail</th><th>TEXT</th><th></th></tr>
+<tr><th>period_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>venue_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>event_type_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>event_detail_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>event_detail_2_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>success_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>play_detail_success_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>zone_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>play_detail_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>play_detail_2_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>role_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>home_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>away_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>player_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>shift_key</th><th>TEXT</th><th>Primary key</th></tr>
+</table>
+
+<h3>fact_events_tracking</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>event_tracking_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>event_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><th>event_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>game_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>event_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>player_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>player_game_number</th><th>INTEGER</th><th></th></tr>
+<tr><th>period</th><th>TEXT</th><th></th></tr>
+<tr><th>linked_event_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>tracking_event_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>event_start_min</th><th>TEXT</th><th></th></tr>
+<tr><th>event_start_sec</th><th>TEXT</th><th></th></tr>
+<tr><th>event_end_min</th><th>TEXT</th><th></th></tr>
+<tr><th>event_end_sec</th><th>TEXT</th><th></th></tr>
+<tr><th>role_abrev</th><th>TEXT</th><th></th></tr>
+<tr><th>event_team_zone</th><th>TEXT</th><th></th></tr>
+<tr><th>home_team_zone</th><th>TEXT</th><th></th></tr>
+<tr><th>away_team_zone</th><th>TEXT</th><th></th></tr>
+<tr><th>team_venue</th><th>TEXT</th><th></th></tr>
+<tr><th>team_venue_abv</th><th>TEXT</th><th></th></tr>
+<tr><th>side_of_puck</th><th>TEXT</th><th></th></tr>
+<tr><th>sequence_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>play_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>play_detail1</th><th>TEXT</th><th></th></tr>
+<tr><th>play_detail_2</th><th>TEXT</th><th></th></tr>
+<tr><th>play_detail_successful</th><th>TEXT</th><th></th></tr>
+<tr><th>pressured_pressurer</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_change_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>home_team</th><th>TEXT</th><th></th></tr>
+<tr><th>away_team</th><th>TEXT</th><th></th></tr>
+<tr><th>Type</th><th>TEXT</th><th></th></tr>
+<tr><th>event_detail</th><th>TEXT</th><th></th></tr>
+<tr><th>event_detail_2</th><th>TEXT</th><th></th></tr>
+<tr><th>event_successful</th><th>TEXT</th><th></th></tr>
+<tr><th>shift_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>duration</th><th>INTEGER</th><th></th></tr>
+<tr><th>time_start_total_seconds</th><th>TEXT</th><th></th></tr>
+<tr><th>time_end_total_seconds</th><th>TEXT</th><th></th></tr>
+<tr><th>running_intermission_duration</th><th>INTEGER</th><th></th></tr>
+<tr><th>period_start_total_running_seconds</th><th>TEXT</th><th></th></tr>
+<tr><th>running_video_time</th><th>TEXT</th><th></th></tr>
+<tr><th>event_running_start</th><th>TEXT</th><th></th></tr>
+<tr><th>event_running_end</th><th>TEXT</th><th></th></tr>
+<tr><th>player_role</th><th>TEXT</th><th></th></tr>
+<tr><th>role_number</th><th>INTEGER</th><th></th></tr>
+<tr><th>player_team</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>fact_game_status</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>game_date</td><td>TIMESTAMP</td><td></td></tr>
+<tr><th>home_team</th><th>TEXT</th><th></th></tr>
+<tr><th>away_team</th><th>TEXT</th><th></th></tr>
+<tr><th>official_home_goals</th><th>INTEGER</th><th></th></tr>
+<tr><th>official_away_goals</th><th>INTEGER</th><th></th></tr>
+<tr><th>official_total_goals</th><th>INTEGER</th><th></th></tr>
+<tr><th>game_url</th><th>TEXT</th><th></th></tr>
+<tr><th>tracking_status</th><th>TEXT</th><th></th></tr>
+<tr><th>tracking_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>events_row_count</th><th>INTEGER</th><th></th></tr>
+<tr><th>shifts_row_count</th><th>INTEGER</th><th></th></tr>
+<tr><th>player_id_fill_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>goal_events</th><th>TEXT</th><th></th></tr>
+<tr><th>periods_covered</th><th>TEXT</th><th></th></tr>
+<tr><th>tracking_start_period</th><th>TEXT</th><th></th></tr>
+<tr><th>tracking_start_time</th><th>TEXT</th><th></th></tr>
+<tr><th>tracking_end_period</th><th>TEXT</th><th></th></tr>
+<tr><th>tracking_end_time</th><th>TEXT</th><th></th></tr>
+<tr><th>is_loaded</th><th>BOOLEAN</th><th></th></tr>
+<tr><th>goals_in_stats</th><th>INTEGER</th><th></th></tr>
+<tr><th>goal_match</th><th>TEXT</th><th></th></tr>
+<tr><th>player_count</th><th>INTEGER</th><th></th></tr>
+<tr><th>issues</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>fact_gameroster</h3>
+<p>_Game rosters_</p>
+
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>team_game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>opp_team_game_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>player_game_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>team_venue</th><th>TEXT</th><th></th></tr>
+<tr><th>team_name</th><th>TEXT</th><th></th></tr>
+<tr><th>opp_team_name</th><th>TEXT</th><th></th></tr>
+<tr><th>player_game_number</th><th>INTEGER</th><th></th></tr>
+<tr><th>n_player_url</th><th>TEXT</th><th></th></tr>
+<tr><th>player_position</th><th>TEXT</th><th></th></tr>
+<tr><th>games_played</th><th>TEXT</th><th></th></tr>
+<tr><th>goals</th><th>INTEGER</th><th></th></tr>
+<tr><th>assist</th><th>TEXT</th><th></th></tr>
+<tr><th>goals_against</th><th>INTEGER</th><th></th></tr>
+<tr><th>pim</th><th>TEXT</th><th></th></tr>
+<tr><th>shutouts</th><th>TEXT</th><th></th></tr>
+<tr><th>team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>opp_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>key</th><th>TEXT</th><th></th></tr>
+<tr><th>player_full_name</th><th>TEXT</th><th></th></tr>
+<tr><th>player_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>date</th><th>TIMESTAMP</th><th></th></tr>
+<tr><th>season</th><th>TEXT</th><th></th></tr>
+<tr><th>sub</th><th>TEXT</th><th></th></tr>
+<tr><th>current_team</th><th>TEXT</th><th></th></tr>
+<tr><th>skill_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>venue_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>position_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>season_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+</table>
+
+<h3>fact_goalie_game_stats</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>goalie_game_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>player_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>player_name</th><th>TEXT</th><th></th></tr>
+<tr><th>team_name</th><th>TEXT</th><th></th></tr>
+<tr><th>saves</th><th>TEXT</th><th></th></tr>
+<tr><th>goals_against</th><th>INTEGER</th><th></th></tr>
+<tr><th>shots_against</th><th>INTEGER</th><th></th></tr>
+<tr><th>save_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>toi_seconds</th><th>TEXT</th><th></th></tr>
+<tr><th>empty_net_ga</th><th>TEXT</th><th></th></tr>
+<tr><th>saves_rebound</th><th>TEXT</th><th></th></tr>
+<tr><th>saves_freeze</th><th>TEXT</th><th></th></tr>
+<tr><th>saves_glove</th><th>TEXT</th><th></th></tr>
+<tr><th>saves_blocker</th><th>TEXT</th><th></th></tr>
+<tr><th>saves_left_pad</th><th>TEXT</th><th></th></tr>
+<tr><th>saves_right_pad</th><th>TEXT</th><th></th></tr>
+<tr><th>rebound_control_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>total_save_events</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>fact_h2h</h3>
+<p>_Head-to-head player matchup stats_</p>
+
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>player_1_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>player_2_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>shifts_together</th><th>TEXT</th><th></th></tr>
+<tr><th>home_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>away_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>toi_together</th><th>TEXT</th><th></th></tr>
+<tr><th>goals_for</th><th>INTEGER</th><th></th></tr>
+<tr><th>goals_against</th><th>INTEGER</th><th></th></tr>
+<tr><th>plus_minus</th><th>TEXT</th><th></th></tr>
+<tr><th>corsi_for</th><th>TEXT</th><th></th></tr>
+<tr><th>corsi_against</th><th>TEXT</th><th></th></tr>
+<tr><th>cf_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>fenwick_for</th><th>TEXT</th><th></th></tr>
+<tr><th>fenwick_against</th><th>TEXT</th><th></th></tr>
+<tr><th>ff_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>xgf</th><th>TEXT</th><th></th></tr>
+<tr><th>xga</th><th>TEXT</th><th></th></tr>
+<tr><th>xg_diff</th><th>TEXT</th><th></th></tr>
+<tr><th>shots_for</th><th>INTEGER</th><th></th></tr>
+<tr><th>shots_against</th><th>INTEGER</th><th></th></tr>
+<tr><th>h2h_key</th><th>TEXT</th><th>Primary key</th></tr>
+<tr><th>player_1_name</th><th>TEXT</th><th></th></tr>
+<tr><th>player_2_name</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>fact_head_to_head</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>player_1_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>player_1_name</th><th>TEXT</th><th></th></tr>
+<tr><th>player_1_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>player_1_venue</th><th>TEXT</th><th></th></tr>
+<tr><th>player_2_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>player_2_name</th><th>TEXT</th><th></th></tr>
+<tr><th>player_2_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>player_2_venue</th><th>TEXT</th><th></th></tr>
+<tr><th>shifts_against</th><th>TEXT</th><th></th></tr>
+<tr><th>toi_against_seconds</th><th>TEXT</th><th></th></tr>
+<tr><th>rating_diff</th><th>NUMERIC</th><th></th></tr>
+<tr><th>home_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>away_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>player_1_venue_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>player_2_venue_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+</table>
+
+<h3>fact_leadership</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>player_full_name</td><td>TEXT</td><td></td></tr>
+<tr><td>player_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>leadership</th><th>TEXT</th><th></th></tr>
+<tr><th>skill_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>n_player_url</th><th>TEXT</th><th></th></tr>
+<tr><th>team_name</th><th>TEXT</th><th></th></tr>
+<tr><th>team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>season</th><th>TEXT</th><th></th></tr>
+<tr><th>season_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+</table>
+
+<h3>fact_league_leaders_snapshot</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>date</td><td>TIMESTAMP</td><td></td></tr>
+<tr><th>player_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>player_name</th><th>TEXT</th><th></th></tr>
+<tr><th>team_name</th><th>TEXT</th><th></th></tr>
+<tr><th>gp</th><th>TEXT</th><th></th></tr>
+<tr><th>goals</th><th>INTEGER</th><th></th></tr>
+<tr><th>assists</th><th>INTEGER</th><th></th></tr>
+<tr><th>pts</th><th>TEXT</th><th></th></tr>
+<tr><th>pim</th><th>TEXT</th><th></th></tr>
+<tr><th>gpg</th><th>TEXT</th><th></th></tr>
+<tr><th>ppg</th><th>TEXT</th><th></th></tr>
+<tr><th>team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+</table>
+
+<h3>fact_line_combos</h3>
+<p>_Line combination statistics_</p>
+
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>line_combo_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>venue</th><th>TEXT</th><th></th></tr>
+<tr><th>forward_combo</th><th>TEXT</th><th></th></tr>
+<tr><th>defense_combo</th><th>TEXT</th><th></th></tr>
+<tr><th>shifts</th><th>TEXT</th><th></th></tr>
+<tr><th>toi_together</th><th>TEXT</th><th></th></tr>
+<tr><th>goals_for</th><th>INTEGER</th><th></th></tr>
+<tr><th>goals_against</th><th>INTEGER</th><th></th></tr>
+<tr><th>plus_minus</th><th>TEXT</th><th></th></tr>
+<tr><th>corsi_for</th><th>TEXT</th><th></th></tr>
+<tr><th>corsi_against</th><th>TEXT</th><th></th></tr>
+<tr><th>xgf</th><th>TEXT</th><th></th></tr>
+<tr><th>home_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>away_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>venue_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>fenwick_for</th><th>TEXT</th><th></th></tr>
+<tr><th>fenwick_against</th><th>TEXT</th><th></th></tr>
+<tr><th>ff_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>xg_against</th><th>TEXT</th><th></th></tr>
+<tr><th>xg_diff</th><th>TEXT</th><th></th></tr>
+<tr><th>xg_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>zone_entries</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_exits</th><th>TEXT</th><th></th></tr>
+<tr><th>controlled_entry_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>giveaways</th><th>TEXT</th><th></th></tr>
+<tr><th>takeaways</th><th>TEXT</th><th></th></tr>
+<tr><th>turnover_diff</th><th>TEXT</th><th></th></tr>
+<tr><th>avg_player_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>opp_avg_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>rating_diff</th><th>NUMERIC</th><th></th></tr>
+<tr><th>pdo</th><th>TEXT</th><th></th></tr>
+<tr><th>sh_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>sv_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>goals_per_60</th><th>INTEGER</th><th></th></tr>
+<tr><th>goals_against_per_60</th><th>INTEGER</th><th></th></tr>
+<tr><th>cf_per_60</th><th>TEXT</th><th></th></tr>
+<tr><th>ca_per_60</th><th>TEXT</th><th></th></tr>
+<tr><th>team_name</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>fact_linked_events</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>linked_event_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>primary_event_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>event_count</th><th>INTEGER</th><th></th></tr>
+<tr><th>event_1_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>event_1_type</th><th>TEXT</th><th></th></tr>
+<tr><th>event_1_detail</th><th>TEXT</th><th></th></tr>
+<tr><th>event_1_player_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>event_2_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>event_2_type</th><th>TEXT</th><th></th></tr>
+<tr><th>event_2_detail</th><th>TEXT</th><th></th></tr>
+<tr><th>event_2_player_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>event_3_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>event_3_type</th><th>TEXT</th><th></th></tr>
+<tr><th>event_3_detail</th><th>TEXT</th><th></th></tr>
+<tr><th>event_3_player_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>event_4_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>event_4_type</th><th>TEXT</th><th></th></tr>
+<tr><th>event_4_detail</th><th>TEXT</th><th></th></tr>
+<tr><th>event_4_player_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>event_5_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>event_5_type</th><th>TEXT</th><th></th></tr>
+<tr><th>event_5_detail</th><th>TEXT</th><th></th></tr>
+<tr><th>event_5_player_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>event_1_key</th><th>TEXT</th><th>Primary key</th></tr>
+<tr><th>event_2_key</th><th>TEXT</th><th>Primary key</th></tr>
+<tr><th>event_3_key</th><th>TEXT</th><th>Primary key</th></tr>
+<tr><th>event_4_key</th><th>TEXT</th><th>Primary key</th></tr>
+<tr><th>event_5_key</th><th>TEXT</th><th>Primary key</th></tr>
+<tr><th>team_venue</th><th>TEXT</th><th></th></tr>
+<tr><th>team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>play_chain</th><th>TEXT</th><th></th></tr>
+<tr><th>event_chain_indices</th><th>TEXT</th><th></th></tr>
+<tr><th>venue_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>video_time_start</th><th>TEXT</th><th></th></tr>
+<tr><th>video_time_end</th><th>TEXT</th><th></th></tr>
+<tr><th>event_1_type_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>event_2_type_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>event_3_type_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>event_4_type_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>event_5_type_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>event_1_detail_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>event_2_detail_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>event_3_detail_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>event_4_detail_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>event_5_detail_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>home_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>away_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+</table>
+
+<h3>fact_matchup_summary</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>player_1_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>player_2_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>shifts_together</th><th>TEXT</th><th></th></tr>
+<tr><th>home_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>away_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>toi_together</th><th>TEXT</th><th></th></tr>
+<tr><th>goals_for</th><th>INTEGER</th><th></th></tr>
+<tr><th>goals_against</th><th>INTEGER</th><th></th></tr>
+<tr><th>plus_minus</th><th>TEXT</th><th></th></tr>
+<tr><th>corsi_for</th><th>TEXT</th><th></th></tr>
+<tr><th>corsi_against</th><th>TEXT</th><th></th></tr>
+<tr><th>cf_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>fenwick_for</th><th>TEXT</th><th></th></tr>
+<tr><th>fenwick_against</th><th>TEXT</th><th></th></tr>
+<tr><th>ff_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>xgf</th><th>TEXT</th><th></th></tr>
+<tr><th>xga</th><th>TEXT</th><th></th></tr>
+<tr><th>xg_diff</th><th>TEXT</th><th></th></tr>
+<tr><th>shots_for</th><th>INTEGER</th><th></th></tr>
+<tr><th>shots_against</th><th>INTEGER</th><th></th></tr>
+<tr><th>p1_shifts_without_p2</th><th>TEXT</th><th></th></tr>
+<tr><th>p2_shifts_without_p1</th><th>TEXT</th><th></th></tr>
+<tr><th>cf_pct_together</th><th>NUMERIC</th><th></th></tr>
+<tr><th>cf_pct_apart</th><th>NUMERIC</th><th></th></tr>
+<tr><th>cf_pct_delta</th><th>NUMERIC</th><th></th></tr>
+<tr><th>matchup_key</th><th>TEXT</th><th>Primary key</th></tr>
+<tr><th>synergy_score</th><th>TEXT</th><th></th></tr>
+<tr><th>is_positive_synergy</th><th>BOOLEAN</th><th></th></tr>
+</table>
+
+<h3>fact_player_boxscore_all</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>player_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>player_name</th><th>TEXT</th><th></th></tr>
+<tr><th>player_number</th><th>INTEGER</th><th></th></tr>
+<tr><th>player_position</th><th>TEXT</th><th></th></tr>
+<tr><th>team_venue</th><th>TEXT</th><th></th></tr>
+<tr><th>team_name</th><th>TEXT</th><th></th></tr>
+<tr><th>team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>opp_team_name</th><th>TEXT</th><th></th></tr>
+<tr><th>date</th><th>TIMESTAMP</th><th></th></tr>
+<tr><th>season</th><th>TEXT</th><th></th></tr>
+<tr><th>gp</th><th>TEXT</th><th></th></tr>
+<tr><th>g</th><th>TEXT</th><th></th></tr>
+<tr><th>a</th><th>TEXT</th><th></th></tr>
+<tr><th>pts</th><th>TEXT</th><th></th></tr>
+<tr><th>ga</th><th>TEXT</th><th></th></tr>
+<tr><th>pim</th><th>TEXT</th><th></th></tr>
+<tr><th>so</th><th>TEXT</th><th></th></tr>
+<tr><th>skill_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>venue_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>position_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>season_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>opp_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+</table>
+
+<h3>fact_player_event_chains</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>event_chain_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>event_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>event_key</th><th>TEXT</th><th>Primary key</th></tr>
+<tr><th>event_type</th><th>TEXT</th><th></th></tr>
+<tr><th>period</th><th>TEXT</th><th></th></tr>
+<tr><th>home_player_count</th><th>INTEGER</th><th></th></tr>
+<tr><th>away_player_count</th><th>INTEGER</th><th></th></tr>
+<tr><th>home_player_1</th><th>TEXT</th><th></th></tr>
+<tr><th>home_player_2</th><th>TEXT</th><th></th></tr>
+<tr><th>home_player_3</th><th>TEXT</th><th></th></tr>
+<tr><th>away_player_1</th><th>TEXT</th><th></th></tr>
+<tr><th>away_player_2</th><th>TEXT</th><th></th></tr>
+<tr><th>away_player_3</th><th>TEXT</th><th></th></tr>
+<tr><th>home_players</th><th>TEXT</th><th></th></tr>
+<tr><th>away_players</th><th>TEXT</th><th></th></tr>
+<tr><th>running_video_time</th><th>TEXT</th><th></th></tr>
+<tr><th>event_running_start</th><th>TEXT</th><th></th></tr>
+<tr><th>period_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>event_type_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>home_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>away_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+</table>
+
+<h3>fact_player_game_position</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>player_position_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>player_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>logical_shifts</th><th>TEXT</th><th></th></tr>
+<tr><th>dominant_position</th><th>TEXT</th><th></th></tr>
+<tr><th>dominant_position_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>forward_shifts</th><th>TEXT</th><th></th></tr>
+<tr><th>defense_shifts</th><th>TEXT</th><th></th></tr>
+<tr><th>goalie_shifts</th><th>TEXT</th><th></th></tr>
+<tr><th>player_name</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>fact_player_game_stats</h3>
+<p>_Player statistics per game_</p>
+
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>player_game_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>player_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>player_name</th><th>TEXT</th><th></th></tr>
+<tr><th>goals</th><th>INTEGER</th><th></th></tr>
+<tr><th>assists</th><th>INTEGER</th><th></th></tr>
+<tr><th>points</th><th>INTEGER</th><th></th></tr>
+<tr><th>shots</th><th>INTEGER</th><th></th></tr>
+<tr><th>sog</th><th>TEXT</th><th></th></tr>
+<tr><th>shots_blocked</th><th>INTEGER</th><th></th></tr>
+<tr><th>shots_missed</th><th>INTEGER</th><th></th></tr>
+<tr><th>shooting_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>pass_attempts</th><th>TEXT</th><th></th></tr>
+<tr><th>pass_completed</th><th>TEXT</th><th></th></tr>
+<tr><th>pass_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>fo_wins</th><th>TEXT</th><th></th></tr>
+<tr><th>fo_losses</th><th>TEXT</th><th></th></tr>
+<tr><th>fo_total</th><th>TEXT</th><th></th></tr>
+<tr><th>fo_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>zone_entries</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_exits</th><th>TEXT</th><th></th></tr>
+<tr><th>giveaways</th><th>TEXT</th><th></th></tr>
+<tr><th>takeaways</th><th>TEXT</th><th></th></tr>
+<tr><th>toi_seconds</th><th>TEXT</th><th></th></tr>
+<tr><th>toi_minutes</th><th>TEXT</th><th></th></tr>
+<tr><th>playing_toi_seconds</th><th>TEXT</th><th></th></tr>
+<tr><th>playing_toi_minutes</th><th>TEXT</th><th></th></tr>
+<tr><th>stoppage_seconds</th><th>TEXT</th><th></th></tr>
+<tr><th>shift_count</th><th>INTEGER</th><th></th></tr>
+<tr><th>logical_shifts</th><th>TEXT</th><th></th></tr>
+<tr><th>avg_shift</th><th>NUMERIC</th><th></th></tr>
+<tr><th>avg_playing_shift</th><th>NUMERIC</th><th></th></tr>
+<tr><th>goals_per_60</th><th>INTEGER</th><th></th></tr>
+<tr><th>assists_per_60</th><th>INTEGER</th><th></th></tr>
+<tr><th>points_per_60</th><th>INTEGER</th><th></th></tr>
+<tr><th>shots_per_60</th><th>INTEGER</th><th></th></tr>
+<tr><th>goals_per_60_playing</th><th>INTEGER</th><th></th></tr>
+<tr><th>assists_per_60_playing</th><th>INTEGER</th><th></th></tr>
+<tr><th>points_per_60_playing</th><th>INTEGER</th><th></th></tr>
+<tr><th>shots_per_60_playing</th><th>INTEGER</th><th></th></tr>
+<tr><th>blocks</th><th>TEXT</th><th></th></tr>
+<tr><th>hits</th><th>TEXT</th><th></th></tr>
+<tr><th>puck_battles</th><th>TEXT</th><th></th></tr>
+<tr><th>puck_battle_wins</th><th>TEXT</th><th></th></tr>
+<tr><th>retrievals</th><th>TEXT</th><th></th></tr>
+<tr><th>corsi_for</th><th>TEXT</th><th></th></tr>
+<tr><th>corsi_against</th><th>TEXT</th><th></th></tr>
+<tr><th>fenwick_for</th><th>TEXT</th><th></th></tr>
+<tr><th>fenwick_against</th><th>TEXT</th><th></th></tr>
+<tr><th>cf_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>ff_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>opp_avg_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>skill_diff</th><th>TEXT</th><th></th></tr>
+<tr><th>plus_ev</th><th>TEXT</th><th></th></tr>
+<tr><th>minus_ev</th><th>TEXT</th><th></th></tr>
+<tr><th>plus_minus_ev</th><th>TEXT</th><th></th></tr>
+<tr><th>plus_total</th><th>TEXT</th><th></th></tr>
+<tr><th>minus_total</th><th>TEXT</th><th></th></tr>
+<tr><th>plus_minus_total</th><th>TEXT</th><th></th></tr>
+<tr><th>plus_en_adj</th><th>TEXT</th><th></th></tr>
+<tr><th>minus_en_adj</th><th>TEXT</th><th></th></tr>
+<tr><th>plus_minus_en_adj</th><th>TEXT</th><th></th></tr>
+<tr><th>player_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>home_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>away_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>chips</th><th>TEXT</th><th></th></tr>
+<tr><th>breakout_rush_attempts</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_keepins</th><th>TEXT</th><th></th></tr>
+<tr><th>dekes_successful</th><th>TEXT</th><th></th></tr>
+<tr><th>breakout_clear_attempts</th><th>TEXT</th><th></th></tr>
+<tr><th>beat_middle</th><th>TEXT</th><th></th></tr>
+<tr><th>beat_wide</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_exit_denials</th><th>TEXT</th><th></th></tr>
+<tr><th>breakouts</th><th>TEXT</th><th></th></tr>
+<tr><th>passes_missed_target</th><th>TEXT</th><th></th></tr>
+<tr><th>drives_corner</th><th>TEXT</th><th></th></tr>
+<tr><th>tip_attempts</th><th>TEXT</th><th></th></tr>
+<tr><th>cutbacks</th><th>TEXT</th><th></th></tr>
+<tr><th>drives_middle</th><th>TEXT</th><th></th></tr>
+<tr><th>pass_for_tip</th><th>TEXT</th><th></th></tr>
+<tr><th>poke_checks</th><th>TEXT</th><th></th></tr>
+<tr><th>stick_checks</th><th>TEXT</th><th></th></tr>
+<tr><th>got_beat_middle</th><th>TEXT</th><th></th></tr>
+<tr><th>crash_net</th><th>TEXT</th><th></th></tr>
+<tr><th>cycle_plays</th><th>TEXT</th><th></th></tr>
+<tr><th>ceded_exits</th><th>TEXT</th><th></th></tr>
+<tr><th>reverse_passes</th><th>TEXT</th><th></th></tr>
+<tr><th>deke_attempts</th><th>TEXT</th><th></th></tr>
+<tr><th>breakout_pass_attempts</th><th>TEXT</th><th></th></tr>
+<tr><th>backchecks</th><th>TEXT</th><th></th></tr>
+<tr><th>separate_from_puck</th><th>TEXT</th><th></th></tr>
+<tr><th>rebound_recoveries</th><th>TEXT</th><th></th></tr>
+<tr><th>block_attempts</th><th>TEXT</th><th></th></tr>
+<tr><th>drives_net</th><th>TEXT</th><th></th></tr>
+<tr><th>ceded_entries</th><th>TEXT</th><th></th></tr>
+<tr><th>puck_retrievals</th><th>TEXT</th><th></th></tr>
+<tr><th>passes_intercepted</th><th>TEXT</th><th></th></tr>
+<tr><th>stopped_deke</th><th>TEXT</th><th></th></tr>
+<tr><th>dump_and_chase</th><th>TEXT</th><th></th></tr>
+<tr><th>def_pass_deflected</th><th>TEXT</th><th></th></tr>
+<tr><th>loose_puck_wins</th><th>TEXT</th><th></th></tr>
+<tr><th>drives_wide</th><th>TEXT</th><th></th></tr>
+<tr><th>puck_recoveries</th><th>TEXT</th><th></th></tr>
+<tr><th>def_pass_intercepted</th><th>TEXT</th><th></th></tr>
+<tr><th>screens</th><th>TEXT</th><th></th></tr>
+<tr><th>front_of_net</th><th>TEXT</th><th></th></tr>
+<tr><th>secondary_assists</th><th>INTEGER</th><th></th></tr>
+<tr><th>in_lane</th><th>TEXT</th><th></th></tr>
+<tr><th>quick_ups</th><th>TEXT</th><th></th></tr>
+<tr><th>second_touches</th><th>TEXT</th><th></th></tr>
+<tr><th>delays</th><th>TEXT</th><th></th></tr>
+<tr><th>loose_puck_losses</th><th>TEXT</th><th></th></tr>
+<tr><th>turnover_recoveries</th><th>TEXT</th><th></th></tr>
+<tr><th>dump_recoveries</th><th>TEXT</th><th></th></tr>
+<tr><th>pressures</th><th>TEXT</th><th></th></tr>
+<tr><th>contains</th><th>TEXT</th><th></th></tr>
+<tr><th>forechecks</th><th>TEXT</th><th></th></tr>
+<tr><th>give_and_go</th><th>TEXT</th><th></th></tr>
+<tr><th>passes_deflected</th><th>TEXT</th><th></th></tr>
+<tr><th>lost_puck</th><th>TEXT</th><th></th></tr>
+<tr><th>force_wide</th><th>TEXT</th><th></th></tr>
+<tr><th>man_on_man</th><th>TEXT</th><th></th></tr>
+<tr><th>dekes_beat_defender</th><th>TEXT</th><th></th></tr>
+<tr><th>box_outs</th><th>TEXT</th><th></th></tr>
+<tr><th>primary_assists</th><th>INTEGER</th><th></th></tr>
+<tr><th>got_beat_wide</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_entry_denials</th><th>TEXT</th><th></th></tr>
+<tr><th>surf_plays</th><th>TEXT</th><th></th></tr>
+<tr><th>blocked_shots_play</th><th>INTEGER</th><th></th></tr>
+<tr><th>drives_middle_success</th><th>TEXT</th><th></th></tr>
+<tr><th>drives_wide_success</th><th>TEXT</th><th></th></tr>
+<tr><th>drives_corner_success</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_entry_denials_success</th><th>TEXT</th><th></th></tr>
+<tr><th>breakouts_success</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_entry_carry</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_entry_pass</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_entry_dump</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_exit_carry</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_exit_pass</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_exit_dump</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_exit_clear</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_entries_controlled</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_entries_uncontrolled</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_entry_success_rate</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_entry_control_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>zone_exits_controlled</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_exits_uncontrolled</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_exit_success_rate</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_exit_control_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>def_shots_against</th><th>INTEGER</th><th></th></tr>
+<tr><th>def_goals_against</th><th>INTEGER</th><th></th></tr>
+<tr><th>def_entries_allowed</th><th>TEXT</th><th></th></tr>
+<tr><th>def_exits_denied</th><th>TEXT</th><th></th></tr>
+<tr><th>def_times_beat_deke</th><th>TEXT</th><th></th></tr>
+<tr><th>def_times_beat_speed</th><th>TEXT</th><th></th></tr>
+<tr><th>def_times_beat_total</th><th>TEXT</th><th></th></tr>
+<tr><th>def_takeaways</th><th>TEXT</th><th></th></tr>
+<tr><th>def_forced_turnovers</th><th>TEXT</th><th></th></tr>
+<tr><th>def_zone_clears</th><th>TEXT</th><th></th></tr>
+<tr><th>def_blocked_shots</th><th>INTEGER</th><th></th></tr>
+<tr><th>def_interceptions</th><th>TEXT</th><th></th></tr>
+<tr><th>def_stick_checks</th><th>TEXT</th><th></th></tr>
+<tr><th>def_poke_checks</th><th>TEXT</th><th></th></tr>
+<tr><th>def_body_checks</th><th>TEXT</th><th></th></tr>
+<tr><th>def_coverage_assignments</th><th>TEXT</th><th></th></tr>
+<tr><th>def_battles_won</th><th>TEXT</th><th></th></tr>
+<tr><th>def_battles_lost</th><th>TEXT</th><th></th></tr>
+<tr><th>giveaways_bad</th><th>TEXT</th><th></th></tr>
+<tr><th>giveaways_neutral</th><th>TEXT</th><th></th></tr>
+<tr><th>giveaways_good</th><th>TEXT</th><th></th></tr>
+<tr><th>turnover_diff_adjusted</th><th>TEXT</th><th></th></tr>
+<tr><th>turnovers_oz</th><th>TEXT</th><th></th></tr>
+<tr><th>turnovers_nz</th><th>TEXT</th><th></th></tr>
+<tr><th>turnovers_dz</th><th>TEXT</th><th></th></tr>
+<tr><th>giveaway_rate_per_60</th><th>TEXT</th><th></th></tr>
+<tr><th>takeaway_rate_per_60</th><th>TEXT</th><th></th></tr>
+<tr><th>goals_rating_adj</th><th>NUMERIC</th><th></th></tr>
+<tr><th>assists_rating_adj</th><th>NUMERIC</th><th></th></tr>
+<tr><th>points_rating_adj</th><th>NUMERIC</th><th></th></tr>
+<tr><th>plus_minus_rating_adj</th><th>NUMERIC</th><th></th></tr>
+<tr><th>cf_pct_rating_adj</th><th>NUMERIC</th><th></th></tr>
+<tr><th>qoc_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>qot_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>expected_vs_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>xg_for</th><th>TEXT</th><th></th></tr>
+<tr><th>xg_against</th><th>TEXT</th><th></th></tr>
+<tr><th>xg_diff</th><th>TEXT</th><th></th></tr>
+<tr><th>xg_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>goals_above_expected</th><th>INTEGER</th><th></th></tr>
+<tr><th>shots_high_danger</th><th>INTEGER</th><th></th></tr>
+<tr><th>shots_medium_danger</th><th>INTEGER</th><th></th></tr>
+<tr><th>shots_low_danger</th><th>INTEGER</th><th></th></tr>
+<tr><th>scoring_chances</th><th>TEXT</th><th></th></tr>
+<tr><th>high_danger_chances</th><th>TEXT</th><th></th></tr>
+<tr><th>xg_per_shot</th><th>TEXT</th><th></th></tr>
+<tr><th>shot_quality_avg</th><th>NUMERIC</th><th></th></tr>
+<tr><th>offensive_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>defensive_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>hustle_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>playmaking_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>shooting_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>physical_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>impact_score</th><th>TEXT</th><th></th></tr>
+<tr><th>war_estimate</th><th>TEXT</th><th></th></tr>
+<tr><th>avg_shift_too_long</th><th>NUMERIC</th><th></th></tr>
+<tr><th>shift_length_warning</th><th>TEXT</th><th></th></tr>
+<tr><th>fatigue_indicator</th><th>TEXT</th><th></th></tr>
+<tr><th>sub_equity_score</th><th>TEXT</th><th></th></tr>
+<tr><th>toi_vs_team_avg</th><th>NUMERIC</th><th></th></tr>
+<tr><th>period_3_dropoff</th><th>TEXT</th><th></th></tr>
+<tr><th>late_game_performance</th><th>TEXT</th><th></th></tr>
+<tr><th>on_ice_sh_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>on_ice_sv_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>pdo</th><th>TEXT</th><th></th></tr>
+<tr><th>pdo_5v5</th><th>TEXT</th><th></th></tr>
+<tr><th>fo_wins_oz</th><th>TEXT</th><th></th></tr>
+<tr><th>fo_wins_nz</th><th>TEXT</th><th></th></tr>
+<tr><th>fo_wins_dz</th><th>TEXT</th><th></th></tr>
+<tr><th>fo_losses_oz</th><th>TEXT</th><th></th></tr>
+<tr><th>fo_losses_nz</th><th>TEXT</th><th></th></tr>
+<tr><th>fo_losses_dz</th><th>TEXT</th><th></th></tr>
+<tr><th>fo_pct_oz</th><th>NUMERIC</th><th></th></tr>
+<tr><th>fo_pct_nz</th><th>NUMERIC</th><th></th></tr>
+<tr><th>fo_pct_dz</th><th>NUMERIC</th><th></th></tr>
+<tr><th>zone_starts_oz_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>zone_starts_dz_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>game_score</th><th>TEXT</th><th></th></tr>
+<tr><th>game_score_per_60</th><th>TEXT</th><th></th></tr>
+<tr><th>game_score_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>effective_game_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>rating_performance_delta</th><th>NUMERIC</th><th></th></tr>
+<tr><th>playing_above_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>playing_below_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>playing_at_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>performance_tier</th><th>TEXT</th><th></th></tr>
+<tr><th>performance_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>shots_successful</th><th>INTEGER</th><th></th></tr>
+<tr><th>shots_unsuccessful</th><th>INTEGER</th><th></th></tr>
+<tr><th>passes_successful</th><th>TEXT</th><th></th></tr>
+<tr><th>passes_unsuccessful</th><th>TEXT</th><th></th></tr>
+<tr><th>plays_successful</th><th>TEXT</th><th></th></tr>
+<tr><th>plays_unsuccessful</th><th>TEXT</th><th></th></tr>
+<tr><th>entries_successful</th><th>TEXT</th><th></th></tr>
+<tr><th>entries_unsuccessful</th><th>TEXT</th><th></th></tr>
+<tr><th>exits_successful</th><th>TEXT</th><th></th></tr>
+<tr><th>exits_unsuccessful</th><th>TEXT</th><th></th></tr>
+<tr><th>total_successful_plays</th><th>TEXT</th><th></th></tr>
+<tr><th>total_unsuccessful_plays</th><th>TEXT</th><th></th></tr>
+<tr><th>overall_success_rate</th><th>TEXT</th><th></th></tr>
+<tr><th>shot_success_rate</th><th>TEXT</th><th></th></tr>
+<tr><th>pass_success_rate</th><th>TEXT</th><th></th></tr>
+<tr><th>play_success_rate</th><th>TEXT</th><th></th></tr>
+<tr><th>times_pass_target</th><th>TEXT</th><th></th></tr>
+<tr><th>passes_received_successful</th><th>TEXT</th><th></th></tr>
+<tr><th>passes_received_unsuccessful</th><th>TEXT</th><th></th></tr>
+<tr><th>pass_reception_rate</th><th>TEXT</th><th></th></tr>
+<tr><th>times_target_oz</th><th>TEXT</th><th></th></tr>
+<tr><th>times_target_nz</th><th>TEXT</th><th></th></tr>
+<tr><th>times_target_dz</th><th>TEXT</th><th></th></tr>
+<tr><th>slot_passes_received</th><th>TEXT</th><th></th></tr>
+<tr><th>cross_ice_passes_received</th><th>TEXT</th><th></th></tr>
+<tr><th>odd_man_rushes</th><th>TEXT</th><th></th></tr>
+<tr><th>odd_man_rush_goals</th><th>INTEGER</th><th></th></tr>
+<tr><th>odd_man_rush_shots</th><th>INTEGER</th><th></th></tr>
+<tr><th>breakaway_attempts</th><th>TEXT</th><th></th></tr>
+<tr><th>breakaway_goals</th><th>INTEGER</th><th></th></tr>
+<tr><th>2on1_rushes</th><th>TEXT</th><th></th></tr>
+<tr><th>3on2_rushes</th><th>TEXT</th><th></th></tr>
+<tr><th>2on0_rushes</th><th>TEXT</th><th></th></tr>
+<tr><th>rush_entries</th><th>TEXT</th><th></th></tr>
+<tr><th>rush_shots</th><th>INTEGER</th><th></th></tr>
+<tr><th>rush_goals</th><th>INTEGER</th><th></th></tr>
+<tr><th>counter_attacks</th><th>INTEGER</th><th></th></tr>
+<tr><th>transition_plays</th><th>TEXT</th><th></th></tr>
+<tr><th>times_targeted_by_opp</th><th>TEXT</th><th></th></tr>
+<tr><th>times_targeted_shots</th><th>INTEGER</th><th></th></tr>
+<tr><th>times_targeted_entries</th><th>TEXT</th><th></th></tr>
+<tr><th>times_targeted_passes</th><th>TEXT</th><th></th></tr>
+<tr><th>times_targeted_as_defender</th><th>TEXT</th><th></th></tr>
+<tr><th>defensive_assignments</th><th>TEXT</th><th></th></tr>
+<tr><th>times_attacked</th><th>TEXT</th><th></th></tr>
+<tr><th>times_attacked_successfully</th><th>TEXT</th><th></th></tr>
+<tr><th>times_attacked_unsuccessfully</th><th>TEXT</th><th></th></tr>
+<tr><th>defensive_success_rate</th><th>TEXT</th><th></th></tr>
+<tr><th>times_ep3</th><th>TEXT</th><th></th></tr>
+<tr><th>times_ep4</th><th>TEXT</th><th></th></tr>
+<tr><th>times_ep5</th><th>TEXT</th><th></th></tr>
+<tr><th>times_opp2</th><th>TEXT</th><th></th></tr>
+<tr><th>times_opp3</th><th>TEXT</th><th></th></tr>
+<tr><th>times_opp4</th><th>TEXT</th><th></th></tr>
+<tr><th>total_on_ice_events</th><th>TEXT</th><th></th></tr>
+<tr><th>puck_touches_estimated</th><th>TEXT</th><th></th></tr>
+<tr><th>involvement_rate</th><th>TEXT</th><th></th></tr>
+<tr><th>support_plays</th><th>TEXT</th><th></th></tr>
+<tr><th>goals_leading</th><th>INTEGER</th><th></th></tr>
+<tr><th>goals_trailing</th><th>INTEGER</th><th></th></tr>
+<tr><th>goals_tied</th><th>INTEGER</th><th></th></tr>
+<tr><th>shots_leading</th><th>INTEGER</th><th></th></tr>
+<tr><th>shots_trailing</th><th>INTEGER</th><th></th></tr>
+<tr><th>shots_tied</th><th>INTEGER</th><th></th></tr>
+<tr><th>first_period_points</th><th>INTEGER</th><th></th></tr>
+<tr><th>second_period_points</th><th>INTEGER</th><th></th></tr>
+<tr><th>third_period_points</th><th>INTEGER</th><th></th></tr>
+<tr><th>first_period_shots</th><th>INTEGER</th><th></th></tr>
+<tr><th>second_period_shots</th><th>INTEGER</th><th></th></tr>
+<tr><th>third_period_shots</th><th>INTEGER</th><th></th></tr>
+<tr><th>clutch_goals</th><th>INTEGER</th><th></th></tr>
+<tr><th>empty_net_goals_for</th><th>INTEGER</th><th></th></tr>
+<tr><th>shorthanded_goals</th><th>INTEGER</th><th></th></tr>
+<tr><th>offensive_contribution</th><th>TEXT</th><th></th></tr>
+<tr><th>defensive_contribution</th><th>TEXT</th><th></th></tr>
+<tr><th>two_way_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>puck_possession_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>danger_creation_rate</th><th>TEXT</th><th></th></tr>
+<tr><th>efficiency_score</th><th>TEXT</th><th></th></tr>
+<tr><th>clutch_factor</th><th>TEXT</th><th></th></tr>
+<tr><th>complete_player_score</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>fact_player_micro_stats</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>micro_stat_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>player_game_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><th>game_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>player_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>micro_stat</th><th>TEXT</th><th></th></tr>
+<tr><th>count</th><th>INTEGER</th><th></th></tr>
+</table>
+
+<h3>fact_player_pair_stats</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>player_1_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>player_1_name</th><th>TEXT</th><th></th></tr>
+<tr><th>player_1_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>player_2_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>player_2_name</th><th>TEXT</th><th></th></tr>
+<tr><th>player_2_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>shifts_together</th><th>TEXT</th><th></th></tr>
+<tr><th>toi_together_seconds</th><th>TEXT</th><th></th></tr>
+<tr><th>combined_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>home_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>away_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+</table>
+
+<h3>fact_player_period_stats</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>player_period_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>player_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>period</th><th>TEXT</th><th></th></tr>
+<tr><th>events</th><th>TEXT</th><th></th></tr>
+<tr><th>shots</th><th>INTEGER</th><th></th></tr>
+<tr><th>goals</th><th>INTEGER</th><th></th></tr>
+<tr><th>passes</th><th>TEXT</th><th></th></tr>
+<tr><th>turnovers</th><th>TEXT</th><th></th></tr>
+<tr><th>period_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+</table>
+
+<h3>fact_player_stats_long</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>player_stat_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>player_game_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><th>game_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>player_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>stat_name</th><th>TEXT</th><th></th></tr>
+<tr><th>stat_value</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>fact_player_xy_long</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>player_xy_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>event_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>event_key</th><th>TEXT</th><th>Primary key</th></tr>
+<tr><th>player_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>player_key</th><th>TEXT</th><th>Primary key</th></tr>
+<tr><th>team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>team_venue</th><th>TEXT</th><th></th></tr>
+<tr><th>point_number</th><th>INTEGER</th><th></th></tr>
+<tr><th>x</th><th>TEXT</th><th></th></tr>
+<tr><th>y</th><th>TEXT</th><th></th></tr>
+<tr><th>timestamp</th><th>TEXT</th><th></th></tr>
+<tr><th>rink_coord_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>rink_coord_id_home</th><th>TEXT</th><th></th></tr>
+<tr><th>rink_coord_id_away</th><th>TEXT</th><th></th></tr>
+<tr><th>venue_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+</table>
+
+<h3>fact_player_xy_wide</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>player_xy_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>event_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>event_key</th><th>TEXT</th><th>Primary key</th></tr>
+<tr><th>player_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>player_key</th><th>TEXT</th><th>Primary key</th></tr>
+<tr><th>team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>team_venue</th><th>TEXT</th><th></th></tr>
+<tr><th>point_count</th><th>INTEGER</th><th></th></tr>
+<tr><th>x_1</th><th>TEXT</th><th></th></tr>
+<tr><th>y_1</th><th>TEXT</th><th></th></tr>
+<tr><th>timestamp_1</th><th>TEXT</th><th></th></tr>
+<tr><th>rink_coord_id_1</th><th>TEXT</th><th></th></tr>
+<tr><th>x_2</th><th>TEXT</th><th></th></tr>
+<tr><th>y_2</th><th>TEXT</th><th></th></tr>
+<tr><th>timestamp_2</th><th>TEXT</th><th></th></tr>
+<tr><th>rink_coord_id_2</th><th>TEXT</th><th></th></tr>
+<tr><th>x_3</th><th>TEXT</th><th></th></tr>
+<tr><th>y_3</th><th>TEXT</th><th></th></tr>
+<tr><th>timestamp_3</th><th>TEXT</th><th></th></tr>
+<tr><th>rink_coord_id_3</th><th>TEXT</th><th></th></tr>
+<tr><th>x_4</th><th>TEXT</th><th></th></tr>
+<tr><th>y_4</th><th>TEXT</th><th></th></tr>
+<tr><th>timestamp_4</th><th>TEXT</th><th></th></tr>
+<tr><th>rink_coord_id_4</th><th>TEXT</th><th></th></tr>
+<tr><th>x_5</th><th>TEXT</th><th></th></tr>
+<tr><th>y_5</th><th>TEXT</th><th></th></tr>
+<tr><th>timestamp_5</th><th>TEXT</th><th></th></tr>
+<tr><th>rink_coord_id_5</th><th>TEXT</th><th></th></tr>
+<tr><th>x_6</th><th>TEXT</th><th></th></tr>
+<tr><th>y_6</th><th>TEXT</th><th></th></tr>
+<tr><th>timestamp_6</th><th>TEXT</th><th></th></tr>
+<tr><th>rink_coord_id_6</th><th>TEXT</th><th></th></tr>
+<tr><th>x_7</th><th>TEXT</th><th></th></tr>
+<tr><th>y_7</th><th>TEXT</th><th></th></tr>
+<tr><th>timestamp_7</th><th>TEXT</th><th></th></tr>
+<tr><th>rink_coord_id_7</th><th>TEXT</th><th></th></tr>
+<tr><th>x_8</th><th>TEXT</th><th></th></tr>
+<tr><th>y_8</th><th>TEXT</th><th></th></tr>
+<tr><th>timestamp_8</th><th>TEXT</th><th></th></tr>
+<tr><th>rink_coord_id_8</th><th>TEXT</th><th></th></tr>
+<tr><th>x_9</th><th>TEXT</th><th></th></tr>
+<tr><th>y_9</th><th>TEXT</th><th></th></tr>
+<tr><th>timestamp_9</th><th>TEXT</th><th></th></tr>
+<tr><th>rink_coord_id_9</th><th>TEXT</th><th></th></tr>
+<tr><th>x_10</th><th>TEXT</th><th></th></tr>
+<tr><th>y_10</th><th>TEXT</th><th></th></tr>
+<tr><th>timestamp_10</th><th>TEXT</th><th></th></tr>
+<tr><th>rink_coord_id_10</th><th>TEXT</th><th></th></tr>
+<tr><th>venue_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+</table>
+
+<h3>fact_playergames</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>ID</td><td>TEXT</td><td></td></tr>
+<tr><td>Date</td><td>TIMESTAMP</td><td></td></tr>
+<tr><th>Type</th><th>TEXT</th><th></th></tr>
+<tr><th>Team</th><th>TEXT</th><th></th></tr>
+<tr><th>Opp</th><th>TEXT</th><th></th></tr>
+<tr><th>#</th><th>TEXT</th><th></th></tr>
+<tr><th>Player</th><th>TEXT</th><th></th></tr>
+<tr><th>Position</th><th>TEXT</th><th></th></tr>
+<tr><th>GP</th><th>TEXT</th><th></th></tr>
+<tr><th>G</th><th>TEXT</th><th></th></tr>
+<tr><th>A</th><th>TEXT</th><th></th></tr>
+<tr><th>GA</th><th>TEXT</th><th></th></tr>
+<tr><th>PIM</th><th>TEXT</th><th></th></tr>
+<tr><th>SO</th><th>TEXT</th><th></th></tr>
+<tr><th>Rank</th><th>TEXT</th><th></th></tr>
+<tr><th>ID2</th><th>TEXT</th><th></th></tr>
+<tr><th>ID3</th><th>TEXT</th><th></th></tr>
+<tr><th>Season</th><th>TEXT</th><th></th></tr>
+<tr><th>SeasonPlayerID</th><th>TEXT</th><th></th></tr>
+<tr><th>player_game_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>event_type_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>position_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>opp_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>season_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+</table>
+
+<h3>fact_plays</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>play_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>sequence_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>play_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>first_event</th><th>TEXT</th><th></th></tr>
+<tr><th>last_event</th><th>TEXT</th><th></th></tr>
+<tr><th>event_count</th><th>INTEGER</th><th></th></tr>
+<tr><th>sequence_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>team</th><th>TEXT</th><th></th></tr>
+<tr><th>zone</th><th>TEXT</th><th></th></tr>
+<tr><th>has_shot</th><th>BOOLEAN</th><th></th></tr>
+<tr><th>start_seconds</th><th>TEXT</th><th></th></tr>
+<tr><th>end_seconds</th><th>TEXT</th><th></th></tr>
+<tr><th>duration_seconds</th><th>INTEGER</th><th></th></tr>
+<tr><th>play_key</th><th>TEXT</th><th>Primary key</th></tr>
+<tr><th>zone_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>first_event_key</th><th>TEXT</th><th>Primary key</th></tr>
+<tr><th>last_event_key</th><th>TEXT</th><th>Primary key</th></tr>
+<tr><th>play_chain</th><th>TEXT</th><th></th></tr>
+<tr><th>event_chain_indices</th><th>TEXT</th><th></th></tr>
+<tr><th>video_time_start</th><th>TEXT</th><th></th></tr>
+<tr><th>video_time_end</th><th>TEXT</th><th></th></tr>
+<tr><th>home_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>away_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+</table>
+
+<h3>fact_possession_time</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>possession_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>player_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>venue</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_entries</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_exits</th><th>TEXT</th><th></th></tr>
+<tr><th>ozone_entries</th><th>TEXT</th><th></th></tr>
+<tr><th>dzone_entries</th><th>TEXT</th><th></th></tr>
+<tr><th>possession_events</th><th>TEXT</th><th></th></tr>
+<tr><th>estimated_possession_seconds</th><th>TEXT</th><th></th></tr>
+<tr><th>venue_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>home_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>away_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+</table>
+
+<h3>fact_puck_xy_long</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>puck_xy_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>event_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>event_key</th><th>TEXT</th><th>Primary key</th></tr>
+<tr><th>point_number</th><th>INTEGER</th><th></th></tr>
+<tr><th>x</th><th>TEXT</th><th></th></tr>
+<tr><th>y</th><th>TEXT</th><th></th></tr>
+<tr><th>z</th><th>TEXT</th><th></th></tr>
+<tr><th>timestamp</th><th>TEXT</th><th></th></tr>
+<tr><th>rink_coord_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>rink_coord_id_home</th><th>TEXT</th><th></th></tr>
+<tr><th>rink_coord_id_away</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>fact_puck_xy_wide</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>puck_xy_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>event_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>event_key</th><th>TEXT</th><th>Primary key</th></tr>
+<tr><th>point_count</th><th>INTEGER</th><th></th></tr>
+<tr><th>x_1</th><th>TEXT</th><th></th></tr>
+<tr><th>y_1</th><th>TEXT</th><th></th></tr>
+<tr><th>z_1</th><th>TEXT</th><th></th></tr>
+<tr><th>timestamp_1</th><th>TEXT</th><th></th></tr>
+<tr><th>rink_coord_id_1</th><th>TEXT</th><th></th></tr>
+<tr><th>x_2</th><th>TEXT</th><th></th></tr>
+<tr><th>y_2</th><th>TEXT</th><th></th></tr>
+<tr><th>z_2</th><th>TEXT</th><th></th></tr>
+<tr><th>timestamp_2</th><th>TEXT</th><th></th></tr>
+<tr><th>rink_coord_id_2</th><th>TEXT</th><th></th></tr>
+<tr><th>x_3</th><th>TEXT</th><th></th></tr>
+<tr><th>y_3</th><th>TEXT</th><th></th></tr>
+<tr><th>z_3</th><th>TEXT</th><th></th></tr>
+<tr><th>timestamp_3</th><th>TEXT</th><th></th></tr>
+<tr><th>rink_coord_id_3</th><th>TEXT</th><th></th></tr>
+<tr><th>x_4</th><th>TEXT</th><th></th></tr>
+<tr><th>y_4</th><th>TEXT</th><th></th></tr>
+<tr><th>z_4</th><th>TEXT</th><th></th></tr>
+<tr><th>timestamp_4</th><th>TEXT</th><th></th></tr>
+<tr><th>rink_coord_id_4</th><th>TEXT</th><th></th></tr>
+<tr><th>x_5</th><th>TEXT</th><th></th></tr>
+<tr><th>y_5</th><th>TEXT</th><th></th></tr>
+<tr><th>z_5</th><th>TEXT</th><th></th></tr>
+<tr><th>timestamp_5</th><th>TEXT</th><th></th></tr>
+<tr><th>rink_coord_id_5</th><th>TEXT</th><th></th></tr>
+<tr><th>x_6</th><th>TEXT</th><th></th></tr>
+<tr><th>y_6</th><th>TEXT</th><th></th></tr>
+<tr><th>z_6</th><th>TEXT</th><th></th></tr>
+<tr><th>timestamp_6</th><th>TEXT</th><th></th></tr>
+<tr><th>rink_coord_id_6</th><th>TEXT</th><th></th></tr>
+<tr><th>x_7</th><th>TEXT</th><th></th></tr>
+<tr><th>y_7</th><th>TEXT</th><th></th></tr>
+<tr><th>z_7</th><th>TEXT</th><th></th></tr>
+<tr><th>timestamp_7</th><th>TEXT</th><th></th></tr>
+<tr><th>rink_coord_id_7</th><th>TEXT</th><th></th></tr>
+<tr><th>x_8</th><th>TEXT</th><th></th></tr>
+<tr><th>y_8</th><th>TEXT</th><th></th></tr>
+<tr><th>z_8</th><th>TEXT</th><th></th></tr>
+<tr><th>timestamp_8</th><th>TEXT</th><th></th></tr>
+<tr><th>rink_coord_id_8</th><th>TEXT</th><th></th></tr>
+<tr><th>x_9</th><th>TEXT</th><th></th></tr>
+<tr><th>y_9</th><th>TEXT</th><th></th></tr>
+<tr><th>z_9</th><th>TEXT</th><th></th></tr>
+<tr><th>timestamp_9</th><th>TEXT</th><th></th></tr>
+<tr><th>rink_coord_id_9</th><th>TEXT</th><th></th></tr>
+<tr><th>x_10</th><th>TEXT</th><th></th></tr>
+<tr><th>y_10</th><th>TEXT</th><th></th></tr>
+<tr><th>z_10</th><th>TEXT</th><th></th></tr>
+<tr><th>timestamp_10</th><th>TEXT</th><th></th></tr>
+<tr><th>rink_coord_id_10</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>fact_registration</h3>
+<p>_Player registration data_</p>
+
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>player_full_name</td><td>TEXT</td><td></td></tr>
+<tr><td>player_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>season_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>season</th><th>TEXT</th><th></th></tr>
+<tr><th>restricted</th><th>TEXT</th><th></th></tr>
+<tr><th>email</th><th>TEXT</th><th></th></tr>
+<tr><th>position</th><th>TEXT</th><th></th></tr>
+<tr><th>norad_experience</th><th>TEXT</th><th></th></tr>
+<tr><th>CAF</th><th>TEXT</th><th></th></tr>
+<tr><th>highest_beer_league_played</th><th>TEXT</th><th></th></tr>
+<tr><th>skill_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>age</th><th>TEXT</th><th></th></tr>
+<tr><th>referred_by</th><th>TEXT</th><th></th></tr>
+<tr><th>notes</th><th>TEXT</th><th></th></tr>
+<tr><th>sub_yn</th><th>TEXT</th><th></th></tr>
+<tr><th>drafted_team_name</th><th>TEXT</th><th></th></tr>
+<tr><th>drafted_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>player_season_registration_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>position_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+</table>
+
+<h3>fact_rush_events</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>entry_event_index</td><td>INTEGER</td><td></td></tr>
+<tr><th>shot_event_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>events_to_shot</th><th>TEXT</th><th></th></tr>
+<tr><th>is_rush</th><th>BOOLEAN</th><th></th></tr>
+<tr><th>rush_type</th><th>TEXT</th><th></th></tr>
+<tr><th>is_goal</th><th>BOOLEAN</th><th></th></tr>
+<tr><th>entry_type</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_entry_type_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>rush_type_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>home_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>away_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+</table>
+
+<h3>fact_scoring_chances</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>scoring_chance_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>event_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>period</th><th>TEXT</th><th></th></tr>
+<tr><th>is_goal</th><th>BOOLEAN</th><th></th></tr>
+<tr><th>danger_level</th><th>TEXT</th><th></th></tr>
+<tr><th>is_rebound</th><th>BOOLEAN</th><th></th></tr>
+<tr><th>is_rush</th><th>BOOLEAN</th><th></th></tr>
+<tr><th>is_odd_man</th><th>BOOLEAN</th><th></th></tr>
+<tr><th>event_detail</th><th>TEXT</th><th></th></tr>
+<tr><th>event_detail_2</th><th>TEXT</th><th></th></tr>
+<tr><th>period_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>event_detail_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>event_detail_2_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+</table>
+
+<h3>fact_sequences</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>sequence_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>sequence_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>first_event</th><th>TEXT</th><th></th></tr>
+<tr><th>last_event</th><th>TEXT</th><th></th></tr>
+<tr><th>event_count</th><th>INTEGER</th><th></th></tr>
+<tr><th>start_team</th><th>TEXT</th><th></th></tr>
+<tr><th>end_team</th><th>TEXT</th><th></th></tr>
+<tr><th>start_zone</th><th>TEXT</th><th></th></tr>
+<tr><th>end_zone</th><th>TEXT</th><th></th></tr>
+<tr><th>has_goal</th><th>BOOLEAN</th><th></th></tr>
+<tr><th>start_seconds</th><th>TEXT</th><th></th></tr>
+<tr><th>end_seconds</th><th>TEXT</th><th></th></tr>
+<tr><th>duration_seconds</th><th>INTEGER</th><th></th></tr>
+<tr><th>sequence_key</th><th>TEXT</th><th>Primary key</th></tr>
+<tr><th>first_event_key</th><th>TEXT</th><th>Primary key</th></tr>
+<tr><th>last_event_key</th><th>TEXT</th><th>Primary key</th></tr>
+<tr><th>start_zone_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>end_zone_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>video_time_start</th><th>TEXT</th><th></th></tr>
+<tr><th>play_chain</th><th>TEXT</th><th></th></tr>
+<tr><th>event_chain_indices</th><th>TEXT</th><th></th></tr>
+<tr><th>team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>video_time_end</th><th>TEXT</th><th></th></tr>
+<tr><th>start_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>end_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>home_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>away_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+</table>
+
+<h3>fact_shift_players</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>shift_player_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>shift_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>game_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>shift_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>player_game_number</th><th>INTEGER</th><th></th></tr>
+<tr><th>player_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>venue</th><th>TEXT</th><th></th></tr>
+<tr><th>position</th><th>TEXT</th><th></th></tr>
+<tr><th>period</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>fact_shift_quality</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>shift_quality_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>player_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>shift_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>shift_duration</th><th>INTEGER</th><th></th></tr>
+<tr><th>shift_quality</th><th>TEXT</th><th></th></tr>
+<tr><th>quality_score</th><th>TEXT</th><th></th></tr>
+<tr><th>period</th><th>TEXT</th><th></th></tr>
+<tr><th>strength</th><th>TEXT</th><th></th></tr>
+<tr><th>situation</th><th>TEXT</th><th></th></tr>
+<tr><th>period_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>strength_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>situation_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+</table>
+
+<h3>fact_shift_quality_logical</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>player_game_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>player_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>player_name</th><th>TEXT</th><th></th></tr>
+<tr><th>logical_shifts</th><th>TEXT</th><th></th></tr>
+<tr><th>toi_seconds</th><th>TEXT</th><th></th></tr>
+<tr><th>avg_logical_shift</th><th>NUMERIC</th><th></th></tr>
+<tr><th>points_per_shift</th><th>INTEGER</th><th></th></tr>
+<tr><th>shots_per_shift</th><th>INTEGER</th><th></th></tr>
+<tr><th>shift_quality_score</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>fact_shifts</h3>
+<p>_All player shifts_</p>
+
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>shift_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>shift_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>Period</th><th>TEXT</th><th></th></tr>
+<tr><th>shift_start_min</th><th>TEXT</th><th></th></tr>
+<tr><th>shift_start_sec</th><th>TEXT</th><th></th></tr>
+<tr><th>shift_end_min</th><th>TEXT</th><th></th></tr>
+<tr><th>shift_end_sec</th><th>TEXT</th><th></th></tr>
+<tr><th>shift_start_type</th><th>TEXT</th><th></th></tr>
+<tr><th>shift_stop_type</th><th>TEXT</th><th></th></tr>
+<tr><th>home_forward_1</th><th>TEXT</th><th></th></tr>
+<tr><th>home_forward_2</th><th>TEXT</th><th></th></tr>
+<tr><th>home_forward_3</th><th>TEXT</th><th></th></tr>
+<tr><th>home_defense_1</th><th>TEXT</th><th></th></tr>
+<tr><th>home_defense_2</th><th>TEXT</th><th></th></tr>
+<tr><th>home_xtra</th><th>TEXT</th><th></th></tr>
+<tr><th>home_goalie</th><th>TEXT</th><th></th></tr>
+<tr><th>away_forward_1</th><th>TEXT</th><th></th></tr>
+<tr><th>away_forward_2</th><th>TEXT</th><th></th></tr>
+<tr><th>away_forward_3</th><th>TEXT</th><th></th></tr>
+<tr><th>away_defense_1</th><th>TEXT</th><th></th></tr>
+<tr><th>away_defense_2</th><th>TEXT</th><th></th></tr>
+<tr><th>away_xtra</th><th>TEXT</th><th></th></tr>
+<tr><th>away_goalie</th><th>TEXT</th><th></th></tr>
+<tr><th>stoppage_time</th><th>TEXT</th><th></th></tr>
+<tr><th>home_ozone_start</th><th>TEXT</th><th></th></tr>
+<tr><th>home_ozone_end</th><th>TEXT</th><th></th></tr>
+<tr><th>home_dzone_start</th><th>TEXT</th><th></th></tr>
+<tr><th>home_dzone_end</th><th>TEXT</th><th></th></tr>
+<tr><th>home_nzone_start</th><th>TEXT</th><th></th></tr>
+<tr><th>home_nzone_end</th><th>TEXT</th><th></th></tr>
+<tr><th>home_team</th><th>TEXT</th><th></th></tr>
+<tr><th>away_team</th><th>TEXT</th><th></th></tr>
+<tr><th>shift_start_total_seconds</th><th>TEXT</th><th></th></tr>
+<tr><th>shift_end_total_seconds</th><th>TEXT</th><th></th></tr>
+<tr><th>shift_duration</th><th>INTEGER</th><th></th></tr>
+<tr><th>home_team_strength</th><th>TEXT</th><th></th></tr>
+<tr><th>away_team_strength</th><th>TEXT</th><th></th></tr>
+<tr><th>home_team_en</th><th>TEXT</th><th></th></tr>
+<tr><th>away_team_en</th><th>TEXT</th><th></th></tr>
+<tr><th>home_team_pk</th><th>TEXT</th><th></th></tr>
+<tr><th>home_team_pp</th><th>TEXT</th><th></th></tr>
+<tr><th>away_team_pp</th><th>TEXT</th><th></th></tr>
+<tr><th>away_team_pk</th><th>TEXT</th><th></th></tr>
+<tr><th>situation</th><th>TEXT</th><th></th></tr>
+<tr><th>strength</th><th>TEXT</th><th></th></tr>
+<tr><th>home_goals</th><th>INTEGER</th><th></th></tr>
+<tr><th>away_goals</th><th>INTEGER</th><th></th></tr>
+<tr><th>home_team_plus</th><th>TEXT</th><th></th></tr>
+<tr><th>home_team_minus</th><th>TEXT</th><th></th></tr>
+<tr><th>away_team_plus</th><th>TEXT</th><th></th></tr>
+<tr><th>away_team_minus</th><th>TEXT</th><th></th></tr>
+<tr><th>period_start_total_running_seconds</th><th>TEXT</th><th></th></tr>
+<tr><th>running_video_time</th><th>TEXT</th><th></th></tr>
+<tr><th>shift_start_running_time</th><th>TEXT</th><th></th></tr>
+<tr><th>shift_end_running_time</th><th>TEXT</th><th></th></tr>
+<tr><th>strength_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>situation_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>shift_start_type_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>shift_stop_type_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>home_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>away_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>period_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+</table>
+
+<h3>fact_shifts_long</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>shift_player_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>shift_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><th>game_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>shift_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>player_number</th><th>INTEGER</th><th></th></tr>
+<tr><th>player_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>player_name</th><th>TEXT</th><th></th></tr>
+<tr><th>venue</th><th>TEXT</th><th></th></tr>
+<tr><th>slot</th><th>TEXT</th><th></th></tr>
+<tr><th>period</th><th>TEXT</th><th></th></tr>
+<tr><th>shift_duration</th><th>INTEGER</th><th></th></tr>
+<tr><th>playing_duration</th><th>INTEGER</th><th></th></tr>
+<tr><th>situation</th><th>TEXT</th><th></th></tr>
+<tr><th>strength</th><th>TEXT</th><th></th></tr>
+<tr><th>stoppage_time</th><th>TEXT</th><th></th></tr>
+<tr><th>pm_plus_ev</th><th>TEXT</th><th></th></tr>
+<tr><th>pm_minus_ev</th><th>TEXT</th><th></th></tr>
+<tr><th>goal_for</th><th>TEXT</th><th></th></tr>
+<tr><th>goal_against</th><th>TEXT</th><th></th></tr>
+<tr><th>team_en</th><th>TEXT</th><th></th></tr>
+<tr><th>opp_en</th><th>TEXT</th><th></th></tr>
+<tr><th>logical_shift_number</th><th>INTEGER</th><th></th></tr>
+<tr><th>period_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>venue_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>strength_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>situation_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>slot_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+</table>
+
+<h3>fact_shifts_player</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>shift_player_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>shift_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><th>game_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>shift_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>player_number</th><th>INTEGER</th><th></th></tr>
+<tr><th>venue</th><th>TEXT</th><th></th></tr>
+<tr><th>slot</th><th>TEXT</th><th></th></tr>
+<tr><th>period</th><th>TEXT</th><th></th></tr>
+<tr><th>shift_duration</th><th>INTEGER</th><th></th></tr>
+<tr><th>situation</th><th>TEXT</th><th></th></tr>
+<tr><th>strength</th><th>TEXT</th><th></th></tr>
+<tr><th>stoppage_time</th><th>TEXT</th><th></th></tr>
+<tr><th>pm_plus_ev</th><th>TEXT</th><th></th></tr>
+<tr><th>pm_minus_ev</th><th>TEXT</th><th></th></tr>
+<tr><th>goal_for</th><th>TEXT</th><th></th></tr>
+<tr><th>goal_against</th><th>TEXT</th><th></th></tr>
+<tr><th>team_en</th><th>TEXT</th><th></th></tr>
+<tr><th>opp_en</th><th>TEXT</th><th></th></tr>
+<tr><th>team_pp</th><th>TEXT</th><th></th></tr>
+<tr><th>team_pk</th><th>TEXT</th><th></th></tr>
+<tr><th>player_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>player_name</th><th>TEXT</th><th></th></tr>
+<tr><th>logical_shift_number</th><th>INTEGER</th><th></th></tr>
+<tr><th>shift_segment</th><th>TEXT</th><th></th></tr>
+<tr><th>cumulative_shift_duration</th><th>INTEGER</th><th></th></tr>
+<tr><th>running_toi</th><th>TEXT</th><th></th></tr>
+<tr><th>playing_duration</th><th>INTEGER</th><th></th></tr>
+<tr><th>running_playing_toi</th><th>TEXT</th><th></th></tr>
+<tr><th>period_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>venue_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>strength_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>situation_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>slot_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>team_name</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>fact_shifts_tracking</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>shift_tracking_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>shift_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><th>shift_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>game_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>shift_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>Period</th><th>TEXT</th><th></th></tr>
+<tr><th>shift_start_min</th><th>TEXT</th><th></th></tr>
+<tr><th>shift_start_sec</th><th>TEXT</th><th></th></tr>
+<tr><th>shift_end_min</th><th>TEXT</th><th></th></tr>
+<tr><th>shift_end_sec</th><th>TEXT</th><th></th></tr>
+<tr><th>shift_start_type</th><th>TEXT</th><th></th></tr>
+<tr><th>shift_stop_type</th><th>TEXT</th><th></th></tr>
+<tr><th>home_forward_1</th><th>TEXT</th><th></th></tr>
+<tr><th>home_forward_2</th><th>TEXT</th><th></th></tr>
+<tr><th>home_forward_3</th><th>TEXT</th><th></th></tr>
+<tr><th>home_defense_1</th><th>TEXT</th><th></th></tr>
+<tr><th>home_defense_2</th><th>TEXT</th><th></th></tr>
+<tr><th>home_xtra</th><th>TEXT</th><th></th></tr>
+<tr><th>home_goalie</th><th>TEXT</th><th></th></tr>
+<tr><th>away_forward_1</th><th>TEXT</th><th></th></tr>
+<tr><th>away_forward_2</th><th>TEXT</th><th></th></tr>
+<tr><th>away_forward_3</th><th>TEXT</th><th></th></tr>
+<tr><th>away_defense_1</th><th>TEXT</th><th></th></tr>
+<tr><th>away_defense_2</th><th>TEXT</th><th></th></tr>
+<tr><th>away_xtra</th><th>TEXT</th><th></th></tr>
+<tr><th>away_goalie</th><th>TEXT</th><th></th></tr>
+<tr><th>stoppage_time</th><th>TEXT</th><th></th></tr>
+<tr><th>home_ozone_start</th><th>TEXT</th><th></th></tr>
+<tr><th>home_ozone_end</th><th>TEXT</th><th></th></tr>
+<tr><th>home_dzone_start</th><th>TEXT</th><th></th></tr>
+<tr><th>home_dzone_end</th><th>TEXT</th><th></th></tr>
+<tr><th>home_nzone_start</th><th>TEXT</th><th></th></tr>
+<tr><th>home_nzone_end</th><th>TEXT</th><th></th></tr>
+<tr><th>home_team</th><th>TEXT</th><th></th></tr>
+<tr><th>away_team</th><th>TEXT</th><th></th></tr>
+<tr><th>shift_start_total_seconds</th><th>TEXT</th><th></th></tr>
+<tr><th>shift_end_total_seconds</th><th>TEXT</th><th></th></tr>
+<tr><th>shift_duration</th><th>INTEGER</th><th></th></tr>
+<tr><th>home_team_strength</th><th>TEXT</th><th></th></tr>
+<tr><th>away_team_strength</th><th>TEXT</th><th></th></tr>
+<tr><th>home_team_en</th><th>TEXT</th><th></th></tr>
+<tr><th>away_team_en</th><th>TEXT</th><th></th></tr>
+<tr><th>home_team_pk</th><th>TEXT</th><th></th></tr>
+<tr><th>home_team_pp</th><th>TEXT</th><th></th></tr>
+<tr><th>away_team_pp</th><th>TEXT</th><th></th></tr>
+<tr><th>away_team_pk</th><th>TEXT</th><th></th></tr>
+<tr><th>situation</th><th>TEXT</th><th></th></tr>
+<tr><th>strength</th><th>TEXT</th><th></th></tr>
+<tr><th>home_goals</th><th>INTEGER</th><th></th></tr>
+<tr><th>away_goals</th><th>INTEGER</th><th></th></tr>
+<tr><th>home_team_plus</th><th>TEXT</th><th></th></tr>
+<tr><th>home_team_minus</th><th>TEXT</th><th></th></tr>
+<tr><th>away_team_plus</th><th>TEXT</th><th></th></tr>
+<tr><th>away_team_minus</th><th>TEXT</th><th></th></tr>
+<tr><th>period_start_total_running_seconds</th><th>TEXT</th><th></th></tr>
+<tr><th>running_video_time</th><th>TEXT</th><th></th></tr>
+<tr><th>shift_start_running_time</th><th>TEXT</th><th></th></tr>
+<tr><th>shift_end_running_time</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>fact_shot_danger</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>shot_danger_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>event_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>danger_zone</th><th>TEXT</th><th></th></tr>
+<tr><th>xg</th><th>TEXT</th><th></th></tr>
+<tr><th>shot_distance</th><th>TEXT</th><th></th></tr>
+<tr><th>shot_angle</th><th>TEXT</th><th></th></tr>
+<tr><th>is_rebound</th><th>BOOLEAN</th><th></th></tr>
+<tr><th>is_rush</th><th>BOOLEAN</th><th></th></tr>
+<tr><th>is_one_timer</th><th>BOOLEAN</th><th></th></tr>
+</table>
+
+<h3>fact_shot_xy</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>shot_xy_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>event_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>event_key</th><th>TEXT</th><th>Primary key</th></tr>
+<tr><th>player_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>player_key</th><th>TEXT</th><th>Primary key</th></tr>
+<tr><th>team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>team_venue</th><th>TEXT</th><th></th></tr>
+<tr><th>period</th><th>TEXT</th><th></th></tr>
+<tr><th>period_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>shot_x</th><th>TEXT</th><th></th></tr>
+<tr><th>shot_y</th><th>TEXT</th><th></th></tr>
+<tr><th>shot_rink_coord_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>shot_rink_coord_id_home</th><th>TEXT</th><th></th></tr>
+<tr><th>shot_rink_coord_id_away</th><th>TEXT</th><th></th></tr>
+<tr><th>shot_distance</th><th>TEXT</th><th></th></tr>
+<tr><th>shot_angle</th><th>TEXT</th><th></th></tr>
+<tr><th>target_x</th><th>TEXT</th><th></th></tr>
+<tr><th>target_y</th><th>TEXT</th><th></th></tr>
+<tr><th>net_location_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>shot_type</th><th>TEXT</th><th></th></tr>
+<tr><th>shot_result</th><th>TEXT</th><th></th></tr>
+<tr><th>is_goal</th><th>BOOLEAN</th><th></th></tr>
+<tr><th>is_on_net</th><th>BOOLEAN</th><th></th></tr>
+<tr><th>strength_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>goalie_player_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>xg</th><th>TEXT</th><th></th></tr>
+<tr><th>running_video_time</th><th>TEXT</th><th></th></tr>
+<tr><th>venue_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>shot_type_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>shot_result_type_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+</table>
+
+<h3>fact_suspicious_stats</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>player_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>player_name</th><th>TEXT</th><th></th></tr>
+<tr><th>position</th><th>TEXT</th><th></th></tr>
+<tr><th>stat_name</th><th>TEXT</th><th></th></tr>
+<tr><th>stat_value</th><th>TEXT</th><th></th></tr>
+<tr><th>threshold</th><th>TEXT</th><th></th></tr>
+<tr><th>threshold_direction</th><th>TEXT</th><th></th></tr>
+<tr><th>flag_type</th><th>TEXT</th><th></th></tr>
+<tr><th>severity</th><th>TEXT</th><th></th></tr>
+<tr><th>category</th><th>TEXT</th><th></th></tr>
+<tr><th>note</th><th>TEXT</th><th></th></tr>
+<tr><th>resolved</th><th>TEXT</th><th></th></tr>
+<tr><th>created_at</th><th>TIMESTAMP</th><th></th></tr>
+</table>
+
+<h3>fact_team_game_stats</h3>
+<p>_Team statistics per game_</p>
+
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>team_game_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>venue</th><th>TEXT</th><th></th></tr>
+<tr><th>goals</th><th>INTEGER</th><th></th></tr>
+<tr><th>shots</th><th>INTEGER</th><th></th></tr>
+<tr><th>fo_wins</th><th>TEXT</th><th></th></tr>
+<tr><th>giveaways</th><th>TEXT</th><th></th></tr>
+<tr><th>takeaways</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_entries</th><th>TEXT</th><th></th></tr>
+<tr><th>zone_exits</th><th>TEXT</th><th></th></tr>
+<tr><th>pass_attempts</th><th>TEXT</th><th></th></tr>
+<tr><th>pass_completed</th><th>TEXT</th><th></th></tr>
+<tr><th>fo_losses</th><th>TEXT</th><th></th></tr>
+<tr><th>sog</th><th>TEXT</th><th></th></tr>
+<tr><th>fo_total</th><th>TEXT</th><th></th></tr>
+<tr><th>fo_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>pass_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>shooting_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>venue_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>home_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>away_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>total_shots</th><th>INTEGER</th><th></th></tr>
+<tr><th>total_sog</th><th>TEXT</th><th></th></tr>
+<tr><th>total_passes</th><th>TEXT</th><th></th></tr>
+<tr><th>total_pass_completed</th><th>TEXT</th><th></th></tr>
+<tr><th>team_pass_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>total_zone_entries</th><th>TEXT</th><th></th></tr>
+<tr><th>total_zone_exits</th><th>TEXT</th><th></th></tr>
+<tr><th>controlled_entries</th><th>TEXT</th><th></th></tr>
+<tr><th>controlled_exits</th><th>TEXT</th><th></th></tr>
+<tr><th>entry_control_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>total_giveaways</th><th>TEXT</th><th></th></tr>
+<tr><th>total_takeaways</th><th>TEXT</th><th></th></tr>
+<tr><th>turnover_diff</th><th>TEXT</th><th></th></tr>
+<tr><th>total_blocks</th><th>TEXT</th><th></th></tr>
+<tr><th>total_hits</th><th>TEXT</th><th></th></tr>
+<tr><th>total_fo_wins</th><th>TEXT</th><th></th></tr>
+<tr><th>total_fo_losses</th><th>TEXT</th><th></th></tr>
+<tr><th>corsi_for</th><th>TEXT</th><th></th></tr>
+<tr><th>corsi_against</th><th>TEXT</th><th></th></tr>
+<tr><th>cf_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>xg_for</th><th>TEXT</th><th></th></tr>
+<tr><th>xg_against</th><th>TEXT</th><th></th></tr>
+<tr><th>xg_diff</th><th>TEXT</th><th></th></tr>
+<tr><th>avg_player_rating</th><th>NUMERIC</th><th></th></tr>
+<tr><th>total_dekes</th><th>TEXT</th><th></th></tr>
+<tr><th>total_screens</th><th>TEXT</th><th></th></tr>
+<tr><th>offensive_rating_avg</th><th>NUMERIC</th><th></th></tr>
+<tr><th>defensive_rating_avg</th><th>NUMERIC</th><th></th></tr>
+<tr><th>hustle_rating_avg</th><th>NUMERIC</th><th></th></tr>
+<tr><th>team_name</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>fact_team_standings_snapshot</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>date</td><td>TIMESTAMP</td><td></td></tr>
+<tr><th>team_name</th><th>TEXT</th><th></th></tr>
+<tr><th>games_played</th><th>TEXT</th><th></th></tr>
+<tr><th>wins</th><th>TEXT</th><th></th></tr>
+<tr><th>losses</th><th>TEXT</th><th></th></tr>
+<tr><th>ties</th><th>TEXT</th><th></th></tr>
+<tr><th>points</th><th>INTEGER</th><th></th></tr>
+<tr><th>goals_for</th><th>INTEGER</th><th></th></tr>
+<tr><th>goals_against</th><th>INTEGER</th><th></th></tr>
+<tr><th>goal_diff</th><th>TEXT</th><th></th></tr>
+<tr><th>gaa</th><th>TEXT</th><th></th></tr>
+<tr><th>gpg</th><th>TEXT</th><th></th></tr>
+<tr><th>team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+</table>
+
+<h3>fact_team_zone_time</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>zone_time_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>venue</th><th>TEXT</th><th></th></tr>
+<tr><th>ozone_events</th><th>TEXT</th><th></th></tr>
+<tr><th>dzone_events</th><th>TEXT</th><th></th></tr>
+<tr><th>nzone_events</th><th>TEXT</th><th></th></tr>
+<tr><th>total_events</th><th>TEXT</th><th></th></tr>
+<tr><th>ozone_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>dzone_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>nzone_pct</th><th>NUMERIC</th><th></th></tr>
+<tr><th>venue_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>home_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>away_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>oz_dominance</th><th>TEXT</th><th></th></tr>
+<tr><th>dz_pressure</th><th>TEXT</th><th></th></tr>
+<tr><th>territorial_index</th><th>INTEGER</th><th></th></tr>
+<tr><th>team_name</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>fact_video</h3>
+<p>_Video links for games_</p>
+
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>video_key</td><td>TEXT</td><td>Primary key</td></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>Index</th><th>INTEGER</th><th></th></tr>
+<tr><th>Key</th><th>TEXT</th><th></th></tr>
+<tr><th>Game_ID</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>Video_Type</th><th>TEXT</th><th></th></tr>
+<tr><th>Video_Category</th><th>TEXT</th><th></th></tr>
+<tr><th>Url_1</th><th>TEXT</th><th></th></tr>
+<tr><th>Url_2</th><th>TEXT</th><th></th></tr>
+<tr><th>Url_3</th><th>TEXT</th><th></th></tr>
+<tr><th>Url_4</th><th>TEXT</th><th></th></tr>
+<tr><th>Video_ID</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>Extension</th><th>TEXT</th><th></th></tr>
+<tr><th>Embed_Url</th><th>TEXT</th><th></th></tr>
+<tr><th>Description</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h3>fact_wowy</h3>
+<p>_With Or Without You analysis_</p>
+
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><td>player_1_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>player_2_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>venue</th><th>TEXT</th><th></th></tr>
+<tr><th>shifts_together</th><th>TEXT</th><th></th></tr>
+<tr><th>p1_shifts_without_p2</th><th>TEXT</th><th></th></tr>
+<tr><th>p2_shifts_without_p1</th><th>TEXT</th><th></th></tr>
+<tr><th>p1_logical_shifts</th><th>TEXT</th><th></th></tr>
+<tr><th>p2_logical_shifts</th><th>TEXT</th><th></th></tr>
+<tr><th>venue_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>home_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>away_team_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>toi_together</th><th>TEXT</th><th></th></tr>
+<tr><th>toi_apart</th><th>TEXT</th><th></th></tr>
+<tr><th>gf_pct_together</th><th>NUMERIC</th><th></th></tr>
+<tr><th>gf_pct_apart</th><th>NUMERIC</th><th></th></tr>
+<tr><th>gf_pct_delta</th><th>NUMERIC</th><th></th></tr>
+<tr><th>cf_pct_together</th><th>NUMERIC</th><th></th></tr>
+<tr><th>cf_pct_apart</th><th>NUMERIC</th><th></th></tr>
+<tr><th>cf_pct_delta</th><th>NUMERIC</th><th></th></tr>
+<tr><th>xgf_pct_together</th><th>NUMERIC</th><th></th></tr>
+<tr><th>xgf_pct_apart</th><th>NUMERIC</th><th></th></tr>
+<tr><th>xgf_pct_delta</th><th>NUMERIC</th><th></th></tr>
+<tr><th>relative_corsi</th><th>TEXT</th><th></th></tr>
+<tr><th>relative_fenwick</th><th>TEXT</th><th></th></tr>
+<tr><th>wowy_key</th><th>TEXT</th><th>Primary key</th></tr>
+<tr><th>player_1_name</th><th>TEXT</th><th></th></tr>
+<tr><th>player_2_name</th><th>TEXT</th><th></th></tr>
+</table>
+
+<h2>QA Tables</h2>
+
+<h3>qa_suspicious_stats</h3>
+<table>
+</table>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td>timestamp</td><td>TEXT</td><td></td></tr>
+<tr><td>game_id</td><td>TEXT</td><td>Foreign key reference</td></tr>
+<tr><th>player_id</th><th>TEXT</th><th>Foreign key reference</th></tr>
+<tr><th>player_name</th><th>TEXT</th><th></th></tr>
+<tr><th>category</th><th>TEXT</th><th></th></tr>
+<tr><th>stat</th><th>TEXT</th><th></th></tr>
+<tr><th>value</th><th>TEXT</th><th></th></tr>
+<tr><th>expected</th><th>TEXT</th><th></th></tr>
+<tr><th>severity</th><th>TEXT</th><th></th></tr>
+<tr><th>note</th><th>TEXT</th><th></th></tr>
+<tr><th>resolved</th><th>TEXT</th><th></th></tr>
+</table>
+
+</body></html>

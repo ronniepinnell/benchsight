@@ -31,7 +31,7 @@ Enable recreational hockey players and teams to access NHL-quality analytics for
 ## What's Done ✅
 
 ### Infrastructure (100%)
-- [x] Database schema design (96 tables)
+- [x] Database schema design (98 tables)
 - [x] Supabase cloud database setup
 - [x] Configuration management
 - [x] Logging system (file + database)
@@ -40,7 +40,7 @@ Enable recreational hockey players and teams to access NHL-quality analytics for
 ### Data Pipeline (95%)
 - [x] ETL from Excel → CSV
 - [x] CSV → Supabase loader
-- [x] All 96 tables loading
+- [x] All 98 tables loading
 - [x] Validation against official stats
 - [ ] Automated scheduling (manual only)
 
@@ -213,7 +213,7 @@ Enable recreational hockey players and teams to access NHL-quality analytics for
 | 2025-12 | Use Supabase | Free tier, easy setup, PostgreSQL | Claude |
 | 2025-12 | Star schema design | Analytics optimization | Claude |
 | 2025-12 | HTML/JS for apps | Simple deployment, no framework lock-in | Claude |
-| 2025-12 | 96 tables | Comprehensive coverage, flexibility | Claude |
+| 2025-12 | 98 tables | Comprehensive coverage, flexibility | Claude |
 
 ---
 

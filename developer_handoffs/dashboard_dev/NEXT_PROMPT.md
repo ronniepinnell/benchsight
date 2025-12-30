@@ -1,203 +1,123 @@
-# BenchSight Dashboard Developer - Next Prompt
+# BenchSight Dashboard Developer - Session Prompt
 
-Copy and paste this prompt to start or continue dashboard development.
-
----
-
-## PROMPT START
-
-I'm building dashboards for BenchSight, a hockey analytics platform. Data is in **Supabase PostgreSQL**.
-
-### Database Connection
-```
-URL: https://uuaowslhpgyiudmbvqze.supabase.co
-API: https://uuaowslhpgyiudmbvqze.supabase.co/rest/v1/
-```
-
-### Available Tables
-**For Player Stats:**
-- `fact_player_game_stats` - 29 columns: goals, assists, points, shots, sog, fo_wins, fo_losses, zone_entries, passes, giveaways, takeaways, toi_seconds, etc.
-- `dim_player` - player_id, player_name, jersey_number, position
-
-**For Team Stats:**
-- `fact_team_game_stats` - 18 columns: goals, shots, sog, fo_wins, fo_losses, pass_pct, shooting_pct, etc.
-- `dim_team` - team_id, team_name, team_abbrev
-
-**For Game Data:**
-- `dim_schedule` - game_id, game_date, home_team, away_team, home_score, away_score
-- `fact_events` - event timeline (event_type, event_detail, period, time)
-
-**For Goalie Stats:**
-- `fact_goalie_game_stats` - 19 columns: saves, goals_against, save_pct, saves_glove, saves_blocker, saves_rebound, saves_freeze, etc.
-
-**For Advanced:**
-- `fact_h2h` - head-to-head when opponents on ice together
-- `fact_wowy` - with-or-without-you for linemates
-
-### Dashboard Hierarchy (Build Order)
-1. League Standings & Leaders
-2. Team Overview
-3. Player Stats
-4. Game Summary
-5. Goalie Stats
-6. Advanced (H2H, WOWY)
-
-### What I Need Help With Today
-[DESCRIBE YOUR SPECIFIC TASK]
-
-**Examples:**
-- "Help me build the league standings component with React"
-- "I need SQL for the player leaderboard aggregations"
-- "Design a responsive game summary layout"
-- "Create a shot chart visualization from event data"
+Copy and paste this prompt to start your session:
 
 ---
 
-## PROMPT END
+I'm the Dashboard Developer for BenchSight, a hockey analytics platform. The dashboard displays stats from Supabase (read-only).
 
----
+## Project Context
 
-## Alternative Prompts
+- **Database:** Supabase PostgreSQL (98 tables total)
+- **Dashboard reads from:** 40+ tables
+- **Player stats:** 317 columns per player per game
+- **Display:** React web app
 
-### For League Standings
-```
-I'm building the BenchSight league standings page.
+## Primary Tables to Query
 
-Data source: `dim_schedule` table with columns: game_id, game_date, home_team, away_team, home_score, away_score
+### Player Stats
+| Table | Rows | Key Columns |
+|-------|------|-------------|
+| `fact_player_game_stats` | 107 | **317 columns** - goals, assists, points, shots, sog, toi_seconds, cf_pct, ff_pct, xg_for, etc. |
+| `fact_player_period_stats` | ~300 | Per-period breakdown |
+| `fact_player_micro_stats` | ~100 | Dekes, screens, backchecks, forechecks, poke_checks |
+| `fact_goalie_game_stats` | ~20 | saves, goals_against, save_pct, saves_glove, saves_blocker |
 
-Need to calculate per team:
-- Wins (home_score > away_score when home, or away_score > home_score when away)
-- Losses
-- Points (2 per win)
-- Goals For / Goals Against
-- Goal Differential
-- Streak
-- Last 10 games record
+### Team Stats
+| Table | Rows | Key Columns |
+|-------|------|-------------|
+| `fact_team_game_stats` | 18 | goals, shots, sog, fo_pct, shooting_pct, hits, blocks |
+| `fact_team_standings_snapshot` | varies | wins, losses, ties, points, position |
 
-Tech stack: [React/Vue/Svelte] with Supabase JS client
+### Game Data
+| Table | Rows | Key Columns |
+|-------|------|-------------|
+| `fact_events` | 5,833 | event_type, event_detail, period, game_time, event_player_1 |
+| `fact_shifts` | 672 | player_id, period, start_time, end_time, duration |
+| `fact_plays` | 2,714 | play sequences |
 
-Help me write the query and component.
-```
+### Advanced Analytics
+| Table | Description |
+|-------|-------------|
+| `fact_h2h` | Head-to-head when two players on ice together |
+| `fact_wowy` | With-or-without-you for linemates |
+| `fact_head_to_head` | Matchup summary |
+| `fact_line_combos` | Line combination stats |
+| `fact_player_pair_stats` | Pair performance |
+| `fact_shift_quality` | Shift quality metrics |
 
-### For Player Stats Page
-```
-I'm building a player stats page for BenchSight.
+### Zone Analytics
+| Table | Description |
+|-------|-------------|
+| `fact_scoring_chances` | Scoring chance tracking |
+| `fact_shot_danger` | Shot danger zones |
+| `fact_possession_time` | Zone possession |
+| `fact_cycle_events` | Cycle plays |
+| `fact_rush_events` | Rush plays |
 
-Data: `fact_player_game_stats` with columns: player_id, player_name, game_id, goals, assists, points, shots, sog, shooting_pct, fo_wins, fo_losses, toi_seconds, etc.
+### XY Visualizations
+| Table | Description |
+|-------|-------------|
+| `fact_shot_xy` | Shot locations for shot maps |
+| `fact_player_xy_long` | Player positions |
+| `fact_puck_xy_long` | Puck tracking |
 
-Features needed:
-1. Player header card with season totals
-2. Stats table (per game, per 60, league rank)
-3. Game log (sortable table)
-4. Trend chart (5-game rolling points average)
+### Video Highlights (NEW)
+| Table | Description |
+|-------|-------------|
+| `fact_video_highlights` | Video clip metadata |
+| `dim_highlight_type` | Highlight categories |
 
-Supabase connection ready. Help me build this.
-```
+## Dimension Tables (Lookups)
 
-### For Game Summary
-```
-Building a game summary dashboard for BenchSight.
+| Table | Rows | Purpose |
+|-------|------|---------|
+| `dim_player` | 337 | Player names, positions, jersey numbers |
+| `dim_team` | 26 | Team names, abbreviations |
+| `dim_schedule` | 562 | Game dates, scores, matchups |
+| `dim_season` | varies | Season info |
+| `dim_event_type` | ~20 | Event type labels |
+| `dim_position` | 5 | C, LW, RW, D, G |
+| `dim_zone` | 3 | DZ, NZ, OZ |
 
-Tables:
-- dim_schedule (scores)
-- fact_team_game_stats (team comparison)
-- fact_player_game_stats (three stars, player stats)
-- fact_events (event timeline)
+## Dashboard Pages (from wireframes)
 
-For game_id = 18969, need:
-1. Score header with period breakdown
-2. Team stats comparison (shots, faceoffs, etc.)
-3. Three stars selection (top 3 by points + goalie by saves)
-4. Event timeline with filters
+1. **Home/Landing** - Recent games, stats snapshot, leaders, highlights
+2. **Player Profile** - Season stats, game log, shot map, trends
+3. **Game Box Score** - Scoring summary, player stats, team totals
+4. **Team Page** - Roster, standings, line combos
+5. **Leaderboards** - Points, goals, assists, advanced stats
 
-Help me design and implement this.
-```
+## Key Documentation
 
-### For Data Visualization
-```
-I need to create visualizations for BenchSight dashboards.
+- UI wireframes: `docs/WIREFRAMES_AND_PAGES.md`
+- Supabase queries: `docs/SUPABASE_INTEGRATION_GUIDE.md`
+- All 317 stats explained: `docs/STATS_REFERENCE_COMPLETE.md`
+- All 98 tables: `docs/DATA_DICTIONARY.md`
+- Current prototype: `dashboard/dashboard.html`
 
-Available data:
-- Shot locations (x, y coordinates in fact_events - coming soon)
-- Player stats over time
-- Team performance trends
+## Example Queries
 
-Visualization needs:
-1. Shot heat map on rink diagram
-2. Line chart for rolling stats
-3. Radar chart for player comparison
-4. Bar chart for team comparison
-
-Using [D3/Chart.js/Recharts]. Help me implement.
-```
-
-### For Mobile Optimization
-```
-BenchSight dashboards need mobile optimization.
-
-Current issues:
-- Wide tables don't fit on mobile
-- Charts too small to read
-- Filters take too much space
-
-Help me:
-1. Convert tables to cards on mobile
-2. Make charts responsive
-3. Create collapsible filter panels
-4. Implement touch-friendly interactions
-```
-
----
-
-## Quick Reference
-
-### Supabase Query Patterns
 ```javascript
-// Aggregate stats
-const { data } = await supabase
-  .from('fact_player_game_stats')
-  .select('player_name, goals.sum(), assists.sum(), points.sum()')
-  .group('player_name')
-  .order('points', { ascending: false })
-
-// Join tables
+// Get player game stats with names
 const { data } = await supabase
   .from('fact_player_game_stats')
   .select(`
     *,
-    dim_player(player_name, position),
-    dim_schedule(game_date, home_team, away_team)
+    dim_player (player_name, position, jersey_number),
+    dim_team (team_name, team_abbrev)
   `)
-  .eq('player_id', 'P100192')
+  .eq('game_id', 18969)
+  .order('points', { ascending: false })
 
-// Filter by date range
+// Get league leaders
 const { data } = await supabase
-  .from('dim_schedule')
-  .select('*')
-  .gte('game_date', '2024-01-01')
-  .lte('game_date', '2024-12-31')
+  .from('fact_player_game_stats')
+  .select('player_id, goals, assists, points')
+  .order('points', { ascending: false })
+  .limit(20)
 ```
 
-### Key Stats Definitions
-| Stat | Calculation |
-|------|-------------|
-| Points | Goals + Assists |
-| Shooting % | Goals / Shots * 100 |
-| FO % | FO Wins / (FO Wins + FO Losses) * 100 |
-| Pass % | Passes Completed / Passes Attempted * 100 |
-| Per 60 | Stat * 3600 / TOI Seconds |
-| +/- | Goals For - Goals Against (when on ice) |
+## My Specific Task Today
 
-### Component Ideas
-```
-STANDINGS: Table with sort, team logos, sparkline for trend
-LEADERS: Cards with player photo, stat highlight, rank badge
-TEAM: Split view (offense/defense), gauges for percentages
-PLAYER: Header card, tabbed stats sections, game log
-GAME: Timeline, shot chart, momentum graph
-GOALIE: Save diagram, micro-stat breakdown
-```
-
----
-
-*Last Updated: December 2024*
+[DESCRIBE YOUR TASK]

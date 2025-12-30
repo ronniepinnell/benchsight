@@ -1,263 +1,93 @@
-# BenchSight Tracker Developer - Next Prompt
+# BenchSight Tracker Developer - Session Prompt
 
-Copy and paste this prompt to start or continue tracker development.
-
----
-
-## PROMPT START
-
-I'm building the game tracker for BenchSight, a hockey analytics platform. The tracker records game events that flow to **Supabase PostgreSQL**.
-
-### Current State
-- **Working:** Basic event entry, save to Excel
-- **Broken:** Roster loading, game dropdown, event ordering
-- **Missing:** Edit/delete, XY coordinates, predictions
-
-### Supabase Connection
-```
-URL: https://uuaowslhpgyiudmbvqze.supabase.co
-API: https://uuaowslhpgyiudmbvqze.supabase.co/rest/v1/
-Tables: fact_events, fact_shifts, dim_player, dim_schedule
-```
-
-### Event Data Structure
-```javascript
-{
-  event_key: 'E1896900001',      // PK: E{game_id}{5-digit index}
-  game_id: 18969,                // FK to dim_schedule
-  event_index: 1,                // Unique within game
-  period: 1,
-  event_start_seconds: 1080,     // Countdown from period start
-  event_type: 'Shot',            // Primary classification
-  event_detail: 'Shot_OnNetSaved', // Secondary
-  event_detail_2: 'Shot-Wrist',  // Tertiary
-  event_successful: 's',         // 's' or 'u'
-  event_team_player_1: 53,       // PRIMARY ACTOR (gets stat)
-  opp_team_player_1: 70,         // Opponent (for faceoffs)
-  linked_event_index: null,      // For assists → goal
-  // ... more columns
-}
-```
-
-### Critical Rules
-1. **event_team_player_1** = gets stat credit (shooter, passer, etc.)
-2. **Shots = Corsi** = all shot attempts (60-70 per team normal)
-3. **Assists** recorded in `play_detail1` as 'AssistPrimary'/'AssistSecondary'
-4. Events must have unique `event_index` per game
-
-### What I Need Help With Today
-[DESCRIBE YOUR SPECIFIC TASK]
-
-**Examples:**
-- "Fix the roster loading - BLB table parsing is broken"
-- "Implement event prediction based on current event type"
-- "Add XY coordinate capture with clickable rink diagram"
-- "Create edit/delete functionality for existing events"
+Copy and paste this prompt to start your session:
 
 ---
 
-## PROMPT END
+I'm the Tracker Developer for BenchSight, a hockey analytics platform. The tracker records live game events and writes directly to Supabase.
 
----
+## Project Context
 
-## Alternative Prompts
+- **Database:** Supabase PostgreSQL (98 tables total)
+- **Tracker writes to:** 4 main tables (events, shifts, XY coords, video highlights)
+- **Tracker reads from:** 15+ dimension tables for dropdowns/lookups
 
-### For Roster Loading Fix
+## Tables I Write To
+
+### 1. fact_events (PRIMARY - game events)
 ```
-The BenchSight tracker's roster loading is broken.
-
-Current behavior:
-- loadRosterFromBLB() function fails silently
-- No players appear in player dropdowns
-- Works sometimes, fails other times
-
-Expected behavior:
-- Load roster from BLB table OR dim_player in Supabase
-- Populate home_team and away_team player lists
-- Show jersey number + name in dropdowns
-
-Current code snippet:
-[PASTE RELEVANT CODE]
-
-Error in console:
-[PASTE ERROR]
-
-Help me debug and fix this. Should also add fallback to Supabase query.
+PK: event_key = "{game_id}_{event_index}"
+Required: game_id, event_index, period_number, game_time, event_type, event_player_1, team_id
+Optional: event_detail, event_detail_2, event_player_2, event_player_3, success, x_coord, y_coord, zone, strength
 ```
 
-### For Event Predictions
+### 2. fact_shifts (player shifts)
 ```
-I need to implement smart event suggestions in the BenchSight tracker.
-
-After user enters an event, suggest the next likely event based on these patterns:
-
-| Current Event | Suggest | Confidence |
-|--------------|---------|------------|
-| Stoppage | DeadIce | 100% |
-| DeadIce | Faceoff | 100% |
-| Shot | Save | 70% |
-| Save_Freeze | Stoppage | 95% |
-| Rebound | Possession (50%), Shot (35%) | |
-| Zone_Entry (success) | Possession | 60% |
-| Zone_Entry (fail) | Turnover | 80% |
-| Pass (success) | Possession (40%), Zone_Entry (30%) | |
-| Pass (fail) | Turnover | 70% |
-
-UI requirements:
-- Show top 2-3 suggestions as buttons
-- Keyboard shortcuts (1, 2, 3 to select)
-- Still allow manual selection
-
-Help me implement this prediction system.
+PK: shift_key = "{game_id}_{player_id}_{shift_number}"
+Required: game_id, player_id, shift_number, period_number, start_time, end_time
+Optional: duration, team_id, shift_start_type, shift_stop_type
 ```
 
-### For XY Coordinate Capture
+### 3. fact_player_xy_long (XY coordinates)
 ```
-I need to add XY coordinate capture to the BenchSight tracker.
-
-Requirements:
-- Clickable rink diagram (200ft x 85ft)
-- Click captures (x, y) for puck position
-- Store in event record as puck_x, puck_y
-- Calculate derived values: shot_distance, shot_angle, zone
-
-Coordinate system:
-- Origin (0, 0) at bottom-left of rink
-- X: 0-200 (length)
-- Y: 0-85 (width)
-- Goal lines at x=11 and x=189
-- Blue lines at x=75 and x=125
-
-UI needs:
-- Rink SVG or Canvas
-- Click handler with position calculation
-- Visual marker showing clicked position
-- Ability to adjust/re-click
-
-Help me build this feature.
+PK: xy_long_key = "{game_id}_{timestamp}_{player_id}"
+Required: game_id, period_number, game_time, player_id, x_coord, y_coord
 ```
 
-### For Edit/Delete Events
+### 4. fact_video_highlights (video clips) - NEW
 ```
-BenchSight tracker needs edit and delete functionality.
-
-Current state:
-- Can add events
-- Cannot modify after save
-- Cannot delete mistakes
-
-Needed features:
-1. Edit button on each event row
-2. Opens event in edit mode (same form)
-3. Save updates existing record
-4. Delete button with confirmation
-5. Bulk delete (select multiple)
-6. Undo last action (nice to have)
-
-Supabase operations needed:
-```javascript
-// Update
-await supabase.from('fact_events')
-  .update({ event_type: 'Shot', ... })
-  .eq('event_key', 'E1896900001')
-
-// Delete
-await supabase.from('fact_events')
-  .delete()
-  .eq('event_key', 'E1896900001')
+PK: highlight_key = "{game_id}_{event_index}_{clip_number}"
+Required: game_id, video_url, start_timestamp, end_timestamp, highlight_type
+Optional: event_index, player_id, team_id, title, description, is_featured
 ```
 
-Help me implement this with proper UI and confirmation dialogs.
-```
+## Tables I Read From (Lookups)
 
-### For Game Dropdown Fix
-```
-The game selector dropdown in BenchSight tracker is missing games.
+**Core lookups:**
+- `dim_player` - player_id, player_name, jersey_number, position (337 rows)
+- `dim_team` - team_id, team_name, team_abbrev (26 rows)
+- `dim_schedule` - game_id, game_date, home_team_id, away_team_id (562 rows)
 
-Current behavior:
-- Only shows some games
-- Recently tracked games don't appear
-- No error messages
+**Event type lookups:**
+- `dim_event_type` - event types (Shot, Pass, Goal, Faceoff, Hit, etc.)
+- `dim_event_detail` - event details (Wrist Shot, Slap Shot, etc.)
+- `dim_event_detail_2` - secondary details
+- `dim_shot_type` - shot types
+- `dim_pass_type` - pass types
 
-Expected behavior:
-- Show all games from dim_schedule
-- Or all game folders in /data/raw/games/
-- Sort by date descending
-- Show: "Game ID - Date - Home vs Away"
+**Other lookups:**
+- `dim_zone` - DZ, NZ, OZ
+- `dim_period` - 1, 2, 3, OT, SO
+- `dim_strength` - EV, PP, PK, 4v4, etc.
+- `dim_success` - s (success), u (unsuccessful)
+- `dim_highlight_type` - goal, save, hit, skill, etc. (NEW)
 
-Current query:
-[PASTE CODE]
+**Roster for game:**
+- `fact_gameroster` - players assigned to each game
 
-Help me fix this to show all available games.
-```
+## Critical Data Rules
 
-### For Offline Mode
-```
-BenchSight tracker needs offline capability.
+1. **event_player_1** = PRIMARY player who gets the stat credit
+2. **Goals detected TWO ways:**
+   - `event_type = 'Goal'`
+   - `event_detail IN ('Shot Goal', 'Goal Scored')`
+3. **success** = 's' (successful) or 'u' (unsuccessful)
+4. **Coordinates:** x: 0-100, y: 0-42.5 (rink dimensions)
 
-Use case: Tracking games at rinks without internet
+## Key Documentation
 
-Requirements:
-1. Save events to localStorage when offline
-2. Detect connection status
-3. Queue events for sync
-4. Sync to Supabase when online
-5. Handle conflicts (server has newer data)
-6. Show sync status indicator
+- **MUST READ:** `docs/TRACKER_DATA_FORMAT.md` - All columns, types, examples
+- Supabase queries: `docs/SUPABASE_INTEGRATION_GUIDE.md`
+- UI wireframes: `docs/WIREFRAMES_AND_PAGES.md`
+- Video feature: `docs/VIDEO_HIGHLIGHTS_SPEC.md`
+- Current prototype: `tracker/tracker_v19.html`
 
-Help me implement offline-first architecture.
-```
+## Dependencies (Must be complete first)
 
----
+- ✅ Supabase schema fixed (all 98 tables loading)
+- ✅ Video tables created (`dim_highlight_type`, `fact_video_highlights`)
+- ✅ `fact_events` has highlight columns (`is_highlight_candidate`, `highlight_score`, etc.)
 
-## Quick Reference
+## My Specific Task Today
 
-### Event Types
-```
-Primary: Faceoff, Shot, Pass, Goal, Turnover, Zone_Entry_Exit,
-         Penalty, Save, Rebound, Possession, Stoppage, DeadIce
-
-Shot Details: Shot_OnNetSaved, Shot_Missed, Shot_Blocked, Shot_Goal
-Pass Details: Pass_Completed, Pass_Missed, Pass_Intercepted
-Save Details: Save_Rebound, Save_Freeze
-```
-
-### Player Roles
-```
-event_team_player_1 = PRIMARY (gets stat credit)
-opp_team_player_1   = OPPONENT (for faceoffs)
-event_team_player_2-6 = On ice but not primary actor
-```
-
-### Key Calculations
-```javascript
-// Event key format
-const eventKey = `E${gameId}${String(eventIndex).padStart(5, '0')}`
-
-// Time to seconds (from 18:30 format)
-const toSeconds = (min, sec) => min * 60 + sec
-
-// Period offset
-const periodStartSeconds = (period - 1) * 1200 // 20 min periods
-```
-
-### Supabase Patterns
-```javascript
-// Insert event
-await supabase.from('fact_events').insert(event)
-
-// Get events for game
-await supabase.from('fact_events')
-  .select('*')
-  .eq('game_id', gameId)
-  .order('event_index')
-
-// Get roster
-await supabase.from('dim_player')
-  .select('*')
-  .in('team_id', [homeTeamId, awayTeamId])
-```
-
----
-
-*Last Updated: December 2024*
+[DESCRIBE YOUR TASK]

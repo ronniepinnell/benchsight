@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PROJECT_MANAGER_HANDOFF - BenchSight</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; line-height: 1.6; color: #333; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #34495e; margin-top: 30px; }
+        h3 { color: #7f8c8d; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; }
+        pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        pre code { background: none; color: inherit; }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #3498db; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        a { color: #3498db; }
+        .nav { background: #2c3e50; padding: 10px; margin-bottom: 20px; border-radius: 5px; }
+        .nav a { color: white; margin-right: 15px; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="INDEX.html">Index</a>
+        <a href="DEPLOYMENT_GUIDE.html">Deploy</a>
+        <a href="STATS_REFERENCE_COMPLETE.html">Stats</a>
+    </div>
+<h1>Project Manager Handoff</h1>
+
+<strong>Role:</strong> Project/Product Manager  
+<strong>Version:</strong> 2.0  
+<strong>Date:</strong> December 30, 2025
+
+<p>---</p>
+
+<h2>Project Overview</h2>
+
+<strong>BenchSight</strong> is a comprehensive hockey analytics platform for the NORAD recreational hockey league. It processes game tracking data through an ETL pipeline and provides analytics via dashboards.
+
+<h3>Vision</h3>
+<p>Enable recreational hockey players and teams to access NHL-quality analytics for their games.</p>
+
+<h3>Current Status: 85% Production Ready</h3>
+
+<p>---</p>
+
+<h2>Team Roles &amp; Responsibilities</h2>
+
+<p>| Role | Responsibility | Status |</p>
+<p>|------|----------------|--------|</p>
+<p>| <strong>DB Admin/Portal Dev</strong> | Build admin interface, manage database | Not Started |</p>
+<p>| <strong>Dashboard Dev</strong> | Build analytics dashboards | Prototype exists |</p>
+<p>| <strong>Tracker Dev</strong> | Build game tracking interface | Prototype exists |</p>
+<p>| <strong>Data Engineer</strong> | Maintain ETL, data quality | Complete (current session) |</p>
+
+<p>---</p>
+
+<h2>What&#x27;s Done ✅</h2>
+
+<h3>Infrastructure (100%)</h3>
+<p>- [x] Database schema design (96 tables)</p>
+<p>- [x] Supabase cloud database setup</p>
+<p>- [x] Configuration management</p>
+<p>- [x] Logging system (file + database)</p>
+<p>- [x] Test suite (326 tests)</p>
+
+<h3>Data Pipeline (95%)</h3>
+<p>- [x] ETL from Excel → CSV</p>
+<p>- [x] CSV → Supabase loader</p>
+<p>- [x] All 96 tables loading</p>
+<p>- [x] Validation against official stats</p>
+<p>- [ ] Automated scheduling (manual only)</p>
+
+<h3>Data (4 Games Complete)</h3>
+<p>- [x] Game 18969 - Full tracking + validation</p>
+<p>- [x] Game 18977 - Full tracking + validation</p>
+<p>- [x] Game 18981 - Full tracking + validation</p>
+<p>- [x] Game 18987 - Full tracking + validation</p>
+<p>- [ ] Additional games pending tracking</p>
+
+<h3>Documentation (70%)</h3>
+<p>- [x] Schema documentation</p>
+<p>- [x] Developer handoffs</p>
+<p>- [x] Loader instructions</p>
+<p>- [x] Project status</p>
+<p>- [ ] End-user documentation</p>
+<p>- [ ] API documentation</p>
+
+<h3>Applications (Prototypes Only)</h3>
+<p>- [x] Tracker HTML prototype</p>
+<p>- [x] Dashboard HTML prototype</p>
+<p>- [ ] Production tracker</p>
+<p>- [ ] Production dashboard</p>
+<p>- [ ] Admin portal</p>
+
+<p>---</p>
+
+<h2>What&#x27;s Not Done ❌</h2>
+
+<h3>Priority 1 (Must Have)</h3>
+<p>1. <strong>Admin Portal</strong> - No UI for database management</p>
+<p>2. <strong>Production Tracker</strong> - Prototype needs Supabase integration</p>
+<p>3. <strong>Production Dashboard</strong> - Needs live data connection</p>
+<p>4. <strong>Video Integration</strong> - URLs exist, playback not implemented</p>
+<p>5. <strong>More Games</strong> - Only 4 games tracked</p>
+
+<h3>Priority 2 (Should Have)</h3>
+<p>1. <strong>Automated ETL</strong> - Currently manual</p>
+<p>2. <strong>User Authentication</strong> - No login system</p>
+<p>3. <strong>Error Alerting</strong> - Logs exist but no notifications</p>
+<p>4. <strong>Backup System</strong> - No automated backups</p>
+
+<h3>Priority 3 (Nice to Have)</h3>
+<p>1. <strong>ML Models</strong> - Expected goals, predictions</p>
+<p>2. <strong>NHL Data Integration</strong> - Compare to pros</p>
+<p>3. <strong>Mobile App</strong> - Desktop only currently</p>
+<p>4. <strong>Real-time Tracking</strong> - Batch only</p>
+
+<p>---</p>
+
+<h2>Timeline Recommendations</h2>
+
+<h3>Sprint 1 (Weeks 1-2): Foundation</h3>
+<strong>Goal:</strong> Get all three apps functional
+
+<p>| Task | Owner | Days |</p>
+<p>|------|-------|------|</p>
+<p>| Tracker Supabase integration | Tracker Dev | 3 |</p>
+<p>| Dashboard live data connection | Dashboard Dev | 3 |</p>
+<p>| Portal MVP (table browser + logs) | Portal Dev | 5 |</p>
+<p>| Connect video playback | Dashboard Dev | 2 |</p>
+
+<strong>Deliverable:</strong> Working apps connected to live data
+
+<h3>Sprint 2 (Weeks 3-4): Features</h3>
+<strong>Goal:</strong> Core features complete
+
+<p>| Task | Owner | Days |</p>
+<p>|------|-------|------|</p>
+<p>| Tracker save/publish workflow | Tracker Dev | 4 |</p>
+<p>| Dashboard drill-downs | Dashboard Dev | 4 |</p>
+<p>| Portal ETL management | Portal Dev | 3 |</p>
+<p>| Dimension table editor | Portal Dev | 2 |</p>
+<p>| Process 5 more games | Data Engineer | 3 |</p>
+
+<strong>Deliverable:</strong> Feature-complete beta
+
+<h3>Sprint 3 (Weeks 5-6): Polish</h3>
+<strong>Goal:</strong> Production-ready
+
+<p>| Task | Owner | Days |</p>
+<p>|------|-------|------|</p>
+<p>| User authentication | Portal Dev | 3 |</p>
+<p>| Error handling &amp; validation | All | 3 |</p>
+<p>| Performance optimization | All | 2 |</p>
+<p>| User testing | All | 3 |</p>
+<p>| Bug fixes | All | 3 |</p>
+
+<strong>Deliverable:</strong> Production release
+
+<p>---</p>
+
+<h2>Risks &amp; Mitigations</h2>
+
+<p>| Risk | Impact | Likelihood | Mitigation |</p>
+<p>|------|--------|------------|------------|</p>
+<p>| Schema changes needed | High | Medium | Good test coverage, migration scripts |</p>
+<p>| Data quality issues | Medium | Medium | Validation tests, logging |</p>
+<p>| Single dev on each component | High | High | Cross-train, document well |</p>
+<p>| Supabase limits | Medium | Low | Monitor usage, optimize queries |</p>
+<p>| Tracking volunteer burnout | High | Medium | Simplify tracker UI |</p>
+
+<p>---</p>
+
+<h2>Key Metrics to Track</h2>
+
+<h3>Development</h3>
+<p>- Features completed vs planned</p>
+<p>- Test pass rate (target: 100%)</p>
+<p>- Code coverage (target: &gt;80%)</p>
+<p>- Bug count by severity</p>
+
+<h3>Data Quality</h3>
+<p>- Games tracked per week</p>
+<p>- Validation errors per game</p>
+<p>- Stats accuracy vs official</p>
+
+<h3>System Health</h3>
+<p>- ETL success rate</p>
+<p>- Average load time</p>
+<p>- Error rate</p>
+<p>- Database size</p>
+
+<p>---</p>
+
+<h2>Budget Considerations</h2>
+
+<h3>Current Costs</h3>
+<p>| Item | Cost | Notes |</p>
+<p>|------|------|-------|</p>
+<p>| Supabase Free Tier | $0 | 500MB, sufficient for now |</p>
+<p>| Domain (if needed) | ~$12/yr | Optional |</p>
+<p>| Hosting (if needed) | $0-20/mo | Vercel/Netlify free tier |</p>
+
+<h3>Scaling Costs</h3>
+<p>| Scenario | Est. Cost |</p>
+<p>|----------|-----------|</p>
+<p>| 50 games, 10 users | Free tier |</p>
+<p>| 200 games, 50 users | ~$25/mo (Supabase Pro) |</p>
+<p>| 1000+ games, 200 users | ~$100/mo |</p>
+
+<p>---</p>
+
+<h2>Success Criteria</h2>
+
+<h3>Phase 1 (MVP)</h3>
+<p>- [ ] Tracker can record and save games</p>
+<p>- [ ] Dashboard shows game stats</p>
+<p>- [ ] Portal shows database status</p>
+<p>- [ ] 10 games tracked and validated</p>
+
+<h3>Phase 2 (Beta)</h3>
+<p>- [ ] Video playback works</p>
+<p>- [ ] 25 games tracked</p>
+<p>- [ ] 5 active users</p>
+<p>- [ ] &lt;5 bugs reported</p>
+
+<h3>Phase 3 (Production)</h3>
+<p>- [ ] Full season tracked (50+ games)</p>
+<p>- [ ] All teams using system</p>
+<p>- [ ] &lt;1% error rate</p>
+<p>- [ ] User satisfaction &gt;80%</p>
+
+<p>---</p>
+
+<h2>Decision Log</h2>
+
+<p>| Date | Decision | Rationale | Owner |</p>
+<p>|------|----------|-----------|-------|</p>
+<p>| 2025-12 | Use Supabase | Free tier, easy setup, PostgreSQL | Claude |</p>
+<p>| 2025-12 | Star schema design | Analytics optimization | Claude |</p>
+<p>| 2025-12 | HTML/JS for apps | Simple deployment, no framework lock-in | Claude |</p>
+<p>| 2025-12 | 96 tables | Comprehensive coverage, flexibility | Claude |</p>
+
+<p>---</p>
+
+<h2>Stakeholder Communication</h2>
+
+<h3>Weekly Update Template</h3>
+<pre><code>BENCHSIGHT WEEKLY UPDATE - Week of [DATE]
+
+<p>ACCOMPLISHMENTS</p>
+<p>- [List completed items]</p>
+
+<p>IN PROGRESS</p>
+<p>- [List active work]</p>
+
+<p>BLOCKERS</p>
+<p>- [List any blockers]</p>
+
+<p>METRICS</p>
+<p>- Games tracked: X</p>
+<p>- Tests passing: X/326</p>
+<p>- Active bugs: X</p>
+
+<p>NEXT WEEK</p>
+<p>- [Planned items]</p>
+</code></pre>
+
+<h3>Monthly Report Template</h3>
+<pre><code>BENCHSIGHT MONTHLY REPORT - [MONTH]
+
+<p>EXECUTIVE SUMMARY</p>
+<p>[2-3 sentence overview]</p>
+
+<p>PROGRESS VS PLAN</p>
+<p>[Chart or table]</p>
+
+<p>KEY ACHIEVEMENTS</p>
+<p>- [Major milestones]</p>
+
+<p>CHALLENGES</p>
+<p>- [Issues faced]</p>
+
+<p>BUDGET STATUS</p>
+<p>- Actual: $X</p>
+<p>- Planned: $Y</p>
+
+<p>NEXT MONTH PRIORITIES</p>
+<p>1. [Priority 1]</p>
+<p>2. [Priority 2]</p>
+<p>3. [Priority 3]</p>
+</code></pre>
+
+<p>---</p>
+
+<h2>Handoff Checklist</h2>
+
+<h3>For New PM</h3>
+<p>- [ ] Review this document</p>
+<p>- [ ] Review <code>docs/PROJECT_STATUS.md</code></p>
+<p>- [ ] Access Supabase dashboard</p>
+<p>- [ ] Review all handoff docs in <code>docs/handoffs/</code></p>
+<p>- [ ] Schedule intro calls with each dev role</p>
+<p>- [ ] Review test results</p>
+<p>- [ ] Understand data flow (ETL → CSV → Supabase → Apps)</p>
+
+<h3>Questions to Answer</h3>
+<p>1. What&#x27;s the release timeline?</p>
+<p>2. Who are the stakeholders?</p>
+<p>3. What&#x27;s the tracking volunteer situation?</p>
+<p>4. Any pending decisions needed?</p>
+<p>5. Budget constraints?</p>
+
+<p>---</p>
+
+<h2>Contact &amp; Resources</h2>
+
+<p>- <strong>Supabase Dashboard</strong>: https://supabase.com/dashboard/project/uuaowslhpgyiudmbvqze</p>
+<p>- <strong>Codebase</strong>: This zip file</p>
+<p>- <strong>Validation Source</strong>: https://noradhockey.com</p>
+<p>- <strong>Chat History</strong>: Ask for Claude context prompt</p>
+
+<p>---</p>
+
+<h2>Appendix: Technical Glossary</h2>
+
+<p>| Term | Meaning |</p>
+<p>|------|---------|</p>
+<p>| ETL | Extract, Transform, Load - data pipeline |</p>
+<p>| Star Schema | Database design with fact + dimension tables |</p>
+<p>| Fact Table | Contains metrics/events (what happened) |</p>
+<p>| Dimension Table | Contains lookups (who, what, where) |</p>
+<p>| Supabase | Cloud PostgreSQL + API service |</p>
+<p>| xG | Expected Goals - shot quality metric |</p>
+<p>| WOWY | With Or Without You - player impact analysis |</p>
+<p>| H2H | Head-to-Head - matchup analysis |</p>
+
+</body></html>

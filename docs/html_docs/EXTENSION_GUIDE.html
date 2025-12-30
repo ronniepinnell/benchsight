@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extension Guide - BenchSight</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; line-height: 1.6; color: #333; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #34495e; margin-top: 30px; }
+        h3 { color: #7f8c8d; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: Monaco, monospace; }
+        pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        pre code { background: none; color: inherit; }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #3498db; color: white; }
+        .nav { background: #2c3e50; padding: 10px; margin-bottom: 20px; border-radius: 5px; }
+        .nav a { color: white; margin-right: 15px; text-decoration: none; }
+        .step { background: #e8f4f8; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 4px solid #3498db; }
+        .step h3 { margin-top: 0; color: #2c3e50; }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="INDEX.html">Index</a>
+        <a href="ETL_DATA_ENGINEER_HANDOFF.html">ETL Guide</a>
+        <a href="ERD_SCHEMA.html">Schema</a>
+        <a href="CODE_ARCHITECTURE.html">Architecture</a>
+    </div>
+    <h1>BenchSight Extension Guide</h1>
+    <p>How to add new stats, tables, columns, and relationships.</p>
+    
+    <h2>Adding a New Stat Column</h2>
+    <div class="step"><h3>Step 1: Add Calculation</h3><p>Edit <code>src/analytics/</code> to compute the new stat.</p></div>
+    <div class="step"><h3>Step 2: Update Schema</h3><p>Add column to <code>sql/01_CREATE_ALL_TABLES.sql</code></p></div>
+    <div class="step"><h3>Step 3: Document</h3><p>Add to <code>docs/STATS_REFERENCE_COMPLETE.md</code></p></div>
+    <div class="step"><h3>Step 4: Add Test</h3><p>Add validation to <code>tests/test_stats_calculations.py</code></p></div>
+    <div class="step"><h3>Step 5: Deploy</h3><p><code>./run_etl.sh --export && ./run_deploy.sh</code></p></div>
+    
+    <h2>Adding a New Table</h2>
+    <div class="step"><h3>Step 1: Design</h3><p>Plan table name, primary key, foreign keys, columns</p></div>
+    <div class="step"><h3>Step 2: Create SQL</h3><p>Add CREATE TABLE to <code>sql/01_CREATE_ALL_TABLES.sql</code></p></div>
+    <div class="step"><h3>Step 3: Create Generator</h3><p>Build script to generate CSV data</p></div>
+    <div class="step"><h3>Step 4: Add to Loader</h3><p>Add table to <code>TABLE_CATEGORIES</code> in flexible_loader.py</p></div>
+    <div class="step"><h3>Step 5: Document</h3><p>Add to DATA_DICTIONARY.md</p></div>
+    <div class="step"><h3>Step 6: Deploy</h3><p>Create table in Supabase, then load data</p></div>
+    
+    <h2>Column Types Reference</h2>
+    <table>
+        <tr><th>Type</th><th>Use For</th><th>Example</th></tr>
+        <tr><td>INTEGER</td><td>IDs, counts</td><td>player_id, goals</td></tr>
+        <tr><td>DECIMAL(10,3)</td><td>Precise numbers</td><td>toi_seconds</td></tr>
+        <tr><td>DECIMAL(5,2)</td><td>Percentages</td><td>shooting_pct</td></tr>
+        <tr><td>TEXT</td><td>Strings</td><td>player_name</td></tr>
+        <tr><td>BOOLEAN</td><td>True/False</td><td>is_highlight</td></tr>
+        <tr><td>TIMESTAMP</td><td>Date/time</td><td>created_at</td></tr>
+    </table>
+</body>
+</html>
