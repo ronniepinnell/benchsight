@@ -69,7 +69,7 @@ class TestDataIntegrity:
     def test_fact_events_has_required_columns(self):
         """Check required columns in fact_event_players."""
         df = pd.read_csv(OUTPUT_DIR / "fact_event_players.csv", nrows=5, dtype=str)
-        required = ['game_id', 'event_index', 'event_type', 'player_id', 'player_role']
+        required = ['game_id', 'event_id', 'event_type', 'player_id', 'player_role']
         for col in required:
             assert col in df.columns, f"Missing column: {col}"
     

@@ -1,290 +1,283 @@
-[14:59:01] INFO: Loading dim_player...
-[14:59:01] INFO:   Saved dim_player: 337 rows, 27 cols
-[14:59:01] INFO: Loading dim_team...
-[14:59:01] INFO:   Saved dim_team: 26 rows, 14 cols
-[14:59:01] INFO: Loading dim_league...
-[14:59:01] INFO:   Saved dim_league: 2 rows, 2 cols
-[14:59:01] INFO: Loading dim_season...
-[14:59:01] INFO:   Saved dim_season: 9 rows, 8 cols
-[14:59:01] INFO: Loading dim_schedule...
-[14:59:01] INFO:   Saved dim_schedule: 562 rows, 44 cols
-[14:59:01] INFO: Loading dim_playerurlref...
-[14:59:01] INFO:   Saved dim_playerurlref: 548 rows, 3 cols
-[14:59:01] WARN: Sheet 'dim_rink_zone' not found
-[14:59:01] INFO: Loading dim_randomnames...
-[14:59:01] INFO:   Saved dim_randomnames: 486 rows, 5 cols
-[14:59:01] INFO: Loading fact_gameroster...
-[14:59:03] INFO:   Enhancing fact_gameroster...
-[14:59:03] INFO:     Deduped on (game_id, player_id): 14473 -> 14471
-[14:59:03] INFO:     Enhanced: 14471 rows, 24 cols
-[14:59:03] INFO:   Saved fact_gameroster: 14,471 rows, 24 cols
-[14:59:03] INFO: Loading fact_leadership...
-[14:59:03] INFO:   Saved fact_leadership: 28 rows, 9 cols
-[14:59:03] INFO: Loading fact_registration...
-[14:59:03] INFO:   Deduped on player_season_registration_id: 191 -> 190
-[14:59:03] INFO:   Saved fact_registration: 190 rows, 18 cols
-[14:59:03] INFO: Loading fact_draft...
-[14:59:03] INFO:   Saved fact_draft: 160 rows, 14 cols
-[14:59:03] INFO: Built lookup with 26905 mappings
-[14:59:03] WARN: Found 125 conflicts (duplicate numbers on different teams)
-[14:59:03] WARN:   Conflict: ('10031', 'HollowBrook', '11') -> P100084 vs P100029
-[14:59:03] WARN:   Conflict: ('13241', 'Triple J', 'nan') -> P100206 vs P100010
-[14:59:03] WARN:   Conflict: ('13241', 'Triple J', 'nan') -> P100010 vs P100271
-[14:59:03] WARN:   Conflict: ('13241', 'Platinum', 'nan') -> P100280 vs P100055
-[14:59:03] WARN:   Conflict: ('13241', 'Platinum', 'nan') -> P100055 vs P100304
-[14:59:03] INFO: Valid games: ['18969', '18977', '18981', '18987']
-[14:59:03] INFO: Excluded games: ['18993', '18965', '19032']
-[14:59:03] INFO: Loaded dim_schedule for venue validation: 562 games
-[14:59:03] INFO: 
+[22:06:38] INFO: Loading dim_player...
+[22:06:39] INFO:   Saved dim_player: 337 rows, 27 cols
+[22:06:39] INFO: Loading dim_team...
+[22:06:39] INFO:   Saved dim_team: 26 rows, 14 cols
+[22:06:39] INFO: Loading dim_league...
+[22:06:40] INFO:   Saved dim_league: 2 rows, 2 cols
+[22:06:40] INFO: Loading dim_season...
+[22:06:40] INFO:   Saved dim_season: 9 rows, 8 cols
+[22:06:40] INFO: Loading dim_schedule...
+[22:06:40] INFO:   Saved dim_schedule: 562 rows, 44 cols
+[22:06:40] INFO: Loading dim_playerurlref...
+[22:06:41] INFO:   Saved dim_playerurlref: 548 rows, 3 cols
+[22:06:41] WARN: Sheet 'dim_rink_zone' not found
+[22:06:41] INFO: Loading dim_randomnames...
+[22:06:41] INFO:   Saved dim_randomnames: 486 rows, 5 cols
+[22:06:41] INFO: Loading fact_gameroster...
+[22:06:45] INFO:   Enhancing fact_gameroster...
+[22:06:45] INFO:     Deduped on (game_id, player_id): 14473 -> 14471
+[22:06:45] INFO:     Enhanced: 14471 rows, 24 cols
+[22:06:45] INFO:   Saved fact_gameroster: 14,471 rows, 24 cols
+[22:06:45] INFO: Loading fact_leadership...
+[22:06:45] INFO:   Saved fact_leadership: 28 rows, 9 cols
+[22:06:45] INFO: Loading fact_registration...
+[22:06:46] INFO:   Deduped on player_season_registration_id: 191 -> 190
+[22:06:46] INFO:   Saved fact_registration: 190 rows, 18 cols
+[22:06:46] INFO: Loading fact_draft...
+[22:06:46] INFO:   Saved fact_draft: 160 rows, 14 cols
+[22:06:46] INFO: Built lookup with 26905 mappings
+[22:06:46] WARN: Found 125 conflicts (duplicate numbers on different teams)
+[22:06:46] WARN:   Conflict: ('10031', 'HollowBrook', '11') -> P100084 vs P100029
+[22:06:46] WARN:   Conflict: ('13241', 'Triple J', 'nan') -> P100206 vs P100010
+[22:06:46] WARN:   Conflict: ('13241', 'Triple J', 'nan') -> P100010 vs P100271
+[22:06:46] WARN:   Conflict: ('13241', 'Platinum', 'nan') -> P100280 vs P100055
+[22:06:46] WARN:   Conflict: ('13241', 'Platinum', 'nan') -> P100055 vs P100304
+[22:06:46] INFO: Valid games: ['18969', '18977', '18981', '18987']
+[22:06:46] INFO: Excluded games: ['18965', '18993', '19032']
+[22:06:46] INFO: Loaded dim_schedule for venue validation: 562 games
+[22:06:46] INFO: 
 Loading game 18969 from 18969_tracking.xlsx...
-[14:59:04] INFO:   events: 3596 raw rows, dropped 29 underscore cols
-[14:59:04] INFO:   events: 3143 valid rows (by tracking_event_index)
-[14:59:04] INFO:   shifts: 98 raw rows, dropped 0 underscore cols
-[14:59:04] INFO:   shifts: 98 valid rows (by shift_index)
-[14:59:04] INFO: 
+[22:06:49] INFO:   events: 3596 raw rows, dropped 29 underscore cols
+[22:06:49] INFO:   events: 3143 valid rows (by tracking_event_index)
+[22:06:49] INFO:   shifts: 98 raw rows, dropped 0 underscore cols
+[22:06:49] INFO:   shifts: 98 valid rows (by shift_index)
+[22:06:49] INFO: 
 Loading game 18977 from 18977_tracking.xlsx...
-[14:59:05] INFO:   events: 2527 raw rows, dropped 30 underscore cols
-[14:59:05] INFO:   events: 2527 valid rows (by tracking_event_index)
-[14:59:05] INFO:   shifts: 88 raw rows, dropped 0 underscore cols
-[14:59:05] INFO:   shifts: 88 valid rows (by shift_index)
-[14:59:05] INFO: 
+[22:06:50] INFO:   events: 2527 raw rows, dropped 30 underscore cols
+[22:06:50] INFO:   events: 2527 valid rows (by tracking_event_index)
+[22:06:50] INFO:   shifts: 88 raw rows, dropped 0 underscore cols
+[22:06:50] INFO:   shifts: 88 valid rows (by shift_index)
+[22:06:50] INFO: 
 Loading game 18981 from 18981_tracking.xlsx...
-[14:59:05] INFO:   events: 2428 raw rows, dropped 30 underscore cols
-[14:59:05] INFO:   events: 2428 valid rows (by tracking_event_index)
-[14:59:05] INFO:   shifts: 106 raw rows, dropped 0 underscore cols
-[14:59:05] INFO:   shifts: 106 valid rows (by shift_index)
-[14:59:05] INFO: 
+[22:06:51] INFO:   events: 2428 raw rows, dropped 30 underscore cols
+[22:06:51] INFO:   events: 2428 valid rows (by tracking_event_index)
+[22:06:51] INFO:   shifts: 106 raw rows, dropped 0 underscore cols
+[22:06:51] INFO:   shifts: 106 valid rows (by shift_index)
+[22:06:51] INFO: 
 Loading game 18987 from 18987_tracking.xlsx...
-[14:59:06] INFO:   events: 3084 raw rows, dropped 30 underscore cols
-[14:59:06] INFO:   events: 3083 valid rows (by tracking_event_index)
-[14:59:06] WARN:   ⚠️  VENUE SWAP DETECTED - Correcting to BLB schedule
-[14:59:06] WARN:       Tracking: Home=Velodrome, Away=Outlaws
-[14:59:06] WARN:       BLB:      Home=Outlaws, Away=Velodrome
-[14:59:06] INFO:       ✓ Venue corrected
-[14:59:06] INFO:   shifts: 106 raw rows, dropped 0 underscore cols
-[14:59:06] INFO:   shifts: 106 valid rows (by shift_index)
-[14:59:06] INFO:   is_goal flag: 17 goals identified
-[14:59:06] INFO: Generating sequences and plays...
-[14:59:06] INFO:   sequence_key: 11170/11181
-[14:59:06] INFO:   play_key: 11170/11181
-[14:59:06] INFO: Standardizing play_detail values...
-[14:59:06] INFO:   Dropped 7 index columns (keys retained)
-[14:59:06] INFO: Adding FK columns...
-[14:59:06] INFO:   Added 16 FK columns
-[14:59:06] INFO: Adding event_chain_key...
-[14:59:06] INFO:   event_chain_key: 11181/11181
-[14:59:07] INFO: 
-Combined events: 11,181 rows, 61 cols, 4 games
-[14:59:07] INFO:   player_id linked: 10991/11181
-[14:59:07] INFO: Combined shifts: 398 rows, 4 games
-[14:59:07] INFO: dim_player_role: 14 rows
-[14:59:07] INFO: dim_position: 6 rows
-[14:59:07] INFO: dim_zone: 3 rows
-[14:59:07] INFO: dim_period: 5 rows
-[14:59:07] INFO: dim_venue: 2 rows
-[14:59:07] INFO: dim_event_type: 12 rows
-[14:59:07] INFO: dim_event_detail: 31 rows
-[14:59:07] INFO: dim_event_detail_2: 97 rows
-[14:59:07] INFO: dim_success: 3 rows
-[14:59:07] INFO: dim_shot_type: 6 rows
-[14:59:07] INFO: dim_pass_type: 8 rows
-[14:59:07] INFO: dim_zone_entry_type: 11 rows
-[14:59:07] INFO: dim_zone_exit_type: 10 rows
-[14:59:07] INFO: dim_stoppage_type: 4 rows
-[14:59:07] INFO: dim_giveaway_type: 15 rows
-[14:59:07] INFO: dim_takeaway_type: 2 rows
-[14:59:07] INFO: dim_play_detail: 127 rows
-[14:59:07] INFO: dim_play_detail_2: 62 rows
-[14:59:07] INFO: Creating fact_events...
-[14:59:08] INFO:   fact_events: 5,831 rows, 27 cols
-[14:59:08] INFO:   FKs: period_id=5831, event_type_id=5421, event_detail_id=2317
-[14:59:08] INFO: Creating fact_tracking...
-[14:59:08] INFO:   fact_tracking: 5,117 rows, 22 cols
-[14:59:08] INFO: Creating fact_shifts...
-[14:59:08] INFO:   fact_shifts: 398 rows
-[14:59:08] INFO: Creating fact_shift_players...
-[14:59:08] INFO:   fact_shift_players: 4,613 rows
-[14:59:08] INFO:   player_id linked: 4551/4613
-[14:59:08] INFO: Enhancing fact_event_players: 11181 rows, 61 cols
-[14:59:08] INFO: Enhancing fact_events: 5831 rows, 27 cols
-[14:59:08] INFO:   Adding player_name...
-[14:59:08] INFO:   Adding season_id...
-[14:59:08] INFO:   Adding position_id...
-[14:59:08] INFO:   Adding shot_type_id...
-[14:59:08] INFO:   Adding zone_entry_type_id...
-[14:59:08] INFO:   Adding zone_exit_type_id...
-[14:59:08] INFO:   Adding stoppage_type_id...
-[14:59:08] INFO:   Adding giveaway_type_id...
-[14:59:08] INFO:   Adding takeaway_type_id...
-[14:59:08] INFO:   Adding turnover_type_id...
-[14:59:08] INFO:   Adding pass_type_id...
-[14:59:08] INFO:   Adding time_bucket_id...
-[14:59:08] INFO:   Adding strength_id...
-[14:59:08] INFO:   Dropping: role_number, role_abrev, team_venue_abv...
-[14:59:08] INFO:   ✓ fact_event_players: 11181 rows, 71 cols
-[14:59:08] INFO:   Enhancing fact_events from tracking...
-[14:59:09] INFO:   ✓ fact_events: 5831 rows, 40 cols
-[14:59:09] INFO:   Fill rates:
-[14:59:09] INFO:     player_name: 10991/11181 (98.3%)
-[14:59:09] INFO:     season_id: 11181/11181 (100.0%)
-[14:59:09] INFO:     position_id: 10991/11181 (98.3%)
-[14:59:09] INFO:     shot_type_id: 0/11181 (0.0%)
-[14:59:09] INFO:     zone_entry_type_id: 981/11181 (8.8%)
-[14:59:09] INFO:     zone_exit_type_id: 580/11181 (5.2%)
-[14:59:09] INFO:     stoppage_type_id: 164/11181 (1.5%)
-[14:59:09] INFO:     giveaway_type_id: 1005/11181 (9.0%)
-[14:59:09] INFO:     takeaway_type_id: 283/11181 (2.5%)
-[14:59:09] INFO:     turnover_type_id: 1288/11181 (11.5%)
-[14:59:09] INFO:     pass_type_id: 0/11181 (0.0%)
-[14:59:09] INFO:     time_bucket_id: 11176/11181 (100.0%)
-[14:59:09] INFO:     strength_id: 11093/11181 (99.2%)
-[14:59:09] INFO: Enhancing fact_player_event_chains...
-[14:59:09] INFO: Enhancing fact_tracking...
-[14:59:09] INFO:   ✓ fact_tracking: 5117 rows, 25 cols
-[14:59:09] INFO: Enhancing fact_shot_chains...
-[14:59:09] INFO: Enhancing fact_linked_events...
-[14:59:09] INFO: Building fact_cycle_events with zone inference...
-[14:59:09] INFO:   ✓ fact_cycle_events: 28 rows
-[14:59:09] INFO:   ✓ Updated is_cycle flag: 383 tracking rows, 181 event rows
-[14:59:09] INFO: Enhancing fact_scoring_chances...
-[14:59:09] INFO: Enhancing fact_rush_events...
-[14:59:09] INFO:   Done enhancing derived tables
-[14:59:09] INFO: Enhancing 5831 events...
-[14:59:09] INFO:   ✓ fact_events: 5831 rows, 78 cols
-[14:59:09] INFO:     Flags: rush=314, rebound=278, shot=455, goal=17
-[14:59:09] INFO: Aggregating 5831 events into sequences...
-[14:59:09] INFO:   ✓ fact_sequences: 397 rows, 38 cols
-[14:59:09] INFO:     Goals: 17, Avg events/seq: 14.7
-[14:59:09] INFO: Aggregating 5831 events into plays...
-[14:59:10] INFO:   ✓ fact_plays: 1956 rows, 39 cols
-[14:59:10] INFO:     Goals: 17, Shots: 359, Avg events/play: 3.0
-[14:59:10] INFO:   ✓ dim_danger_level: 3 rows
-[14:59:10] INFO:   ✓ fact_rushes: 314 rows
-[14:59:10] INFO:   ✓ fact_breakouts: 475 rows
-[14:59:10] INFO:   ✓ fact_zone_entries: 508 rows
-[14:59:10] INFO:   ✓ fact_zone_exits: 487 rows
-[14:59:10] INFO:   ✓ fact_scoring_chances_detailed: 455 rows
-[14:59:10] INFO:   ✓ fact_high_danger_chances: 26 rows
-[14:59:10] INFO:   ✓ fact_saves: 212 rows
-[14:59:10] INFO:   ✓ fact_turnovers_detailed: 741 rows
-[14:59:10] INFO:   ✓ fact_faceoffs: 171 rows
-[14:59:10] INFO:   ✓ fact_penalties: 20 rows
-[14:59:10] INFO: Enhancing 398 shifts...
-[14:59:11] INFO:   ✓ fact_shifts: 398 rows, 129 cols
-[14:59:11] INFO:   ✓ Player IDs, plus/minus (5 types), shift stats added
-[14:59:11] INFO: Building player game positions from 4613 shift-player records...
-[14:59:11] INFO:   ✓ fact_player_game_position: 105 rows
-[14:59:12] INFO:   ✓ Updated 10 positions in fact_gameroster from shift data
-[14:59:12] INFO: 
+[22:06:53] INFO:   events: 3084 raw rows, dropped 30 underscore cols
+[22:06:53] INFO:   events: 3083 valid rows (by tracking_event_index)
+[22:06:53] WARN:   ⚠️  VENUE SWAP DETECTED - Correcting to BLB schedule
+[22:06:53] WARN:       Tracking: Home=Velodrome, Away=Outlaws
+[22:06:53] WARN:       BLB:      Home=Outlaws, Away=Velodrome
+[22:06:53] INFO:       ✓ Venue corrected
+[22:06:53] INFO:   shifts: 106 raw rows, dropped 0 underscore cols
+[22:06:53] INFO:   shifts: 106 valid rows (by shift_index)
+[22:06:54] INFO:   is_goal flag: 17 goals identified
+[22:06:54] INFO: Generating sequences and plays...
+[22:06:55] INFO:   sequence_key: 11170/11181
+[22:06:55] INFO:   play_key: 11170/11181
+[22:06:55] INFO: Standardizing play_detail values...
+[22:06:55] INFO:   Dropped 7 index columns (keys retained)
+[22:06:55] INFO: Adding FK columns...
+[22:06:55] INFO:   Added 4 FK columns
+[22:06:55] INFO: Adding event_chain_key...
+[22:06:55] INFO:   event_chain_key: 11181/11181
+[22:06:55] INFO: 
+Combined events: 11,181 rows, 49 cols, 4 games
+[22:06:55] INFO:   player_id linked: 10991/11181
+[22:06:55] INFO: Combined shifts: 398 rows, 4 games
+[22:06:55] INFO: dim_player_role: 14 rows
+[22:06:55] INFO: dim_position: 6 rows
+[22:06:55] INFO: dim_zone: 3 rows
+[22:06:55] INFO: dim_period: 5 rows
+[22:06:55] INFO: dim_venue: 2 rows
+[22:06:55] INFO: dim_event_type: 12 rows
+[22:06:55] INFO: dim_event_detail: 31 rows
+[22:06:55] INFO: dim_event_detail_2: 97 rows
+[22:06:55] INFO: dim_success: 3 rows
+[22:06:55] INFO: dim_shot_type: 6 rows
+[22:06:55] INFO: dim_pass_type: 8 rows
+[22:06:55] INFO: dim_zone_entry_type: 11 rows
+[22:06:55] INFO: dim_zone_exit_type: 10 rows
+[22:06:55] INFO: dim_stoppage_type: 4 rows
+[22:06:55] INFO: dim_giveaway_type: 15 rows
+[22:06:56] INFO: dim_takeaway_type: 2 rows
+[22:06:56] INFO: dim_play_detail: 134 rows
+[22:06:56] INFO: dim_play_detail_2: 62 rows
+[22:06:56] INFO: Creating fact_events...
+[22:06:59] INFO:   fact_events: 5,831 rows, 27 cols
+[22:06:59] INFO:   FKs: period_id=5831, event_type_id=5421, event_detail_id=2317
+[22:06:59] INFO: Creating fact_tracking...
+[22:06:59] INFO:   fact_tracking: 5,117 rows, 19 cols
+[22:06:59] INFO: Creating fact_shifts...
+[22:06:59] INFO:   fact_shifts: 398 rows
+[22:06:59] INFO: Creating fact_shift_players...
+[22:07:00] INFO:   fact_shift_players: 4,613 rows
+[22:07:00] INFO:   player_id linked: 4551/4613
+[22:07:00] INFO: Enhancing fact_event_players: 11181 rows, 49 cols
+[22:07:00] INFO: Enhancing fact_events: 5831 rows, 27 cols
+[22:07:00] INFO:   Adding player_name...
+[22:07:00] INFO:   Adding season_id...
+[22:07:00] INFO:   Adding position_id...
+[22:07:00] INFO:   Adding shot_type_id...
+[22:07:00] INFO:   Adding zone_entry_type_id...
+[22:07:00] INFO:   Adding zone_exit_type_id...
+[22:07:01] INFO:   Adding stoppage_type_id...
+[22:07:01] INFO:   Adding giveaway_type_id...
+[22:07:01] INFO:   Adding takeaway_type_id...
+[22:07:01] INFO:   Adding turnover_type_id...
+[22:07:01] INFO:   Adding pass_type_id...
+[22:07:01] INFO:   Adding time_bucket_id...
+[22:07:01] INFO:   Adding strength_id...
+[22:07:01] INFO:   Dropping: role_number, role_abrev, team_venue_abv...
+[22:07:01] INFO:   ✓ fact_event_players: 11181 rows, 59 cols
+[22:07:01] INFO:   Enhancing fact_events from tracking...
+[22:07:01] INFO:   ✓ fact_events: 5831 rows, 40 cols
+[22:07:01] INFO:   Fill rates:
+[22:07:01] INFO:     player_name: 10991/11181 (98.3%)
+[22:07:01] INFO:     season_id: 11181/11181 (100.0%)
+[22:07:01] INFO:     position_id: 10991/11181 (98.3%)
+[22:07:01] INFO:     shot_type_id: 0/11181 (0.0%)
+[22:07:01] INFO:     zone_entry_type_id: 981/11181 (8.8%)
+[22:07:01] INFO:     zone_exit_type_id: 580/11181 (5.2%)
+[22:07:01] INFO:     stoppage_type_id: 164/11181 (1.5%)
+[22:07:01] INFO:     giveaway_type_id: 1005/11181 (9.0%)
+[22:07:01] INFO:     takeaway_type_id: 283/11181 (2.5%)
+[22:07:01] INFO:     turnover_type_id: 1288/11181 (11.5%)
+[22:07:01] INFO:     pass_type_id: 0/11181 (0.0%)
+[22:07:01] INFO:     time_bucket_id: 11176/11181 (100.0%)
+[22:07:01] INFO:     strength_id: 11093/11181 (99.2%)
+[22:07:02] INFO: Enhancing fact_player_event_chains...
+[22:07:02] INFO: Enhancing fact_tracking...
+[22:07:02] INFO:   ✓ fact_tracking: 5117 rows, 22 cols
+[22:07:02] INFO: Enhancing fact_shot_chains...
+[22:07:02] INFO: Enhancing fact_linked_events...
+[22:07:02] INFO: Building fact_cycle_events with zone inference...
+[22:07:02] INFO:   ✓ fact_cycle_events: 32 rows
+[22:07:02] INFO:   ✓ Updated is_cycle flag: 436 tracking rows, 206 event rows
+[22:07:02] INFO: Enhancing fact_scoring_chances...
+[22:07:02] INFO: Enhancing fact_rush_events...
+[22:07:02] INFO:   Done enhancing derived tables
+[22:07:02] INFO: Enhancing 5831 events...
+[22:07:03] INFO:   ✓ fact_events: 5831 rows, 78 cols
+[22:07:03] INFO:     Flags: rush=314, rebound=278, shot=455, goal=17
+[22:07:03] INFO: Aggregating 5831 events into sequences...
+[22:07:03] INFO:   ✓ fact_sequences: 397 rows, 38 cols
+[22:07:03] INFO:     Goals: 17, Avg events/seq: 14.7
+[22:07:04] INFO: Aggregating 5831 events into plays...
+[22:07:06] INFO:   ✓ fact_plays: 1956 rows, 39 cols
+[22:07:06] INFO:     Goals: 17, Shots: 359, Avg events/play: 3.0
+[22:07:06] INFO:   ✓ dim_danger_level: 3 rows
+[22:07:06] INFO:   ✓ fact_rushes: 314 rows
+[22:07:06] INFO:   ✓ fact_breakouts: 475 rows
+[22:07:07] INFO:   ✓ fact_zone_entries: 508 rows
+[22:07:07] INFO:   ✓ fact_zone_exits: 487 rows
+[22:07:07] INFO:   ✓ fact_scoring_chances_detailed: 455 rows
+[22:07:07] INFO:   ✓ fact_high_danger_chances: 26 rows
+[22:07:07] INFO:   ✓ fact_saves: 212 rows
+[22:07:07] INFO:   ✓ fact_turnovers_detailed: 741 rows
+[22:07:07] INFO:   ✓ fact_faceoffs: 171 rows
+[22:07:07] INFO:   ✓ fact_penalties: 20 rows
+[22:07:07] INFO: Enhancing 398 shifts...
+[22:07:10] INFO:   ✓ fact_shifts: 398 rows, 129 cols
+[22:07:10] INFO:   ✓ Player IDs, plus/minus (5 types), shift stats added
+[22:07:10] INFO: Building player game positions from 4613 shift-player records...
+[22:07:10] INFO:   ✓ fact_player_game_position: 105 rows
+[22:07:10] INFO:   ✓ Updated 10 positions in fact_gameroster from shift data
+[22:07:10] INFO: 
 [1] Table existence check:
-[14:59:12] INFO:   ✓ dim_player: 337 rows
-[14:59:12] INFO:   ✓ dim_team: 26 rows
-[14:59:12] INFO:   ✓ dim_league: 2 rows
-[14:59:12] INFO:   ✓ dim_season: 9 rows
-[14:59:12] INFO:   ✓ dim_schedule: 562 rows
-[14:59:12] INFO:   ✓ dim_player_role: 14 rows
-[14:59:12] INFO:   ✓ dim_position: 6 rows
-[14:59:12] INFO:   ✓ dim_zone: 3 rows
-[14:59:12] INFO:   ✓ dim_period: 5 rows
-[14:59:12] INFO:   ✓ dim_venue: 2 rows
-[14:59:12] INFO:   ✓ fact_gameroster: 14,471 rows
-[14:59:12] INFO:   ✓ fact_events: 5,831 rows
-[14:59:12] INFO:   ✓ fact_event_players: 11,181 rows
-[14:59:12] INFO:   ✓ fact_tracking: 5,117 rows
-[14:59:12] INFO:   ✓ fact_shifts: 398 rows
-[14:59:12] INFO:   ✓ fact_shift_players: 4,613 rows
-[14:59:12] INFO:   ✓ fact_shifts: 398 rows
-[14:59:12] INFO:   ✓ fact_draft: 160 rows
-[14:59:12] INFO:   ✓ fact_registration: 190 rows
-[14:59:12] INFO:   ✓ fact_leadership: 28 rows
-[14:59:12] INFO: 
+[22:07:10] INFO:   ✓ dim_player: 337 rows
+[22:07:10] INFO:   ✓ dim_team: 26 rows
+[22:07:10] INFO:   ✓ dim_league: 2 rows
+[22:07:10] INFO:   ✓ dim_season: 9 rows
+[22:07:10] INFO:   ✓ dim_schedule: 562 rows
+[22:07:10] INFO:   ✓ dim_player_role: 14 rows
+[22:07:10] INFO:   ✓ dim_position: 6 rows
+[22:07:10] INFO:   ✓ dim_zone: 3 rows
+[22:07:10] INFO:   ✓ dim_period: 5 rows
+[22:07:10] INFO:   ✓ dim_venue: 2 rows
+[22:07:10] INFO:   ✓ fact_gameroster: 14,471 rows
+[22:07:11] INFO:   ✓ fact_events: 5,831 rows
+[22:07:11] INFO:   ✓ fact_event_players: 11,181 rows
+[22:07:11] INFO:   ✓ fact_tracking: 5,117 rows
+[22:07:11] INFO:   ✓ fact_shifts: 398 rows
+[22:07:11] INFO:   ✓ fact_shift_players: 4,613 rows
+[22:07:11] INFO:   ✓ fact_shifts: 398 rows
+[22:07:11] INFO:   ✓ fact_draft: 160 rows
+[22:07:11] INFO:   ✓ fact_registration: 190 rows
+[22:07:11] INFO:   ✓ fact_leadership: 28 rows
+[22:07:11] INFO: 
 [2] Game coverage (tracking tables):
-[14:59:12] INFO:   ✓ fact_events: all 4 games present
-[14:59:12] INFO:   ✓ fact_shifts: all 4 games present
-[14:59:12] INFO:   ✓ fact_shift_players: all 4 games present
-[14:59:12] INFO: 
+[22:07:11] INFO:   ✓ fact_events: all 4 games present
+[22:07:11] INFO:   ✓ fact_shifts: all 4 games present
+[22:07:11] INFO:   ✓ fact_shift_players: all 4 games present
+[22:07:11] INFO: 
 [3] Primary key integrity:
-[14:59:12] INFO:   ✓ dim_player.player_id: P100001
-[14:59:12] INFO:   ✓ dim_team.team_id: N10001
-[14:59:12] INFO:   ✓ dim_league.league_id: N
-[14:59:12] INFO:   ✓ dim_season.season_id: N20212022F
-[14:59:12] INFO:   ✓ dim_schedule.game_id: 18619
-[14:59:12] INFO:   ✓ fact_events.event_id: EV1896901000
-[14:59:12] INFO:   ✓ fact_shifts.shift_id: SH1896900001
-[14:59:12] INFO:   ✓ fact_shift_players.shift_player_id: SH1896900001_home_F1
-[14:59:12] INFO: 
+[22:07:11] INFO:   ✓ dim_player.player_id: P100001
+[22:07:11] INFO:   ✓ dim_team.team_id: N10001
+[22:07:11] INFO:   ✓ dim_league.league_id: N
+[22:07:11] INFO:   ✓ dim_season.season_id: N20212022F
+[22:07:11] INFO:   ✓ dim_schedule.game_id: 18619
+[22:07:11] INFO:   ✓ fact_events.event_id: EV1896901000
+[22:07:11] INFO:   ✓ fact_shifts.shift_id: SH1896900001
+[22:07:11] INFO:   ✓ fact_shift_players.shift_player_id: SH1896900001_home_F1
+[22:07:11] INFO: 
 [4] Player ID linkage:
-[14:59:12] INFO:   ✓ fact_event_players: 10,991/11,181 (98.3%)
-[14:59:12] INFO:   ✓ fact_shift_players: 4,551/4,613 (98.7%)
-[14:59:12] INFO:   ✓ fact_gameroster: 14,471/14,471 (100.0%)
-[14:59:12] INFO: 
+[22:07:11] INFO:   ✓ fact_event_players: 10,991/11,181 (98.3%)
+[22:07:11] INFO:   ✓ fact_shift_players: 4,551/4,613 (98.7%)
+[22:07:11] INFO:   ✓ fact_gameroster: 14,471/14,471 (100.0%)
+[22:07:11] INFO: 
 [5] No underscore columns check:
-[14:59:12] INFO:   ✓ dim_period: clean
-[14:59:12] INFO:   ✓ fact_shifts: clean
-[14:59:12] INFO:   ✓ dim_time_bucket: clean
-[14:59:12] INFO:   ✓ fact_registration: clean
-[14:59:12] INFO:   ✓ qa_goal_accuracy: clean
-[14:59:12] INFO:   ✓ dim_shot_type: clean
-[14:59:12] INFO:   ✓ dim_danger_level: clean
-[14:59:12] INFO:   ✓ dim_team: clean
-[14:59:12] INFO:   ✓ dim_player: clean
-[14:59:12] INFO:   ✓ fact_events: clean
-[14:59:12] INFO:   ✓ dim_play_detail_2: clean
-[14:59:12] INFO:   ✓ dim_pass_type: clean
-[14:59:12] INFO:   ✓ qa_data_completeness: clean
-[14:59:12] INFO:   ✓ fact_saves: clean
-[14:59:12] INFO:   ✓ dim_takeaway_type: clean
-[14:59:12] INFO:   ✓ dim_league: clean
-[14:59:12] INFO:   ✓ fact_faceoffs: clean
-[14:59:12] INFO:   ✓ fact_gameroster: clean
-[14:59:12] INFO:   ✓ fact_breakouts: clean
-[14:59:12] INFO:   ✓ dim_schedule: clean
-[14:59:12] INFO:   ✓ dim_assist_type: clean
-[14:59:12] INFO:   ✓ dim_zone_entry_type: clean
-[14:59:12] INFO:   ✓ dim_game_state: clean
-[14:59:12] INFO:   ✓ fact_rushes: clean
-[14:59:12] INFO:   ✓ fact_shift_players: clean
-[14:59:12] INFO:   ✓ fact_sequences: clean
-[14:59:12] INFO:   ✓ fact_high_danger_chances: clean
-[14:59:12] INFO:   ✓ dim_zone_exit_type: clean
-[14:59:12] INFO:   ✓ fact_event_players: clean
-[14:59:12] INFO:   ✓ dim_shift_start_type: clean
-[14:59:12] INFO:   ✓ fact_tracking: clean
-[14:59:12] INFO:   ✓ dim_play_detail: clean
-[14:59:12] INFO:   ✓ fact_cycle_events: clean
-[14:59:12] INFO:   ✓ fact_season_summary: clean
-[14:59:12] INFO:   ✓ dim_event_detail: clean
-[14:59:12] INFO:   ✓ fact_scoring_chances_detailed: clean
-[14:59:12] INFO:   ✓ dim_shift_stop_type: clean
-[14:59:12] INFO:   ✓ dim_event_type: clean
-[14:59:12] INFO:   ✓ fact_leadership: clean
-[14:59:12] INFO:   ✓ fact_draft: clean
-[14:59:12] INFO:   ✓ fact_plays: clean
-[14:59:12] INFO:   ✓ dim_playerurlref: clean
-[14:59:12] INFO:   ✓ dim_shift_quality_tier: clean
-[14:59:12] INFO:   ✓ dim_venue: clean
-[14:59:12] INFO:   ✓ fact_penalties: clean
-[14:59:12] INFO:   ✓ fact_zone_exits: clean
-[14:59:12] INFO:   ✓ dim_stoppage_type: clean
-[14:59:12] INFO:   ✓ dim_position: clean
-[14:59:12] INFO:   ✓ fact_turnovers_detailed: clean
-[14:59:12] INFO:   ✓ dim_zone: clean
-[14:59:12] INFO:   ✓ dim_player_role: clean
-[14:59:12] INFO:   ✓ dim_success: clean
-[14:59:12] INFO:   ✓ dim_giveaway_type: clean
-[14:59:12] INFO:   ✓ dim_randomnames: clean
-[14:59:12] INFO:   ✓ fact_player_game_position: clean
-[14:59:12] INFO:   ✓ dim_event_detail_2: clean
-[14:59:12] INFO:   ✓ dim_situation: clean
-[14:59:12] INFO:   ✓ fact_zone_entries: clean
-[14:59:12] INFO:   ✓ dim_season: clean
-[14:59:12] INFO: 
+[22:07:11] INFO:   ✓ dim_situation: clean
+[22:07:11] INFO:   ✓ dim_league: clean
+[22:07:11] INFO:   ✓ fact_registration: clean
+[22:07:11] INFO:   ✓ dim_randomnames: clean
+[22:07:11] INFO:   ✓ fact_faceoffs: clean
+[22:07:11] INFO:   ✓ dim_player_role: clean
+[22:07:11] INFO:   ✓ fact_draft: clean
+[22:07:11] INFO:   ✓ dim_stoppage_type: clean
+[22:07:11] INFO:   ✓ fact_zone_exits: clean
+[22:07:11] INFO:   ✓ dim_shift_start_type: clean
+[22:07:11] INFO:   ✓ dim_zone_exit_type: clean
+[22:07:11] INFO:   ✓ fact_high_danger_chances: clean
+[22:07:11] INFO:   ✓ fact_rushes: clean
+[22:07:11] INFO:   ✓ dim_schedule: clean
+[22:07:11] INFO:   ✓ dim_position: clean
+[22:07:11] INFO:   ✓ dim_venue: clean
+[22:07:11] INFO:   ✓ fact_player_game_position: clean
+[22:07:11] INFO:   ✓ dim_player: clean
+[22:07:11] INFO:   ✓ fact_sequences: clean
+[22:07:11] INFO:   ✓ fact_cycle_events: clean
+[22:07:11] INFO:   ✓ dim_shift_stop_type: clean
+[22:07:11] INFO:   ✓ fact_saves: clean
+[22:07:11] INFO:   ✓ fact_shifts: clean
+[22:07:11] INFO:   ✓ fact_plays: clean
+[22:07:11] INFO:   ✓ fact_tracking: clean
+[22:07:11] INFO:   ✓ dim_play_detail_2: clean
+[22:07:11] INFO:   ✓ dim_shot_type: clean
+[22:07:11] INFO:   ✓ dim_playerurlref: clean
+[22:07:11] INFO:   ✓ fact_breakouts: clean
+[22:07:11] INFO:   ✓ fact_shift_players: clean
+[22:07:11] INFO:   ✓ dim_zone_entry_type: clean
+[22:07:11] INFO:   ✓ dim_takeaway_type: clean
+[22:07:11] INFO:   ✓ dim_pass_type: clean
+[22:07:11] INFO:   ✓ dim_event_detail: clean
+[22:07:11] INFO:   ✓ fact_scoring_chances_detailed: clean
+[22:07:11] INFO:   ✓ dim_giveaway_type: clean
+[22:07:11] INFO:   ✓ fact_turnovers_detailed: clean
+[22:07:11] INFO:   ✓ fact_penalties: clean
+[22:07:11] INFO:   ✓ fact_leadership: clean
+[22:07:11] INFO:   ✓ dim_season: clean
+[22:07:11] INFO:   ✓ dim_event_type: clean
+[22:07:11] INFO:   ✓ fact_events: clean
+[22:07:11] INFO:   ✓ dim_team: clean
+[22:07:11] INFO:   ✓ fact_zone_entries: clean
+[22:07:11] INFO:   ✓ dim_zone: clean
+[22:07:11] INFO:   ✓ dim_period: clean
+[22:07:11] INFO:   ✓ fact_event_players: clean
+[22:07:11] INFO:   ✓ fact_gameroster: clean
+[22:07:11] INFO:   ✓ dim_success: clean
+[22:07:11] INFO:   ✓ dim_event_detail_2: clean
+[22:07:11] INFO:   ✓ dim_danger_level: clean
+[22:07:11] INFO:   ✓ dim_play_detail: clean
+[22:07:11] INFO: 
 [6] Referential integrity:
-[14:59:12] INFO:   ✓ All event games exist in schedule
-[14:59:12] INFO: Tables: 59
-[14:59:12] INFO: Total rows: 50,338
-[14:59:12] INFO: Warnings: 10
-[14:59:12] INFO: Errors: 0
-[14:59:12] INFO: Issues for review: 0
-[14:59:12] INFO: 
+[22:07:11] INFO:   ✓ All event games exist in schedule
+[22:07:12] INFO: Tables: 52
+[22:07:12] INFO: Total rows: 50,318
+[22:07:12] INFO: Warnings: 10
+[22:07:12] INFO: Errors: 0
+[22:07:12] INFO: Issues for review: 0
+[22:07:12] INFO: 
 ✓ ALL VALIDATIONS PASSED

@@ -1,12 +1,9 @@
 {
-    "major": 14,
-    "minor": 1,
-    "version_string": "v14.01",
-    "last_updated": "2026-01-07T21:30:00Z",
-    "chat_number": 14,
-    "output_number": 1,
-    "notes": "Comprehensive tracker v3 delivery with all documentation",
-    "output": 2,
-    "version": "0.02",
-    "date": "2026-01-07"
+  "major": 14,
+  "minor": 2,
+  "version_string": "v14.02",
+  "last_updated": "2026-01-07T22:08:00Z",
+  "chat_number": 14,
+  "output_number": 2,
+  "notes": "Fixed 18981 home_xtra jersey numbers, Supabase sync working"
 }

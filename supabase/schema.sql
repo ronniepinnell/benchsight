@@ -1,5 +1,5 @@
 -- BenchSight Supabase Schema
--- Generated: 2026-01-07 18:57
+-- Generated: 2026-01-07 22:05
 -- Tables: 59
 --
 -- To apply:
@@ -94,7 +94,6 @@ CREATE TABLE IF NOT EXISTS "dim_pass_type" (
     "description" VARCHAR(100)
 );
 
--- Game periods
 CREATE TABLE IF NOT EXISTS "dim_period" (
     "period_id" TEXT,
     "period_number" INTEGER,
@@ -329,7 +328,6 @@ CREATE TABLE IF NOT EXISTS "dim_venue" (
     "venue_abbrev" VARCHAR(100)
 );
 
--- Ice zones
 CREATE TABLE IF NOT EXISTS "dim_zone" (
     "zone_id" TEXT,
     "zone_code" VARCHAR(100),
@@ -642,7 +640,6 @@ CREATE TABLE IF NOT EXISTS "fact_events" (
 CREATE INDEX IF NOT EXISTS idx_fact_events_game_id ON "fact_events" ("game_id");
 CREATE INDEX IF NOT EXISTS idx_fact_events_event_type ON "fact_events" ("event_type");
 
--- Faceoff events with win/loss tracking
 CREATE TABLE IF NOT EXISTS "fact_faceoffs" (
     "event_id" TEXT,
     "game_id" BIGINT,
@@ -729,7 +726,6 @@ CREATE TABLE IF NOT EXISTS "fact_faceoffs" (
 CREATE INDEX IF NOT EXISTS idx_fact_faceoffs_game_id ON "fact_faceoffs" ("game_id");
 CREATE INDEX IF NOT EXISTS idx_fact_faceoffs_event_type ON "fact_faceoffs" ("event_type");
 
--- Players who appeared in each game with their jersey/position
 CREATE TABLE IF NOT EXISTS "fact_gameroster" (
     "game_id" BIGINT,
     "player_id" TEXT,
@@ -861,7 +857,6 @@ CREATE TABLE IF NOT EXISTS "fact_leadership" (
 CREATE INDEX IF NOT EXISTS idx_fact_leadership_player_id ON "fact_leadership" ("player_id");
 CREATE INDEX IF NOT EXISTS idx_fact_leadership_team_id ON "fact_leadership" ("team_id");
 
--- Penalty events
 CREATE TABLE IF NOT EXISTS "fact_penalties" (
     "event_id" TEXT,
     "game_id" BIGINT,
@@ -1114,7 +1109,6 @@ CREATE TABLE IF NOT EXISTS "fact_rushes" (
 CREATE INDEX IF NOT EXISTS idx_fact_rushes_game_id ON "fact_rushes" ("game_id");
 CREATE INDEX IF NOT EXISTS idx_fact_rushes_event_type ON "fact_rushes" ("event_type");
 
--- Save events by goaltenders
 CREATE TABLE IF NOT EXISTS "fact_saves" (
     "event_id" TEXT,
     "game_id" BIGINT,
@@ -1353,7 +1347,7 @@ CREATE TABLE IF NOT EXISTS "fact_shift_players" (
 CREATE INDEX IF NOT EXISTS idx_fact_shift_players_game_id ON "fact_shift_players" ("game_id");
 CREATE INDEX IF NOT EXISTS idx_fact_shift_players_player_id ON "fact_shift_players" ("player_id");
 
--- Raw shift data - when players entered/exited ice
+-- Player shift data - when players are on the ice
 CREATE TABLE IF NOT EXISTS "fact_shifts" (
     "shift_id" TEXT,
     "game_id" BIGINT,
@@ -1777,7 +1771,6 @@ CREATE INDEX IF NOT EXISTS idx_fact_zone_exits_event_type ON "fact_zone_exits" (
 -- QA TABLES (2)
 -- ============================================================
 
--- Quality assurance - checks for missing data
 CREATE TABLE IF NOT EXISTS "qa_data_completeness" (
     "qa_key" VARCHAR(100),
     "game_id" BIGINT,
@@ -1816,6 +1809,7 @@ CREATE OR REPLACE VIEW v_goals AS
 SELECT 
     e.game_id,
     e.period,
+    e.event_index,
     e.event_id,
     e.player_name as scorer,
     e.event_detail,

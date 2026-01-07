@@ -1,3 +1,0 @@
-shift_index,Period,shift_start_type,shift_stop_type,shift_start_min,shift_start_sec,shift_end_min,shift_end_sec,home_forward_1,home_forward_2,home_forward_3,home_defense_1,home_defense_2,home_goalie,home_xtra,away_forward_1,away_forward_2,away_forward_3,away_defense_1,away_defense_2,away_goalie,away_xtra,stoppage_time,clock_stoped,home_ozone_start,home_ozone_end,home_dzone_start,home_dzone_end,home_nzone_start,home_nzone_end,game_id,home_team,away_team,X,Y
-1,1,PeriodStart,-,18,0,16,56,70,75,49,84,87,39,,11,19,22,33,28,99,,18,FALSE,,1,,,1,,18977,Velodrome,HollowBrook,-0.46,-0.12
-2,1,-,Home Goalie Stoppage,16,56,16,34,70,75,49,22,87,39,,11,19,22,33,28,99,,,FALSE,1,,,1,,,18977,Velodrome,HollowBrook,-0.69,0.11

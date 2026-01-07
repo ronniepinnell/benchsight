@@ -50,7 +50,6 @@
   "test_dynamic_games.py::TestPlayerStats::test_player_goals_match_rate[18977]": true,
   "test_dynamic_games.py::TestPlayerStats::test_player_goals_match_rate[18981]": true,
   "test_dynamic_games.py::TestPlayerStats::test_player_goals_match_rate[18987]": true,
-  "test_etl.py::TestDataIntegrity::test_fact_events_has_required_columns": true,
   "test_etl_column_preservation.py::TestColumnPreservation::test_fact_player_game_stats_has_317_columns": true,
   "test_etl_column_preservation.py::TestColumnPreservation::test_critical_fk_columns_present": true,
   "test_etl_column_preservation.py::TestColumnPreservation::test_enhanced_stats_columns_present": true,

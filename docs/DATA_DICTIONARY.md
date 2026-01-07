@@ -1,6 +1,6 @@
-# BenchSight Data Dictionary v0.02
+# BenchSight Data Dictionary v0.01
 
-**Auto-generated:** 2026-01-07 14:30  
+**Auto-generated:** 2026-01-07 21:13  
 **Metadata source:** `config/TABLE_METADATA.json`
 
 ---
@@ -316,7 +316,7 @@ df[(df['event_type']=='Goal') & (df['event_detail']=='Goal_Scored')]
 
 ### dim_play_detail
 
-**Rows:** 129 | **Columns:** 6
+**Rows:** 126 | **Columns:** 6
 
 #### Columns
 
@@ -842,7 +842,7 @@ df[(df['event_type']=='Goal') & (df['event_detail']=='Goal_Scored')]
 
 ### fact_cycle_events
 
-**Rows:** 28 | **Columns:** 22
+**Rows:** 32 | **Columns:** 22
 
 #### Columns
 
@@ -867,7 +867,7 @@ df[(df['event_type']=='Goal') & (df['event_detail']=='Goal_Scored')]
 | `ended_with_shot` | int64 | - | 0 |
 | `ended_with_goal` | int64 | - | 0 |
 | `event_ids` | object | Unique event identifier | EV1896901046,EV1896901047... |
-| `player_ids` | object | Unique player identifier | P100022,P100117 |
+| `player_ids` | object | Unique player identifier | P100117,P100022 |
 | `period` | int64 | Game period | 1 |
 | `period_id` | object | Game period (1, 2, 3, OT) | P01 |
 
@@ -1543,7 +1543,7 @@ df[(df['event_type']=='Goal') & (df['event_detail']=='Goal_Scored')]
 | `pass_type_id` | float64 | Foreign key reference |  |
 | `time_bucket_id` | object | Foreign key reference | TB01 |
 | `strength_id` | object | Foreign key reference | STR0001 |
-| `cycle_key` | object | - | CY189770012 |
+| `cycle_key` | object | - | CY189770013 |
 | `is_cycle` | int64 | Boolean flag | 0 |
 | `event_start_min` | float64 | - | 17.0 |
 | `event_start_sec` | float64 | - | 37.0 |
@@ -1779,7 +1779,7 @@ df[(df['event_type']=='Goal') & (df['event_detail']=='Goal_Scored')]
 | `total_goals` | int64 | Goals scored | 0 |
 | `total_players` | int64 | - | 0 |
 | `avg_goals_per_game` | float64 | Goals scored | 0.0 |
-| `created_at` | object | Record creation timestamp | 2026-01-07T14:30:06.93831... |
+| `created_at` | object | Record creation timestamp | 2026-01-07T21:13:25.57319... |
 
 ---
 
@@ -2175,7 +2175,7 @@ df[(df['event_type']=='Goal') & (df['event_detail']=='Goal_Scored')]
 | `pass_type_id` | float64 | Foreign key reference |  |
 | `time_bucket_id` | object | Foreign key reference | TB01 |
 | `strength_id` | object | Foreign key reference | STR0001 |
-| `cycle_key` | object | - | CY189770012 |
+| `cycle_key` | object | - | CY189770013 |
 | `is_cycle` | int64 | Boolean flag | 0 |
 | `event_start_min` | float64 | - | 17.0 |
 | `event_start_sec` | float64 | - | 49.0 |
@@ -2325,7 +2325,7 @@ df[(df['event_type']=='Goal') & (df['event_detail']=='Goal_Scored')]
 | `has_shifts` | bool | Boolean flag | True |
 | `has_rosters` | bool | Boolean flag | True |
 | `is_complete` | bool | Boolean flag | True |
-| `check_date` | object | - | 2026-01-07T14:30:06.96284... |
+| `check_date` | object | - | 2026-01-07T21:13:25.62067... |
 
 ---
 
@@ -2352,7 +2352,7 @@ df[(df['event_type']=='Goal') & (df['event_detail']=='Goal_Scored')]
 | `actual_goals` | int64 | Goals scored | 7 |
 | `match` | bool | - | True |
 | `difference` | int64 | - | 0 |
-| `check_date` | object | - | 2026-01-07T14:30:06.96024... |
+| `check_date` | object | - | 2026-01-07T21:13:25.61398... |
 
 ---
 
