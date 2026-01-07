@@ -1,83 +1,81 @@
-# BenchSight Test Suite
+# BenchSight Tests
 
-## Overview
-
-290 tests covering data integrity, stats calculations, and deployment readiness.
+Test suite for ETL pipeline and data validation.
 
 ## Running Tests
 
 ```bash
 # Run all tests
-python -m pytest tests/ -v
+pytest tests/
 
 # Run specific test file
-python -m pytest tests/test_stats_calculations.py -v
+pytest tests/test_data_validation.py
+
+# Run with verbose output
+pytest tests/ -v
 
 # Run with coverage
-python -m pytest tests/ --cov=src --cov-report=html
+pytest tests/ --cov=src
 ```
 
 ## Test Categories
 
-### test_stats_calculations.py (250+ tests)
-Tests all statistical calculations:
-- **Scoring**: goals, assists, points consistency
-- **Shooting**: shots, SOG, shooting percentage
-- **Passing**: pass attempts, completion rate
-- **Faceoffs**: FO wins/losses, FO percentage
-- **Time on Ice**: TOI seconds/minutes, shift counts
-- **Per-60 Stats**: goals/60, assists/60, etc.
-- **Corsi/Fenwick**: possession metrics
-- **Plus/Minus**: +/- calculations
-- **Composite Ratings**: offensive/defensive ratings
+### Data Validation
+- `test_data_validation.py`: Core data integrity checks
+- `test_data_validation_comprehensive.py`: Extended validation
+- `test_schema_data_quality.py`: Schema conformance
 
-### test_supabase_config.py (15 tests)
-Deployment readiness:
-- Configuration files exist
-- SQL files exist
-- Loader scripts exist
-- Documentation complete
-- Data files present
+### ETL Pipeline
+- `test_etl.py`: ETL transformation tests
+- `test_etl_integration.py`: End-to-end pipeline tests
+- `test_etl_column_preservation.py`: Column integrity
 
-### test_validation.py (6 tests)
-Data integrity:
-- Output files exist
-- Tables have data
-- Column counts correct
+### Statistics
+- `test_stats_calculations.py`: Statistical accuracy
+- `test_goal_verification.py`: Goal count validation
+- `test_ground_truth.py`: Verification against official data
 
-### test_comprehensive_integrity.py (3 tests)
-Project structure validation
+### Foreign Keys
+- `test_fk_relationships.py`: Referential integrity
 
-### test_data_integrity.py
-Foreign key relationships and data consistency
+### Production Readiness
+- `test_production_etl.py`: Production deployment tests
+- `test_failure_modes.py`: Error handling
 
-### test_etl.py
-ETL pipeline functionality
+## Key Tests
 
-## Test Data
+### Data Integrity
+```bash
+pytest tests/test_data_integrity.py -v
+```
+- Primary key uniqueness
+- Foreign key validity
+- Required field checks
 
-Tests use actual data from `data/output/`:
-- `fact_player_game_stats.csv` - 317 columns
-- `dim_player.csv` - Player dimension
-- `dim_team.csv` - Team dimension
+### Goal Verification
+```bash
+pytest tests/test_goal_verification.py -v
+```
+- Compares calculated goals to noradhockey.com
+- Critical for data accuracy
+
+### Schema Validation
+```bash
+pytest tests/test_schema_data_quality.py -v
+```
+- Column types match expectations
+- All required columns present
+
+## Test Fixtures
+
+Defined in `conftest.py`:
+- Database connections
+- Sample data fixtures
+- Test configuration
 
 ## Adding New Tests
 
-```python
-# tests/test_new_feature.py
-import pytest
-from pathlib import Path
-import pandas as pd
-
-class TestNewFeature:
-    def test_something(self):
-        df = pd.read_csv("data/output/fact_player_game_stats.csv")
-        assert len(df) > 0
-```
-
-## Expected Results
-
-All 290 tests should pass:
-```
-============================= 290 passed in 6.23s ==============================
-```
+1. Create test file: `tests/test_new_feature.py`
+2. Import fixtures from conftest
+3. Follow naming convention: `test_*`
+4. Add docstrings explaining test purpose

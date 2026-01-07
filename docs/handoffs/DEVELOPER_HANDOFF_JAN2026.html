@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<title>DEVELOPER_HANDOFF_JAN2026</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 900px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
+h1, h2, h3 { color: #1a1a2e; }
+h1 { border-bottom: 2px solid #e94560; padding-bottom: 10px; }
+h2 { border-bottom: 1px solid #ddd; padding-bottom: 8px; margin-top: 30px; }
+code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+pre { background: #1a1a2e; color: #e0e0e0; padding: 15px; border-radius: 5px; overflow-x: auto; }
+pre code { background: transparent; color: inherit; }
+table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+th { background: #f4f4f4; }
+a { color: #e94560; }
+blockquote { border-left: 4px solid #e94560; margin: 20px 0; padding-left: 20px; color: #666; }
+ul, ol { padding-left: 25px; }
+li { margin: 5px 0; }
+</style>
+</head><body><h1>BenchSight Developer Handoff - January 2026</h1>
+<h2>Executive Summary</h2>
+<p>BenchSight is a hockey analytics platform in active development. This handoff covers the current state, what's working, what needs work, and how to continue development.</p>
+<hr />
+<h2>What Was Delivered</h2>
+<h3>1. Tracker v22 (<code>tracker/tracker_v22.html</code>)</h3>
+<p>Production-ready game tracking interface with:
+- Full Supabase integration (read/write)
+- 12 event types with keyboard shortcuts
+- Puck XY tracking (10 points per event)
+- Player XY tracking
+- Net location picker for shots
+- 6+6 player slots per event
+- Undo/redo (50 steps)
+- Import/export Excel
+- Auto-linking (Shot → Save)
+- Local storage persistence</p>
+<h3>2. Dashboard v4 (<code>dashboard/dashboard_v4.html</code>)</h3>
+<p>NHL-style analytics dashboard with:
+- 6 views (Overview, Box Score, Shot Chart, Players, Advanced, H2H)
+- Real-time Supabase data loading
+- Team comparison visualizations
+- Interactive shot chart with filtering
+- Player cards and stat tables</p>
+<h3>3. Backend API (<code>scripts/tracker_api.py</code>)</h3>
+<p>Python API for tracker operations:
+- CLI interface for all operations
+- HTTP server mode for JavaScript integration
+- Full CRUD for events, shifts, XY data
+- ETL trigger support
+- CSV export functionality</p>
+<h3>4. Documentation</h3>
+<ul>
+<li><code>docs/README.md</code> - Complete project overview</li>
+<li><code>docs/GAMEPLAN.md</code> - Development roadmap</li>
+<li><code>docs/QUICKSTART.md</code> - User quick start guide</li>
+<li><code>docs/handoffs/</code> - Previous handoff documents</li>
+</ul>
+<hr />
+<h2>Technical Architecture</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│                        USER INTERFACE                        │
+├──────────────────────────┬──────────────────────────────────┤
+│    Tracker v22 (HTML)    │      Dashboard v4 (HTML)         │
+│    - Event entry         │      - Analytics views           │
+│    - XY tracking         │      - Shot charts               │
+│    - Shift management    │      - Player stats              │
+└───────────┬──────────────┴────────────────┬─────────────────┘
+            │                                │
+            ▼                                ▼
+┌─────────────────────────────────────────────────────────────┐
+│                     SUPABASE REST API                        │
+│    - fact_events         - fact_puck_xy_long                │
+│    - fact_events_player  - fact_player_xy_long              │
+│    - fact_shifts         - fact_shot_xy                     │
+│    - dim_schedule        - dim_player                       │
+└───────────┬─────────────────────────────────────────────────┘
+            │
+            ▼
+┌─────────────────────────────────────────────────────────────┐
+│                     BACKEND SCRIPTS                          │
+│    tracker_api.py    - API for tracker operations           │
+│    flexible_loader.py - Data loading/ETL                    │
+│    qa_comprehensive.py - Data validation                    │
+└─────────────────────────────────────────────────────────────┘
+</code></pre>
+<hr />
+<h2>Key Files Reference</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Lines</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tracker/tracker_v22.html</code></td>
+<td>~2200</td>
+<td>Production tracker</td>
+</tr>
+<tr>
+<td><code>dashboard/dashboard_v4.html</code></td>
+<td>~800</td>
+<td>Analytics dashboard</td>
+</tr>
+<tr>
+<td><code>scripts/tracker_api.py</code></td>
+<td>~700</td>
+<td>Backend API</td>
+</tr>
+<tr>
+<td><code>scripts/flexible_loader.py</code></td>
+<td>~600</td>
+<td>Supabase loader</td>
+</tr>
+<tr>
+<td><code>docs/README.md</code></td>
+<td>~300</td>
+<td>Documentation</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>Supabase Configuration</h2>
+<pre><code class="language-javascript">const SUPABASE_URL = 'https://uuaowslhpgyiudmbvqze.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // Service role
+</code></pre>
+<h3>Key Tables</h3>
+<ul>
+<li><code>dim_schedule</code> - Game list</li>
+<li><code>dim_player</code> - Player master</li>
+<li><code>fact_gameroster</code> - Game rosters</li>
+<li><code>fact_events</code> - Tracking events</li>
+<li><code>fact_events_player</code> - Player-event links</li>
+<li><code>fact_shifts</code> - Shift tracking</li>
+<li><code>fact_puck_xy_long</code> - Puck positions</li>
+<li><code>fact_shot_xy</code> - Shot details</li>
+<li><code>fact_video</code> - Video links</li>
+</ul>
+<hr />
+<h2>Known Issues</h2>
+<h3>1. ETL Pipeline Incomplete</h3>
+<p>Previous developer deleted substantial code. Stat aggregation tables are not being populated:
+- <code>fact_player_game_stats</code> - Needs calculation logic
+- <code>fact_team_game_stats</code> - Needs calculation logic
+- <code>fact_player_micro_stats</code> - Needs calculation logic</p>
+<p><strong>Workaround:</strong> Stats shown in dashboard are calculated client-side from raw events.</p>
+<h3>2. Video Sync Limitations</h3>
+<p>YouTube iframe API has restrictions. Current implementation:
+- Time sync via offset calculation
+- No programmatic play/pause control</p>
+<h3>3. XY Data Untested in Production</h3>
+<p>Puck and player XY tracking is new. Needs validation:
+- Test with real game tracking
+- Verify Supabase storage
+- Check dashboard visualization</p>
+<hr />
+<h2>Continuing Development</h2>
+<h3>Immediate Priorities</h3>
+<ol>
+<li><strong>Test tracker with real game</strong> - Track game 18969</li>
+<li><strong>Validate Supabase integration</strong> - Push/pull cycle</li>
+<li><strong>Check stat accuracy</strong> - Compare to noradhockey.com</li>
+</ol>
+<h3>Week 2 Priorities</h3>
+<ol>
+<li>Restore stat calculation ETL</li>
+<li>Add QA validation suite</li>
+<li>Test with multiple games</li>
+</ol>
+<h3>Future Enhancements</h3>
+<ul>
+<li>Mobile responsive tracker</li>
+<li>xG model implementation</li>
+<li>Real-time collaboration</li>
+<li>Advanced analytics (WAR, RAPM)</li>
+</ul>
+<hr />
+<h2>Running Locally</h2>
+<pre><code class="language-bash"># 1. Open tracker
+open tracker/tracker_v22.html
+
+# 2. Open dashboard
+open dashboard/dashboard_v4.html
+
+# 3. Run API server (optional)
+pip install supabase --break-system-packages
+python scripts/tracker_api.py --action serve --port 8765
+</code></pre>
+<hr />
+<h2>Code Patterns</h2>
+<h3>Tracker State Management</h3>
+<pre><code class="language-javascript">const S = {
+  gameId: null,
+  events: [],
+  shifts: [],
+  evt: {
+    type: null,
+    puckXYPoints: [],
+    playerXYPoints: [],
+    eventPlayers: [null,null,null,null,null,null],
+    // ...
+  }
+};
+</code></pre>
+<h3>Supabase API Calls</h3>
+<pre><code class="language-javascript">async function sbFetch(table, query = '') {
+  const resp = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${query}`, {
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+  });
+  return resp.json();
+}
+</code></pre>
+<h3>Event Data Format</h3>
+<pre><code class="language-javascript">{
+  event_index: 1001,
+  period: 1,
+  event_type_: 'Shot',
+  event_detail_: 'Shot_Wrist',
+  event_successful_: 's',
+  player_game_number_: 17,
+  xy_x: 175.5,
+  xy_y: 42.0,
+  net_location: 'GH'
+}
+</code></pre>
+<hr />
+<h2>Delivery Checklist</h2>
+<ul>
+<li>[x] tracker_v22.html - Production tracker</li>
+<li>[x] dashboard_v4.html - Analytics dashboard</li>
+<li>[x] tracker_api.py - Backend API</li>
+<li>[x] README.md - Documentation</li>
+<li>[x] GAMEPLAN.md - Development roadmap</li>
+<li>[x] QUICKSTART.md - User guide</li>
+<li>[x] All files in /mnt/user-data/outputs/</li>
+</ul>
+<hr />
+<h2>Contact</h2>
+<p>For questions:
+1. Review documentation first
+2. Check code comments
+3. Test with sample data
+4. Document any issues found</p>
+<hr />
+<p><em>Handoff Date: January 1, 2026</em>
+<em>Version: v22</em></p></body></html>

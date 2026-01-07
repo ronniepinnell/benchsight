@@ -1,6 +1,21 @@
-# BenchSight Admin Portal Requirements
+# BenchSight Hockey Analytics Platform
 # Install with: pip install -r requirements.txt
 
-flask>=2.0.0
+# Core
 pandas>=1.5.0
+
+# Web scraping (for norad_scraper.py)
+requests>=2.28.0
+beautifulsoup4>=4.11.0
+
+# Excel support (for tracker exports)
 openpyxl>=3.0.0
+
+# API Server
+flask>=2.0.0
+flask-cors>=4.0.0
+werkzeug>=2.0.0
+
+# Testing
+pytest>=7.0.0
+pytest-cov>=4.0.0

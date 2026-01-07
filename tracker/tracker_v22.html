@@ -1,0 +1,1844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BenchSight Tracker Pro v22</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root {
+  --bg: #0a0e14; --bg2: #0d1117; --card: #111820; --card2: #161d27; --border: #1e2a36;
+  --text: #e0e0e0; --muted: #6b7280; --accent: #3b82f6; --accent2: #60a5fa;
+  --home: #22c55e; --away: #ef4444; --success: #22c55e; --fail: #ef4444;
+  --warn: #f59e0b; --input: #1a2332; --hover: #243040;
+  --puck: #ef4444; --player: #3b82f6;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); font-size: 11px; height: 100vh; overflow: hidden; }
+button { cursor: pointer; font-family: inherit; }
+select, input { font-family: inherit; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* Layout */
+.app { display: grid; grid-template-rows: 38px 1fr 22px; height: 100vh; }
+
+/* Header */
+header { display: flex; align-items: center; gap: 6px; padding: 0 8px; background: linear-gradient(90deg, var(--card) 0%, var(--card2) 100%); border-bottom: 1px solid var(--border); }
+header h1 { font-size: 12px; color: var(--accent); font-weight: 700; display: flex; align-items: center; gap: 4px; }
+header select, header button { background: var(--input); border: 1px solid var(--border); color: var(--text); padding: 4px 8px; border-radius: 4px; font-size: 10px; }
+header button:hover { background: var(--hover); }
+.hdr-sep { width: 1px; height: 18px; background: var(--border); margin: 0 2px; }
+.spacer { flex: 1; }
+#status { font-size: 9px; color: var(--muted); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.btn-sm { padding: 3px 6px !important; font-size: 9px !important; }
+.btn-green { background: var(--success) !important; color: #000 !important; font-weight: 600; }
+.btn-orange { background: var(--warn) !important; color: #000 !important; font-weight: 600; }
+.btn-blue { background: var(--accent) !important; color: #fff !important; }
+.btn-red { background: var(--fail) !important; color: #fff !important; }
+
+/* Main 3-column */
+.main { display: grid; grid-template-columns: 170px 1fr 280px; gap: 4px; padding: 4px; overflow: hidden; }
+
+/* Panels */
+.panel { background: var(--card); border-radius: 5px; padding: 6px; display: flex; flex-direction: column; overflow: hidden; }
+.panel h3 { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: flex; align-items: center; gap: 4px; }
+.panel h3 .badge { background: var(--accent); color: #fff; padding: 1px 4px; border-radius: 6px; font-size: 8px; }
+
+/* Left Column */
+.left { display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
+
+/* Team Toggle */
+.team-row { display: flex; gap: 2px; }
+.team-btn { flex: 1; padding: 5px 3px; border: none; border-radius: 4px; font-weight: 700; font-size: 9px; opacity: 0.35; transition: all 0.15s; }
+.team-btn.home { background: var(--home); color: #000; }
+.team-btn.away { background: var(--away); color: #fff; }
+.team-btn.active { opacity: 1; box-shadow: 0 0 0 2px #fff; }
+
+/* Period */
+.period-row { display: flex; gap: 2px; margin-top: 3px; }
+.period-btn { flex: 1; padding: 3px; background: var(--input); border: 1px solid var(--border); border-radius: 3px; font-size: 9px; text-align: center; color: var(--text); }
+.period-btn:hover { background: var(--hover); }
+.period-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* On-Ice Slots */
+.slots-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-top: 4px; }
+.slot { background: var(--input); border: 2px solid var(--border); border-radius: 4px; padding: 2px; text-align: center; cursor: pointer; min-height: 32px; transition: all 0.1s; }
+.slot:hover { border-color: var(--accent2); }
+.slot.active { border-color: var(--accent); background: #1a3050; }
+.slot.filled { border-color: var(--success); }
+.slot .lbl { font-size: 7px; color: var(--muted); text-transform: uppercase; }
+.slot .num { font-size: 12px; font-weight: 700; color: var(--accent); }
+
+/* Roster */
+.roster-panel { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+.roster { flex: 1; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 2px; align-content: flex-start; padding: 2px 0; }
+.player { display: inline-flex; align-items: center; gap: 2px; padding: 2px 4px; background: var(--input); border: 1px solid var(--border); border-radius: 3px; font-size: 9px; cursor: pointer; transition: all 0.1s; }
+.player:hover { border-color: var(--accent); background: var(--hover); }
+.player.on-ice { background: var(--success); color: #000; border-color: var(--success); font-weight: 600; }
+.player.evt-player { background: var(--accent); color: #fff; border-color: var(--accent); }
+.player.opp-player { background: var(--warn); color: #000; border-color: var(--warn); }
+.player .n { font-weight: 700; }
+.player .pos { font-size: 7px; color: var(--muted); }
+
+/* Center Column */
+.center { display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
+
+/* Video */
+.video-panel { display: flex; flex-direction: column; gap: 3px; }
+.camera-tabs { display: flex; gap: 2px; }
+.cam-tab { flex: 1; padding: 3px; background: var(--input); border: 1px solid var(--border); border-radius: 3px 3px 0 0; font-size: 8px; text-align: center; color: var(--muted); }
+.cam-tab:hover { background: var(--hover); }
+.cam-tab.active { background: var(--card2); color: var(--text); border-bottom-color: var(--card2); }
+.video-box { background: #000; border-radius: 0 0 5px 5px; height: 130px; position: relative; }
+.video-box iframe { width: 100%; height: 100%; border: none; }
+.video-placeholder { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--muted); font-size: 10px; }
+.video-url-row { display: flex; gap: 3px; }
+.video-url-row input { flex: 1; padding: 4px 6px; background: var(--input); border: 1px solid var(--border); border-radius: 3px; color: var(--text); font-size: 9px; }
+.video-url-row button { padding: 4px 8px; font-size: 8px; }
+
+/* Clock */
+.clock-row { display: flex; gap: 6px; align-items: center; padding: 5px 8px; background: var(--card2); border-radius: 5px; }
+.clock-big { font-family: 'SF Mono', Monaco, 'Courier New', monospace; font-size: 22px; font-weight: 700; color: var(--accent); min-width: 65px; }
+.time-inp { display: flex; flex-direction: column; gap: 1px; }
+.time-inp label { font-size: 7px; color: var(--muted); text-transform: uppercase; }
+.time-inp input { width: 50px; padding: 3px; background: var(--bg); border: 1px solid var(--border); border-radius: 3px; color: var(--text); font-family: monospace; font-size: 10px; text-align: center; }
+.video-time { font-family: monospace; font-size: 9px; color: var(--warn); margin-left: auto; }
+.clock-btns { display: flex; gap: 2px; }
+.clock-btns button { padding: 3px 6px; font-size: 8px; }
+
+/* Rink */
+.rink-section { display: flex; gap: 4px; }
+.rink-box { flex: 1; background: var(--card2); border-radius: 5px; padding: 5px; display: flex; flex-direction: column; }
+.xy-mode-toggle { display: flex; gap: 2px; margin-bottom: 3px; align-items: center; }
+.xy-mode-btn { padding: 2px 6px; background: var(--input); border: 1px solid var(--border); border-radius: 3px; font-size: 8px; color: var(--text); }
+.xy-mode-btn:hover { background: var(--hover); }
+.xy-mode-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.xy-mode-btn.puck.active { background: var(--puck); }
+.xy-mode-btn.player.active { background: var(--player); }
+.rink-svg { width: 100%; cursor: crosshair; }
+.xy-info { font-size: 8px; color: var(--muted); margin-top: 2px; text-align: center; }
+.xy-points-section { margin-top: 4px; padding: 4px; background: var(--input); border-radius: 3px; max-height: 60px; overflow-y: auto; }
+.xy-points-label { font-size: 7px; color: var(--muted); margin-bottom: 2px; display: flex; align-items: center; gap: 4px; }
+.xy-points-row { display: flex; flex-wrap: wrap; gap: 2px; }
+.xy-point { padding: 1px 4px; background: var(--bg); border: 1px solid var(--border); border-radius: 2px; font-size: 7px; font-family: monospace; cursor: pointer; }
+.xy-point:hover { border-color: var(--fail); }
+.xy-point.puck { background: #4c1515; border-color: var(--puck); color: #fca5a5; }
+.xy-point.player { background: #1e3a5f; border-color: var(--player); color: #93c5fd; }
+
+/* Net Target */
+.net-box { width: 80px; background: var(--card2); border-radius: 5px; padding: 4px; display: flex; flex-direction: column; align-items: center; }
+.net-box h4 { font-size: 7px; color: var(--muted); margin-bottom: 3px; }
+.net-svg { width: 100%; cursor: pointer; }
+.net-info { font-size: 7px; color: var(--muted); text-align: center; margin-top: 2px; }
+
+/* Events List */
+.events-panel { flex: 1; min-height: 0; }
+.events-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+.events-header button { padding: 2px 5px; font-size: 7px; }
+.event-list { flex: 1; overflow-y: auto; font-size: 9px; }
+.event-row { display: grid; grid-template-columns: 28px 42px 50px 1fr 24px 18px; gap: 2px; padding: 3px 2px; border-bottom: 1px solid var(--border); cursor: pointer; align-items: center; }
+.event-row:hover { background: var(--hover); }
+.event-row.selected { background: var(--accent); color: #fff; }
+.event-row.linked { border-left: 2px solid var(--warn); padding-left: 4px; }
+.event-row.editing { background: #2a3a50; border: 1px solid var(--accent); }
+.event-row .idx { font-family: monospace; color: var(--muted); font-size: 8px; }
+.event-row .time { font-family: monospace; font-size: 7px; }
+.event-row .type { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 8px; }
+.event-row .players { color: var(--muted); font-size: 7px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.event-row .zone { font-size: 7px; text-align: center; }
+.event-row .del { color: var(--fail); cursor: pointer; opacity: 0.3; text-align: center; font-size: 10px; }
+.event-row .del:hover { opacity: 1; }
+
+/* Stats Bar */
+.stats-bar { display: flex; gap: 8px; padding: 4px 6px; background: var(--card2); border-radius: 4px; font-size: 8px; flex-wrap: wrap; }
+.stat { display: flex; gap: 2px; }
+.stat .l { color: var(--muted); }
+.stat .v { font-weight: 600; color: var(--accent); }
+.stat.home .v { color: var(--home); }
+.stat.away .v { color: var(--away); }
+
+/* Right Column */
+.right { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; }
+
+/* Event Type Grid */
+.evt-types { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; }
+.evt-btn { padding: 5px 2px; display: flex; flex-direction: column; align-items: center; gap: 1px; background: var(--input); border: 2px solid var(--border); border-radius: 3px; transition: all 0.1s; }
+.evt-btn:hover { border-color: var(--accent); background: var(--hover); }
+.evt-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.evt-btn span { font-size: 8px; font-weight: 600; }
+.evt-btn kbd { font-size: 6px; color: var(--muted); background: var(--bg); padding: 0 2px; border-radius: 2px; }
+.evt-btn.active kbd { color: #fff; background: rgba(255,255,255,0.2); }
+
+/* Form */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin-top: 3px; }
+.form-row.tri { grid-template-columns: 1fr 1fr 1fr; }
+.form-row.quad { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 1px; }
+.form-group label { font-size: 7px; color: var(--muted); text-transform: uppercase; }
+.form-group select, .form-group input { background: var(--input); border: 1px solid var(--border); color: var(--text); padding: 4px; border-radius: 3px; font-size: 9px; }
+.form-group select:focus, .form-group input:focus { outline: none; border-color: var(--accent); }
+
+/* Success Toggle */
+.success-row { display: flex; gap: 2px; }
+.suc-btn { flex: 1; padding: 5px; border: 2px solid var(--border); border-radius: 3px; background: var(--input); font-weight: 700; font-size: 10px; text-align: center; }
+.suc-btn:hover { background: var(--hover); }
+.suc-btn.s.active { background: var(--success); color: #000; border-color: var(--success); }
+.suc-btn.u.active { background: var(--fail); color: #fff; border-color: var(--fail); }
+
+/* Link Row */
+.link-row { display: flex; gap: 2px; align-items: center; padding: 4px; background: var(--card2); border-radius: 3px; margin-top: 3px; }
+.link-row label { font-size: 7px; color: var(--muted); white-space: nowrap; }
+.link-row select { flex: 1; font-size: 8px; max-width: 100px; }
+.link-row button { padding: 3px 6px; font-size: 7px; }
+.auto-link { font-size: 7px; color: var(--warn); margin-left: auto; }
+
+/* Player Slots */
+.players-section { margin-top: 4px; }
+.players-section h4 { font-size: 7px; color: var(--muted); margin-bottom: 2px; display: flex; justify-content: space-between; align-items: center; }
+.player-slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+.player-slot { background: var(--input); border: 1px solid var(--border); border-radius: 3px; padding: 3px; text-align: center; cursor: pointer; min-height: 28px; display: flex; flex-direction: column; justify-content: center; }
+.player-slot:hover { border-color: var(--accent); }
+.player-slot.filled { background: var(--accent); color: #fff; border-color: var(--accent); }
+.player-slot.opp.filled { background: var(--warn); color: #000; border-color: var(--warn); }
+.player-slot .role { font-size: 6px; color: var(--muted); }
+.player-slot.filled .role { color: rgba(255,255,255,0.7); }
+.player-slot .num { font-size: 10px; font-weight: 700; }
+
+/* Action Buttons */
+.action-row { display: flex; gap: 3px; margin-top: 4px; }
+.action-row button { flex: 1; padding: 8px; border: none; border-radius: 4px; font-weight: 600; font-size: 10px; }
+.action-row .save { background: var(--success); color: #000; }
+.action-row .save:hover { background: #16a34a; }
+.action-row .clear { background: var(--input); color: var(--text); border: 1px solid var(--border); }
+.action-row .clear:hover { background: var(--hover); }
+.action-row .update { background: var(--accent); color: #fff; }
+.action-row .undo { background: var(--warn); color: #000; }
+
+/* Shift Panel */
+.shift-panel { padding: 5px; background: var(--card2); border-radius: 4px; margin-top: 3px; }
+.shift-panel h4 { font-size: 7px; color: var(--muted); margin-bottom: 3px; display: flex; justify-content: space-between; align-items: center; }
+.shift-info { display: flex; gap: 3px; flex-wrap: wrap; font-size: 8px; align-items: center; }
+.shift-info input { width: 45px; padding: 2px; font-size: 8px; }
+.shift-info select { flex: 1; min-width: 70px; font-size: 8px; padding: 2px; }
+.shift-btns { display: flex; gap: 2px; margin-top: 3px; }
+.shift-btns button { flex: 1; padding: 4px; font-size: 8px; }
+
+/* Footer */
+footer { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 0 8px; background: var(--card); border-top: 1px solid var(--border); font-size: 8px; color: var(--muted); }
+footer kbd { background: var(--input); padding: 0 3px; border-radius: 2px; margin: 0 1px; font-size: 7px; }
+
+/* Modal */
+.modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; }
+.modal-bg.show { display: flex; }
+.modal { background: var(--card); border-radius: 8px; padding: 16px; max-width: 700px; width: 95%; max-height: 85vh; overflow-y: auto; }
+.modal h3 { margin-bottom: 12px; font-size: 14px; }
+.modal-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+.modal-row label { width: 100px; font-size: 10px; color: var(--muted); }
+.modal-row input, .modal-row select { flex: 1; padding: 6px; background: var(--input); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 10px; }
+.modal-actions { display: flex; gap: 8px; margin-top: 16px; justify-content: flex-end; }
+.modal-actions button { padding: 8px 16px; border-radius: 4px; font-size: 11px; }
+.modal table { width: 100%; font-size: 9px; border-collapse: collapse; }
+.modal th, .modal td { padding: 4px 6px; border: 1px solid var(--border); text-align: left; }
+.modal th { background: var(--input); }
+
+/* Toast */
+.toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--card); padding: 10px 20px; border-radius: 6px; border: 1px solid var(--border); font-size: 11px; z-index: 2000; display: none; }
+.toast.show { display: block; animation: fadeIn 0.2s; }
+.toast.success { border-color: var(--success); }
+.toast.error { border-color: var(--fail); }
+@keyframes fadeIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+/* Loading */
+.loading { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px; }
+.loading.hidden { display: none; }
+.spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="loading hidden" id="loading">
+  <div class="spinner"></div>
+  <div id="loadingText">Loading...</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="app">
+<!-- HEADER -->
+<header>
+  <h1>🏒 BenchSight Pro</h1>
+  <div class="hdr-sep"></div>
+  <select id="gameSelect" style="width:160px"><option value="">-- Select Game --</option></select>
+  <button onclick="loadGame()" class="btn-blue btn-sm">Load</button>
+  <button onclick="showNewGameModal()" class="btn-green btn-sm">+ New</button>
+  <button onclick="showImportModal()" class="btn-sm">📁 Import</button>
+  <div class="hdr-sep"></div>
+  <button onclick="syncFromSupabase()" class="btn-sm">↓ Pull</button>
+  <button onclick="pushToSupabase()" class="btn-blue btn-sm">↑ Push</button>
+  <button onclick="triggerETL()" class="btn-orange btn-sm">⚙ ETL</button>
+  <span class="spacer"></span>
+  <span id="status">Ready</span>
+  <button onclick="undo()" class="btn-sm" title="Undo (Ctrl+Z)">↩</button>
+  <button onclick="redo()" class="btn-sm" title="Redo (Ctrl+Y)">↪</button>
+  <button onclick="saveLocal()" class="btn-sm">💾</button>
+  <button onclick="exportXLSX()" class="btn-orange btn-sm">📥</button>
+</header>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- LEFT -->
+<div class="left">
+  <div class="panel">
+    <div class="team-row">
+      <button class="team-btn home active" onclick="setTeam('home')" id="homeBtn">HOME</button>
+      <button class="team-btn away" onclick="setTeam('away')" id="awayBtn">AWAY</button>
+    </div>
+    <div class="period-row" id="periodRow"></div>
+    <div class="slots-grid" id="slotsGrid"></div>
+  </div>
+  
+  <div class="panel roster-panel">
+    <h3>Roster <span class="badge" id="rosterCount">0</span></h3>
+    <div class="roster" id="rosterList"></div>
+  </div>
+</div>
+
+<!-- CENTER -->
+<div class="center">
+  <div class="panel video-panel">
+    <div class="camera-tabs" id="cameraTabs"><div class="cam-tab active">No Video</div></div>
+    <div class="video-box" id="videoBox">
+      <div class="video-placeholder">📹 Load game to see video</div>
+    </div>
+    <div class="video-url-row">
+      <input type="text" id="videoUrl" placeholder="YouTube URL...">
+      <button onclick="loadVideoManual()">Load</button>
+      <button onclick="captureVideoTime()" title="Sync clock to video">⏱</button>
+      <button onclick="jumpToTime()" title="Jump to current time">▶</button>
+    </div>
+  </div>
+  
+  <div class="panel">
+    <div class="clock-row">
+      <div class="clock-big" id="clockDisplay">20:00</div>
+      <div class="time-inp"><label>Start</label><input type="text" id="timeS" value="20:00" onchange="onTimeChange()"></div>
+      <div class="time-inp"><label>End</label><input type="text" id="timeE" value="20:00"></div>
+      <div class="clock-btns">
+        <button onclick="copyTimeDown()">⬇</button>
+        <button onclick="decrementClock()">-1s</button>
+      </div>
+      <div class="video-time">🎬 <span id="videoTimeDisplay">0s</span></div>
+    </div>
+  </div>
+  
+  <div class="rink-section">
+    <div class="rink-box">
+      <div class="xy-mode-toggle">
+        <button id="xyModePuck" class="xy-mode-btn puck active" onclick="setXYMode('puck')">🏒 Puck</button>
+        <button id="xyModePlayer" class="xy-mode-btn player" onclick="setXYMode('player')">👤 Player</button>
+        <button onclick="clearAllXY()" style="margin-left:auto;font-size:7px;padding:2px 4px">Clear</button>
+      </div>
+      <svg class="rink-svg" id="rinkSvg" viewBox="0 0 200 85" onclick="onRinkClick(event)">
+        <defs>
+          <linearGradient id="iceGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#f0f4f8"/>
+            <stop offset="100%" style="stop-color:#dce4ec"/>
+          </linearGradient>
+        </defs>
+        <rect x="0" y="0" width="200" height="85" fill="url(#iceGrad)" stroke="#64748b" stroke-width="1" rx="15"/>
+        <line x1="100" y1="0" x2="100" y2="85" stroke="#dc2626" stroke-width="2"/>
+        <line x1="25" y1="0" x2="25" y2="85" stroke="#2563eb" stroke-width="1.5"/>
+        <line x1="175" y1="0" x2="175" y2="85" stroke="#2563eb" stroke-width="1.5"/>
+        <circle cx="100" cy="42.5" r="15" fill="none" stroke="#2563eb" stroke-width="1"/>
+        <circle cx="100" cy="42.5" r="2" fill="#2563eb"/>
+        <circle cx="31" cy="21" r="15" fill="none" stroke="#dc2626" stroke-width="0.7"/>
+        <circle cx="31" cy="64" r="15" fill="none" stroke="#dc2626" stroke-width="0.7"/>
+        <circle cx="169" cy="21" r="15" fill="none" stroke="#dc2626" stroke-width="0.7"/>
+        <circle cx="169" cy="64" r="15" fill="none" stroke="#dc2626" stroke-width="0.7"/>
+        <rect x="0" y="37" width="4" height="11" fill="#dc2626" rx="1"/>
+        <rect x="196" y="37" width="4" height="11" fill="#dc2626" rx="1"/>
+        <text x="10" y="44" font-size="5" fill="#64748b">DZ</text>
+        <text x="96" y="44" font-size="5" fill="#64748b">NZ</text>
+        <text x="183" y="44" font-size="5" fill="#64748b">OZ</text>
+        <g id="xyMarkers"></g>
+      </svg>
+      <div class="xy-info">XY: <span id="xyText">Click rink</span> | Zone: <span id="zoneText">-</span></div>
+      <div class="xy-points-section">
+        <div class="xy-points-label">🏒 Puck (<span id="puckCount">0</span>/10)</div>
+        <div class="xy-points-row" id="puckXYRow"></div>
+        <div class="xy-points-label" style="margin-top:3px">👤 Player</div>
+        <div class="xy-points-row" id="playerXYRow"></div>
+      </div>
+    </div>
+    <div class="net-box" id="netBox" style="display:none">
+      <h4>Shot Target</h4>
+      <svg class="net-svg" id="netSvg" viewBox="0 0 72 48" onclick="onNetClick(event)">
+        <rect x="0" y="0" width="72" height="48" fill="#1e293b" stroke="#475569" stroke-width="1" rx="2"/>
+        <line x1="0" y1="24" x2="72" y2="24" stroke="#334155" stroke-width="0.5"/>
+        <line x1="24" y1="0" x2="24" y2="48" stroke="#334155" stroke-width="0.5"/>
+        <line x1="48" y1="0" x2="48" y2="48" stroke="#334155" stroke-width="0.5"/>
+        <text x="6" y="14" font-size="6" fill="#64748b">GH</text>
+        <text x="30" y="14" font-size="6" fill="#64748b">TM</text>
+        <text x="54" y="14" font-size="6" fill="#64748b">BH</text>
+        <text x="6" y="38" font-size="6" fill="#64748b">GL</text>
+        <text x="30" y="38" font-size="6" fill="#64748b">5H</text>
+        <text x="54" y="38" font-size="6" fill="#64748b">BL</text>
+        <g id="netMarker"></g>
+      </svg>
+      <div class="net-info" id="netInfo">-</div>
+    </div>
+  </div>
+  
+  <div class="panel events-panel">
+    <div class="events-header">
+      <h3>Events <span class="badge" id="evtCount">0</span></h3>
+      <div>
+        <button onclick="editSelectedEvent()">✏</button>
+        <button onclick="duplicateEvent()">📋</button>
+        <button onclick="scrollToLatest()">⬇</button>
+      </div>
+    </div>
+    <div class="event-list" id="eventList"></div>
+  </div>
+  
+  <div class="stats-bar">
+    <div class="stat home"><span class="l">H:</span><span class="v" id="statHomeG">0</span></div>
+    <div class="stat away"><span class="l">A:</span><span class="v" id="statAwayG">0</span></div>
+    <div class="stat"><span class="l">Shots:</span><span class="v" id="statShots">0</span></div>
+    <div class="stat"><span class="l">FO:</span><span class="v" id="statFO">0</span></div>
+    <div class="stat"><span class="l">Shifts:</span><span class="v" id="statShifts">0</span></div>
+    <div class="stat"><span class="l">XY:</span><span class="v" id="statXY">0</span></div>
+  </div>
+</div>
+
+<!-- RIGHT -->
+<div class="right">
+  <div class="panel" style="flex:1">
+    <h3>Event <span id="editingLabel" style="color:var(--warn);display:none">✏ #<span id="editingIdx"></span></span></h3>
+    
+    <div class="evt-types" id="evtTypesGrid"></div>
+    
+    <div class="form-row">
+      <div class="form-group"><label>Detail 1</label><select id="detail1"><option value="">--</option></select></div>
+      <div class="form-group"><label>Detail 2</label><select id="detail2"><option value="">--</option></select></div>
+    </div>
+    
+    <div class="form-row">
+      <div class="form-group"><label>Play Detail</label><select id="playDetail1"><option value="">--</option></select></div>
+      <div class="form-group"><label>Play Detail 2</label><select id="playDetail2"><option value="">--</option></select></div>
+    </div>
+    
+    <div class="form-row quad">
+      <div class="form-group"><label>Zone</label>
+        <select id="zoneSelect" onchange="S.evt.zone=this.value">
+          <option value="n">N</option>
+          <option value="o">O</option>
+          <option value="d">D</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Success</label>
+        <div class="success-row">
+          <button class="suc-btn s active" onclick="setSuccess('s')" id="sucBtnS">✓</button>
+          <button class="suc-btn u" onclick="setSuccess('u')" id="sucBtnU">✗</button>
+        </div>
+      </div>
+      <div class="form-group"><label>Press</label>
+        <select id="pressure"><option value="">-</option><option value="1">Y</option><option value="0">N</option></select>
+      </div>
+      <div class="form-group"><label>P.Suc</label>
+        <select id="playSuccess"><option value="">-</option><option value="s">✓</option><option value="u">✗</option></select>
+      </div>
+    </div>
+    
+    <div class="link-row">
+      <label>Link:</label>
+      <select id="linkTo"><option value="">None</option></select>
+      <button onclick="linkToPrev()">⬆Prev</button>
+      <span class="auto-link" id="autoLinkHint"></span>
+    </div>
+    
+    <div class="players-section">
+      <h4>Event Team (1-6) <button onclick="clearEventPlayers()" style="font-size:6px;padding:1px 3px">Clear</button></h4>
+      <div class="player-slots" id="eventPlayerSlots"></div>
+    </div>
+    
+    <div class="players-section">
+      <h4>Opponent (1-6) <button onclick="clearOppPlayers()" style="font-size:6px;padding:1px 3px">Clear</button></h4>
+      <div class="player-slots opp" id="oppPlayerSlots"></div>
+    </div>
+    
+    <div class="action-row">
+      <button class="undo" onclick="undo()" style="flex:0.5">↩</button>
+      <button class="clear" onclick="clearEventForm()">Clear</button>
+      <button class="save" onclick="saveEvent()" id="saveBtn">Save ⏎</button>
+      <button class="update" onclick="updateEvent()" id="updateBtn" style="display:none">Update</button>
+    </div>
+  </div>
+  
+  <div class="panel shift-panel">
+    <h4>Shift #<span id="shiftNum">1</span> <button onclick="showShiftEditor()" style="font-size:6px;padding:1px 3px">Edit All</button></h4>
+    <div class="shift-info">
+      <input type="text" id="shiftStart" placeholder="Start" value="20:00">
+      <span>→</span>
+      <input type="text" id="shiftEnd" placeholder="End">
+      <select id="shiftType">
+        <option value="GameStart">Start</option>
+        <option value="OtherFaceoff">FO</option>
+        <option value="Icing">Icing</option>
+        <option value="Offside">Off</option>
+        <option value="Penalty">Pen</option>
+        <option value="Goal">Goal</option>
+        <option value="">Fly</option>
+      </select>
+    </div>
+    <div class="shift-btns">
+      <button onclick="endCurrentShift()">End</button>
+      <button onclick="newShift()" class="btn-green">+ New</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <kbd>F</kbd>ace <kbd>S</kbd>hot <kbd>G</kbd>oal <kbd>V</kbd>Save <kbd>P</kbd>ass <kbd>T</kbd>urn <kbd>Z</kbd>Entry <kbd>X</kbd>Exit <kbd>H</kbd>it <kbd>B</kbd>lock |
+  <kbd>Space</kbd>=Suc <kbd>Enter</kbd>=Save <kbd>1-4</kbd>=Period <kbd>Esc</kbd>=Clear <kbd>Ctrl+Z</kbd>=Undo
+</footer>
+
+</div>
+
+<!-- MODALS -->
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)hideModal()">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<script>
+// =============================================================================
+// CONFIG
+// =============================================================================
+const SUPABASE_URL = 'https://uuaowslhpgyiudmbvqze.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1YW93c2xocGd5aXVkbWJ2cXplIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2Njg1NDk4NywiZXhwIjoyMDgyNDMwOTg3fQ.BV5d03x9Hv83XZsveGdU7k7D7gAZ7Yi1tqNB7DeDkrM';
+
+// =============================================================================
+// STATE
+// =============================================================================
+const S = {
+  gameId: null,
+  game: null,
+  period: 1,
+  team: 'home',
+  playerSlotMode: 'event',
+  activePlayerSlot: 0,
+  events: [],
+  shifts: [],
+  currentShiftIdx: 1,
+  onIce: { home: {F1:null,F2:null,F3:null,D1:null,D2:null,G:null}, away: {F1:null,F2:null,F3:null,D1:null,D2:null,G:null} },
+  roster: { home: [], away: [] },
+  selectedSlot: null,
+  selectedEventIdx: null,
+  editingEventIdx: null,
+  evt: {
+    type: null, detail1: '', detail2: '', playDetail1: '', playDetail2: '', playSuccess: '',
+    zone: 'n', success: 's', pressure: '', linkedTo: null,
+    eventPlayers: [null,null,null,null,null,null],
+    oppPlayers: [null,null,null,null,null,null],
+    puckXYPoints: [],
+    playerXYPoints: [],
+    netLocation: null
+  },
+  puckXYData: [],
+  playerXYData: [],
+  shotXYData: [],
+  videos: [],
+  activeCamera: 0,
+  videoOffset: 0,
+  xyMode: 'puck',
+  // Undo/redo
+  history: [],
+  historyIdx: -1,
+  maxHistory: 50,
+  // Reference data
+  ref: { schedule: [], players: [], rosters: [], playDetails: [], playDetails2: [] }
+};
+
+const EVENT_TYPES = [
+  { key: 'Faceoff', label: 'Face', kbd: 'F', d1: ['Faceoff_GameStart','Faceoff_AfterGoal','Faceoff_AfterIcing','Faceoff_AfterOffside','Faceoff_AfterPenalty'], d2: [], autoLink: null },
+  { key: 'Shot', label: 'Shot', kbd: 'S', d1: ['Shot_Wrist','Shot_Slap','Shot_Snap','Shot_Backhand','Shot_Tip'], d2: ['Shot-OnNet','Shot-Blocked','Shot-Missed','Shot Goal'], autoLink: 'Save', showNet: true },
+  { key: 'Goal', label: 'Goal', kbd: 'G', d1: ['Goal_EvenStrength','Goal_PowerPlay','Goal_ShortHanded','Goal_EmptyNet'], d2: ['Goal Scored'], autoLink: null, showNet: true },
+  { key: 'Save', label: 'Save', kbd: 'V', d1: ['Save_Glove','Save_Blocker','Save_Pad','Save_Body','Save_Stick'], d2: ['Save-Rebound','Save-Freeze','Save-Cover'], autoLink: null },
+  { key: 'Pass', label: 'Pass', kbd: 'P', d1: ['Pass_Completed','Pass_Incomplete','Pass_Intercepted'], d2: ['Pass-Forehand','Pass-Backhand','Pass-Saucer','Pass-Bank'], autoLink: null },
+  { key: 'Turnover', label: 'Turn', kbd: 'T', d1: ['Turnover_Giveaway','Turnover_Takeaway','Turnover_LostBattle'], d2: ['Giveaway-BadPass','Takeaway-Stick'], autoLink: null },
+  { key: 'Zone_Entry', label: 'Entry', kbd: 'Z', d1: ['ZoneEntry-Carry','ZoneEntry-Pass','ZoneEntry-DumpIn','ZoneEntry-DumpChase'], d2: ['Entry-Controlled','Entry-Uncontrolled'], autoLink: null },
+  { key: 'Zone_Exit', label: 'Exit', kbd: 'X', d1: ['ZoneExit-Carry','ZoneExit-Pass','ZoneExit-Clear','ZoneExit-Dump'], d2: ['Exit-Clean','Exit-Pressured'], autoLink: null },
+  { key: 'Hit', label: 'Hit', kbd: 'H', d1: ['Hit_Body','Hit_Stick','Hit_Board'], d2: ['Hit-Clean','Hit-Penalty'], autoLink: null },
+  { key: 'Block', label: 'Block', kbd: 'B', d1: ['Block_Shot','Block_Pass'], d2: [], autoLink: null },
+  { key: 'Retrieval', label: 'Retr', kbd: 'R', d1: ['Retrieval_Board','Retrieval_Corner','Retrieval_Slot'], d2: [], autoLink: null },
+  { key: 'Stoppage', label: 'Stop', kbd: 'W', d1: ['Stoppage_Whistle','Stoppage_Icing','Stoppage_Offside','Stoppage_Penalty'], d2: [], autoLink: null }
+];
+
+const NET_LOCATIONS = [
+  { code: 'GH', name: 'Glove High', x: 18, y: 12 },
+  { code: 'TM', name: 'Top Mid', x: 36, y: 8 },
+  { code: 'BH', name: 'Blocker High', x: 54, y: 12 },
+  { code: 'GL', name: 'Glove Low', x: 18, y: 36 },
+  { code: '5H', name: 'Five Hole', x: 36, y: 40 },
+  { code: 'BL', name: 'Blocker Low', x: 54, y: 36 }
+];
+
+// =============================================================================
+// INIT
+// =============================================================================
+async function init() {
+  showLoading('Initializing...');
+  buildUI();
+  setupKeyboard();
+  await loadReferenceData();
+  loadLocalGames();
+  hideLoading();
+  toast('Ready', 'success');
+}
+
+function buildUI() {
+  // Periods
+  document.getElementById('periodRow').innerHTML = [1,2,3,4].map(p => 
+    `<button class="period-btn ${p===1?'active':''}" onclick="setPeriod(${p})">${p===4?'OT':'P'+p}</button>`
+  ).join('');
+  
+  // Event types
+  document.getElementById('evtTypesGrid').innerHTML = EVENT_TYPES.map(et =>
+    `<button class="evt-btn" data-type="${et.key}" onclick="setEventType('${et.key}')"><span>${et.label}</span><kbd>${et.kbd}</kbd></button>`
+  ).join('');
+  
+  // On-ice slots
+  const slotLabels = { F1: 'LW', F2: 'C', F3: 'RW', D1: 'LD', D2: 'RD', G: 'G' };
+  document.getElementById('slotsGrid').innerHTML = Object.entries(slotLabels).map(([s, lbl]) =>
+    `<div class="slot" data-slot="${s}" onclick="selectIceSlot('${s}')"><div class="lbl">${lbl}</div><div class="num" id="slot${s}">-</div></div>`
+  ).join('');
+  
+  // Player slots
+  document.getElementById('eventPlayerSlots').innerHTML = [1,2,3,4,5,6].map(i =>
+    `<div class="player-slot" id="evtP${i}" onclick="activatePlayerSlot('event',${i-1})"><div class="role">P${i}</div><div class="num">-</div></div>`
+  ).join('');
+  
+  document.getElementById('oppPlayerSlots').innerHTML = [1,2,3,4,5,6].map(i =>
+    `<div class="player-slot opp" id="oppP${i}" onclick="activatePlayerSlot('opp',${i-1})"><div class="role">O${i}</div><div class="num">-</div></div>`
+  ).join('');
+}
+
+function setupKeyboard() {
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+    
+    // Undo/Redo
+    if (e.ctrlKey && e.key === 'z') { undo(); e.preventDefault(); return; }
+    if (e.ctrlKey && e.key === 'y') { redo(); e.preventDefault(); return; }
+    
+    const keyMap = {};
+    EVENT_TYPES.forEach(et => keyMap[et.kbd.toLowerCase()] = et.key);
+    
+    if (keyMap[e.key.toLowerCase()]) { setEventType(keyMap[e.key.toLowerCase()]); e.preventDefault(); }
+    if (e.key === ' ') { toggleSuccess(); e.preventDefault(); }
+    if (e.key === 'Enter') { S.editingEventIdx !== null ? updateEvent() : saveEvent(); e.preventDefault(); }
+    if (e.key >= '1' && e.key <= '4') { setPeriod(+e.key); e.preventDefault(); }
+    if (e.key === 'Escape') { clearEventForm(); e.preventDefault(); }
+    if (e.key === 'ArrowUp') { selectPrevEvent(); e.preventDefault(); }
+    if (e.key === 'ArrowDown') { selectNextEvent(); e.preventDefault(); }
+  });
+}
+
+// =============================================================================
+// SUPABASE
+// =============================================================================
+async function sbFetch(table, query = '') {
+  const resp = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${query}`, {
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+  });
+  if (!resp.ok) throw new Error(`Supabase: ${resp.status}`);
+  return resp.json();
+}
+
+async function sbUpsert(table, data) {
+  const resp = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+    method: 'POST',
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+    body: JSON.stringify(data)
+  });
+  if (!resp.ok) throw new Error(`Supabase: ${resp.status}`);
+  return resp;
+}
+
+async function sbDelete(table, column, value) {
+  const resp = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${column}=eq.${value}`, {
+    method: 'DELETE',
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+  });
+  return resp;
+}
+
+async function loadReferenceData() {
+  try {
+    S.ref.schedule = await sbFetch('dim_schedule', 'select=game_id,game_date_str,home_team_name,away_team_name&order=game_date_str.desc&limit=100');
+    S.ref.players = await sbFetch('dim_player', 'select=player_id,player_full_name,player_primary_position');
+    S.ref.rosters = await sbFetch('fact_gameroster', 'select=game_id,player_id,player_game_number,team_venue,player_position&limit=3000');
+    S.ref.playDetails = await sbFetch('dim_play_detail', 'select=play_detail_code');
+    S.ref.playDetails2 = await sbFetch('dim_play_detail_2', 'select=play_detail_2_code');
+    S.videos = await sbFetch('fact_video', 'select=*');
+    populateGameSelect();
+    populatePlayDetails();
+  } catch (err) {
+    console.error('Error loading ref data:', err);
+    toast('Error loading data', 'error');
+  }
+}
+
+function populateGameSelect() {
+  const sel = document.getElementById('gameSelect');
+  sel.innerHTML = '<option value="">-- Select Game --</option>';
+  S.ref.schedule.forEach(g => {
+    const opt = document.createElement('option');
+    opt.value = g.game_id;
+    opt.textContent = `${g.game_id} - ${g.game_date_str || ''} ${g.home_team_name || ''} vs ${g.away_team_name || ''}`;
+    sel.appendChild(opt);
+  });
+}
+
+function populatePlayDetails() {
+  const pd1 = document.getElementById('playDetail1');
+  const pd2 = document.getElementById('playDetail2');
+  pd1.innerHTML = '<option value="">--</option>' + S.ref.playDetails.map(p => `<option value="${p.play_detail_code}">${p.play_detail_code}</option>`).join('');
+  pd2.innerHTML = '<option value="">--</option>' + S.ref.playDetails2.map(p => `<option value="${p.play_detail_2_code}">${p.play_detail_2_code}</option>`).join('');
+}
+
+// =============================================================================
+// GAME LOADING
+// =============================================================================
+async function loadGame() {
+  const gid = document.getElementById('gameSelect').value;
+  if (!gid) { toast('Select a game', 'error'); return; }
+  
+  showLoading('Loading game ' + gid + '...');
+  
+  try {
+    const gameInfo = S.ref.schedule.find(g => g.game_id === gid);
+    S.gameId = gid;
+    S.game = gameInfo;
+    
+    // Load roster
+    const roster = S.ref.rosters.filter(r => r.game_id === gid);
+    S.roster.home = roster.filter(r => r.team_venue === 'Home').map(r => ({
+      number: parseInt(r.player_game_number) || 0, playerId: r.player_id,
+      name: getPlayerName(r.player_id), position: r.player_position
+    })).sort((a,b) => a.number - b.number);
+    S.roster.away = roster.filter(r => r.team_venue === 'Away').map(r => ({
+      number: parseInt(r.player_game_number) || 0, playerId: r.player_id,
+      name: getPlayerName(r.player_id), position: r.player_position
+    })).sort((a,b) => a.number - b.number);
+    
+    // Load existing tracking data
+    try {
+      const events = await sbFetch('fact_events', `game_id=eq.${gid}&order=event_index`);
+      const eventsPlayer = await sbFetch('fact_events_player', `game_id=eq.${gid}`);
+      const shifts = await sbFetch('fact_shifts', `game_id=eq.${gid}&order=shift_index`);
+      const puckXY = await sbFetch('fact_puck_xy_long', `game_id=eq.${gid}`);
+      
+      if (events.length > 0) {
+        S.events = mergeEventData(events, eventsPlayer);
+        S.shifts = shifts || [];
+        S.currentShiftIdx = (shifts.length || 0) + 1;
+        
+        // Reconstruct puck XY data
+        const puckByEvent = {};
+        puckXY.forEach(p => {
+          if (!puckByEvent[p.event_index]) puckByEvent[p.event_index] = [];
+          puckByEvent[p.event_index].push({ x: p.x, y: p.y, z: p.z, timestamp: p.event_timestamp });
+        });
+        S.puckXYData = Object.entries(puckByEvent).map(([idx, pts]) => ({ event_index: parseInt(idx), points: pts }));
+        
+        toast(`Loaded ${events.length} events`, 'success');
+      } else {
+        S.events = []; S.shifts = []; S.currentShiftIdx = 1; S.puckXYData = [];
+        toast('New game - no data', 'success');
+      }
+    } catch (e) {
+      S.events = []; S.shifts = []; S.currentShiftIdx = 1; S.puckXYData = [];
+    }
+    
+    // Check local save
+    loadLocalState();
+    
+    // Setup videos
+    const gameVideos = S.videos.filter(v => v.game_id === gid);
+    setupVideos(gameVideos);
+    
+    // Save history
+    saveHistory();
+    
+    renderAll();
+    hideLoading();
+    
+  } catch (err) {
+    hideLoading();
+    toast('Error: ' + err.message, 'error');
+  }
+}
+
+function mergeEventData(events, eventsPlayer) {
+  const playersByEvent = {};
+  eventsPlayer.forEach(ep => {
+    if (!playersByEvent[ep.event_index]) playersByEvent[ep.event_index] = [];
+    playersByEvent[ep.event_index].push(ep);
+  });
+  
+  const merged = [];
+  events.forEach(e => {
+    const players = playersByEvent[e.event_index] || [];
+    if (players.length === 0) {
+      merged.push({ ...e, player_game_number_: '', player_role: '', role_number: 1, event_index_flag_: 1 });
+    } else {
+      players.forEach((p, i) => {
+        merged.push({
+          ...e,
+          player_game_number_: p.player_game_number,
+          player_id: p.player_id,
+          player_role: p.player_role,
+          role_number: i + 1,
+          event_index_flag_: i === 0 ? 1 : '',
+          event_type_: e.event_type,
+          event_detail_: e.event_detail,
+          event_detail_2_: e.event_detail_2,
+          event_successful_: e.event_successful,
+          event_team_zone_: e.zone,
+          team_venue_: e.team_venue,
+          linked_event_index_: e.linked_event_index,
+          play_detail1_: e.play_detail1,
+          play_detail2_: e.play_detail2,
+          xy_x: e.x_coord,
+          xy_y: e.y_coord
+        });
+      });
+    }
+  });
+  return merged;
+}
+
+function getPlayerName(playerId) {
+  const p = S.ref.players.find(pl => pl.player_id === playerId);
+  return p ? p.player_full_name : '';
+}
+
+function setupVideos(videos) {
+  const tabs = document.getElementById('cameraTabs');
+  if (!videos.length) { tabs.innerHTML = '<div class="cam-tab active">No Video</div>'; return; }
+  S.videos = videos;
+  tabs.innerHTML = videos.map((v, i) => `<div class="cam-tab ${i===0?'active':''}" onclick="switchCamera(${i})">${v.Video_Type || 'Cam '+(i+1)}</div>`).join('');
+  loadVideo(videos[0].Url_1);
+}
+
+function switchCamera(idx) {
+  S.activeCamera = idx;
+  document.querySelectorAll('.cam-tab').forEach((t, i) => t.classList.toggle('active', i === idx));
+  if (S.videos[idx]) loadVideo(S.videos[idx].Url_1);
+}
+
+function loadVideo(url) {
+  if (!url) return;
+  let videoId = '';
+  if (url.includes('youtu.be/')) videoId = url.split('youtu.be/')[1].split(/[?&]/)[0];
+  else if (url.includes('v=')) videoId = url.split('v=')[1].split(/[?&]/)[0];
+  if (videoId) {
+    document.getElementById('videoBox').innerHTML = `<iframe id="ytFrame" src="https://www.youtube.com/embed/${videoId}?enablejsapi=1" allowfullscreen></iframe>`;
+    document.getElementById('videoUrl').value = url;
+  }
+}
+
+function loadVideoManual() { loadVideo(document.getElementById('videoUrl').value); }
+
+// =============================================================================
+// TEAM / PERIOD / TIME
+// =============================================================================
+function setTeam(t) {
+  S.team = t;
+  document.getElementById('homeBtn').classList.toggle('active', t === 'home');
+  document.getElementById('awayBtn').classList.toggle('active', t === 'away');
+  renderRoster();
+  renderOnIce();
+}
+
+function setPeriod(p) {
+  S.period = p;
+  document.querySelectorAll('.period-btn').forEach((b, i) => b.classList.toggle('active', i + 1 === p));
+  updateVideoTime();
+}
+
+function onTimeChange() {
+  document.getElementById('clockDisplay').textContent = document.getElementById('timeS').value;
+  updateVideoTime();
+}
+
+function copyTimeDown() { document.getElementById('timeE').value = document.getElementById('timeS').value; }
+
+function decrementClock() {
+  const [m, s] = parseTime(document.getElementById('timeS').value);
+  const newSec = s > 0 ? s - 1 : 59;
+  const newMin = s > 0 ? m : m - 1;
+  if (newMin >= 0) {
+    const t = `${newMin}:${String(newSec).padStart(2, '0')}`;
+    document.getElementById('timeS').value = t;
+    document.getElementById('timeE').value = t;
+    document.getElementById('clockDisplay').textContent = t;
+    updateVideoTime();
+  }
+}
+
+function parseTime(str) { const p = (str||'').split(':'); return [parseInt(p[0])||0, parseInt(p[1])||0]; }
+
+function calcVideoTime(period, min, sec) {
+  const periodSec = (20 - min) * 60 - sec;
+  const priorPeriods = (period - 1) * 20 * 60;
+  const intermission = (period - 1) * 90;
+  return priorPeriods + periodSec + intermission + S.videoOffset;
+}
+
+function updateVideoTime() {
+  const [m, s] = parseTime(document.getElementById('timeS').value);
+  document.getElementById('videoTimeDisplay').textContent = calcVideoTime(S.period, m, s) + 's';
+}
+
+function captureVideoTime() {
+  const t = prompt('Video time in seconds:');
+  if (t !== null) {
+    const [m, s] = parseTime(document.getElementById('timeS').value);
+    const expected = calcVideoTime(S.period, m, s) - S.videoOffset;
+    S.videoOffset = parseInt(t) - expected;
+    updateVideoTime();
+    toast('Video offset: ' + S.videoOffset + 's', 'success');
+  }
+}
+
+function jumpToTime() {
+  const vt = parseInt(document.getElementById('videoTimeDisplay').textContent);
+  const iframe = document.getElementById('ytFrame');
+  if (iframe) {
+    try { iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'seekTo', args: [vt, true] }), '*'); } catch (e) {}
+  }
+}
+
+// =============================================================================
+// ON-ICE & ROSTER
+// =============================================================================
+function selectIceSlot(slot) {
+  S.selectedSlot = S.selectedSlot === slot ? null : slot;
+  renderOnIce();
+}
+
+function renderOnIce() {
+  const ice = S.onIce[S.team];
+  ['F1','F2','F3','D1','D2','G'].forEach(s => {
+    const el = document.getElementById('slot' + s);
+    const slotDiv = document.querySelector(`.slot[data-slot="${s}"]`);
+    el.textContent = ice[s] || '-';
+    slotDiv.classList.toggle('filled', !!ice[s]);
+    slotDiv.classList.toggle('active', S.selectedSlot === s);
+  });
+}
+
+function renderRoster() {
+  const r = S.roster[S.team] || [];
+  const onIceNums = Object.values(S.onIce[S.team]).filter(Boolean);
+  const evtNums = S.evt.eventPlayers.filter(Boolean).map(p => p.number);
+  const oppNums = S.evt.oppPlayers.filter(Boolean).map(p => p.number);
+  
+  document.getElementById('rosterCount').textContent = r.length;
+  document.getElementById('rosterList').innerHTML = r.map(p => {
+    let cls = 'player';
+    if (onIceNums.includes(p.number)) cls += ' on-ice';
+    if (evtNums.includes(p.number)) cls += ' evt-player';
+    if (oppNums.includes(p.number)) cls += ' opp-player';
+    return `<div class="${cls}" onclick="onPlayerClick(${p.number},'${S.team}')" title="${p.name}"><span class="n">${p.number}</span></div>`;
+  }).join('') || '<span style="color:var(--muted)">No roster</span>';
+}
+
+function onPlayerClick(num, team) {
+  if (S.selectedSlot) {
+    S.onIce[team][S.selectedSlot] = num;
+    S.selectedSlot = null;
+    renderOnIce(); renderRoster();
+    return;
+  }
+  
+  const player = S.roster[team].find(p => p.number === num);
+  if (!player) return;
+  
+  const slots = S.playerSlotMode === 'event' ? S.evt.eventPlayers : S.evt.oppPlayers;
+  const emptyIdx = slots.findIndex(p => p === null);
+  if (emptyIdx >= 0) {
+    slots[emptyIdx] = { number: num, playerId: player.playerId, team };
+    renderPlayerSlots();
+    renderRoster();
+  }
+}
+
+function activatePlayerSlot(mode, idx) {
+  S.playerSlotMode = mode;
+  S.activePlayerSlot = idx;
+  if (mode === 'opp') setTeam(S.team === 'home' ? 'away' : 'home');
+}
+
+function clearEventPlayers() { S.evt.eventPlayers = [null,null,null,null,null,null]; renderPlayerSlots(); renderRoster(); }
+function clearOppPlayers() { S.evt.oppPlayers = [null,null,null,null,null,null]; renderPlayerSlots(); renderRoster(); }
+
+function renderPlayerSlots() {
+  S.evt.eventPlayers.forEach((p, i) => {
+    const el = document.getElementById(`evtP${i+1}`);
+    el.querySelector('.num').textContent = p ? '#' + p.number : '-';
+    el.classList.toggle('filled', !!p);
+  });
+  S.evt.oppPlayers.forEach((p, i) => {
+    const el = document.getElementById(`oppP${i+1}`);
+    el.querySelector('.num').textContent = p ? '#' + p.number : '-';
+    el.classList.toggle('filled', !!p);
+  });
+}
+
+// =============================================================================
+// EVENT TYPE & FORM
+// =============================================================================
+function setEventType(type) {
+  S.evt.type = type;
+  document.querySelectorAll('.evt-btn').forEach(b => b.classList.toggle('active', b.dataset.type === type));
+  
+  const et = EVENT_TYPES.find(e => e.key === type);
+  if (et) {
+    document.getElementById('detail1').innerHTML = '<option value="">--</option>' + et.d1.map(d => `<option value="${d}">${d}</option>`).join('');
+    document.getElementById('detail2').innerHTML = '<option value="">--</option>' + et.d2.map(d => `<option value="${d}">${d}</option>`).join('');
+    if (et.d1.length) document.getElementById('detail1').value = et.d1[0];
+    if (type === 'Goal') document.getElementById('detail2').value = 'Goal Scored';
+    document.getElementById('netBox').style.display = et.showNet ? 'flex' : 'none';
+    document.getElementById('autoLinkHint').textContent = et.autoLink ? `→ ${et.autoLink}` : '';
+  }
+}
+
+function setSuccess(s) {
+  S.evt.success = s;
+  document.getElementById('sucBtnS').classList.toggle('active', s === 's');
+  document.getElementById('sucBtnU').classList.toggle('active', s === 'u');
+}
+
+function toggleSuccess() { setSuccess(S.evt.success === 's' ? 'u' : 's'); }
+
+function linkToPrev() {
+  const unique = getUniqueEvents();
+  if (unique.length > 0) {
+    const last = unique[unique.length - 1];
+    document.getElementById('linkTo').value = last.event_index;
+    S.evt.linkedTo = last.event_index;
+  }
+}
+
+// =============================================================================
+// RINK & NET XY
+// =============================================================================
+function setXYMode(mode) {
+  S.xyMode = mode;
+  document.getElementById('xyModePuck').classList.toggle('active', mode === 'puck');
+  document.getElementById('xyModePlayer').classList.toggle('active', mode === 'player');
+}
+
+function onRinkClick(e) {
+  const svg = document.getElementById('rinkSvg');
+  const rect = svg.getBoundingClientRect();
+  const x = ((e.clientX - rect.left) / rect.width * 200).toFixed(1);
+  const y = ((e.clientY - rect.top) / rect.height * 85).toFixed(1);
+  const timestamp = calcVideoTime(S.period, ...parseTime(document.getElementById('timeS').value));
+  
+  if (S.xyMode === 'puck') {
+    if (S.evt.puckXYPoints.length < 10) {
+      S.evt.puckXYPoints.push({ x: parseFloat(x), y: parseFloat(y), z: 0, timestamp });
+    }
+  } else {
+    if (S.evt.playerXYPoints.length < 10) {
+      const activeP = S.evt.eventPlayers[S.activePlayerSlot] || S.evt.oppPlayers[S.activePlayerSlot];
+      S.evt.playerXYPoints.push({ x: parseFloat(x), y: parseFloat(y), timestamp, playerIdx: S.activePlayerSlot, playerId: activeP?.playerId || '' });
+    }
+  }
+  
+  renderXYPoints();
+  renderRinkMarkers();
+  document.getElementById('xyText').textContent = `(${x}, ${y})`;
+  autoDetectZone(parseFloat(x));
+}
+
+function renderXYPoints() {
+  document.getElementById('puckCount').textContent = S.evt.puckXYPoints.length;
+  document.getElementById('puckXYRow').innerHTML = S.evt.puckXYPoints.map((p, i) => 
+    `<div class="xy-point puck" onclick="removePuckXY(${i})">${i+1}:(${p.x},${p.y})</div>`
+  ).join('') || '<span style="font-size:7px;color:var(--muted)">Click rink</span>';
+  
+  document.getElementById('playerXYRow').innerHTML = S.evt.playerXYPoints.map((p, i) => 
+    `<div class="xy-point player" onclick="removePlayerXY(${i})">P${p.playerIdx+1}:(${p.x},${p.y})</div>`
+  ).join('') || '<span style="font-size:7px;color:var(--muted)">-</span>';
+}
+
+function renderRinkMarkers() {
+  let html = '';
+  if (S.evt.puckXYPoints.length > 1) {
+    const path = S.evt.puckXYPoints.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
+    html += `<path d="${path}" fill="none" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="2,2" opacity="0.6"/>`;
+  }
+  S.evt.puckXYPoints.forEach((p, i) => {
+    html += `<circle cx="${p.x}" cy="${p.y}" r="${i === S.evt.puckXYPoints.length - 1 ? 4 : 2.5}" fill="#ef4444" stroke="#fff" stroke-width="0.5"/>`;
+  });
+  S.evt.playerXYPoints.forEach(p => {
+    html += `<circle cx="${p.x}" cy="${p.y}" r="3" fill="#3b82f6" stroke="#fff" stroke-width="0.5"/>`;
+  });
+  document.getElementById('xyMarkers').innerHTML = html;
+}
+
+function removePuckXY(idx) { S.evt.puckXYPoints.splice(idx, 1); renderXYPoints(); renderRinkMarkers(); }
+function removePlayerXY(idx) { S.evt.playerXYPoints.splice(idx, 1); renderXYPoints(); renderRinkMarkers(); }
+function clearAllXY() { S.evt.puckXYPoints = []; S.evt.playerXYPoints = []; renderXYPoints(); renderRinkMarkers(); }
+
+function autoDetectZone(x) {
+  let zone = 'n';
+  if (x < 50) zone = 'd';
+  else if (x > 150) zone = 'o';
+  if (S.team === 'away') zone = zone === 'o' ? 'd' : (zone === 'd' ? 'o' : 'n');
+  S.evt.zone = zone;
+  document.getElementById('zoneSelect').value = zone;
+  document.getElementById('zoneText').textContent = { n: 'Neutral', o: 'Offensive', d: 'Defensive' }[zone];
+}
+
+function onNetClick(e) {
+  const svg = document.getElementById('netSvg');
+  const rect = svg.getBoundingClientRect();
+  const x = (e.clientX - rect.left) / rect.width * 72;
+  const y = (e.clientY - rect.top) / rect.height * 48;
+  
+  let closest = NET_LOCATIONS[0], minDist = Infinity;
+  NET_LOCATIONS.forEach(nl => {
+    const dist = Math.sqrt((x - nl.x) ** 2 + (y - nl.y) ** 2);
+    if (dist < minDist) { minDist = dist; closest = nl; }
+  });
+  
+  S.evt.netLocation = closest;
+  document.getElementById('netMarker').innerHTML = `<circle cx="${closest.x}" cy="${closest.y}" r="6" fill="var(--accent)" stroke="#fff" stroke-width="1"/>`;
+  document.getElementById('netInfo').textContent = closest.name;
+}
+
+// =============================================================================
+// SAVE EVENT
+// =============================================================================
+function saveEvent() {
+  if (!S.evt.type) { toast('Select event type', 'error'); return; }
+  if (!S.gameId) { toast('Load a game first', 'error'); return; }
+  
+  saveHistory();
+  
+  const [startMin, startSec] = parseTime(document.getElementById('timeS').value);
+  const [endMin, endSec] = parseTime(document.getElementById('timeE').value);
+  const eventIndex = 1000 + getUniqueEvents().length + 1;
+  const videoTime = calcVideoTime(S.period, startMin, startSec);
+  const puckPos = S.evt.puckXYPoints.length > 0 ? S.evt.puckXYPoints[S.evt.puckXYPoints.length - 1] : null;
+  
+  const evtPlayers = S.evt.eventPlayers.filter(Boolean);
+  const oppPlayers = S.evt.oppPlayers.filter(Boolean);
+  const allPlayers = [
+    ...evtPlayers.map((p, i) => ({ ...p, role: `event_team_player_${i+1}`, roleNum: i + 1 })),
+    ...oppPlayers.map((p, i) => ({ ...p, role: `opp_team_player_${i+1}`, roleNum: i + 1 }))
+  ];
+  if (allPlayers.length === 0) allPlayers.push({ number: '', playerId: '', team: S.team, role: 'event_team_player_1', roleNum: 1 });
+  
+  allPlayers.forEach((p, i) => {
+    S.events.push({
+      event_index: eventIndex, event_index_flag_: i === 0 ? 1 : '', period: S.period,
+      event_start_min_: i === 0 ? startMin : '', event_start_sec_: i === 0 ? startSec : '',
+      event_end_min_: i === 0 ? endMin : '', event_end_sec_: i === 0 ? endSec : '',
+      player_game_number_: p.number, player_id: p.playerId, player_role: p.role, role_number: p.roleNum,
+      event_team_zone_: S.evt.zone, event_type_: S.evt.type,
+      event_detail_: document.getElementById('detail1').value,
+      event_detail_2_: document.getElementById('detail2').value,
+      event_successful_: S.evt.success,
+      play_detail1_: document.getElementById('playDetail1').value,
+      play_detail2_: document.getElementById('playDetail2').value,
+      play_detail_successful_: document.getElementById('playSuccess').value,
+      pressured_pressurer_: document.getElementById('pressure').value,
+      team_: S.team[0], team_venue_: S.team === 'home' ? 'Home' : 'Away',
+      linked_event_index_: S.evt.linkedTo || '', running_video_time: videoTime,
+      shift_index: S.currentShiftIdx, game_id: S.gameId,
+      xy_x: puckPos ? puckPos.x : '', xy_y: puckPos ? puckPos.y : '',
+      net_location: S.evt.netLocation ? S.evt.netLocation.code : ''
+    });
+  });
+  
+  // Store XY data
+  if (S.evt.puckXYPoints.length > 0) {
+    S.puckXYData.push({ event_index: eventIndex, points: [...S.evt.puckXYPoints] });
+  }
+  if (S.evt.playerXYPoints.length > 0) {
+    S.playerXYData.push({ event_index: eventIndex, points: [...S.evt.playerXYPoints], team_venue: S.team === 'home' ? 'Home' : 'Away' });
+  }
+  if (['Shot', 'Goal'].includes(S.evt.type) && puckPos) {
+    S.shotXYData.push({
+      event_index: eventIndex, player_id: evtPlayers[0]?.playerId || '',
+      team_venue: S.team === 'home' ? 'Home' : 'Away', period: S.period,
+      shot_x: puckPos.x, shot_y: puckPos.y,
+      target_x: S.evt.netLocation?.x || '', target_y: S.evt.netLocation?.y || '',
+      net_location: S.evt.netLocation?.code || '',
+      shot_type: document.getElementById('detail1').value,
+      shot_result: document.getElementById('detail2').value,
+      is_goal: S.evt.type === 'Goal' ? '1' : '0', running_video_time: videoTime
+    });
+  }
+  
+  const et = EVENT_TYPES.find(e => e.key === S.evt.type);
+  const prevIdx = eventIndex;
+  
+  clearEventForm();
+  
+  // Auto-link
+  if (et && et.autoLink) {
+    setEventType(et.autoLink);
+    S.evt.linkedTo = prevIdx;
+    document.getElementById('linkTo').value = prevIdx;
+    setTeam(S.team === 'home' ? 'away' : 'home');
+  }
+  
+  decrementClock();
+  renderEvents();
+  updateStats();
+  autoSave();
+  toast('Event saved', 'success');
+}
+
+function updateEvent() {
+  if (S.editingEventIdx === null) return;
+  saveHistory();
+  
+  S.events = S.events.filter(e => e.event_index !== S.editingEventIdx);
+  
+  const [startMin, startSec] = parseTime(document.getElementById('timeS').value);
+  const [endMin, endSec] = parseTime(document.getElementById('timeE').value);
+  const videoTime = calcVideoTime(S.period, startMin, startSec);
+  const puckPos = S.evt.puckXYPoints.length > 0 ? S.evt.puckXYPoints[S.evt.puckXYPoints.length - 1] : null;
+  
+  const evtPlayers = S.evt.eventPlayers.filter(Boolean);
+  const oppPlayers = S.evt.oppPlayers.filter(Boolean);
+  const allPlayers = [
+    ...evtPlayers.map((p, i) => ({ ...p, role: `event_team_player_${i+1}`, roleNum: i + 1 })),
+    ...oppPlayers.map((p, i) => ({ ...p, role: `opp_team_player_${i+1}`, roleNum: i + 1 }))
+  ];
+  if (allPlayers.length === 0) allPlayers.push({ number: '', playerId: '', team: S.team, role: 'event_team_player_1', roleNum: 1 });
+  
+  allPlayers.forEach((p, i) => {
+    S.events.push({
+      event_index: S.editingEventIdx, event_index_flag_: i === 0 ? 1 : '', period: S.period,
+      event_start_min_: i === 0 ? startMin : '', event_start_sec_: i === 0 ? startSec : '',
+      event_end_min_: i === 0 ? endMin : '', event_end_sec_: i === 0 ? endSec : '',
+      player_game_number_: p.number, player_id: p.playerId, player_role: p.role, role_number: p.roleNum,
+      event_team_zone_: S.evt.zone, event_type_: S.evt.type,
+      event_detail_: document.getElementById('detail1').value,
+      event_detail_2_: document.getElementById('detail2').value,
+      event_successful_: S.evt.success,
+      play_detail1_: document.getElementById('playDetail1').value,
+      play_detail2_: document.getElementById('playDetail2').value,
+      play_detail_successful_: document.getElementById('playSuccess').value,
+      pressured_pressurer_: document.getElementById('pressure').value,
+      team_: S.team[0], team_venue_: S.team === 'home' ? 'Home' : 'Away',
+      linked_event_index_: S.evt.linkedTo || '', running_video_time: videoTime,
+      shift_index: S.currentShiftIdx, game_id: S.gameId,
+      xy_x: puckPos ? puckPos.x : '', xy_y: puckPos ? puckPos.y : '',
+      net_location: S.evt.netLocation ? S.evt.netLocation.code : ''
+    });
+  });
+  
+  S.editingEventIdx = null;
+  document.getElementById('editingLabel').style.display = 'none';
+  document.getElementById('saveBtn').style.display = '';
+  document.getElementById('updateBtn').style.display = 'none';
+  
+  clearEventForm();
+  renderEvents();
+  updateStats();
+  autoSave();
+  toast('Event updated', 'success');
+}
+
+function clearEventForm() {
+  S.evt = {
+    type: null, detail1: '', detail2: '', playDetail1: '', playDetail2: '', playSuccess: '',
+    zone: 'n', success: 's', pressure: '', linkedTo: null,
+    eventPlayers: [null,null,null,null,null,null], oppPlayers: [null,null,null,null,null,null],
+    puckXYPoints: [], playerXYPoints: [], netLocation: null
+  };
+  S.editingEventIdx = null;
+  S.playerSlotMode = 'event';
+  S.xyMode = 'puck';
+  
+  document.querySelectorAll('.evt-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('detail1').innerHTML = '<option value="">--</option>';
+  document.getElementById('detail2').innerHTML = '<option value="">--</option>';
+  document.getElementById('playDetail1').value = '';
+  document.getElementById('playDetail2').value = '';
+  document.getElementById('playSuccess').value = '';
+  document.getElementById('zoneSelect').value = 'n';
+  setSuccess('s');
+  document.getElementById('pressure').value = '';
+  document.getElementById('linkTo').value = '';
+  document.getElementById('autoLinkHint').textContent = '';
+  document.getElementById('xyMarkers').innerHTML = '';
+  document.getElementById('xyText').textContent = 'Click rink';
+  document.getElementById('zoneText').textContent = '-';
+  document.getElementById('netMarker').innerHTML = '';
+  document.getElementById('netInfo').textContent = '-';
+  document.getElementById('netBox').style.display = 'none';
+  document.getElementById('editingLabel').style.display = 'none';
+  document.getElementById('saveBtn').style.display = '';
+  document.getElementById('updateBtn').style.display = 'none';
+  
+  renderXYPoints();
+  setXYMode('puck');
+  renderPlayerSlots();
+  renderRoster();
+}
+
+// =============================================================================
+// EVENTS LIST
+// =============================================================================
+function getUniqueEvents() {
+  const seen = new Set();
+  return S.events.filter(e => { if (seen.has(e.event_index)) return false; seen.add(e.event_index); return true; });
+}
+
+function renderEvents() {
+  const unique = getUniqueEvents();
+  document.getElementById('evtCount').textContent = unique.length;
+  
+  document.getElementById('eventList').innerHTML = unique.map(e => {
+    const players = S.events.filter(x => x.event_index === e.event_index).map(x => x.player_game_number_).filter(Boolean).join(',');
+    const linked = e.linked_event_index_ ? 'linked' : '';
+    const selected = S.selectedEventIdx === e.event_index ? 'selected' : '';
+    const editing = S.editingEventIdx === e.event_index ? 'editing' : '';
+    
+    return `<div class="event-row ${linked} ${selected} ${editing}" onclick="selectEvent(${e.event_index})" ondblclick="loadEventForEdit(${e.event_index})">
+      <span class="idx">${e.event_index}</span>
+      <span class="time">P${e.period} ${e.event_start_min_||0}:${String(e.event_start_sec_||0).padStart(2,'0')}</span>
+      <span class="type">${(e.event_type_||'').substring(0,6)}</span>
+      <span class="players">#${players || '-'}</span>
+      <span class="zone">${e.event_team_zone_ || '-'}</span>
+      <span class="del" onclick="event.stopPropagation();deleteEvent(${e.event_index})">×</span>
+    </div>`;
+  }).join('');
+  
+  document.getElementById('linkTo').innerHTML = '<option value="">None</option>' + 
+    unique.slice(-15).reverse().map(e => `<option value="${e.event_index}">${e.event_index}: ${(e.event_type_||'').substring(0,6)}</option>`).join('');
+}
+
+function selectEvent(idx) {
+  S.selectedEventIdx = idx;
+  renderEvents();
+}
+
+function selectPrevEvent() {
+  const unique = getUniqueEvents();
+  const i = unique.findIndex(e => e.event_index === S.selectedEventIdx);
+  if (i > 0) selectEvent(unique[i - 1].event_index);
+}
+
+function selectNextEvent() {
+  const unique = getUniqueEvents();
+  const i = unique.findIndex(e => e.event_index === S.selectedEventIdx);
+  if (i < unique.length - 1) selectEvent(unique[i + 1].event_index);
+}
+
+function editSelectedEvent() {
+  if (S.selectedEventIdx) loadEventForEdit(S.selectedEventIdx);
+}
+
+function loadEventForEdit(idx) {
+  const rows = S.events.filter(e => e.event_index === idx);
+  if (!rows.length) return;
+  
+  const primary = rows.find(r => r.event_index_flag_ === 1) || rows[0];
+  
+  S.editingEventIdx = idx;
+  document.getElementById('editingLabel').style.display = '';
+  document.getElementById('editingIdx').textContent = idx;
+  document.getElementById('saveBtn').style.display = 'none';
+  document.getElementById('updateBtn').style.display = '';
+  
+  setEventType(primary.event_type_);
+  document.getElementById('detail1').value = primary.event_detail_ || '';
+  document.getElementById('detail2').value = primary.event_detail_2_ || '';
+  document.getElementById('playDetail1').value = primary.play_detail1_ || '';
+  document.getElementById('playDetail2').value = primary.play_detail2_ || '';
+  document.getElementById('playSuccess').value = primary.play_detail_successful_ || '';
+  document.getElementById('zoneSelect').value = primary.event_team_zone_ || 'n';
+  S.evt.zone = primary.event_team_zone_ || 'n';
+  setSuccess(primary.event_successful_ || 's');
+  document.getElementById('pressure').value = primary.pressured_pressurer_ || '';
+  document.getElementById('linkTo').value = primary.linked_event_index_ || '';
+  S.evt.linkedTo = primary.linked_event_index_ || null;
+  
+  S.period = primary.period;
+  document.querySelectorAll('.period-btn').forEach((b, i) => b.classList.toggle('active', i + 1 === S.period));
+  
+  const t = `${primary.event_start_min_||0}:${String(primary.event_start_sec_||0).padStart(2,'0')}`;
+  document.getElementById('timeS').value = t;
+  document.getElementById('timeE').value = `${primary.event_end_min_||0}:${String(primary.event_end_sec_||0).padStart(2,'0')}`;
+  document.getElementById('clockDisplay').textContent = t;
+  
+  // Load players
+  S.evt.eventPlayers = [null,null,null,null,null,null];
+  S.evt.oppPlayers = [null,null,null,null,null,null];
+  rows.forEach(r => {
+    if (r.player_role && r.player_role.includes('event_team_player_')) {
+      const slot = parseInt(r.player_role.replace('event_team_player_', '')) - 1;
+      if (slot >= 0 && slot < 6) S.evt.eventPlayers[slot] = { number: r.player_game_number_, playerId: r.player_id, team: r.team_venue_ === 'Home' ? 'home' : 'away' };
+    }
+    if (r.player_role && r.player_role.includes('opp_team_player_')) {
+      const slot = parseInt(r.player_role.replace('opp_team_player_', '')) - 1;
+      if (slot >= 0 && slot < 6) S.evt.oppPlayers[slot] = { number: r.player_game_number_, playerId: r.player_id, team: r.team_venue_ === 'Home' ? 'away' : 'home' };
+    }
+  });
+  
+  // Load puck XY
+  const puckData = S.puckXYData.find(p => p.event_index === idx);
+  S.evt.puckXYPoints = puckData ? [...puckData.points] : [];
+  if (primary.xy_x && primary.xy_y && S.evt.puckXYPoints.length === 0) {
+    S.evt.puckXYPoints.push({ x: parseFloat(primary.xy_x), y: parseFloat(primary.xy_y), z: 0, timestamp: 0 });
+  }
+  
+  renderPlayerSlots();
+  renderXYPoints();
+  renderRinkMarkers();
+  renderEvents();
+}
+
+function duplicateEvent() {
+  if (!S.selectedEventIdx) { toast('Select event first', 'error'); return; }
+  loadEventForEdit(S.selectedEventIdx);
+  S.editingEventIdx = null;
+  document.getElementById('editingLabel').style.display = 'none';
+  document.getElementById('saveBtn').style.display = '';
+  document.getElementById('updateBtn').style.display = 'none';
+  decrementClock();
+  toast('Duplicated - modify and save', 'success');
+}
+
+function deleteEvent(idx) {
+  if (!confirm(`Delete event #${idx}?`)) return;
+  saveHistory();
+  S.events = S.events.filter(e => e.event_index !== idx);
+  S.puckXYData = S.puckXYData.filter(p => p.event_index !== idx);
+  S.playerXYData = S.playerXYData.filter(p => p.event_index !== idx);
+  S.shotXYData = S.shotXYData.filter(s => s.event_index !== idx);
+  renderEvents();
+  updateStats();
+  autoSave();
+}
+
+function scrollToLatest() { document.getElementById('eventList').scrollTop = document.getElementById('eventList').scrollHeight; }
+
+// =============================================================================
+// SHIFTS
+// =============================================================================
+function newShift() {
+  endCurrentShift();
+  S.currentShiftIdx++;
+  document.getElementById('shiftNum').textContent = S.currentShiftIdx;
+  document.getElementById('shiftStart').value = document.getElementById('timeS').value;
+  document.getElementById('shiftEnd').value = '';
+  document.getElementById('shiftType').value = 'OtherFaceoff';
+  updateStats();
+  autoSave();
+}
+
+function endCurrentShift() {
+  const [startMin, startSec] = parseTime(document.getElementById('shiftStart').value);
+  const [endMin, endSec] = parseTime(document.getElementById('shiftEnd').value || document.getElementById('timeS').value);
+  
+  const shift = {
+    shift_index: S.currentShiftIdx, Period: S.period,
+    shift_start_min: startMin, shift_start_sec: startSec,
+    shift_end_min: endMin, shift_end_sec: endSec,
+    shift_start_type: document.getElementById('shiftType').value,
+    home_forward_1: S.onIce.home.F1, home_forward_2: S.onIce.home.F2, home_forward_3: S.onIce.home.F3,
+    home_defense_1: S.onIce.home.D1, home_defense_2: S.onIce.home.D2, home_goalie: S.onIce.home.G,
+    away_forward_1: S.onIce.away.F1, away_forward_2: S.onIce.away.F2, away_forward_3: S.onIce.away.F3,
+    away_defense_1: S.onIce.away.D1, away_defense_2: S.onIce.away.D2, away_goalie: S.onIce.away.G,
+    game_id: S.gameId
+  };
+  
+  const existing = S.shifts.findIndex(s => s.shift_index === S.currentShiftIdx);
+  if (existing >= 0) S.shifts[existing] = shift;
+  else S.shifts.push(shift);
+}
+
+function showShiftEditor() {
+  let html = '<h3>Edit Shifts</h3><div style="max-height:350px;overflow-y:auto"><table>';
+  html += '<tr><th>Shift</th><th>P</th><th>Start</th><th>End</th><th>Type</th><th></th></tr>';
+  S.shifts.forEach((s, i) => {
+    html += `<tr><td>${s.shift_index}</td><td>${s.Period}</td><td>${s.shift_start_min}:${String(s.shift_start_sec||0).padStart(2,'0')}</td><td>${s.shift_end_min||''}:${String(s.shift_end_sec||0).padStart(2,'0')}</td><td>${s.shift_start_type||'-'}</td><td><button onclick="deleteShift(${i})">×</button></td></tr>`;
+  });
+  html += '</table></div><div class="modal-actions"><button onclick="hideModal()">Close</button></div>';
+  showModal(html);
+}
+
+function deleteShift(idx) {
+  if (confirm('Delete shift?')) { S.shifts.splice(idx, 1); showShiftEditor(); updateStats(); autoSave(); }
+}
+
+// =============================================================================
+// STATS
+// =============================================================================
+function updateStats() {
+  const unique = getUniqueEvents();
+  const goals = S.events.filter(e => e.event_type_ === 'Goal' && e.event_index_flag_ === 1);
+  
+  document.getElementById('statHomeG').textContent = goals.filter(e => e.team_venue_ === 'Home').length;
+  document.getElementById('statAwayG').textContent = goals.filter(e => e.team_venue_ === 'Away').length;
+  document.getElementById('statShots').textContent = unique.filter(e => ['Shot','Goal'].includes(e.event_type_)).length;
+  document.getElementById('statFO').textContent = unique.filter(e => e.event_type_ === 'Faceoff').length;
+  document.getElementById('statShifts').textContent = S.shifts.length;
+  document.getElementById('statXY').textContent = S.puckXYData.reduce((a, b) => a + b.points.length, 0);
+}
+
+// =============================================================================
+// UNDO/REDO
+// =============================================================================
+function saveHistory() {
+  const state = JSON.stringify({ events: S.events, shifts: S.shifts, puckXYData: S.puckXYData, playerXYData: S.playerXYData, shotXYData: S.shotXYData, onIce: S.onIce });
+  if (S.historyIdx < S.history.length - 1) S.history = S.history.slice(0, S.historyIdx + 1);
+  S.history.push(state);
+  if (S.history.length > S.maxHistory) S.history.shift();
+  S.historyIdx = S.history.length - 1;
+}
+
+function undo() {
+  if (S.historyIdx <= 0) { toast('Nothing to undo', 'error'); return; }
+  S.historyIdx--;
+  restoreHistory();
+  toast('Undone', 'success');
+}
+
+function redo() {
+  if (S.historyIdx >= S.history.length - 1) { toast('Nothing to redo', 'error'); return; }
+  S.historyIdx++;
+  restoreHistory();
+  toast('Redone', 'success');
+}
+
+function restoreHistory() {
+  const state = JSON.parse(S.history[S.historyIdx]);
+  S.events = state.events;
+  S.shifts = state.shifts;
+  S.puckXYData = state.puckXYData;
+  S.playerXYData = state.playerXYData;
+  S.shotXYData = state.shotXYData;
+  S.onIce = state.onIce;
+  renderAll();
+}
+
+// =============================================================================
+// LOCAL SAVE
+// =============================================================================
+function autoSave() { if (S.gameId) saveLocal(); }
+
+function saveLocal() {
+  if (!S.gameId) return;
+  const data = { gameId: S.gameId, game: S.game, events: S.events, shifts: S.shifts, onIce: S.onIce, roster: S.roster, currentShiftIdx: S.currentShiftIdx, period: S.period, videoOffset: S.videoOffset, puckXYData: S.puckXYData, playerXYData: S.playerXYData, shotXYData: S.shotXYData };
+  localStorage.setItem('bst_' + S.gameId, JSON.stringify(data));
+  document.getElementById('status').textContent = 'Saved ' + new Date().toLocaleTimeString();
+}
+
+function loadLocalGames() {
+  Object.keys(localStorage).filter(k => k.startsWith('bst_')).forEach(k => {
+    const gid = k.replace('bst_', '');
+    if (!S.ref.schedule.find(g => g.game_id === gid)) {
+      const opt = document.createElement('option');
+      opt.value = gid; opt.textContent = gid + ' (local)';
+      document.getElementById('gameSelect').appendChild(opt);
+    }
+  });
+}
+
+function loadLocalState() {
+  if (!S.gameId) return;
+  const saved = localStorage.getItem('bst_' + S.gameId);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      if (data.events && data.events.length > S.events.length) {
+        S.events = data.events; S.shifts = data.shifts || []; S.currentShiftIdx = data.currentShiftIdx || 1;
+        S.puckXYData = data.puckXYData || []; S.playerXYData = data.playerXYData || []; S.shotXYData = data.shotXYData || [];
+      }
+      if (data.onIce) S.onIce = data.onIce;
+      S.videoOffset = data.videoOffset || 0;
+    } catch (e) {}
+  }
+}
+
+// =============================================================================
+// SUPABASE PUSH/PULL
+// =============================================================================
+async function pushToSupabase() {
+  if (!S.gameId) { toast('No game loaded', 'error'); return; }
+  showLoading('Pushing to Supabase...');
+  
+  try {
+    // Delete existing data
+    await sbDelete('fact_events_player', 'game_id', S.gameId);
+    await sbDelete('fact_events', 'game_id', S.gameId);
+    await sbDelete('fact_shifts', 'game_id', S.gameId);
+    await sbDelete('fact_puck_xy_long', 'game_id', S.gameId);
+    await sbDelete('fact_shot_xy', 'game_id', S.gameId);
+    
+    // Push events
+    const unique = getUniqueEvents();
+    const factEvents = unique.map(e => ({
+      event_key: `EVT_${S.gameId}_${e.event_index}`, game_id: S.gameId, event_index: e.event_index,
+      period: e.period, event_type: e.event_type_, event_detail: e.event_detail_, event_detail_2: e.event_detail_2_,
+      event_successful: e.event_successful_, play_detail1: e.play_detail1_, play_detail2: e.play_detail2_,
+      zone: e.event_team_zone_, team_venue: e.team_venue_, linked_event_index: e.linked_event_index_ || null,
+      running_video_time: e.running_video_time, shift_index: e.shift_index,
+      x_coord: e.xy_x || null, y_coord: e.xy_y || null, net_location: e.net_location || null
+    }));
+    if (factEvents.length) await sbUpsert('fact_events', factEvents);
+    
+    // Push event players
+    const eventPlayers = S.events.filter(e => e.player_game_number_).map(e => ({
+      event_player_key: `EP_${S.gameId}_${e.event_index}_${e.role_number || 1}`,
+      event_key: `EVT_${S.gameId}_${e.event_index}`, game_id: S.gameId, event_index: e.event_index,
+      player_id: e.player_id, player_game_number: e.player_game_number_,
+      player_role: e.player_role, role_number: e.role_number, team_venue: e.team_venue_
+    }));
+    if (eventPlayers.length) await sbUpsert('fact_events_player', eventPlayers);
+    
+    // Push shifts
+    const factShifts = S.shifts.map(s => ({
+      shift_key: `SHF_${S.gameId}_${s.shift_index}`, game_id: S.gameId, shift_index: s.shift_index,
+      period: s.Period, shift_start_min: s.shift_start_min, shift_start_sec: s.shift_start_sec,
+      shift_end_min: s.shift_end_min, shift_end_sec: s.shift_end_sec, shift_start_type: s.shift_start_type,
+      home_forward_1: s.home_forward_1, home_forward_2: s.home_forward_2, home_forward_3: s.home_forward_3,
+      home_defense_1: s.home_defense_1, home_defense_2: s.home_defense_2, home_goalie: s.home_goalie,
+      away_forward_1: s.away_forward_1, away_forward_2: s.away_forward_2, away_forward_3: s.away_forward_3,
+      away_defense_1: s.away_defense_1, away_defense_2: s.away_defense_2, away_goalie: s.away_goalie
+    }));
+    if (factShifts.length) await sbUpsert('fact_shifts', factShifts);
+    
+    // Push puck XY
+    const puckXYLong = [];
+    S.puckXYData.forEach(evt => {
+      evt.points.forEach((pt, i) => {
+        puckXYLong.push({
+          puck_xy_key: `PXY_${S.gameId}_${evt.event_index}_${i + 1}`, game_id: S.gameId,
+          event_index: evt.event_index, event_key: `EVT_${S.gameId}_${evt.event_index}`,
+          point_number: i + 1, x: pt.x, y: pt.y, z: pt.z || 0, event_timestamp: pt.timestamp
+        });
+      });
+    });
+    if (puckXYLong.length) await sbUpsert('fact_puck_xy_long', puckXYLong);
+    
+    // Push shot XY
+    const shotXY = S.shotXYData.map(s => ({
+      shot_xy_key: `SHOTXY_${S.gameId}_${s.event_index}`, game_id: S.gameId, event_index: s.event_index,
+      event_key: `EVT_${S.gameId}_${s.event_index}`, player_id: s.player_id, team_venue: s.team_venue,
+      period: s.period, shot_x: s.shot_x, shot_y: s.shot_y, target_x: s.target_x, target_y: s.target_y,
+      net_location_id: s.net_location, shot_type: s.shot_type, shot_result: s.shot_result,
+      is_goal: s.is_goal, running_video_time: s.running_video_time
+    }));
+    if (shotXY.length) await sbUpsert('fact_shot_xy', shotXY);
+    
+    hideLoading();
+    toast(`Pushed: ${factEvents.length} events, ${factShifts.length} shifts, ${puckXYLong.length} XY`, 'success');
+  } catch (err) {
+    hideLoading();
+    toast('Error: ' + err.message, 'error');
+  }
+}
+
+async function syncFromSupabase() {
+  if (!S.gameId) { toast('Select a game', 'error'); return; }
+  await loadGame();
+}
+
+async function triggerETL() {
+  toast('ETL: Run python scripts/tracker_api.py --action run-etl --game-id ' + S.gameId, 'success');
+}
+
+// =============================================================================
+// IMPORT/EXPORT
+// =============================================================================
+function showImportModal() {
+  const html = `<h3>Import Tracking File</h3>
+    <p style="font-size:10px;color:var(--muted);margin-bottom:10px">Import from Excel tracking file (must have 'events' and 'shifts' sheets)</p>
+    <input type="file" id="importFile" accept=".xlsx,.xls" style="margin-bottom:10px">
+    <div class="modal-actions">
+      <button onclick="doImport()">Import</button>
+      <button onclick="hideModal()">Cancel</button>
+    </div>`;
+  showModal(html);
+}
+
+async function doImport() {
+  const file = document.getElementById('importFile').files[0];
+  if (!file) { toast('Select a file', 'error'); return; }
+  
+  showLoading('Importing...');
+  
+  try {
+    const data = await file.arrayBuffer();
+    const wb = XLSX.read(data);
+    
+    if (wb.SheetNames.includes('events')) {
+      const events = XLSX.utils.sheet_to_json(wb.Sheets['events']);
+      S.events = events.map(e => ({
+        event_index: e.event_index_ || e.event_index,
+        event_index_flag_: e.event_index_flag_,
+        period: e.period,
+        event_start_min_: e.event_start_min_,
+        event_start_sec_: e.event_start_sec_,
+        event_end_min_: e.event_end_min_,
+        event_end_sec_: e.event_end_sec_,
+        player_game_number_: e.player_game_number_,
+        event_team_zone_: e.event_team_zone_,
+        event_type_: e.event_type_,
+        event_detail_: e.event_detail_,
+        event_detail_2_: e.event_detail_2_,
+        event_successful_: e.event_successful_,
+        play_detail1_: e.play_detail1_,
+        play_detail2_: e.play_detail2_,
+        team_: e.team_,
+        team_venue_: e.team_venue_,
+        linked_event_index_: e.linked_event_index_,
+        role_number: e.role_number,
+        player_role: e.player_role,
+        game_id: S.gameId
+      }));
+    }
+    
+    if (wb.SheetNames.includes('shifts')) {
+      const shifts = XLSX.utils.sheet_to_json(wb.Sheets['shifts']);
+      S.shifts = shifts;
+      S.currentShiftIdx = shifts.length + 1;
+    }
+    
+    hideModal();
+    hideLoading();
+    renderAll();
+    toast('Imported ' + S.events.length + ' events', 'success');
+    saveHistory();
+    autoSave();
+    
+  } catch (err) {
+    hideLoading();
+    toast('Import error: ' + err.message, 'error');
+  }
+}
+
+function exportXLSX() {
+  if (!S.gameId) { toast('No game', 'error'); return; }
+  
+  const eventsData = S.events.map(e => ({
+    event_index_flag_: e.event_index_flag_, event_start_min_: e.event_start_min_, event_start_sec_: e.event_start_sec_,
+    event_end_min_: e.event_end_min_, event_end_sec_: e.event_end_sec_, player_game_number_: e.player_game_number_,
+    event_team_zone_: e.event_team_zone_, event_type_: e.event_type_, event_detail_: e.event_detail_,
+    event_detail_2_: e.event_detail_2_, event_successful_: e.event_successful_, play_detail1_: e.play_detail1_,
+    play_detail2_: e.play_detail2_, team_: e.team_, event_index_: e.event_index, linked_event_index_: e.linked_event_index_,
+    period: e.period, running_video_time: e.running_video_time, shift_index: e.shift_index,
+    role_number: e.role_number, player_role: e.player_role, xy_x: e.xy_x, xy_y: e.xy_y, net_location: e.net_location
+  }));
+  
+  const shiftsData = S.shifts.map(s => ({
+    shift_index: s.shift_index, Period: s.Period, shift_start_min: s.shift_start_min, shift_start_sec: s.shift_start_sec,
+    shift_end_min: s.shift_end_min, shift_end_sec: s.shift_end_sec, shift_start_type: s.shift_start_type,
+    home_forward_1: s.home_forward_1, home_forward_2: s.home_forward_2, home_forward_3: s.home_forward_3,
+    home_defense_1: s.home_defense_1, home_defense_2: s.home_defense_2, home_goalie: s.home_goalie,
+    away_forward_1: s.away_forward_1, away_forward_2: s.away_forward_2, away_forward_3: s.away_forward_3,
+    away_defense_1: s.away_defense_1, away_defense_2: s.away_defense_2, away_goalie: s.away_goalie
+  }));
+  
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(eventsData), 'events');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(shiftsData), 'shifts');
+  XLSX.writeFile(wb, `${S.gameId}_tracking.xlsx`);
+  toast('Exported!', 'success');
+}
+
+// =============================================================================
+// NEW GAME
+// =============================================================================
+function showNewGameModal() {
+  const html = `<h3>Create New Game</h3>
+    <div class="modal-row"><label>Game ID</label><input type="text" id="newGameId" placeholder="e.g. 19050"></div>
+    <div class="modal-row"><label>Home Team</label><input type="text" id="newHomeTeam" placeholder="Home Team"></div>
+    <div class="modal-row"><label>Away Team</label><input type="text" id="newAwayTeam" placeholder="Away Team"></div>
+    <div class="modal-row"><label>Home Roster</label><input type="text" id="newHomeRoster" placeholder="1,2,3,4,5..."></div>
+    <div class="modal-row"><label>Away Roster</label><input type="text" id="newAwayRoster" placeholder="11,12,13,14..."></div>
+    <div class="modal-actions">
+      <button onclick="createNewGame()" class="btn-green">Create</button>
+      <button onclick="hideModal()">Cancel</button>
+    </div>`;
+  showModal(html);
+}
+
+function createNewGame() {
+  const gid = document.getElementById('newGameId').value.trim();
+  if (!gid) { toast('Enter game ID', 'error'); return; }
+  
+  S.gameId = gid;
+  S.game = { game_id: gid, home_team_name: document.getElementById('newHomeTeam').value || 'Home', away_team_name: document.getElementById('newAwayTeam').value || 'Away' };
+  S.events = []; S.shifts = []; S.currentShiftIdx = 1; S.puckXYData = []; S.playerXYData = []; S.shotXYData = [];
+  S.onIce = { home: {F1:null,F2:null,F3:null,D1:null,D2:null,G:null}, away: {F1:null,F2:null,F3:null,D1:null,D2:null,G:null} };
+  
+  const homeNums = (document.getElementById('newHomeRoster').value || '').split(',').map(n => parseInt(n.trim())).filter(n => n);
+  const awayNums = (document.getElementById('newAwayRoster').value || '').split(',').map(n => parseInt(n.trim())).filter(n => n);
+  S.roster.home = homeNums.map(n => ({ number: n, playerId: '', name: '' }));
+  S.roster.away = awayNums.map(n => ({ number: n, playerId: '', name: '' }));
+  
+  hideModal();
+  renderAll();
+  saveHistory();
+  saveLocal();
+  
+  const opt = document.createElement('option');
+  opt.value = gid; opt.textContent = gid + ' (new)';
+  document.getElementById('gameSelect').appendChild(opt);
+  document.getElementById('gameSelect').value = gid;
+  
+  toast('Game created', 'success');
+}
+
+// =============================================================================
+// RENDER ALL
+// =============================================================================
+function renderAll() {
+  renderOnIce(); renderRoster(); renderPlayerSlots(); renderEvents(); updateStats();
+  document.getElementById('shiftNum').textContent = S.currentShiftIdx;
+}
+
+// =============================================================================
+// UI HELPERS
+// =============================================================================
+function showLoading(msg) { document.getElementById('loadingText').textContent = msg || 'Loading...'; document.getElementById('loading').classList.remove('hidden'); }
+function hideLoading() { document.getElementById('loading').classList.add('hidden'); }
+function showModal(html) { document.getElementById('modalContent').innerHTML = html; document.getElementById('modalBg').classList.add('show'); }
+function hideModal() { document.getElementById('modalBg').classList.remove('show'); }
+function toast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show ' + (type || '');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// =============================================================================
+// START
+// =============================================================================
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

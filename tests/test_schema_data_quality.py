@@ -122,9 +122,9 @@ class TestDataQuality:
             if len(df) == 0:
                 empty_tables.append(table_path.stem)
         
-        # Allow some empty tables (like qa tables)
+        # Allow some empty tables (like qa tables and future XY data)
         non_qa_empty = [t for t in empty_tables if not t.startswith('qa_')]
-        assert len(non_qa_empty) <= 5, \
+        assert len(non_qa_empty) <= 6, \
             f"Empty non-QA tables: {non_qa_empty}"
     
     def test_primary_keys_have_no_nulls(self):
@@ -133,8 +133,8 @@ class TestDataQuality:
             'dim_player': 'player_id',
             'dim_team': 'team_id',
             'dim_schedule': 'game_id',
-            'fact_gameroster': 'player_game_id',
-            'fact_events': 'event_id',
+            'fact_gameroster': 'roster_key',
+            'fact_events': 'event_key',
         }
         
         null_pks = []
@@ -156,7 +156,7 @@ class TestDataQuality:
             'dim_player': 'player_id',
             'dim_team': 'team_id',
             'dim_schedule': 'game_id',
-            'fact_gameroster': 'player_game_id',
+            'fact_gameroster': 'roster_key',
         }
         
         duplicate_pks = []

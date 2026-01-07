@@ -1,0 +1,50 @@
+{
+  "18969": {
+    "home": 4,
+    "away": 3,
+    "home_team": "Velodrome",
+    "away_team": "Outlaws",
+    "source": "noradhockey.com",
+    "updated_at": "2025-12-31T05:06:52.947833"
+  },
+  "18977": {
+    "home": 3,
+    "away": 2,
+    "home_team": "Velodrome",
+    "away_team": "HollowBrook",
+    "source": "noradhockey.com",
+    "updated_at": "2025-12-31T05:06:52.948258"
+  },
+  "18991": {
+    "home": 2,
+    "away": 4,
+    "home_team": "Grizzlies",
+    "away_team": "Ravens",
+    "source": "noradhockey.com",
+    "updated_at": "2025-12-31T01:56:56.004851"
+  },
+  "19011": {
+    "home": 6,
+    "away": 2,
+    "home_team": "Nighthawks",
+    "away_team": "Wolverines",
+    "source": "noradhockey.com",
+    "updated_at": "2025-12-31T01:56:56.005138"
+  },
+  "18981": {
+    "home": 2,
+    "away": 1,
+    "home_team": "Unknown",
+    "away_team": "Unknown",
+    "source": "noradhockey.com",
+    "updated_at": "2025-12-31T05:06:52.948616"
+  },
+  "18987": {
+    "home": 1,
+    "away": 0,
+    "home_team": "Unknown",
+    "away_team": "Unknown",
+    "source": "noradhockey.com",
+    "updated_at": "2025-12-31T05:06:52.948918"
+  }
+}

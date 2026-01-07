@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BenchSight Tracker Pro</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root {
+  --bg: #0d1117;
+  --card: #161b22;
+  --border: #30363d;
+  --text: #c9d1d9;
+  --muted: #8b949e;
+  --accent: #58a6ff;
+  --home: #238636;
+  --away: #da3633;
+  --success: #3fb950;
+  --warning: #d29922;
+  --input: #21262d;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 12px;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Layout */
+.app {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100vh;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+
+header h1 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+header select, header input, header button {
+  background: var(--input);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+header button { cursor: pointer; }
+header button:hover { background: var(--border); }
+
+.btn-primary { background: var(--accent) !important; border-color: var(--accent) !important; }
+.btn-success { background: var(--success) !important; border-color: var(--success) !important; }
+.btn-warning { background: var(--warning) !important; border-color: var(--warning) !important; color: #000 !important; }
+
+.main {
+  display: grid;
+  grid-template-columns: 220px 1fr 280px;
+  gap: 8px;
+  padding: 8px;
+  overflow: hidden;
+}
+
+.panel {
+  background: var(--card);
+  border-radius: 8px;
+  padding: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel h3 {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+/* Left Panel - Roster */
+.left-panel { display: flex; flex-direction: column; gap: 8px; }
+
+.team-tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.team-tab {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 11px;
+  opacity: 0.6;
+  transition: all 0.2s;
+}
+
+.team-tab.home { background: var(--home); color: white; }
+.team-tab.away { background: var(--away); color: white; }
+.team-tab.active { opacity: 1; box-shadow: 0 0 0 2px white; }
+
+.period-tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.period-tab {
+  flex: 1;
+  padding: 6px;
+  background: var(--input);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  text-align: center;
+}
+
+.period-tab.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.on-ice-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.ice-slot {
+  background: var(--input);
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  padding: 6px;
+  text-align: center;
+  cursor: pointer;
+  min-height: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.ice-slot:hover { border-color: var(--accent); }
+.ice-slot.active { border-color: var(--accent); background: var(--card); }
+.ice-slot.filled { border-color: var(--success); }
+.ice-slot .label { font-size: 9px; color: var(--muted); }
+.ice-slot .player { font-size: 11px; font-weight: 600; }
+.ice-slot .number { font-size: 14px; font-weight: 700; color: var(--accent); }
+
+.roster-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-content: flex-start;
+}
+
+.player-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--input);
+  transition: all 0.15s;
+}
+
+.player-chip:hover { border-color: var(--accent); }
+.player-chip.selected { background: var(--accent); color: white; border-color: var(--accent); }
+.player-chip.on-ice { background: var(--success); color: white; border-color: var(--success); }
+.player-chip .num { font-weight: 700; }
+.player-chip .pos { color: var(--muted); font-size: 9px; }
+
+/* Center Panel */
+.center-panel { display: flex; flex-direction: column; gap: 8px; }
+
+.clock-section {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  background: var(--input);
+  border-radius: 8px;
+}
+
+.clock-display {
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.clock-inputs {
+  display: flex;
+  gap: 8px;
+}
+
+.clock-input {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.clock-input label {
+  font-size: 9px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.clock-input input {
+  width: 70px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 14px;
+  text-align: center;
+}
+
+.video-section {
+  height: 200px;
+  background: #000;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.video-section iframe {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+}
+
+.video-placeholder {
+  color: var(--muted);
+  text-align: center;
+}
+
+.video-controls {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  right: 8px;
+  display: flex;
+  gap: 8px;
+}
+
+.video-controls input {
+  flex: 1;
+  background: var(--input);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+/* Event List */
+.event-list-panel { flex: 1; min-height: 0; }
+
+.event-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.event-item {
+  display: grid;
+  grid-template-columns: 40px 60px 1fr 60px 30px;
+  gap: 8px;
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  align-items: center;
+  font-size: 11px;
+}
+
+.event-item:hover { background: var(--input); }
+.event-item.active { background: var(--accent); color: white; }
+.event-item.linked { border-left: 3px solid var(--warning); }
+
+.event-item .idx {
+  font-weight: 700;
+  font-family: monospace;
+  color: var(--muted);
+}
+
+.event-item .time {
+  font-family: monospace;
+  font-size: 10px;
+}
+
+.event-item .type {
+  font-weight: 600;
+}
+
+.event-item .detail {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.event-item .players {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.event-item .actions button {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* Right Panel - Event Entry */
+.right-panel { display: flex; flex-direction: column; gap: 8px; }
+
+.event-types {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.evt-btn {
+  padding: 10px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  border-radius: 6px;
+  border: 2px solid var(--border);
+  background: var(--input);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.evt-btn:hover { border-color: var(--accent); }
+.evt-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+.evt-btn span { font-size: 10px; font-weight: 600; }
+.evt-btn kbd {
+  font-size: 9px;
+  color: var(--muted);
+  background: var(--bg);
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+.evt-btn.active kbd { background: rgba(255,255,255,0.2); color: white; }
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-group label {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.form-group select, .form-group input {
+  background: var(--input);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.success-toggle {
+  display: flex;
+  gap: 4px;
+}
+
+.success-btn {
+  flex: 1;
+  padding: 8px;
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  background: var(--input);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.success-btn.success.active { background: var(--success); color: white; border-color: var(--success); }
+.success-btn.fail.active { background: var(--away); color: white; border-color: var(--away); }
+
+.player-select-section h4 {
+  font-size: 10px;
+  color: var(--muted);
+  margin: 8px 0 4px 0;
+}
+
+.selected-players {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-height: 30px;
+  padding: 4px;
+  background: var(--input);
+  border-radius: 4px;
+}
+
+.selected-player {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: var(--accent);
+  color: white;
+  border-radius: 4px;
+  font-size: 10px;
+}
+
+.selected-player .role {
+  font-size: 8px;
+  background: rgba(255,255,255,0.2);
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+.selected-player .remove {
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.selected-player .remove:hover { opacity: 1; }
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.action-buttons button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.link-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: var(--input);
+  border-radius: 6px;
+}
+
+.link-section label {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.link-section select {
+  flex: 1;
+}
+
+/* Modal */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-overlay.show { display: flex; }
+
+.modal {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal h3 { margin-bottom: 16px; }
+
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  justify-content: flex-end;
+}
+
+/* Stats Bar */
+.stats-bar {
+  display: flex;
+  gap: 16px;
+  padding: 8px 16px;
+  background: var(--input);
+  border-radius: 6px;
+  font-size: 11px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-item .label { color: var(--muted); }
+.stat-item .value { font-weight: 600; color: var(--accent); }
+
+/* Keyboard hint */
+.keyboard-hint {
+  position: fixed;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--card);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 10px;
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+
+.keyboard-hint kbd {
+  background: var(--input);
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin: 0 2px;
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <h1>🏒 BenchSight Tracker Pro</h1>
+    <select id="gameSelect" onchange="loadGame(this.value)">
+      <option value="">-- Select Game --</option>
+    </select>
+    <button onclick="showNewGameModal()" class="btn-success">+ New Game</button>
+    <div style="flex:1"></div>
+    <span id="statusText" style="color:var(--muted)">Load a game to begin</span>
+    <button onclick="saveToLocal()" title="Save to browser">💾 Save</button>
+    <button onclick="exportTracking()" class="btn-warning" title="Export Excel">📥 Export</button>
+  </header>
+
+  <div class="main">
+    <!-- Left Panel: Roster & On-Ice -->
+    <div class="left-panel">
+      <div class="panel">
+        <div class="team-tabs">
+          <button class="team-tab home active" onclick="setTeam('home')" id="homeTab">HOME</button>
+          <button class="team-tab away" onclick="setTeam('away')" id="awayTab">AWAY</button>
+        </div>
+        <div class="period-tabs" style="margin-top:8px">
+          <button class="period-tab active" onclick="setPeriod(1)">P1</button>
+          <button class="period-tab" onclick="setPeriod(2)">P2</button>
+          <button class="period-tab" onclick="setPeriod(3)">P3</button>
+          <button class="period-tab" onclick="setPeriod(4)">OT</button>
+        </div>
+      </div>
+      
+      <div class="panel" style="flex:1">
+        <h3>On Ice - <span id="onIceTeamLabel">Home</span></h3>
+        <div class="on-ice-grid" id="onIceGrid">
+          <div class="ice-slot" data-slot="F1" onclick="selectSlot('F1')"><div class="label">LW</div><div class="number">-</div></div>
+          <div class="ice-slot" data-slot="F2" onclick="selectSlot('F2')"><div class="label">C</div><div class="number">-</div></div>
+          <div class="ice-slot" data-slot="F3" onclick="selectSlot('F3')"><div class="label">RW</div><div class="number">-</div></div>
+          <div class="ice-slot" data-slot="D1" onclick="selectSlot('D1')"><div class="label">LD</div><div class="number">-</div></div>
+          <div class="ice-slot" data-slot="D2" onclick="selectSlot('D2')"><div class="label">RD</div><div class="number">-</div></div>
+          <div class="ice-slot" data-slot="G" onclick="selectSlot('G')"><div class="label">G</div><div class="number">-</div></div>
+        </div>
+        
+        <h3>Bench</h3>
+        <div class="roster-list" id="rosterList"></div>
+      </div>
+    </div>
+
+    <!-- Center Panel: Video, Clock, Event List -->
+    <div class="center-panel">
+      <div class="panel">
+        <div class="clock-section">
+          <div class="clock-display" id="clockDisplay">20:00</div>
+          <div class="clock-inputs">
+            <div class="clock-input">
+              <label>Start</label>
+              <input type="text" id="timeStart" value="20:00" onchange="updateClock()">
+            </div>
+            <div class="clock-input">
+              <label>End</label>
+              <input type="text" id="timeEnd" value="20:00">
+            </div>
+          </div>
+          <button onclick="syncTimeEnd()" style="padding:8px 12px">⬇️ Sync</button>
+        </div>
+      </div>
+
+      <div class="panel video-section" id="videoSection">
+        <div class="video-placeholder">
+          <div>📹 Video</div>
+          <div style="font-size:10px;margin-top:4px">Paste YouTube URL below</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:-4px">
+        <input type="text" id="videoUrl" placeholder="YouTube URL..." style="flex:1;padding:8px;background:var(--input);border:1px solid var(--border);border-radius:6px;color:var(--text)">
+        <button onclick="loadVideo()" style="padding:8px 16px">Load</button>
+      </div>
+
+      <div class="panel event-list-panel" style="flex:1">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h3>Events (<span id="eventCount">0</span>)</h3>
+          <div>
+            <button onclick="scrollToBottom()" style="padding:4px 8px;font-size:10px">⬇️ Latest</button>
+          </div>
+        </div>
+        <div class="event-list" id="eventList"></div>
+      </div>
+      
+      <div class="stats-bar">
+        <div class="stat-item"><span class="label">Home:</span><span class="value" id="homeGoals">0</span></div>
+        <div class="stat-item"><span class="label">Away:</span><span class="value" id="awayGoals">0</span></div>
+        <div class="stat-item"><span class="label">Shots:</span><span class="value" id="totalShots">0</span></div>
+        <div class="stat-item"><span class="label">Shifts:</span><span class="value" id="shiftCount">0</span></div>
+      </div>
+    </div>
+
+    <!-- Right Panel: Event Entry -->
+    <div class="right-panel">
+      <div class="panel" style="flex:1">
+        <h3>Event Entry</h3>
+        
+        <div class="event-types">
+          <button class="evt-btn" onclick="setEventType('Faceoff')" data-type="Faceoff"><span>Faceoff</span><kbd>F</kbd></button>
+          <button class="evt-btn" onclick="setEventType('Shot')" data-type="Shot"><span>Shot</span><kbd>S</kbd></button>
+          <button class="evt-btn" onclick="setEventType('Goal')" data-type="Goal"><span>Goal</span><kbd>G</kbd></button>
+          <button class="evt-btn" onclick="setEventType('Save')" data-type="Save"><span>Save</span><kbd>V</kbd></button>
+          <button class="evt-btn" onclick="setEventType('Pass')" data-type="Pass"><span>Pass</span><kbd>P</kbd></button>
+          <button class="evt-btn" onclick="setEventType('Turnover')" data-type="Turnover"><span>Turnover</span><kbd>T</kbd></button>
+          <button class="evt-btn" onclick="setEventType('Zone_Entry')" data-type="Zone_Entry"><span>Zone In</span><kbd>Z</kbd></button>
+          <button class="evt-btn" onclick="setEventType('Zone_Exit')" data-type="Zone_Exit"><span>Zone Out</span><kbd>X</kbd></button>
+          <button class="evt-btn" onclick="setEventType('Hit')" data-type="Hit"><span>Hit</span><kbd>H</kbd></button>
+          <button class="evt-btn" onclick="setEventType('Block')" data-type="Block"><span>Block</span><kbd>B</kbd></button>
+          <button class="evt-btn" onclick="setEventType('PuckRetrieval')" data-type="PuckRetrieval"><span>Retrieval</span><kbd>R</kbd></button>
+          <button class="evt-btn" onclick="setEventType('Stoppage')" data-type="Stoppage"><span>Stop</span><kbd>W</kbd></button>
+        </div>
+
+        <div class="form-row" style="margin-top:12px">
+          <div class="form-group">
+            <label>Detail 1</label>
+            <select id="detail1"></select>
+          </div>
+          <div class="form-group">
+            <label>Detail 2</label>
+            <select id="detail2"></select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Zone</label>
+            <select id="zoneSelect">
+              <option value="OZ">Offensive (OZ)</option>
+              <option value="NZ">Neutral (NZ)</option>
+              <option value="DZ">Defensive (DZ)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Success</label>
+            <div class="success-toggle">
+              <button class="success-btn success active" onclick="setSuccess('s')" id="successBtn">✓</button>
+              <button class="success-btn fail" onclick="setSuccess('u')" id="failBtn">✗</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="link-section">
+          <label>Link to:</label>
+          <select id="linkedEvent">
+            <option value="">-- None --</option>
+          </select>
+          <button onclick="linkToPrevious()" title="Link to last event">⬆️ Prev</button>
+        </div>
+
+        <div class="player-select-section">
+          <h4>Players Involved (click roster or on-ice)</h4>
+          <div class="selected-players" id="selectedPlayers">
+            <span style="color:var(--muted);font-size:10px">No players selected</span>
+          </div>
+        </div>
+
+        <div class="action-buttons">
+          <button onclick="clearEvent()" style="background:var(--input)">Clear</button>
+          <button onclick="saveEvent()" class="btn-success">Save Event (Enter)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="keyboard-hint">
+  <kbd>F</kbd>aceoff <kbd>S</kbd>hot <kbd>G</kbd>oal <kbd>V</kbd>Save <kbd>P</kbd>ass <kbd>T</kbd>urnover <kbd>Z</kbd>one <kbd>H</kbd>it <kbd>B</kbd>lock <kbd>R</kbd>etrieval | <kbd>Enter</kbd> Save | <kbd>1-4</kbd> Period
+</div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)hideModal()">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<script>
+// ============================================================================
+// DATA STRUCTURES
+// ============================================================================
+
+// App state
+const STATE = {
+  gameId: null,
+  period: 1,
+  team: 'home', // Currently selected team for event entry
+  currentEvent: {
+    type: null,
+    detail1: '',
+    detail2: '',
+    zone: 'NZ',
+    success: 's',
+    linkedTo: null,
+    players: [] // [{number, playerId, role}]
+  },
+  selectedSlot: null,
+  events: [],
+  shifts: [],
+  currentShiftIndex: 0,
+  onIce: {
+    home: { F1: null, F2: null, F3: null, D1: null, D2: null, G: null },
+    away: { F1: null, F2: null, F3: null, D1: null, D2: null, G: null }
+  },
+  roster: {
+    home: [],
+    away: []
+  },
+  game: null
+};
+
+// Reference data (loaded from CSVs)
+let SCHEDULE = [];
+let PLAYERS = [];
+let ROSTER_DATA = [];
+
+// Event detail options
+const EVENT_DETAILS = {
+  'Faceoff': {
+    detail1: ['Faceoff_GameStart', 'Faceoff_AfterGoal', 'Faceoff_AfterIcing', 'Faceoff_AfterOffside', 'Faceoff_AfterPenalty', 'Faceoff_AfterStoppage'],
+    detail2: []
+  },
+  'Shot': {
+    detail1: ['Shot_Wrist', 'Shot_Slap', 'Shot_Snap', 'Shot_Backhand', 'Shot_Tip', 'Shot_Deflection', 'Shot_Wrap'],
+    detail2: ['Shot-OnNet', 'Shot-Blocked', 'Shot-Missed', 'Shot-Post', 'Shot Goal']
+  },
+  'Goal': {
+    detail1: ['Goal_EvenStrength', 'Goal_PowerPlay', 'Goal_ShortHanded', 'Goal_EmptyNet', 'Goal_Penalty'],
+    detail2: ['Goal Scored']
+  },
+  'Save': {
+    detail1: ['Save_Glove', 'Save_Blocker', 'Save_Pad', 'Save_Body', 'Save_Stick'],
+    detail2: ['Save-Rebound', 'Save-Freeze', 'Save-Cover']
+  },
+  'Pass': {
+    detail1: ['Pass_Completed', 'Pass_Incomplete', 'Pass_Intercepted'],
+    detail2: ['Pass-Forehand', 'Pass-Backhand', 'Pass-Saucer', 'Pass-Bank', 'Pass-Chip', 'Pass-Drop']
+  },
+  'Turnover': {
+    detail1: ['Turnover_Giveaway', 'Turnover_Takeaway', 'Turnover_LostBattle'],
+    detail2: ['Giveaway-BadPass', 'Giveaway-LostPuck', 'Takeaway-Stick', 'Takeaway-Body']
+  },
+  'Zone_Entry': {
+    detail1: ['ZoneEntry-Carry', 'ZoneEntry-Pass', 'ZoneEntry-DumpIn', 'ZoneEntry-DumpChase'],
+    detail2: ['Entry-Controlled', 'Entry-Uncontrolled']
+  },
+  'Zone_Exit': {
+    detail1: ['ZoneExit-Carry', 'ZoneExit-Pass', 'ZoneExit-Clear', 'ZoneExit-Dump'],
+    detail2: ['Exit-Clean', 'Exit-Pressured']
+  },
+  'Hit': {
+    detail1: ['Hit_Body', 'Hit_Stick', 'Hit_Board'],
+    detail2: ['Hit-Clean', 'Hit-Penalty']
+  },
+  'Block': {
+    detail1: ['Block_Shot', 'Block_Pass'],
+    detail2: []
+  },
+  'PuckRetrieval': {
+    detail1: ['Retrieval_Board', 'Retrieval_Corner', 'Retrieval_Slot', 'Retrieval_Rebound'],
+    detail2: []
+  },
+  'Stoppage': {
+    detail1: ['Stoppage_Whistle', 'Stoppage_Icing', 'Stoppage_Offside', 'Stoppage_Penalty', 'Stoppage_GoalieFreeze', 'Stoppage_PuckOutOfPlay'],
+    detail2: []
+  }
+};
+
+// ============================================================================
+// INITIALIZATION
+// ============================================================================
+
+async function init() {
+  console.log('Initializing BenchSight Tracker Pro...');
+  
+  // Load data from CSVs
+  await loadReferenceData();
+  
+  // Setup keyboard shortcuts
+  setupKeyboard();
+  
+  // Restore from localStorage if available
+  restoreFromLocal();
+  
+  // Update UI
+  updateStatus();
+  
+  console.log('Ready!');
+}
+
+async function loadReferenceData() {
+  try {
+    // In production, load from actual CSV files or API
+    // For now, we'll embed the data or fetch from local files
+    
+    // Try to fetch from relative paths (when served from project root)
+    try {
+      const scheduleResp = await fetch('data/output/dim_schedule.csv');
+      if (scheduleResp.ok) {
+        const text = await scheduleResp.text();
+        SCHEDULE = parseCSV(text);
+        console.log(`Loaded ${SCHEDULE.length} games from schedule`);
+      }
+    } catch (e) {
+      console.log('Could not load schedule CSV, using embedded data');
+    }
+    
+    try {
+      const rosterResp = await fetch('data/output/fact_gameroster.csv');
+      if (rosterResp.ok) {
+        const text = await rosterResp.text();
+        ROSTER_DATA = parseCSV(text);
+        console.log(`Loaded ${ROSTER_DATA.length} roster entries`);
+      }
+    } catch (e) {
+      console.log('Could not load roster CSV');
+    }
+    
+    try {
+      const playersResp = await fetch('data/output/dim_player.csv');
+      if (playersResp.ok) {
+        const text = await playersResp.text();
+        PLAYERS = parseCSV(text);
+        console.log(`Loaded ${PLAYERS.length} players`);
+      }
+    } catch (e) {
+      console.log('Could not load players CSV');
+    }
+    
+    populateGameSelect();
+    
+  } catch (error) {
+    console.error('Error loading reference data:', error);
+  }
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  if (lines.length === 0) return [];
+  
+  const headers = parseCSVLine(lines[0]);
+  const data = [];
+  
+  for (let i = 1; i < lines.length; i++) {
+    const values = parseCSVLine(lines[i]);
+    const row = {};
+    headers.forEach((h, idx) => {
+      row[h] = values[idx] || '';
+    });
+    data.push(row);
+  }
+  
+  return data;
+}
+
+function parseCSVLine(line) {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+  
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) {
+      result.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  result.push(current.trim());
+  
+  return result;
+}
+
+function populateGameSelect() {
+  const select = document.getElementById('gameSelect');
+  select.innerHTML = '<option value="">-- Select Game --</option>';
+  
+  // Add recent games from schedule
+  const recentGames = SCHEDULE
+    .filter(g => g.game_id)
+    .sort((a, b) => (b.game_date_str || '').localeCompare(a.game_date_str || ''))
+    .slice(0, 50);
+  
+  recentGames.forEach(g => {
+    const opt = document.createElement('option');
+    opt.value = g.game_id;
+    opt.textContent = `${g.game_id} - ${g.game_date_str || ''} ${g.home_team_name || ''} vs ${g.away_team_name || ''}`;
+    select.appendChild(opt);
+  });
+  
+  // Also add any saved games from localStorage
+  const savedGames = JSON.parse(localStorage.getItem('benchsight_games') || '{}');
+  Object.keys(savedGames).forEach(gid => {
+    if (!recentGames.find(g => g.game_id === gid)) {
+      const opt = document.createElement('option');
+      opt.value = gid;
+      opt.textContent = `${gid} (saved)`;
+      select.appendChild(opt);
+    }
+  });
+}
+</script>
+</body>
+</html>

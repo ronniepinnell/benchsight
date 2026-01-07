@@ -1,0 +1,563 @@
+game_id,game_date_str,game_time,season,home_team_id,away_team_id,home_team_name,away_team_name,home_goals,away_goals,game_type,game_url
+18619,2025-07-13 00:00:00,18:45:00,2025,N10022,N10023,Red,Green,4,5,Regular,https://www.noradhockey.com/event/18619/
+10063,2025-04-27 00:00:00,,20242025,N10003,N10009,HollowBrook,Triple J,1,2,Playoffs,https://www.noradhockey.com/event/tbd-vs-tbd-3/
+10074,2025-04-13 00:00:00,,20242025,N10008,N10003,Platinum,HollowBrook,2,4,Playoffs,https://www.noradhockey.com/event/tbd-vs-tbd/
+10073,2025-04-13 00:00:00,,20242025,N10004,N10009,Nelson,Triple J,4,7,Playoffs,https://www.noradhockey.com/event/tbd-vs-tbd-2/
+10066,2025-04-06 00:00:00,,20242025,N10008,N10004,Platinum,Nelson,3,4,Playoffs,https://www.noradhockey.com/event/platinum-vs-nelson/
+10065,2025-04-06 00:00:00,,20242025,N10003,N10005,HollowBrook,OS Offices,9,0,Playoffs,https://www.noradhockey.com/event/hollowbrook-vs-os-offices/
+10064,2025-04-06 00:00:00,,20242025,N10001,N10009,Amos,Triple J,1,2,Playoffs,https://www.noradhockey.com/event/amos-vs-triple-j/
+10069,2025-03-30 00:00:00,,20242025,N10008,N10002,Platinum,Ace,12,2,Playoffs,https://www.noradhockey.com/event/platinum-vs-ace/
+10068,2025-03-30 00:00:00,,20242025,N10003,N10007,HollowBrook,Outlaws,6,2,Playoffs,https://www.noradhockey.com/event/hollowbrook-vs-outlaws/
+10067,2025-03-30 00:00:00,,20242025,N10001,N10006,Amos,Orphans,5,3,Playoffs,https://www.noradhockey.com/event/amos-vs-orphans/
+10072,2025-03-23 00:00:00,,20242025,N10004,N10002,Nelson,Ace,7,4,Playoffs,https://www.noradhockey.com/event/seed-6-vs-seed-9/
+10071,2025-03-23 00:00:00,,20242025,N10005,N10007,OS Offices,Outlaws,5,4,Playoffs,https://www.noradhockey.com/event/seed-5-vs-seed-8/
+10070,2025-03-23 00:00:00,,20242025,N10009,N10006,Triple J,Orphans,5,1,Playoffs,https://www.noradhockey.com/event/seed-4-vs-seed-7/
+18001,2025-03-16 00:00:00,,20242025,N10004,N10007,Nelson,Outlaws,0,3,Regular,https://www.noradhockey.com/event/18001/
+18000,2025-03-16 00:00:00,,20242025,N10001,N10006,Amos,Orphans,7,2,Regular,https://www.noradhockey.com/event/18000/
+17999,2025-03-16 00:00:00,,20242025,N10005,N10002,OS Offices,Ace,5,6,Regular,https://www.noradhockey.com/event/17999/
+17998,2025-03-16 00:00:00,,20242025,N10008,N10009,Platinum,Triple J,4,3,Regular,https://www.noradhockey.com/event/17998/
+18051,2025-03-09 00:00:00,,20242025,N10003,N10006,HollowBrook,Orphans,4,3,Regular,https://www.noradhockey.com/event/18051/
+18050,2025-03-09 00:00:00,,20242025,N10004,N10002,Nelson,Ace,4,4,Regular,https://www.noradhockey.com/event/18050/
+18049,2025-03-09 00:00:00,,20242025,N10001,N10009,Amos,Triple J,4,6,Regular,https://www.noradhockey.com/event/18049/
+18048,2025-03-09 00:00:00,,20242025,N10005,N10008,OS Offices,Platinum,3,6,Regular,https://www.noradhockey.com/event/18048/
+18046,2025-03-02 00:00:00,,20242025,N10004,N10007,Nelson,Outlaws,6,3,Regular,https://www.noradhockey.com/event/18046/
+18045,2025-03-02 00:00:00,,20242025,N10001,N10006,Amos,Orphans,7,5,Regular,https://www.noradhockey.com/event/18045/
+18044,2025-03-02 00:00:00,,20242025,N10005,N10002,OS Offices,Ace,3,4,Regular,https://www.noradhockey.com/event/18044/
+18043,2025-03-02 00:00:00,,20242025,N10008,N10009,Platinum,Triple J,3,1,Regular,https://www.noradhockey.com/event/18043/
+18041,2025-02-23 00:00:00,,20242025,N10001,N10003,Amos,HollowBrook,6,5,Regular,https://www.noradhockey.com/event/18041/
+18040,2025-02-23 00:00:00,,20242025,N10005,N10007,OS Offices,Outlaws,2,2,Regular,https://www.noradhockey.com/event/18040/
+18039,2025-02-23 00:00:00,,20242025,N10008,N10006,Platinum,Orphans,5,5,Regular,https://www.noradhockey.com/event/18039/
+18038,2025-02-23 00:00:00,,20242025,N10009,N10002,Triple J,Ace,4,1,Regular,https://www.noradhockey.com/event/18038/
+18036,2025-02-09 00:00:00,,20242025,N10005,N10004,OS Offices,Nelson,2,4,Regular,https://www.noradhockey.com/event/18036/
+18035,2025-02-09 00:00:00,,20242025,N10008,N10003,Platinum,HollowBrook,2,2,Regular,https://www.noradhockey.com/event/18035/
+18034,2025-02-09 00:00:00,,20242025,N10009,N10007,Triple J,Outlaws,4,9,Regular,https://www.noradhockey.com/event/18034/
+18033,2025-02-09 00:00:00,,20242025,N10002,N10006,Ace,Orphans,7,4,Regular,https://www.noradhockey.com/event/18033/
+18031,2025-02-02 00:00:00,,20242025,N10008,N10001,Platinum,Amos,3,4,Regular,https://www.noradhockey.com/event/18031/
+18030,2025-02-02 00:00:00,,20242025,N10009,N10004,Triple J,Nelson,2,5,Regular,https://www.noradhockey.com/event/18030/
+18029,2025-02-02 00:00:00,,20242025,N10002,N10003,Ace,HollowBrook,4,8,Regular,https://www.noradhockey.com/event/18029/
+18028,2025-02-02 00:00:00,,20242025,N10006,N10007,Orphans,Outlaws,5,4,Regular,https://www.noradhockey.com/event/18028/
+18025,2025-01-26 00:00:00,,20242025,N10002,N10001,Ace,Amos,2,8,Regular,https://www.noradhockey.com/event/18025/
+18024,2025-01-26 00:00:00,,20242025,N10006,N10004,Orphans,Nelson,7,1,Regular,https://www.noradhockey.com/event/18024/
+18023,2025-01-26 00:00:00,,20242025,N10007,N10003,Outlaws,HollowBrook,0,7,Regular,https://www.noradhockey.com/event/18023/
+10826,2025-01-26 00:00:00,,20242025,N10009,N10005,Triple J,OS Offices,3,4,Regular,https://www.noradhockey.com/event/10826/
+18021,2025-01-12 00:00:00,,20242025,N10002,N10008,Ace,Platinum,0,10,Regular,https://www.noradhockey.com/event/18021/
+18020,2025-01-12 00:00:00,,20242025,N10006,N10005,Orphans,OS Offices,1,2,Regular,https://www.noradhockey.com/event/18020/
+18019,2025-01-12 00:00:00,,20242025,N10007,N10001,Outlaws,Amos,5,3,Regular,https://www.noradhockey.com/event/18019/
+18018,2025-01-12 00:00:00,,20242025,N10003,N10004,HollowBrook,Nelson,6,6,Regular,https://www.noradhockey.com/event/18018/
+18016,2025-01-05 00:00:00,,20242025,N10006,N10009,Orphans,Triple J,2,5,Regular,https://www.noradhockey.com/event/18016/
+18015,2025-01-05 00:00:00,,20242025,N10007,N10008,Outlaws,Platinum,0,4,Regular,https://www.noradhockey.com/event/18015/
+18014,2025-01-05 00:00:00,,20242025,N10003,N10005,HollowBrook,OS Offices,2,4,Regular,https://www.noradhockey.com/event/18014/
+18013,2025-01-05 00:00:00,,20242025,N10004,N10001,Nelson,Amos,11,2,Regular,https://www.noradhockey.com/event/18013/
+17955,2024-12-29 00:00:00,,20242025,N10001,N10006,Amos,Orphans,2,4,Regular,https://www.noradhockey.com/event/17955/
+18011,2024-12-22 00:00:00,,20242025,N10007,N10002,Outlaws,Ace,5,5,Regular,https://www.noradhockey.com/event/18011/
+18010,2024-12-22 00:00:00,,20242025,N10003,N10009,HollowBrook,Triple J,3,4,Regular,https://www.noradhockey.com/event/18010/
+18009,2024-12-22 00:00:00,,20242025,N10004,N10008,Nelson,Platinum,4,4,Regular,https://www.noradhockey.com/event/18009/
+18008,2024-12-22 00:00:00,,20242025,N10001,N10005,Amos,OS Offices,4,7,Regular,https://www.noradhockey.com/event/18008/
+18006,2024-12-15 00:00:00,,20242025,N10003,N10006,HollowBrook,Orphans,5,2,Regular,https://www.noradhockey.com/event/18006/
+18005,2024-12-15 00:00:00,,20242025,N10004,N10002,Nelson,Ace,8,6,Regular,https://www.noradhockey.com/event/18005/
+18004,2024-12-15 00:00:00,,20242025,N10001,N10009,Amos,Triple J,5,7,Regular,https://www.noradhockey.com/event/18004/
+18003,2024-12-15 00:00:00,,20242025,N10005,N10008,OS Offices,Platinum,4,7,Regular,https://www.noradhockey.com/event/18003/
+17996,2024-11-24 00:00:00,,20242025,N10001,N10003,Amos,HollowBrook,2,4,Regular,https://www.noradhockey.com/event/17996/
+17995,2024-11-24 00:00:00,,20242025,N10005,N10007,OS Offices,Outlaws,2,3,Regular,https://www.noradhockey.com/event/17995/
+17994,2024-11-24 00:00:00,,20242025,N10008,N10006,Platinum,Orphans,4,4,Regular,https://www.noradhockey.com/event/17994/
+17993,2024-11-24 00:00:00,,20242025,N10009,N10002,Triple J,Ace,8,3,Regular,https://www.noradhockey.com/event/17993/
+17991,2024-11-17 00:00:00,,20242025,N10005,N10004,OS Offices,Nelson,5,5,Regular,https://www.noradhockey.com/event/17991/
+17990,2024-11-17 00:00:00,,20242025,N10008,N10003,Platinum,HollowBrook,5,2,Regular,https://www.noradhockey.com/event/17990/
+17989,2024-11-17 00:00:00,,20242025,N10009,N10007,Triple J,Outlaws,6,4,Regular,https://www.noradhockey.com/event/17989/
+17988,2024-11-17 00:00:00,,20242025,N10002,N10006,Ace,Orphans,3,6,Regular,https://www.noradhockey.com/event/17988/
+17986,2024-11-10 00:00:00,,20242025,N10008,N10001,Platinum,Amos,4,5,Regular,https://www.noradhockey.com/event/17986/
+17985,2024-11-10 00:00:00,,20242025,N10009,N10004,Triple J,Nelson,2,2,Regular,https://www.noradhockey.com/event/17985/
+17984,2024-11-10 00:00:00,,20242025,N10002,N10003,Ace,HollowBrook,2,8,Regular,https://www.noradhockey.com/event/17984/
+17983,2024-11-10 00:00:00,,20242025,N10006,N10007,Orphans,Outlaws,6,5,Regular,https://www.noradhockey.com/event/17983/
+17981,2024-11-03 00:00:00,,20242025,N10009,N10005,Triple J,OS Offices,4,6,Regular,https://www.noradhockey.com/event/17981/
+17980,2024-11-03 00:00:00,,20242025,N10002,N10001,Ace,Amos,3,4,Regular,https://www.noradhockey.com/event/17980/
+17979,2024-11-03 00:00:00,,20242025,N10006,N10004,Orphans,Nelson,5,4,Regular,https://www.noradhockey.com/event/17979/
+17978,2024-11-03 00:00:00,,20242025,N10007,N10003,Outlaws,HollowBrook,0,9,Regular,https://www.noradhockey.com/event/17978/
+17976,2024-10-27 00:00:00,,20242025,N10002,N10008,Ace,Platinum,2,9,Regular,https://www.noradhockey.com/event/17976/
+17975,2024-10-27 00:00:00,,20242025,N10006,N10005,Orphans,OS Offices,3,2,Regular,https://www.noradhockey.com/event/17975/
+17974,2024-10-27 00:00:00,,20242025,N10007,N10001,Outlaws,Amos,0,5,Regular,https://www.noradhockey.com/event/17974/
+17973,2024-10-27 00:00:00,,20242025,N10003,N10004,HollowBrook,Nelson,5,2,Regular,https://www.noradhockey.com/event/17973/
+17971,2024-10-20 00:00:00,,20242025,N10006,N10009,Orphans,Triple J,4,6,Regular,https://www.noradhockey.com/event/17971/
+17970,2024-10-20 00:00:00,,20242025,N10007,N10008,Outlaws,Platinum,5,4,Regular,https://www.noradhockey.com/event/17970/
+17969,2024-10-20 00:00:00,,20242025,N10003,N10005,HollowBrook,OS Offices,2,4,Regular,https://www.noradhockey.com/event/17969/
+17968,2024-10-20 00:00:00,,20242025,N10004,N10001,Nelson,Amos,1,10,Regular,https://www.noradhockey.com/event/17968/
+17966,2024-10-13 00:00:00,,20242025,N10007,N10002,Outlaws,Ace,2,2,Regular,https://www.noradhockey.com/event/17966/
+17965,2024-10-13 00:00:00,,20242025,N10003,N10009,HollowBrook,Triple J,5,4,Regular,https://www.noradhockey.com/event/17965/
+17964,2024-10-13 00:00:00,,20242025,N10004,N10008,Nelson,Platinum,2,3,Regular,https://www.noradhockey.com/event/17964/
+17963,2024-10-13 00:00:00,,20242025,N10001,N10005,Amos,OS Offices,2,6,Regular,https://www.noradhockey.com/event/17963/
+17961,2024-10-06 00:00:00,,20242025,N10003,N10006,HollowBrook,Orphans,5,5,Regular,https://www.noradhockey.com/event/17961/
+17960,2024-10-06 00:00:00,,20242025,N10004,N10002,Nelson,Ace,8,4,Regular,https://www.noradhockey.com/event/17960/
+17959,2024-10-06 00:00:00,,20242025,N10001,N10009,Amos,Triple J,3,1,Regular,https://www.noradhockey.com/event/17959/
+17958,2024-10-06 00:00:00,,20242025,N10005,N10008,OS Offices,Platinum,2,5,Regular,https://www.noradhockey.com/event/17958/
+17956,2024-09-29 00:00:00,,20242025,N10004,N10007,Nelson,Outlaws,9,6,Regular,https://www.noradhockey.com/event/17956/
+17954,2024-09-29 00:00:00,,20242025,N10005,N10002,OS Offices,Ace,5,1,Regular,https://www.noradhockey.com/event/17954/
+17953,2024-09-29 00:00:00,,20242025,N10008,N10009,Platinum,Triple J,3,6,Regular,https://www.noradhockey.com/event/17953/
+17951,2024-09-22 00:00:00,,20242025,N10001,N10003,Amos,HollowBrook,4,4,Regular,https://www.noradhockey.com/event/17951/
+17950,2024-09-22 00:00:00,,20242025,N10005,N10007,OS Offices,Outlaws,5,4,Regular,https://www.noradhockey.com/event/17950/
+17949,2024-09-22 00:00:00,,20242025,N10008,N10006,Platinum,Orphans,10,3,Regular,https://www.noradhockey.com/event/17949/
+17948,2024-09-22 00:00:00,,20242025,N10009,N10002,Triple J,Ace,7,4,Regular,https://www.noradhockey.com/event/17948/
+17946,2024-09-15 00:00:00,,20242025,N10005,N10004,OS Offices,Nelson,8,5,Regular,https://www.noradhockey.com/event/17946/
+17945,2024-09-15 00:00:00,,20242025,N10008,N10003,Platinum,HollowBrook,1,4,Regular,https://www.noradhockey.com/event/17945/
+17944,2024-09-15 00:00:00,,20242025,N10009,N10007,Triple J,Outlaws,3,3,Regular,https://www.noradhockey.com/event/17944/
+17943,2024-09-15 00:00:00,,20242025,N10002,N10006,Ace,Orphans,0,4,Regular,https://www.noradhockey.com/event/17943/
+17941,2024-09-08 00:00:00,,20242025,N10008,N10001,Platinum,Amos,6,2,Regular,https://www.noradhockey.com/event/17941/
+17940,2024-09-08 00:00:00,,20242025,N10009,N10004,Triple J,Nelson,1,3,Regular,https://www.noradhockey.com/event/17940/
+17939,2024-09-08 00:00:00,,20242025,N10002,N10003,Ace,HollowBrook,4,2,Regular,https://www.noradhockey.com/event/17939/
+17938,2024-09-08 00:00:00,,20242025,N10006,N10007,Orphans,Outlaws,6,3,Regular,https://www.noradhockey.com/event/17938/
+17936,2024-09-01 00:00:00,,20242025,N10009,N10005,Triple J,OS Offices,4,4,Regular,https://www.noradhockey.com/event/17936/
+17935,2024-09-01 00:00:00,,20242025,N10002,N10001,Ace,Amos,3,7,Regular,https://www.noradhockey.com/event/17935/
+17934,2024-09-01 00:00:00,,20242025,N10006,N10004,Orphans,Nelson,5,7,Regular,https://www.noradhockey.com/event/17934/
+17933,2024-09-01 00:00:00,,20242025,N10007,N10003,Outlaws,HollowBrook,1,7,Regular,https://www.noradhockey.com/event/17933/
+17931,2024-08-25 00:00:00,,20242025,N10002,N10008,Ace,Platinum,5,12,Regular,https://www.noradhockey.com/event/17931/
+17930,2024-08-25 00:00:00,,20242025,N10006,N10005,Orphans,OS Offices,1,6,Regular,https://www.noradhockey.com/event/17930/
+17929,2024-08-25 00:00:00,,20242025,N10007,N10001,Outlaws,Amos,1,6,Regular,https://www.noradhockey.com/event/17929/
+17928,2024-08-25 00:00:00,,20242025,N10003,N10004,HollowBrook,Nelson,6,4,Regular,https://www.noradhockey.com/event/17928/
+17926,2024-08-18 00:00:00,,20242025,N10006,N10009,Orphans,Triple J,1,6,Regular,https://www.noradhockey.com/event/17926/
+17925,2024-08-18 00:00:00,,20242025,N10007,N10008,Outlaws,Platinum,2,6,Regular,https://www.noradhockey.com/event/17925/
+17924,2024-08-18 00:00:00,,20242025,N10003,N10005,HollowBrook,OS Offices,6,2,Regular,https://www.noradhockey.com/event/17924/
+17923,2024-08-18 00:00:00,,20242025,N10004,N10001,Nelson,Amos,0,6,Regular,https://www.noradhockey.com/event/17923/
+17921,2024-08-11 00:00:00,,20242025,N10007,N10002,Outlaws,Ace,4,5,Regular,https://www.noradhockey.com/event/17921/
+17920,2024-08-11 00:00:00,,20242025,N10003,N10009,HollowBrook,Triple J,2,2,Regular,https://www.noradhockey.com/event/17920/
+17919,2024-08-11 00:00:00,,20242025,N10004,N10008,Nelson,Platinum,3,8,Regular,https://www.noradhockey.com/event/17919/
+17918,2024-08-11 00:00:00,,20242025,N10001,N10005,Amos,OS Offices,4,5,Regular,https://www.noradhockey.com/event/17918/
+10019,2024-05-12 00:00:00,,20232024,N10003,N10001,HollowBrook,Amos,3,0,Playoffs,https://www.noradhockey.com/event/event-12/
+10018,2024-05-11 00:00:00,,20232024,N10005,N10001,OS Offices,Amos,3,4,Playoffs,https://www.noradhockey.com/event/event-11/
+10036,2024-05-09 00:00:00,,20232024,N10003,N10005,HollowBrook,OS Offices,2,1,Playoffs,https://www.noradhockey.com/event/event-5/
+10017,2024-05-08 00:00:00,,20232024,N10001,N10004,Amos,Nelson,7,4,Playoffs,https://www.noradhockey.com/event/event-10/
+10016,2024-05-05 00:00:00,,20232024,N10008,N10001,Platinum,Amos,2,6,Playoffs,https://www.noradhockey.com/event/event-8/
+10046,2024-05-05 00:00:00,,20232024,N10004,N10009,Nelson,Triple J,4,1,Playoffs,https://www.noradhockey.com/event/event-9/
+10052,2024-05-02 00:00:00,,20232024,N10005,N10008,OS Offices,Platinum,5,4,Playoffs,https://www.noradhockey.com/event/event-4/
+10035,2024-05-02 00:00:00,,20232024,N10004,N10003,Nelson,HollowBrook,2,6,Playoffs,https://www.noradhockey.com/event/event-3/
+10015,2024-04-30 00:00:00,,20232024,N10006,N10001,Orphans,Amos,4,5,Playoffs,https://www.noradhockey.com/event/event-6/
+10003,2024-04-30 00:00:00,,20232024,N10009,N10002,Triple J,Ace,6,4,Playoffs,https://www.noradhockey.com/event/event-7/
+10014,2024-04-28 00:00:00,,20232024,N10001,N10003,Amos,HollowBrook,2,4,Playoffs,https://www.noradhockey.com/event/event/
+10045,2024-04-28 00:00:00,,20232024,N10006,N10004,Orphans,Nelson,3,5,Playoffs,https://www.noradhockey.com/event/nelson-company/
+10051,2024-04-28 00:00:00,,20232024,N10005,N10009,OS Offices,Triple J,6,2,Playoffs,https://www.noradhockey.com/event/event-2/
+16894,2024-04-21 00:00:00,,20232024,N10003,N10002,HollowBrook,Ace,10,4,Regular,https://www.noradhockey.com/event/16894/
+16893,2024-04-21 00:00:00,,20232024,N10008,N10004,Platinum,Nelson,8,2,Regular,https://www.noradhockey.com/event/16893/
+16892,2024-04-21 00:00:00,,20232024,N10001,N10006,Amos,Orphans,3,2,Regular,https://www.noradhockey.com/event/16892/
+16890,2024-04-21 00:00:00,,20232024,N10008,N10001,Platinum,Amos,3,7,Regular,https://www.noradhockey.com/event/16890/
+16895,2024-04-21 00:00:00,,20232024,N10009,N10005,Triple J,OS Offices,3,5,Regular,https://www.noradhockey.com/event/16895/
+16891,2024-04-14 00:00:00,,20232024,N10005,N10002,OS Offices,Ace,7,4,Regular,https://www.noradhockey.com/event/16891/
+16888,2024-04-14 00:00:00,,20232024,N10009,N10003,Triple J,HollowBrook,4,5,Regular,https://www.noradhockey.com/event/16888/
+16889,2024-04-14 00:00:00,,20232024,N10004,N10006,Nelson,Orphans,5,8,Regular,https://www.noradhockey.com/event/16889/
+16887,2024-04-07 00:00:00,,20232024,N10006,N10005,Orphans,OS Offices,2,5,Regular,https://www.noradhockey.com/event/16887/
+16886,2024-04-07 00:00:00,,20232024,N10003,N10008,HollowBrook,Platinum,4,6,Regular,https://www.noradhockey.com/event/16886/
+16885,2024-04-07 00:00:00,,20232024,N10004,N10002,Nelson,Ace,3,0,Regular,https://www.noradhockey.com/event/16885/
+16884,2024-04-07 00:00:00,,20232024,N10009,N10001,Triple J,Amos,6,2,Regular,https://www.noradhockey.com/event/16884/
+16874,2024-03-31 00:00:00,,20232024,N10002,N10005,Ace,OS Offices,8,4,Regular,https://www.noradhockey.com/event/16874/
+16883,2024-03-24 00:00:00,,20232024,N10006,N10009,Orphans,Triple J,0,1,Regular,https://www.noradhockey.com/event/16883/
+16881,2024-03-24 00:00:00,,20232024,N10004,N10003,Nelson,HollowBrook,6,7,Regular,https://www.noradhockey.com/event/16881/
+16873,2024-03-24 00:00:00,,20232024,N10008,N10001,Platinum,Amos,5,5,Regular,https://www.noradhockey.com/event/16873/
+16880,2024-03-17 00:00:00,,20232024,N10001,N10002,Amos,Ace,4,8,Regular,https://www.noradhockey.com/event/16880/
+16872,2024-03-17 00:00:00,,20232024,N10004,N10006,Nelson,Orphans,2,5,Regular,https://www.noradhockey.com/event/16872/
+16871,2024-03-10 00:00:00,,20232024,N10001,N10006,Amos,Orphans,3,5,Regular,https://www.noradhockey.com/event/16871/
+16875,2024-03-10 00:00:00,,20232024,N10009,N10003,Triple J,HollowBrook,3,4,Regular,https://www.noradhockey.com/event/16875/
+16868,2024-03-03 00:00:00,,20232024,N10008,N10004,Platinum,Nelson,5,3,Regular,https://www.noradhockey.com/event/16868/
+16870,2024-03-03 00:00:00,,20232024,N10009,N10005,Triple J,OS Offices,4,2,Regular,https://www.noradhockey.com/event/16870/
+16869,2024-03-03 00:00:00,,20232024,N10002,N10003,Ace,HollowBrook,3,5,Regular,https://www.noradhockey.com/event/16869/
+16867,2024-02-25 00:00:00,,20232024,N10003,N10001,HollowBrook,Amos,5,3,Regular,https://www.noradhockey.com/event/16867/
+16866,2024-02-25 00:00:00,,20232024,N10004,N10005,Nelson,OS Offices,3,10,Regular,https://www.noradhockey.com/event/16866/
+16865,2024-02-25 00:00:00,,20232024,N10009,N10008,Triple J,Platinum,4,4,Regular,https://www.noradhockey.com/event/16865/
+16864,2024-02-25 00:00:00,,20232024,N10002,N10006,Ace,Orphans,2,6,Regular,https://www.noradhockey.com/event/16864/
+16882,2024-02-24 00:00:00,,20232024,N10005,N10008,OS Offices,Platinum,3,4,Regular,https://www.noradhockey.com/event/16882/
+16863,2024-02-18 00:00:00,,20232024,N10003,N10008,HollowBrook,Platinum,4,0,Regular,https://www.noradhockey.com/event/16863/
+16862,2024-02-11 00:00:00,,20232024,N10002,N10004,Ace,Nelson,10,7,Regular,https://www.noradhockey.com/event/16862/
+16858,2024-02-11 00:00:00,,20232024,N10004,N10003,Nelson,HollowBrook,0,4,Regular,https://www.noradhockey.com/event/16858/
+16860,2024-02-04 00:00:00,,20232024,N10006,N10005,Orphans,OS Offices,0,3,Regular,https://www.noradhockey.com/event/16860/
+16857,2024-02-04 00:00:00,,20232024,N10002,N10001,Ace,Amos,3,7,Regular,https://www.noradhockey.com/event/16857/
+16861,2024-02-04 00:00:00,,20232024,N10009,N10001,Triple J,Amos,0,5,Regular,https://www.noradhockey.com/event/16861/
+16859,2024-01-28 00:00:00,,20232024,N10005,N10008,OS Offices,Platinum,6,2,Regular,https://www.noradhockey.com/event/16859/
+16856,2024-01-28 00:00:00,,20232024,N10006,N10009,Orphans,Triple J,6,2,Regular,https://www.noradhockey.com/event/16856/
+16855,2024-01-21 00:00:00,,20232024,N10001,N10004,Amos,Nelson,6,2,Regular,https://www.noradhockey.com/event/16855/
+16854,2024-01-21 00:00:00,,20232024,N10008,N10006,Platinum,Orphans,4,6,Regular,https://www.noradhockey.com/event/16854/
+16853,2024-01-21 00:00:00,,20232024,N10005,N10003,OS Offices,HollowBrook,5,4,Regular,https://www.noradhockey.com/event/16853/
+16852,2024-01-21 00:00:00,,20232024,N10009,N10002,Triple J,Ace,7,7,Regular,https://www.noradhockey.com/event/16852/
+16847,2024-01-07 00:00:00,,20232024,N10005,N10004,OS Offices,Nelson,3,2,Regular,https://www.noradhockey.com/event/16847/
+16851,2024-01-07 00:00:00,,20232024,N10008,N10002,Platinum,Ace,7,7,Regular,https://www.noradhockey.com/event/16851/
+16850,2024-01-07 00:00:00,,20232024,N10004,N10009,Nelson,Triple J,0,5,Regular,https://www.noradhockey.com/event/16850/
+16849,2024-01-07 00:00:00,,20232024,N10001,N10005,Amos,OS Offices,5,3,Regular,https://www.noradhockey.com/event/16849/
+10034,2024-01-07 00:00:00,,20232024,N10006,N10003,Orphans,HollowBrook,8,3,Regular,https://www.noradhockey.com/event/world-orphans-at-hollowbrook-dental-2/
+16846,2023-12-31 00:00:00,,20232024,N10003,N10001,HollowBrook,Amos,1,7,Regular,https://www.noradhockey.com/event/16846/
+16830,2023-12-31 00:00:00,,20232024,N10002,N10009,Ace,Triple J,2,5,Regular,https://www.noradhockey.com/event/16830/
+16845,2023-12-24 00:00:00,,20232024,N10006,N10002,Orphans,Ace,6,3,Regular,https://www.noradhockey.com/event/16845/
+16842,2023-12-24 00:00:00,,20232024,N10001,N10005,Amos,OS Offices,3,9,Regular,https://www.noradhockey.com/event/16842/
+16829,2023-12-24 00:00:00,,20232024,N10005,N10003,OS Offices,HollowBrook,5,5,Regular,https://www.noradhockey.com/event/16829/
+16841,2023-12-17 00:00:00,,20232024,N10006,N10003,Orphans,HollowBrook,9,5,Regular,https://www.noradhockey.com/event/16841/
+16844,2023-12-17 00:00:00,,20232024,N10009,N10008,Triple J,Platinum,2,8,Regular,https://www.noradhockey.com/event/16844/
+16828,2023-12-17 00:00:00,,20232024,N10001,N10004,Amos,Nelson,7,0,Regular,https://www.noradhockey.com/event/16828/
+16840,2023-12-10 00:00:00,,20232024,N10008,N10002,Platinum,Ace,7,6,Regular,https://www.noradhockey.com/event/16840/
+16843,2023-12-10 00:00:00,,20232024,N10004,N10009,Nelson,Triple J,3,5,Regular,https://www.noradhockey.com/event/16843/
+16827,2023-12-10 00:00:00,,20232024,N10008,N10001,Platinum,Amos,5,2,Regular,https://www.noradhockey.com/event/16827/
+16826,2023-12-03 00:00:00,,20232024,N10004,N10006,Nelson,Orphans,5,6,Regular,https://www.noradhockey.com/event/16826/
+16839,2023-12-03 00:00:00,,20232024,N10004,N10002,Nelson,Ace,3,6,Regular,https://www.noradhockey.com/event/16839/
+16838,2023-12-03 00:00:00,,20232024,N10001,N10009,Amos,Triple J,2,4,Regular,https://www.noradhockey.com/event/16838/
+16837,2023-12-03 00:00:00,,20232024,N10006,N10005,Orphans,OS Offices,6,3,Regular,https://www.noradhockey.com/event/16837/
+16836,2023-12-03 00:00:00,,20232024,N10003,N10008,HollowBrook,Platinum,3,5,Regular,https://www.noradhockey.com/event/16836/
+16824,2023-11-26 00:00:00,,20232024,N10002,N10005,Ace,OS Offices,3,5,Regular,https://www.noradhockey.com/event/16824/
+16834,2023-11-26 00:00:00,,20232024,N10001,N10002,Amos,Ace,8,3,Regular,https://www.noradhockey.com/event/16834/
+16823,2023-11-19 00:00:00,,20232024,N10002,N10003,Ace,HollowBrook,5,6,Regular,https://www.noradhockey.com/event/16823/
+16833,2023-11-19 00:00:00,,20232024,N10006,N10009,Orphans,Triple J,3,3,Regular,https://www.noradhockey.com/event/16833/
+16832,2023-11-19 00:00:00,,20232024,N10005,N10008,OS Offices,Platinum,1,5,Regular,https://www.noradhockey.com/event/16832/
+10033,2023-11-12 00:00:00,,20232024,N10004,N10003,Nelson,HollowBrook,4,3,Regular,https://www.noradhockey.com/event/nelson-co-at-hollowbrook-dental/
+16822,2023-11-12 00:00:00,,20232024,N10008,N10004,Platinum,Nelson,7,3,Regular,https://www.noradhockey.com/event/16822/
+16831,2023-11-12 00:00:00,,20232024,N10008,N10006,Platinum,Orphans,3,2,Regular,https://www.noradhockey.com/event/16831/
+16821,2023-11-05 00:00:00,,20232024,N10001,N10006,Amos,Orphans,5,2,Regular,https://www.noradhockey.com/event/16821/
+16819,2023-11-05 00:00:00,,20232024,N10003,N10001,HollowBrook,Amos,7,7,Regular,https://www.noradhockey.com/event/16819/
+10032,2023-11-05 00:00:00,,20232024,N10009,N10003,Triple J,HollowBrook,4,5,Regular,https://www.noradhockey.com/event/triple-j-at-hollowbrook-dental/
+16816,2023-11-05 00:00:00,,20232024,N10005,N10004,OS Offices,Nelson,7,1,Regular,https://www.noradhockey.com/event/16816/
+16818,2023-10-29 00:00:00,,20232024,N10002,N10006,Ace,Orphans,5,4,Regular,https://www.noradhockey.com/event/16818/
+16815,2023-10-29 00:00:00,,20232024,N10005,N10001,OS Offices,Amos,4,2,Regular,https://www.noradhockey.com/event/16815/
+16820,2023-10-29 00:00:00,,20232024,N10009,N10005,Triple J,OS Offices,2,4,Regular,https://www.noradhockey.com/event/16820/
+16813,2023-10-22 00:00:00,,20232024,N10002,N10008,Ace,Platinum,8,5,Regular,https://www.noradhockey.com/event/16813/
+16817,2023-10-22 00:00:00,,20232024,N10009,N10008,Triple J,Platinum,5,7,Regular,https://www.noradhockey.com/event/16817/
+16812,2023-10-15 00:00:00,,20232024,N10004,N10009,Nelson,Triple J,3,3,Regular,https://www.noradhockey.com/event/16812/
+16810,2023-10-15 00:00:00,,20232024,N10006,N10005,Orphans,OS Offices,7,4,Regular,https://www.noradhockey.com/event/16810/
+10031,2023-10-15 00:00:00,,20232024,N10006,N10003,Orphans,HollowBrook,4,3,Regular,https://www.noradhockey.com/event/world-orphans-at-hollowbrook-dental/
+10002,2023-10-15 00:00:00,,20232024,N10008,N10002,Platinum,Ace,8,1,Regular,https://www.noradhockey.com/event/ace/
+16807,2023-10-08 00:00:00,,20232024,N10002,N10001,Ace,Amos,3,2,Regular,https://www.noradhockey.com/event/16807/
+16811,2023-10-08 00:00:00,,20232024,N10009,N10008,Triple J,Platinum,9,4,Regular,https://www.noradhockey.com/event/16811/
+16809,2023-10-08 00:00:00,,20232024,N10001,N10003,Amos,HollowBrook,4,6,Regular,https://www.noradhockey.com/event/16809/
+16805,2023-10-08 00:00:00,,20232024,N10005,N10008,OS Offices,Platinum,3,2,Regular,https://www.noradhockey.com/event/16805/
+10001,2023-10-08 00:00:00,,20232024,N10002,N10004,Ace,Nelson,4,7,Regular,https://www.noradhockey.com/event/ace-at-nelson-company/
+16802,2023-10-08 00:00:00,,20232024,N10003,N10002,HollowBrook,Ace,3,6,Regular,https://www.noradhockey.com/event/16802/
+16801,2023-10-01 00:00:00,,20232024,N10001,N10004,Amos,Nelson,5,3,Regular,https://www.noradhockey.com/event/16801/
+16806,2023-10-01 00:00:00,,20232024,N10006,N10009,Orphans,Triple J,4,6,Regular,https://www.noradhockey.com/event/16806/
+16804,2023-10-01 00:00:00,,20232024,N10003,N10004,HollowBrook,Nelson,4,4,Regular,https://www.noradhockey.com/event/16804/
+16799,2023-10-01 00:00:00,,20232024,N10004,N10006,Nelson,Orphans,1,5,Regular,https://www.noradhockey.com/event/16799/
+16796,2023-10-01 00:00:00,,20232024,N10008,N10001,Platinum,Amos,5,2,Regular,https://www.noradhockey.com/event/16796/
+16798,2023-09-24 00:00:00,,20232024,N10003,N10009,HollowBrook,Triple J,5,3,Regular,https://www.noradhockey.com/event/16798/
+16795,2023-09-24 00:00:00,,20232024,N10008,N10004,Platinum,Nelson,6,3,Regular,https://www.noradhockey.com/event/16795/
+16803,2023-09-24 00:00:00,,20232024,N10005,N10009,OS Offices,Triple J,6,2,Regular,https://www.noradhockey.com/event/16803/
+16800,2023-09-24 00:00:00,,20232024,N10008,N10006,Platinum,Orphans,2,4,Regular,https://www.noradhockey.com/event/16800/
+16794,2023-09-17 00:00:00,,20232024,N10001,N10006,Amos,Orphans,3,3,Regular,https://www.noradhockey.com/event/16794/
+16797,2023-09-17 00:00:00,,20232024,N10005,N10002,OS Offices,Ace,5,5,Regular,https://www.noradhockey.com/event/16797/
+16793,2023-09-10 00:00:00,,20232024,N10009,N10002,Triple J,Ace,7,7,Regular,https://www.noradhockey.com/event/16793/
+16789,2023-09-10 00:00:00,,20232024,N10005,N10004,OS Offices,Nelson,4,1,Regular,https://www.noradhockey.com/event/16789/
+10030,2023-09-10 00:00:00,,20232024,N10005,N10003,OS Offices,HollowBrook,8,6,Regular,https://www.noradhockey.com/event/os-offices-at-hollowbrook-dental/
+16788,2023-09-03 00:00:00,,20232024,N10003,N10001,HollowBrook,Amos,3,7,Regular,https://www.noradhockey.com/event/16788/
+16791,2023-09-03 00:00:00,,20232024,N10006,N10002,Orphans,Ace,4,1,Regular,https://www.noradhockey.com/event/16791/
+16790,2023-09-03 00:00:00,,20232024,N10009,N10008,Triple J,Platinum,4,3,Regular,https://www.noradhockey.com/event/16790/
+16785,2023-09-03 00:00:00,,20232024,N10004,N10009,Nelson,Triple J,4,1,Regular,https://www.noradhockey.com/event/16785/
+16784,2023-08-27 00:00:00,,20232024,N10001,N10005,Amos,OS Offices,10,3,Regular,https://www.noradhockey.com/event/16784/
+16787,2023-08-27 00:00:00,,20232024,N10003,N10006,HollowBrook,Orphans,2,4,Regular,https://www.noradhockey.com/event/16787/
+16786,2023-08-27 00:00:00,,20232024,N10002,N10008,Ace,Platinum,2,4,Regular,https://www.noradhockey.com/event/16786/
+16782,2023-08-27 00:00:00,,20232024,N10006,N10005,Orphans,OS Offices,10,6,Regular,https://www.noradhockey.com/event/16782/
+16783,2023-08-20 00:00:00,,20232024,N10001,N10009,Amos,Triple J,5,2,Regular,https://www.noradhockey.com/event/16783/
+16781,2023-08-20 00:00:00,,20232024,N10003,N10002,HollowBrook,Ace,10,2,Regular,https://www.noradhockey.com/event/16781/
+16780,2023-08-20 00:00:00,,20232024,N10008,N10004,Platinum,Nelson,9,1,Regular,https://www.noradhockey.com/event/16780/
+16779,2023-08-13 00:00:00,,20232024,N10003,N10004,HollowBrook,Nelson,7,1,Regular,https://www.noradhockey.com/event/16779/
+16778,2023-08-13 00:00:00,,20232024,N10005,N10009,OS Offices,Triple J,2,5,Regular,https://www.noradhockey.com/event/16778/
+16777,2023-08-13 00:00:00,,20232024,N10006,N10008,Orphans,Platinum,2,4,Regular,https://www.noradhockey.com/event/16777/
+16776,2023-08-13 00:00:00,,20232024,N10002,N10001,Ace,Amos,4,8,Regular,https://www.noradhockey.com/event/16776/
+10029,2023-05-07 00:00:00,,20222023,N10009,N10003,Triple J,HollowBrook,0,4,Playoffs,https://www.noradhockey.com/event/winner-game-11-at-winner-game-13/
+10060,2023-05-04 00:00:00,,20222023,N10009,N10006,Triple J,Orphans,4,3,Playoffs,https://www.noradhockey.com/event/loser-game-11-at-winner-game-12/
+10028,2023-05-02 00:00:00,,20222023,N10003,N10006,HollowBrook,Orphans,6,1,Playoffs,https://www.noradhockey.com/event/winner-game-5-at-winner-game-6/
+10059,2023-05-02 00:00:00,,20222023,N10009,N10008,Triple J,Platinum,3,1,Playoffs,https://www.noradhockey.com/event/winner-game-9-at-winner-game-10/
+10044,2023-04-30 00:00:00,,20222023,N10009,N10004,Triple J,Nelson,5,1,Playoffs,https://www.noradhockey.com/event/loser-game-5-at-winner-game-8/
+10013,2023-04-30 00:00:00,,20222023,N10008,N10001,Platinum,Amos,7,2,Playoffs,https://www.noradhockey.com/event/loser-game-6-at-winner-game-7/
+10043,2023-04-27 00:00:00,,20222023,N10004,N10005,Nelson,OS Offices,8,3,Playoffs,https://www.noradhockey.com/event/loser-game-3-at-loser-game-4/
+10012,2023-04-27 00:00:00,,20222023,N10012,N10001,Canada,Amos,4,5,Playoffs,https://www.noradhockey.com/event/loser-game-1-at-loser-game-2/
+10058,2023-04-25 00:00:00,,20222023,N10008,N10006,Platinum,Orphans,3,5,Playoffs,https://www.noradhockey.com/event/winner-game-3-at-winner-game-4/
+10027,2023-04-25 00:00:00,,20222023,N10003,N10009,HollowBrook,Triple J,9,0,Playoffs,https://www.noradhockey.com/event/winner-game-1-at-winner-game-2/
+10042,2023-04-23 00:00:00,,20222023,N10004,N10006,Nelson,Orphans,1,8,Playoffs,https://www.noradhockey.com/event/nelson-company-at-world-orphans/
+10011,2023-04-23 00:00:00,,20222023,N10009,N10001,Triple J,Amos,4,2,Playoffs,https://www.noradhockey.com/event/seed-5-at-seed-4/
+10026,2023-04-23 00:00:00,,20222023,N10012,N10003,Canada,HollowBrook,1,7,Playoffs,https://www.noradhockey.com/event/canada-colorado-at-hollowbrook-dental/
+10050,2023-04-23 00:00:00,,20222023,N10005,N10008,OS Offices,Platinum,3,5,Playoffs,https://www.noradhockey.com/event/seed-6-at-seed-3/
+15169,2023-04-16 00:00:00,,20222023,N10008,N10003,Platinum,HollowBrook,4,6,Regular,https://www.noradhockey.com/event/15169/
+10057,2023-04-16 00:00:00,,20222023,N10012,N10008,Canada,Platinum,9,6,Regular,https://www.noradhockey.com/event/15129-2/
+10041,2023-04-16 00:00:00,,20222023,N10006,N10004,Orphans,Nelson,8,4,Regular,https://www.noradhockey.com/event/15128-2/
+10025,2023-04-16 00:00:00,,20222023,N10003,N10009,HollowBrook,Triple J,7,2,Regular,https://www.noradhockey.com/event/15127-2/
+10010,2023-04-16 00:00:00,,20222023,N10001,N10005,Amos,OS Offices,4,3,Regular,https://www.noradhockey.com/event/15130-2/
+15163,2023-04-16 00:00:00,,20222023,N10001,N10012,Amos,Canada,11,4,Regular,https://www.noradhockey.com/event/15163/
+15168,2023-04-09 00:00:00,,20222023,N10001,N10004,Amos,Nelson,0,1,Regular,https://www.noradhockey.com/event/15168/
+15162,2023-04-09 00:00:00,,20222023,N10009,N10001,Triple J,Amos,5,2,Regular,https://www.noradhockey.com/event/15162/
+15167,2023-04-02 00:00:00,,20222023,N10012,N10009,Canada,Triple J,1,4,Regular,https://www.noradhockey.com/event/15167/
+15161,2023-04-02 00:00:00,,20222023,N10012,N10004,Canada,Nelson,5,4,Regular,https://www.noradhockey.com/event/15161/
+15164,2023-03-26 00:00:00,,20222023,N10003,N10004,HollowBrook,Nelson,7,3,Playoffs,https://www.noradhockey.com/event/15164/
+15160,2023-03-26 00:00:00,,20222023,N10006,N10008,Orphans,Platinum,4,2,Regular,https://www.noradhockey.com/event/15160/
+15166,2023-03-26 00:00:00,,20222023,N10009,N10006,Triple J,Orphans,3,2,Regular,https://www.noradhockey.com/event/15166/
+15165,2023-03-26 00:00:00,,20222023,N10008,N10005,Platinum,OS Offices,3,7,Regular,https://www.noradhockey.com/event/15165/
+15159,2023-03-19 00:00:00,,20222023,N10003,N10005,HollowBrook,OS Offices,4,0,Regular,https://www.noradhockey.com/event/15159/
+15157,2023-03-19 00:00:00,,20222023,N10005,N10001,OS Offices,Amos,6,6,Regular,https://www.noradhockey.com/event/15157/
+15155,2023-03-12 00:00:00,,20222023,N10006,N10004,Orphans,Nelson,5,2,Regular,https://www.noradhockey.com/event/15155/
+15158,2023-03-12 00:00:00,,20222023,N10003,N10009,HollowBrook,Triple J,9,2,Regular,https://www.noradhockey.com/event/15158/
+15156,2023-03-12 00:00:00,,20222023,N10012,N10008,Canada,Platinum,0,7,Regular,https://www.noradhockey.com/event/15156/
+15152,2023-03-12 00:00:00,,20222023,N10003,N10001,HollowBrook,Amos,5,5,Regular,https://www.noradhockey.com/event/15152/
+15149,2023-03-12 00:00:00,,20222023,N10005,N10004,OS Offices,Nelson,8,0,Regular,https://www.noradhockey.com/event/15149/
+15151,2023-03-05 00:00:00,,20222023,N10004,N10008,Nelson,Platinum,5,7,Regular,https://www.noradhockey.com/event/15151/
+15148,2023-03-05 00:00:00,,20222023,N10012,N10003,Canada,HollowBrook,2,12,Regular,https://www.noradhockey.com/event/15148/
+15154,2023-03-05 00:00:00,,20222023,N10006,N10012,Orphans,Canada,2,2,Regular,https://www.noradhockey.com/event/15154/
+15153,2023-03-05 00:00:00,,20222023,N10005,N10009,OS Offices,Triple J,2,8,Regular,https://www.noradhockey.com/event/15153/
+15147,2023-02-26 00:00:00,,20222023,N10006,N10001,Orphans,Amos,8,3,Regular,https://www.noradhockey.com/event/15147/
+15150,2023-02-26 00:00:00,,20222023,N10008,N10009,Platinum,Triple J,6,2,Regular,https://www.noradhockey.com/event/15150/
+15142,2023-02-26 00:00:00,,20222023,N10008,N10003,Platinum,HollowBrook,6,3,Regular,https://www.noradhockey.com/event/15142/
+15141,2023-02-19 00:00:00,,20222023,N10004,N10001,Nelson,Amos,4,6,Regular,https://www.noradhockey.com/event/15141/
+15146,2023-02-19 00:00:00,,20222023,N10001,N10008,Amos,Platinum,6,4,Regular,https://www.noradhockey.com/event/15146/
+15145,2023-02-19 00:00:00,,20222023,N10009,N10004,Triple J,Nelson,3,3,Regular,https://www.noradhockey.com/event/15145/
+15144,2023-02-19 00:00:00,,20222023,N10005,N10012,OS Offices,Canada,4,1,Regular,https://www.noradhockey.com/event/15144/
+15143,2023-02-19 00:00:00,,20222023,N10003,N10006,HollowBrook,Orphans,2,9,Regular,https://www.noradhockey.com/event/15143/
+15138,2023-02-19 00:00:00,,20222023,N10008,N10005,Platinum,OS Offices,5,2,Regular,https://www.noradhockey.com/event/15138/
+15140,2023-02-12 00:00:00,,20222023,N10012,N10009,Canada,Triple J,8,3,Regular,https://www.noradhockey.com/event/15140/
+15137,2023-02-12 00:00:00,,20222023,N10003,N10004,HollowBrook,Nelson,12,4,Regular,https://www.noradhockey.com/event/15137/
+15136,2023-02-05 00:00:00,,20222023,N10012,N10001,Canada,Amos,2,7,Regular,https://www.noradhockey.com/event/15136/
+15139,2023-02-05 00:00:00,,20222023,N10005,N10006,OS Offices,Orphans,1,8,Regular,https://www.noradhockey.com/event/15139/
+15135,2023-01-29 00:00:00,,20222023,N10009,N10006,Triple J,Orphans,3,8,Regular,https://www.noradhockey.com/event/15135/
+15134,2023-01-22 00:00:00,,20222023,N10004,N10012,Nelson,Canada,8,3,Regular,https://www.noradhockey.com/event/15134/
+15133,2023-01-22 00:00:00,,20222023,N10006,N10008,Orphans,Platinum,4,4,Regular,https://www.noradhockey.com/event/15133/
+15132,2023-01-22 00:00:00,,20222023,N10003,N10005,HollowBrook,OS Offices,2,0,Regular,https://www.noradhockey.com/event/15132/
+15131,2023-01-22 00:00:00,,20222023,N10001,N10009,Amos,Triple J,3,4,Regular,https://www.noradhockey.com/event/15131/
+15122,2023-01-08 00:00:00,,20222023,N10004,N10005,Nelson,OS Offices,4,8,Regular,https://www.noradhockey.com/event/15122/
+15126,2023-01-08 00:00:00,,20222023,N10005,N10009,OS Offices,Triple J,9,5,Regular,https://www.noradhockey.com/event/15126/
+15125,2023-01-08 00:00:00,,20222023,N10001,N10003,Amos,HollowBrook,5,8,Regular,https://www.noradhockey.com/event/15125/
+15124,2023-01-08 00:00:00,,20222023,N10004,N10008,Nelson,Platinum,7,9,Regular,https://www.noradhockey.com/event/15124/
+15123,2023-01-08 00:00:00,,20222023,N10006,N10012,Orphans,Canada,7,6,Regular,https://www.noradhockey.com/event/15123/
+15121,2023-01-01 00:00:00,,20222023,N10012,N10003,Canada,HollowBrook,3,6,Regular,https://www.noradhockey.com/event/15121/
+15120,2022-12-25 00:00:00,,20222023,N10001,N10006,Amos,Orphans,2,4,Regular,https://www.noradhockey.com/event/15120/
+15117,2022-12-25 00:00:00,,20222023,N10005,N10012,OS Offices,Canada,10,2,Regular,https://www.noradhockey.com/event/15117/
+15116,2022-12-18 00:00:00,,20222023,N10003,N10006,HollowBrook,Orphans,4,3,Regular,https://www.noradhockey.com/event/15116/
+15119,2022-12-18 00:00:00,,20222023,N10008,N10009,Platinum,Triple J,9,4,Regular,https://www.noradhockey.com/event/15119/
+15115,2022-12-11 00:00:00,,20222023,N10001,N10008,Amos,Platinum,8,4,Regular,https://www.noradhockey.com/event/15115/
+15118,2022-12-11 00:00:00,,20222023,N10009,N10004,Triple J,Nelson,5,2,Regular,https://www.noradhockey.com/event/15118/
+15110,2022-12-04 00:00:00,,20222023,N10003,N10004,HollowBrook,Nelson,7,2,Regular,https://www.noradhockey.com/event/15110/
+15114,2022-12-04 00:00:00,,20222023,N10001,N10004,Amos,Nelson,5,3,Regular,https://www.noradhockey.com/event/15114/
+15113,2022-12-04 00:00:00,,20222023,N10009,N10012,Triple J,Canada,4,3,Regular,https://www.noradhockey.com/event/15113/
+15112,2022-12-04 00:00:00,,20222023,N10005,N10006,OS Offices,Orphans,8,2,Regular,https://www.noradhockey.com/event/15112/
+15111,2022-12-04 00:00:00,,20222023,N10008,N10003,Platinum,HollowBrook,4,9,Regular,https://www.noradhockey.com/event/15111/
+15106,2022-12-04 00:00:00,,20222023,N10006,N10008,Orphans,Platinum,7,8,Regular,https://www.noradhockey.com/event/15106/
+15109,2022-11-27 00:00:00,,20222023,N10001,N10012,Amos,Canada,8,3,Regular,https://www.noradhockey.com/event/15109/
+15105,2022-11-27 00:00:00,,20222023,N10003,N10005,HollowBrook,OS Offices,6,4,Regular,https://www.noradhockey.com/event/15105/
+15104,2022-11-20 00:00:00,,20222023,N10009,N10001,Triple J,Amos,3,3,Regular,https://www.noradhockey.com/event/15104/
+15108,2022-11-20 00:00:00,,20222023,N10009,N10006,Triple J,Orphans,5,7,Regular,https://www.noradhockey.com/event/15108/
+15107,2022-11-20 00:00:00,,20222023,N10008,N10005,Platinum,OS Offices,8,3,Regular,https://www.noradhockey.com/event/15107/
+15099,2022-11-20 00:00:00,,20222023,N10005,N10001,OS Offices,Amos,3,6,Regular,https://www.noradhockey.com/event/15099/
+15103,2022-11-13 00:00:00,,20222023,N10004,N10012,Nelson,Canada,10,11,Regular,https://www.noradhockey.com/event/15103/
+15098,2022-11-13 00:00:00,,20222023,N10003,N10001,HollowBrook,Amos,1,1,Regular,https://www.noradhockey.com/event/15098/
+15101,2022-11-13 00:00:00,,20222023,N10006,N10004,Orphans,Nelson,7,2,Regular,https://www.noradhockey.com/event/15101/
+15091,2022-11-13 00:00:00,,20222023,N10004,N10005,Nelson,OS Offices,6,11,Regular,https://www.noradhockey.com/event/15091/
+15097,2022-11-06 00:00:00,,20222023,N10004,N10008,Nelson,Platinum,6,11,Regular,https://www.noradhockey.com/event/15097/
+15102,2022-11-06 00:00:00,,20222023,N10012,N10008,Canada,Platinum,0,6,Regular,https://www.noradhockey.com/event/15102/
+15100,2022-11-06 00:00:00,,20222023,N10003,N10009,HollowBrook,Triple J,13,6,Regular,https://www.noradhockey.com/event/15100/
+15094,2022-11-06 00:00:00,,20222023,N10012,N10003,Canada,HollowBrook,2,12,Regular,https://www.noradhockey.com/event/15094/
+15090,2022-11-06 00:00:00,,20222023,N10012,N10005,Canada,OS Offices,5,7,Regular,https://www.noradhockey.com/event/15090/
+15093,2022-10-30 00:00:00,,20222023,N10006,N10001,Orphans,Amos,8,1,Regular,https://www.noradhockey.com/event/15093/
+15089,2022-10-30 00:00:00,,20222023,N10003,N10006,HollowBrook,Orphans,7,1,Regular,https://www.noradhockey.com/event/15089/
+15096,2022-10-30 00:00:00,,20222023,N10006,N10012,Orphans,Canada,6,3,Regular,https://www.noradhockey.com/event/15096/
+15095,2022-10-30 00:00:00,,20222023,N10005,N10009,OS Offices,Triple J,6,6,Regular,https://www.noradhockey.com/event/15095/
+15085,2022-10-30 00:00:00,,20222023,N10005,N10006,OS Offices,Orphans,4,7,Regular,https://www.noradhockey.com/event/15085/
+15088,2022-10-23 00:00:00,,20222023,N10008,N10001,Platinum,Amos,6,4,Regular,https://www.noradhockey.com/event/15088/
+15092,2022-10-23 00:00:00,,20222023,N10008,N10009,Platinum,Triple J,4,8,Regular,https://www.noradhockey.com/event/15092/
+15084,2022-10-23 00:00:00,,20222023,N10008,N10003,Platinum,HollowBrook,3,9,Regular,https://www.noradhockey.com/event/15084/
+15079,2022-10-23 00:00:00,,20222023,N10004,N10003,Nelson,HollowBrook,9,7,Regular,https://www.noradhockey.com/event/15079/
+15083,2022-10-16 00:00:00,,20222023,N10004,N10001,Nelson,Amos,5,3,Regular,https://www.noradhockey.com/event/15083/
+15087,2022-10-16 00:00:00,,20222023,N10009,N10004,Triple J,Nelson,7,4,Regular,https://www.noradhockey.com/event/15087/
+15078,2022-10-16 00:00:00,,20222023,N10003,N10005,HollowBrook,OS Offices,9,3,Regular,https://www.noradhockey.com/event/15078/
+15082,2022-10-09 00:00:00,,20222023,N10012,N10001,Canada,Amos,4,8,Regular,https://www.noradhockey.com/event/15082/
+15077,2022-10-09 00:00:00,,20222023,N10001,N10009,Amos,Triple J,3,7,Regular,https://www.noradhockey.com/event/15077/
+15086,2022-10-09 00:00:00,,20222023,N10009,N10012,Triple J,Canada,8,3,Regular,https://www.noradhockey.com/event/15086/
+15076,2022-10-02 00:00:00,,20222023,N10004,N10012,Nelson,Canada,7,5,Regular,https://www.noradhockey.com/event/15076/
+15081,2022-10-02 00:00:00,,20222023,N10009,N10006,Triple J,Orphans,6,8,Regular,https://www.noradhockey.com/event/15081/
+15080,2022-10-02 00:00:00,,20222023,N10008,N10005,Platinum,OS Offices,5,2,Regular,https://www.noradhockey.com/event/15080/
+15072,2022-10-02 00:00:00,,20222023,N10001,N10005,Amos,OS Offices,4,2,Regular,https://www.noradhockey.com/event/15072/
+15074,2022-09-25 00:00:00,,20222023,N10006,N10004,Orphans,Nelson,4,4,Regular,https://www.noradhockey.com/event/15074/
+15071,2022-09-25 00:00:00,,20222023,N10012,N10008,Canada,Platinum,1,8,Regular,https://www.noradhockey.com/event/15071/
+15075,2022-09-25 00:00:00,,20222023,N10006,N10008,Orphans,Platinum,6,6,Regular,https://www.noradhockey.com/event/15075/
+15064,2022-09-25 00:00:00,,20222023,N10004,N10005,Nelson,OS Offices,8,5,Regular,https://www.noradhockey.com/event/15064/
+15070,2022-09-18 00:00:00,,20222023,N10004,N10008,Nelson,Platinum,6,2,Regular,https://www.noradhockey.com/event/15070/
+15073,2022-09-18 00:00:00,,20222023,N10009,N10003,Triple J,HollowBrook,1,12,Regular,https://www.noradhockey.com/event/15073/
+15067,2022-09-18 00:00:00,,20222023,N10001,N10003,Amos,HollowBrook,2,7,Regular,https://www.noradhockey.com/event/15067/
+15063,2022-09-18 00:00:00,,20222023,N10012,N10003,Canada,HollowBrook,3,9,Regular,https://www.noradhockey.com/event/15063/
+15066,2022-09-11 00:00:00,,20222023,N10001,N10006,Amos,Orphans,1,8,Regular,https://www.noradhockey.com/event/15066/
+15062,2022-09-11 00:00:00,,20222023,N10006,N10003,Orphans,HollowBrook,3,7,Regular,https://www.noradhockey.com/event/15062/
+15069,2022-09-11 00:00:00,,20222023,N10006,N10012,Orphans,Canada,8,2,Regular,https://www.noradhockey.com/event/15069/
+15068,2022-09-11 00:00:00,,20222023,N10005,N10009,OS Offices,Triple J,9,1,Regular,https://www.noradhockey.com/event/15068/
+15061,2022-09-04 00:00:00,,20222023,N10001,N10008,Amos,Platinum,4,8,Regular,https://www.noradhockey.com/event/15061/
+15065,2022-09-04 00:00:00,,20222023,N10008,N10009,Platinum,Triple J,7,5,Regular,https://www.noradhockey.com/event/15065/
+14168,2022-09-04 00:00:00,,20222023,N10005,N10006,OS Offices,Orphans,4,8,Regular,https://www.noradhockey.com/event/14168/
+15059,2022-08-28 00:00:00,,20222023,N10005,N10012,OS Offices,Canada,5,1,Regular,https://www.noradhockey.com/event/15059/
+14167,2022-08-28 00:00:00,,20222023,N10008,N10003,Platinum,HollowBrook,6,4,Regular,https://www.noradhockey.com/event/14167/
+15060,2022-08-28 00:00:00,,20222023,N10009,N10004,Triple J,Nelson,7,5,Regular,https://www.noradhockey.com/event/15060/
+14166,2022-08-21 00:00:00,,20222023,N10004,N10001,Nelson,Amos,0,4,Regular,https://www.noradhockey.com/event/14166/
+14169,2022-08-21 00:00:00,,20222023,N10009,N10012,Triple J,Canada,5,2,Regular,https://www.noradhockey.com/event/14169/
+14165,2022-08-14 00:00:00,,20222023,N10009,N10006,Triple J,Orphans,4,6,Regular,https://www.noradhockey.com/event/14165/
+14164,2022-08-14 00:00:00,,20222023,N10008,N10005,Platinum,OS Offices,3,5,Regular,https://www.noradhockey.com/event/14164/
+14163,2022-08-14 00:00:00,,20222023,N10004,N10003,Nelson,HollowBrook,6,3,Regular,https://www.noradhockey.com/event/14163/
+14162,2022-08-14 00:00:00,,20222023,N10012,N10001,Canada,Amos,1,7,Regular,https://www.noradhockey.com/event/14162/
+10056,2022-05-01 00:00:00,,20212022,N10009,N10008,Triple J,Platinum,8,7,Playoffs,https://www.noradhockey.com/event/championship/
+10055,2022-04-24 00:00:00,,20212022,N10012,N10008,Canada,Platinum,2,7,Playoffs,https://www.noradhockey.com/event/1st-pool-b-vs-2nd-pool-a/
+10024,2022-04-24 00:00:00,,20212022,N10009,N10003,Triple J,HollowBrook,7,3,Playoffs,https://www.noradhockey.com/event/1st-pool-a-vs-2nd-pool-b/
+10009,2022-04-17 00:00:00,,20212022,N10005,N10001,OS Offices,Amos,7,2,Regular,https://www.noradhockey.com/event/1st-pool-b-vs-3rd-pool-b/
+10023,2022-04-17 00:00:00,,20212022,N10004,N10003,Nelson,HollowBrook,4,11,Playoffs,https://www.noradhockey.com/event/1st-pool-a-vs-3rd-pool-a/
+10062,2022-04-17 00:00:00,,20212022,N10012,N10006,Canada,Orphans,5,2,Playoffs,https://www.noradhockey.com/event/2nd-pool-a-vs-4th-pool-a/
+10054,2022-04-17 00:00:00,,20212022,N10009,N10008,Triple J,Platinum,4,7,Playoffs,https://www.noradhockey.com/event/2nd-pool-b-vs-4th-pool-b/
+10022,2022-04-10 00:00:00,,20212022,N10006,N10003,Orphans,HollowBrook,2,7,Playoffs,https://www.noradhockey.com/event/1st-pool-a-vs-2nd-pool-a/
+10049,2022-04-10 00:00:00,,20212022,N10005,N10009,OS Offices,Triple J,1,5,Playoffs,https://www.noradhockey.com/event/4th-pool-a-vs-3rd-pool-a/
+10008,2022-04-10 00:00:00,,20212022,N10001,N10008,Amos,Platinum,2,5,Playoffs,https://www.noradhockey.com/event/1st-pool-b-vs-2nd-pool-b/
+10040,2022-04-10 00:00:00,,20212022,N10012,N10004,Canada,Nelson,4,4,Playoffs,https://www.noradhockey.com/event/4th-pool-a-vs-3rd-pool-a-2/
+10048,2022-04-03 00:00:00,,20212022,N10005,N10008,OS Offices,Platinum,2,2,Playoffs,https://www.noradhockey.com/event/1st-pool-b-vs-4th-pool-b/
+10007,2022-04-03 00:00:00,,20212022,N10009,N10001,Triple J,Amos,7,3,Playoffs,https://www.noradhockey.com/event/2nd-pool-b-vs-3rd-pool-b/
+10039,2022-04-03 00:00:00,,20212022,N10004,N10006,Nelson,Orphans,3,7,Playoffs,https://www.noradhockey.com/event/2nd-pool-a-vs-3rd-pool-a/
+10021,2022-04-03 00:00:00,,20212022,N10012,N10003,Canada,HollowBrook,2,8,Playoffs,https://www.noradhockey.com/event/1st-pool-a-vs-4th-pool-a/
+10006,2022-03-27 00:00:00,,20212022,N10001,N10003,Amos,HollowBrook,3,7,Regular,https://www.noradhockey.com/event/amos-at-hollowbrook-dental/
+10038,2022-03-27 00:00:00,,20212022,N10004,N10008,Nelson,Platinum,1,5,Regular,https://www.noradhockey.com/event/nelson-company-at-platinum-group/
+10061,2022-03-27 00:00:00,,20212022,N10012,N10006,Canada,Orphans,4,4,Regular,https://www.noradhockey.com/event/canada-colorado-at-world-orphans/
+10047,2022-03-27 00:00:00,,20212022,N10009,N10005,Triple J,OS Offices,6,2,Regular,https://www.noradhockey.com/event/triple-j-at-office-scapes/
+10053,2022-03-20 00:00:00,,20212022,N10008,N10012,Platinum,Canada,9,6,Regular,https://www.noradhockey.com/event/platinum-group-at-canada-colorado/
+10037,2022-03-20 00:00:00,,20212022,N10005,N10004,OS Offices,Nelson,7,1,Regular,https://www.noradhockey.com/event/office-scapes-at-nelson-company/
+10020,2022-03-20 00:00:00,,20212022,N10003,N10006,HollowBrook,Orphans,3,6,Regular,https://www.noradhockey.com/event/hollowbrook-dental-at-world-orphans/
+10005,2022-03-20 00:00:00,,20212022,N10001,N10009,Amos,Triple J,6,6,Regular,https://www.noradhockey.com/event/amos-at-triple-j/
+13495,2022-03-20 00:00:00,,20212022,N10004,N10001,Nelson,Amos,4,4,Regular,https://www.noradhockey.com/event/13495/
+13498,2022-03-13 00:00:00,,20212022,N10005,N10003,OS Offices,HollowBrook,6,4,Regular,https://www.noradhockey.com/event/13498/
+13494,2022-03-13 00:00:00,,20212022,N10001,N10008,Amos,Platinum,3,7,Regular,https://www.noradhockey.com/event/13494/
+13493,2022-03-06 00:00:00,,20212022,N10004,N10003,Nelson,HollowBrook,5,6,Regular,https://www.noradhockey.com/event/13493/
+13497,2022-03-06 00:00:00,,20212022,N10009,N10008,Triple J,Platinum,9,9,Regular,https://www.noradhockey.com/event/13497/
+13496,2022-03-06 00:00:00,,20212022,N10012,N10006,Canada,Orphans,5,9,Regular,https://www.noradhockey.com/event/13496/
+13489,2022-03-06 00:00:00,,20212022,N10001,N10012,Amos,Canada,8,4,Regular,https://www.noradhockey.com/event/13489/
+13485,2022-03-06 00:00:00,,20212022,N10003,N10008,HollowBrook,Platinum,7,6,Regular,https://www.noradhockey.com/event/13485/
+13491,2022-02-27 00:00:00,,20212022,N10006,N10005,Orphans,OS Offices,7,5,Regular,https://www.noradhockey.com/event/13491/
+13488,2022-02-27 00:00:00,,20212022,N10009,N10003,Triple J,HollowBrook,6,7,Regular,https://www.noradhockey.com/event/13488/
+13492,2022-02-27 00:00:00,,20212022,N10012,N10009,Canada,Triple J,7,10,Regular,https://www.noradhockey.com/event/13492/
+13484,2022-02-27 00:00:00,,20212022,N10005,N10001,OS Offices,Amos,2,8,Regular,https://www.noradhockey.com/event/13484/
+13482,2022-02-20 00:00:00,,20212022,N10012,N10003,Canada,HollowBrook,1,8,Regular,https://www.noradhockey.com/event/13482/
+13490,2022-02-20 00:00:00,,20212022,N10006,N10005,Orphans,OS Offices,7,4,Regular,https://www.noradhockey.com/event/13490/
+13487,2022-02-20 00:00:00,,20212022,N10008,N10004,Platinum,Nelson,5,3,Regular,https://www.noradhockey.com/event/13487/
+13481,2022-02-13 00:00:00,,20212022,N10006,N10001,Orphans,Amos,7,4,Regular,https://www.noradhockey.com/event/13481/
+13486,2022-02-13 00:00:00,,20212022,N10009,N10006,Triple J,Orphans,4,5,Regular,https://www.noradhockey.com/event/13486/
+13478,2022-02-06 00:00:00,,20212022,N10005,N10003,OS Offices,HollowBrook,4,13,Regular,https://www.noradhockey.com/event/13478/
+13480,2022-02-06 00:00:00,,20212022,N10008,N10005,Platinum,OS Offices,11,6,Regular,https://www.noradhockey.com/event/13480/
+13479,2022-02-06 00:00:00,,20212022,N10004,N10009,Nelson,Triple J,1,6,Regular,https://www.noradhockey.com/event/13479/
+13475,2022-01-30 00:00:00,,20212022,N10001,N10004,Amos,Nelson,5,2,Regular,https://www.noradhockey.com/event/13475/
+13477,2022-01-30 00:00:00,,20212022,N10009,N10008,Triple J,Platinum,11,4,Regular,https://www.noradhockey.com/event/13477/
+13476,2022-01-30 00:00:00,,20212022,N10006,N10012,Orphans,Canada,10,2,Regular,https://www.noradhockey.com/event/13476/
+13474,2022-01-23 00:00:00,,20212022,N10012,N10005,Canada,OS Offices,4,8,Regular,https://www.noradhockey.com/event/13474/
+13473,2022-01-23 00:00:00,,20212022,N10009,N10003,Triple J,HollowBrook,10,13,Regular,https://www.noradhockey.com/event/13473/
+13472,2022-01-23 00:00:00,,20212022,N10001,N10008,Amos,Platinum,8,5,Regular,https://www.noradhockey.com/event/13472/
+13471,2022-01-23 00:00:00,,20212022,N10006,N10004,Orphans,Nelson,4,2,Regular,https://www.noradhockey.com/event/13471/
+13466,2022-01-09 00:00:00,,20212022,N10004,N10008,Nelson,Platinum,4,6,Regular,https://www.noradhockey.com/event/13466/
+13465,2022-01-09 00:00:00,,20212022,N10001,N10005,Amos,OS Offices,5,3,Regular,https://www.noradhockey.com/event/13465/
+13464,2022-01-09 00:00:00,,20212022,N10006,N10003,Orphans,HollowBrook,5,5,Regular,https://www.noradhockey.com/event/13464/
+13463,2022-01-09 00:00:00,,20212022,N10012,N10009,Canada,Triple J,2,6,Regular,https://www.noradhockey.com/event/13463/
+13460,2022-01-02 00:00:00,,20212022,N10003,N10004,HollowBrook,Nelson,3,1,Regular,https://www.noradhockey.com/event/13460/
+13459,2021-12-26 00:00:00,,20212022,N10009,N10001,Triple J,Amos,2,9,Regular,https://www.noradhockey.com/event/13459/
+13458,2021-12-19 00:00:00,,20212022,N10004,N10005,Nelson,OS Offices,3,2,Regular,https://www.noradhockey.com/event/13458/
+13462,2021-12-19 00:00:00,,20212022,N10012,N10008,Canada,Platinum,0,9,Regular,https://www.noradhockey.com/event/13462/
+13461,2021-12-19 00:00:00,,20212022,N10005,N10006,OS Offices,Orphans,1,8,Regular,https://www.noradhockey.com/event/13461/
+13455,2021-12-19 00:00:00,,20212022,N10008,N10003,Platinum,HollowBrook,7,6,Regular,https://www.noradhockey.com/event/13455/
+13454,2021-12-12 00:00:00,,20212022,N10006,N10001,Orphans,Amos,4,7,Regular,https://www.noradhockey.com/event/13454/
+13457,2021-12-12 00:00:00,,20212022,N10006,N10009,Orphans,Triple J,8,2,Regular,https://www.noradhockey.com/event/13457/
+13456,2021-12-12 00:00:00,,20212022,N10001,N10012,Amos,Canada,2,3,Regular,https://www.noradhockey.com/event/13456/
+13453,2021-12-05 00:00:00,,20212022,N10005,N10008,OS Offices,Platinum,5,3,Regular,https://www.noradhockey.com/event/13453/
+13452,2021-12-05 00:00:00,,20212022,N10004,N10009,Nelson,Triple J,4,1,Regular,https://www.noradhockey.com/event/13452/
+13451,2021-12-05 00:00:00,,20212022,N10012,N10003,Canada,HollowBrook,4,9,Regular,https://www.noradhockey.com/event/13451/
+13445,2021-12-05 00:00:00,,20212022,N10008,N10001,Platinum,Amos,4,6,Regular,https://www.noradhockey.com/event/13445/
+13448,2021-11-28 00:00:00,,20212022,N10003,N10005,HollowBrook,OS Offices,8,3,Regular,https://www.noradhockey.com/event/13448/
+13444,2021-11-28 00:00:00,,20212022,N10004,N10006,Nelson,Orphans,0,9,Regular,https://www.noradhockey.com/event/13444/
+13447,2021-11-21 00:00:00,,20212022,N10001,N10004,Amos,Nelson,6,2,Regular,https://www.noradhockey.com/event/13447/
+13443,2021-11-21 00:00:00,,20212022,N10005,N10012,OS Offices,Canada,9,1,Regular,https://www.noradhockey.com/event/13443/
+13450,2021-11-21 00:00:00,,20212022,N10008,N10009,Platinum,Triple J,8,4,Regular,https://www.noradhockey.com/event/13450/
+13449,2021-11-21 00:00:00,,20212022,N10006,N10012,Orphans,Canada,6,2,Regular,https://www.noradhockey.com/event/13449/
+13436,2021-11-21 00:00:00,,20212022,N10005,N10001,OS Offices,Amos,5,4,Regular,https://www.noradhockey.com/event/13436/
+13442,2021-11-14 00:00:00,,20212022,N10012,N10004,Canada,Nelson,4,6,Regular,https://www.noradhockey.com/event/13442/
+13446,2021-11-14 00:00:00,,20212022,N10003,N10009,HollowBrook,Triple J,14,3,Regular,https://www.noradhockey.com/event/13446/
+13435,2021-11-14 00:00:00,,20212022,N10003,N10006,HollowBrook,Orphans,12,3,Regular,https://www.noradhockey.com/event/13435/
+13434,2021-11-07 00:00:00,,20212022,N10001,N10009,Amos,Triple J,9,8,Regular,https://www.noradhockey.com/event/13434/
+13439,2021-11-07 00:00:00,,20212022,N10001,N10003,Amos,HollowBrook,8,7,Regular,https://www.noradhockey.com/event/13439/
+13441,2021-11-07 00:00:00,,20212022,N10006,N10008,Orphans,Platinum,5,10,Regular,https://www.noradhockey.com/event/13441/
+13440,2021-11-07 00:00:00,,20212022,N10009,N10005,Triple J,OS Offices,3,5,Regular,https://www.noradhockey.com/event/13440/
+13433,2021-10-31 00:00:00,,20212022,N10004,N10003,Nelson,HollowBrook,1,11,Regular,https://www.noradhockey.com/event/13433/
+13438,2021-10-31 00:00:00,,20212022,N10008,N10004,Platinum,Nelson,10,6,Regular,https://www.noradhockey.com/event/13438/
+13437,2021-10-31 00:00:00,,20212022,N10009,N10012,Triple J,Canada,6,2,Regular,https://www.noradhockey.com/event/13437/
+13430,2021-10-24 00:00:00,,20212022,N10005,N10004,OS Offices,Nelson,1,3,Regular,https://www.noradhockey.com/event/13430/
+13432,2021-10-24 00:00:00,,20212022,N10008,N10012,Platinum,Canada,6,5,Regular,https://www.noradhockey.com/event/13432/
+13431,2021-10-24 00:00:00,,20212022,N10006,N10005,Orphans,OS Offices,6,4,Regular,https://www.noradhockey.com/event/13431/
+13427,2021-10-24 00:00:00,,20212022,N10003,N10008,HollowBrook,Platinum,6,3,Regular,https://www.noradhockey.com/event/13427/
+10004,2021-10-17 00:00:00,,20212022,N10012,N10001,Canada,Amos,3,9,Regular,https://www.noradhockey.com/event/canada-colorado-at-amos/
+13426,2021-10-17 00:00:00,,20212022,N10001,N10006,Amos,Orphans,5,8,Regular,https://www.noradhockey.com/event/13426/
+13428,2021-10-17 00:00:00,,20212022,N10009,N10006,Triple J,Orphans,2,7,Regular,https://www.noradhockey.com/event/13428/
+13424,2021-10-17 00:00:00,,20212022,N10003,N10012,HollowBrook,Canada,14,1,Regular,https://www.noradhockey.com/event/13424/
+13425,2021-10-10 00:00:00,,20212022,N10004,N10009,Nelson,Triple J,2,5,Regular,https://www.noradhockey.com/event/13425/
+13423,2021-10-10 00:00:00,,20212022,N10008,N10005,Platinum,OS Offices,3,4,Regular,https://www.noradhockey.com/event/13423/
+13243,2021-10-03 00:00:00,,20212022,N10005,N10003,OS Offices,HollowBrook,9,5,Regular,https://www.noradhockey.com/event/13243/
+13242,2021-10-03 00:00:00,,20212022,N10004,N10001,Nelson,Amos,3,10,Playoffs,https://www.noradhockey.com/event/13242/
+13241,2021-10-02 00:00:00,,20212022,N10009,N10008,Triple J,Platinum,3,6,Regular,https://www.noradhockey.com/event/13241/
+13244,2021-03-03 00:00:00,,20212022,N10012,N10006,Canada,Orphans,5,4,Regular,https://www.noradhockey.com/event/13244/
+18953,2025-08-10 00:00:00,16:00:00,20252026,N10001,N10004,Amos,Nelson,3,5,Regular,https://www.noradhockey.com/event/18953/
+18954,2025-08-10 00:00:00,17:15:00,20252026,N10002,N10005,Ace,OS Offices,4,6,Regular,https://www.noradhockey.com/event/18954/
+18955,2025-08-10 00:00:00,18:30:00,20252026,N10010,N10006,Velodrome,Orphans,5,1,Regular,https://www.noradhockey.com/event/18955/
+18956,2025-08-10 00:00:00,19:54:00,20252026,N10003,N10009,HollowBrook,Triple J,6,2,Regular,https://www.noradhockey.com/event/18956/
+18957,2025-08-10 00:00:00,21:00:00,20252026,N10007,N10008,Outlaws,Platinum,4,4,Regular,https://www.noradhockey.com/event/18957/
+18958,2025-08-17 00:00:00,16:00:00,20252026,N10007,N10005,Outlaws,OS Offices,7,4,Regular,https://www.noradhockey.com/event/18958/
+18959,2025-08-17 00:00:00,17:15:00,20252026,N10001,N10010,Amos,Velodrome,1,8,Regular,https://www.noradhockey.com/event/18959/
+18960,2025-08-17 00:00:00,18:30:00,20252026,N10003,N10006,HollowBrook,Orphans,1,5,Regular,https://www.noradhockey.com/event/18960/
+18961,2025-08-17 00:00:00,19:54:00,20252026,N10002,N10008,Ace,Platinum,5,2,Regular,https://www.noradhockey.com/event/18961/
+18962,2025-08-17 00:00:00,21:00:00,20252026,N10004,N10009,Nelson,Triple J,4,1,Regular,https://www.noradhockey.com/event/18962/
+18963,2025-08-24 00:00:00,16:00:00,20252026,N10001,N10009,Amos,Triple J,7,5,Regular,https://www.noradhockey.com/event/18963/
+18964,2025-08-24 00:00:00,17:15:00,20252026,N10007,N10006,Outlaws,Orphans,1,7,Regular,https://www.noradhockey.com/event/18964/
+18965,2025-08-24 00:00:00,18:30:00,20252026,N10010,N10005,Velodrome,OS Offices,2,4,Regular,https://www.noradhockey.com/event/18965/
+18966,2025-08-24 00:00:00,19:54:00,20252026,N10004,N10008,Nelson,Platinum,4,7,Regular,https://www.noradhockey.com/event/18966/
+18967,2025-08-24 00:00:00,21:00:00,20252026,N10002,N10003,Ace,HollowBrook,4,4,Regular,https://www.noradhockey.com/event/18967/
+18968,2025-09-07 00:00:00,16:00:00,20252026,N10004,N10005,Nelson,OS Offices,9,6,Regular,https://www.noradhockey.com/event/18968/
+18969,2025-09-07 00:00:00,17:15:00,20252026,N10008,N10010,Platinum,Velodrome,4,3,Regular,https://www.noradhockey.com/event/18969/
+18970,2025-09-07 00:00:00,18:30:00,20252026,N10002,N10007,Ace,Outlaws,3,3,Regular,https://www.noradhockey.com/event/18970/
+18971,2025-09-07 00:00:00,19:54:00,20252026,N10009,N10006,Triple J,Orphans,5,2,Regular,https://www.noradhockey.com/event/18971/
+18972,2025-09-07 00:00:00,21:00:00,20252026,N10001,N10003,Amos,HollowBrook,1,1,Regular,https://www.noradhockey.com/event/18972/
+18973,2025-09-14 00:00:00,16:00:00,20252026,N10008,N10006,Platinum,Orphans,5,3,Regular,https://www.noradhockey.com/event/18973/
+18974,2025-09-14 00:00:00,17:15:00,20252026,N10007,N10009,Outlaws,Triple J,6,1,Regular,https://www.noradhockey.com/event/18974/
+18975,2025-09-14 00:00:00,18:30:00,20252026,N10001,N10005,Amos,OS Offices,2,9,Regular,https://www.noradhockey.com/event/18975/
+18976,2025-09-14 00:00:00,19:54:00,20252026,N10002,N10004,Ace,Nelson,3,7,Regular,https://www.noradhockey.com/event/18976/
+18977,2025-09-14 00:00:00,21:00:00,20252026,N10010,N10003,Velodrome,HollowBrook,4,2,Regular,https://www.noradhockey.com/event/18977/
+18978,2025-09-28 00:00:00,16:00:00,20252027,N10002,N10009,Ace,Triple J,5,2,Regular,https://www.noradhockey.com/event/18978/
+18979,2025-09-28 00:00:00,17:15:00,20252028,N10003,N10007,HollowBrook,Outlaws,3,5,Regular,https://www.noradhockey.com/event/18979/
+18980,2025-09-28 00:00:00,18:30:00,20252029,N10001,N10008,Amos,Platinum,1,5,Regular,https://www.noradhockey.com/event/18980/
+18981,2025-09-28 00:00:00,19:54:00,20252030,N10004,N10010,Nelson,Velodrome,2,1,Regular,https://www.noradhockey.com/event/18981/
+18982,2025-09-28 00:00:00,21:00:00,20252031,N10005,N10006,OS Offices,Orphans,9,9,Regular,https://www.noradhockey.com/event/18982/
+18983,2025-10-05 00:00:00,16:00:00,20252032,N10003,N10008,HollowBrook,Platinum,4,4,Regular,https://www.noradhockey.com/event/18983/
+18984,2025-10-05 00:00:00,17:15:00,20252033,N10002,N10001,Ace,Amos,6,3,Regular,https://www.noradhockey.com/event/18984/
+18985,2025-10-05 00:00:00,18:30:00,20252034,N10005,N10009,OS Offices,Triple J,5,3,Regular,https://www.noradhockey.com/event/18985/
+18986,2025-10-05 00:00:00,19:54:00,20252035,N10004,N10006,Nelson,Orphans,4,10,Regular,https://www.noradhockey.com/event/18986/
+18987,2025-10-05 00:00:00,21:00:00,20252036,N10007,N10010,Outlaws,Velodrome,0,1,Regular,https://www.noradhockey.com/event/18987/
+18988,2025-10-12 00:00:00,16:00:00,20252037,N10002,N10006,Ace,Orphans,7,2,Regular,https://www.noradhockey.com/event/18988/
+18989,2025-10-12 00:00:00,17:15:00,20252038,N10003,N10004,HollowBrook,Nelson,1,3,Regular,https://www.noradhockey.com/event/18989/
+18990,2025-10-12 00:00:00,18:30:00,20252039,N10008,N10005,Platinum,OS Offices,5,7,Regular,https://www.noradhockey.com/event/18990/
+18991,2025-10-12 00:00:00,19:54:00,20252040,N10009,N10010,Triple J,Velodrome,1,5,Regular,https://www.noradhockey.com/event/18991/
+18992,2025-10-12 00:00:00,21:00:00,20252041,N10001,N10007,Amos,Outlaws,2,6,Regular,https://www.noradhockey.com/event/amos-vs-outlaws/
+18993,2025-10-19 00:00:00,16:00:00,20252042,N10002,N10010,Ace,Velodrome,1,2,Regular,https://www.noradhockey.com/event/18993/
+18994,2025-10-19 00:00:00,17:15:00,20252043,N10001,N10006,Amos,Orphans,2,2,Regular,https://www.noradhockey.com/event/18994/
+18995,2025-10-19 00:00:00,18:30:00,20252044,N10004,N10007,Nelson,Outlaws,1,5,Regular,https://www.noradhockey.com/event/18995/
+18996,2025-10-19 00:00:00,19:54:00,20252045,N10003,N10005,HollowBrook,OS Offices,3,8,Regular,https://www.noradhockey.com/event/18996/
+18997,2025-10-19 00:00:00,21:00:00,20252046,N10008,N10009,Platinum,Triple J,7,3,Regular,https://www.noradhockey.com/event/18997/
+18998,2025-10-26 00:00:00,16:00:00,20252047,N10006,N10010,Orphans,Velodrome,6,4,Regular,https://www.noradhockey.com/event/18998/
+18999,2025-10-26 00:00:00,17:15:00,20252048,N10001,N10004,Amos,Nelson,8,6,Regular,https://www.noradhockey.com/event/18999/
+19000,2025-10-26 00:00:00,18:30:00,20252049,N10003,N10009,HollowBrook,Triple J,5,2,Regular,https://www.noradhockey.com/event/19000/
+19001,2025-10-26 00:00:00,19:54:00,20252050,N10007,N10008,Outlaws,Platinum,4,4,Regular,https://www.noradhockey.com/event/19001/
+19002,2025-10-26 00:00:00,21:00:00,20252051,N10002,N10005,Ace,OS Offices,4,6,Regular,https://www.noradhockey.com/event/19002/
+19003,2025-11-02 00:00:00,16:00:00,20252052,N10007,N10005,Outlaws,OS Offices,6,3,Regular,https://www.noradhockey.com/event/19003/
+19004,2025-11-02 00:00:00,17:15:00,20252053,N10003,N10006,HollowBrook,Orphans,4,3,Regular,https://www.noradhockey.com/event/19004/
+19005,2025-11-02 00:00:00,18:30:00,20252054,N10004,N10009,Nelson,Triple J,7,1,Regular,https://www.noradhockey.com/event/19005/
+19006,2025-11-02 00:00:00,19:54:00,20252055,N10002,N10008,Ace,Platinum,2,8,Regular,https://www.noradhockey.com/event/19006/
+19007,2025-11-02 00:00:00,21:00:00,20252056,N10001,N10010,Amos,Velodrome,4,5,Regular,https://www.noradhockey.com/event/19007/
+19008,2025-11-09 00:00:00,16:00:00,20252057,N10001,N10009,Amos,Triple J,4,5,Regular,https://www.noradhockey.com/event/19008/
+19009,2025-11-09 00:00:00,17:15:00,20252058,N10005,N10010,OS Offices,Velodrome,5,4,Regular,https://www.noradhockey.com/event/19009/
+19010,2025-11-09 00:00:00,18:30:00,20252059,N10002,N10003,Ace,HollowBrook,4,3,Regular,https://www.noradhockey.com/event/19010/
+19011,2025-11-09 00:00:00,19:54:00,20252060,N10007,N10006,Outlaws,Orphans,1,5,Regular,https://www.noradhockey.com/event/19011/
+19012,2025-11-09 00:00:00,21:00:00,20252061,N10004,N10008,Nelson,Platinum,1,6,Regular,https://www.noradhockey.com/event/19012/
+19013,2025-11-16 00:00:00,16:00:00,20252062,N10004,N10005,Nelson,OS Offices,3,7,Regular,https://www.noradhockey.com/event/19013/
+19014,2025-11-16 00:00:00,17:15:00,20252063,N10008,N10010,Platinum,Velodrome,2,6,Regular,https://www.noradhockey.com/event/19014/
+19015,2025-11-16 00:00:00,18:30:00,20252064,N10002,N10007,Ace,Outlaws,0,8,Regular,https://www.noradhockey.com/event/19015/
+19016,2025-11-16 00:00:00,19:54:00,20252065,N10001,N10003,Amos,HollowBrook,3,5,Regular,https://www.noradhockey.com/event/19016/
+19017,2025-11-16 00:00:00,21:00:00,20252066,N10009,N10006,Triple J,Orphans,7,6,Regular,https://www.noradhockey.com/event/19017/
+19018,2025-11-23 00:00:00,16:00:00,20252067,N10007,N10009,Outlaws,Triple J,1,5,Regular,https://www.noradhockey.com/event/19018/
+19019,2025-11-23 00:00:00,17:15:00,20252068,N10008,N10006,Platinum,Orphans,7,2,Regular,https://www.noradhockey.com/event/19019/
+19020,2025-11-23 00:00:00,18:30:00,20252069,N10003,N10010,HollowBrook,Velodrome,4,1,Regular,https://www.noradhockey.com/event/19020/
+19021,2025-11-23 00:00:00,19:54:00,20252070,N10001,N10005,Amos,OS Offices,6,12,Regular,https://www.noradhockey.com/event/19021/
+19022,2025-11-23 00:00:00,21:00:00,20252071,N10002,N10004,Ace,Nelson,7,5,Regular,https://www.noradhockey.com/event/19022/
+19023,2025-12-14 00:00:00,16:00:00,20252072,N10003,N10007,HollowBrook,Outlaws,4,2,Regular,https://www.noradhockey.com/event/19023/
+19024,2025-12-14 00:00:00,17:15:00,20252073,N10002,N10009,Ace,Triple J,6,2,Regular,https://www.noradhockey.com/event/19024/
+19025,2025-12-14 00:00:00,18:30:00,20252074,N10001,N10008,Amos,Platinum,4,7,Regular,https://www.noradhockey.com/event/amos-vs-platinum/
+19026,2025-12-14 00:00:00,19:54:00,20252075,N10004,N10010,Nelson,Velodrome,3,5,Regular,https://www.noradhockey.com/event/19026/
+19027,2025-12-14 00:00:00,21:00:00,20252076,N10005,N10006,OS Offices,Orphans,4,4,Regular,https://www.noradhockey.com/event/19027/
+19028,2025-12-21 00:00:00,16:00:00,20252077,N10003,N10008,HollowBrook,Platinum,0,3,Regular,https://www.noradhockey.com/event/19028/
+19029,2025-12-21 00:00:00,17:15:00,20252078,N10005,N10009,OS Offices,Triple J,8,3,Regular,https://www.noradhockey.com/event/19029/
+19030,2025-12-21 00:00:00,18:30:00,20252079,N10004,N10006,Nelson,Orphans,6,5,Regular,https://www.noradhockey.com/event/19030/
+19031,2025-12-21 00:00:00,19:54:00,20252079,N10002,N10001,Ace,Amos,8,3,Regular,https://www.noradhockey.com/event/19031/
+19032,2025-12-21 00:00:00,21:00:00,20252079,N10007,N10010,Outlaws,Velodrome,3,6,Regular,https://www.noradhockey.com/event/19032/

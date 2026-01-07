@@ -1,4 +1,4 @@
-play_id,game_id,sequence_id,play_index,first_event,last_event,event_count,sequence_index,team,zone,has_shot,start_seconds,end_seconds,duration_seconds,play_key,zone_id,team_id,first_event_key,last_event_key,play_chain,event_chain_indices,video_time_start,video_time_end,home_team_id,away_team_id
+play_id,game_id,sequence_id,play_index,first_event,last_event,event_count,sequence_index,team,zone_name,has_shot,start_seconds,end_seconds,duration_seconds,play_key,zone_id,team_id,first_event_key,last_event_key,play_chain,event_chain_indices,video_time_start,video_time_end,home_team_id,away_team_id
 PL1896900002,18969,SQ1896900002,2,1000.0,1000.0,1,2,,,False,,,,PL18969000002,,N10010,E18969001000,E18969001000,GameStart,1000,0.0,0.0,N10008,N10010
 PL1896900003,18969,SQ1896900003,3,1001.0,1005.0,5,3,Home,n,False,1069.0,1080.0,11.0,PL18969000003,ZN0003,N10008,E18969001001,E18969001005,Faceoff > Pass > Possession > Pass > Zone_Entry_Exit,"1001,1002,1003,1004,1005",0.0,11.0,N10008,N10010
 PL1896900004,18969,SQ1896900004,4,1006.0,1006.0,1,4,Home,n,False,1069.0,1069.0,0.0,PL18969000004,ZN0003,N10008,E18969001006,E18969001006,Turnover,1006,11.0,11.0,N10008,N10010

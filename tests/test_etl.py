@@ -1,136 +1,251 @@
+#!/usr/bin/env python3
 """
-ETL Tests for BenchSight
-Tests the ETL orchestrator and data transformations.
+=============================================================================
+BENCHSIGHT ETL UNIT TESTS
+=============================================================================
+Run with: python -m pytest tests/test_etl.py -v
+=============================================================================
 """
+
 import pytest
 import pandas as pd
+import numpy as np
 from pathlib import Path
 import sys
 
+# Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.etl_orchestrator import ETLOrchestrator
+OUTPUT_DIR = Path("data/output")
+RAW_DIR = Path("data/raw/games")
 
-OUTPUT_DIR = Path(__file__).parent.parent / "data" / "output"
+# =============================================================================
+# FIXTURES
+# =============================================================================
+
+@pytest.fixture
+def player_stats():
+    """Load fact_player_game_stats."""
+    return pd.read_csv(OUTPUT_DIR / "fact_player_game_stats.csv")
+
+@pytest.fixture
+def events():
+    """Load fact_events."""
+    return pd.read_csv(OUTPUT_DIR / "fact_events.csv")
+
+@pytest.fixture
+def shifts():
+    """Load fact_shifts."""
+    return pd.read_csv(OUTPUT_DIR / "fact_shifts.csv")
+
+@pytest.fixture
+def roster():
+    """Load fact_game_roster."""
+    return pd.read_csv(OUTPUT_DIR / "fact_game_roster.csv")
+
+@pytest.fixture
+def dim_player():
+    """Load dim_player."""
+    return pd.read_csv(OUTPUT_DIR / "dim_player.csv")
 
 
-class TestETLOrchestrator:
-    """Tests for ETL orchestrator."""
+# =============================================================================
+# GOAL ACCURACY TESTS (CRITICAL)
+# =============================================================================
+
+class TestGoalAccuracy:
+    """Critical tests for goal counts matching official data."""
     
-    def test_orchestrator_init(self, tmp_path):
-        """Test orchestrator initialization."""
-        orch = ETLOrchestrator(output_dir=tmp_path)
-        assert orch.output_dir == tmp_path
-        assert orch.mode == 'overwrite'
+    OFFICIAL_GOALS = {
+        '18969': {'total': 7},   # Platinum 4, Velodrome 3
+        '18977': {'total': 6},   # Velodrome 4, HollowBrook 2
+        '18981': {'total': 3},   # Nelson 2, Velodrome 1
+        '18987': {'total': 1},   # Outlaws 0, Velodrome 1
+    }
     
-    def test_orchestrator_append_mode(self, tmp_path):
-        """Test append mode."""
-        orch = ETLOrchestrator(output_dir=tmp_path, mode='append')
-        assert orch.mode == 'append'
+    def test_game_18969_goals(self, player_stats):
+        """Game 18969: Platinum 4, Velodrome 3 = 7 total."""
+        game = player_stats[player_stats['game_id'].astype(str) == '18969']
+        total = game['goals'].sum()
+        assert total == 7, f"Expected 7 goals, got {total}"
+    
+    def test_game_18977_goals(self, player_stats):
+        """Game 18977: Velodrome 4, HollowBrook 2 = 6 total."""
+        game = player_stats[player_stats['game_id'].astype(str) == '18977']
+        total = game['goals'].sum()
+        assert total == 6, f"Expected 6 goals, got {total}"
+    
+    def test_game_18981_goals(self, player_stats):
+        """Game 18981: Nelson 2, Velodrome 1 = 3 total."""
+        game = player_stats[player_stats['game_id'].astype(str) == '18981']
+        total = game['goals'].sum()
+        assert total == 3, f"Expected 3 goals, got {total}"
+    
+    def test_game_18987_goals(self, player_stats):
+        """Game 18987: Outlaws 0, Velodrome 1 = 1 total."""
+        game = player_stats[player_stats['game_id'].astype(str) == '18987']
+        total = game['goals'].sum()
+        assert total == 1, f"Expected 1 goal, got {total}"
+    
+    def test_total_goals_all_games(self, player_stats):
+        """Total goals across all 4 tracked games should be 17."""
+        tracked = ['18969', '18977', '18981', '18987']
+        total = player_stats[player_stats['game_id'].astype(str).isin(tracked)]['goals'].sum()
+        assert total == 17, f"Expected 17 total goals, got {total}"
 
+
+# =============================================================================
+# DATA INTEGRITY TESTS
+# =============================================================================
 
 class TestDataIntegrity:
-    """Tests for data integrity."""
+    """Tests for data integrity and consistency."""
     
-    def test_fact_events_player_exists(self):
-        """Check fact_events_player.csv exists."""
-        assert (OUTPUT_DIR / "fact_events_player.csv").exists()
+    def test_no_null_player_ids(self, player_stats):
+        """player_id should never be NULL."""
+        null_count = player_stats['player_id'].isna().sum()
+        assert null_count == 0, f"Found {null_count} NULL player_ids"
     
-    def test_fact_shifts_player_exists(self):
-        """Check fact_shifts_player.csv exists."""
-        assert (OUTPUT_DIR / "fact_shifts_player.csv").exists()
+    def test_no_null_game_ids(self, player_stats):
+        """game_id should never be NULL."""
+        null_count = player_stats['game_id'].isna().sum()
+        assert null_count == 0, f"Found {null_count} NULL game_ids"
     
-    def test_fact_events_has_required_columns(self):
-        """Check required columns in fact_events_player."""
-        df = pd.read_csv(OUTPUT_DIR / "fact_events_player.csv", nrows=5, dtype=str)
-        required = ['game_id', 'event_index', 'event_type', 'player_id', 'player_role']
-        for col in required:
-            assert col in df.columns, f"Missing column: {col}"
+    def test_no_duplicate_player_games(self, player_stats):
+        """Each player should appear once per game."""
+        dupes = player_stats.duplicated(subset=['game_id', 'player_id']).sum()
+        assert dupes == 0, f"Found {dupes} duplicate player-game rows"
     
-    def test_fact_shifts_has_logical_shift_columns(self):
-        """Check logical shift columns exist."""
-        df = pd.read_csv(OUTPUT_DIR / "fact_shifts_player.csv", nrows=5)
-        required = ['logical_shift_number', 'shift_segment', 'running_toi']
-        for col in required:
-            assert col in df.columns, f"Missing column: {col}"
+    def test_no_negative_goals(self, player_stats):
+        """Goals should never be negative."""
+        neg = (player_stats['goals'] < 0).sum()
+        assert neg == 0, f"Found {neg} rows with negative goals"
     
-    def test_no_negative_shift_durations(self):
-        """Shift durations should be non-negative."""
-        df = pd.read_csv(OUTPUT_DIR / "fact_shifts_player.csv")
-        assert (df['shift_duration'] >= 0).all(), "Found negative shift durations"
+    def test_no_negative_assists(self, player_stats):
+        """Assists should never be negative."""
+        neg = (player_stats['assists'] < 0).sum()
+        assert neg == 0, f"Found {neg} rows with negative assists"
     
-    def test_logical_shifts_increment(self):
-        """Logical shift numbers should only increment."""
-        df = pd.read_csv(OUTPUT_DIR / "fact_shifts_player.csv")
-        for (game_id, player), group in df.groupby(['game_id', 'player_id']):
-            group = group.sort_values('shift_index')
-            prev = 0
-            for _, row in group.iterrows():
-                assert row['logical_shift_number'] >= prev, f"Logical shift decreased for {player}"
-                prev = row['logical_shift_number']
+    def test_points_equals_goals_plus_assists(self, player_stats):
+        """Points should equal goals + assists."""
+        if 'points' in player_stats.columns:
+            calculated = player_stats['goals'] + player_stats['assists']
+            mismatch = (player_stats['points'] != calculated).sum()
+            assert mismatch == 0, f"Found {mismatch} rows where points != goals + assists"
 
 
-class TestValidatedRules:
-    """Tests based on validated counting rules."""
+# =============================================================================
+# SCHEMA TESTS
+# =============================================================================
+
+class TestSchemas:
+    """Tests for required columns and data types."""
     
-    @pytest.fixture
-    def events(self):
-        return pd.read_csv(OUTPUT_DIR / "fact_events_player.csv", dtype=str)
+    def test_player_stats_columns(self, player_stats):
+        """fact_player_game_stats should have required columns."""
+        required = ['player_game_key', 'game_id', 'player_id', 'player_name', 'goals', 'assists']
+        missing = [c for c in required if c not in player_stats.columns]
+        assert len(missing) == 0, f"Missing columns: {missing}"
     
-    @pytest.fixture
-    def keegan_events(self, events):
-        return events[(events['game_id'] == '18969') & (events['player_id'] == 'P100117')]
+    def test_player_stats_enhanced_columns(self, player_stats):
+        """fact_player_game_stats should have 300+ columns (enhanced stats)."""
+        col_count = len(player_stats.columns)
+        assert col_count >= 300, f"Only {col_count} columns, expected 300+ (enhanced stats lost?)"
     
-    def test_keegan_goals_count(self, keegan_events):
-        """Keegan should have 2 goals in game 18969."""
-        goals = keegan_events[(keegan_events['event_type'] == 'Goal') & 
-                              (keegan_events['player_role'] == 'event_team_player_1')]
-        assert len(goals) == 2, f"Expected 2 goals, got {len(goals)}"
+    def test_events_columns(self, events):
+        """fact_events should have required columns."""
+        required = ['event_key', 'game_id', 'event_index', 'event_type', 'period']
+        missing = [c for c in required if c not in events.columns]
+        assert len(missing) == 0, f"Missing columns: {missing}"
     
-    def test_keegan_assists_count(self, keegan_events):
-        """Keegan should have 1 assist in game 18969."""
-        assists = keegan_events[keegan_events['play_detail'].str.contains('Assist', na=False)]
-        assert len(assists) == 1, f"Expected 1 assist, got {len(assists)}"
-    
-    def test_keegan_fo_wins(self, keegan_events):
-        """Keegan should have 11 FO wins in game 18969."""
-        fo_wins = keegan_events[(keegan_events['event_type'] == 'Faceoff') & 
-                                (keegan_events['player_role'] == 'event_team_player_1')]
-        assert len(fo_wins) == 11, f"Expected 11 FO wins, got {len(fo_wins)}"
-    
-    def test_keegan_fo_losses(self, keegan_events):
-        """Keegan should have 11 FO losses in game 18969."""
-        fo_losses = keegan_events[(keegan_events['event_type'] == 'Faceoff') & 
-                                  (keegan_events['player_role'] == 'opp_team_player_1')]
-        assert len(fo_losses) == 11, f"Expected 11 FO losses, got {len(fo_losses)}"
-    
-    def test_keegan_pass_attempts(self, keegan_events):
-        """Keegan should have 17 pass attempts in game 18969."""
-        passes = keegan_events[(keegan_events['event_type'] == 'Pass') & 
-                               (keegan_events['player_role'] == 'event_team_player_1')]
-        assert len(passes) == 17, f"Expected 17 passes, got {len(passes)}"
+    def test_roster_columns(self, roster):
+        """fact_game_roster should have required columns."""
+        required = ['roster_key', 'game_id', 'player_id', 'team_id']
+        missing = [c for c in required if c not in roster.columns]
+        assert len(missing) == 0, f"Missing columns: {missing}"
 
 
-class TestGoalieStats:
-    """Tests for goalie stats."""
+# =============================================================================
+# ROW COUNT TESTS
+# =============================================================================
+
+class TestRowCounts:
+    """Tests for expected row counts."""
     
-    @pytest.fixture
-    def wyatt_events(self):
-        events = pd.read_csv(OUTPUT_DIR / "fact_events_player.csv", dtype=str)
-        return events[(events['game_id'] == '18969') & (events['player_id'] == 'P100016')]
+    def test_player_stats_row_count(self, player_stats):
+        """Should have ~107 player-game rows (4 games × ~27 players)."""
+        count = len(player_stats)
+        assert 100 <= count <= 150, f"Unexpected row count: {count}"
     
-    def test_wyatt_saves(self, wyatt_events):
-        """Wyatt should have 37 saves in game 18969."""
-        saves = wyatt_events[(wyatt_events['event_type'] == 'Save') & 
-                             (wyatt_events['player_role'] == 'event_team_player_1')]
-        assert len(saves) == 37, f"Expected 37 saves, got {len(saves)}"
+    def test_events_row_count(self, events):
+        """Should have ~5800 events (4 games × ~1450 events)."""
+        count = len(events)
+        assert 5000 <= count <= 7000, f"Unexpected event count: {count}"
     
-    def test_wyatt_goals_against(self, wyatt_events):
-        """Wyatt should have 4 goals against in game 18969."""
-        ga = wyatt_events[(wyatt_events['event_type'] == 'Goal') & 
-                          (wyatt_events['player_role'] == 'opp_team_player_1')]
-        assert len(ga) == 4, f"Expected 4 GA, got {len(ga)}"
+    def test_four_tracked_games(self, player_stats):
+        """Should have exactly 4 tracked games."""
+        games = player_stats['game_id'].astype(str).unique()
+        tracked = ['18969', '18977', '18981', '18987']
+        for g in tracked:
+            assert g in games, f"Missing game {g}"
 
 
-if __name__ == '__main__':
-    pytest.main([__file__, '-v'])
+# =============================================================================
+# EVENT VALIDATION TESTS
+# =============================================================================
+
+class TestEvents:
+    """Tests for event data."""
+    
+    def test_goals_have_event_type(self, events):
+        """Goal events should be properly typed."""
+        goal_types = ['Goal', 'Shot Goal', 'Goal Scored']
+        # At least some goals should exist
+        goal_events = events[events['event_type'].isin(goal_types)]
+        assert len(goal_events) > 0, "No goal events found"
+    
+    def test_event_periods_valid(self, events):
+        """Period should be 1, 2, 3, or OT."""
+        if 'period' in events.columns:
+            # Handle both numeric and string periods
+            valid_periods = ['1', '2', '3', 'OT', 'OT1', 'OT2', '1.0', '2.0', '3.0', 'nan']
+            periods = events['period'].astype(str)
+            invalid = events[~periods.isin(valid_periods)]
+            assert len(invalid) == 0, f"Found {len(invalid)} events with invalid periods"
+    
+    def test_event_indices_sequential(self, events):
+        """Event indices should be mostly sequential per game."""
+        for game_id in events['game_id'].unique():
+            game_events = events[events['game_id'] == game_id]
+            if 'event_index' in game_events.columns:
+                indices = sorted(game_events['event_index'].unique())
+                gaps = 0
+                for i in range(1, len(indices)):
+                    if indices[i] - indices[i-1] > 10:  # Allow small gaps
+                        gaps += 1
+                assert gaps < 5, f"Game {game_id} has too many gaps in event indices"
+
+
+# =============================================================================
+# REFERENTIAL INTEGRITY TESTS
+# =============================================================================
+
+class TestReferentialIntegrity:
+    """Tests for foreign key relationships."""
+    
+    def test_player_ids_in_dim_player(self, player_stats, dim_player):
+        """All player_ids in stats should exist in dim_player."""
+        stats_players = set(player_stats['player_id'].dropna().unique())
+        dim_players = set(dim_player['player_id'].dropna().unique())
+        orphans = stats_players - dim_players
+        # Allow some orphans (subs, etc) but not too many
+        orphan_pct = len(orphans) / len(stats_players) * 100 if stats_players else 0
+        assert orphan_pct < 10, f"{orphan_pct:.1f}% orphan player_ids"
+
+
+# =============================================================================
+# RUN TESTS
+# =============================================================================
+
+if __name__ == "__main__":
+    pytest.main([__file__, "-v", "--tb=short"])

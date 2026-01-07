@@ -1,0 +1,162 @@
+validation_key,run_id,validation_time,check_name,table_name,passed,severity,expected_value,actual_value,violation_count,sample_violations,message
+QVL000000,20251231_015656,2025-12-31T01:56:56.056981,events_not_empty,fact_events,True,ERROR,,5832.0,0,,Events table has 5832 rows
+QVL000001,20251231_015656,2025-12-31T01:56:56.070356,player_stats_not_empty,fact_player_game_stats,True,ERROR,,107.0,0,,Player stats table has 107 rows
+QVL000002,20251231_015656,2025-12-31T01:56:56.111682,event_pk_not_null,fact_events,True,ERROR,,,0,,All PKs valid
+QVL000003,20251231_015656,2025-12-31T01:56:56.150312,event_pk_unique,fact_events,True,ERROR,,,0,,All PKs unique
+QVL000004,20251231_015656,2025-12-31T01:56:56.160749,goals_lte_shots,fact_player_game_stats,True,WARNING,,,0,,All valid
+QVL000005,20251231_015656,2025-12-31T01:56:56.166277,players_not_empty,dim_player,True,ERROR,,337.0,0,,Player dim has 337 rows
+QVL000006,20251231_015906,2025-12-31T01:59:06.614554,events_not_empty,fact_events,True,ERROR,,5832.0,0,,Events table has 5832 rows
+QVL000007,20251231_015906,2025-12-31T01:59:06.626735,player_stats_not_empty,fact_player_game_stats,True,ERROR,,107.0,0,,Player stats table has 107 rows
+QVL000008,20251231_015906,2025-12-31T01:59:06.665783,event_pk_not_null,fact_events,True,ERROR,,,0,,All PKs valid
+QVL000009,20251231_015906,2025-12-31T01:59:06.702851,event_pk_unique,fact_events,True,ERROR,,,0,,All PKs unique
+QVL000010,20251231_015906,2025-12-31T01:59:06.713546,goals_lte_shots,fact_player_game_stats,True,WARNING,,,0,,All valid
+QVL000011,20251231_015906,2025-12-31T01:59:06.719114,players_not_empty,dim_player,True,ERROR,,337.0,0,,Player dim has 337 rows
+QVL000012,20251231_020207,2025-12-31T02:02:07.437893,events_not_empty,fact_events,True,ERROR,,5832.0,0,,Events table has 5832 rows
+QVL000013,20251231_020207,2025-12-31T02:02:07.449987,player_stats_not_empty,fact_player_game_stats,True,ERROR,,107.0,0,,Player stats table has 107 rows
+QVL000014,20251231_020207,2025-12-31T02:02:07.486074,event_pk_not_null,fact_events,True,ERROR,,,0,,All PKs valid
+QVL000015,20251231_020207,2025-12-31T02:02:07.520328,event_pk_unique,fact_events,True,ERROR,,,0,,All PKs unique
+QVL000016,20251231_020207,2025-12-31T02:02:07.530586,goals_lte_shots,fact_player_game_stats,True,WARNING,,,0,,All valid
+QVL000017,20251231_020207,2025-12-31T02:02:07.535624,players_not_empty,dim_player,True,ERROR,,337.0,0,,Player dim has 337 rows
+QVL000018,20251231_032542,2025-12-31T03:25:42.912444,events_not_empty,fact_events,True,ERROR,,5832.0,0,,Events table has 5832 rows
+QVL000019,20251231_032542,2025-12-31T03:25:42.924622,player_stats_not_empty,fact_player_game_stats,True,ERROR,,107.0,0,,Player stats table has 107 rows
+QVL000020,20251231_032542,2025-12-31T03:25:42.961257,event_pk_not_null,fact_events,True,ERROR,,,0,,All PKs valid
+QVL000021,20251231_032542,2025-12-31T03:25:42.996944,event_pk_unique,fact_events,True,ERROR,,,0,,All PKs unique
+QVL000022,20251231_032542,2025-12-31T03:25:43.006617,goals_lte_shots,fact_player_game_stats,True,WARNING,,,0,,All valid
+QVL000023,20251231_032542,2025-12-31T03:25:43.011949,players_not_empty,dim_player,True,ERROR,,337.0,0,,Player dim has 337 rows
+QVL000024,20251231_050652,2025-12-31T05:06:52.993562,events_not_empty,fact_events,True,ERROR,,5832.0,0,,Events table has 5832 rows
+QVL000025,20251231_050652,2025-12-31T05:06:53.006262,player_stats_not_empty,fact_player_game_stats,True,ERROR,,107.0,0,,Player stats table has 107 rows
+QVL000026,20251231_050652,2025-12-31T05:06:53.043362,event_pk_not_null,fact_events,True,ERROR,,,0,,All PKs valid
+QVL000027,20251231_050652,2025-12-31T05:06:53.079077,event_pk_unique,fact_events,True,ERROR,,,0,,All PKs unique
+QVL000028,20251231_050652,2025-12-31T05:06:53.089519,goals_lte_shots,fact_player_game_stats,True,WARNING,,,0,,All valid
+QVL000029,20251231_050652,2025-12-31T05:06:53.095578,players_not_empty,dim_player,True,ERROR,,337.0,0,,Player dim has 337 rows
+QVL000030,20251231_050719,2025-12-31T05:07:19.536190,pre_pk_dim_team,dim_team,True,ERROR,,,0,,PK team_id valid (26 rows)
+QVL000031,20251231_050719,2025-12-31T05:07:19.551540,pre_pk_fact_shifts,fact_shifts,True,ERROR,,,0,,PK shift_key valid (672 rows)
+QVL000032,20251231_050719,2025-12-31T05:07:19.574410,pre_pk_fact_player_game_stats,fact_player_game_stats,True,ERROR,,,0,,PK player_game_key valid (107 rows)
+QVL000033,20251231_050719,2025-12-31T05:07:19.585371,pre_pk_dim_schedule,dim_schedule,True,ERROR,,,0,,PK game_id valid (562 rows)
+QVL000034,20251231_050719,2025-12-31T05:07:19.643245,pre_pk_fact_events,fact_events,True,ERROR,,,0,,PK event_key valid (5832 rows)
+QVL000035,20251231_050719,2025-12-31T05:07:19.652107,pre_pk_dim_player,dim_player,True,ERROR,,,0,,PK player_id valid (337 rows)
+QVL000036,20251231_050719,2025-12-31T05:07:22.632121,pk_integrity,dim_comparison_type,True,ERROR,,,0,,"No PK defined for dim_comparison_type, skipping"
+QVL000037,20251231_050719,2025-12-31T05:07:22.634026,pk_integrity,dim_composite_rating,True,ERROR,,,0,,"No PK defined for dim_composite_rating, skipping"
+QVL000038,20251231_050719,2025-12-31T05:07:22.635693,pk_integrity,dim_danger_zone,True,ERROR,,,0,,"No PK defined for dim_danger_zone, skipping"
+QVL000039,20251231_050719,2025-12-31T05:07:22.637328,pk_integrity,dim_event_detail,True,ERROR,,,0,,"No PK defined for dim_event_detail, skipping"
+QVL000040,20251231_050719,2025-12-31T05:07:22.639092,pk_integrity,dim_event_detail_2,True,ERROR,,,0,,"No PK defined for dim_event_detail_2, skipping"
+QVL000041,20251231_050719,2025-12-31T05:07:22.640736,pk_integrity,dim_event_type,True,ERROR,,,0,,PK event_type_id valid (20 rows)
+QVL000042,20251231_050719,2025-12-31T05:07:22.642418,pk_integrity,dim_giveaway_type,True,ERROR,,,0,,"No PK defined for dim_giveaway_type, skipping"
+QVL000043,20251231_050719,2025-12-31T05:07:22.644056,pk_integrity,dim_highlight_subtype,True,ERROR,,,0,,"No PK defined for dim_highlight_subtype, skipping"
+QVL000044,20251231_050719,2025-12-31T05:07:22.645650,pk_integrity,dim_highlight_type,True,ERROR,,,0,,"No PK defined for dim_highlight_type, skipping"
+QVL000045,20251231_050719,2025-12-31T05:07:22.647195,pk_integrity,dim_league,True,ERROR,,,0,,"No PK defined for dim_league, skipping"
+QVL000046,20251231_050719,2025-12-31T05:07:22.648766,pk_integrity,dim_micro_stat,True,ERROR,,,0,,"No PK defined for dim_micro_stat, skipping"
+QVL000047,20251231_050719,2025-12-31T05:07:22.650517,pk_integrity,dim_net_location,True,ERROR,,,0,,"No PK defined for dim_net_location, skipping"
+QVL000048,20251231_050719,2025-12-31T05:07:22.652130,pk_integrity,dim_pass_type,True,ERROR,,,0,,"No PK defined for dim_pass_type, skipping"
+QVL000049,20251231_050719,2025-12-31T05:07:22.653737,pk_integrity,dim_period,True,ERROR,,,0,,PK period_id valid (5 rows)
+QVL000050,20251231_050719,2025-12-31T05:07:22.655326,pk_integrity,dim_play_detail,True,ERROR,,,0,,"No PK defined for dim_play_detail, skipping"
+QVL000051,20251231_050719,2025-12-31T05:07:22.656887,pk_integrity,dim_play_detail_2,True,ERROR,,,0,,"No PK defined for dim_play_detail_2, skipping"
+QVL000052,20251231_050719,2025-12-31T05:07:22.658583,pk_integrity,dim_player,True,ERROR,,,0,,PK player_id valid (337 rows)
+QVL000053,20251231_050719,2025-12-31T05:07:22.660342,pk_integrity,dim_player_role,True,ERROR,,,0,,"No PK defined for dim_player_role, skipping"
+QVL000054,20251231_050719,2025-12-31T05:07:22.662009,pk_integrity,dim_playerurlref,True,ERROR,,,0,,"No PK defined for dim_playerurlref, skipping"
+QVL000055,20251231_050719,2025-12-31T05:07:22.663679,pk_integrity,dim_position,True,ERROR,,,0,,PK position_id valid (7 rows)
+QVL000056,20251231_050719,2025-12-31T05:07:22.665456,pk_integrity,dim_randomnames,True,ERROR,,,0,,"No PK defined for dim_randomnames, skipping"
+QVL000057,20251231_050719,2025-12-31T05:07:22.667169,pk_integrity,dim_rink_coord,True,ERROR,,,0,,"No PK defined for dim_rink_coord, skipping"
+QVL000058,20251231_050719,2025-12-31T05:07:22.668874,pk_integrity,dim_rinkboxcoord,True,ERROR,,,0,,"No PK defined for dim_rinkboxcoord, skipping"
+QVL000059,20251231_050719,2025-12-31T05:07:22.670637,pk_integrity,dim_rinkcoordzones,True,ERROR,,,0,,"No PK defined for dim_rinkcoordzones, skipping"
+QVL000060,20251231_050719,2025-12-31T05:07:22.672267,pk_integrity,dim_schedule,True,ERROR,,,0,,PK game_id valid (562 rows)
+QVL000061,20251231_050719,2025-12-31T05:07:22.673948,pk_integrity,dim_season,True,ERROR,,,0,,PK season_id valid (9 rows)
+QVL000062,20251231_050719,2025-12-31T05:07:22.675599,pk_integrity,dim_shift_slot,True,ERROR,,,0,,"No PK defined for dim_shift_slot, skipping"
+QVL000063,20251231_050719,2025-12-31T05:07:22.677272,pk_integrity,dim_shift_start_type,True,ERROR,,,0,,"No PK defined for dim_shift_start_type, skipping"
+QVL000064,20251231_050719,2025-12-31T05:07:22.678917,pk_integrity,dim_shift_stop_type,True,ERROR,,,0,,"No PK defined for dim_shift_stop_type, skipping"
+QVL000065,20251231_050719,2025-12-31T05:07:22.680655,pk_integrity,dim_shot_type,True,ERROR,,,0,,"No PK defined for dim_shot_type, skipping"
+QVL000066,20251231_050719,2025-12-31T05:07:22.682383,pk_integrity,dim_situation,True,ERROR,,,0,,"No PK defined for dim_situation, skipping"
+QVL000067,20251231_050719,2025-12-31T05:07:22.684066,pk_integrity,dim_stat,True,ERROR,,,0,,"No PK defined for dim_stat, skipping"
+QVL000068,20251231_050719,2025-12-31T05:07:22.685794,pk_integrity,dim_stat_category,True,ERROR,,,0,,"No PK defined for dim_stat_category, skipping"
+QVL000069,20251231_050719,2025-12-31T05:07:22.687664,pk_integrity,dim_stat_type,True,ERROR,,,0,,"No PK defined for dim_stat_type, skipping"
+QVL000070,20251231_050719,2025-12-31T05:07:22.689436,pk_integrity,dim_stoppage_type,True,ERROR,,,0,,"No PK defined for dim_stoppage_type, skipping"
+QVL000071,20251231_050719,2025-12-31T05:07:22.691217,pk_integrity,dim_strength,True,ERROR,,,0,,PK strength_id valid (18 rows)
+QVL000072,20251231_050719,2025-12-31T05:07:22.692997,pk_integrity,dim_success,True,ERROR,,,0,,"No PK defined for dim_success, skipping"
+QVL000073,20251231_050719,2025-12-31T05:07:22.694728,pk_integrity,dim_takeaway_type,True,ERROR,,,0,,"No PK defined for dim_takeaway_type, skipping"
+QVL000074,20251231_050719,2025-12-31T05:07:22.696495,pk_integrity,dim_team,True,ERROR,,,0,,PK team_id valid (26 rows)
+QVL000075,20251231_050719,2025-12-31T05:07:22.698238,pk_integrity,dim_terminology_mapping,True,ERROR,,,0,,"No PK defined for dim_terminology_mapping, skipping"
+QVL000076,20251231_050719,2025-12-31T05:07:22.700068,pk_integrity,dim_turnover_quality,True,ERROR,,,0,,"No PK defined for dim_turnover_quality, skipping"
+QVL000077,20251231_050719,2025-12-31T05:07:22.701843,pk_integrity,dim_turnover_type,True,ERROR,,,0,,"No PK defined for dim_turnover_type, skipping"
+QVL000078,20251231_050719,2025-12-31T05:07:22.703606,pk_integrity,dim_venue,True,ERROR,,,0,,PK venue_id valid (2 rows)
+QVL000079,20251231_050719,2025-12-31T05:07:22.705456,pk_integrity,dim_zone,True,ERROR,,,0,,"No PK defined for dim_zone, skipping"
+QVL000080,20251231_050719,2025-12-31T05:07:22.707277,pk_integrity,dim_zone_entry_type,True,ERROR,,,0,,"No PK defined for dim_zone_entry_type, skipping"
+QVL000081,20251231_050719,2025-12-31T05:07:22.709079,pk_integrity,dim_zone_exit_type,True,ERROR,,,0,,"No PK defined for dim_zone_exit_type, skipping"
+QVL000082,20251231_050719,2025-12-31T05:07:22.710923,pk_integrity,etl_run_log,True,ERROR,,,0,,"No PK defined for etl_run_log, skipping"
+QVL000083,20251231_050719,2025-12-31T05:07:22.712809,pk_integrity,etl_table_log,True,ERROR,,,0,,"No PK defined for etl_table_log, skipping"
+QVL000084,20251231_050719,2025-12-31T05:07:22.714928,pk_integrity,fact_cycle_events,True,ERROR,,,0,,"No PK defined for fact_cycle_events, skipping"
+QVL000085,20251231_050719,2025-12-31T05:07:22.717138,pk_integrity,fact_draft,True,ERROR,,,0,,"No PK defined for fact_draft, skipping"
+QVL000086,20251231_050719,2025-12-31T05:07:22.719035,pk_integrity,fact_event_chains,True,ERROR,,,0,,"No PK defined for fact_event_chains, skipping"
+QVL000087,20251231_050719,2025-12-31T05:07:22.720878,pk_integrity,fact_events,True,ERROR,,,0,,PK event_key valid (5832 rows)
+QVL000088,20251231_050719,2025-12-31T05:07:22.722752,fk_game_id,fact_events,True,ERROR,,,0,,FK game_id -> dim_schedule: valid
+QVL000089,20251231_050719,2025-12-31T05:07:22.724668,fk_period_id,fact_events,True,ERROR,,,0,,FK period_id -> dim_period: valid
+QVL000090,20251231_050719,2025-12-31T05:07:22.726679,fk_event_type_id,fact_events,True,ERROR,,,0,,FK event_type_id -> dim_event_type: valid
+QVL000091,20251231_050719,2025-12-31T05:07:22.728562,range_period,fact_events,True,ERROR,,,0,,"Column period: all values in [1, 5]"
+QVL000092,20251231_050719,2025-12-31T05:07:22.730449,range_event_index,fact_events,True,ERROR,,,0,,"Column event_index: all values in [0, 10000]"
+QVL000093,20251231_050719,2025-12-31T05:07:22.732410,pk_integrity,fact_events_long,False,ERROR,,,3132,,"PK event_player_key: 3132 duplicates (samples: ['P18991010011', 'P18981010011', 'P18981010021', 'P18981010031', 'P18981010041'])"
+QVL000094,20251231_050719,2025-12-31T05:07:22.734319,fk_game_id,fact_events_long,True,ERROR,,,0,,FK game_id -> dim_schedule: valid
+QVL000095,20251231_050719,2025-12-31T05:07:22.736266,fk_player_id,fact_events_long,True,ERROR,,,0,,FK player_id -> dim_player: valid
+QVL000096,20251231_050719,2025-12-31T05:07:22.738177,pk_integrity,fact_events_player,True,ERROR,,,0,,PK event_player_key valid (11635 rows)
+QVL000097,20251231_050719,2025-12-31T05:07:22.740114,pk_integrity,fact_events_tracking,False,ERROR,,,6507,,"PK event_tracking_key: 6507 duplicates (samples: ['ET1896901001', 'ET1896901002', 'ET1896901003', 'ET1896901004', 'ET1896909001'])"
+QVL000098,20251231_050719,2025-12-31T05:07:22.742038,pk_integrity,fact_game_status,True,ERROR,,,0,,"No PK defined for fact_game_status, skipping"
+QVL000099,20251231_050719,2025-12-31T05:07:22.744040,pk_integrity,fact_gameroster,True,ERROR,,,0,,PK roster_key valid (14471 rows)
+QVL000100,20251231_050719,2025-12-31T05:07:22.745982,fk_game_id,fact_gameroster,True,ERROR,,,0,,FK game_id -> dim_schedule: valid
+QVL000101,20251231_050719,2025-12-31T05:07:22.747989,fk_player_id,fact_gameroster,True,ERROR,,,0,,FK player_id -> dim_player: valid
+QVL000102,20251231_050719,2025-12-31T05:07:22.750011,pk_integrity,fact_goalie_game_stats,True,ERROR,,,0,,PK goalie_game_key valid (8 rows)
+QVL000103,20251231_050719,2025-12-31T05:07:22.752460,pk_integrity,fact_h2h,True,ERROR,,,0,,PK h2h_key valid (684 rows)
+QVL000104,20251231_050719,2025-12-31T05:07:22.754789,pk_integrity,fact_head_to_head,True,ERROR,,,0,,PK matchup_key valid (572 rows)
+QVL000105,20251231_050719,2025-12-31T05:07:22.756908,pk_integrity,fact_leadership,True,ERROR,,,0,,"No PK defined for fact_leadership, skipping"
+QVL000106,20251231_050719,2025-12-31T05:07:22.758942,pk_integrity,fact_league_leaders_snapshot,True,ERROR,,,0,,"No PK defined for fact_league_leaders_snapshot, skipping"
+QVL000107,20251231_050719,2025-12-31T05:07:22.761012,pk_integrity,fact_line_combos,True,ERROR,,,0,,PK line_combo_key valid (332 rows)
+QVL000108,20251231_050719,2025-12-31T05:07:22.763037,pk_integrity,fact_linked_events,True,ERROR,,,0,,"No PK defined for fact_linked_events, skipping"
+QVL000109,20251231_050719,2025-12-31T05:07:22.765138,pk_integrity,fact_matchup_summary,True,ERROR,,,0,,"No PK defined for fact_matchup_summary, skipping"
+QVL000110,20251231_050719,2025-12-31T05:07:22.767237,pk_integrity,fact_player_boxscore_all,True,ERROR,,,0,,PK boxscore_key valid (14471 rows)
+QVL000111,20251231_050719,2025-12-31T05:07:22.769295,pk_integrity,fact_player_event_chains,True,ERROR,,,0,,"No PK defined for fact_player_event_chains, skipping"
+QVL000112,20251231_050719,2025-12-31T05:07:22.771400,pk_integrity,fact_player_game_position,True,ERROR,,,0,,"No PK defined for fact_player_game_position, skipping"
+QVL000113,20251231_050719,2025-12-31T05:07:22.773446,pk_integrity,fact_player_game_stats,True,ERROR,,,0,,PK player_game_key valid (107 rows)
+QVL000114,20251231_050719,2025-12-31T05:07:22.775482,fk_game_id,fact_player_game_stats,True,ERROR,,,0,,FK game_id -> dim_schedule: valid
+QVL000115,20251231_050719,2025-12-31T05:07:22.777617,fk_player_id,fact_player_game_stats,True,ERROR,,,0,,FK player_id -> dim_player: valid
+QVL000116,20251231_050719,2025-12-31T05:07:22.779785,range_goals,fact_player_game_stats,True,ERROR,,,0,,"Column goals: all values in [0, 20]"
+QVL000117,20251231_050719,2025-12-31T05:07:22.782111,range_assists,fact_player_game_stats,True,ERROR,,,0,,"Column assists: all values in [0, 20]"
+QVL000118,20251231_050719,2025-12-31T05:07:22.784330,range_shots,fact_player_game_stats,True,ERROR,,,0,,"Column shots: all values in [0, 50]"
+QVL000119,20251231_050719,2025-12-31T05:07:22.786591,range_toi_seconds,fact_player_game_stats,True,ERROR,,,0,,"Column toi_seconds: all values in [0, 3600]"
+QVL000120,20251231_050719,2025-12-31T05:07:22.788744,rule_goals_lte_shots,fact_player_game_stats,True,ERROR,,,0,,Business rule 'goals_lte_shots' passed
+QVL000121,20251231_050719,2025-12-31T05:07:22.790879,rule_assists_reasonable,fact_player_game_stats,True,ERROR,,,0,,Business rule 'assists_reasonable' passed
+QVL000122,20251231_050719,2025-12-31T05:07:22.793002,rule_points_equals_goals_plus_assists,fact_player_game_stats,False,WARNING,,,0,,Error checking rule 'points_equals_goals_plus_assists': 'pts'
+QVL000123,20251231_050719,2025-12-31T05:07:22.795100,pk_integrity,fact_player_micro_stats,True,ERROR,,,0,,"No PK defined for fact_player_micro_stats, skipping"
+QVL000124,20251231_050719,2025-12-31T05:07:22.797292,pk_integrity,fact_player_pair_stats,True,ERROR,,,0,,"No PK defined for fact_player_pair_stats, skipping"
+QVL000125,20251231_050719,2025-12-31T05:07:22.799478,pk_integrity,fact_player_period_stats,True,ERROR,,,0,,PK player_period_key valid (321 rows)
+QVL000126,20251231_050719,2025-12-31T05:07:22.801926,pk_integrity,fact_player_stats_long,True,ERROR,,,0,,PK player_stat_key valid (7026 rows)
+QVL000127,20251231_050719,2025-12-31T05:07:22.804144,pk_integrity,fact_player_xy_long,True,ERROR,,,0,,"No PK defined for fact_player_xy_long, skipping"
+QVL000128,20251231_050719,2025-12-31T05:07:22.806421,pk_integrity,fact_player_xy_wide,True,ERROR,,,0,,"No PK defined for fact_player_xy_wide, skipping"
+QVL000129,20251231_050719,2025-12-31T05:07:22.808621,pk_integrity,fact_playergames,True,ERROR,,,0,,"No PK defined for fact_playergames, skipping"
+QVL000130,20251231_050719,2025-12-31T05:07:22.810863,pk_integrity,fact_plays,True,ERROR,,,0,,"No PK defined for fact_plays, skipping"
+QVL000131,20251231_050719,2025-12-31T05:07:22.813063,pk_integrity,fact_possession_time,True,ERROR,,,0,,"No PK defined for fact_possession_time, skipping"
+QVL000132,20251231_050719,2025-12-31T05:07:22.815341,pk_integrity,fact_puck_xy_long,True,ERROR,,,0,,"No PK defined for fact_puck_xy_long, skipping"
+QVL000133,20251231_050719,2025-12-31T05:07:22.817593,pk_integrity,fact_puck_xy_wide,True,ERROR,,,0,,"No PK defined for fact_puck_xy_wide, skipping"
+QVL000134,20251231_050719,2025-12-31T05:07:22.819862,pk_integrity,fact_registration,True,ERROR,,,0,,"No PK defined for fact_registration, skipping"
+QVL000135,20251231_050719,2025-12-31T05:07:22.822082,pk_integrity,fact_rush_events,True,ERROR,,,0,,"No PK defined for fact_rush_events, skipping"
+QVL000136,20251231_050719,2025-12-31T05:07:22.824420,pk_integrity,fact_scoring_chances,True,ERROR,,,0,,"No PK defined for fact_scoring_chances, skipping"
+QVL000137,20251231_050719,2025-12-31T05:07:22.826731,pk_integrity,fact_sequences,True,ERROR,,,0,,"No PK defined for fact_sequences, skipping"
+QVL000138,20251231_050719,2025-12-31T05:07:22.829063,pk_integrity,fact_shift_players,True,ERROR,,,0,,"No PK defined for fact_shift_players, skipping"
+QVL000139,20251231_050719,2025-12-31T05:07:22.831309,pk_integrity,fact_shift_quality,False,ERROR,,,4237,,"PK shift_quality_key: 4237 duplicates (samples: ['S18969000002', 'S18969000003', 'S18969000004', 'S18969000005', 'S18969000006'])"
+QVL000140,20251231_050719,2025-12-31T05:07:22.833673,pk_integrity,fact_shift_quality_logical,True,ERROR,,,0,,"No PK defined for fact_shift_quality_logical, skipping"
+QVL000141,20251231_050719,2025-12-31T05:07:22.835947,pk_integrity,fact_shifts,True,ERROR,,,0,,PK shift_key valid (672 rows)
+QVL000142,20251231_050719,2025-12-31T05:07:22.838248,fk_game_id,fact_shifts,True,ERROR,,,0,,FK game_id -> dim_schedule: valid
+QVL000143,20251231_050719,2025-12-31T05:07:22.840526,range_shift_index,fact_shifts,True,ERROR,,,0,,"Column shift_index: all values in [0, 500]"
+QVL000144,20251231_050719,2025-12-31T05:07:22.842863,pk_integrity,fact_shifts_long,True,ERROR,,,0,,PK shift_player_key valid (4336 rows)
+QVL000145,20251231_050719,2025-12-31T05:07:22.845182,fk_game_id,fact_shifts_long,True,ERROR,,,0,,FK game_id -> dim_schedule: valid
+QVL000146,20251231_050719,2025-12-31T05:07:22.847618,fk_player_id,fact_shifts_long,True,ERROR,,,0,,FK player_id -> dim_player: valid
+QVL000147,20251231_050719,2025-12-31T05:07:22.849950,pk_integrity,fact_shifts_player,True,ERROR,,,0,,PK shift_player_key valid (4626 rows)
+QVL000148,20251231_050719,2025-12-31T05:07:22.852452,pk_integrity,fact_shifts_tracking,True,ERROR,,,0,,PK shift_tracking_key valid (476 rows)
+QVL000149,20251231_050719,2025-12-31T05:07:22.854907,pk_integrity,fact_shot_danger,True,ERROR,,,0,,"No PK defined for fact_shot_danger, skipping"
+QVL000150,20251231_050719,2025-12-31T05:07:22.857318,pk_integrity,fact_shot_xy,True,ERROR,,,0,,"No PK defined for fact_shot_xy, skipping"
+QVL000151,20251231_050719,2025-12-31T05:07:22.859750,pk_integrity,fact_suspicious_stats,True,ERROR,,,0,,"No PK defined for fact_suspicious_stats, skipping"
+QVL000152,20251231_050719,2025-12-31T05:07:22.862164,pk_integrity,fact_team_game_stats,True,ERROR,,,0,,PK team_game_key valid (8 rows)
+QVL000153,20251231_050719,2025-12-31T05:07:22.864616,pk_integrity,fact_team_standings_snapshot,True,ERROR,,,0,,"No PK defined for fact_team_standings_snapshot, skipping"
+QVL000154,20251231_050719,2025-12-31T05:07:22.866970,pk_integrity,fact_team_zone_time,True,ERROR,,,0,,"No PK defined for fact_team_zone_time, skipping"
+QVL000155,20251231_050719,2025-12-31T05:07:22.869446,pk_integrity,fact_video,True,ERROR,,,0,,"No PK defined for fact_video, skipping"
+QVL000156,20251231_050719,2025-12-31T05:07:22.872004,pk_integrity,fact_video_highlights,True,ERROR,,,0,,"No PK defined for fact_video_highlights, skipping"
+QVL000157,20251231_050719,2025-12-31T05:07:22.875352,pk_integrity,fact_wowy,True,ERROR,,,0,,PK wowy_key valid (641 rows)
+QVL000158,20251231_050719,2025-12-31T05:07:22.877869,pk_integrity,qa_goal_accuracy,True,ERROR,,,0,,"No PK defined for qa_goal_accuracy, skipping"
+QVL000159,20251231_050719,2025-12-31T05:07:22.880360,pk_integrity,qa_suspicious_stats,True,ERROR,,,0,,"No PK defined for qa_suspicious_stats, skipping"
+QVL000160,20251231_050719,2025-12-31T05:07:22.882814,pk_integrity,qa_validation_log,True,ERROR,,,0,,"No PK defined for qa_validation_log, skipping"

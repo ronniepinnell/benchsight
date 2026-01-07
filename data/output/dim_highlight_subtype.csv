@@ -1,0 +1,26 @@
+highlight_subtype_id,highlight_type_code,subtype_code,subtype_name,description
+1,goal,snipe,Snipe,Top corner shot
+2,goal,one_timer,One Timer,One-time shot from pass
+3,goal,tip_in,Tip-In,Deflected into net
+4,goal,rebound,Rebound,Goal off rebound
+5,goal,breakaway_goal,Breakaway Goal,Goal on breakaway
+6,goal,ot_winner,OT Winner,Overtime winning goal
+7,goal,empty_net,Empty Net,Empty net goal
+8,goal,shorthanded,Shorthanded,Shorthanded goal
+9,goal,power_play,Power Play,Power play goal
+10,save,glove,Glove Save,Caught with glove
+11,save,pad,Pad Save,Pad or leg save
+12,save,diving,Diving Save,Diving save
+13,save,breakaway_save,Breakaway Save,Save on breakaway
+14,save,penalty_shot,Penalty Shot Save,Penalty shot save
+15,hit,open_ice,Open Ice,Open ice hit
+16,hit,boards,Boards,Hit into boards
+17,hit,reverse,Reverse Hit,Reverse body check
+18,skill,deke,Deke,Deked defender
+19,skill,dangle,Dangle,Dangled through defense
+20,skill,toe_drag,Toe Drag,Toe drag move
+21,skill,between_legs,Between Legs,Between the legs move
+22,defensive,shot_block,Shot Block,Blocked shot
+23,defensive,poke_check,Poke Check,Poke check takeaway
+24,defensive,diving_block,Diving Block,Diving shot block
+25,fight,scrap,Scrap,Fight or scrap

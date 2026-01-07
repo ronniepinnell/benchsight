@@ -11,15 +11,15 @@ class TestDeploymentReadiness:
     
     def test_sql_create_tables_exists(self):
         """Check SQL create tables exists."""
-        assert Path("sql/01_CREATE_ALL_TABLES.sql").exists()
+        assert Path("sql/create_all_tables.sql").exists()
     
-    def test_flexible_loader_exists(self):
-        """Check flexible loader exists."""
-        assert Path("scripts/flexible_loader.py").exists()
+    def test_deploy_script_exists(self):
+        """Check deploy script exists."""
+        assert Path("scripts/deploy_supabase.py").exists()
     
-    def test_config_example_exists(self):
-        """Check config example exists."""
-        assert Path("config/config_local.ini.example").exists()
+    def test_config_template_exists(self):
+        """Check config template exists."""
+        assert Path("config/config_local.ini.template").exists()
 
 
 class TestProjectStructure:

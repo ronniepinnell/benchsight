@@ -47,15 +47,27 @@ BLB_FILE = DATA_DIR / "BLB_Tables.xlsx"  # Note: in data/, not data/raw/
 
 # All tables
 DIM_TABLES = [
-    'dim_player', 'dim_team', 'dim_season', 'dim_position', 'dim_venue',
+    # From BLB_Tables.xlsx
+    'dim_player', 'dim_team', 'dim_season', 'dim_league', 'dim_schedule',
+    'dim_playerurlref', 'dim_randomnames', 'dim_rinkboxcoord', 'dim_rinkcoordzones',
+    # Static/derived dimensions
+    'dim_position', 'dim_venue', 'dim_zone',
     'dim_event_type', 'dim_event_detail', 'dim_event_detail_2',
-    'dim_zone_entry_type', 'dim_zone_exit_type', 'dim_play_detail',
-    'dim_player_role', 'dim_situation', 'dim_strength', 'dim_period'
+    'dim_zone_entry_type', 'dim_zone_exit_type', 'dim_play_detail', 'dim_play_detail_2',
+    'dim_player_role', 'dim_situation', 'dim_strength', 'dim_period', 'dim_skill_tier',
+    'dim_comparison_type', 'dim_composite_rating', 'dim_danger_zone',
+    'dim_giveaway_type', 'dim_highlight_subtype', 'dim_highlight_type',
+    'dim_micro_stat', 'dim_net_location', 'dim_pass_type',
+    'dim_shift_slot', 'dim_shift_start_type', 'dim_shift_stop_type',
+    'dim_shot_type', 'dim_stat', 'dim_stat_category', 'dim_stat_type',
+    'dim_stoppage_type', 'dim_success', 'dim_takeaway_type',
+    'dim_terminology_mapping', 'dim_turnover_quality', 'dim_turnover_type',
+    'dim_game', 'dim_rink_coord'
 ]
 
 FACT_TABLES = [
-    'fact_events', 'fact_events_player', 'fact_shifts_player',
-    'fact_gameroster', 'fact_player_game_stats', 'fact_goalie_game_stats',
+    'fact_gameroster', 'fact_events', 'fact_events_player', 'fact_shifts_player',
+    'fact_player_game_stats', 'fact_goalie_game_stats',
     'fact_team_game_stats', 'fact_event_chains', 'fact_team_zone_time',
     'fact_h2h', 'fact_wowy', 'fact_line_combos', 'fact_rush_cycle_flags'
 ]
@@ -185,12 +197,21 @@ class ETLOrchestrator:
                 elif table == 'fact_rush_cycle_flags':
                     self._add_rush_cycle_flags(games)
                 elif table == 'fact_gameroster':
-                    logger.info(f"Skipping {table} - sourced from NORAD website")
+                    self._build_fact_gameroster()
                 else:
                     logger.warning(f"No builder for {table}")
             except Exception as e:
                 logger.error(f"Error processing {table}: {e}")
                 self.stats['errors'] += 1
+    
+    def _build_fact_gameroster(self):
+        """Load fact_gameroster from BLB_Tables.xlsx."""
+        try:
+            df = pd.read_excel(BLB_FILE, 'fact_gameroster')
+            self._save_table('fact_gameroster', df)
+            logger.info(f"  ✓ fact_gameroster: {len(df)} rows")
+        except Exception as e:
+            logger.error(f"Error loading fact_gameroster: {e}")
     
     def _build_fact_events(self, games):
         """Build fact_events (wide) from tracking files - one row per unique event."""

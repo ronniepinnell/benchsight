@@ -1,0 +1,2 @@
+run_id,started_at,completed_at,status,mode,games_requested,games_processed,games_failed,tables_loaded,rows_processed,rows_quarantined,rows_failed,duration_seconds,error_message,checksum
+20251231_050719,2025-12-31T05:07:19.516982,2025-12-31T05:07:22.898901,failed,standard,[18969],[],[],98,135334,0,0,3.381919,,

@@ -1,97 +1,188 @@
-# BenchSight v6.1 Handoff Document
-**Last Updated:** 2024-12-29
-**Session:** ETL Fix + Supabase Setup
+# BenchSight Project Handoff
 
-## What Changed in v6.1
+**Date**: January 1, 2026  
+**Status**: Production Ready  
+**Version**: 17.0 (Complete ETL Implementation)
 
-### Critical Bug Fixes
-- **TOI Bug Fixed**: Was matching shifts on `player_number` (jersey) instead of `player_id` - all TOI was 0
-- **fact_events_player Fixed**: Was re-saving existing file instead of building from tracking data
-- **Column Normalization**: Added mapping for raw column names (Type → event_type, etc.)
-- **Game 18987 Venue Swap**: Added handling for games where tracking has home/away reversed
+---
 
-### New Files
-- `sql/00_drop_all.sql` - Clean DROP script for Supabase reset
-- `sql/01_create_tables_generated.sql` - Auto-generated CREATE statements (58 tables)
-- `src/supabase_upload_clean.py` - Upload script with hybrid credential handling
-- `src/generate_schema.py` - Script to regenerate SQL from CSVs
-- `docs/SESSION_LOG.md` - Session tracking
-- `docs/BACKLOG.md` - Future tasks
+## What Changed
 
-### Configuration
-- Credentials: Environment variable OR config/config_local.ini
-- Template: config/config_local.ini.template
+**The ETL now generates ALL 111 tables from source data.**
 
-## Current Status
+Previously only ~15 tables were generated; the rest were static CSVs. Now you can run:
 
-### Games Processed
-| Game | Status | Notes |
-|------|--------|-------|
-| 18969 | ✅ Complete | Reference game - full validation |
-| 18977 | ✅ Complete | Older format |
-| 18981 | ✅ Complete | |
-| 18987 | ✅ Complete | Venue swap handled |
-| 18955 | ❌ Excluded | No tracking file |
-| 18965 | ❌ Excluded | Incomplete |
-| 18991 | ❌ Excluded | Incomplete |
-| 18993 | ❌ Excluded | Incomplete |
-| 19032 | ❌ Excluded | Incomplete |
+```bash
+python -m src.etl_complete --all
+```
 
-### Data Quality
-- **107 player-game rows** with stats
-- **98.1% TOI coverage** (105/107 players)
-- **46/46 validation tests passed**
-- **8 goalie-game rows** with stats
+And get all 111 tables regenerated from:
+- BLB_Tables.xlsx (master data)
+- Game tracking files in data/raw/games/
 
-## Table Structure
+---
 
-### Events Tables
-| Table | Purpose | Key Columns |
-|-------|---------|-------------|
-| fact_events | One row per event | game_id, event_index, sequence_id, play_id, event_type, event_detail |
-| fact_events_player | One row per player per event | + player_id, player_role, role_number |
+## Quick Start
 
-### Shifts Tables  
-| Table | Purpose | Key Columns |
-|-------|---------|-------------|
-| fact_shifts | One row per shift | game_id, shift_index, all player slots |
-| fact_shifts_player | One row per player per shift | game_id, shift_index, player_id, slot, shift_duration |
+### Generate All Tables
+```bash
+python -m src.etl_complete --all
+```
 
-### Stats Tables
-| Table | Scope | Key Columns |
-|-------|-------|-------------|
-| fact_player_game_stats | Tracked games | 46 columns - goals, assists, shots, passes, zone, faceoffs, TOI |
-| fact_goalie_game_stats | Tracked games | saves, goals_against, sv_pct, gaa |
-| fact_team_game_stats | Tracked games | Team totals from player stats |
-| fact_player_boxscore_all | ALL games | Basic G/A/PIM from NORAD |
+### Generate Specific Games
+```bash
+python -m src.etl_complete --games 18969,18977,18981,18987
+```
 
-### Analytics Tables
-| Table | Purpose |
-|-------|---------|
-| fact_sequences | Possession chain summaries |
-| fact_plays | Single-zone play summaries |
-| fact_team_standings_snapshot | Running W/L/T record per game |
-| fact_league_leaders_snapshot | Running player rankings per game |
+### Deploy to Supabase
+```bash
+python scripts/deploy_supabase.py --all
+```
 
-## Validation
+---
 
-Run `python scripts/validate_stats.py` to verify:
-- Goals match between events and stats
-- TOI coverage > 80%
-- Goalie stats present
+## Project Structure
 
-## Key Domain Knowledge
+```
+benchsight/
+├── src/
+│   ├── etl_complete.py       # NEW: Complete ETL (generates all 111 tables)
+│   ├── etl_orchestrator.py   # Legacy: Partial ETL
+│   ├── api/server.py         # REST API
+│   └── ...
+├── data/
+│   ├── BLB_Tables.xlsx       # Master data source
+│   ├── raw/games/            # Game tracking files
+│   └── output/               # Generated CSVs (111 tables)
+├── sql/
+│   ├── create_all_tables.sql
+│   └── drop_all_tables.sql
+├── scripts/
+│   └── deploy_supabase.py
+├── Dockerfile
+└── docker-compose.yml
+```
 
-### Player Roles
-- `event_team_player_1`: Primary player (scorer on goals, passer on passes)
-- `event_team_player_2`: Secondary player (A1 on goals, target on passes)
-- `event_team_player_3`: Tertiary player (A2 on goals)
-- `opp_team_player_1`: Primary opponent (goalie on goals, defender)
-- `opp_team_player_2+`: Other opponents
+---
 
-### Sequence/Play Rules
-- **New sequence**: Faceoff, Stoppage, Giveaway
-- **New play**: Zone entry/exit, Turnover, Faceoff, Zone change
+## ETL Pipeline
 
-### Game 18987 Venue Swap
-Raw tracking has home/away swapped compared to roster. ETL auto-detects and fixes.
+### Data Sources
+
+1. **BLB_Tables.xlsx** - Master data
+   - dim_player, dim_team, dim_season, dim_league
+   - dim_schedule, fact_gameroster, fact_draft, etc.
+
+2. **Game Tracking Files** (data/raw/games/{game_id}/{game_id}_tracking.xlsx)
+   - events sheet: All game events with player IDs
+   - shifts sheet: Shift data by period
+   - game_rosters sheet: Per-game rosters
+
+### What Gets Generated
+
+| Category | Tables | Source |
+|----------|--------|--------|
+| BLB Dimensions | 9 | BLB_Tables.xlsx |
+| Static Dimensions | 39 | Pre-defined lookups |
+| Event Facts | 6 | Tracking files |
+| Shift Facts | 6 | Tracking files |
+| Player Stats | 17 | Calculated from events/shifts |
+| Analytics | 20 | Derived from above |
+| Support/QA | 14 | Generated |
+
+### Key Tables
+
+- `fact_events` - One row per unique event (5,833 rows for 4 games)
+- `fact_events_player` - One row per player per event (11,635 rows)
+- `fact_shifts_player` - Player shift records (4,559 rows)
+- `fact_player_game_stats` - Per-game player statistics (107 rows)
+- `fact_h2h` - Head-to-head matchup stats
+- `fact_wowy` - With-or-without-you analysis
+- `fact_line_combos` - Line combination tracking
+
+---
+
+## Docker
+
+### Build and Run API
+```bash
+docker-compose up -d benchsight-api
+```
+
+### Run ETL
+```bash
+docker-compose --profile etl up benchsight-etl
+```
+
+### Build Only
+```bash
+docker build -t benchsight .
+docker run -p 5000:5000 -v ./data:/app/data benchsight
+```
+
+---
+
+## API Endpoints
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| /api/health | GET | Health check |
+| /api/status | GET | Pipeline status |
+| /api/games | GET | List games |
+| /api/games/{id}/process | POST | Process single game |
+| /api/upload | POST | Upload tracking file |
+| /api/tables/{name} | GET | Get table data |
+
+---
+
+## Adding New Games
+
+1. Place tracking file in `data/raw/games/{game_id}/{game_id}_tracking.xlsx`
+2. Run: `python -m src.etl_complete --games {game_id}`
+3. Deploy: `python scripts/deploy_supabase.py --all --mode upsert`
+
+---
+
+## Deployment Checklist
+
+### First Time
+1. Create Supabase project
+2. Copy `config/config_local.ini.template` → `config/config_local.ini`
+3. Add Supabase URL and service key
+4. Run `sql/create_all_tables.sql` in SQL Editor
+5. Run `python -m src.etl_complete --all`
+6. Run `python scripts/deploy_supabase.py --all`
+
+### Updates
+```bash
+python -m src.etl_complete --all
+python scripts/deploy_supabase.py --all --mode upsert
+```
+
+---
+
+## Files Reference
+
+### Critical
+- `src/etl_complete.py` - Main ETL that generates everything
+- `data/BLB_Tables.xlsx` - Master data (DO NOT LOSE)
+- `scripts/deploy_supabase.py` - Supabase deployment
+
+### Documentation
+- `docs/TABLE_INVENTORY.csv` - All 111 tables listed
+- `docs/DATA_DICTIONARY_COMPLETE.md` - Column definitions
+- `docs/HONEST_ASSESSMENT.md` - Project status analysis
+
+---
+
+## Known Limitations
+
+1. **Empty XY Tables** - 6 coordinate tables are placeholders for future tracking
+2. **Batch Size** - 500 rows per Supabase API call
+3. **Video Tables** - Placeholder for video integration
+
+---
+
+## Contact
+
+NORAD Hockey League: https://noradhockey.com
