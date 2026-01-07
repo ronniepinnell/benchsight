@@ -34,7 +34,7 @@ EVENT_LOCATIONS CSV STRUCTURE:
 Each CSV in xy/event_locations/ contains:
 
 REQUIRED COLUMNS:
-- event_index          : Links to fact_events_tracking
+- event_index          : Links to fact_event_players
 - player_game_number   : Player who performed the action
 - player_team          : Team of the player (e.g., "Platinum", "Velodrome")
 
@@ -61,7 +61,7 @@ SHOT_LOCATIONS CSV STRUCTURE:
 =============================
 Each CSV in shots/shot_locations/ contains:
 
-- event_index          : Links to shot events in fact_events_tracking
+- event_index          : Links to shot events in fact_event_players
 - shot_net_x           : X on net (-3 to 3, left post to right post)
 - shot_net_y           : Y on net (0 to 4, ice level to crossbar)
 - shot_result          : Goal, Save, Miss, Post, Crossbar, Block

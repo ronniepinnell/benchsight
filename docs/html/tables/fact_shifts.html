@@ -1,0 +1,2241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fact_shifts - BenchSight v0.02</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #333; line-height: 1.6; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #4a4e69 100%); color: white; padding: 20px 40px; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .nav { background: #4a4e69; padding: 0 20px; display: flex; flex-wrap: wrap; }
+        .nav a { color: white; text-decoration: none; padding: 10px 14px; font-size: 13px; }
+        .nav a:hover { background: rgba(255,255,255,0.1); }
+        .container { max-width: 1600px; margin: 0 auto; padding: 30px; }
+        
+        /* Table Overview Section */
+        .table-overview { background: white; border-radius: 8px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .table-overview h2 { margin-top: 0; color: #4a4e69; border-bottom: 2px solid #4a4e69; padding-bottom: 10px; }
+        .overview-desc { background: #e3f2fd; border-left: 4px solid #1976d2; padding: 15px; margin-bottom: 20px; font-size: 15px; }
+        .overview-grid { display: grid; grid-template-columns: 120px 1fr; gap: 10px 20px; }
+        .overview-label { font-weight: 600; color: #555; }
+        .overview-value { color: #333; }
+        .overview-value code { background: #f5f5f5; padding: 2px 8px; border-radius: 4px; font-family: 'SF Mono', Monaco, monospace; font-size: 12px; }
+        
+        /* Column Documentation Section */
+        .column-docs { background: white; border-radius: 8px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .column-docs h2 { margin-top: 0; color: #4a4e69; border-bottom: 2px solid #4a4e69; padding-bottom: 10px; }
+        
+        /* Legend */
+        .legend { margin-bottom: 20px; padding: 15px; background: #fafafa; border-radius: 6px; }
+        .legend-title { font-weight: 600; margin-right: 10px; }
+        .legend-item { display: inline-flex; align-items: center; margin-right: 20px; }
+        
+        /* Type badges */
+        .type-badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+        .badge-explicit { background: #e8f5e9; color: #2e7d32; }
+        .badge-calculated { background: #fff3e0; color: #e65100; }
+        .badge-derived { background: #e3f2fd; color: #1565c0; }
+        .badge-fk { background: #fce4ec; color: #c2185b; }
+        .badge-unknown { background: #f5f5f5; color: #757575; }
+        
+        /* Table styling */
+        table { border-collapse: collapse; width: 100%; margin: 15px 0; background: white; }
+        th { background: #4a4e69; color: white; padding: 12px 10px; text-align: left; font-size: 12px; font-weight: 600; position: sticky; top: 0; }
+        td { border: 1px solid #e0e0e0; padding: 10px; font-size: 13px; vertical-align: top; }
+        tr:nth-child(even) { background: #fafafa; }
+        tr:hover { background: #f0f7ff; }
+        code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-family: 'SF Mono', Monaco, monospace; font-size: 11px; }
+        
+        /* Column-specific styling */
+        .context-cell { max-width: 300px; font-size: 12px; color: #555; }
+        .calc-cell { max-width: 250px; font-size: 11px; }
+        .calc-cell code { background: #fff8e1; }
+        .stat-cell { text-align: right; font-size: 12px; }
+        .null-low { color: #2e7d32; }
+        .null-med { color: #f57c00; }
+        .null-high { color: #c62828; font-weight: 600; }
+        
+        /* Badge styles */
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+        .badge-blue { background: #1976d2; color: white; }
+        .badge-green { background: #388e3c; color: white; }
+        .badge-yellow { background: #f9a825; color: #333; }
+        
+        /* Sample data */
+        .data-table { font-size: 11px; overflow-x: auto; }
+        .data-table th { font-size: 11px; padding: 8px; }
+        .data-table td { padding: 6px 8px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        
+        footer { text-align: center; padding: 20px; color: #888; font-size: 11px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏒 BenchSight <span style="font-size: 14px; opacity: 0.8;">v0.02</span></h1>
+    </div>
+    
+    <nav class="nav">
+        <a href="../index.html">🏠 Home</a>
+        <a href="../tables.html">📊 Tables (59)</a>
+        <a href="../BS_DETECTOR.html">🔍 BS Detector</a>
+        <a href="../DOC_MAINTENANCE.html">📝 Doc Guide</a>
+    </nav>
+
+    <div class="container">
+        <h1>fact_shifts <span class="badge badge-green">Fact</span></h1>
+        
+        <!-- Table Overview Section -->
+        <div class="table-overview">
+            <h2>Table Overview</h2>
+            
+            <div class="overview-desc">
+                <strong>Description:</strong> Player shift data - when players are on the ice
+            </div>
+            
+            <div class="overview-grid">
+                <div class="overview-label">Purpose:</div>
+                <div class="overview-value">Track ice time, line combinations, and shift patterns.</div>
+                
+                <div class="overview-label">Source Module:</div>
+                <div class="overview-value"><code>src/core/base_etl.py:create_derived_tables()</code></div>
+                
+                <div class="overview-label">Logic:</div>
+                <div class="overview-value">Shift start/end times with player assignments.</div>
+                
+                <div class="overview-label">Grain:</div>
+                <div class="overview-value">One row per shift per game</div>
+                
+                <div class="overview-label">Rows:</div>
+                <div class="overview-value">100</div>
+                
+                <div class="overview-label">Columns:</div>
+                <div class="overview-value">129</div>
+            </div>
+        </div>
+        
+        <!-- Column Documentation Section -->
+        <div class="column-docs">
+            <h2>Column Documentation</h2>
+            
+            <div class="legend">
+                <span class="legend-title">Legend:</span>
+                <span class="legend-item"><span class="type-badge badge-explicit">Explicit</span> = From raw data</span>
+                <span class="legend-item"><span class="type-badge badge-calculated">Calculated</span> = Formula-based</span>
+                <span class="legend-item"><span class="type-badge badge-derived">Derived</span> = Generated key/aggregate</span>
+                <span class="legend-item"><span class="type-badge badge-fk">FK</span> = Foreign key lookup</span>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Column</th>
+                        <th>Data Type</th>
+                        <th>Description</th>
+                        <th>Context / Mapping</th>
+                        <th>Calculation / Formula</th>
+                        <th>Type</th>
+                        <th>Non-Null</th>
+                        <th>Null %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+            <tr>
+                <td><code>shift_id</code></td>
+                <td>object</td>
+                <td>Unique shift identifier (PK)</td>
+                <td class="context-cell">Format: SH{game_id}{shift_index:05d}. Example: SH1896900001. One shift_id per line change.</td>
+                <td class="calc-cell"><code>format_key("SH", game_id, shift_index) in key_utils.py:84</code></td>
+                <td><span class="type-badge badge-derived">Derived</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>game_id</code></td>
+                <td>int64</td>
+                <td>Game identifier from noradhockey.com</td>
+                <td class="context-cell">Numeric ID from league website URL. Example: 18969. Links to dim_schedule.game_id. Used as prefix in all composite keys.</td>
+                <td class="calc-cell"><code>Extracted from tracking file directory name (data/raw/games/{game_id}/)</code></td>
+                <td><span class="type-badge badge-explicit">Explicit</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>shift_index</code></td>
+                <td>int64</td>
+                <td>Sequential shift number within game</td>
+                <td class="context-cell">Increments with each line change. Used to generate shift_id.</td>
+                <td class="calc-cell"><code>From tracking spreadsheet shifts sheet</code></td>
+                <td><span class="type-badge badge-explicit">Explicit</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>period</code></td>
+                <td>float64</td>
+                <td>Period</td>
+                <td class="context-cell">Game period 1, 2, 3, or OT</td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-explicit">Explicit</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>shift_start_type</code></td>
+                <td>object</td>
+                <td>How the shift started</td>
+                <td class="context-cell">GameStart, Faceoff, OnTheFly, etc.</td>
+                <td class="calc-cell"><code>From tracking spreadsheet or inferred from prior event</code></td>
+                <td><span class="type-badge badge-explicit">Explicit</span></td>
+                <td class="stat-cell">35</td>
+                <td class="stat-cell null-high">65.0%</td>
+            </tr>
+            <tr>
+                <td><code>shift_stop_type</code></td>
+                <td>object</td>
+                <td>How the shift ended</td>
+                <td class="context-cell">Whistle, Goal, Penalty, OnTheFly, etc.</td>
+                <td class="calc-cell"><code>From tracking spreadsheet or inferred from next event</code></td>
+                <td><span class="type-badge badge-explicit">Explicit</span></td>
+                <td class="stat-cell">37</td>
+                <td class="stat-cell null-high">63.0%</td>
+            </tr>
+            <tr>
+                <td><code>shift_start_min</code></td>
+                <td>float64</td>
+                <td>Shift start minute within period</td>
+                <td class="context-cell">When players came onto ice. Minutes 0-20.</td>
+                <td class="calc-cell"><code>From tracking spreadsheet</code></td>
+                <td><span class="type-badge badge-explicit">Explicit</span></td>
+                <td class="stat-cell">99</td>
+                <td class="stat-cell null-low">1.0%</td>
+            </tr>
+            <tr>
+                <td><code>shift_start_sec</code></td>
+                <td>float64</td>
+                <td>Shift start second within minute</td>
+                <td class="context-cell">Seconds 0-59.</td>
+                <td class="calc-cell"><code>From tracking spreadsheet</code></td>
+                <td><span class="type-badge badge-explicit">Explicit</span></td>
+                <td class="stat-cell">98</td>
+                <td class="stat-cell null-med">2.0%</td>
+            </tr>
+            <tr>
+                <td><code>shift_end_min</code></td>
+                <td>float64</td>
+                <td>Shift end minute within period</td>
+                <td class="context-cell">When players left ice.</td>
+                <td class="calc-cell"><code>From tracking spreadsheet</code></td>
+                <td><span class="type-badge badge-explicit">Explicit</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>shift_end_sec</code></td>
+                <td>float64</td>
+                <td>Shift end second within minute</td>
+                <td class="context-cell">Seconds 0-59.</td>
+                <td class="calc-cell"><code>From tracking spreadsheet</code></td>
+                <td><span class="type-badge badge-explicit">Explicit</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_team</code></td>
+                <td>object</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_team</code></td>
+                <td>object</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_forward_1</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_forward_2</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_forward_3</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">95</td>
+                <td class="stat-cell null-med">5.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_defense_1</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_defense_2</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_xtra</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">0</td>
+                <td class="stat-cell null-high">100.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_goalie</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_forward_1</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_forward_2</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_forward_3</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_defense_1</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_defense_2</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_xtra</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">1</td>
+                <td class="stat-cell null-high">99.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_goalie</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">95</td>
+                <td class="stat-cell null-med">5.0%</td>
+            </tr>
+            <tr>
+                <td><code>shift_start_total_seconds</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>shift_end_total_seconds</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>shift_duration</code></td>
+                <td>float64</td>
+                <td>Total shift duration in seconds</td>
+                <td class="context-cell">Time on ice for this shift.</td>
+                <td class="calc-cell"><code>(end_min*60 + end_sec) - (start_min*60 + start_sec)</code></td>
+                <td><span class="type-badge badge-calculated">Calculated</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_team_strength</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_team_strength</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_team_en</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_team_en</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_team_pk</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_team_pp</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_team_pp</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_team_pk</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>situation</code></td>
+                <td>object</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>strength</code></td>
+                <td>object</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_goals</code></td>
+                <td>float64</td>
+                <td>Goals scored</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_goals</code></td>
+                <td>float64</td>
+                <td>Goals scored</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>stoppage_time</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_ozone_start</code></td>
+                <td>float64</td>
+                <td>Ice zone (Off, Def, Neu)</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">33</td>
+                <td class="stat-cell null-high">67.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_ozone_end</code></td>
+                <td>float64</td>
+                <td>Ice zone (Off, Def, Neu)</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">36</td>
+                <td class="stat-cell null-high">64.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_dzone_start</code></td>
+                <td>float64</td>
+                <td>Ice zone (Off, Def, Neu)</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">35</td>
+                <td class="stat-cell null-high">65.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_dzone_end</code></td>
+                <td>float64</td>
+                <td>Ice zone (Off, Def, Neu)</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">40</td>
+                <td class="stat-cell null-high">60.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_nzone_start</code></td>
+                <td>float64</td>
+                <td>Ice zone (Off, Def, Neu)</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">30</td>
+                <td class="stat-cell null-high">70.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_nzone_end</code></td>
+                <td>float64</td>
+                <td>Ice zone (Off, Def, Neu)</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">21</td>
+                <td class="stat-cell null-high">79.0%</td>
+            </tr>
+            <tr>
+                <td><code>period_id</code></td>
+                <td>object</td>
+                <td>Game period (1, 2, 3, OT)</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_team_id</code></td>
+                <td>object</td>
+                <td>Unique team identifier</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_team_id</code></td>
+                <td>object</td>
+                <td>Unique team identifier</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>season_id</code></td>
+                <td>object</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>time_bucket_id</code></td>
+                <td>object</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">99</td>
+                <td class="stat-cell null-low">1.0%</td>
+            </tr>
+            <tr>
+                <td><code>strength_id</code></td>
+                <td>object</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>shift_start_type_derived</code></td>
+                <td>object</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>shift_stop_type_derived</code></td>
+                <td>object</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>start_zone</code></td>
+                <td>object</td>
+                <td>Ice zone (Off, Def, Neu)</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">93</td>
+                <td class="stat-cell null-high">7.0%</td>
+            </tr>
+            <tr>
+                <td><code>end_zone</code></td>
+                <td>object</td>
+                <td>Ice zone (Off, Def, Neu)</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">94</td>
+                <td class="stat-cell null-high">6.0%</td>
+            </tr>
+            <tr>
+                <td><code>start_zone_id</code></td>
+                <td>float64</td>
+                <td>Ice zone (Off, Def, Neu)</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">93</td>
+                <td class="stat-cell null-high">7.0%</td>
+            </tr>
+            <tr>
+                <td><code>end_zone_id</code></td>
+                <td>float64</td>
+                <td>Ice zone (Off, Def, Neu)</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">94</td>
+                <td class="stat-cell null-high">6.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_forward_1_id</code></td>
+                <td>object</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_forward_2_id</code></td>
+                <td>object</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_forward_3_id</code></td>
+                <td>object</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">95</td>
+                <td class="stat-cell null-med">5.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_defense_1_id</code></td>
+                <td>object</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">95</td>
+                <td class="stat-cell null-med">5.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_defense_2_id</code></td>
+                <td>object</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_xtra_id</code></td>
+                <td>float64</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">0</td>
+                <td class="stat-cell null-high">100.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_goalie_id</code></td>
+                <td>object</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_forward_1_id</code></td>
+                <td>object</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_forward_2_id</code></td>
+                <td>object</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_forward_3_id</code></td>
+                <td>object</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_defense_1_id</code></td>
+                <td>object</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">95</td>
+                <td class="stat-cell null-med">5.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_defense_2_id</code></td>
+                <td>object</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_xtra_id</code></td>
+                <td>object</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">1</td>
+                <td class="stat-cell null-high">99.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_goalie_id</code></td>
+                <td>object</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">95</td>
+                <td class="stat-cell null-med">5.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_gf_all</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_ga_all</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_gf_all</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_ga_all</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_gf_ev</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_ga_ev</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_gf_ev</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_ga_ev</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_gf_nen</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_ga_nen</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_gf_nen</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_ga_nen</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_gf_pp</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_ga_pp</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_gf_pp</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_ga_pp</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_gf_pk</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_ga_pk</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_gf_pk</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_ga_pk</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_pm_all</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_pm_all</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_pm_ev</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_pm_ev</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_pm_nen</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_pm_nen</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_pm_pp</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_pm_pp</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_pm_pk</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_pm_pk</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>sf</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>sa</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>shot_diff</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>cf</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>ca</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>cf_pct</code></td>
+                <td>float64</td>
+                <td>Percentage value</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>ff</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>fa</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>ff_pct</code></td>
+                <td>float64</td>
+                <td>Percentage value</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>scf</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>sca</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>hdf</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>hda</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>zone_entries</code></td>
+                <td>int64</td>
+                <td>Ice zone (Off, Def, Neu)</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>zone_exits</code></td>
+                <td>int64</td>
+                <td>Ice zone (Off, Def, Neu)</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>giveaways</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>takeaways</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>fo_won</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>fo_lost</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>fo_pct</code></td>
+                <td>float64</td>
+                <td>Percentage value</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>event_count</code></td>
+                <td>int64</td>
+                <td>Count/total</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>shift_start_type_id</code></td>
+                <td>object</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>shift_stop_type_id</code></td>
+                <td>object</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>situation_id</code></td>
+                <td>object</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">97</td>
+                <td class="stat-cell null-med">3.0%</td>
+            </tr>
+            <tr>
+                <td><code>shift_key</code></td>
+                <td>object</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Sample Data Section -->
+        <div class="column-docs">
+            <h2>Sample Data (First 5 Rows)</h2>
+            <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>shift_id</th>
+      <th>game_id</th>
+      <th>shift_index</th>
+      <th>period</th>
+      <th>shift_start_type</th>
+      <th>shift_stop_type</th>
+      <th>shift_start_min</th>
+      <th>shift_start_sec</th>
+      <th>shift_end_min</th>
+      <th>shift_end_sec</th>
+      <th>home_team</th>
+      <th>away_team</th>
+      <th>home_forward_1</th>
+      <th>home_forward_2</th>
+      <th>home_forward_3</th>
+      <th>home_defense_1</th>
+      <th>home_defense_2</th>
+      <th>home_xtra</th>
+      <th>home_goalie</th>
+      <th>away_forward_1</th>
+      <th>away_forward_2</th>
+      <th>away_forward_3</th>
+      <th>away_defense_1</th>
+      <th>away_defense_2</th>
+      <th>away_xtra</th>
+      <th>away_goalie</th>
+      <th>shift_start_total_seconds</th>
+      <th>shift_end_total_seconds</th>
+      <th>shift_duration</th>
+      <th>home_team_strength</th>
+      <th>away_team_strength</th>
+      <th>home_team_en</th>
+      <th>away_team_en</th>
+      <th>home_team_pk</th>
+      <th>home_team_pp</th>
+      <th>away_team_pp</th>
+      <th>away_team_pk</th>
+      <th>situation</th>
+      <th>strength</th>
+      <th>home_goals</th>
+      <th>away_goals</th>
+      <th>stoppage_time</th>
+      <th>home_ozone_start</th>
+      <th>home_ozone_end</th>
+      <th>home_dzone_start</th>
+      <th>home_dzone_end</th>
+      <th>home_nzone_start</th>
+      <th>home_nzone_end</th>
+      <th>period_id</th>
+      <th>home_team_id</th>
+      <th>away_team_id</th>
+      <th>season_id</th>
+      <th>time_bucket_id</th>
+      <th>strength_id</th>
+      <th>shift_start_type_derived</th>
+      <th>shift_stop_type_derived</th>
+      <th>start_zone</th>
+      <th>end_zone</th>
+      <th>start_zone_id</th>
+      <th>end_zone_id</th>
+      <th>home_forward_1_id</th>
+      <th>home_forward_2_id</th>
+      <th>home_forward_3_id</th>
+      <th>home_defense_1_id</th>
+      <th>home_defense_2_id</th>
+      <th>home_xtra_id</th>
+      <th>home_goalie_id</th>
+      <th>away_forward_1_id</th>
+      <th>away_forward_2_id</th>
+      <th>away_forward_3_id</th>
+      <th>away_defense_1_id</th>
+      <th>away_defense_2_id</th>
+      <th>away_xtra_id</th>
+      <th>away_goalie_id</th>
+      <th>home_gf_all</th>
+      <th>home_ga_all</th>
+      <th>away_gf_all</th>
+      <th>away_ga_all</th>
+      <th>home_gf_ev</th>
+      <th>home_ga_ev</th>
+      <th>away_gf_ev</th>
+      <th>away_ga_ev</th>
+      <th>home_gf_nen</th>
+      <th>home_ga_nen</th>
+      <th>away_gf_nen</th>
+      <th>away_ga_nen</th>
+      <th>home_gf_pp</th>
+      <th>home_ga_pp</th>
+      <th>away_gf_pp</th>
+      <th>away_ga_pp</th>
+      <th>home_gf_pk</th>
+      <th>home_ga_pk</th>
+      <th>away_gf_pk</th>
+      <th>away_ga_pk</th>
+      <th>home_pm_all</th>
+      <th>away_pm_all</th>
+      <th>home_pm_ev</th>
+      <th>away_pm_ev</th>
+      <th>home_pm_nen</th>
+      <th>away_pm_nen</th>
+      <th>home_pm_pp</th>
+      <th>away_pm_pp</th>
+      <th>home_pm_pk</th>
+      <th>away_pm_pk</th>
+      <th>sf</th>
+      <th>sa</th>
+      <th>shot_diff</th>
+      <th>cf</th>
+      <th>ca</th>
+      <th>cf_pct</th>
+      <th>ff</th>
+      <th>fa</th>
+      <th>ff_pct</th>
+      <th>scf</th>
+      <th>sca</th>
+      <th>hdf</th>
+      <th>hda</th>
+      <th>zone_entries</th>
+      <th>zone_exits</th>
+      <th>giveaways</th>
+      <th>takeaways</th>
+      <th>fo_won</th>
+      <th>fo_lost</th>
+      <th>fo_pct</th>
+      <th>event_count</th>
+      <th>shift_start_type_id</th>
+      <th>shift_stop_type_id</th>
+      <th>situation_id</th>
+      <th>shift_key</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>SH1896900001</td>
+      <td>18969</td>
+      <td>1</td>
+      <td>1.0</td>
+      <td>GameStart</td>
+      <td>Away Icing</td>
+      <td>18.0</td>
+      <td>0.0</td>
+      <td>16.0</td>
+      <td>38.0</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>53.0</td>
+      <td>20.0</td>
+      <td>12.0</td>
+      <td>8.0</td>
+      <td>21.0</td>
+      <td>NaN</td>
+      <td>99.0</td>
+      <td>70.0</td>
+      <td>75.0</td>
+      <td>49.0</td>
+      <td>52.0</td>
+      <td>22.0</td>
+      <td>NaN</td>
+      <td>39.0</td>
+      <td>1080.0</td>
+      <td>998.0</td>
+      <td>82.0</td>
+      <td>5.0</td>
+      <td>5.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>Full Strength</td>
+      <td>5v5</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>P01</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>N20252026F</td>
+      <td>TB01</td>
+      <td>STR0001</td>
+      <td>GameStart</td>
+      <td>Away Icing</td>
+      <td>n</td>
+      <td>n</td>
+      <td>3.0</td>
+      <td>3.0</td>
+      <td>P100192</td>
+      <td>P100024</td>
+      <td>P100027</td>
+      <td>P100030</td>
+      <td>P100025</td>
+      <td>NaN</td>
+      <td>P100202</td>
+      <td>P100001</td>
+      <td>P100039</td>
+      <td>P100161</td>
+      <td>P100070</td>
+      <td>P100108</td>
+      <td>NaN</td>
+      <td>P100016</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>3</td>
+      <td>1</td>
+      <td>75.0</td>
+      <td>3</td>
+      <td>1</td>
+      <td>75.0</td>
+      <td>3</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>3</td>
+      <td>3</td>
+      <td>3</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>39</td>
+      <td>SST0001</td>
+      <td>SPT0001</td>
+      <td>SIT0001</td>
+      <td>SH1896900001</td>
+    </tr>
+    <tr>
+      <td>SH1896900002</td>
+      <td>18969</td>
+      <td>2</td>
+      <td>1.0</td>
+      <td>OtherFaceoff</td>
+      <td>NaN</td>
+      <td>16.0</td>
+      <td>38.0</td>
+      <td>15.0</td>
+      <td>19.0</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>45.0</td>
+      <td>82.0</td>
+      <td>34.0</td>
+      <td>3.0</td>
+      <td>78.0</td>
+      <td>NaN</td>
+      <td>99.0</td>
+      <td>42.0</td>
+      <td>91.0</td>
+      <td>61.0</td>
+      <td>84.0</td>
+      <td>93.0</td>
+      <td>NaN</td>
+      <td>39.0</td>
+      <td>998.0</td>
+      <td>919.0</td>
+      <td>79.0</td>
+      <td>5.0</td>
+      <td>5.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>Full Strength</td>
+      <td>5v5</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>21.0</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>P01</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>N20252026F</td>
+      <td>TB01</td>
+      <td>STR0001</td>
+      <td>OtherFaceoff</td>
+      <td>Stoppage</td>
+      <td>d</td>
+      <td>n</td>
+      <td>2.0</td>
+      <td>3.0</td>
+      <td>P100117</td>
+      <td>P100110</td>
+      <td>P100022</td>
+      <td>P100023</td>
+      <td>P100107</td>
+      <td>NaN</td>
+      <td>P100202</td>
+      <td>P100201</td>
+      <td>P100002</td>
+      <td>P100224</td>
+      <td>P100198</td>
+      <td>P100093</td>
+      <td>NaN</td>
+      <td>P100016</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>100.0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>100.0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>3</td>
+      <td>4</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>38</td>
+      <td>SST0002</td>
+      <td>SPT0002</td>
+      <td>SIT0001</td>
+      <td>SH1896900002</td>
+    </tr>
+    <tr>
+      <td>SH1896900003</td>
+      <td>18969</td>
+      <td>3</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>15.0</td>
+      <td>19.0</td>
+      <td>15.0</td>
+      <td>10.0</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>45.0</td>
+      <td>47.0</td>
+      <td>34.0</td>
+      <td>3.0</td>
+      <td>78.0</td>
+      <td>NaN</td>
+      <td>99.0</td>
+      <td>42.0</td>
+      <td>91.0</td>
+      <td>61.0</td>
+      <td>84.0</td>
+      <td>9.0</td>
+      <td>NaN</td>
+      <td>39.0</td>
+      <td>919.0</td>
+      <td>910.0</td>
+      <td>9.0</td>
+      <td>5.0</td>
+      <td>5.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>Full Strength</td>
+      <td>5v5</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>P01</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>N20252026F</td>
+      <td>TB01</td>
+      <td>STR0001</td>
+      <td>OnTheFly</td>
+      <td>OnTheFly</td>
+      <td>d</td>
+      <td>d</td>
+      <td>2.0</td>
+      <td>2.0</td>
+      <td>P100117</td>
+      <td>P100210</td>
+      <td>P100022</td>
+      <td>P100023</td>
+      <td>P100107</td>
+      <td>NaN</td>
+      <td>P100202</td>
+      <td>P100201</td>
+      <td>P100002</td>
+      <td>P100224</td>
+      <td>P100198</td>
+      <td>P100105</td>
+      <td>NaN</td>
+      <td>P100016</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>50.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>50.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>4</td>
+      <td>SST0003</td>
+      <td>SPT0003</td>
+      <td>SIT0001</td>
+      <td>SH1896900003</td>
+    </tr>
+    <tr>
+      <td>SH1896900004</td>
+      <td>18969</td>
+      <td>4</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>15.0</td>
+      <td>10.0</td>
+      <td>14.0</td>
+      <td>41.0</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>45.0</td>
+      <td>47.0</td>
+      <td>34.0</td>
+      <td>3.0</td>
+      <td>78.0</td>
+      <td>NaN</td>
+      <td>99.0</td>
+      <td>42.0</td>
+      <td>91.0</td>
+      <td>61.0</td>
+      <td>52.0</td>
+      <td>9.0</td>
+      <td>NaN</td>
+      <td>39.0</td>
+      <td>910.0</td>
+      <td>881.0</td>
+      <td>29.0</td>
+      <td>5.0</td>
+      <td>5.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>Full Strength</td>
+      <td>5v5</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1.0</td>
+      <td>P01</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>N20252026F</td>
+      <td>TB01</td>
+      <td>STR0001</td>
+      <td>OnTheFly</td>
+      <td>OnTheFly</td>
+      <td>o</td>
+      <td>o</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>P100117</td>
+      <td>P100210</td>
+      <td>P100022</td>
+      <td>P100023</td>
+      <td>P100107</td>
+      <td>NaN</td>
+      <td>P100202</td>
+      <td>P100201</td>
+      <td>P100002</td>
+      <td>P100224</td>
+      <td>P100070</td>
+      <td>P100105</td>
+      <td>NaN</td>
+      <td>P100016</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>50.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>50.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>16</td>
+      <td>SST0003</td>
+      <td>SPT0003</td>
+      <td>SIT0001</td>
+      <td>SH1896900004</td>
+    </tr>
+    <tr>
+      <td>SH1896900005</td>
+      <td>18969</td>
+      <td>5</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>14.0</td>
+      <td>41.0</td>
+      <td>14.0</td>
+      <td>37.0</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>53.0</td>
+      <td>47.0</td>
+      <td>34.0</td>
+      <td>3.0</td>
+      <td>78.0</td>
+      <td>NaN</td>
+      <td>99.0</td>
+      <td>42.0</td>
+      <td>91.0</td>
+      <td>61.0</td>
+      <td>52.0</td>
+      <td>9.0</td>
+      <td>NaN</td>
+      <td>39.0</td>
+      <td>881.0</td>
+      <td>877.0</td>
+      <td>4.0</td>
+      <td>5.0</td>
+      <td>5.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>Full Strength</td>
+      <td>5v5</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>P01</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>N20252026F</td>
+      <td>TB02</td>
+      <td>STR0001</td>
+      <td>OnTheFly</td>
+      <td>OnTheFly</td>
+      <td>d</td>
+      <td>d</td>
+      <td>2.0</td>
+      <td>2.0</td>
+      <td>P100192</td>
+      <td>P100210</td>
+      <td>P100022</td>
+      <td>P100023</td>
+      <td>P100107</td>
+      <td>NaN</td>
+      <td>P100202</td>
+      <td>P100201</td>
+      <td>P100002</td>
+      <td>P100224</td>
+      <td>P100070</td>
+      <td>P100105</td>
+      <td>NaN</td>
+      <td>P100016</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>50.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>50.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>2</td>
+      <td>SST0003</td>
+      <td>SPT0003</td>
+      <td>SIT0001</td>
+      <td>SH1896900005</td>
+    </tr>
+  </tbody>
+</table>
+        </div>
+        
+        <footer>
+            BenchSight v0.02 | Generated: 2026-01-07 14:30 | <a href="../tables.html">Back to Tables</a>
+        </footer>
+    </div>
+</body>
+</html>

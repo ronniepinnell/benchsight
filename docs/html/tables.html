@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Tables - BenchSight v0.02</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #333; line-height: 1.6; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #4a4e69 100%); color: white; padding: 20px 40px; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .nav { background: #4a4e69; padding: 0 20px; display: flex; flex-wrap: wrap; }
+        .nav a { color: white; text-decoration: none; padding: 10px 14px; font-size: 13px; }
+        .nav a:hover { background: rgba(255,255,255,0.1); }
+        .nav a.active { background: rgba(255,255,255,0.2); }
+        .container { max-width: 1400px; margin: 0 auto; padding: 30px; }
+        h2 { color: #4a4e69; border-bottom: 2px solid #4a4e69; padding-bottom: 8px; }
+        .stats { display: flex; gap: 20px; margin: 20px 0; flex-wrap: wrap; }
+        .stat { background: white; padding: 20px 30px; border-radius: 10px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); text-align: center; }
+        .stat-value { font-size: 36px; font-weight: bold; color: #4a4e69; }
+        .stat-label { font-size: 13px; color: #888; }
+        .table-grid { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
+        .table-link { text-decoration: none; }
+        .badge { display: inline-block; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; }
+        .badge-blue { background: #e3f2fd; color: #1565c0; }
+        .badge-blue:hover { background: #1565c0; color: white; }
+        .badge-green { background: #e8f5e9; color: #2e7d32; }
+        .badge-green:hover { background: #2e7d32; color: white; }
+        .badge-yellow { background: #fff8e1; color: #f57f17; }
+        .badge-yellow:hover { background: #f57f17; color: white; }
+        footer { text-align: center; padding: 20px; color: #888; font-size: 11px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏒 BenchSight <span style="font-size: 14px; opacity: 0.8;">v0.02</span></h1>
+    </div>
+    
+    <nav class="nav">
+        <a href="index.html">🏠 Home</a>
+        <a href="tables.html" class="active">📊 Tables (59)</a>
+        <a href="BS_DETECTOR.html">🔍 BS Detector</a>
+        <a href="DOC_MAINTENANCE.html">📝 Doc Guide</a>
+    </nav>
+
+    <div class="container">
+        <h1>All Tables (59)</h1>
+        
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value">33</div>
+                <div class="stat-label">Dimension Tables</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">24</div>
+                <div class="stat-label">Fact Tables</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">2</div>
+                <div class="stat-label">QA Tables</div>
+            </div>
+        </div>
+        
+        <h2>Dimension Tables (33)</h2>
+        <div class="table-grid">
+            <a href="tables/dim_assist_type.html" class="table-link"><span class="badge badge-blue">dim_assist_type</span></a>
+<a href="tables/dim_danger_level.html" class="table-link"><span class="badge badge-blue">dim_danger_level</span></a>
+<a href="tables/dim_event_detail.html" class="table-link"><span class="badge badge-blue">dim_event_detail</span></a>
+<a href="tables/dim_event_detail_2.html" class="table-link"><span class="badge badge-blue">dim_event_detail_2</span></a>
+<a href="tables/dim_event_type.html" class="table-link"><span class="badge badge-blue">dim_event_type</span></a>
+<a href="tables/dim_game_state.html" class="table-link"><span class="badge badge-blue">dim_game_state</span></a>
+<a href="tables/dim_giveaway_type.html" class="table-link"><span class="badge badge-blue">dim_giveaway_type</span></a>
+<a href="tables/dim_league.html" class="table-link"><span class="badge badge-blue">dim_league</span></a>
+<a href="tables/dim_pass_type.html" class="table-link"><span class="badge badge-blue">dim_pass_type</span></a>
+<a href="tables/dim_period.html" class="table-link"><span class="badge badge-blue">dim_period</span></a>
+<a href="tables/dim_play_detail.html" class="table-link"><span class="badge badge-blue">dim_play_detail</span></a>
+<a href="tables/dim_play_detail_2.html" class="table-link"><span class="badge badge-blue">dim_play_detail_2</span></a>
+<a href="tables/dim_player.html" class="table-link"><span class="badge badge-blue">dim_player</span></a>
+<a href="tables/dim_player_role.html" class="table-link"><span class="badge badge-blue">dim_player_role</span></a>
+<a href="tables/dim_playerurlref.html" class="table-link"><span class="badge badge-blue">dim_playerurlref</span></a>
+<a href="tables/dim_position.html" class="table-link"><span class="badge badge-blue">dim_position</span></a>
+<a href="tables/dim_randomnames.html" class="table-link"><span class="badge badge-blue">dim_randomnames</span></a>
+<a href="tables/dim_schedule.html" class="table-link"><span class="badge badge-blue">dim_schedule</span></a>
+<a href="tables/dim_season.html" class="table-link"><span class="badge badge-blue">dim_season</span></a>
+<a href="tables/dim_shift_quality_tier.html" class="table-link"><span class="badge badge-blue">dim_shift_quality_tier</span></a>
+<a href="tables/dim_shift_start_type.html" class="table-link"><span class="badge badge-blue">dim_shift_start_type</span></a>
+<a href="tables/dim_shift_stop_type.html" class="table-link"><span class="badge badge-blue">dim_shift_stop_type</span></a>
+<a href="tables/dim_shot_type.html" class="table-link"><span class="badge badge-blue">dim_shot_type</span></a>
+<a href="tables/dim_situation.html" class="table-link"><span class="badge badge-blue">dim_situation</span></a>
+<a href="tables/dim_stoppage_type.html" class="table-link"><span class="badge badge-blue">dim_stoppage_type</span></a>
+<a href="tables/dim_success.html" class="table-link"><span class="badge badge-blue">dim_success</span></a>
+<a href="tables/dim_takeaway_type.html" class="table-link"><span class="badge badge-blue">dim_takeaway_type</span></a>
+<a href="tables/dim_team.html" class="table-link"><span class="badge badge-blue">dim_team</span></a>
+<a href="tables/dim_time_bucket.html" class="table-link"><span class="badge badge-blue">dim_time_bucket</span></a>
+<a href="tables/dim_venue.html" class="table-link"><span class="badge badge-blue">dim_venue</span></a>
+<a href="tables/dim_zone.html" class="table-link"><span class="badge badge-blue">dim_zone</span></a>
+<a href="tables/dim_zone_entry_type.html" class="table-link"><span class="badge badge-blue">dim_zone_entry_type</span></a>
+<a href="tables/dim_zone_exit_type.html" class="table-link"><span class="badge badge-blue">dim_zone_exit_type</span></a>
+
+        </div>
+        
+        <h2>Fact Tables (24)</h2>
+        <div class="table-grid">
+            <a href="tables/fact_breakouts.html" class="table-link"><span class="badge badge-green">fact_breakouts</span></a>
+<a href="tables/fact_cycle_events.html" class="table-link"><span class="badge badge-green">fact_cycle_events</span></a>
+<a href="tables/fact_draft.html" class="table-link"><span class="badge badge-green">fact_draft</span></a>
+<a href="tables/fact_event_players.html" class="table-link"><span class="badge badge-green">fact_event_players</span></a>
+<a href="tables/fact_events.html" class="table-link"><span class="badge badge-green">fact_events</span></a>
+<a href="tables/fact_faceoffs.html" class="table-link"><span class="badge badge-green">fact_faceoffs</span></a>
+<a href="tables/fact_gameroster.html" class="table-link"><span class="badge badge-green">fact_gameroster</span></a>
+<a href="tables/fact_high_danger_chances.html" class="table-link"><span class="badge badge-green">fact_high_danger_chances</span></a>
+<a href="tables/fact_leadership.html" class="table-link"><span class="badge badge-green">fact_leadership</span></a>
+<a href="tables/fact_penalties.html" class="table-link"><span class="badge badge-green">fact_penalties</span></a>
+<a href="tables/fact_player_game_position.html" class="table-link"><span class="badge badge-green">fact_player_game_position</span></a>
+<a href="tables/fact_plays.html" class="table-link"><span class="badge badge-green">fact_plays</span></a>
+<a href="tables/fact_registration.html" class="table-link"><span class="badge badge-green">fact_registration</span></a>
+<a href="tables/fact_rushes.html" class="table-link"><span class="badge badge-green">fact_rushes</span></a>
+<a href="tables/fact_saves.html" class="table-link"><span class="badge badge-green">fact_saves</span></a>
+<a href="tables/fact_scoring_chances_detailed.html" class="table-link"><span class="badge badge-green">fact_scoring_chances_detailed</span></a>
+<a href="tables/fact_season_summary.html" class="table-link"><span class="badge badge-green">fact_season_summary</span></a>
+<a href="tables/fact_sequences.html" class="table-link"><span class="badge badge-green">fact_sequences</span></a>
+<a href="tables/fact_shift_players.html" class="table-link"><span class="badge badge-green">fact_shift_players</span></a>
+<a href="tables/fact_shifts.html" class="table-link"><span class="badge badge-green">fact_shifts</span></a>
+<a href="tables/fact_tracking.html" class="table-link"><span class="badge badge-green">fact_tracking</span></a>
+<a href="tables/fact_turnovers_detailed.html" class="table-link"><span class="badge badge-green">fact_turnovers_detailed</span></a>
+<a href="tables/fact_zone_entries.html" class="table-link"><span class="badge badge-green">fact_zone_entries</span></a>
+<a href="tables/fact_zone_exits.html" class="table-link"><span class="badge badge-green">fact_zone_exits</span></a>
+
+        </div>
+        
+        <h2>QA Tables (2)</h2>
+        <div class="table-grid">
+            <a href="tables/qa_data_completeness.html" class="table-link"><span class="badge badge-yellow">qa_data_completeness</span></a>
+<a href="tables/qa_goal_accuracy.html" class="table-link"><span class="badge badge-yellow">qa_goal_accuracy</span></a>
+
+        </div>
+        
+        <footer>
+            BenchSight v0.02 | Generated: 2026-01-07 14:30
+        </footer>
+    </div>
+</body>
+</html>

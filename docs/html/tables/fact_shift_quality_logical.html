@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fact_shift_quality_logical - BenchSight</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #4a4e69; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>fact_shift_quality_logical</h1>
+        
+        <div class="alert alert-danger">⚠️ 15 suspicious stat entries for games in this table</div>
+        
+        <div class="meta">
+            <strong>Rows:</strong> 105 | 
+            <strong>Columns:</strong> 25 |
+            <strong>Last Updated:</strong> 2026-01-07 05:03:20 |
+            <strong>Version:</strong> 12.03
+        </div>
+        
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>game_id</td><td>int64</td><td>105</td><td>0.0%</td></tr><tr><td>season_id</td><td>object</td><td>105</td><td>0.0%</td></tr><tr><td>player_id</td><td>object</td><td>105</td><td>0.0%</td></tr><tr><td>player_name</td><td>object</td><td>105</td><td>0.0%</td></tr><tr><td>team_id</td><td>object</td><td>105</td><td>0.0%</td></tr><tr><td>team_name</td><td>object</td><td>105</td><td>0.0%</td></tr><tr><td>logical_shifts</td><td>int64</td><td>105</td><td>0.0%</td></tr><tr><td>toi_seconds</td><td>float64</td><td>105</td><td>0.0%</td></tr><tr><td>player_rating</td><td>int64</td><td>105</td><td>0.0%</td></tr><tr><td>avg_opp_rating</td><td>float64</td><td>105</td><td>0.0%</td></tr><tr><td>gf_all</td><td>int64</td><td>105</td><td>0.0%</td></tr><tr><td>ga_all</td><td>int64</td><td>105</td><td>0.0%</td></tr><tr><td>pm_all</td><td>int64</td><td>105</td><td>0.0%</td></tr><tr><td>gf_adj</td><td>float64</td><td>105</td><td>0.0%</td></tr><tr><td>ga_adj</td><td>float64</td><td>105</td><td>0.0%</td></tr><tr><td>pm_adj</td><td>float64</td><td>105</td><td>0.0%</td></tr><tr><td>cf</td><td>int64</td><td>105</td><td>0.0%</td></tr><tr><td>ca</td><td>int64</td><td>105</td><td>0.0%</td></tr><tr><td>avg_quality_score</td><td>float64</td><td>105</td><td>0.0%</td></tr><tr><td>toi_minutes</td><td>float64</td><td>105</td><td>0.0%</td></tr><tr><td>cf_pct</td><td>float64</td><td>105</td><td>0.0%</td></tr><tr><td>qoc</td><td>float64</td><td>105</td><td>0.0%</td></tr><tr><td>expected_pm</td><td>float64</td><td>105</td><td>0.0%</td></tr><tr><td>pm_vs_expected</td><td>float64</td><td>105</td><td>0.0%</td></tr><tr><td>performance</td><td>object</td><td>105</td><td>0.0%</td></tr>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>game_id</th>
+      <th>season_id</th>
+      <th>player_id</th>
+      <th>player_name</th>
+      <th>team_id</th>
+      <th>team_name</th>
+      <th>logical_shifts</th>
+      <th>toi_seconds</th>
+      <th>player_rating</th>
+      <th>avg_opp_rating</th>
+      <th>gf_all</th>
+      <th>ga_all</th>
+      <th>pm_all</th>
+      <th>gf_adj</th>
+      <th>ga_adj</th>
+      <th>pm_adj</th>
+      <th>cf</th>
+      <th>ca</th>
+      <th>avg_quality_score</th>
+      <th>toi_minutes</th>
+      <th>cf_pct</th>
+      <th>qoc</th>
+      <th>expected_pm</th>
+      <th>pm_vs_expected</th>
+      <th>performance</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100001</td>
+      <td>Sam Downs</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>13</td>
+      <td>1730.0</td>
+      <td>6</td>
+      <td>4.004359</td>
+      <td>1</td>
+      <td>4</td>
+      <td>-3</td>
+      <td>1.00</td>
+      <td>4.015873</td>
+      <td>-3.015873</td>
+      <td>25</td>
+      <td>41</td>
+      <td>55.813187</td>
+      <td>28.833333</td>
+      <td>37.878788</td>
+      <td>4.004359</td>
+      <td>0.997821</td>
+      <td>-3.997821</td>
+      <td>Under</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100002</td>
+      <td>Kevin White</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>10</td>
+      <td>939.0</td>
+      <td>4</td>
+      <td>4.104250</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.00</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>7</td>
+      <td>17</td>
+      <td>55.100000</td>
+      <td>15.650000</td>
+      <td>29.166667</td>
+      <td>4.104250</td>
+      <td>-0.052125</td>
+      <td>0.052125</td>
+      <td>Expected</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100016</td>
+      <td>Wyatt Crandall</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>3</td>
+      <td>3158.0</td>
+      <td>5</td>
+      <td>3.936757</td>
+      <td>3</td>
+      <td>5</td>
+      <td>-2</td>
+      <td>2.90</td>
+      <td>5.015873</td>
+      <td>-2.115873</td>
+      <td>49</td>
+      <td>65</td>
+      <td>49.625483</td>
+      <td>52.633333</td>
+      <td>42.982456</td>
+      <td>3.936757</td>
+      <td>0.531621</td>
+      <td>-2.531621</td>
+      <td>Under</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>Chris Dube</td>
+      <td>N10008</td>
+      <td>Platinum</td>
+      <td>10</td>
+      <td>995.0</td>
+      <td>4</td>
+      <td>4.049476</td>
+      <td>3</td>
+      <td>1</td>
+      <td>2</td>
+      <td>2.95</td>
+      <td>1.000000</td>
+      <td>1.950000</td>
+      <td>19</td>
+      <td>26</td>
+      <td>64.833333</td>
+      <td>16.583333</td>
+      <td>42.222222</td>
+      <td>4.049476</td>
+      <td>-0.024738</td>
+      <td>2.024738</td>
+      <td>Over</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100023</td>
+      <td>Alex Considine</td>
+      <td>N10008</td>
+      <td>Platinum</td>
+      <td>10</td>
+      <td>1754.0</td>
+      <td>4</td>
+      <td>3.972804</td>
+      <td>5</td>
+      <td>2</td>
+      <td>3</td>
+      <td>4.90</td>
+      <td>2.000000</td>
+      <td>2.900000</td>
+      <td>32</td>
+      <td>35</td>
+      <td>68.792857</td>
+      <td>29.233333</td>
+      <td>47.761194</td>
+      <td>3.972804</td>
+      <td>0.013598</td>
+      <td>2.986402</td>
+      <td>Over</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100024</td>
+      <td>John Thien</td>
+      <td>N10008</td>
+      <td>Platinum</td>
+      <td>11</td>
+      <td>1084.0</td>
+      <td>3</td>
+      <td>4.002424</td>
+      <td>1</td>
+      <td>2</td>
+      <td>-1</td>
+      <td>1.00</td>
+      <td>2.052632</td>
+      <td>-1.052632</td>
+      <td>18</td>
+      <td>19</td>
+      <td>60.909091</td>
+      <td>18.066667</td>
+      <td>48.648649</td>
+      <td>4.002424</td>
+      <td>-0.501212</td>
+      <td>-0.498788</td>
+      <td>Expected</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100025</td>
+      <td>Andrew Marshall</td>
+      <td>N10008</td>
+      <td>Platinum</td>
+      <td>11</td>
+      <td>1566.0</td>
+      <td>4</td>
+      <td>3.996364</td>
+      <td>0</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>0.00</td>
+      <td>1.052632</td>
+      <td>-1.052632</td>
+      <td>19</td>
+      <td>33</td>
+      <td>57.848485</td>
+      <td>26.100000</td>
+      <td>36.538462</td>
+      <td>3.996364</td>
+      <td>0.001818</td>
+      <td>-1.001818</td>
+      <td>Under</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100027</td>
+      <td>Karen Zietlow</td>
+      <td>N10008</td>
+      <td>Platinum</td>
+      <td>12</td>
+      <td>1225.0</td>
+      <td>2</td>
+      <td>3.995833</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1.00</td>
+      <td>1.052632</td>
+      <td>-0.052632</td>
+      <td>21</td>
+      <td>22</td>
+      <td>63.208333</td>
+      <td>20.416667</td>
+      <td>48.837209</td>
+      <td>3.995833</td>
+      <td>-0.997917</td>
+      <td>0.997917</td>
+      <td>Over</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100030</td>
+      <td>Jesse Chambless</td>
+      <td>N10008</td>
+      <td>Platinum</td>
+      <td>12</td>
+      <td>1680.0</td>
+      <td>5</td>
+      <td>4.029074</td>
+      <td>0</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>0.00</td>
+      <td>1.052632</td>
+      <td>-1.052632</td>
+      <td>19</td>
+      <td>35</td>
+      <td>58.236111</td>
+      <td>28.000000</td>
+      <td>35.185185</td>
+      <td>4.029074</td>
+      <td>0.485463</td>
+      <td>-1.485463</td>
+      <td>Under</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100039</td>
+      <td>Nicole Downs</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>9</td>
+      <td>1257.0</td>
+      <td>2</td>
+      <td>3.908624</td>
+      <td>1</td>
+      <td>3</td>
+      <td>-2</td>
+      <td>0.90</td>
+      <td>2.904762</td>
+      <td>-2.004762</td>
+      <td>20</td>
+      <td>32</td>
+      <td>57.092593</td>
+      <td>20.950000</td>
+      <td>38.461538</td>
+      <td>3.908624</td>
+      <td>-0.954312</td>
+      <td>-1.045688</td>
+      <td>Under</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100064</td>
+      <td>James Rynearson</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>8</td>
+      <td>1024.0</td>
+      <td>3</td>
+      <td>3.770000</td>
+      <td>2</td>
+      <td>2</td>
+      <td>0</td>
+      <td>2.00</td>
+      <td>2.111111</td>
+      <td>-0.111111</td>
+      <td>23</td>
+      <td>18</td>
+      <td>66.250000</td>
+      <td>17.066667</td>
+      <td>56.097561</td>
+      <td>3.770000</td>
+      <td>-0.385000</td>
+      <td>0.385000</td>
+      <td>Expected</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100070</td>
+      <td>Hayden Perea</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>14</td>
+      <td>1569.0</td>
+      <td>4</td>
+      <td>3.949524</td>
+      <td>2</td>
+      <td>0</td>
+      <td>2</td>
+      <td>1.90</td>
+      <td>0.000000</td>
+      <td>1.900000</td>
+      <td>13</td>
+      <td>36</td>
+      <td>60.559524</td>
+      <td>26.150000</td>
+      <td>26.530612</td>
+      <td>3.949524</td>
+      <td>0.025238</td>
+      <td>1.974762</td>
+      <td>Over</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100093</td>
+      <td>Pat Major</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>10</td>
+      <td>1296.0</td>
+      <td>3</td>
+      <td>3.825079</td>
+      <td>1</td>
+      <td>2</td>
+      <td>-1</td>
+      <td>1.00</td>
+      <td>2.000000</td>
+      <td>-1.000000</td>
+      <td>25</td>
+      <td>28</td>
+      <td>59.835714</td>
+      <td>21.600000</td>
+      <td>47.169811</td>
+      <td>3.825079</td>
+      <td>-0.412540</td>
+      <td>-0.587460</td>
+      <td>Under</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100105</td>
+      <td>Ronnie Pinnell</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>9</td>
+      <td>1045.0</td>
+      <td>4</td>
+      <td>3.964815</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0.90</td>
+      <td>0.000000</td>
+      <td>0.900000</td>
+      <td>15</td>
+      <td>20</td>
+      <td>64.722222</td>
+      <td>17.416667</td>
+      <td>42.857143</td>
+      <td>3.964815</td>
+      <td>0.017593</td>
+      <td>0.982407</td>
+      <td>Over</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100107</td>
+      <td>Matt Quinn</td>
+      <td>N10008</td>
+      <td>Platinum</td>
+      <td>11</td>
+      <td>1480.0</td>
+      <td>3</td>
+      <td>3.959394</td>
+      <td>5</td>
+      <td>2</td>
+      <td>3</td>
+      <td>4.90</td>
+      <td>2.000000</td>
+      <td>2.900000</td>
+      <td>28</td>
+      <td>31</td>
+      <td>67.220779</td>
+      <td>24.666667</td>
+      <td>47.457627</td>
+      <td>3.959394</td>
+      <td>-0.479697</td>
+      <td>3.479697</td>
+      <td>Over</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100108</td>
+      <td>Robert Mayfield</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>12</td>
+      <td>923.0</td>
+      <td>3</td>
+      <td>3.979722</td>
+      <td>1</td>
+      <td>4</td>
+      <td>-3</td>
+      <td>1.00</td>
+      <td>4.015873</td>
+      <td>-3.015873</td>
+      <td>18</td>
+      <td>19</td>
+      <td>56.666667</td>
+      <td>15.383333</td>
+      <td>48.648649</td>
+      <td>3.979722</td>
+      <td>-0.489861</td>
+      <td>-2.510139</td>
+      <td>Under</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100110</td>
+      <td>JoLyn Maly</td>
+      <td>N10008</td>
+      <td>Platinum</td>
+      <td>9</td>
+      <td>737.0</td>
+      <td>2</td>
+      <td>3.937037</td>
+      <td>0</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>0.00</td>
+      <td>1.000000</td>
+      <td>-1.000000</td>
+      <td>13</td>
+      <td>17</td>
+      <td>60.611111</td>
+      <td>12.283333</td>
+      <td>43.333333</td>
+      <td>3.937037</td>
+      <td>-0.968519</td>
+      <td>-0.031481</td>
+      <td>Expected</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100117</td>
+      <td>Keegan Mantaro</td>
+      <td>N10008</td>
+      <td>Platinum</td>
+      <td>13</td>
+      <td>1535.0</td>
+      <td>6</td>
+      <td>4.071026</td>
+      <td>4</td>
+      <td>2</td>
+      <td>2</td>
+      <td>3.95</td>
+      <td>2.052632</td>
+      <td>1.897368</td>
+      <td>19</td>
+      <td>35</td>
+      <td>61.335165</td>
+      <td>25.583333</td>
+      <td>35.185185</td>
+      <td>4.071026</td>
+      <td>0.964487</td>
+      <td>1.035513</td>
+      <td>Over</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100132</td>
+      <td>Nick Ciampoli</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>8</td>
+      <td>968.0</td>
+      <td>4</td>
+      <td>3.761667</td>
+      <td>2</td>
+      <td>2</td>
+      <td>0</td>
+      <td>2.00</td>
+      <td>2.111111</td>
+      <td>-0.111111</td>
+      <td>23</td>
+      <td>16</td>
+      <td>67.250000</td>
+      <td>16.133333</td>
+      <td>58.974359</td>
+      <td>3.761667</td>
+      <td>0.119167</td>
+      <td>-0.119167</td>
+      <td>Expected</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100161</td>
+      <td>Galen Wood</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>10</td>
+      <td>1357.0</td>
+      <td>5</td>
+      <td>3.931333</td>
+      <td>1</td>
+      <td>3</td>
+      <td>-2</td>
+      <td>0.90</td>
+      <td>2.904762</td>
+      <td>-2.004762</td>
+      <td>19</td>
+      <td>35</td>
+      <td>56.183333</td>
+      <td>22.616667</td>
+      <td>35.185185</td>
+      <td>3.931333</td>
+      <td>0.534333</td>
+      <td>-2.534333</td>
+      <td>Under</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+        </div>
+        
+        <footer>
+            BenchSight v13.18 | Generated 2026-01-07 05:03:20
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,54 @@
+{
+    "_description": "HUMAN-VERIFIED ONLY. LLMs must NEVER modify this file without explicit user permission.",
+    "_last_verified": "2026-01-07",
+    "_verified_by": "Ronnie (manual check against noradhockey.com)",
+    "_verification_url": "https://www.noradhockey.com/",
+    
+    "goal_counting_rule": "event_type='Goal' AND event_detail='Goal_Scored'",
+    "goal_counting_warning": "Shot_Goal is the SHOT, not the goal!",
+    
+    "games": {
+        "18969": {
+            "date": "2025-09-07",
+            "matchup": "Platinum Group vs COS Velodrome",
+            "score": "4-3",
+            "goals": 7,
+            "verified": true
+        },
+        "18977": {
+            "date": "2025-09-14",
+            "matchup": "HollowBrook Dental vs COS Velodrome",
+            "score": "2-4",
+            "goals": 6,
+            "verified": true
+        },
+        "18981": {
+            "date": "2025-09-28",
+            "matchup": "Nelson & Company vs COS Velodrome",
+            "score": "2-1",
+            "goals": 3,
+            "verified": true
+        },
+        "18987": {
+            "date": "2025-10-05",
+            "matchup": "OUTCAN Outlaws vs COS Velodrome",
+            "score": "0-1",
+            "goals": 1,
+            "verified": true
+        }
+    },
+    
+    "total_goals": 17,
+    
+    "_how_to_add_new_game": [
+        "1. Go to https://www.noradhockey.com/",
+        "2. Find the game in 'Previous Game' section",
+        "3. Note the game ID from the URL (e.g., /event/18969/)",
+        "4. Note the score (e.g., 4-3)",
+        "5. Add to this file with goals = sum of scores",
+        "6. Update total_goals",
+        "7. Run: python scripts/pre_delivery.py"
+    ],
+    
+    "_llm_warning": "If an LLM modifies this file without showing you the noradhockey.com source, REJECT THE CHANGE"
+}

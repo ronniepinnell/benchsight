@@ -1,0 +1,8 @@
+# Excluded games (incomplete tracking data)
+# Add game IDs one per line
+# These games will be skipped during ETL
+
+# Games with incomplete tracking data
+18965
+18993
+19032

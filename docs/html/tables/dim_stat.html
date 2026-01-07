@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>dim_stat - BenchSight</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #4a4e69; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>dim_stat</h1>
+        
+        
+        
+        <div class="meta">
+            <strong>Rows:</strong> 83 | 
+            <strong>Columns:</strong> 12 |
+            <strong>Last Updated:</strong> 2026-01-07 05:03:20 |
+            <strong>Version:</strong> 12.03
+        </div>
+        
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>stat_id</td><td>object</td><td>83</td><td>0.0%</td></tr><tr><td>stat_code</td><td>object</td><td>83</td><td>0.0%</td></tr><tr><td>stat_name</td><td>object</td><td>83</td><td>0.0%</td></tr><tr><td>category</td><td>object</td><td>83</td><td>0.0%</td></tr><tr><td>description</td><td>object</td><td>83</td><td>0.0%</td></tr><tr><td>formula</td><td>object</td><td>83</td><td>0.0%</td></tr><tr><td>player_role</td><td>object</td><td>83</td><td>0.0%</td></tr><tr><td>computable_now</td><td>object</td><td>83</td><td>0.0%</td></tr><tr><td>benchmark_elite</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>nhl_avg_per_game</td><td>object</td><td>14</td><td>83.1%</td></tr><tr><td>nhl_elite_threshold</td><td>object</td><td>14</td><td>83.1%</td></tr><tr><td>nhl_min_threshold</td><td>object</td><td>14</td><td>83.1%</td></tr>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>stat_id</th>
+      <th>stat_code</th>
+      <th>stat_name</th>
+      <th>category</th>
+      <th>description</th>
+      <th>formula</th>
+      <th>player_role</th>
+      <th>computable_now</th>
+      <th>benchmark_elite</th>
+      <th>nhl_avg_per_game</th>
+      <th>nhl_elite_threshold</th>
+      <th>nhl_min_threshold</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>MS0001</td>
+      <td>G</td>
+      <td>Goals</td>
+      <td>basic</td>
+      <td>Goals scored</td>
+      <td>count of goals</td>
+      <td>event_player_1</td>
+      <td>yes</td>
+      <td>NaN</td>
+      <td>0.30</td>
+      <td>0.40</td>
+      <td>0.15</td>
+    </tr>
+    <tr>
+      <td>MS0002</td>
+      <td>A</td>
+      <td>Assists</td>
+      <td>basic</td>
+      <td>Assists</td>
+      <td>count of assists</td>
+      <td>event_player_1</td>
+      <td>yes</td>
+      <td>NaN</td>
+      <td>0.45</td>
+      <td>0.70</td>
+      <td>0.20</td>
+    </tr>
+    <tr>
+      <td>MS0003</td>
+      <td>A1</td>
+      <td>Primary Assists</td>
+      <td>basic</td>
+      <td>Primary assists</td>
+      <td>count of primary assists</td>
+      <td>event_player_1</td>
+      <td>yes</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>MS0004</td>
+      <td>A2</td>
+      <td>Secondary Assists</td>
+      <td>basic</td>
+      <td>Secondary assists</td>
+      <td>count of secondary assists</td>
+      <td>event_player_1</td>
+      <td>yes</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>MS0005</td>
+      <td>PTS</td>
+      <td>Points</td>
+      <td>basic</td>
+      <td>Total points</td>
+      <td>G + A</td>
+      <td>derived</td>
+      <td>yes</td>
+      <td>NaN</td>
+      <td>0.75</td>
+      <td>1.20</td>
+      <td>0.35</td>
+    </tr>
+    <tr>
+      <td>MS0006</td>
+      <td>SOG</td>
+      <td>Shots on Goal</td>
+      <td>basic</td>
+      <td>Shots on goal</td>
+      <td>count of shots on goal</td>
+      <td>event_player_1</td>
+      <td>yes</td>
+      <td>NaN</td>
+      <td>2.5</td>
+      <td>4.0</td>
+      <td>1.5</td>
+    </tr>
+    <tr>
+      <td>MS0007</td>
+      <td>SH_PCT</td>
+      <td>Shooting %</td>
+      <td>basic</td>
+      <td>Shooting percentage</td>
+      <td>G / SOG * 100</td>
+      <td>derived</td>
+      <td>yes</td>
+      <td>NaN</td>
+      <td>10%</td>
+      <td>15%</td>
+      <td>6%</td>
+    </tr>
+    <tr>
+      <td>MS0008</td>
+      <td>TOI</td>
+      <td>Time on Ice</td>
+      <td>basic</td>
+      <td>Total time on ice</td>
+      <td>sum of shift durations</td>
+      <td>on_ice</td>
+      <td>yes</td>
+      <td>NaN</td>
+      <td>1020</td>
+      <td>1320</td>
+      <td>600</td>
+    </tr>
+    <tr>
+      <td>MS0009</td>
+      <td>TOI_PLAYING</td>
+      <td>Playing TOI</td>
+      <td>basic</td>
+      <td>Active playing time (excl dead ice)</td>
+      <td>TOI - dead ice time</td>
+      <td>on_ice</td>
+      <td>yes</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>MS0010</td>
+      <td>SHIFTS</td>
+      <td>Shifts</td>
+      <td>basic</td>
+      <td>Number of shifts</td>
+      <td>count of shifts</td>
+      <td>on_ice</td>
+      <td>yes</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>MS0011</td>
+      <td>PLUS_MINUS</td>
+      <td>+/-</td>
+      <td>basic</td>
+      <td>Plus/minus</td>
+      <td>goals for - goals against while on ice</td>
+      <td>on_ice</td>
+      <td>yes</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>MS0012</td>
+      <td>CF</td>
+      <td>Corsi For</td>
+      <td>shot</td>
+      <td>Shot attempts for</td>
+      <td>SOG + missed + blocked</td>
+      <td>on_ice</td>
+      <td>yes</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>MS0013</td>
+      <td>CA</td>
+      <td>Corsi Against</td>
+      <td>shot</td>
+      <td>Shot attempts against</td>
+      <td>opp SOG + missed + blocked</td>
+      <td>on_ice</td>
+      <td>yes</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>MS0014</td>
+      <td>CF_PCT</td>
+      <td>Corsi %</td>
+      <td>shot</td>
+      <td>Corsi percentage</td>
+      <td>CF / (CF + CA) * 100</td>
+      <td>derived</td>
+      <td>yes</td>
+      <td>NaN</td>
+      <td>50%</td>
+      <td>55%</td>
+      <td>40%</td>
+    </tr>
+    <tr>
+      <td>MS0015</td>
+      <td>FF</td>
+      <td>Fenwick For</td>
+      <td>shot</td>
+      <td>Unblocked shot attempts for</td>
+      <td>SOG + missed</td>
+      <td>on_ice</td>
+      <td>yes</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>MS0016</td>
+      <td>FA</td>
+      <td>Fenwick Against</td>
+      <td>shot</td>
+      <td>Unblocked shot attempts against</td>
+      <td>opp SOG + missed</td>
+      <td>on_ice</td>
+      <td>yes</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>MS0017</td>
+      <td>FF_PCT</td>
+      <td>Fenwick %</td>
+      <td>shot</td>
+      <td>Fenwick percentage</td>
+      <td>FF / (FF + FA) * 100</td>
+      <td>derived</td>
+      <td>yes</td>
+      <td>NaN</td>
+      <td>50%</td>
+      <td>55%</td>
+      <td>40%</td>
+    </tr>
+    <tr>
+      <td>MS0018</td>
+      <td>HDCF</td>
+      <td>High Danger CF</td>
+      <td>shot</td>
+      <td>High danger Corsi for</td>
+      <td>CF from slot/crease</td>
+      <td>on_ice</td>
+      <td>xy_required</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>MS0019</td>
+      <td>HDCA</td>
+      <td>High Danger CA</td>
+      <td>shot</td>
+      <td>High danger Corsi against</td>
+      <td>CA from slot/crease</td>
+      <td>on_ice</td>
+      <td>xy_required</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>MS0020</td>
+      <td>XG</td>
+      <td>Expected Goals</td>
+      <td>xg</td>
+      <td>Expected goals</td>
+      <td>sum of shot xG values</td>
+      <td>event_player_1</td>
+      <td>xy_required</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+        </div>
+        
+        <footer>
+            BenchSight v13.18 | Generated 2026-01-07 05:03:20
+        </footer>
+    </div>
+</body>
+</html>

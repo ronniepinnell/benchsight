@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fact_head_to_head - BenchSight</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #4a4e69; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>fact_head_to_head</h1>
+        
+        <div class="alert alert-danger">⚠️ 15 suspicious stat entries for games in this table</div>
+        
+        <div class="meta">
+            <strong>Rows:</strong> 572 | 
+            <strong>Columns:</strong> 17 |
+            <strong>Last Updated:</strong> 2026-01-07 05:03:20 |
+            <strong>Version:</strong> 12.03
+        </div>
+        
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>game_id</td><td>int64</td><td>572</td><td>0.0%</td></tr><tr><td>season_id</td><td>object</td><td>572</td><td>0.0%</td></tr><tr><td>player_1_id</td><td>object</td><td>572</td><td>0.0%</td></tr><tr><td>player_1_name</td><td>object</td><td>572</td><td>0.0%</td></tr><tr><td>player_1_rating</td><td>float64</td><td>572</td><td>0.0%</td></tr><tr><td>player_1_venue</td><td>object</td><td>572</td><td>0.0%</td></tr><tr><td>player_2_id</td><td>object</td><td>572</td><td>0.0%</td></tr><tr><td>player_2_name</td><td>object</td><td>572</td><td>0.0%</td></tr><tr><td>player_2_rating</td><td>float64</td><td>572</td><td>0.0%</td></tr><tr><td>player_2_venue</td><td>object</td><td>572</td><td>0.0%</td></tr><tr><td>shifts_against</td><td>int64</td><td>572</td><td>0.0%</td></tr><tr><td>toi_against_seconds</td><td>int64</td><td>572</td><td>0.0%</td></tr><tr><td>rating_diff</td><td>float64</td><td>572</td><td>0.0%</td></tr><tr><td>home_team_id</td><td>object</td><td>572</td><td>0.0%</td></tr><tr><td>away_team_id</td><td>object</td><td>572</td><td>0.0%</td></tr><tr><td>player_1_venue_id</td><td>object</td><td>572</td><td>0.0%</td></tr><tr><td>player_2_venue_id</td><td>object</td><td>572</td><td>0.0%</td></tr>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>game_id</th>
+      <th>season_id</th>
+      <th>player_1_id</th>
+      <th>player_1_name</th>
+      <th>player_1_rating</th>
+      <th>player_1_venue</th>
+      <th>player_2_id</th>
+      <th>player_2_name</th>
+      <th>player_2_rating</th>
+      <th>player_2_venue</th>
+      <th>shifts_against</th>
+      <th>toi_against_seconds</th>
+      <th>rating_diff</th>
+      <th>home_team_id</th>
+      <th>away_team_id</th>
+      <th>player_1_venue_id</th>
+      <th>player_2_venue_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>Chris Dube</td>
+      <td>4.0</td>
+      <td>home</td>
+      <td>P100001</td>
+      <td>Sam Downs</td>
+      <td>6.0</td>
+      <td>away</td>
+      <td>18</td>
+      <td>507</td>
+      <td>-2.0</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>VN0001</td>
+      <td>VN0002</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>Chris Dube</td>
+      <td>4.0</td>
+      <td>home</td>
+      <td>P100002</td>
+      <td>Kevin White</td>
+      <td>4.0</td>
+      <td>away</td>
+      <td>9</td>
+      <td>212</td>
+      <td>0.0</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>VN0001</td>
+      <td>VN0002</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>Chris Dube</td>
+      <td>4.0</td>
+      <td>home</td>
+      <td>P100039</td>
+      <td>Nicole Downs</td>
+      <td>2.0</td>
+      <td>away</td>
+      <td>23</td>
+      <td>727</td>
+      <td>2.0</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>VN0001</td>
+      <td>VN0002</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>Chris Dube</td>
+      <td>4.0</td>
+      <td>home</td>
+      <td>P100064</td>
+      <td>James Rynearson</td>
+      <td>3.0</td>
+      <td>away</td>
+      <td>2</td>
+      <td>21</td>
+      <td>1.0</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>VN0001</td>
+      <td>VN0002</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>Chris Dube</td>
+      <td>4.0</td>
+      <td>home</td>
+      <td>P100070</td>
+      <td>Hayden Perea</td>
+      <td>4.0</td>
+      <td>away</td>
+      <td>18</td>
+      <td>468</td>
+      <td>0.0</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>VN0001</td>
+      <td>VN0002</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>Chris Dube</td>
+      <td>4.0</td>
+      <td>home</td>
+      <td>P100093</td>
+      <td>Pat Major</td>
+      <td>3.0</td>
+      <td>away</td>
+      <td>19</td>
+      <td>588</td>
+      <td>1.0</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>VN0001</td>
+      <td>VN0002</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>Chris Dube</td>
+      <td>4.0</td>
+      <td>home</td>
+      <td>P100105</td>
+      <td>Ronnie Pinnell</td>
+      <td>4.0</td>
+      <td>away</td>
+      <td>16</td>
+      <td>272</td>
+      <td>0.0</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>VN0001</td>
+      <td>VN0002</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>Chris Dube</td>
+      <td>4.0</td>
+      <td>home</td>
+      <td>P100108</td>
+      <td>Robert Mayfield</td>
+      <td>3.0</td>
+      <td>away</td>
+      <td>2</td>
+      <td>69</td>
+      <td>1.0</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>VN0001</td>
+      <td>VN0002</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>Chris Dube</td>
+      <td>4.0</td>
+      <td>home</td>
+      <td>P100132</td>
+      <td>Nick Ciampoli</td>
+      <td>4.0</td>
+      <td>away</td>
+      <td>1</td>
+      <td>17</td>
+      <td>0.0</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>VN0001</td>
+      <td>VN0002</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>Chris Dube</td>
+      <td>4.0</td>
+      <td>home</td>
+      <td>P100161</td>
+      <td>Galen Wood</td>
+      <td>5.0</td>
+      <td>away</td>
+      <td>25</td>
+      <td>766</td>
+      <td>-1.0</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>VN0001</td>
+      <td>VN0002</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>Chris Dube</td>
+      <td>4.0</td>
+      <td>home</td>
+      <td>P100198</td>
+      <td>Maxwell Donaty</td>
+      <td>5.0</td>
+      <td>away</td>
+      <td>15</td>
+      <td>593</td>
+      <td>-1.0</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>VN0001</td>
+      <td>VN0002</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>Chris Dube</td>
+      <td>4.0</td>
+      <td>home</td>
+      <td>P100201</td>
+      <td>Garrett Ashcroft</td>
+      <td>5.0</td>
+      <td>away</td>
+      <td>18</td>
+      <td>546</td>
+      <td>-1.0</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>VN0001</td>
+      <td>VN0002</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>Chris Dube</td>
+      <td>4.0</td>
+      <td>home</td>
+      <td>P100224</td>
+      <td>Kaitlyn Shain</td>
+      <td>3.0</td>
+      <td>away</td>
+      <td>9</td>
+      <td>189</td>
+      <td>1.0</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>VN0001</td>
+      <td>VN0002</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100023</td>
+      <td>Alex Considine</td>
+      <td>4.0</td>
+      <td>home</td>
+      <td>P100001</td>
+      <td>Sam Downs</td>
+      <td>6.0</td>
+      <td>away</td>
+      <td>30</td>
+      <td>922</td>
+      <td>-2.0</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>VN0001</td>
+      <td>VN0002</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100023</td>
+      <td>Alex Considine</td>
+      <td>4.0</td>
+      <td>home</td>
+      <td>P100002</td>
+      <td>Kevin White</td>
+      <td>4.0</td>
+      <td>away</td>
+      <td>13</td>
+      <td>424</td>
+      <td>0.0</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>VN0001</td>
+      <td>VN0002</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100023</td>
+      <td>Alex Considine</td>
+      <td>4.0</td>
+      <td>home</td>
+      <td>P100039</td>
+      <td>Nicole Downs</td>
+      <td>2.0</td>
+      <td>away</td>
+      <td>20</td>
+      <td>726</td>
+      <td>2.0</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>VN0001</td>
+      <td>VN0002</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100023</td>
+      <td>Alex Considine</td>
+      <td>4.0</td>
+      <td>home</td>
+      <td>P100064</td>
+      <td>James Rynearson</td>
+      <td>3.0</td>
+      <td>away</td>
+      <td>18</td>
+      <td>586</td>
+      <td>1.0</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>VN0001</td>
+      <td>VN0002</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100023</td>
+      <td>Alex Considine</td>
+      <td>4.0</td>
+      <td>home</td>
+      <td>P100070</td>
+      <td>Hayden Perea</td>
+      <td>4.0</td>
+      <td>away</td>
+      <td>28</td>
+      <td>800</td>
+      <td>0.0</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>VN0001</td>
+      <td>VN0002</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100023</td>
+      <td>Alex Considine</td>
+      <td>4.0</td>
+      <td>home</td>
+      <td>P100093</td>
+      <td>Pat Major</td>
+      <td>3.0</td>
+      <td>away</td>
+      <td>26</td>
+      <td>875</td>
+      <td>1.0</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>VN0001</td>
+      <td>VN0002</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100023</td>
+      <td>Alex Considine</td>
+      <td>4.0</td>
+      <td>home</td>
+      <td>P100105</td>
+      <td>Ronnie Pinnell</td>
+      <td>4.0</td>
+      <td>away</td>
+      <td>15</td>
+      <td>356</td>
+      <td>0.0</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>VN0001</td>
+      <td>VN0002</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+        </div>
+        
+        <footer>
+            BenchSight v13.18 | Generated 2026-01-07 05:03:20
+        </footer>
+    </div>
+</body>
+</html>

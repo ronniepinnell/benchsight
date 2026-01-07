@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BenchSight - All Games Browser</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-hover: #1a1a24;
+            --border: #2a2a3a;
+            --text: #e0e0e0;
+            --text-dim: #888;
+            --accent: #00d4ff;
+            --success: #00ff88;
+            --warning: #ff8800;
+            --danger: #ff4466;
+            --purple: #aa66ff;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container { max-width: 1400px; margin: 0 auto; }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 24px;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .stats-bar {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .stat { text-align: center; }
+        .stat-value { font-size: 28px; font-weight: 700; color: var(--accent); }
+        .stat-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; }
+        
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .filter-label {
+            font-size: 11px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+        
+        input, select {
+            padding: 10px 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            font-size: 14px;
+            min-width: 150px;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px 6px 0 0;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .tab.active {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+        
+        .tab:hover:not(.active) {
+            background: var(--bg-hover);
+        }
+        
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 15px;
+        }
+        
+        .game-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 15px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .game-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+        
+        .game-card.tracked {
+            border-left: 3px solid var(--success);
+        }
+        
+        .game-card.blb-only {
+            border-left: 3px solid var(--warning);
+        }
+        
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .game-id {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+        
+        .game-date {
+            font-size: 12px;
+            color: var(--accent);
+        }
+        
+        .game-matchup {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .team {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .team-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .team-score {
+            font-size: 32px;
+            font-weight: 700;
+        }
+        
+        .team.home .team-score { color: var(--accent); }
+        .team.away .team-score { color: var(--warning); }
+        
+        .vs {
+            font-size: 14px;
+            color: var(--text-dim);
+            padding: 0 15px;
+        }
+        
+        .game-meta {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+        
+        .badge {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .badge-tracked { background: rgba(0, 255, 136, 0.2); color: var(--success); }
+        .badge-blb { background: rgba(255, 136, 0, 0.2); color: var(--warning); }
+        .badge-video { background: rgba(170, 102, 255, 0.2); color: var(--purple); }
+        
+        .game-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .game-stat {
+            text-align: center;
+            padding: 8px;
+            background: var(--bg-dark);
+            border-radius: 6px;
+        }
+        
+        .game-stat-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--accent);
+        }
+        
+        .game-stat-label {
+            font-size: 9px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+        
+        /* Modal for game details */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .modal.active { display: block; }
+        
+        .modal-content {
+            background: var(--bg-card);
+            max-width: 900px;
+            margin: 40px auto;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 28px;
+            cursor: pointer;
+        }
+        
+        .modal-body { padding: 20px; }
+        
+        .roster-section {
+            margin-top: 20px;
+        }
+        
+        .roster-title {
+            font-size: 14px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .roster-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        
+        .roster-table th,
+        .roster-table td {
+            padding: 8px 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .roster-table th {
+            background: var(--bg-dark);
+            color: var(--text-dim);
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 11px;
+        }
+        
+        .roster-table tr:hover { background: var(--bg-hover); }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-dim);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: var(--text-dim);
+        }
+        
+        @media (max-width: 768px) {
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+            .filters {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ================================================================== -->
+<!-- CHANGELOG - MUST BE UPDATED WITH EVERY MODIFICATION -->
+<!-- ================================================================== -->
+<!--
+CHANGELOG:
+---------------------------------------------------------------------------
+2026-01-06 v8.0.5:
+  - CRITICAL FIX: Restored 4 missing src/advanced/ modules:
+    * create_additional_tables.py
+    * enhance_all_stats.py
+    * final_stats_enhancement.py
+    * extended_tables.py
+  - Created fact_events_player.csv (7,476 rows)
+  - Extended tables now run: +15 tables created
+  - Table count: 131 (54 dim, 73 fact, 3 QA, 1 other)
+  - Added comprehensive code audit documentation
+  - Fixed column name mismatches (Type -> event_type)
+
+2026-01-06 v8.0.4:
+  - CRITICAL: Recovered 72 missing tables from v7 backup
+  - Table count restored from 53 to 130
+  - Created 4 new outcome dimension tables
+  - Regenerated ERD with all tables
+  - Added table integrity tests
+
+2026-01-05 v8.0.0:
+  - Major schema expansion: 96 -> 111 tables planned
+  - Added 317 player metrics
+  - Created comprehensive foreign key relationships
+  - Added QA validation tables
+
+RULES FOR UPDATING THIS CHANGELOG:
+1. ALWAYS add entry BEFORE making changes
+2. Include: date, version, what changed, table counts
+3. Never delete old entries
+4. Be specific about what was added/changed/removed
+---------------------------------------------------------------------------
+-->
+
+    <div class="container">
+        <header>
+            <h1>🏒 BenchSight Games Browser</h1>
+            <div class="stats-bar">
+                <div class="stat">
+                    <div class="stat-value" id="totalGames">-</div>
+                    <div class="stat-label">Total Games</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="trackedGames">-</div>
+                    <div class="stat-label">Fully Tracked</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="blbGames">-</div>
+                    <div class="stat-label">BLB Stats Only</div>
+                </div>
+            </div>
+        </header>
+        
+        <div class="filters">
+            <div class="filter-group">
+                <span class="filter-label">Search</span>
+                <input type="text" id="searchInput" placeholder="Team name or Game ID...">
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Season</span>
+                <select id="seasonFilter">
+                    <option value="">All Seasons</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Data Type</span>
+                <select id="dataFilter">
+                    <option value="">All Games</option>
+                    <option value="tracked">Fully Tracked Only</option>
+                    <option value="blb">BLB Stats Only</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">Team</span>
+                <select id="teamFilter">
+                    <option value="">All Teams</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" data-view="grid">Grid View</div>
+            <div class="tab" data-view="list">List View</div>
+        </div>
+        
+        <div id="gamesContainer" class="games-grid">
+            <div class="loading">Loading games data...</div>
+        </div>
+    </div>
+    
+    <!-- Game Detail Modal -->
+    <div class="modal" id="gameModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Game Details</h2>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                Loading...
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Game data will be loaded from CSV or embedded
+        let allGames = [];
+        let allRosters = [];
+        const trackedGameIds = new Set([18965, 18969, 18977, 18981, 18987, 18991, 18993, 19032]);
+        
+        // Load data from embedded JSON (generated by Python)
+        async function loadData() {
+            try {
+                // Try to load from data files
+                const scheduleResp = await fetch('data/output/dim_schedule.csv');
+                const rosterResp = await fetch('data/output/fact_gameroster.csv');
+                
+                if (scheduleResp.ok) {
+                    const scheduleText = await scheduleResp.text();
+                    allGames = parseCSV(scheduleText);
+                }
+                
+                if (rosterResp.ok) {
+                    const rosterText = await rosterResp.text();
+                    allRosters = parseCSV(rosterText);
+                }
+                
+                // If no data, use embedded sample
+                if (allGames.length === 0) {
+                    allGames = getSampleGames();
+                }
+                
+                populateFilters();
+                renderGames();
+                updateStats();
+            } catch (e) {
+                console.error('Error loading data:', e);
+                allGames = getSampleGames();
+                populateFilters();
+                renderGames();
+                updateStats();
+            }
+        }
+        
+        function parseCSV(text) {
+            const lines = text.trim().split('\n');
+            if (lines.length < 2) return [];
+            
+            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+            const data = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+                const row = {};
+                headers.forEach((h, idx) => {
+                    row[h] = values[idx] || '';
+                });
+                data.push(row);
+            }
+            
+            return data;
+        }
+        
+        function getSampleGames() {
+            // Sample data for demo
+            return [
+                { game_id: '18969', date: '2025-09-07', home_team_name: 'Platinum', away_team_name: 'Velodrome', home_total_goals: '5', away_total_goals: '3', season: '20252026', video_url: 'https://youtube.com/watch?v=xyz' },
+                { game_id: '18977', date: '2025-09-14', home_team_name: 'AMOS', away_team_name: 'Orphans', home_total_goals: '4', away_total_goals: '6', season: '20252026' },
+                { game_id: '18981', date: '2025-09-21', home_team_name: 'Velodrome', away_team_name: 'Nelson', home_total_goals: '3', away_total_goals: '2', season: '20252026' },
+                { game_id: '18619', date: '2025-07-13', home_team_name: 'Red', away_team_name: 'Green', home_total_goals: '4', away_total_goals: '5', season: '20252026' },
+                { game_id: '18620', date: '2025-07-13', home_team_name: 'Blue', away_team_name: 'Yellow', home_total_goals: '2', away_total_goals: '2', season: '20252026' },
+            ];
+        }
+        
+        function populateFilters() {
+            const seasons = [...new Set(allGames.map(g => g.season).filter(Boolean))].sort().reverse();
+            const teams = [...new Set([
+                ...allGames.map(g => g.home_team_name),
+                ...allGames.map(g => g.away_team_name)
+            ].filter(Boolean))].sort();
+            
+            const seasonSelect = document.getElementById('seasonFilter');
+            seasons.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s;
+                opt.textContent = `${s.slice(0,4)}-${s.slice(4)}`;
+                seasonSelect.appendChild(opt);
+            });
+            
+            const teamSelect = document.getElementById('teamFilter');
+            teams.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t;
+                opt.textContent = t;
+                teamSelect.appendChild(opt);
+            });
+        }
+        
+        function updateStats() {
+            const tracked = allGames.filter(g => trackedGameIds.has(parseInt(g.game_id)));
+            const blbOnly = allGames.filter(g => !trackedGameIds.has(parseInt(g.game_id)));
+            
+            document.getElementById('totalGames').textContent = allGames.length;
+            document.getElementById('trackedGames').textContent = tracked.length;
+            document.getElementById('blbGames').textContent = blbOnly.length;
+        }
+        
+        function filterGames() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const season = document.getElementById('seasonFilter').value;
+            const dataType = document.getElementById('dataFilter').value;
+            const team = document.getElementById('teamFilter').value;
+            
+            return allGames.filter(g => {
+                // Search filter
+                if (search && !g.game_id.includes(search) && 
+                    !g.home_team_name?.toLowerCase().includes(search) &&
+                    !g.away_team_name?.toLowerCase().includes(search)) {
+                    return false;
+                }
+                
+                // Season filter
+                if (season && g.season !== season) return false;
+                
+                // Data type filter
+                const isTracked = trackedGameIds.has(parseInt(g.game_id));
+                if (dataType === 'tracked' && !isTracked) return false;
+                if (dataType === 'blb' && isTracked) return false;
+                
+                // Team filter
+                if (team && g.home_team_name !== team && g.away_team_name !== team) return false;
+                
+                return true;
+            });
+        }
+        
+        function renderGames() {
+            const container = document.getElementById('gamesContainer');
+            const games = filterGames();
+            
+            if (games.length === 0) {
+                container.innerHTML = '<div class="no-data">No games match your filters</div>';
+                return;
+            }
+            
+            // Sort by date descending
+            games.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+            
+            container.innerHTML = games.slice(0, 50).map(g => {
+                const isTracked = trackedGameIds.has(parseInt(g.game_id));
+                const hasVideo = g.video_url && g.video_url !== '';
+                
+                return `
+                    <div class="game-card ${isTracked ? 'tracked' : 'blb-only'}" onclick="showGameDetail('${g.game_id}')">
+                        <div class="game-header">
+                            <span class="game-id">Game #${g.game_id}</span>
+                            <span class="game-date">${formatDate(g.date)}</span>
+                        </div>
+                        <div class="game-matchup">
+                            <div class="team home">
+                                <div class="team-name">${g.home_team_name || 'Home'}</div>
+                                <div class="team-score">${g.home_total_goals || '-'}</div>
+                            </div>
+                            <div class="vs">vs</div>
+                            <div class="team away">
+                                <div class="team-name">${g.away_team_name || 'Away'}</div>
+                                <div class="team-score">${g.away_total_goals || '-'}</div>
+                            </div>
+                        </div>
+                        <div class="game-meta">
+                            <div>
+                                ${isTracked ? '<span class="badge badge-tracked">Full Tracking</span>' : '<span class="badge badge-blb">BLB Stats</span>'}
+                                ${hasVideo ? '<span class="badge badge-video">Video</span>' : ''}
+                            </div>
+                            <span>${g.season ? g.season.slice(0,4) + '-' + g.season.slice(4) : ''}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            if (games.length > 50) {
+                container.innerHTML += `<div class="no-data">Showing 50 of ${games.length} games. Use filters to narrow results.</div>`;
+            }
+        }
+        
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            try {
+                const d = new Date(dateStr);
+                return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            } catch {
+                return dateStr;
+            }
+        }
+        
+        function showGameDetail(gameId) {
+            const game = allGames.find(g => g.game_id === gameId);
+            if (!game) return;
+            
+            const isTracked = trackedGameIds.has(parseInt(gameId));
+            const roster = allRosters.filter(r => r.game_id === gameId);
+            
+            const homeRoster = roster.filter(r => r.team_venue === 'home' || r.team_name === game.home_team_name);
+            const awayRoster = roster.filter(r => r.team_venue === 'away' || r.team_name === game.away_team_name);
+            
+            document.getElementById('modalTitle').textContent = `Game #${gameId} - ${game.home_team_name} vs ${game.away_team_name}`;
+            
+            document.getElementById('modalBody').innerHTML = `
+                <div class="game-matchup" style="font-size: 1.2em; margin-bottom: 20px;">
+                    <div class="team home">
+                        <div class="team-name">${game.home_team_name}</div>
+                        <div class="team-score">${game.home_total_goals || '-'}</div>
+                    </div>
+                    <div class="vs">vs</div>
+                    <div class="team away">
+                        <div class="team-name">${game.away_team_name}</div>
+                        <div class="team-score">${game.away_total_goals || '-'}</div>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <strong>Date:</strong> ${formatDate(game.date)}<br>
+                    <strong>Season:</strong> ${game.season || 'N/A'}<br>
+                    <strong>Data:</strong> ${isTracked ? '✅ Full Tracking (Events, Shifts, Coordinates)' : '📊 BLB Box Score Stats Only'}<br>
+                    ${game.video_url ? `<strong>Video:</strong> <a href="${game.video_url}" target="_blank" style="color: var(--accent);">Watch on YouTube</a>` : ''}
+                </div>
+                
+                ${renderRosterSection('Home Team - ' + game.home_team_name, homeRoster)}
+                ${renderRosterSection('Away Team - ' + game.away_team_name, awayRoster)}
+                
+                ${isTracked ? `
+                    <div style="margin-top: 20px; padding: 15px; background: var(--bg-dark); border-radius: 8px;">
+                        <strong style="color: var(--success);">📊 Advanced Stats Available</strong><br>
+                        <small style="color: var(--text-dim);">This game has full tracking data including events, shifts, coordinates, and video sync.</small>
+                    </div>
+                ` : `
+                    <div style="margin-top: 20px; padding: 15px; background: var(--bg-dark); border-radius: 8px;">
+                        <strong style="color: var(--warning);">📋 Basic Stats Only</strong><br>
+                        <small style="color: var(--text-dim);">This game has BLB box score stats. Track this game to get full event-level data.</small>
+                    </div>
+                `}
+            `;
+            
+            document.getElementById('gameModal').classList.add('active');
+        }
+        
+        function renderRosterSection(title, roster) {
+            if (!roster || roster.length === 0) {
+                return `
+                    <div class="roster-section">
+                        <div class="roster-title">${title}</div>
+                        <div class="no-data" style="padding: 20px;">No roster data available</div>
+                    </div>
+                `;
+            }
+            
+            return `
+                <div class="roster-section">
+                    <div class="roster-title">${title} (${roster.length} players)</div>
+                    <table class="roster-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Player</th>
+                                <th>Pos</th>
+                                <th>G</th>
+                                <th>A</th>
+                                <th>PIM</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${roster.map(p => `
+                                <tr>
+                                    <td>${p.player_game_number || '-'}</td>
+                                    <td>${p.player_full_name || p.Player || '-'}</td>
+                                    <td>${(p.player_position || p.Position || '-').charAt(0)}</td>
+                                    <td>${p.goals || p.G || 0}</td>
+                                    <td>${p.assist || p.A || 0}</td>
+                                    <td>${p.pim || p.PIM || 0}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+        
+        function closeModal() {
+            document.getElementById('gameModal').classList.remove('active');
+        }
+        
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', renderGames);
+        document.getElementById('seasonFilter').addEventListener('change', renderGames);
+        document.getElementById('dataFilter').addEventListener('change', renderGames);
+        document.getElementById('teamFilter').addEventListener('change', renderGames);
+        
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                // Could implement list view here
+            });
+        });
+        
+        // Close modal on click outside
+        document.getElementById('gameModal').addEventListener('click', (e) => {
+            if (e.target.id === 'gameModal') closeModal();
+        });
+        
+        // Load data on page load
+        loadData();
+    </script>
+</body>
+</html>

@@ -1,0 +1,617 @@
+{
+  "_description": "Documentation Registry - tracks all features/components and their documentation status",
+  "_updated": "2026-01-07",
+  "_usage": "Run: python scripts/utilities/doc_registry.py --audit to check for undocumented items",
+  "categories": {
+    "tables": {
+      "description": "ETL output tables",
+      "doc_location": "config/TABLE_METADATA.json",
+      "auto_discover": true,
+      "discover_path": "data/output/*.csv"
+    },
+    "scripts": {
+      "description": "Utility and pipeline scripts",
+      "doc_location": "docs/SCRIPTS.md",
+      "auto_discover": true,
+      "discover_path": "scripts/**/*.py"
+    },
+    "supabase": {
+      "description": "Supabase integration components",
+      "doc_location": "supabase/README.md",
+      "auto_discover": true,
+      "discover_path": "supabase/*.py"
+    },
+    "api_endpoints": {
+      "description": "API endpoints",
+      "doc_location": "docs/API.md",
+      "auto_discover": false
+    },
+    "config_files": {
+      "description": "Configuration files",
+      "doc_location": "docs/CONFIG.md",
+      "auto_discover": true,
+      "discover_path": "config/*.json"
+    },
+    "features": {
+      "description": "Major features from changelog",
+      "doc_location": "MASTER_GUIDE.md",
+      "auto_discover": false
+    }
+  },
+  "items": {
+    "tables": {
+      "fact_events": {
+        "status": "partial",
+        "last_updated": "2026-01-07",
+        "needs_review": true
+      },
+      "fact_shifts": {
+        "status": "partial",
+        "last_updated": "2026-01-07",
+        "needs_review": true
+      },
+      "fact_event_players": {
+        "status": "partial",
+        "last_updated": "2026-01-07",
+        "needs_review": true
+      },
+      "fact_shift_players": {
+        "status": "partial",
+        "last_updated": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_player": {
+        "status": "partial",
+        "last_updated": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_team": {
+        "status": "partial",
+        "last_updated": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_event_type": {
+        "status": "partial",
+        "last_updated": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_event_detail": {
+        "status": "partial",
+        "last_updated": "2026-01-07",
+        "needs_review": true
+      },
+      "qa_goal_accuracy": {
+        "status": "partial",
+        "last_updated": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_assist_type": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_danger_level": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_event_detail_2": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_game_state": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_giveaway_type": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_league": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_pass_type": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_period": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_play_detail": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_play_detail_2": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_player_role": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_playerurlref": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_position": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_randomnames": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_schedule": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_season": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_shift_quality_tier": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_shift_start_type": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_shift_stop_type": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_shot_type": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_situation": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_stoppage_type": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_success": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_takeaway_type": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_time_bucket": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_venue": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_zone": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_zone_entry_type": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "dim_zone_exit_type": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "fact_breakouts": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "fact_cycle_events": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "fact_draft": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "fact_faceoffs": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "fact_gameroster": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "fact_high_danger_chances": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "fact_leadership": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "fact_penalties": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "fact_player_game_position": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "fact_plays": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "fact_registration": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "fact_rushes": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "fact_saves": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "fact_scoring_chances_detailed": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "fact_season_summary": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "fact_sequences": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "fact_tracking": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "fact_turnovers_detailed": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "fact_zone_entries": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "fact_zone_exits": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "qa_data_completeness": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      }
+    },
+    "scripts": {
+      "pre_delivery.py": {
+        "status": "documented",
+        "last_updated": "2026-01-07",
+        "doc_file": "LLM_REQUIREMENTS.md"
+      },
+      "doc_sync.py": {
+        "status": "documented",
+        "last_updated": "2026-01-07",
+        "doc_file": "docs/DOC_MAINTENANCE.md"
+      },
+      "doc_consistency.py": {
+        "status": "documented",
+        "last_updated": "2026-01-07",
+        "doc_file": "docs/DOC_MAINTENANCE.md"
+      },
+      "etl_orchestrator.py": {
+        "status": "documented",
+        "last_updated": "2026-01-07",
+        "doc_file": "MASTER_GUIDE.md"
+      },
+      "add_all_fkeys.py": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "add_game.py": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "add_video.py": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "base_etl.py": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "blb_loader.py": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "bs_detector.py": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "build_qa_facts.py": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "calculate_stats.py": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "cleaner.py": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "combine_tracking.py": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "config_loader.py": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "connection.py": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "create_additional_tables.py": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "create_dim_rink_zone.py": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "create_player_season_stats.py": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "csv_exporter.py": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "data_transformer.py": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "dimensions.py": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "doc_registry.py": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "enhance_all_stats.py": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      }
+    },
+    "supabase": {
+      "schema.sql": {
+        "status": "documented",
+        "last_updated": "2026-01-07",
+        "doc_file": "supabase/README.md"
+      },
+      "sync_to_supabase.py": {
+        "status": "documented",
+        "last_updated": "2026-01-07",
+        "doc_file": "supabase/README.md"
+      },
+      "generate_schema.py": {
+        "status": "documented",
+        "last_updated": "2026-01-07",
+        "doc_file": "supabase/README.md"
+      }
+    },
+    "config_files": {
+      "TABLE_METADATA.json": {
+        "status": "partial",
+        "last_updated": "2026-01-07",
+        "needs_review": true
+      },
+      "IMMUTABLE_FACTS.json": {
+        "status": "documented",
+        "last_updated": "2026-01-07"
+      },
+      "VERSION.json": {
+        "status": "documented",
+        "last_updated": "2026-01-07"
+      },
+      "GROUND_TRUTH.json": {
+        "status": "documented",
+        "last_updated": "2026-01-07"
+      },
+      "DOC_REGISTRY.json": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "FILE_SIZES.json": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "SCHEMA_SNAPSHOT.json": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "supabase_schema.json": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      },
+      "table_registry.json": {
+        "status": "missing",
+        "discovered": "2026-01-07",
+        "needs_review": true
+      }
+    },
+    "features": {
+      "safeguard_system": {
+        "status": "documented",
+        "last_updated": "2026-01-07",
+        "changelog_version": "v13.06",
+        "doc_file": "docs/SAFEGUARDS.md"
+      },
+      "doc_sync_system": {
+        "status": "documented",
+        "last_updated": "2026-01-07",
+        "changelog_version": "v13.09",
+        "doc_file": "docs/DOC_MAINTENANCE.md"
+      },
+      "supabase_integration": {
+        "status": "documented",
+        "last_updated": "2026-01-07",
+        "changelog_version": "v13.12",
+        "doc_file": "supabase/README.md"
+      },
+      "rich_table_docs": {
+        "status": "partial",
+        "last_updated": "2026-01-07",
+        "changelog_version": "v13.13",
+        "needs_review": true
+      },
+      "role_guides": {
+        "status": "documented",
+        "last_updated": "2026-01-07",
+        "changelog_version": "v13.13",
+        "doc_file": "docs/roles/README.md"
+      },
+      "metadata_verification": {
+        "status": "documented",
+        "last_updated": "2026-01-07",
+        "changelog_version": "v13.15"
+      }
+    }
+  },
+  "changelog_tracking": {
+    "_description": "Maps changelog versions to documentation requirements",
+    "v13.16": {
+      "changes": [
+        "metadata_verification"
+      ],
+      "docs_updated": [
+        "CHANGELOG.md"
+      ],
+      "docs_needed": []
+    },
+    "v13.15": {
+      "changes": [
+        "metadata_verification"
+      ],
+      "docs_updated": [
+        "CHANGELOG.md",
+        "scripts/utilities/doc_sync.py"
+      ],
+      "docs_needed": []
+    },
+    "v13.14": {
+      "changes": [
+        "role_guides",
+        "rich_table_docs_fix"
+      ],
+      "docs_updated": [
+        "docs/roles/*.md",
+        "CHANGELOG.md"
+      ],
+      "docs_needed": []
+    },
+    "v13.13": {
+      "changes": [
+        "rich_table_docs",
+        "role_guides"
+      ],
+      "docs_updated": [
+        "config/TABLE_METADATA.json",
+        "docs/roles/*.md"
+      ],
+      "docs_needed": [
+        "TABLE_METADATA needs accurate ETL-sourced content"
+      ]
+    },
+    "v13.12": {
+      "changes": [
+        "supabase_integration",
+        "table_metadata_json"
+      ],
+      "docs_updated": [
+        "supabase/README.md",
+        "config/TABLE_METADATA.json"
+      ],
+      "docs_needed": []
+    }
+  }
+}

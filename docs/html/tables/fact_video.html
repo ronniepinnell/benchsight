@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fact_video - BenchSight</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #4a4e69; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>fact_video</h1>
+        
+        <div class="alert alert-danger">⚠️ 15 suspicious stat entries for games in this table</div>
+        
+        <div class="meta">
+            <strong>Rows:</strong> 10 | 
+            <strong>Columns:</strong> 16 |
+            <strong>Last Updated:</strong> 2026-01-07 05:03:20 |
+            <strong>Version:</strong> 12.03
+        </div>
+        
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>video_key</td><td>object</td><td>10</td><td>0.0%</td></tr><tr><td>game_id</td><td>int64</td><td>10</td><td>0.0%</td></tr><tr><td>season_id</td><td>object</td><td>10</td><td>0.0%</td></tr><tr><td>Index</td><td>int64</td><td>10</td><td>0.0%</td></tr><tr><td>Key</td><td>object</td><td>10</td><td>0.0%</td></tr><tr><td>Game_ID</td><td>int64</td><td>10</td><td>0.0%</td></tr><tr><td>Video_Type</td><td>object</td><td>10</td><td>0.0%</td></tr><tr><td>Video_Category</td><td>object</td><td>10</td><td>0.0%</td></tr><tr><td>Url_1</td><td>object</td><td>10</td><td>0.0%</td></tr><tr><td>Url_2</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>Url_3</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>Url_4</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>Video_ID</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>Extension</td><td>object</td><td>10</td><td>0.0%</td></tr><tr><td>Embed_Url</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>Description</td><td>float64</td><td>0</td><td>100.0%</td></tr>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>video_key</th>
+      <th>game_id</th>
+      <th>season_id</th>
+      <th>Index</th>
+      <th>Key</th>
+      <th>Game_ID</th>
+      <th>Video_Type</th>
+      <th>Video_Category</th>
+      <th>Url_1</th>
+      <th>Url_2</th>
+      <th>Url_3</th>
+      <th>Url_4</th>
+      <th>Video_ID</th>
+      <th>Extension</th>
+      <th>Embed_Url</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>V18981001</td>
+      <td>18981</td>
+      <td>N20252026F</td>
+      <td>1</td>
+      <td>V189811001</td>
+      <td>18981</td>
+      <td>Full_Ice</td>
+      <td>Full_Ice</td>
+      <td>https://www.youtube.com/watch?v=DaQS2qlm_C4</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>v=DaQS2qlm_C4</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>V19032001</td>
+      <td>19032</td>
+      <td>N20252026F</td>
+      <td>1</td>
+      <td>V190321001</td>
+      <td>19032</td>
+      <td>Full_Ice</td>
+      <td>Full_Ice</td>
+      <td>https://www.youtube.com/watch?v=Mt-lTEMScK4</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>v=Mt-lTEMScK4</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>V19032002</td>
+      <td>19032</td>
+      <td>N20252026F</td>
+      <td>2</td>
+      <td>V190321002</td>
+      <td>19032</td>
+      <td>Braodcast</td>
+      <td>Broadcast</td>
+      <td>https://www.youtube.com/watch?v=A2SPUvqhgvQ</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>v=A2SPUvqhgvQ</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>V18991001</td>
+      <td>18991</td>
+      <td>N20252026F</td>
+      <td>1</td>
+      <td>V189911001</td>
+      <td>18991</td>
+      <td>Full_Ice</td>
+      <td>Full_Ice</td>
+      <td>https://www.youtube.com/watch?v=fbZ-kglEMfk</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>v=fbZ-kglEMfk</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>V18991002</td>
+      <td>18991</td>
+      <td>N20252026F</td>
+      <td>2</td>
+      <td>V189911002</td>
+      <td>18991</td>
+      <td>Braodcast</td>
+      <td>Broadcast</td>
+      <td>https://www.youtube.com/watch?v=DYLkmiu52Zk</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>v=DYLkmiu52Zk</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>V18955001</td>
+      <td>18955</td>
+      <td>N20252026F</td>
+      <td>1</td>
+      <td>V189551001</td>
+      <td>18955</td>
+      <td>Full_Ice</td>
+      <td>Full_Ice</td>
+      <td>https://www.youtube.com/watch?v=-JbRtW__V18</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>v=-JbRtW__V18</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>V18977001</td>
+      <td>18977</td>
+      <td>N20252026F</td>
+      <td>1</td>
+      <td>V189771001</td>
+      <td>18977</td>
+      <td>Full_Ice</td>
+      <td>Full_Ice</td>
+      <td>https://www.youtube.com/watch?v=mx4pzfH-pXs</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>v=mx4pzfH-pXs</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>V18987001</td>
+      <td>18987</td>
+      <td>N20252026F</td>
+      <td>1</td>
+      <td>V189871001</td>
+      <td>18987</td>
+      <td>Full_Ice</td>
+      <td>Full_Ice</td>
+      <td>https://www.youtube.com/watch?v=L9a8xCAIo-Q</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>v=L9a8xCAIo-Q</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>V18987002</td>
+      <td>18987</td>
+      <td>N20252026F</td>
+      <td>2</td>
+      <td>V189871002</td>
+      <td>18987</td>
+      <td>Braodcast</td>
+      <td>Broadcast</td>
+      <td>https://www.youtube.com/watch?v=M0lElm9UkpM</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>v=M0lElm9UkpM</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>V18969001</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>1</td>
+      <td>V189691001</td>
+      <td>18969</td>
+      <td>Full_Ice</td>
+      <td>Full_Ice</td>
+      <td>https://www.youtube.com/watch?v=hMM6oE6O_Mg</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>v=hMM6oE6O_Mg</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+        </div>
+        
+        <footer>
+            BenchSight v13.18 | Generated 2026-01-07 05:03:20
+        </footer>
+    </div>
+</body>
+</html>

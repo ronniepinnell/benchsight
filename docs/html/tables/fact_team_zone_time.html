@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fact_team_zone_time - BenchSight</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #4a4e69; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>fact_team_zone_time</h1>
+        
+        <div class="alert alert-danger">⚠️ 15 suspicious stat entries for games in this table</div>
+        
+        <div class="meta">
+            <strong>Rows:</strong> 8 | 
+            <strong>Columns:</strong> 19 |
+            <strong>Last Updated:</strong> 2026-01-07 05:03:20 |
+            <strong>Version:</strong> 12.03
+        </div>
+        
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>zone_time_key</td><td>object</td><td>8</td><td>0.0%</td></tr><tr><td>game_id</td><td>int64</td><td>8</td><td>0.0%</td></tr><tr><td>season_id</td><td>object</td><td>8</td><td>0.0%</td></tr><tr><td>venue</td><td>object</td><td>8</td><td>0.0%</td></tr><tr><td>ozone_events</td><td>int64</td><td>8</td><td>0.0%</td></tr><tr><td>dzone_events</td><td>int64</td><td>8</td><td>0.0%</td></tr><tr><td>nzone_events</td><td>int64</td><td>8</td><td>0.0%</td></tr><tr><td>total_events</td><td>int64</td><td>8</td><td>0.0%</td></tr><tr><td>ozone_pct</td><td>float64</td><td>8</td><td>0.0%</td></tr><tr><td>dzone_pct</td><td>float64</td><td>8</td><td>0.0%</td></tr><tr><td>nzone_pct</td><td>float64</td><td>8</td><td>0.0%</td></tr><tr><td>venue_id</td><td>object</td><td>8</td><td>0.0%</td></tr><tr><td>home_team_id</td><td>object</td><td>8</td><td>0.0%</td></tr><tr><td>away_team_id</td><td>object</td><td>8</td><td>0.0%</td></tr><tr><td>team_id</td><td>object</td><td>8</td><td>0.0%</td></tr><tr><td>oz_dominance</td><td>float64</td><td>8</td><td>0.0%</td></tr><tr><td>dz_pressure</td><td>float64</td><td>8</td><td>0.0%</td></tr><tr><td>territorial_index</td><td>float64</td><td>8</td><td>0.0%</td></tr><tr><td>team_name</td><td>object</td><td>8</td><td>0.0%</td></tr>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>zone_time_key</th>
+      <th>game_id</th>
+      <th>season_id</th>
+      <th>venue</th>
+      <th>ozone_events</th>
+      <th>dzone_events</th>
+      <th>nzone_events</th>
+      <th>total_events</th>
+      <th>ozone_pct</th>
+      <th>dzone_pct</th>
+      <th>nzone_pct</th>
+      <th>venue_id</th>
+      <th>home_team_id</th>
+      <th>away_team_id</th>
+      <th>team_id</th>
+      <th>oz_dominance</th>
+      <th>dz_pressure</th>
+      <th>territorial_index</th>
+      <th>team_name</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>ZT1896900001</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>home</td>
+      <td>1542</td>
+      <td>1034</td>
+      <td>542</td>
+      <td>3118</td>
+      <td>49.5</td>
+      <td>33.2</td>
+      <td>17.4</td>
+      <td>VN0001</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>N10008</td>
+      <td>16.3</td>
+      <td>33.2</td>
+      <td>58.1</td>
+      <td>Platinum</td>
+    </tr>
+    <tr>
+      <td>ZT1896900002</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>away</td>
+      <td>1034</td>
+      <td>1542</td>
+      <td>542</td>
+      <td>3118</td>
+      <td>33.2</td>
+      <td>49.5</td>
+      <td>17.4</td>
+      <td>VN0002</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>N10010</td>
+      <td>-16.3</td>
+      <td>49.5</td>
+      <td>41.9</td>
+      <td>Velodrome</td>
+    </tr>
+    <tr>
+      <td>ZT1897700001</td>
+      <td>18977</td>
+      <td>N20252026F</td>
+      <td>home</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>100.0</td>
+      <td>VN0001</td>
+      <td>N10010</td>
+      <td>N10003</td>
+      <td>N10010</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>50.0</td>
+      <td>Velodrome</td>
+    </tr>
+    <tr>
+      <td>ZT1897700002</td>
+      <td>18977</td>
+      <td>N20252026F</td>
+      <td>away</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>100.0</td>
+      <td>VN0002</td>
+      <td>N10010</td>
+      <td>N10003</td>
+      <td>N10003</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>50.0</td>
+      <td>HollowBrook</td>
+    </tr>
+    <tr>
+      <td>ZT1898100001</td>
+      <td>18981</td>
+      <td>N20252026F</td>
+      <td>home</td>
+      <td>590</td>
+      <td>402</td>
+      <td>13</td>
+      <td>1005</td>
+      <td>58.7</td>
+      <td>40.0</td>
+      <td>1.3</td>
+      <td>VN0001</td>
+      <td>N10004</td>
+      <td>N10010</td>
+      <td>N10004</td>
+      <td>18.7</td>
+      <td>40.0</td>
+      <td>59.4</td>
+      <td>Nelson</td>
+    </tr>
+    <tr>
+      <td>ZT1898100002</td>
+      <td>18981</td>
+      <td>N20252026F</td>
+      <td>away</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>3</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>100.0</td>
+      <td>VN0002</td>
+      <td>N10004</td>
+      <td>N10010</td>
+      <td>N10010</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>50.0</td>
+      <td>Velodrome</td>
+    </tr>
+    <tr>
+      <td>ZT1898700001</td>
+      <td>18987</td>
+      <td>N20252026F</td>
+      <td>home</td>
+      <td>135</td>
+      <td>211</td>
+      <td>3</td>
+      <td>349</td>
+      <td>38.7</td>
+      <td>60.5</td>
+      <td>0.9</td>
+      <td>VN0001</td>
+      <td>N10007</td>
+      <td>N10010</td>
+      <td>N10007</td>
+      <td>-21.8</td>
+      <td>60.5</td>
+      <td>39.1</td>
+      <td>Outlaws</td>
+    </tr>
+    <tr>
+      <td>ZT1898700002</td>
+      <td>18987</td>
+      <td>N20252026F</td>
+      <td>away</td>
+      <td>213</td>
+      <td>133</td>
+      <td>3</td>
+      <td>349</td>
+      <td>61.0</td>
+      <td>38.1</td>
+      <td>0.9</td>
+      <td>VN0002</td>
+      <td>N10007</td>
+      <td>N10010</td>
+      <td>N10010</td>
+      <td>22.9</td>
+      <td>38.1</td>
+      <td>61.5</td>
+      <td>Velodrome</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+        </div>
+        
+        <footer>
+            BenchSight v13.18 | Generated 2026-01-07 05:03:20
+        </footer>
+    </div>
+</body>
+</html>

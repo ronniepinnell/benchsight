@@ -1,0 +1,472 @@
+{
+  "dim_period": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_venue": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_zone": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_strength": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_situation": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_position": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_event_type": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_event_detail": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_event_detail_2": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_play_detail": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_play_detail_2": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_shot_type": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_pass_type": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_zone_entry_type": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_zone_exit_type": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_giveaway_type": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_takeaway_type": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_turnover_type": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_stoppage_type": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_success": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_shift_start_type": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_shift_stop_type": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_shift_slot": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_player_role": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_season": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_league": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_team": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_player": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_schedule": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_playerurlref": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_danger_level": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_shot_outcome": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_save_outcome": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_pass_outcome": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_zone_outcome": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_turnover_quality": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_competition_tier": {
+    "type": "dim",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "dim_assist_type": {
+    "type": "dim",
+    "source": "src/advanced/extended_tables.py",
+    "protection": "MEDIUM"
+  },
+  "dim_game_state": {
+    "type": "dim",
+    "source": "src/advanced/extended_tables.py",
+    "protection": "MEDIUM"
+  },
+  "dim_time_bucket": {
+    "type": "dim",
+    "source": "src/advanced/extended_tables.py",
+    "protection": "MEDIUM"
+  },
+  "dim_shift_quality_tier": {
+    "type": "dim",
+    "source": "src/advanced/extended_tables.py",
+    "protection": "MEDIUM"
+  },
+  "dim_stat_category": {
+    "type": "dim",
+    "source": "src/advanced/create_additional_tables.py",
+    "protection": "MEDIUM"
+  },
+  "dim_micro_stat": {
+    "type": "dim",
+    "source": "src/advanced/create_additional_tables.py",
+    "protection": "MEDIUM"
+  },
+  "dim_danger_zone": {
+    "type": "dim",
+    "source": "src/advanced/enhance_all_stats.py",
+    "protection": "MEDIUM"
+  },
+  "dim_composite_rating": {
+    "type": "dim",
+    "source": "src/advanced/enhance_all_stats.py",
+    "protection": "MEDIUM"
+  },
+  "fact_events": {
+    "type": "fact",
+    "source": "src/core/base_etl.py",
+    "protection": "CRITICAL"
+  },
+  "fact_shifts_player": {
+    "type": "fact",
+    "source": "src/core/base_etl.py",
+    "protection": "CRITICAL"
+  },
+  "fact_gameroster": {
+    "type": "fact",
+    "source": "src/core/base_etl.py",
+    "protection": "CRITICAL"
+  },
+  "fact_player_game_stats": {
+    "type": "fact",
+    "source": "src/core/base_etl.py",
+    "protection": "CRITICAL"
+  },
+  "fact_events_tracking": {
+    "type": "fact",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "fact_shifts_tracking": {
+    "type": "fact",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "fact_shift_players": {
+    "type": "fact",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "fact_sequences": {
+    "type": "fact",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "fact_plays": {
+    "type": "fact",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "fact_zone_entries": {
+    "type": "fact",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "fact_zone_exits": {
+    "type": "fact",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "fact_scoring_chances_detailed": {
+    "type": "fact",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "fact_goalie_game_stats": {
+    "type": "fact",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "fact_team_game_stats": {
+    "type": "fact",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "fact_h2h": {
+    "type": "fact",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "fact_wowy": {
+    "type": "fact",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "fact_line_combos": {
+    "type": "fact",
+    "source": "src/core/base_etl.py",
+    "protection": "HIGH"
+  },
+  "fact_player_career_stats": {
+    "type": "fact",
+    "source": "src/advanced/extended_tables.py",
+    "protection": "HIGH"
+  },
+  "fact_team_season_stats": {
+    "type": "fact",
+    "source": "src/advanced/extended_tables.py",
+    "protection": "HIGH"
+  },
+  "fact_season_summary": {
+    "type": "fact",
+    "source": "src/advanced/extended_tables.py",
+    "protection": "HIGH"
+  },
+  "fact_player_trends": {
+    "type": "fact",
+    "source": "src/advanced/extended_tables.py",
+    "protection": "HIGH"
+  },
+  "fact_zone_entry_summary": {
+    "type": "fact",
+    "source": "src/advanced/extended_tables.py",
+    "protection": "HIGH"
+  },
+  "fact_zone_exit_summary": {
+    "type": "fact",
+    "source": "src/advanced/extended_tables.py",
+    "protection": "HIGH"
+  },
+  "fact_player_position_splits": {
+    "type": "fact",
+    "source": "src/advanced/extended_tables.py",
+    "protection": "HIGH"
+  },
+  "fact_period_momentum": {
+    "type": "fact",
+    "source": "src/advanced/extended_tables.py",
+    "protection": "HIGH"
+  },
+  "fact_special_teams_summary": {
+    "type": "fact",
+    "source": "src/advanced/extended_tables.py",
+    "protection": "HIGH"
+  },
+  "fact_player_stats_long": {
+    "type": "fact",
+    "source": "src/advanced/create_additional_tables.py",
+    "protection": "HIGH"
+  },
+  "fact_matchup_summary": {
+    "type": "fact",
+    "source": "src/advanced/create_additional_tables.py",
+    "protection": "HIGH"
+  },
+  "fact_shift_quality": {
+    "type": "fact",
+    "source": "src/advanced/create_additional_tables.py",
+    "protection": "HIGH"
+  },
+  "fact_scoring_chances": {
+    "type": "fact",
+    "source": "src/advanced/create_additional_tables.py",
+    "protection": "HIGH"
+  },
+  "fact_player_micro_stats": {
+    "type": "fact",
+    "source": "src/advanced/create_additional_tables.py",
+    "protection": "HIGH"
+  },
+  "fact_player_period_stats": {
+    "type": "fact",
+    "source": "src/advanced/enhance_all_stats.py",
+    "protection": "HIGH"
+  },
+  "fact_shot_danger": {
+    "type": "fact",
+    "source": "src/advanced/enhance_all_stats.py",
+    "protection": "HIGH"
+  },
+  "fact_team_zone_time": {
+    "type": "fact",
+    "source": "src/advanced/create_additional_tables.py",
+    "protection": "HIGH"
+  },
+  "fact_tracking": {
+    "type": "fact",
+    "source": "src/core/base_etl.py",
+    "protection": "MEDIUM"
+  },
+  "fact_breakouts": {
+    "type": "fact",
+    "source": "src/core/base_etl.py",
+    "protection": "MEDIUM"
+  },
+  "fact_rushes": {
+    "type": "fact",
+    "source": "src/core/base_etl.py",
+    "protection": "MEDIUM"
+  },
+  "fact_turnovers_detailed": {
+    "type": "fact",
+    "source": "src/core/base_etl.py",
+    "protection": "MEDIUM"
+  },
+  "fact_penalties": {
+    "type": "fact",
+    "source": "src/core/base_etl.py",
+    "protection": "MEDIUM"
+  },
+  "fact_registration": {
+    "type": "fact",
+    "source": "src/core/base_etl.py",
+    "protection": "MEDIUM"
+  },
+  "fact_leadership": {
+    "type": "fact",
+    "source": "src/core/base_etl.py",
+    "protection": "MEDIUM"
+  },
+  "fact_player_game_position": {
+    "type": "fact",
+    "source": "src/core/base_etl.py",
+    "protection": "MEDIUM"
+  },
+  "fact_events_player": {
+    "type": "fact",
+    "source": "src/core/base_etl.py",
+    "protection": "MEDIUM"
+  },
+  "fact_player_boxscore_all": {
+    "type": "fact",
+    "source": "src/core/base_etl.py",
+    "protection": "MEDIUM"
+  },
+  "fact_player_pair_stats": {
+    "type": "fact",
+    "source": "src/core/base_etl.py",
+    "protection": "MEDIUM"
+  },
+  "fact_player_event_chains": {
+    "type": "fact",
+    "source": "src/core/base_etl.py",
+    "protection": "MEDIUM"
+  },
+  "qa_goal_accuracy": {
+    "type": "qa",
+    "source": "src/advanced/extended_tables.py",
+    "protection": "LOW"
+  },
+  "qa_data_completeness": {
+    "type": "qa",
+    "source": "src/advanced/extended_tables.py",
+    "protection": "LOW"
+  },
+  "qa_validation_summary": {
+    "type": "qa",
+    "source": "src/advanced/extended_tables.py",
+    "protection": "LOW"
+  }
+}

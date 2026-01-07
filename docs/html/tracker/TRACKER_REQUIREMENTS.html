@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BenchSight Tracker - Requirements & Design Document - BenchSight</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --border: #30363d;
+  --text: #c9d1d9;
+  --muted: #8b949e;
+  --accent: #58a6ff;
+  --accent2: #3fb950;
+  --warn: #d29922;
+  --danger: #f85149;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  font-size: 14px;
+}
+.container { max-width: 900px; margin: 0 auto; padding: 20px 40px; }
+header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 15px 0;
+}
+header .container { display: flex; justify-content: space-between; align-items: center; }
+header h1 {
+  font-size: 18px;
+  color: var(--accent);
+}
+header nav a {
+  color: var(--muted);
+  text-decoration: none;
+  margin-left: 15px;
+  font-size: 13px;
+}
+header nav a:hover { color: var(--accent); }
+main { padding: 30px 0; }
+h1 { font-size: 28px; color: var(--accent); margin-bottom: 20px; }
+h2 { font-size: 22px; color: var(--text); margin: 30px 0 15px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+h3 { font-size: 18px; color: var(--accent2); margin: 25px 0 12px; }
+h4 { font-size: 15px; color: var(--text); margin: 20px 0 10px; }
+p { margin: 12px 0; color: var(--text); }
+ul, ol { margin: 12px 0 12px 25px; }
+li { margin: 6px 0; }
+code {
+  font-family: 'SF Mono', Consolas, monospace;
+  background: var(--surface);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+  border: 1px solid var(--border);
+}
+pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 15px;
+  overflow-x: auto;
+  margin: 15px 0;
+  font-size: 12px;
+}
+pre code { background: none; border: none; padding: 0; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 15px 0;
+  font-size: 13px;
+}
+th, td {
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  text-align: left;
+}
+th { background: var(--surface); color: var(--accent); }
+tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 10px 15px;
+  margin: 15px 0;
+  background: rgba(88,166,255,0.1);
+  border-radius: 0 6px 6px 0;
+}
+hr { border: none; border-top: 1px solid var(--border); margin: 30px 0; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+strong { color: var(--text); }
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.badge-done { background: var(--accent2); color: #000; }
+.badge-pending { background: var(--warn); color: #000; }
+footer {
+  border-top: 1px solid var(--border);
+  padding: 20px 0;
+  margin-top: 40px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="container">
+    <h1>⚡ BenchSight</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="tracker/index.html">Tracker</a>
+      <a href="tables.html">Tables</a>
+      <a href="diagrams/ERD_VIEWER.html">ERD</a>
+    </nav>
+  </div>
+</header>
+<main>
+<div class="container">
+<h1>BenchSight Tracker - Requirements & Design Document</h1>
+
+<strong>Version:</strong> Draft 2.0  
+<strong>Date:</strong> 2026-01-07  
+<strong>Based on:</strong> Analysis of 4 games, 11,181 event rows, 398 shifts, existing prototypes (v18/v19)
+<p>---</p>
+
+<h2>Table of Contents</h2>
+
+<ol>
+<li>1. <a href="#critical-etl-alignment">Critical: ETL Alignment</a></li>
+<li>2. <a href="#database-architecture">Database Architecture</a></li>
+<li>3. <a href="#current-workflow-summary">Current Workflow Summary</a></li>
+<li>4. <a href="#data-analysis-findings">Data Analysis Findings</a></li>
+<li>5. <a href="#requirements-summary">Requirements Summary</a></li>
+<li>6. <a href="#xy-coordinate-system-design">XY Coordinate System Design</a></li>
+<li>7. <a href="#linked-event-detection">Linked Event Detection</a></li>
+<li>8. <a href="#automation-opportunities">Automation Opportunities</a></li>
+<li>9. <a href="#technical-architecture">Technical Architecture</a></li>
+</ul>
+<p>---</p>
+
+<h2>Critical: ETL Alignment</h2>
+
+<h3>ABSOLUTE REQUIREMENT</h3>
+The tracker output MUST match the existing <code>{gameid}_tracking.xlsx</code> format 1000000%.
+
+<strong>Events Tab Output → fact_event_players (61 columns)</strong>
+<pre><code class="language-">event_id, game_id, player_id, player_game_number, sequence_key, play_key, 
+shift_key, linked_event_key, event_chain_key, tracking_event_key, zone_change_key,
+period_id, home_team_id, away_team_id, player_team_id, period, event_start_min,
+event_start_sec, event_end_min, event_end_sec, event_team_zone, home_team_zone,
+away_team_zone, team_venue, side_of_puck, play_detail1, play_detail_2,
+play_detail_successful, pressured_pressurer, home_team, away_team, event_type,
+event_detail, event_detail_2, event_successful, duration, time_start_total_seconds,
+time_end_total_seconds, running_intermission_duration, period_start_total_running_seconds,
+running_video_time, event_running_start, event_running_end, player_role, player_team,
+is_goal, player_name, season_id, position_id, shot_type_id, zone_entry_type_id,
+zone_exit_type_id, stoppage_type_id, giveaway_type_id, takeaway_type_id,
+turnover_type_id, pass_type_id, time_bucket_id, strength_id, cycle_key, is_cycle
+</code></pre>
+
+<strong>Shifts Tab Output → fact_shifts (129 columns)</strong>
+<pre><code class="language-">shift_id, game_id, shift_index, period, shift_start_type, shift_stop_type,
+shift_start_min, shift_start_sec, shift_end_min, shift_end_sec, home_team, away_team,
+home_forward_1, home_forward_2, home_forward_3, home_defense_1, home_defense_2,
+home_xtra, home_goalie, away_forward_1, away_forward_2, away_forward_3,
+away_defense_1, away_defense_2, away_xtra, away_goalie, shift_start_total_seconds,
+shift_end_total_seconds, shift_duration, home_team_strength, away_team_strength,
+... (remaining 100+ columns calculated by ETL)
+</code></pre>
+
+<h3>New Columns to Add (Tracker-Specific)</h3>
+
+<strong>Events:</strong>
+<ul>
+<li><code>is_highlight</code> (boolean) - User-flagged highlight</li>
+<li><code>highlight_key</code> (varchar) - Links to dim_highlights</li>
+<li><code>video_time_seconds</code> (int) - For YouTube deep links</li>
+<li><code>puck_xy_1</code> through <code>puck_xy_10</code> (json: {x, y})</li>
+<li><code>player_xy_1</code> through <code>player_xy_10</code> (json per player: {player_id, x, y})</li>
+<li><code>shot_net_xy</code> (json: {x, y}) - Net location for shots</li>
+</ul>
+
+<strong>Shifts:</strong>
+<ul>
+<li><code>video_start_seconds</code> (int)</li>
+<li><code>video_end_seconds</code> (int)</li>
+</ul>
+
+<h3>New Tables Required</h3>
+
+<pre><code class="language-sql">-- YouTube video links per game
+CREATE TABLE dim_youtube_videos (
+    video_id SERIAL PRIMARY KEY,
+    game_id INT REFERENCES dim_games(game_id),
+    angle_name VARCHAR(50),  -- 'Main', 'Alt1', 'Alt2'
+    youtube_url VARCHAR(500),
+    start_offset_seconds INT DEFAULT 0,  -- Offset from video start to game start
+    created_at TIMESTAMP DEFAULT NOW()
+);
+<p>-- Highlight clips</p>
+CREATE TABLE fact_highlights (
+    highlight_id SERIAL PRIMARY KEY,
+    game_id INT REFERENCES dim_games(game_id),
+    event_id INT REFERENCES fact_event_players(event_id),
+    highlight_type VARCHAR(50),  -- 'Goal', 'Save', 'Hit', 'Custom'
+    video_start_seconds INT,
+    video_end_seconds INT,
+    title VARCHAR(200),
+    description TEXT,
+    tags VARCHAR(500),  -- Comma-separated
+    created_at TIMESTAMP DEFAULT NOW()
+);
+</code></pre>
+<p>---</p>
+
+<h2>Database Architecture</h2>
+
+<h3>Three-Tier Design</h3>
+
+<pre><code class="language-">┌─────────────────────────────────────────────────────────────────────┐
+│                    TRACKER APPLICATION                               │
+│  (Electron + React)                                                  │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  STAGE (Local PostgreSQL)                                            │
+│  ─────────────────────────                                           │
+│  • Raw tracker input                                                 │
+│  • Auto-save every 30 seconds                                        │
+│  • JSON backups to filesystem                                        │
+│  • Full undo/redo history                                            │
+│  • Working copy for active editing                                   │
+│                                                                      │
+│  Tables:                                                             │
+│  • stage_events (tracker input format)                               │
+│  • stage_shifts (tracker input format)                               │
+│  • stage_undo_history                                                │
+│  • stage_session_state                                               │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              │ ETL (existing Python scripts)
+                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  INTERMEDIATE (Local PostgreSQL)                                     │
+│  ───────────────────────────────                                     │
+│  • Transformed/enriched data                                         │
+│  • All calculated fields                                             │
+│  • Foreign key relationships                                         │
+│  • QA validation results                                             │
+│                                                                      │
+│  Tables:                                                             │
+│  • All 111+ existing BenchSight tables                               │
+│  • qa_validation_results                                             │
+│  • etl_run_log                                                       │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              │ Sync (verified data only)
+                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  DATAMART (Supabase PostgreSQL)                                      │
+│  ──────────────────────────────                                      │
+│  • Production-ready data                                             │
+│  • Dashboard queries                                                 │
+│  • API access                                                        │
+│  • Row-level security                                                │
+│                                                                      │
+│  Tables:                                                             │
+│  • All fact/dim tables                                               │
+│  • dim_youtube_videos (NEW)                                          │
+│  • fact_highlights (NEW)                                             │
+│  • Materialized views for dashboard                                  │
+└─────────────────────────────────────────────────────────────────────┘
+</code></pre>
+
+<h3>Auto-Save Strategy</h3>
+
+<pre><code class="language-javascript">// Every 30 seconds → Local PostgreSQL
+setInterval(async () =&gt; {
+  await localPg.query(<code>
+    INSERT INTO stage_events (game_id, event_data, saved_at)
+    VALUES ($1, $2, NOW())
+    ON CONFLICT (game_id) DO UPDATE SET event_data = $2, saved_at = NOW()
+  </code>, [gameId, JSON.stringify(state.events)]);
+}, 30000);
+<p>// Every 5 minutes → JSON backup file</p>
+setInterval(async () =&gt; {
+  const backup = {
+    game_id: state.gid,
+    timestamp: new Date().toISOString(),
+    events: state.events,
+    shifts: state.shifts,
+    undo_stack: state.undoStack
+  };
+  await fs.writeFile(
+    <code>backups/${state.gid}_${Date.now()}.json</code>,
+    JSON.stringify(backup, null, 2)
+  );
+}, 300000);
+</code></pre>
+
+<h3>Data Flow</h3>
+
+<pre><code class="language-">1. TRACKING SESSION
+   User tracks game in Tracker app
+   → Auto-saves to stage_events/stage_shifts (local PG)
+   → JSON backups every 5 min
+
+<ol>
+<li>2. GAME COMPLETE</li>
+</ol>
+   User clicks "Finalize Game"
+   → Exports to {gameid}_tracking.xlsx format
+   → Triggers existing ETL pipeline
+
+<ol>
+<li>3. ETL PROCESSING</li>
+</ol>
+   Existing Python ETL runs
+   → Reads tracking Excel
+   → Transforms to all 111+ tables
+   → Writes to intermediate (local PG)
+   → Runs QA validations
+
+<ol>
+<li>4. SYNC TO DATAMART</li>
+</ol>
+   After QA passes
+   → Sync intermediate → Supabase
+   → Dashboard sees new data
+</code></pre>
+<p>---</p>
+
+<h2>XY Coordinate System Design</h2>
+
+<h3>Rink Visualization (Reference: shot-plotter.netlify.app)</h3>
+
+<pre><code class="language-">┌─────────────────────────────────────────────────────────────────────┐
+│                         RINK DIAGRAM                                 │
+│  ViewBox: 0,0 → 200,85 (NHL proportions)                            │
+│                                                                      │
+│  ┌─────────────────────────────────────────────────────────────┐    │
+│  │  ●42      ●9                              ●70     ●84       │    │
+│  │    ╲      ╱                                ╲     ╱          │    │
+│  │     ╲    ╱                                  ╲   ╱           │    │
+│  │      [⬤]───────────────────────────────────[⬤]            │    │
+│  │       P1                                    P2              │    │
+│  │                        ⬤ PUCK                               │    │
+│  │  ●61                  (current)             ●22             │    │
+│  │                                                             │    │
+│  │  [G39]                                            [G99]     │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+│                                                                      │
+│  LEGEND:                                                             │
+│  ● = Player (team color, jersey #)                                  │
+│  ⬤ = Puck position                                                  │
+│  ─── = Movement path (xy1 → xy2 → xy3)                              │
+│  Older events = more transparent (0.3 → 0.6 → 1.0 opacity)          │
+└─────────────────────────────────────────────────────────────────────┘
+</code></pre>
+
+<h3>Net Diagram (For Shots - Reference: shot-plotter.netlify.app/ice-hockey-net-nhl)</h3>
+
+<pre><code class="language-">When event_type = 'Shot' or 'Goal', popup net diagram:
+<p>┌───────────────────────────────────────┐</p>
+│           NET LOCATION                │
+│  ┌─────────────────────────────────┐  │
+│  │ ┌───┬───┬───┬───┬───┬───┬───┐ │  │
+│  │ │   │   │   │   │   │   │   │ │  │
+│  │ │ TL│ TC│ TC│ TC│ TC│ TC│ TR│ │  │ ← Top shelf
+│  │ ├───┼───┼───┼───┼───┼───┼───┤ │  │
+│  │ │   │   │   │   │   │   │   │ │  │
+│  │ │ ML│ MC│ MC│ MC│ MC│ MC│ MR│ │  │ ← Mid
+│  │ ├───┼───┼───┼───┼───┼───┼───┤ │  │
+│  │ │   │   │   │   │   │   │   │ │  │
+│  │ │ BL│ BC│ BC│ BC│ BC│ BC│ BR│ │  │ ← Low (five hole center)
+│  │ └───┴───┴───┴───┴───┴───┴───┘ │  │
+│  │  │                           │  │  │
+│  │  └───────────────────────────┘  │  │
+│  │           Posts                  │  │
+│  └─────────────────────────────────┘  │
+│                                       │
+│  Click to mark shot location          │
+│  [Cancel]                             │
+└───────────────────────────────────────┘
+</code></pre>
+
+<h3>XY Storage Format</h3>
+
+<pre><code class="language-javascript">// Per-event XY data structure
+{
+  event_id: 'EV18969001',
+  puck_xy: [
+    { seq: 1, x: 45.2, y: 32.1 },  // Puck position 1
+    { seq: 2, x: 62.8, y: 28.4 },  // Puck position 2 (movement)
+  ],
+  player_xy: [
+    { player_id: 'P42', role: 'event_player_1', positions: [
+      { seq: 1, x: 38.1, y: 40.2 },
+      { seq: 2, x: 55.3, y: 35.1 }
+    ]},
+    { player_id: 'P9', role: 'event_player_2', positions: [
+      { seq: 1, x: 42.0, y: 22.5 }
+    ]},
+    { player_id: 'P39', role: 'opp_player_1', positions: [
+      { seq: 1, x: 12.0, y: 42.5 }  // Goalie
+    ]}
+  ],
+  shot_net_xy: { x: 3, y: 4 }  // Grid position (only for shots)
+}
+</code></pre>
+
+<h3>Visual History (Last N Events)</h3>
+
+<pre><code class="language-javascript">// Show last 5 events on rink, with decreasing opacity
+const EVENT_HISTORY_COUNT = 5;
+const OPACITY_SCALE = [1.0, 0.7, 0.5, 0.35, 0.2];  // Current → oldest
+<p>function renderEventHistory(events) {</p>
+  const recent = events.slice(-EVENT_HISTORY_COUNT);
+  
+  recent.forEach((evt, idx) =&gt; {
+    const opacity = OPACITY_SCALE[recent.length - 1 - idx];
+    const teamColor = evt.team === 'home' ? homeColor : awayColor;
+    
+    // Draw player positions
+    evt.player_xy.forEach(player =&gt; {
+      player.positions.forEach((pos, posIdx) =&gt; {
+        // Draw dot with team color, player #
+        drawPlayerDot(pos.x, pos.y, player.player_id, teamColor, opacity);
+        
+        // Draw line to next position
+        if (posIdx &lt; player.positions.length - 1) {
+          const next = player.positions[posIdx + 1];
+          drawLine(pos.x, pos.y, next.x, next.y, teamColor, opacity);
+        }
+      });
+    });
+    
+    // Draw puck
+    evt.puck_xy.forEach((pos, posIdx) =&gt; {
+      drawPuck(pos.x, pos.y, opacity);
+      if (posIdx &lt; evt.puck_xy.length - 1) {
+        const next = evt.puck_xy[posIdx + 1];
+        drawLine(pos.x, pos.y, next.x, next.y, '#000', opacity);
+      }
+    });
+  });
+}
+</code></pre>
+<p>---</p>
+
+<h2>Linked Event Detection</h2>
+
+<h3>Always-Linked Event Pairs</h3>
+<p>These events ALWAYS create linked events automatically:</p>
+
+<table>
+<thead><tr><th>Primary Event</th><th>Auto-Creates</th><th>Relationship</th></tr></thead>
+<tbody><tr><td>Stoppage</td><td>DeadIce</td><td>1:1 always</td></tr><tr><td>Shot_OnNet</td><td>Save</td><td>1:1 (unless goal)</td></tr><tr><td>Save_Rebound</td><td>Rebound</td><td>1:1 always</td></tr><tr><td>Save_Freeze</td><td>Stoppage + DeadIce</td><td>1:1:1 chain</td></tr><tr><td>Goal_Scored</td><td>Shot_Goal</td><td>1:1 always</td></tr></tbody></table>
+<h3>Smart Detection Rules</h3>
+
+<pre><code class="language-javascript">const LINKED_EVENT_RULES = {
+  // After a pass that crosses a line
+  'Pass_Completed': {
+    detect: (evt, context) =&gt; {
+      const startZone = getZoneFromXY(evt.puck_xy[0]);
+      const endZone = getZoneFromXY(evt.puck_xy[evt.puck_xy.length - 1]);
+      if (startZone !== endZone) {
+        return {
+          suggest: true,
+          linkedType: startZone === 'o' ? 'Zone_Exit' : 'Zone_Entry',
+          confidence: 0.95,
+          message: <code>Pass crossed ${startZone} → ${endZone} zone line</code>
+        };
+      }
+    }
+  },
+  
+  // After a turnover with zone change
+  'Turnover_Giveaway': {
+    detect: (evt, context) =&gt; {
+      const prevZone = context.previousEvent?.zone;
+      const currZone = evt.zone;
+      if (prevZone && prevZone !== currZone) {
+        return {
+          suggest: true,
+          linkedType: 'Zone_Entry',
+          confidence: 0.85,
+          message: <code>Possession change with zone transition</code>
+        };
+      }
+    }
+  },
+  
+  // Shot → Save chain
+  'Shot_OnNetSaved': {
+    detect: () =&gt; ({
+      suggest: true,
+      linkedType: 'Save',
+      confidence: 0.99,
+      autoCreate: true,  // Don't even ask, just do it
+      message: 'Auto-creating Save event'
+    })
+  }
+};
+</code></pre>
+
+<h3>Linked Event UI</h3>
+
+<pre><code class="language-">┌─────────────────────────────────────────────────────────────────────┐
+│  ⚡ LINKED EVENT DETECTED                                           │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  Pass_Completed (Zone Exit detected)                                 │
+│                                                                      │
+│  Your pass crossed from offensive → neutral zone.                    │
+│  Create linked Zone_Exit event?                                      │
+│                                                                      │
+│  ┌─────────────────────────────────────────────────────────────┐    │
+│  │ ✓ Copy all player XY positions                              │    │
+│  │ ✓ Copy play details                                         │    │
+│  │ ✓ Same timestamp                                            │    │
+│  │ ○ Flip event/opp players (for opposing perspective)         │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+│                                                                      │
+│  [Create Linked] [Skip] [Always Auto-Create]                         │
+│   (Enter)        (Esc)  (Shift+Enter)                               │
+└─────────────────────────────────────────────────────────────────────┘
+</code></pre>
+
+<h3>Shot → Save Player Flip Logic</h3>
+
+<pre><code class="language-javascript">function createLinkedSaveEvent(shotEvent) {
+  const saveEvent = {
+    ...shotEvent,
+    event_type: 'Save',
+    event_detail: determineSaveType(shotEvent),  // Save_Rebound, Save_Freeze, etc.
+    
+    // FLIP players
+    event_player_1: shotEvent.opp_player_1,      // Goalie becomes primary
+    event_player_2: shotEvent.opp_player_2,      // Other defenders
+    opp_player_1: shotEvent.event_player_1,      // Shooter becomes opponent
+    opp_player_2: shotEvent.event_player_2,      // Other attackers
+    
+    // Copy XY but flip player assignments
+    player_xy: shotEvent.player_xy.map(p =&gt; ({
+      ...p,
+      role: flipRole(p.role)  // event_player_1 → opp_player_1, etc.
+    })),
+    
+    // Same puck position
+    puck_xy: shotEvent.puck_xy
+  };
+  
+  return saveEvent;
+}
+</code></pre>
+<p>---</p>
+
+<h2>Hotkey System (User-Editable)</h2>
+
+<h3>Default Hotkey Configuration</h3>
+
+<pre><code class="language-javascript">// Stored in localStorage, editable via Settings modal
+const DEFAULT_HOTKEYS = {
+  // Video Controls
+  'space': { action: 'togglePlay', label: 'Play/Pause' },
+  'arrowleft': { action: 'frameBack', label: 'Frame Back' },
+  'arrowright': { action: 'frameForward', label: 'Frame Forward' },
+  'shift+arrowleft': { action: 'jumpBack5', label: 'Jump Back 5s' },
+  'shift+arrowright': { action: 'jumpForward5', label: 'Jump Forward 5s' },
+  '[': { action: 'slowDown', label: 'Slow Down' },
+  ']': { action: 'speedUp', label: 'Speed Up' },
+  '1': { action: 'angle1', label: 'Camera Angle 1' },
+  '2': { action: 'angle2', label: 'Camera Angle 2' },
+  '3': { action: 'angle3', label: 'Camera Angle 3' },
+  
+  // Event Types
+  's': { action: 'evtShot', label: 'Shot' },
+  'g': { action: 'evtGoal', label: 'Goal' },
+  'p': { action: 'evtPass', label: 'Pass' },
+  't': { action: 'evtTurnover', label: 'Turnover' },
+  'f': { action: 'evtFaceoff', label: 'Faceoff' },
+  'z': { action: 'evtZone', label: 'Zone Entry/Exit' },
+  'o': { action: 'evtPossession', label: 'Possession' },
+  'v': { action: 'evtSave', label: 'Save' },
+  'r': { action: 'evtRebound', label: 'Rebound' },
+  'd': { action: 'evtDeadIce', label: 'Dead Ice' },
+  'x': { action: 'evtStoppage', label: 'Stoppage' },
+  'n': { action: 'evtPenalty', label: 'Penalty' },
+  'y': { action: 'evtPlay', label: 'Play (Off/Def)' },
+  
+  // Team Selection
+  'h': { action: 'teamHome', label: 'Home Team' },
+  'a': { action: 'teamAway', label: 'Away Team' },
+  
+  // XY Mode
+  '<code>': { action: 'modePuck', label: 'Puck XY Mode' },
+  'e': { action: 'modeEventPlayer', label: 'Event Player XY' },
+  'w': { action: 'modeOppPlayer', label: 'Opp Player XY' },
+  
+  // Event Actions
+  'enter': { action: 'logEvent', label: 'Log Event' },
+  'escape': { action: 'clearForm', label: 'Clear Form' },
+  'l': { action: 'createLinked', label: 'Create Linked Event' },
+  'ctrl+z': { action: 'undo', label: 'Undo' },
+  'ctrl+shift+z': { action: 'redo', label: 'Redo' },
+  'ctrl+c': { action: 'copyLastEvent', label: 'Copy Last Event' },
+  
+  // Shift Actions
+  'shift+n': { action: 'newShift', label: 'New Shift' },
+  'shift+e': { action: 'endShift', label: 'End Current Shift' },
+  'q': { action: 'quickSwap', label: 'Quick Swap Mode' },
+  
+  // Highlight
+  'shift+h': { action: 'toggleHighlight', label: 'Toggle Highlight' },
+  
+  // Player Selection (Numpad)
+  'numpad1': { action: 'selectEvtPlayer1', label: 'Event Player 1' },
+  'numpad2': { action: 'selectEvtPlayer2', label: 'Event Player 2' },
+  'numpad3': { action: 'selectEvtPlayer3', label: 'Event Player 3' },
+  'numpad4': { action: 'selectOppPlayer1', label: 'Opp Player 1' },
+  'numpad5': { action: 'selectOppPlayer2', label: 'Opp Player 2' },
+  'numpad6': { action: 'selectOppPlayer3', label: 'Opp Player 3' },
+};
+</code></pre>
+
+<h3>Hotkey Editor UI</h3>
+
+<pre><code class="language-">┌─────────────────────────────────────────────────────────────────────┐
+│  ⌨️ HOTKEY SETTINGS                                                 │
+├─────────────────────────────────────────────────────────────────────┤
+│  Search: [________________]                                          │
+│                                                                      │
+│  ┌─ VIDEO ──────────────────────────────────────────────────────┐   │
+│  │ Play/Pause        [Space     ] ← Click to rebind             │   │
+│  │ Frame Back        [←         ]                               │   │
+│  │ Frame Forward     [→         ]                               │   │
+│  │ Slow Down         [[         ]                               │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+│                                                                      │
+│  ┌─ EVENTS ─────────────────────────────────────────────────────┐   │
+│  │ Shot              [S         ]                               │   │
+│  │ Goal              [G         ]                               │   │
+│  │ Pass              [P         ]                               │   │
+│  │ ... (expandable)                                             │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+│                                                                      │
+│  [Reset to Defaults] [Import] [Export]              [Save] [Cancel]  │
+└─────────────────────────────────────────────────────────────────────┘
+</code></pre>
+<p>---</p>
+
+<h2>ML Suggestion System</h2>
+
+<h3>Transition Matrix (From Data Analysis)</h3>
+
+<pre><code class="language-javascript">// Pre-computed from 4 games of tracking data
+const TRANSITION_MATRIX = {
+  'Shot': {
+    'Save': 0.487, 'Turnover': 0.170, 'Possession': 0.152,
+    'Zone_Entry_Exit': 0.048, 'Stoppage': 0.039
+  },
+  'Pass': {
+    'Zone_Entry_Exit': 0.329, 'Possession': 0.302, 'Turnover': 0.150,
+    'Pass': 0.107, 'Shot': 0.092
+  },
+  'Save': {
+    'Rebound': 0.642, 'Stoppage': 0.325, 'Possession': 0.009
+  },
+  'Turnover': {
+    'Possession': 0.542, 'Zone_Entry_Exit': 0.279, 'Pass': 0.087
+  },
+  'Faceoff': {
+    'Possession': 0.343, 'Pass': 0.195, 'Zone_Entry_Exit': 0.189,
+    'Shot': 0.142, 'Turnover': 0.083
+  },
+  'Goal': {
+    'Stoppage': 0.688, 'DeadIce': 0.312
+  }
+};
+<p>// Detail-level predictions</p>
+const DETAIL_TRANSITIONS = {
+  'Shot_OnNetSaved': { 'Save_Rebound': 0.66, 'Save_Freeze': 0.32 },
+  'Save_Rebound': { 'Rebound_TeamRecovered': 0.49, 'Rebound_OppTeamRecovered': 0.36 },
+  'Save_Freeze': { 'Stoppage_Play': 0.91 }
+};
+</code></pre>
+
+<h3>Suggestion Display</h3>
+
+<pre><code class="language-">┌─────────────────────────────────────────────────────────────────────┐
+│  After: Shot_OnNetSaved                                             │
+├─────────────────────────────────────────────────────────────────────┤
+│  SUGGESTED NEXT:                                                     │
+│  [1] Save_Rebound  ████████████████░░░░ 66%   [Enter]               │
+│  [2] Save_Freeze   ██████████░░░░░░░░░░ 32%   [2]                   │
+│  [3] Other...                                  [3]                   │
+└─────────────────────────────────────────────────────────────────────┘
+</code></pre>
+<p>---</p>
+
+<h2>Current Workflow Summary</h2>
+
+<h3>Video Setup</h3>
+<ul>
+<li>Multiple camera angles for puck visibility</li>
+<li>Premiere Pro for playback, angle switching, scrubbing</li>
+<li>Watch-back tracking (not real-time)</li>
+<li>Video time ≠ Game time (intermissions create offset)</li>
+</ul>
+
+<h3>Pain Points Identified</h3>
+<table>
+<thead><tr><th>Pain Point</th><th>Impact</th></tr></thead>
+<tbody><tr><td>Too many clicks</td><td>10+ fields per event</td></tr><tr><td>Linked events = 2x work</td><td>Duplicate data entry</td></tr><tr><td>Excel is slow</td><td>4k+ rows per game</td></tr><tr><td>No validation</td><td>Errors go undetected</td></tr><tr><td>Manual zone/team</td><td>Could be inferred from XY</td></tr><tr><td>No XY coordinates</td><td>Want spatial data</td></tr><tr><td>Shift player entry</td><td>Re-enter 12+ players when 1-3 change</td></tr><tr><td>No video integration</td><td>Must switch between apps</td></tr></tbody></table>
+<h3>New Requirements</h3>
+<table>
+<thead><tr><th>Requirement</th><th>Details</th></tr></thead>
+<tbody><tr><td>XY Coordinates</td><td>Up to 10 points per player per event</td></tr><tr><td>Puck XY</td><td>Up to 10 puck positions per event</td></tr><tr><td>Shot net location</td><td>1 additional XY point for shots</td></tr><tr><td>Highlight flag</td><td>Boolean per event</td></tr><tr><td>Video time storage</td><td>Seconds for YouTube link generation</td></tr><tr><td>Player validation</td><td>Only on-ice players can be in events</td></tr><tr><td>Shift boundary validation</td><td>Events shouldn't span shift boundaries</td></tr><tr><td>Video integration</td><td>Easy switching, zooming, super scrub</td></tr><tr><td>ML suggestions</td><td>Predict next likely events</td></tr></tbody></table>
+<hr>
+
+<h2>Data Analysis Findings</h2>
+
+<h3>Event Volume (Per Game Average)</h3>
+
+<table>
+<thead><tr><th>Event Type</th><th>Per Game</th><th>Notes</th></tr></thead>
+<tbody><tr><td>Possession</td><td>378</td><td>Most frequent - puck retrievals, recoveries</td></tr><tr><td>Zone_Entry_Exit</td><td>284</td><td>Entries, exits, keep-ins</td></tr><tr><td>Pass</td><td>255</td><td>Completed, missed, deflected, intercepted</td></tr><tr><td>Turnover</td><td>186</td><td>Giveaways and takeaways</td></tr><tr><td>Shot</td><td>109</td><td>Various outcomes</td></tr><tr><td>Save</td><td>53</td><td>Follows 48.7% of shots</td></tr><tr><td>Faceoff</td><td>42</td><td>After stoppages, goals, penalties</td></tr><tr><td>Stoppage</td><td>41</td><td>Play stoppages</td></tr><tr><td>DeadIce</td><td>39</td><td>Dead puck situations</td></tr><tr><td>Rebound</td><td>35</td><td>Follows 64.2% of saves</td></tr><tr><td>Play</td><td>19</td><td>Offensive/defensive plays</td></tr><tr><td>Goal</td><td>4</td><td>Scoring events</td></tr></tbody></table>
+<strong>Total: ~1,458 unique events per game</strong>
+
+<h3>Linked Events (20.4% of all events)</h3>
+<p>Most common compound actions:</p>
+
+<table>
+<thead><tr><th>Linked Combination</th><th>Count</th><th>Common Details</th></tr></thead>
+<tbody><tr><td>Pass ↔ Zone_Entry_Exit</td><td>75</td><td>Pass_Completed ↔ Zone_Exit (44)</td></tr><tr><td>Pass ↔ Turnover</td><td>67</td><td>Pass_Missed ↔ Turnover_Giveaway (36)</td></tr><tr><td>Turnover ↔ Zone_Entry_Exit</td><td>63</td><td>Turnover_Giveaway ↔ Zone_Entry (23)</td></tr><tr><td>Rebound ↔ Save ↔ Shot</td><td>55</td><td>Full shot sequence</td></tr><tr><td>Pass ↔ Turnover ↔ Zone_Entry_Exit</td><td>45</td><td>Triple-linked</td></tr><tr><td>Shot ↔ Turnover</td><td>34</td><td>Shot_Blocked ↔ Turnover_Giveaway</td></tr><tr><td>DeadIce ↔ Save ↔ Shot ↔ Stoppage</td><td>33</td><td>Goalie freeze sequence</td></tr><tr><td>Goal sequence</td><td>6</td><td>DeadIce ↔ Goal ↔ Shot ↔ Stoppage</td></tr></tbody></table>
+<h3>Event Sequence Predictions (ML Basis)</h3>
+
+<strong>After Shot:</strong>
+<ul>
+<li>48.7% → Save</li>
+<li>17.0% → Turnover</li>
+<li>15.2% → Possession</li>
+</ul>
+
+<strong>After Pass:</strong>
+<ul>
+<li>32.9% → Zone_Entry_Exit</li>
+<li>30.2% → Possession</li>
+<li>15.0% → Turnover</li>
+</ul>
+
+<strong>After Faceoff:</strong>
+<ul>
+<li>34.3% → Possession</li>
+<li>19.5% → Pass</li>
+<li>18.9% → Zone_Entry_Exit</li>
+</ul>
+
+<strong>After Save:</strong>
+<ul>
+<li>64.2% → Rebound</li>
+<li>32.5% → Stoppage</li>
+</ul>
+
+<strong>After Turnover:</strong>
+<ul>
+<li>54.2% → Possession</li>
+<li>27.9% → Zone_Entry_Exit</li>
+</ul>
+
+<strong>After Zone_Entry_Exit:</strong>
+<ul>
+<li>35.3% → Possession</li>
+<li>26.2% → Turnover</li>
+<li>13.3% → Pass</li>
+</ul>
+
+<h3>Detail-Level Predictions</h3>
+
+<table>
+<thead><tr><th>After This</th><th>Most Likely Next</th></tr></thead>
+<tbody><tr><td>Shot_OnNetSaved</td><td>Save_Rebound (66%), Save_Freeze (32%)</td></tr><tr><td>Save_Rebound</td><td>Rebound_TeamRecovered (49%), Rebound_OppTeamRecovered (36%)</td></tr><tr><td>Save_Freeze</td><td>Stoppage_Play (91%)</td></tr><tr><td>Pass_Completed</td><td>Zone_Exit (20%), Pass_Completed (10%)</td></tr><tr><td>Zone_Entry</td><td>Turnover_Giveaway (26%), Shot_OnNetSaved (10%)</td></tr><tr><td>Turnover_Giveaway</td><td>PuckRetrieval (31%), Zone_Keepin (12%)</td></tr></tbody></table>
+<h3>Players Per Event</h3>
+
+<table>
+<thead><tr><th>Players</th><th>Count</th><th>Percentage</th></tr></thead>
+<tbody><tr><td>1</td><td>2,250</td><td>38.6%</td></tr><tr><td>2</td><td>2,232</td><td>38.3%</td></tr><tr><td>3</td><td>1,062</td><td>18.2%</td></tr><tr><td>4</td><td>201</td><td>3.4%</td></tr><tr><td>5+</td><td>86</td><td>1.5%</td></tr></tbody></table>
+<strong>Average: 1.92 players per event</strong>
+
+<h3>Player Role Patterns in Shot↔Save Links</h3>
+
+<strong>Shot event:</strong>
+<ul>
+<li>event_player_1: Shooter (100%)</li>
+<li>opp_player_1: Goalie (99%)</li>
+<li>opp_player_2: Other defender (50%)</li>
+</ul>
+
+<strong>Save event (roles flip):</strong>
+<ul>
+<li>event_player_1: Goalie (100%)</li>
+<li>opp_player_1: Shooter (99%)</li>
+<li>event_player_2: Other defender (51%)</li>
+</ul>
+
+<h3>Shift Analysis</h3>
+
+<table>
+<thead><tr><th>Metric</th><th>Value</th></tr></thead>
+<tbody><tr><td>Shifts per game</td><td>~100</td></tr><tr><td>Average duration</td><td>33 sec</td></tr><tr><td>Median duration</td><td>22 sec</td></tr><tr><td>Min/Max</td><td>0 / 130 sec</td></tr></tbody></table>
+<strong>Shift Start Types:</strong>
+<ul>
+<li>OtherFaceoff: 66%</li>
+<li>FaceoffAfterGoal: 11%</li>
+<li>PeriodStart/GameStart: 9%</li>
+<li>Intermission: 6%</li>
+<li>FaceoffAfterPenalty: 6%</li>
+</ul>
+
+<strong>Shift Stop Types:</strong>
+<ul>
+<li>Goalie Stopped: 41%</li>
+<li>Icing: 16%</li>
+<li>Puck Out of Play: 10%</li>
+<li>Goal: 13%</li>
+<li>Period End: 7%</li>
+<li>Penalty: 6%</li>
+</ul>
+
+<h3>Player Changes Between Shifts</h3>
+
+<table>
+<thead><tr><th>Changes</th><th>Home</th><th>Away</th></tr></thead>
+<tbody><tr><td>1 player</td><td>32%</td><td>30%</td></tr><tr><td>2 players</td><td>36%</td><td>34%</td></tr><tr><td>3 players</td><td>13%</td><td>15%</td></tr><tr><td>4+ players</td><td>19%</td><td>21%</td></tr></tbody></table>
+<strong>Average: 2.4-2.5 player changes per shift transition</strong>
+
+<h3>Zone Distribution by Event Type</h3>
+
+<table>
+<thead><tr><th>Event Type</th><th>Offensive</th><th>Defensive</th><th>Neutral</th></tr></thead>
+<tbody><tr><td>Shot</td><td>100%</td><td>0%</td><td>0%</td></tr><tr><td>Goal</td><td>100%</td><td>0%</td><td>0%</td></tr><tr><td>Save</td><td>0%</td><td>100%</td><td>0%</td></tr><tr><td>Rebound</td><td>0%</td><td>100%</td><td>0%</td></tr><tr><td>Faceoff</td><td>37%</td><td>31%</td><td>33%</td></tr><tr><td>Pass</td><td>43%</td><td>34%</td><td>22%</td></tr><tr><td>Turnover</td><td>41%</td><td>39%</td><td>19%</td></tr><tr><td>Zone_Entry_Exit</td><td>47%</td><td>48%</td><td>6%</td></tr></tbody></table>
+<h3>Video Time Offset</h3>
+
+<table>
+<thead><tr><th>Period</th><th>Video Start (sec)</th><th>Offset</th></tr></thead>
+<tbody><tr><td>1</td><td>0</td><td>-</td></tr><tr><td>2</td><td>1152</td><td>+72 sec (intermission)</td></tr><tr><td>3</td><td>2296</td><td>+64 sec (intermission)</td></tr></tbody></table>
+<hr>
+
+<h2>Requirements Summary</h2>
+
+<h3>Must Have (P0)</h3>
+
+<ol>
+<li>1. <strong>Event Entry</strong></li>
+</ol>
+   - All current event types and details
+   - Multi-player support (1-9 players per event)
+   - Linked event support with auto-population
+   - XY coordinates (up to 10 per player, 10 for puck)
+   - Shot net location XY
+   - Highlight flag per event
+
+<ol>
+<li>2. <strong>Shift Entry</strong></li>
+</ol>
+   - 14 player slots (7 home, 7 away)
+   - Quick swap UI (not full re-entry)
+   - Zone start/end tracking
+   - Start/stop type selection
+
+<ol>
+<li>3. <strong>Full CRUD Operations</strong></li>
+</ol>
+   - <strong>Create</strong> new events/shifts
+   - <strong>Read</strong> existing games from Supabase
+   - <strong>Update</strong> ALL fields on ALL events/shifts (including old games without XY)
+   - <strong>Delete</strong> events/shifts/players from events
+   - Add/remove players from existing events
+
+<ol>
+<li>4. <strong>Validation & Error Checking</strong></li>
+</ol>
+   - Only on-ice players can be in events
+   - Events bounded by shifts
+   - Required field validation
+   - <strong>NORAD verification</strong> - warn if tracked goals don't match official record
+   - Real-time error warnings
+
+<ol>
+<li>5. <strong>Video Integration</strong></li>
+</ol>
+   - Multi-angle switching (local files + YouTube)
+   - Variable speed scrubbing ("super scrub")
+   - Zooming
+   - Video time ↔ game time mapping (handle intermission offsets)
+   - Store video seconds for YouTube deep links
+   - Videos are pre-synced (same start time across angles)
+
+<ol>
+<li>6. <strong>Data Integration</strong></li>
+</ol>
+   - Load game rosters directly from Supabase
+   - Auto-save (no manual save button)
+   - Read/write prior games from Supabase
+   - Match fact_event_players schema (61 columns)
+   - Match fact_shifts schema (129 columns)
+
+<ol>
+<li>7. <strong>UI Essentials</strong></li>
+</ol>
+   - Dependent/cascading dropdowns (event_type → detail → detail_2)
+   - Running basic box score during tracking
+   - Extensive hotkeys
+   - Guides/tooltips for new users
+
+<h3>Should Have (P1)</h3>
+
+<ol>
+<li>1. <strong>ML Suggestions</strong></li>
+</ol>
+   - Next event type prediction
+   - Next event detail prediction
+   - Auto-event creation for common sequences (Shot → Save → Rebound)
+   - Based on sequence analysis above
+
+<ol>
+<li>2. <strong>Auto-Fill</strong></li>
+</ol>
+   - Zone from XY coordinates (puck position)
+   - Team carry-forward until possession change
+   - Linked event data copy (everything except type/detail)
+   - Shot→Save player role flip
+
+<ol>
+<li>3. <strong>UI Optimizations</strong></li>
+</ol>
+   - Quick-add buttons for common sequences
+   - Undo/redo with history
+   - Batch edit capabilities
+
+<h3>Nice to Have (P2)</h3>
+
+<ol>
+<li>1. Rink visualization for XY entry (click-to-place)</li>
+<li>2. Player tracking overlay on video</li>
+<li>3. Auto-shift detection from player XY movement</li>
+<li>4. Heat map preview during tracking</li>
+<li>5. Offline mode (future consideration)</li>
+</ul>
+<p>---</p>
+
+<h2>Automation Opportunities</h2>
+
+<h3>High-Value Automations</h3>
+
+<table>
+<thead><tr><th>Manual Today</th><th>Automation</th><th>Confidence</th></tr></thead>
+<tbody><tr><td>Zone entry for every event</td><td>Infer from puck XY</td><td>100%</td></tr><tr><td>Team for every event</td><td>Carry forward until possession change</td><td>95%</td></tr><tr><td>Linked event data entry</td><td>Copy all fields except type/detail</td><td>100%</td></tr><tr><td>Event success</td><td>Already auto-calculated</td><td>100%</td></tr><tr><td>Shot → Save flip</td><td>Auto-flip player roles</td><td>100%</td></tr><tr><td>Save_Freeze → Stoppage</td><td>Auto-suggest next event</td><td>91%</td></tr><tr><td>Shot_OnNet → Save</td><td>Auto-suggest next event</td><td>66%</td></tr><tr><td>Shift player changes</td><td>Show diff, confirm swaps</td><td>95%</td></tr></tbody></table>
+<h3>Linked Event Auto-Fill</h3>
+<p>When creating linked event:</p>
+<pre><code class="language-">Copy from primary event:
+✓ All player IDs
+✓ All XY coordinates  
+✓ Play details 1 & 2
+✓ Zone
+✓ Time
+✓ Team
+<p>User enters:</p>
+<ul>
+<li>Event type (dropdown)</li>
+<li>Event detail (cascading)</li>
+<li>Event detail 2 (if applicable)</li>
+</ul>
+<p>Special case: Shot → Save</p>
+✓ Auto-flip: event_player_1 ↔ opp_player_1
+✓ Auto-flip: event_player_2 ↔ opp_player_2
+</code></pre>
+
+<h3>ML Suggestion System</h3>
+<p>Based on transition analysis, show top 3 predicted next events:</p>
+
+<pre><code class="language-">After: Shot_OnNetSaved
+┌─────────────────────────────────────┐
+│ Suggested Next:                     │
+│ [1] Save_Rebound (66%)    [Enter]   │
+│ [2] Save_Freeze (32%)     [2]       │
+│ [3] Save_Played (2%)      [3]       │
+└─────────────────────────────────────┘
+</code></pre>
+
+<h3>Shift Quick-Swap UI</h3>
+<p>Instead of entering all 14 players:</p>
+
+<pre><code class="language-">┌─────────────────────────────────────────────┐
+│ HOME                    │ AWAY              │
+│ F1: 53 [change]         │ F1: 70 [change]   │
+│ F2: 20 [change]         │ F2: 75 [change]   │
+│ F3: 12 → [24]           │ F3: 49 [change]   │
+│ D1: 8  [change]         │ D1: 52 [change]   │
+│ D2: 21 → [77]           │ D2: 22 [change]   │
+│ G:  99 [change]         │ G:  39 [change]   │
+└─────────────────────────────────────────────┘
+│ [Apply 2 changes] [Full line change] [Undo] │
+</code></pre>
+<p>---</p>
+
+<h2>Proposed Design Concepts</h2>
+
+<h3>Concept A: Integrated Video Player</h3>
+
+<pre><code class="language-">┌─────────────────────────────────────────────────────────────────┐
+│ [Angle 1] [Angle 2] [Angle 3]  │ Game: 18969 │ Period: 2      │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│                    VIDEO PLAYER                                 │
+│                    (with XY click overlay)                      │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│ ◀◀ ◀ [▶] ▶ ▶▶  │ 0.25x 0.5x [1x] 2x │ 12:34 / 54:21          │
+├─────────────────────────────────────────────────────────────────┤
+│ EVENT ENTRY                    │ CURRENT SHIFT                  │
+│ Type: [Shot      ▼]            │ #42: 5v5 Full Strength         │
+│ Detail: [Shot_OnNetSaved ▼]    │ 12:45 - ongoing                │
+│ Detail2: [Shot-Wrist     ▼]    │ [New Shift] [End Shift]        │
+│                                │                                │
+│ Players:                       │ HOME         AWAY              │
+│ E1: [53] Shooter    (x,y)      │ 53 20 12     70 75 49          │
+│ E2: [  ]            (x,y)      │ 8  21        52 22             │
+│ O1: [39] Goalie     (x,y)      │ 99           39                │
+│                                │                                │
+│ [+ Add Linked] [★ Highlight]   │                                │
+│                                │                                │
+│ SUGGESTED NEXT:                │                                │
+│ [Save_Rebound 66%] [Save_Freeze 32%]                           │
+└─────────────────────────────────────────────────────────────────┘
+</code></pre>
+
+<h3>Concept B: Side-by-Side Video + Rink</h3>
+
+<pre><code class="language-">┌──────────────────────────┬──────────────────────────────────────┐
+│     VIDEO PLAYER         │         RINK DIAGRAM                 │
+│                          │    ┌─────────────────────┐            │
+│                          │    │  ●53  ●20           │            │
+│                          │    │       ●12     ⬤puck │            │
+│                          │    │  ●8   ●21           │            │
+│                          │    │         [G99]       │            │
+│                          │    └─────────────────────┘            │
+├──────────────────────────┴──────────────────────────────────────┤
+│ QUICK ENTRY BAR                                                 │
+│ [Faceoff] [Pass] [Shot] [Save] [Turnover] [Zone] [Stoppage]     │
+├─────────────────────────────────────────────────────────────────┤
+│ RECENT EVENTS                   │ SHIFT PANEL                   │
+│ 12:34 Pass_Completed #53        │ Players on ice...             │
+│ 12:32 Zone_Exit #53             │                               │
+│ 12:28 Possession #20            │ [Swap Players]                │
+└─────────────────────────────────────────────────────────────────┘
+</code></pre>
+<p>---</p>
+
+<h2>Technical Architecture (Confirmed)</h2>
+
+<h3>Platform: Electron + React</h3>
+
+<strong>Why Electron:</strong>
+<ul>
+<li>Desktop-first (your requirement)</li>
+<li>Native video handling (local files + YouTube)</li>
+<li>Can access local filesystem for video files</li>
+<li>SQLite for local fast operations</li>
+<li>Cross-platform if needed later</li>
+</ul>
+
+<strong>Stack:</strong>
+<pre><code class="language-">┌─────────────────────────────────────────────────────┐
+│                  ELECTRON APP                        │
+├─────────────────────────────────────────────────────┤
+│  React Frontend                                      │
+│  ├── Video Player (react-player or custom)          │
+│  ├── Rink Diagram Component (XY entry)              │
+│  ├── Event Entry Forms                              │
+│  ├── Shift Manager                                  │
+│  ├── Box Score Live Display                         │
+│  └── Hotkey Handler                                 │
+├─────────────────────────────────────────────────────┤
+│  State Management (Zustand or Redux)                │
+│  ├── Current game state                             │
+│  ├── Undo/redo history                              │
+│  └── ML suggestion cache                            │
+├─────────────────────────────────────────────────────┤
+│  Data Layer                                          │
+│  ├── Local SQLite (fast ops, auto-save)             │
+│  ├── Supabase Client (sync, rosters)                │
+│  └── File System (video access)                     │
+└─────────────────────────────────────────────────────┘
+</code></pre>
+
+<h3>Data Flow</h3>
+
+<pre><code class="language-">┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│   SUPABASE   │◄───►│  LOCAL DB    │◄───►│   TRACKER    │
+│              │     │  (SQLite)    │     │     UI       │
+│  - Rosters   │     │              │     │              │
+│  - Games     │     │  - Working   │     │  - Events    │
+│  - Events    │     │    copy      │     │  - Shifts    │
+│  - Shifts    │     │  - Auto-save │     │  - Video     │
+│  - NORAD     │     │  - Undo hist │     │  - XY        │
+└──────────────┘     └──────────────┘     └──────────────┘
+        │                   │                    │
+        └───────────────────┴────────────────────┘
+                    Real-time sync
+</code></pre>
+
+<h3>Video Architecture</h3>
+
+<pre><code class="language-">Video Sources:
+├── Local Files (MP4, MOV, etc.)
+│   └── Angle 1: /path/to/game_18969_angle1.mp4
+│   └── Angle 2: /path/to/game_18969_angle2.mp4
+│   └── Angle 3: /path/to/game_18969_angle3.mp4
+│
+└── YouTube (after upload)
+    └── https://youtube.com/watch?v=ABC123
+    └── Deep links: ?t=1234 (seconds)
+<p>Time Mapping:</p>
+┌─────────────────────────────────────────────────────┐
+│ Game Clock: 18:00 P1 │ Video Time: 0:00            │
+│ Game Clock: 00:00 P1 │ Video Time: 18:00           │
+│ Intermission         │ Video Time: 18:00 - 19:12   │
+│ Game Clock: 18:00 P2 │ Video Time: 19:12           │
+│ ...                                                 │
+└─────────────────────────────────────────────────────┘
+</code></pre>
+
+<h3>Auto-Save Strategy</h3>
+
+<pre><code class="language-javascript">// Debounced auto-save on every change
+const autoSave = debounce(async (state) =&gt; {
+  // 1. Save to local SQLite immediately
+  await localDb.saveGame(state);
+  
+  // 2. Sync to Supabase in background
+  await supabase.upsertGame(state);
+  
+  // 3. Update sync status indicator
+  setLastSaved(Date.now());
+}, 500); // 500ms debounce
+</code></pre>
+
+<h3>NORAD Validation</h3>
+
+<pre><code class="language-javascript">// On game load, fetch official NORAD data
+const noradData = await supabase
+  .from('norad_games')
+  .select('goals')
+  .eq('game_id', gameId);
+<p>// Compare during tracking</p>
+function validateGoal(goalEvent) {
+  const trackedGoals = getTrackedGoals();
+  const noradGoals = noradData.goals;
+  
+  if (!noradGoals.includes(goalEvent.player_id)) {
+    return {
+      warning: true,
+      message: </code>⚠️ Player ${goalEvent.player_name} scored in tracker but not in NORAD<code>
+    };
+  }
+}
+</code></pre>
+<p>---</p>
+
+<h2>Hotkey Design</h2>
+
+<h3>Global Hotkeys (Always Active)</h3>
+
+<table>
+<thead><tr><th>Key</th><th>Action</th></tr></thead>
+<tbody><tr><td></code>Space<code></td><td>Play/Pause video</td></tr><tr><td></code>←<code> / </code>→<code></td><td>Frame step (when paused)</td></tr><tr><td></code>Shift+←<code> / </code>Shift+→<code></td><td>5 second jump</td></tr><tr><td></code>[<code> / </code>]<code></td><td>Slow down / speed up playback</td></tr><tr><td></code>1<code> / </code>2<code> / </code>3<code></td><td>Switch camera angle</td></tr><tr><td></code>Ctrl+Z<code></td><td>Undo</td></tr><tr><td></code>Ctrl+Shift+Z<code></td><td>Redo</td></tr><tr><td></code>Ctrl+S<code></td><td>Force sync to Supabase</td></tr><tr><td></code>Escape<code></td><td>Cancel current action</td></tr></tbody></table>
+<h3>Event Entry Hotkeys</h3>
+
+<table>
+<thead><tr><th>Key</th><th>Action</th></tr></thead>
+<tbody><tr><td></code>F<code></td><td>New Faceoff</td></tr><tr><td></code>S<code></td><td>New Shot</td></tr><tr><td></code>P<code></td><td>New Pass</td></tr><tr><td></code>G<code></td><td>New Goal</td></tr><tr><td></code>T<code></td><td>New Turnover</td></tr><tr><td></code>Z<code></td><td>New Zone Entry/Exit</td></tr><tr><td></code>V<code></td><td>New Save</td></tr><tr><td></code>R<code></td><td>New Rebound</td></tr><tr><td></code>D<code></td><td>New DeadIce</td></tr><tr><td></code>O<code></td><td>New Stoppage</td></tr><tr><td></code>H<code></td><td>Toggle Highlight flag</td></tr><tr><td></code>L<code></td><td>Create Linked Event</td></tr><tr><td></code>Enter<code></td><td>Confirm/Save event</td></tr><tr><td></code>Tab<code></td><td>Next field</td></tr><tr><td></code>Shift+Tab<code></td><td>Previous field</td></tr></tbody></table>
+<h3>Shift Hotkeys</h3>
+
+<table>
+<thead><tr><th>Key</th><th>Action</th></tr></thead>
+<tbody><tr><td></code>N<code></td><td>New Shift</td></tr><tr><td></code>E<code></td><td>End Current Shift</td></tr><tr><td></code>Q<code></td><td>Quick swap mode (then click players)</td></tr></tbody></table>
+<h3>Number Pad for Players</h3>
+
+<table>
+<thead><tr><th>Key</th><th>Action</th></tr></thead>
+<tbody><tr><td></code>Numpad 1-6<code></td><td>Select event_player slot</td></tr><tr><td></code>Shift+Numpad 1-6`</td><td>Select opp_player slot</td></tr><tr><td>Then type jersey number</td></tr></tbody></table>
+<hr>
+
+<h2>Live Box Score Design</h2>
+
+<pre><code class="language-">┌─────────────────────────────────────────────────────┐
+│                  LIVE BOX SCORE                      │
+├─────────────────────────────────────────────────────┤
+│ PLATINUM (H)          3 - 2          VELODROME (A)  │
+├─────────────────────────────────────────────────────┤
+│ Period 2    │ 12:34 │ Shift #45 │ 5v5 Full Strength │
+├─────────────────────────────────────────────────────┤
+│         HOME │ STAT        │ AWAY                   │
+│           23 │ Shots       │ 18                     │
+│           12 │ SOG         │ 11                     │
+│            8 │ Saves       │ 9                      │
+│           15 │ Faceoffs    │ 12                     │
+│            3 │ Giveaways   │ 5                      │
+│            2 │ Takeaways   │ 1                      │
+│            1 │ Penalties   │ 2                      │
+│          54% │ Zone Time   │ 46%                    │
+├─────────────────────────────────────────────────────┤
+│ ⚠️ WARNINGS:                                        │
+│ • Player #53 has goal not in NORAD                  │
+│ • Event at 12:34 outside shift bounds               │
+└─────────────────────────────────────────────────────┘
+</code></pre>
+<p>---</p>
+
+<h2>Workflow Modes</h2>
+
+<h3>Mode 1: New Game Tracking</h3>
+
+<pre><code class="language-">1. Select game from Supabase (or create new)
+<ol>
+<li>2. Rosters auto-load from Supabase</li>
+<li>3. Load video files (local) or YouTube URL</li>
+<li>4. Sync video angles</li>
+<li>5. Start tracking</li>
+<li>6. Auto-save continuously</li>
+<li>7. Close when done (already saved)</li>
+</ul>
+</code></pre>
+
+<h3>Mode 2: Edit Existing Game</h3>
+
+<pre><code class="language-">1. Load game from Supabase
+<ol>
+<li>2. All events/shifts populate</li>
+<li>3. Video loads (if still available)</li>
+<li>4. Edit any field on any event/shift</li>
+<li>5. Add XY to old events (backfill)</li>
+<li>6. Add/remove players from events</li>
+<li>7. Auto-save on every change</li>
+</ul>
+</code></pre>
+
+<h3>Mode 3: Review & Validate</h3>
+
+<pre><code class="language-">1. Load completed game
+<ol>
+<li>2. Run validation checks</li>
+<li>3. Compare to NORAD official data</li>
+<li>4. Fix discrepancies</li>
+<li>5. Mark as "verified"</li>
+</ul>
+</code></pre>
+<p>---</p>
+
+<h2>Open Questions (Answered)</h2>
+
+<table>
+<thead><tr><th>Question</th><th>Answer</th></tr></thead>
+<tbody><tr><td>Video files</td><td>Both local and YouTube</td></tr><tr><td>Angle sync</td><td>Pre-synced (same start time)</td></tr><tr><td>Offline</td><td>Not required yet</td></tr><tr><td>Edit after</td><td><strong>YES - critical requirement</strong></td></tr><tr><td>Platform</td><td>Desktop (Electron)</td></tr><tr><td>YouTube</td><td>Yes, videos uploaded after tracking</td></tr></tbody></table>
+<hr>
+
+<h2>Next Steps</h2>
+
+<ol>
+<li>1. <strong>Confirm hotkey mappings</strong> - Review proposed hotkeys, adjust as needed</li>
+<li>2. <strong>Design database schema</strong> - Local SQLite structure for auto-save + undo</li>
+<li>3. <strong>Design Supabase sync</strong> - What tables, what fields, conflict resolution</li>
+<li>4. <strong>Build video player prototype</strong> - Test multi-angle + scrubbing</li>
+<li>5. <strong>Build event entry MVP</strong> - Core form with hotkeys</li>
+<li>6. <strong>Build shift tracker</strong> - Quick-swap UI</li>
+<li>7. <strong>Integrate ML suggestions</strong> - From transition matrix</li>
+<li>8. <strong>Add validations</strong> - NORAD checks, shift bounds, etc.</li>
+</ul>
+<p>---</p>
+
+<h2>Estimated Complexity</h2>
+
+<table>
+<thead><tr><th>Component</th><th>Effort</th><th>Priority</th></tr></thead>
+<tbody><tr><td>Video player with multi-angle</td><td>High</td><td>P0</td></tr><tr><td>Event entry form + hotkeys</td><td>Medium</td><td>P0</td></tr><tr><td>Supabase integration</td><td>Medium</td><td>P0</td></tr><tr><td>Shift tracker</td><td>Medium</td><td>P0</td></tr><tr><td>Auto-save + local DB</td><td>Medium</td><td>P0</td></tr><tr><td>Cascading dropdowns</td><td>Low</td><td>P0</td></tr><tr><td>XY click-to-place</td><td>Medium</td><td>P1</td></tr><tr><td>ML suggestions</td><td>Low</td><td>P1</td></tr><tr><td>Live box score</td><td>Low</td><td>P1</td></tr><tr><td>NORAD validation</td><td>Low</td><td>P1</td></tr><tr><td>Undo/redo history</td><td>Medium</td><td>P1</td></tr><tr><td>Edit existing games</td><td>Medium</td><td>P0</td></tr></tbody></table>
+<hr>
+
+<em>Document updated with confirmed requirements</em>
+
+</div>
+</main>
+<footer>
+  <div class="container">
+    BenchSight Documentation • v14.01 • January 7, 2026
+  </div>
+</footer>
+</body>
+</html>

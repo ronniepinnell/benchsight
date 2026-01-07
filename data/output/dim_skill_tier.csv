@@ -1,6 +1,0 @@
-tier_id,tier_name,min_rating,max_rating,description,_updated_timestamp,_export_timestamp
-1,Elite,5.5,6.0,Top-tier players,2025-12-31T05:50:56.537981,2025-12-31T05:50:59.473922
-2,Advanced,4.5,5.4,Strong players,2025-12-31T05:50:56.537981,2025-12-31T05:50:59.473922
-3,Intermediate,3.5,4.4,Average skilled,2025-12-31T05:50:56.537981,2025-12-31T05:50:59.473922
-4,Developing,2.5,3.4,Building skills,2025-12-31T05:50:56.537981,2025-12-31T05:50:59.473922
-5,Beginner,2.0,2.4,New players,2025-12-31T05:50:56.537981,2025-12-31T05:50:59.473922

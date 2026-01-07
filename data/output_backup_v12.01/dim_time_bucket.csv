@@ -1,0 +1,7 @@
+time_bucket_id,time_bucket_code,time_bucket_name,minute_start,minute_end,description
+TB01,early,Early Period (0-5),0,5,First 5 minutes
+TB02,mid_early,Mid-Early (5-10),5,10,5-10 minute mark
+TB03,mid_late,Mid-Late (10-15),10,15,10-15 minute mark
+TB04,late,Late (15-18),15,18,15-18 minute mark
+TB05,final_minute,Final Minute (18-20),18,20,Final 2 minutes
+TB06,overtime,Overtime,0,5,Overtime period

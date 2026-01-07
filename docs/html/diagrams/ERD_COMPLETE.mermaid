@@ -1,0 +1,1094 @@
+erDiagram
+    %% ============================================
+    %% BENCHSIGHT ENTITY RELATIONSHIP DIAGRAM
+    %% 128 Tables (54 Dimension + 71 Fact + 3 QA)
+    %% Generated: January 6, 2026
+    %% Version: 8.0.4
+    %% ============================================
+
+    %% ==================== DIMENSION TABLES ====================
+
+    dim_assist_type {
+        string assist_type_id PK
+        string assist_type_code
+        string assist_type_name
+        int points_value
+        string description
+    }
+
+    dim_comparison_type {
+        string comparison_type_id PK
+        string comparison_type_code
+        string comparison_type_name
+        string description
+        string analysis_scope
+    }
+
+    dim_competition_tier {
+        string competition_tier_id PK
+        string tier_name
+        float min_rating
+        float max_rating
+    }
+
+    dim_composite_rating {
+        string rating_id PK
+        string rating_code
+        string rating_name
+        string description
+        int scale_min
+        int scale_max
+    }
+
+    dim_danger_level {
+        string danger_level_id PK
+        string danger_level_code
+        string danger_level_name
+        float xg_multiplier
+    }
+
+    dim_danger_zone {
+        string danger_zone_id PK
+        string danger_zone_code
+        string danger_zone_name
+        float xg_base
+        string description
+    }
+
+    dim_event_detail {
+        string event_detail_id PK
+        string event_detail_code
+        string event_detail_name
+        string event_type
+        string category
+        string is_shot_on_goal
+    }
+
+    dim_event_detail_2 {
+        string event_detail_2_id PK
+        string event_detail_2_code
+        string event_detail_2_name
+        string category
+    }
+
+    dim_event_type {
+        string event_type_id PK
+        string event_type_code
+        string event_type_name
+        string event_category
+        string description
+        string is_corsi
+    }
+
+    dim_game_state {
+        string game_state_id PK
+        string game_state_code
+        string game_state_name
+        int goal_diff_min
+        int goal_diff_max
+        string description
+    }
+
+    dim_giveaway_type {
+        string giveaway_type_id PK
+        string giveaway_type_code
+        string giveaway_type_name
+    }
+
+    dim_league {
+        string league_id PK
+        string league
+    }
+
+    dim_micro_stat {
+        string micro_stat_id PK
+        string stat_code
+        string stat_name
+        string category
+    }
+
+    dim_net_location {
+        string net_location_id PK
+        string net_location_code
+        string net_location_name
+        float x_pct
+        float y_pct
+    }
+
+    dim_pass_outcome {
+        string pass_outcome_id PK
+        string pass_outcome_code
+        string pass_outcome_name
+        string is_successful
+    }
+
+    dim_pass_type {
+        string pass_type_id PK
+        string pass_type_code
+        string pass_type_name
+        string description
+    }
+
+    dim_period {
+        string period_id PK
+        int period_number
+        string period_name
+        string period_type
+        int period_minutes
+    }
+
+    dim_play_detail {
+        string play_detail_id PK
+        string play_detail_code
+        string play_detail_name
+        string play_category
+        string skill_level
+        string description
+    }
+
+    dim_play_detail_2 {
+        string play_detail_2_id PK
+        string play_detail_2_code
+        string play_detail_2_name
+        string play_category
+        string skill_level
+        string description
+    }
+
+    dim_player {
+        string player_first_name
+        string player_last_name
+        string player_full_name
+        string player_id FK
+        string player_primary_position
+        int current_skill_rating
+    }
+
+    dim_player_role {
+        int role_id PK
+        string role_code
+        string role_name
+        string role_type
+        int sort_order
+    }
+
+    dim_playerurlref {
+        string n_player_url
+        string player_full_name
+        string n_player_id_2
+    }
+
+    dim_position {
+        int position_id PK
+        string position_code
+        string position_name
+        string position_type
+    }
+
+    dim_randomnames {
+        string random_full_name
+        string random_first_name
+        string random_last_name
+        string gender
+        string name_used
+    }
+
+    dim_rating {
+        string rating_id PK
+        int rating_value
+        string rating_name
+    }
+
+    dim_rating_matchup {
+        string matchup_id PK
+        string matchup_name
+        float min_diff
+        float max_diff
+    }
+
+    dim_rink_zone {
+        string rink_zone_id PK
+        string zone_code
+        string zone_name
+        string granularity
+        float x_min
+        float x_max
+    }
+
+    dim_save_outcome {
+        string save_outcome_id PK
+        string save_outcome_code
+        string save_outcome_name
+        string causes_stoppage
+    }
+
+    dim_schedule {
+        int game_id PK
+        int season
+        string season_id FK
+        string game_url
+        string home_team_game_id FK
+        string away_team_game_id FK
+    }
+
+    dim_season {
+        string season_id PK
+        int season
+        string session
+        string norad
+        string csah
+        string league_id FK
+    }
+
+    dim_shift_quality_tier {
+        string tier_id PK
+        string tier_code
+        string tier_name
+        int score_min
+        int score_max
+        string description
+    }
+
+    dim_shift_slot {
+        string slot_id PK
+        string slot_code
+        string slot_name
+    }
+
+    dim_shift_start_type {
+        string shift_start_type_id PK
+        string shift_start_type_name
+    }
+
+    dim_shift_stop_type {
+        string shift_stop_type_id PK
+        string shift_stop_type_name
+    }
+
+    dim_shot_outcome {
+        string shot_outcome_id PK
+        string shot_outcome_code
+        string shot_outcome_name
+        string is_goal
+        string is_save
+        string is_block
+    }
+
+    dim_shot_type {
+        string shot_type_id PK
+        string shot_type_code
+        string shot_type_name
+        string description
+    }
+
+    dim_situation {
+        string situation_id PK
+        string situation_name
+    }
+
+    dim_stat {
+        string stat_id PK
+        string stat_code
+        string stat_name
+        string category
+        string description
+        string formula
+    }
+
+    dim_stat_category {
+        string stat_category_id PK
+        string category_code
+        string category_name
+        string description
+    }
+
+    dim_stat_type {
+        string stat_id PK
+        string stat_name
+        string stat_category
+        string stat_level
+        string computable_now
+        string description
+    }
+
+    dim_stoppage_type {
+        string stoppage_type_id PK
+        string stoppage_type_code
+        string stoppage_type_name
+    }
+
+    dim_strength {
+        string strength_id PK
+        string strength_code
+        string strength_name
+        string situation_type
+        float xg_multiplier
+        string description
+    }
+
+    dim_success {
+        string success_id PK
+        string success_code
+        string success_name
+        string is_successful
+    }
+
+    dim_takeaway_type {
+        string takeaway_type_id PK
+        string takeaway_type_code
+        string takeaway_type_name
+    }
+
+    dim_team {
+        string team_name
+        string team_id FK
+        string norad_team
+        string csah_team
+        string league_id FK
+        string league
+    }
+
+    dim_terminology_mapping {
+        string dimension
+        string old_value
+        string new_value
+        string match_type
+    }
+
+    dim_time_bucket {
+        string time_bucket_id PK
+        string time_bucket_code
+        string time_bucket_name
+        int minute_start
+        int minute_end
+        string description
+    }
+
+    dim_turnover_quality {
+        string turnover_quality_id PK
+        string turnover_quality_code
+        string turnover_quality_name
+        string description
+        string counts_against
+    }
+
+    dim_turnover_type {
+        string turnover_type_id PK
+        string turnover_type_code
+        string turnover_type_name
+        string category
+        string quality
+        float weight
+    }
+
+    dim_venue {
+        int venue_id PK
+        string venue_code
+        string venue_name
+        string venue_abbrev
+    }
+
+    dim_zone {
+        int zone_id PK
+        string zone_code
+        string zone_name
+        string zone_abbrev
+    }
+
+    dim_zone_entry_type {
+        string zone_entry_type_id PK
+        string zone_entry_type_code
+        string zone_entry_type_name
+    }
+
+    dim_zone_exit_type {
+        string zone_exit_type_id PK
+        string zone_exit_type_code
+        string zone_exit_type_name
+    }
+
+    dim_zone_outcome {
+        string zone_outcome_id PK
+        string zone_outcome_code
+        string zone_outcome_name
+        string is_controlled
+        string zone_type
+    }
+
+    %% ==================== FACT TABLES ====================
+
+    fact_breakouts {
+        string event_id PK
+        int game_id FK
+        int period
+        string period_id FK
+        string event_type
+        string event_type_id FK
+    }
+
+    fact_cycle_events {
+        string cycle_key
+        int game_id FK
+        string season_id FK
+        string team_id FK
+        string team_name
+        string home_team_id FK
+    }
+
+    fact_draft {
+        string team_id PK
+        int skill_rating
+        int round
+        string player_full_name
+        string player_id FK
+        string team_name
+    }
+
+    fact_event_chains {
+        string chain_id PK
+        int game_id FK
+        string season_id FK
+        string entry_event_key
+        string shot_event_key
+        int entry_event_index
+    }
+
+    fact_events {
+        string event_id PK
+        int game_id FK
+        int period
+        string period_id FK
+        string event_type
+        string event_type_id FK
+    }
+
+    fact_event_players {
+        string event_id PK
+        int game_id FK
+        string player_id FK
+        float player_game_number
+        string sequence_key
+        string play_key
+    }
+
+    fact_faceoffs {
+        string event_id PK
+        int game_id FK
+        int period
+        string period_id FK
+        string event_type
+        string event_type_id FK
+    }
+
+    fact_game_status {
+        int game_id PK
+        string game_date
+        string home_team
+        string away_team
+        int official_home_goals
+        int official_away_goals
+    }
+
+    fact_gameroster {
+        int game_id PK
+        string player_id FK
+        string team_id FK
+        string opp_team_id FK
+        string season_id FK
+        string venue_id FK
+    }
+
+    fact_goalie_game_stats {
+        string goalie_game_key
+        int game_id FK
+        string season_id FK
+        string player_id FK
+        string player_name
+        string team_name
+    }
+
+    fact_h2h {
+        int game_id PK
+        string season_id FK
+        string player_1_id FK
+        string player_2_id FK
+        int shifts_together
+        string home_team_id FK
+    }
+
+    fact_head_to_head {
+        int game_id PK
+        string season_id FK
+        string player_1_id FK
+        string player_1_name
+        float player_1_rating
+        string player_1_venue
+    }
+
+    fact_high_danger_chances {
+        string event_id PK
+        int game_id FK
+        int period
+        string period_id FK
+        string event_type
+        string event_type_id FK
+    }
+
+    fact_leadership {
+        string player_full_name
+        string player_id FK
+        string leadership
+        int skill_rating
+        string n_player_url
+        string team_name
+    }
+
+    fact_league_leaders_snapshot {
+        int game_id PK
+        string season_id FK
+        string date
+        string player_id FK
+        string player_name
+        string team_name
+    }
+
+    fact_line_combos {
+        string line_combo_key
+        int game_id FK
+        string season_id FK
+        string venue
+        string forward_combo
+        string defense_combo
+    }
+
+    fact_linked_events {
+        string linked_event_key
+        int game_id FK
+        string season_id FK
+        int primary_event_index
+        int event_count
+        float event_1_index
+    }
+
+    fact_matchup_performance {
+        int game_id PK
+        string season_id FK
+        string player_id FK
+        string player_name
+        string team_id FK
+        string matchup_id FK
+    }
+
+    fact_matchup_summary {
+        int game_id PK
+        string season_id FK
+        string player_1_id FK
+        string player_2_id FK
+        int shifts_together
+        string home_team_id FK
+    }
+
+    fact_penalties {
+        string event_id PK
+        int game_id FK
+        int period
+        string period_id FK
+        string event_type
+        string event_type_id FK
+    }
+
+    fact_period_momentum {
+        string momentum_key
+        int game_id FK
+        int period
+        int events_count
+        int goals
+        int shots
+    }
+
+    fact_player_career_stats {
+        string player_career_key
+        string player_id FK
+        int games_played
+        int career_goals
+        int career_assists
+        int career_points
+    }
+
+    fact_player_event_chains {
+        string event_chain_key
+        int game_id FK
+        string event_key
+        string event_type
+        int period
+        int home_player_count
+    }
+
+    fact_player_game_position {
+        int game_id PK
+        string player_id FK
+        int total_shifts
+        string dominant_position
+        float dominant_position_pct
+        int forward_shifts
+    }
+
+    fact_player_game_stats {
+        string player_game_id PK
+        string player_game_key
+        int game_id FK
+        string season_id FK
+        string player_id FK
+        string player_name
+    }
+
+    fact_player_micro_stats {
+        string micro_stat_key
+        string player_game_key
+        int game_id FK
+        string season_id FK
+        string player_id FK
+        string micro_stat
+    }
+
+    fact_player_pair_stats {
+        int game_id PK
+        string season_id FK
+        string player_1_id FK
+        string player_1_name
+        float player_1_rating
+        string player_2_id FK
+    }
+
+    fact_player_period_stats {
+        string player_period_key
+        int game_id FK
+        string season_id FK
+        string player_id FK
+        int period
+        int events
+    }
+
+    fact_player_position_splits {
+        string position_split_key
+        string position
+        int player_count
+        float avg_goals
+        float avg_assists
+        float avg_points
+    }
+
+    fact_player_qoc_summary {
+        int game_id PK
+        string season_id FK
+        string player_id FK
+        string player_name
+        string team_id FK
+        string team_name
+    }
+
+    fact_player_season_stats {
+        string player_season_key
+        string player_id FK
+        string season_id FK
+        string player_name
+        int games_played
+        int goals
+    }
+
+    fact_player_stats_by_competition_tier {
+        int game_id PK
+        string season_id FK
+        string player_id FK
+        string player_name
+        string team_id FK
+        string team_name
+    }
+
+    fact_player_stats_long {
+        string player_stat_key
+        string player_game_key
+        int game_id FK
+        string player_id FK
+        string stat_name
+        string stat_value
+    }
+
+    fact_player_trends {
+        string player_trend_key
+        string player_id FK
+        int game_id FK
+        int game_number
+        int points
+        int cumulative_points
+    }
+
+    fact_player_xy_long {
+        string player_xy_key
+        string game_id FK
+        string event_index
+        string event_key
+        string player_id FK
+        string player_key
+    }
+
+    fact_player_xy_wide {
+        string player_xy_key
+        string game_id FK
+        string event_index
+        string event_key
+        string player_id FK
+        string player_key
+    }
+
+    fact_playergames {
+        string ID
+        string Date
+        string Type
+        string Team
+        string Opp
+        int #
+    }
+
+    fact_plays {
+        string play_key
+        string play_id FK
+        int game_id FK
+        string season_id FK
+        int period
+        string period_id FK
+    }
+
+    fact_possession_time {
+        string possession_key
+        int game_id FK
+        string season_id FK
+        string player_id FK
+        string venue
+        int zone_entries
+    }
+
+    fact_puck_xy_long {
+        string puck_xy_key
+        string game_id FK
+        string event_index
+        string event_key
+        string point_number
+        string x
+    }
+
+    fact_puck_xy_wide {
+        string puck_xy_key
+        string game_id FK
+        string event_index
+        string event_key
+        string point_count
+        string x_1
+    }
+
+    fact_registration {
+        string player_full_name
+        string player_id FK
+        string season_id FK
+        int season
+        string restricted
+        string email
+    }
+
+    fact_rush_events {
+        int game_id PK
+        string season_id FK
+        int entry_event_index
+        int shot_event_index
+        int events_to_shot
+        string is_rush
+    }
+
+    fact_rushes {
+        string event_id PK
+        int game_id FK
+        int period
+        string period_id FK
+        string event_type
+        string event_type_id FK
+    }
+
+    fact_saves {
+        string event_id PK
+        int game_id FK
+        int period
+        string period_id FK
+        string event_type
+        string event_type_id FK
+    }
+
+    fact_scoring_chances {
+        string scoring_chance_key
+        int game_id FK
+        string season_id FK
+        float event_index
+        float period
+        int is_goal
+    }
+
+    fact_scoring_chances_detailed {
+        string event_id PK
+        int game_id FK
+        int period
+        string period_id FK
+        string event_type
+        string event_type_id FK
+    }
+
+    fact_season_summary {
+        string season_summary_key
+        string season_id FK
+        int games_tracked
+        int total_goals
+        int total_players
+        float avg_goals_per_game
+    }
+
+    fact_sequences {
+        string sequence_key
+        string sequence_id FK
+        int game_id FK
+        string season_id FK
+        int period
+        string period_id FK
+    }
+
+    fact_shift_players {
+        string shift_player_id PK
+        string shift_id FK
+        int game_id FK
+        int shift_index
+        int player_game_number
+        string player_id FK
+    }
+
+    fact_shift_quality {
+        int game_id PK
+        string season_id FK
+        string player_id FK
+        string player_name
+        string team_id FK
+        string team_name
+    }
+
+    fact_shift_quality_logical {
+        int game_id PK
+        string season_id FK
+        string player_id FK
+        string player_name
+        string team_id FK
+        string team_name
+    }
+
+    fact_shifts {
+        string shift_id PK
+        int game_id FK
+        int shift_index
+        int period
+        string shift_start_type
+        string shift_stop_type
+    }
+
+    fact_shift_players {
+        string shift_player_key
+        string shift_key
+        int game_id FK
+        string season_id FK
+        int shift_index
+        string player_id FK
+    }
+
+    fact_shifts {
+        string shift_id PK
+        int game_id FK
+        int shift_index
+        float Period
+        float shift_start_min
+        float shift_start_sec
+    }
+
+    fact_shot_danger {
+        string shot_danger_key
+        int game_id FK
+        string season_id FK
+        float event_index
+        string danger_zone
+        float xg
+    }
+
+    fact_shot_xy {
+        string shot_xy_key
+        string game_id FK
+        string event_index
+        string event_key
+        string player_id FK
+        string player_key
+    }
+
+    fact_special_teams_summary {
+        string special_teams_key
+        string team_id FK
+        int games_played
+        float total_corsi_for
+        float total_corsi_against
+        float total_cf_pct
+    }
+
+    fact_suspicious_stats {
+        int game_id PK
+        string player_id FK
+        string player_name
+        string position
+        string stat_name
+        float stat_value
+    }
+
+    fact_team_game_stats {
+        string team_game_key
+        int game_id FK
+        string season_id FK
+        string venue
+        int goals
+        int shots
+    }
+
+    fact_team_season_stats {
+        string team_season_key
+        string team_id FK
+        int games_played
+        int season_goals
+        int season_shots
+        int season_sog
+    }
+
+    fact_team_standings_snapshot {
+        int game_id PK
+        string season_id FK
+        string date
+        string team_name
+        int games_played
+        int wins
+    }
+
+    fact_team_zone_time {
+        string zone_time_key
+        int game_id FK
+        string season_id FK
+        string venue
+        int ozone_events
+        int dzone_events
+    }
+
+    fact_tracking {
+        string tracking_event_key
+        int game_id FK
+        int period
+        string period_id FK
+        float event_start_min
+        float event_start_sec
+    }
+
+    fact_turnovers_detailed {
+        string event_id PK
+        int game_id FK
+        int period
+        string period_id FK
+        string event_type
+        string event_type_id FK
+    }
+
+    fact_video {
+        string video_key
+        int game_id FK
+        string season_id FK
+        int Index
+        string Key
+        int Game_ID
+    }
+
+    fact_wowy {
+        int game_id PK
+        string season_id FK
+        string player_1_id FK
+        string player_2_id FK
+        string venue
+        int shifts_together
+    }
+
+    fact_zone_entries {
+        string event_id PK
+        int game_id FK
+        int period
+        string period_id FK
+        string event_type
+        string event_type_id FK
+    }
+
+    fact_zone_entry_summary {
+        string zone_entry_key
+        string player_id FK
+        int games
+        int total_entries
+        float entries_per_game
+    }
+
+    fact_zone_exit_summary {
+        string zone_exit_key
+        string player_id FK
+        int games
+        int total_exits
+        float exits_per_game
+    }
+
+    fact_zone_exits {
+        string event_id PK
+        int game_id FK
+        int period
+        string period_id FK
+        string event_type
+        string event_type_id FK
+    }
+
+    %% ==================== QA TABLES ====================
+
+    qa_data_completeness {
+        string qa_key
+        int game_id FK
+        string has_events
+        string has_shifts
+        string has_rosters
+        string is_complete
+    }
+
+    qa_goal_accuracy {
+        string qa_key
+        int game_id FK
+        int expected_goals
+        int actual_goals
+        string match
+        int difference
+    }
+
+    qa_suspicious_stats {
+        string timestamp
+        int game_id FK
+        string season_id FK
+        string player_id FK
+        string player_name
+        string category
+    }
+
+    %% ==================== KEY RELATIONSHIPS ====================
+    
+    dim_player ||--o{ fact_events : "player_id"
+    dim_team ||--o{ fact_events : "team_id"
+    dim_schedule ||--o{ fact_events : "game_id"
+    dim_player ||--o{ fact_gameroster : "player_id"
+    dim_schedule ||--o{ fact_gameroster : "game_id"
+    dim_player ||--o{ fact_player_game_stats : "player_id"
+    dim_schedule ||--o{ fact_player_game_stats : "game_id"

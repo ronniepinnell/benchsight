@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fact_matchup_summary - BenchSight</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #4a4e69; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>fact_matchup_summary</h1>
+        
+        <div class="alert alert-danger">⚠️ 15 suspicious stat entries for games in this table</div>
+        
+        <div class="meta">
+            <strong>Rows:</strong> 684 | 
+            <strong>Columns:</strong> 34 |
+            <strong>Last Updated:</strong> 2026-01-07 05:03:20 |
+            <strong>Version:</strong> 12.03
+        </div>
+        
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>game_id</td><td>int64</td><td>684</td><td>0.0%</td></tr><tr><td>season_id</td><td>object</td><td>684</td><td>0.0%</td></tr><tr><td>player_1_id</td><td>object</td><td>684</td><td>0.0%</td></tr><tr><td>player_2_id</td><td>object</td><td>684</td><td>0.0%</td></tr><tr><td>shifts_together</td><td>int64</td><td>684</td><td>0.0%</td></tr><tr><td>home_team_id</td><td>object</td><td>684</td><td>0.0%</td></tr><tr><td>away_team_id</td><td>object</td><td>684</td><td>0.0%</td></tr><tr><td>toi_together</td><td>float64</td><td>684</td><td>0.0%</td></tr><tr><td>goals_for</td><td>float64</td><td>684</td><td>0.0%</td></tr><tr><td>goals_against</td><td>float64</td><td>684</td><td>0.0%</td></tr><tr><td>plus_minus</td><td>float64</td><td>684</td><td>0.0%</td></tr><tr><td>corsi_for</td><td>float64</td><td>684</td><td>0.0%</td></tr><tr><td>corsi_against</td><td>float64</td><td>684</td><td>0.0%</td></tr><tr><td>cf_pct</td><td>float64</td><td>684</td><td>0.0%</td></tr><tr><td>fenwick_for</td><td>float64</td><td>684</td><td>0.0%</td></tr><tr><td>fenwick_against</td><td>float64</td><td>684</td><td>0.0%</td></tr><tr><td>ff_pct</td><td>float64</td><td>684</td><td>0.0%</td></tr><tr><td>xgf</td><td>float64</td><td>684</td><td>0.0%</td></tr><tr><td>xga</td><td>float64</td><td>684</td><td>0.0%</td></tr><tr><td>xg_diff</td><td>float64</td><td>684</td><td>0.0%</td></tr><tr><td>shots_for</td><td>float64</td><td>684</td><td>0.0%</td></tr><tr><td>shots_against</td><td>float64</td><td>684</td><td>0.0%</td></tr><tr><td>h2h_key</td><td>object</td><td>684</td><td>0.0%</td></tr><tr><td>player_1_name</td><td>object</td><td>684</td><td>0.0%</td></tr><tr><td>player_2_name</td><td>object</td><td>684</td><td>0.0%</td></tr><tr><td>ozone_pct</td><td>float64</td><td>530</td><td>22.5%</td></tr><tr><td>p1_shifts_without_p2</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>p2_shifts_without_p1</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>cf_pct_together</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>cf_pct_apart</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>cf_pct_delta</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>matchup_key</td><td>object</td><td>684</td><td>0.0%</td></tr><tr><td>synergy_score</td><td>float64</td><td>684</td><td>0.0%</td></tr><tr><td>is_positive_synergy</td><td>int64</td><td>684</td><td>0.0%</td></tr>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>game_id</th>
+      <th>season_id</th>
+      <th>player_1_id</th>
+      <th>player_2_id</th>
+      <th>shifts_together</th>
+      <th>home_team_id</th>
+      <th>away_team_id</th>
+      <th>toi_together</th>
+      <th>goals_for</th>
+      <th>goals_against</th>
+      <th>plus_minus</th>
+      <th>corsi_for</th>
+      <th>corsi_against</th>
+      <th>cf_pct</th>
+      <th>fenwick_for</th>
+      <th>fenwick_against</th>
+      <th>ff_pct</th>
+      <th>xgf</th>
+      <th>xga</th>
+      <th>xg_diff</th>
+      <th>shots_for</th>
+      <th>shots_against</th>
+      <th>h2h_key</th>
+      <th>player_1_name</th>
+      <th>player_2_name</th>
+      <th>ozone_pct</th>
+      <th>p1_shifts_without_p2</th>
+      <th>p2_shifts_without_p1</th>
+      <th>cf_pct_together</th>
+      <th>cf_pct_apart</th>
+      <th>cf_pct_delta</th>
+      <th>matchup_key</th>
+      <th>synergy_score</th>
+      <th>is_positive_synergy</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>P100001</td>
+      <td>18</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>810.0</td>
+      <td>0.4</td>
+      <td>0.0</td>
+      <td>0.4</td>
+      <td>2.9</td>
+      <td>3.2</td>
+      <td>50.0</td>
+      <td>2.3</td>
+      <td>2.6</td>
+      <td>50.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>2.9</td>
+      <td>3.2</td>
+      <td>HH1896900001</td>
+      <td>Chris Dube</td>
+      <td>Sam Downs</td>
+      <td>40.6</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>18969_P100022_P100001</td>
+      <td>0.0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>P100002</td>
+      <td>9</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>405.0</td>
+      <td>0.2</td>
+      <td>0.0</td>
+      <td>0.2</td>
+      <td>1.4</td>
+      <td>0.9</td>
+      <td>50.0</td>
+      <td>1.2</td>
+      <td>0.7</td>
+      <td>50.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.4</td>
+      <td>0.9</td>
+      <td>HH1896900002</td>
+      <td>Chris Dube</td>
+      <td>Kevin White</td>
+      <td>52.9</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>18969_P100022_P100002</td>
+      <td>0.0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>P100016</td>
+      <td>34</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>1530.0</td>
+      <td>0.7</td>
+      <td>0.0</td>
+      <td>0.7</td>
+      <td>5.4</td>
+      <td>0.0</td>
+      <td>50.0</td>
+      <td>4.4</td>
+      <td>0.0</td>
+      <td>50.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>5.4</td>
+      <td>0.0</td>
+      <td>HH1896900003</td>
+      <td>Chris Dube</td>
+      <td>Wyatt Crandall</td>
+      <td>37.6</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>18969_P100022_P100016</td>
+      <td>0.0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>P100039</td>
+      <td>23</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>1035.0</td>
+      <td>0.5</td>
+      <td>0.0</td>
+      <td>0.5</td>
+      <td>3.7</td>
+      <td>2.3</td>
+      <td>50.0</td>
+      <td>2.9</td>
+      <td>1.8</td>
+      <td>50.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>3.7</td>
+      <td>2.3</td>
+      <td>HH1896900004</td>
+      <td>Chris Dube</td>
+      <td>Nicole Downs</td>
+      <td>37.7</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>18969_P100022_P100039</td>
+      <td>0.0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>P100064</td>
+      <td>2</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>90.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.3</td>
+      <td>0.1</td>
+      <td>50.0</td>
+      <td>0.3</td>
+      <td>0.1</td>
+      <td>50.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.3</td>
+      <td>0.1</td>
+      <td>HH1896900005</td>
+      <td>Chris Dube</td>
+      <td>James Rynearson</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>18969_P100022_P100064</td>
+      <td>0.0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>P100070</td>
+      <td>18</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>810.0</td>
+      <td>0.4</td>
+      <td>0.0</td>
+      <td>0.4</td>
+      <td>2.9</td>
+      <td>0.4</td>
+      <td>50.0</td>
+      <td>2.3</td>
+      <td>0.3</td>
+      <td>50.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>2.9</td>
+      <td>0.4</td>
+      <td>HH1896900006</td>
+      <td>Chris Dube</td>
+      <td>Hayden Perea</td>
+      <td>49.1</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>18969_P100022_P100070</td>
+      <td>0.0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>P100093</td>
+      <td>19</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>855.0</td>
+      <td>0.4</td>
+      <td>0.0</td>
+      <td>0.4</td>
+      <td>3.0</td>
+      <td>0.8</td>
+      <td>50.0</td>
+      <td>2.4</td>
+      <td>0.6</td>
+      <td>50.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>3.0</td>
+      <td>0.8</td>
+      <td>HH1896900007</td>
+      <td>Chris Dube</td>
+      <td>Pat Major</td>
+      <td>31.9</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>18969_P100022_P100093</td>
+      <td>0.0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>P100105</td>
+      <td>16</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>720.0</td>
+      <td>0.3</td>
+      <td>0.0</td>
+      <td>0.3</td>
+      <td>2.6</td>
+      <td>0.0</td>
+      <td>50.0</td>
+      <td>2.0</td>
+      <td>0.0</td>
+      <td>50.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>2.6</td>
+      <td>0.0</td>
+      <td>HH1896900008</td>
+      <td>Chris Dube</td>
+      <td>Ronnie Pinnell</td>
+      <td>59.9</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>18969_P100022_P100105</td>
+      <td>0.0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>P100108</td>
+      <td>2</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>90.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.3</td>
+      <td>0.1</td>
+      <td>50.0</td>
+      <td>0.3</td>
+      <td>0.1</td>
+      <td>50.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.3</td>
+      <td>0.1</td>
+      <td>HH1896900009</td>
+      <td>Chris Dube</td>
+      <td>Robert Mayfield</td>
+      <td>77.8</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>18969_P100022_P100108</td>
+      <td>0.0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>P100132</td>
+      <td>1</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>45.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.2</td>
+      <td>0.1</td>
+      <td>50.0</td>
+      <td>0.1</td>
+      <td>0.0</td>
+      <td>50.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.2</td>
+      <td>0.1</td>
+      <td>HH1896900010</td>
+      <td>Chris Dube</td>
+      <td>Nick Ciampoli</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>18969_P100022_P100132</td>
+      <td>0.0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>P100161</td>
+      <td>25</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>1125.0</td>
+      <td>0.5</td>
+      <td>0.0</td>
+      <td>0.5</td>
+      <td>4.0</td>
+      <td>2.0</td>
+      <td>50.0</td>
+      <td>3.2</td>
+      <td>1.6</td>
+      <td>50.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>4.0</td>
+      <td>2.0</td>
+      <td>HH1896900011</td>
+      <td>Chris Dube</td>
+      <td>Galen Wood</td>
+      <td>39.5</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>18969_P100022_P100161</td>
+      <td>0.0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>P100198</td>
+      <td>15</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>675.0</td>
+      <td>0.3</td>
+      <td>0.0</td>
+      <td>0.3</td>
+      <td>2.4</td>
+      <td>0.6</td>
+      <td>50.0</td>
+      <td>1.9</td>
+      <td>0.5</td>
+      <td>50.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>2.4</td>
+      <td>0.6</td>
+      <td>HH1896900012</td>
+      <td>Chris Dube</td>
+      <td>Maxwell Donaty</td>
+      <td>30.9</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>18969_P100022_P100198</td>
+      <td>0.0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>P100201</td>
+      <td>18</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>810.0</td>
+      <td>0.4</td>
+      <td>0.4</td>
+      <td>0.0</td>
+      <td>2.9</td>
+      <td>1.8</td>
+      <td>50.0</td>
+      <td>2.3</td>
+      <td>1.4</td>
+      <td>50.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>2.9</td>
+      <td>1.8</td>
+      <td>HH1896900013</td>
+      <td>Chris Dube</td>
+      <td>Garrett Ashcroft</td>
+      <td>37.2</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>18969_P100022_P100201</td>
+      <td>0.0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>P100224</td>
+      <td>9</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>405.0</td>
+      <td>0.2</td>
+      <td>0.0</td>
+      <td>0.2</td>
+      <td>1.4</td>
+      <td>0.4</td>
+      <td>50.0</td>
+      <td>1.2</td>
+      <td>0.3</td>
+      <td>50.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.4</td>
+      <td>0.4</td>
+      <td>HH1896900014</td>
+      <td>Chris Dube</td>
+      <td>Kaitlyn Shain</td>
+      <td>44.9</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>18969_P100022_P100224</td>
+      <td>0.0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100023</td>
+      <td>P100001</td>
+      <td>30</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>1350.0</td>
+      <td>0.6</td>
+      <td>0.0</td>
+      <td>0.6</td>
+      <td>6.6</td>
+      <td>5.4</td>
+      <td>50.0</td>
+      <td>5.3</td>
+      <td>4.3</td>
+      <td>50.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>6.6</td>
+      <td>5.4</td>
+      <td>HH1896900015</td>
+      <td>Alex Considine</td>
+      <td>Sam Downs</td>
+      <td>55.1</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>18969_P100023_P100001</td>
+      <td>0.0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100023</td>
+      <td>P100002</td>
+      <td>13</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>585.0</td>
+      <td>0.3</td>
+      <td>0.0</td>
+      <td>0.3</td>
+      <td>2.9</td>
+      <td>1.3</td>
+      <td>50.0</td>
+      <td>2.3</td>
+      <td>1.0</td>
+      <td>50.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>2.9</td>
+      <td>1.3</td>
+      <td>HH1896900016</td>
+      <td>Alex Considine</td>
+      <td>Kevin White</td>
+      <td>43.5</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>18969_P100023_P100002</td>
+      <td>0.0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100023</td>
+      <td>P100016</td>
+      <td>55</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>2475.0</td>
+      <td>1.1</td>
+      <td>0.0</td>
+      <td>1.1</td>
+      <td>12.1</td>
+      <td>0.0</td>
+      <td>50.0</td>
+      <td>9.7</td>
+      <td>0.0</td>
+      <td>50.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>12.1</td>
+      <td>0.0</td>
+      <td>HH1896900017</td>
+      <td>Alex Considine</td>
+      <td>Wyatt Crandall</td>
+      <td>40.2</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>18969_P100023_P100016</td>
+      <td>0.0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100023</td>
+      <td>P100039</td>
+      <td>20</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>900.0</td>
+      <td>0.4</td>
+      <td>0.0</td>
+      <td>0.4</td>
+      <td>4.4</td>
+      <td>2.0</td>
+      <td>50.0</td>
+      <td>3.5</td>
+      <td>1.6</td>
+      <td>50.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>4.4</td>
+      <td>2.0</td>
+      <td>HH1896900018</td>
+      <td>Alex Considine</td>
+      <td>Nicole Downs</td>
+      <td>49.2</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>18969_P100023_P100039</td>
+      <td>0.0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100023</td>
+      <td>P100064</td>
+      <td>18</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>810.0</td>
+      <td>0.4</td>
+      <td>0.0</td>
+      <td>0.4</td>
+      <td>4.0</td>
+      <td>0.7</td>
+      <td>50.0</td>
+      <td>3.2</td>
+      <td>0.6</td>
+      <td>50.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>4.0</td>
+      <td>0.7</td>
+      <td>HH1896900019</td>
+      <td>Alex Considine</td>
+      <td>James Rynearson</td>
+      <td>66.1</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>18969_P100023_P100064</td>
+      <td>0.0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100023</td>
+      <td>P100070</td>
+      <td>28</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>1260.0</td>
+      <td>0.6</td>
+      <td>0.0</td>
+      <td>0.6</td>
+      <td>6.2</td>
+      <td>0.6</td>
+      <td>50.0</td>
+      <td>4.9</td>
+      <td>0.4</td>
+      <td>50.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>6.2</td>
+      <td>0.6</td>
+      <td>HH1896900020</td>
+      <td>Alex Considine</td>
+      <td>Hayden Perea</td>
+      <td>34.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>18969_P100023_P100070</td>
+      <td>0.0</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+        </div>
+        
+        <footer>
+            BenchSight v13.18 | Generated 2026-01-07 05:03:20
+        </footer>
+    </div>
+</body>
+</html>

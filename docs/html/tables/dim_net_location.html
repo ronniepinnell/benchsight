@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>dim_net_location - BenchSight</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #4a4e69; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>dim_net_location</h1>
+        
+        
+        
+        <div class="meta">
+            <strong>Rows:</strong> 10 | 
+            <strong>Columns:</strong> 5 |
+            <strong>Last Updated:</strong> 2026-01-07 05:03:20 |
+            <strong>Version:</strong> 12.03
+        </div>
+        
+        
+        <div class="card">
+            <h2>🥅 Net Zone Visualization</h2>
+            <p>Goal net divided into zones for shot placement tracking (goalie's perspective looking out):</p>
+            <svg viewBox="0 0 300 200" style="max-width:400px; border:1px solid #ddd; background:#fff; margin: 20px 0;">
+                <rect x="50" y="40" width="200" height="120" fill="none" stroke="#333" stroke-width="3"/>
+                <line x1="116" y1="40" x2="116" y2="160" stroke="#999" stroke-width="1" stroke-dasharray="5,5"/>
+                <line x1="183" y1="40" x2="183" y2="160" stroke="#999" stroke-width="1" stroke-dasharray="5,5"/>
+                <line x1="50" y1="100" x2="250" y2="100" stroke="#999" stroke-width="1" stroke-dasharray="5,5"/>
+                <text x="83" y="75" text-anchor="middle" font-size="11" fill="#333">Top</text>
+                <text x="83" y="90" text-anchor="middle" font-size="11" fill="#333">Left</text>
+                <text x="150" y="75" text-anchor="middle" font-size="11" fill="#333">Top</text>
+                <text x="150" y="90" text-anchor="middle" font-size="11" fill="#333">Center</text>
+                <text x="216" y="75" text-anchor="middle" font-size="11" fill="#333">Top</text>
+                <text x="216" y="90" text-anchor="middle" font-size="11" fill="#333">Right</text>
+                <text x="83" y="125" text-anchor="middle" font-size="11" fill="#333">Bottom</text>
+                <text x="83" y="140" text-anchor="middle" font-size="11" fill="#333">Left</text>
+                <text x="150" y="125" text-anchor="middle" font-size="11" fill="#333">Bottom</text>
+                <text x="150" y="140" text-anchor="middle" font-size="11" fill="#333">Center</text>
+                <text x="216" y="125" text-anchor="middle" font-size="11" fill="#333">Bottom</text>
+                <text x="216" y="140" text-anchor="middle" font-size="11" fill="#333">Right</text>
+                <circle cx="50" cy="40" r="4" fill="#c00"/>
+                <circle cx="250" cy="40" r="4" fill="#c00"/>
+                <circle cx="50" cy="160" r="4" fill="#c00"/>
+                <circle cx="250" cy="160" r="4" fill="#c00"/>
+                <text x="150" y="20" text-anchor="middle" font-size="12" font-weight="bold">Hockey Net - Shot Zones</text>
+                <text x="150" y="185" text-anchor="middle" font-size="9" fill="#888">Posts shown in red</text>
+            </svg>
+        </div>
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>net_location_id</td><td>object</td><td>10</td><td>0.0%</td></tr><tr><td>net_location_code</td><td>object</td><td>10</td><td>0.0%</td></tr><tr><td>net_location_name</td><td>object</td><td>10</td><td>0.0%</td></tr><tr><td>x_pct</td><td>float64</td><td>10</td><td>0.0%</td></tr><tr><td>y_pct</td><td>float64</td><td>10</td><td>0.0%</td></tr>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>net_location_id</th>
+      <th>net_location_code</th>
+      <th>net_location_name</th>
+      <th>x_pct</th>
+      <th>y_pct</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>NL0001</td>
+      <td>GH</td>
+      <td>Glove High</td>
+      <td>0.25</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <td>NL0002</td>
+      <td>GL</td>
+      <td>Glove Low</td>
+      <td>0.25</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <td>NL0003</td>
+      <td>BH</td>
+      <td>Blocker High</td>
+      <td>0.75</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <td>NL0004</td>
+      <td>BL</td>
+      <td>Blocker Low</td>
+      <td>0.75</td>
+      <td>0.25</td>
+    </tr>
+    <tr>
+      <td>NL0005</td>
+      <td>5H</td>
+      <td>Five Hole</td>
+      <td>0.50</td>
+      <td>0.10</td>
+    </tr>
+    <tr>
+      <td>NL0006</td>
+      <td>TL</td>
+      <td>Top Left</td>
+      <td>0.15</td>
+      <td>0.90</td>
+    </tr>
+    <tr>
+      <td>NL0007</td>
+      <td>TR</td>
+      <td>Top Right</td>
+      <td>0.85</td>
+      <td>0.90</td>
+    </tr>
+    <tr>
+      <td>NL0008</td>
+      <td>TM</td>
+      <td>Top Middle</td>
+      <td>0.50</td>
+      <td>0.90</td>
+    </tr>
+    <tr>
+      <td>NL0009</td>
+      <td>ML</td>
+      <td>Mid Left</td>
+      <td>0.15</td>
+      <td>0.50</td>
+    </tr>
+    <tr>
+      <td>NL0010</td>
+      <td>MR</td>
+      <td>Mid Right</td>
+      <td>0.85</td>
+      <td>0.50</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+        </div>
+        
+        <footer>
+            BenchSight v13.18 | Generated 2026-01-07 05:03:20
+        </footer>
+    </div>
+</body>
+</html>

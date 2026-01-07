@@ -1,0 +1,7 @@
+game_state_id,game_state_code,game_state_name,goal_diff_min,goal_diff_max,description
+GS01,leading,Leading,1,99,Team is ahead
+GS02,trailing,Trailing,-99,-1,Team is behind
+GS03,tied,Tied,0,0,Game is tied
+GS04,close,Close Game,-2,2,Within 2 goals
+GS05,blowout_up,Leading by 3+,3,99,Comfortable lead
+GS06,blowout_down,Trailing by 3+,-99,-3,Big deficit

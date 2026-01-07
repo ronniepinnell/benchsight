@@ -29,9 +29,9 @@ class CSVExporter:
     
     # Primary keys for deduplication
     PRIMARY_KEYS = {
-        'fact_events_tracking': 'event_key',
+        'fact_event_players': 'event_key',
         'fact_event_players_tracking': 'event_player_key',
-        'fact_shifts_tracking': 'shift_key',
+        'fact_shifts': 'shift_key',
         'fact_shift_players_tracking': 'shift_player_key',
         'fact_box_score_tracking': 'player_game_key',
         'fact_linked_events_tracking': 'chain_id',

@@ -1,0 +1,2219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏒 BLB Pro Tracker v17</title>
+<style>
+:root{--bg:#0d1117;--panel:#161b22;--card:#21262d;--input:#0d1117;--border:#30363d;--accent:#58a6ff;--success:#3fb950;--warn:#d29922;--danger:#f85149;--text:#c9d1d9;--muted:#8b949e;--home:#667788;--away:#9C47E4}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:11px;overflow:hidden;height:100vh}
+
+[data-tip]{position:relative}
+[data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:#000;color:#fff;padding:4px 8px;border-radius:4px;font-size:9px;white-space:nowrap;z-index:1000;margin-bottom:4px}
+
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:4px 10px;display:flex;align-items:center;gap:8px;height:36px}
+.header h1{font-size:13px;color:var(--accent)}
+.header select,.header input{background:var(--input);border:1px solid var(--border);color:var(--text);padding:2px 5px;border-radius:3px;font-size:10px}
+.clock{font-family:'SF Mono',monospace;font-size:16px;font-weight:700;color:var(--accent);background:var(--card);padding:2px 8px;border-radius:4px}
+.score span{padding:2px 6px;border-radius:3px;font-weight:700;font-size:13px}
+.header-right{margin-left:auto;display:flex;gap:6px;align-items:center}
+.btn{background:var(--card);border:1px solid var(--border);color:var(--text);padding:3px 6px;border-radius:3px;cursor:pointer;font-size:10px;transition:all 0.15s}
+.btn:hover{background:var(--border)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#000}
+.btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+.btn.warn{background:var(--warn);border-color:var(--warn);color:#000}
+.btn.success{background:var(--success);border-color:var(--success);color:#000}
+.btn.on{background:var(--accent);color:#000;box-shadow:0 0 8px rgba(88,166,255,0.4)}
+.btn.sm{padding:2px 4px;font-size:9px}
+kbd{background:var(--input);border:1px solid var(--border);padding:0 3px;border-radius:2px;font-family:monospace;font-size:8px}
+
+.main{display:flex;height:calc(100vh - 36px)}
+.panel{background:var(--panel);display:flex;flex-direction:column;overflow:hidden}
+.panel-header{background:var(--card);padding:4px 8px;font-size:10px;font-weight:600;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.panel-content{flex:1;overflow-y:auto;padding:6px}
+.resizer{width:5px;background:var(--border);cursor:col-resize}
+.resizer:hover{background:var(--accent)}
+.left-panel{width:280px;border-right:1px solid var(--border)}
+.center-panel{flex:1;display:flex;flex-direction:column}
+.right-panel{width:320px;border-left:1px solid var(--border)}
+
+.team-section{margin-bottom:8px;background:var(--card);border-radius:6px;padding:6px}
+.team-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.team-header h4{font-size:11px;display:flex;align-items:center;gap:4px}
+.team-header .dot{width:10px;height:10px;border-radius:50%}
+.position-row{display:flex;align-items:center;gap:4px;margin-bottom:4px}
+.position-row .label{font-size:9px;color:var(--muted);width:20px}
+.position-row .slots{display:flex;gap:3px;flex:1}
+.slot-btn{min-width:38px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:9px;cursor:pointer;border:2px solid var(--border);background:var(--input);transition:all 0.15s}
+.slot-btn.filled{border-color:var(--success);background:var(--card)}
+.slot-btn.selected{box-shadow:0 0 0 2px var(--accent)}
+.slot-btn:hover{border-color:var(--accent)}
+
+.roster-picker{background:var(--input);border:1px solid var(--border);border-radius:4px;padding:4px;margin-top:4px;display:none}
+.roster-picker.show{display:block}
+.roster-grid{display:flex;flex-wrap:wrap;gap:2px}
+.roster-btn{padding:2px 5px;font-size:9px;border-radius:3px;cursor:pointer;border:1px solid var(--border);background:var(--card)}
+.roster-btn:hover{background:var(--accent);color:#000}
+.roster-btn.in-shift{opacity:0.4}
+
+.video-area{height:32%;min-height:100px;background:#000;position:relative;border-bottom:1px solid var(--border)}
+.video-tabs{position:absolute;top:4px;left:4px;display:flex;gap:3px;z-index:10}
+.video-tab{padding:2px 8px;font-size:9px;background:rgba(0,0,0,0.8);border:1px solid var(--border);color:#fff;border-radius:3px;cursor:pointer}
+.video-tab.active{background:var(--accent);color:#000}
+.video-wrapper{width:100%;height:calc(100% - 30px)}
+.video-wrapper video{width:100%;height:100%;object-fit:contain}
+.video-timeline{position:absolute;bottom:0;left:0;right:0;height:28px;background:rgba(0,0,0,0.9);display:flex;align-items:center;padding:0 8px;gap:8px}
+.timeline-time{font-family:monospace;font-size:10px;color:#fff;min-width:50px}
+.timeline-bar{flex:1;height:6px;background:var(--border);border-radius:3px;cursor:pointer;position:relative}
+.timeline-progress{height:100%;background:var(--accent);border-radius:3px;position:absolute;left:0;top:0}
+.timeline-handle{width:12px;height:12px;background:#fff;border-radius:50%;position:absolute;top:-3px;cursor:grab}
+.video-sync{display:flex;align-items:center;gap:4px}
+.video-resizer{height:5px;background:var(--border);cursor:row-resize}
+
+.rink-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;position:relative}
+#rinkSvg{width:100%;max-width:520px;cursor:crosshair}
+.mode-ind{position:absolute;top:8px;left:50%;transform:translateX(-50%);padding:4px 16px;border-radius:20px;font-size:12px;font-weight:600;z-index:5}
+.mode-ind.puck{background:#000;color:#fff;border:2px solid #fff}
+.mode-ind.ev{background:var(--accent);color:#000}
+.mode-ind.opp{background:var(--danger);color:#fff}
+.rink-controls{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;justify-content:center;font-size:9px}
+
+.box-scores{background:var(--card);border-radius:6px;padding:6px;margin-bottom:8px}
+.box-scores h4{font-size:9px;color:var(--muted);margin-bottom:4px}
+.box-row{display:flex;justify-content:space-between;font-size:9px;padding:2px 0;border-bottom:1px solid var(--border)}
+.box-row:last-child{border:none}
+
+.evt-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-bottom:8px}
+.evt-btn{padding:6px 3px;display:flex;flex-direction:column;align-items:center;gap:1px;border-radius:5px}
+.evt-btn span{font-size:9px;font-weight:600}
+.evt-btn kbd{font-size:7px}
+
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:6px}
+.form-row.tri{grid-template-columns:1fr 1fr 1fr}
+.form-group{display:flex;flex-direction:column;gap:2px}
+.form-group label{font-size:8px;color:var(--muted);text-transform:uppercase}
+.form-group select,.form-group input{background:var(--input);border:1px solid var(--border);color:var(--text);padding:3px;border-radius:3px;font-size:10px}
+.time-input{font-family:monospace;text-align:center;width:50px}
+
+.player-cards{display:flex;flex-direction:column;gap:3px;margin-bottom:6px}
+.player-card{background:var(--card);border-radius:5px;padding:5px;border-left:3px solid var(--accent)}
+.player-card.opp{border-left-color:var(--danger)}
+.player-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}
+.player-card-header .info{display:flex;align-items:center;gap:4px}
+.player-card-header .num{font-size:12px;font-weight:700}
+.player-card-header .name{font-size:9px;color:var(--muted)}
+.player-card-xy{display:flex;gap:2px;margin-bottom:3px}
+.player-card-xy .btn.has{background:var(--success);color:#fff}
+.player-card-xy .btn.active{background:var(--accent);color:#000}
+.player-card-pd{display:grid;grid-template-columns:1fr 1fr;gap:2px}
+.player-card-pd select{font-size:8px;padding:2px}
+
+.quick-add{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:6px;padding:4px;background:var(--card);border-radius:4px}
+.quick-add-btn{padding:3px 6px;font-size:9px;border-radius:3px;cursor:pointer;border:1px solid var(--border);background:var(--input)}
+.quick-add-btn:hover{background:var(--accent);color:#000}
+.quick-add-btn.evt{border-color:var(--accent)}
+.quick-add-btn.opp{border-color:var(--danger)}
+.quick-add-btn.in{background:var(--success);color:#fff}
+
+.linked-box{background:rgba(210,153,34,0.1);border:1px solid var(--warn);border-radius:5px;padding:6px;margin-bottom:6px}
+.validation{background:rgba(248,81,73,0.15);border:1px solid var(--danger);border-radius:5px;padding:6px;margin-bottom:6px;font-size:9px;display:none}
+
+.list{max-height:200px;overflow-y:auto}
+.list-item{display:grid;grid-template-columns:70px 45px 1fr 20px;gap:3px;padding:4px;border-bottom:1px solid var(--border);font-size:9px;cursor:pointer;align-items:center}
+.list-item:hover{background:var(--card)}
+.list-item.active{background:rgba(88,166,255,0.15);border-left:2px solid var(--accent)}
+.list-item .idx{font-family:monospace;font-size:8px;color:var(--accent)}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;z-index:100}
+.modal-overlay.show{display:flex}
+.modal{background:var(--panel);border:1px solid var(--border);border-radius:8px;width:90%;max-width:900px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column}
+.modal-header{background:var(--card);padding:10px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.modal-body{padding:16px;overflow-y:auto;flex:1}
+.modal-footer{padding:10px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+
+.edit-section{background:var(--card);border-radius:6px;padding:10px;margin-bottom:12px}
+.edit-section h4{font-size:11px;color:var(--accent);margin-bottom:8px;border-bottom:1px solid var(--border);padding-bottom:4px}
+.edit-player{background:var(--input);border-radius:4px;padding:8px;margin-bottom:6px;border-left:3px solid var(--accent)}
+.edit-player.opp{border-left-color:var(--danger)}
+
+.section{margin-bottom:6px}
+.section-title{font-size:9px;color:var(--muted);text-transform:uppercase;margin-bottom:3px;display:flex;justify-content:space-between}
+
+.tabs{display:flex;gap:2px;margin-bottom:10px}
+.tab{flex:1;padding:6px;text-align:center;font-size:10px;cursor:pointer;border-radius:4px;background:var(--card)}
+.tab.active{background:var(--accent);color:#000}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+.loading{color:var(--accent);text-align:center;padding:20px}
+.loading::after{content:'';animation:dots 1s steps(4) infinite}
+@keyframes dots{0%{content:''} 25%{content:'.'} 50%{content:'..'} 75%{content:'...'}}
+</style>
+</head>
+<body>
+
+<!-- ================================================================== -->
+<!-- CHANGELOG - MUST BE UPDATED WITH EVERY MODIFICATION -->
+<!-- ================================================================== -->
+<!--
+CHANGELOG:
+---------------------------------------------------------------------------
+2026-01-06 v8.0.5:
+  - CRITICAL FIX: Restored 4 missing src/advanced/ modules:
+    * create_additional_tables.py
+    * enhance_all_stats.py
+    * final_stats_enhancement.py
+    * extended_tables.py
+  - Created fact_events_player.csv (7,476 rows)
+  - Extended tables now run: +15 tables created
+  - Table count: 131 (54 dim, 73 fact, 3 QA, 1 other)
+  - Added comprehensive code audit documentation
+  - Fixed column name mismatches (Type -> event_type)
+
+2026-01-06 v8.0.4:
+  - CRITICAL: Recovered 72 missing tables from v7 backup
+  - Table count restored from 53 to 130
+  - Created 4 new outcome dimension tables
+  - Regenerated ERD with all tables
+  - Added table integrity tests
+
+2026-01-05 v8.0.0:
+  - Major schema expansion: 96 -> 111 tables planned
+  - Added 317 player metrics
+  - Created comprehensive foreign key relationships
+  - Added QA validation tables
+
+RULES FOR UPDATING THIS CHANGELOG:
+1. ALWAYS add entry BEFORE making changes
+2. Include: date, version, what changed, table counts
+3. Never delete old entries
+4. Be specific about what was added/changed/removed
+---------------------------------------------------------------------------
+-->
+
+
+<div class="header">
+  <h1>🏒 v17</h1>
+  <select id="gameId" onchange="selectGame(this.value)">
+    <option value="">-- Select Game --</option>
+  </select>
+  <button class="btn sm success" onclick="showNewGameModal()" data-tip="Create new game">+ New</button>
+  <span id="homeTeamD">--</span> vs <span id="awayTeamD">--</span>
+  <select id="period" onchange="S.period=this.value;resetClock()">
+    <option value="1">P1</option><option value="2">P2</option><option value="3">P3</option><option value="OT">OT</option>
+  </select>
+  <div class="clock" id="clock">18:00</div>
+  <button class="btn sm" onclick="adjClock(-1)">−</button>
+  <button class="btn sm" onclick="adjClock(1)">+</button>
+  <div class="score"><span id="hScore">0</span>-<span id="aScore">0</span></div>
+  <div class="header-right">
+    <label style="font-size:9px"><input type="checkbox" id="syncVid" checked> Sync</label>
+    <span>🎬<b id="vidTime">0</b>s</span>
+    <span>Sh:<b id="shiftN">--</b></span>
+    <span>Ev:<b id="evtN">0</b></span>
+    <span id="saveStatus">💾</span>
+    <button class="btn sm" onclick="downloadBackup()" data-tip="Download JSON backup">💾</button>
+    <button class="btn sm" onclick="showModal('hotkeys')">⌨️</button>
+    <button class="btn sm" onclick="showModal('boxscores')">📊</button>
+    <button class="btn sm" onclick="showModal('settings')">⚙️</button>
+  </div>
+</div>
+
+<div class="main">
+  
+  <!-- LEFT PANEL -->
+  <div class="panel left-panel" id="leftPanel">
+    <div class="panel-header">Shifts<button class="btn sm primary" id="logShiftBtn" onclick="logShift()">LOG SHIFT</button></div>
+    <div class="panel-content">
+      
+      <div class="team-section" id="homeSection">
+        <div class="team-header">
+          <h4><span class="dot" id="homeDot"></span><span id="hLabel">HOME</span></h4>
+          <button class="btn sm" onclick="clearTeam('home')">Clear</button>
+        </div>
+        <div class="position-row"><span class="label">F</span><div class="slots">
+          <div class="slot-btn" data-team="home" data-pos="F1" onclick="selectSlot(this)">F1</div>
+          <div class="slot-btn" data-team="home" data-pos="F2" onclick="selectSlot(this)">F2</div>
+          <div class="slot-btn" data-team="home" data-pos="F3" onclick="selectSlot(this)">F3</div>
+        </div></div>
+        <div class="position-row"><span class="label">D</span><div class="slots">
+          <div class="slot-btn" data-team="home" data-pos="D1" onclick="selectSlot(this)">D1</div>
+          <div class="slot-btn" data-team="home" data-pos="D2" onclick="selectSlot(this)">D2</div>
+        </div></div>
+        <div class="position-row"><span class="label">G</span><div class="slots">
+          <div class="slot-btn" data-team="home" data-pos="G" onclick="selectSlot(this)">G</div>
+          <div class="slot-btn" data-team="home" data-pos="X" onclick="selectSlot(this)">X</div>
+        </div></div>
+        <div class="roster-picker" id="homeRosterPicker"><div class="roster-grid" id="homeRosterGrid"></div></div>
+      </div>
+      
+      <div class="team-section" id="awaySection">
+        <div class="team-header">
+          <h4><span class="dot" id="awayDot"></span><span id="aLabel">AWAY</span></h4>
+          <button class="btn sm" onclick="clearTeam('away')">Clear</button>
+        </div>
+        <div class="position-row"><span class="label">F</span><div class="slots">
+          <div class="slot-btn" data-team="away" data-pos="F1" onclick="selectSlot(this)">F1</div>
+          <div class="slot-btn" data-team="away" data-pos="F2" onclick="selectSlot(this)">F2</div>
+          <div class="slot-btn" data-team="away" data-pos="F3" onclick="selectSlot(this)">F3</div>
+        </div></div>
+        <div class="position-row"><span class="label">D</span><div class="slots">
+          <div class="slot-btn" data-team="away" data-pos="D1" onclick="selectSlot(this)">D1</div>
+          <div class="slot-btn" data-team="away" data-pos="D2" onclick="selectSlot(this)">D2</div>
+        </div></div>
+        <div class="position-row"><span class="label">G</span><div class="slots">
+          <div class="slot-btn" data-team="away" data-pos="G" onclick="selectSlot(this)">G</div>
+          <div class="slot-btn" data-team="away" data-pos="X" onclick="selectSlot(this)">X</div>
+        </div></div>
+        <div class="roster-picker" id="awayRosterPicker"><div class="roster-grid" id="awayRosterGrid"></div></div>
+      </div>
+      
+      <div class="section">
+        <div class="form-row">
+          <div class="form-group"><label>Shift Start</label><input type="text" id="shiftStartTime" class="time-input" placeholder="1800" oninput="formatTimeInput(this)" onfocus="S.timeOverride=true"></div>
+          <div class="form-group"><label>Shift End</label><input type="text" id="shiftEndTime" class="time-input" placeholder="1630" oninput="formatTimeInput(this)" onfocus="S.timeOverride=true"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Stop Type</label>
+            <select id="shiftStop" onchange="autoStart()">
+              <option value="">--</option><option>Goalie_H</option><option>Goalie_A</option>
+              <option>Icing_H</option><option>Icing_A</option><option>Goal_H</option><option>Goal_A</option>
+              <option>Offside</option><option>Penalty</option><option>Period</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Start Type</label>
+            <select id="shiftStart">
+              <option value="OtherFaceoff">Other FO</option><option value="FaceoffAfterGoal">After Goal</option>
+              <option value="FaceoffAfterPenalty">After Pen</option><option value="PeriodStart">Period</option>
+              <option value="GameStart">Game Start</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:4px">
+          <button class="btn primary" style="flex:1" onclick="logShift()">LOG SHIFT <kbd>⌥⇧S</kbd></button>
+          <button class="btn" onclick="copyLastShift()">📋</button>
+        </div>
+      </div>
+      
+      <div class="section">
+        <div class="section-title">Shifts <span id="shiftCount">0</span></div>
+        <div class="list" id="shiftList"></div>
+      </div>
+      
+    </div>
+  </div>
+  
+  <div class="resizer" id="leftResizer"></div>
+  
+  <!-- CENTER -->
+  <div class="panel center-panel">
+    <div class="video-area" id="videoArea">
+      <div class="video-tabs" id="videoTabs">
+        <button class="video-tab active" onclick="switchVideo(0)">📺 Main</button>
+        <button class="video-tab" onclick="addVideo()">+</button>
+      </div>
+      <div class="video-wrapper" id="videoWrapper">
+        <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);cursor:pointer" onclick="addVideo()">Click to add video</div>
+      </div>
+      <div class="video-timeline">
+        <span class="timeline-time" id="vidTimeDisplay">0:00</span>
+        <div class="timeline-bar" id="timelineBar" onclick="seekTimeline(event)">
+          <div class="timeline-progress" id="timelineProgress"></div>
+          <div class="timeline-handle" id="timelineHandle"></div>
+        </div>
+        <span class="timeline-time" id="vidDuration">0:00</span>
+      </div>
+    </div>
+    <div class="video-resizer" id="videoResizer"></div>
+    
+    <div class="rink-area">
+      <div class="mode-ind puck" id="modeInd">🏒 PUCK XY1</div>
+      <svg id="rinkSvg" viewBox="-105 -47 210 94">
+        <defs><marker id="arrow" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto"><polygon points="0 0, 6 2, 0 4" fill="#888"/></marker></defs>
+        <rect x="-100" y="-42.5" width="200" height="85" rx="28" ry="28" fill="#e8f4fc" stroke="#444" stroke-width="0.5"/>
+        <line x1="0" y1="-42.5" x2="0" y2="42.5" stroke="#c62828" stroke-width="1.2"/>
+        <line x1="-25" y1="-42.5" x2="-25" y2="42.5" stroke="#1565c0" stroke-width="1"/>
+        <line x1="25" y1="-42.5" x2="25" y2="42.5" stroke="#1565c0" stroke-width="1"/>
+        <circle cx="0" cy="0" r="15" fill="none" stroke="#1565c0" stroke-width="0.5"/>
+        <circle cx="-69" cy="-22" r="15" fill="none" stroke="#c62828" stroke-width="0.3"/>
+        <circle cx="-69" cy="22" r="15" fill="none" stroke="#c62828" stroke-width="0.3"/>
+        <circle cx="69" cy="-22" r="15" fill="none" stroke="#c62828" stroke-width="0.3"/>
+        <circle cx="69" cy="22" r="15" fill="none" stroke="#c62828" stroke-width="0.3"/>
+        <rect x="-91" y="-3" width="2" height="6" fill="#c62828"/>
+        <rect x="89" y="-3" width="2" height="6" fill="#c62828"/>
+        <g id="prevMarkers"></g>
+        <g id="arrows"></g>
+        <g id="markers"></g>
+      </svg>
+      <div class="rink-controls">
+        <span>Zone:<b id="zoneD">--</b></span>
+        <span>Press:<b id="pressD">--</b></span>
+        <button class="btn sm on" onclick="setMode('puck',1)" data-tip="Puck mode (`)">🏒Puck</button>
+        <span>MaxXY:<input type="number" id="maxXY" value="3" min="1" max="10" style="width:35px" onchange="setMaxXY(this.value)"></span>
+        <button class="btn sm" onclick="clearMarkers()">🗑Clear</button>
+        <span>Keep:<input type="number" id="keepPrev" value="2" min="0" max="10" style="width:30px"></span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="resizer" id="rightResizer"></div>
+  
+  <!-- RIGHT PANEL -->
+  <div class="panel right-panel" id="rightPanel">
+    <div class="panel-header">Events<button class="btn sm" onclick="clearEvtForm()" data-tip="Clear (Esc)">Clear</button></div>
+    <div class="panel-content">
+      
+      <div style="display:flex;gap:3px;margin-bottom:6px">
+        <button class="btn on" id="teamH" onclick="setTeam('home')" style="flex:1">HOME <kbd>H</kbd></button>
+        <button class="btn" id="teamA" onclick="setTeam('away')" style="flex:1">AWAY <kbd>A</kbd></button>
+      </div>
+      
+      <div class="evt-grid">
+        <button class="btn evt-btn" onclick="qEvt('Shot')" id="bShot"><span>Shot</span><kbd>S</kbd></button>
+        <button class="btn evt-btn" onclick="qEvt('Pass')" id="bPass"><span>Pass</span><kbd>P</kbd></button>
+        <button class="btn evt-btn" onclick="qEvt('Faceoff')" id="bFaceoff"><span>FO</span><kbd>F</kbd></button>
+        <button class="btn evt-btn" onclick="qEvt('Goal')" id="bGoal"><span>Goal</span><kbd>G</kbd></button>
+        <button class="btn evt-btn" onclick="qEvt('Zone')" id="bZone"><span>Zone</span><kbd>Z</kbd></button>
+        <button class="btn evt-btn" onclick="qEvt('Turnover')" id="bTurnover"><span>TO</span><kbd>T</kbd></button>
+        <button class="btn evt-btn" onclick="qEvt('Poss')" id="bPoss"><span>Poss</span><kbd>O</kbd></button>
+        <button class="btn evt-btn" onclick="qEvt('Save')" id="bSave"><span>Save</span><kbd>V</kbd></button>
+        <button class="btn evt-btn" onclick="qEvt('Dead')" id="bDead"><span>Dead</span><kbd>D</kbd></button>
+        <button class="btn evt-btn" onclick="qEvt('Stop')" id="bStop"><span>Stop</span><kbd>X</kbd></button>
+        <button class="btn evt-btn" onclick="qEvt('Rebound')" id="bRebound"><span>Reb</span><kbd>R</kbd></button>
+        <button class="btn evt-btn" onclick="qEvt('Penalty')" id="bPenalty"><span>Pen</span><kbd>N</kbd></button>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group"><label>Detail 1</label><select id="evtD1" onchange="onD1Change()"></select></div>
+        <div class="form-group"><label>Detail 2</label><select id="evtD2"></select></div>
+      </div>
+      <div class="form-row tri">
+        <div class="form-group"><label>Success</label><select id="evtSucc"><option value="">Auto</option><option value="s">✓</option><option value="u">✗</option></select></div>
+        <div class="form-group"><label>Zone</label><select id="evtZone"><option value="">Auto</option><option value="o">Off</option><option value="n">Neu</option><option value="d">Def</option></select></div>
+        <div class="form-group"><label>Pressure</label><select id="evtPress"><option value="">Auto</option><option value="1">Yes</option><option value="0">No</option></select></div>
+      </div>
+      
+      <div class="validation" id="validation"></div>
+      
+      <!-- Quick Player Add -->
+      <div class="section">
+        <div class="section-title">Add Players <kbd>1-9</kbd>=Evt <kbd>Ctrl+1-9</kbd>=Opp</div>
+        <div class="quick-add" id="quickAdd">Log shift first</div>
+      </div>
+      
+      <div class="section">
+        <div class="section-title">Event Players <button class="btn sm" onclick="addEvtPlayer()">+Evt</button><button class="btn sm" onclick="addOppPlayer()">+Opp</button></div>
+        <div class="player-cards" id="playerCards"></div>
+      </div>
+      
+      <!-- Puck XY -->
+      <div class="section">
+        <div class="section-title">Puck XY <button class="btn sm ${S?.mode==='puck'?'on':''}" onclick="setMode('puck',1)" data-tip="Back to puck (`)">🏒</button></div>
+        <div id="puckXYBtns" style="display:flex;gap:3px;flex-wrap:wrap"></div>
+      </div>
+      
+      <div class="linked-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <span style="font-size:9px;color:var(--warn)">⚡ Linked Event</span>
+          <label style="font-size:9px"><input type="checkbox" id="linkOn"> Enable</label>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Type</label><select id="linkType" onchange="updateLinkDetails()"></select></div>
+          <div class="form-group"><label>Detail 1</label><select id="linkD1"></select></div>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group"><label>Event Start</label><input id="clockS" class="time-input" value="18:00" oninput="formatTimeInput(this)" onfocus="S.timeOverride=true"></div>
+        <div class="form-group"><label>Event End</label><input id="clockE" class="time-input" value="18:00" oninput="formatTimeInput(this)" onfocus="S.timeOverride=true"></div>
+      </div>
+      
+      <div style="display:flex;gap:3px;margin-bottom:6px">
+        <button class="btn primary" style="flex:2" onclick="logEvt()">LOG EVENT <kbd>Enter</kbd></button>
+        <button class="btn" onclick="copyLastEvt()">📋</button>
+        <button class="btn" onclick="undoEvt()">↩</button>
+      </div>
+      
+      <div class="section">
+        <div class="section-title">Events <span id="evtCount">0</span></div>
+        <div class="list" id="evtList"></div>
+      </div>
+      
+    </div>
+  </div>
+  
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)hideModal()">
+  
+  <!-- NEW GAME -->
+  <div class="modal" id="newGameModal" style="display:none;max-width:500px">
+    <div class="modal-header"><h3>➕ New Game</h3><button class="btn sm" onclick="hideModal()">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Game ID</label><input type="text" id="newGameId" placeholder="e.g. 19050"></div>
+        <div class="form-group"><label>Date</label><input type="date" id="newGameDate"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Home Team</label><input type="text" id="newHomeTeam" placeholder="Home Team Name"></div>
+        <div class="form-group"><label>Away Team</label><input type="text" id="newAwayTeam" placeholder="Away Team Name"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Home Color</label><input type="color" id="newHomeColor" value="#667788"></div>
+        <div class="form-group"><label>Away Color</label><input type="color" id="newAwayColor" value="#9C47E4"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="hideModal()">Cancel</button>
+      <button class="btn primary" onclick="createNewGame()">Create Game</button>
+    </div>
+  </div>
+  
+  <!-- SETTINGS -->
+  <div class="modal" id="settingsModal" style="display:none">
+    <div class="modal-header"><h3>⚙️ Settings</h3><button class="btn sm" onclick="hideModal()">✕</button></div>
+    <div class="modal-body">
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('import')">Import</div>
+        <div class="tab" onclick="switchTab('export')">Export</div>
+        <div class="tab" onclick="switchTab('video')">Video</div>
+        <div class="tab" onclick="switchTab('general')">General</div>
+      </div>
+      <div class="tab-panel active" id="importPanel">
+        <h4 style="margin-bottom:12px">Import Excel Tracking File</h4>
+        <input type="file" id="importExcel" accept=".xlsx,.xls,.csv" onchange="importExcel(event)">
+        <p style="font-size:10px;color:var(--muted);margin-top:8px">Expects sheets: events, shifts, xy_data (optional)</p>
+        <hr style="margin:16px 0;border-color:var(--border)">
+        <h4 style="margin-bottom:12px">Import JSON</h4>
+        <input type="file" accept=".json" onchange="importJSON(event)">
+      </div>
+      <div class="tab-panel" id="exportPanel">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn" onclick="exportExcel()">📊 Export Excel (All Tabs)</button>
+          <button class="btn" onclick="exportJSON()">📄 Export JSON</button>
+          <button class="btn" onclick="exportCSV('events')">Events CSV</button>
+          <button class="btn" onclick="exportCSV('shifts')">Shifts CSV</button>
+        </div>
+        <button class="btn danger" style="margin-top:20px" onclick="if(confirm('Clear ALL?')){S.events=[];S.shifts=[];updateLists();autoSave()}">🗑 Clear All</button>
+      </div>
+      <div class="tab-panel" id="videoPanel">
+        <div class="form-row">
+          <div class="form-group"><label>P1 Video Offset (sec)</label><input type="number" id="vidOffP1" value="0"></div>
+          <div class="form-group"><label>P2 Video Offset (sec)</label><input type="number" id="vidOffP2" value="0"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>P3 Video Offset (sec)</label><input type="number" id="vidOffP3" value="0"></div>
+          <div class="form-group"><label>OT Video Offset (sec)</label><input type="number" id="vidOffOT" value="0"></div>
+        </div>
+      </div>
+      <div class="tab-panel" id="generalPanel">
+        <div class="form-row">
+          <div class="form-group"><label>Clock Auto-Advance (sec)</label><input type="number" id="clockAdvance" value="2" min="0" max="10"></div>
+          <div class="form-group"><label>Period Length (min)</label><input type="number" id="periodLen" value="18" min="10" max="20"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- HOTKEYS -->
+  <div class="modal" id="hotkeysModal" style="display:none;max-width:550px">
+    <div class="modal-header"><h3>⌨️ Keyboard Shortcuts</h3><button class="btn sm" onclick="hideModal()">✕</button></div>
+    <div class="modal-body" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;font-size:10px">
+      <div>
+        <h4 style="color:var(--accent);margin-bottom:6px">Events</h4>
+        <div><kbd>S</kbd> Shot</div><div><kbd>P</kbd> Pass</div><div><kbd>F</kbd> Faceoff</div>
+        <div><kbd>G</kbd> Goal</div><div><kbd>Z</kbd> Zone</div><div><kbd>T</kbd> Turnover</div>
+        <div><kbd>O</kbd> Possession</div><div><kbd>V</kbd> Save</div><div><kbd>D</kbd> Dead</div>
+        <div><kbd>X</kbd> Stop</div><div><kbd>R</kbd> Rebound</div><div><kbd>N</kbd> Penalty</div>
+      </div>
+      <div>
+        <h4 style="color:var(--accent);margin-bottom:6px">Players/XY</h4>
+        <div><kbd>1-9</kbd> Add evt player</div>
+        <div><kbd>Ctrl+1-9</kbd> Add opp player</div>
+        <div><kbd>H/A</kbd> Team</div>
+        <div><kbd>Tab</kbd> Toggle team</div>
+        <div><kbd>`</kbd> Puck XY mode</div>
+        <div><kbd>Q/W/E</kbd> XY slot 1/2/3</div>
+      </div>
+      <div>
+        <h4 style="color:var(--accent);margin-bottom:6px">Actions</h4>
+        <div><kbd>Enter</kbd> Log event</div>
+        <div><kbd>⌥⇧S</kbd> Log shift</div>
+        <div><kbd>⌘Z</kbd> Undo</div>
+        <div><kbd>Esc</kbd> Clear form</div>
+        <div><kbd>Space</kbd> Play/Pause</div>
+        <div><kbd>[/]</kbd> Clock ±1s</div>
+        <div><kbd>,/.</kbd> Frame step</div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- BOX SCORES -->
+  <div class="modal" id="boxscoresModal" style="display:none;max-width:700px">
+    <div class="modal-header"><h3>📊 Box Scores</h3><button class="btn sm" onclick="hideModal()">✕</button></div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="boxScoreContent"></div>
+    </div>
+  </div>
+  
+  <!-- EVENT DETAIL/EDIT -->
+  <div class="modal" id="detailModal" style="display:none">
+    <div class="modal-header"><h3 id="detailTitle">Event Details</h3><button class="btn sm" onclick="hideModal()">✕</button></div>
+    <div class="modal-body" id="detailBody"></div>
+    <div class="modal-footer">
+      <button class="btn danger" onclick="deleteItem()">Delete</button>
+      <button class="btn primary" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+  
+  <!-- SHIFT EDIT -->
+  <div class="modal" id="shiftEditModal" style="display:none">
+    <div class="modal-header"><h3 id="shiftEditTitle">Edit Shift</h3><button class="btn sm" onclick="hideModal()">✕</button></div>
+    <div class="modal-body" id="shiftEditBody"></div>
+    <div class="modal-footer">
+      <button class="btn danger" onclick="deleteShift()">Delete Shift</button>
+      <button class="btn primary" onclick="saveShiftEdit()">Save Changes</button>
+    </div>
+  </div>
+  
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+// ========== GLOBAL STATE ==========
+// EMBEDDED GAME DATA - No fetch required, works standalone
+let GAMES = {"18955":{"gid":"18955","date":"2025-08-10","homeTeam":"Velodrome","awayTeam":"Orphans","homeColor":"#9C47E4","awayColor":"#000000","videoUrl":"","homeRoster":[{"n":"9","name":"Ronnie Pinnell","pos":"D","skill":4},{"n":"14","name":"Nick Ciampoli","pos":"F","skill":4},{"n":"22","name":"Robert Mayfield","pos":"D","skill":3},{"n":"24","name":"Jennifer Valente","pos":"F","skill":2},{"n":"39","name":"Wyatt Crandall","pos":"G","skill":5},{"n":"42","name":"Garrett Ashcroft","pos":"F","skill":5},{"n":"55","name":"James Rynearson","pos":"F","skill":3},{"n":"61","name":"Kaitlyn Shain","pos":"F","skill":3},{"n":"70","name":"Sam Downs","pos":"F","skill":6},{"n":"75","name":"Nicole Downs","pos":"F","skill":2},{"n":"84","name":"Maxwell Donaty","pos":"D","skill":5},{"n":"87","name":"Josh Cronk","pos":"D","skill":5},{"n":"91","name":"Kevin White","pos":"F","skill":4}],"awayRoster":[{"n":"1","name":"Michael Gipson","pos":"G","skill":5},{"n":"3","name":"Ryan Case","pos":"F","skill":5},{"n":"4","name":"Greg Hoyt","pos":"F","skill":3},{"n":"5","name":"Matt Rocco","pos":"F","skill":3},{"n":"6","name":"Matt Vivian","pos":"F","skill":3},{"n":"7","name":"Marc Smith","pos":"F","skill":4},{"n":"9","name":"Joshua Parmiter","pos":"D","skill":5},{"n":"10","name":"Wayne Kohut","pos":"F","skill":3},{"n":"11","name":"Ross Thompson","pos":"F","skill":6},{"n":"12","name":"Daniel Heck","pos":"D","skill":4},{"n":"13","name":"Dean Porter","pos":"D","skill":4},{"n":"14","name":"Austin Webb","pos":"F","skill":5},{"n":"15","name":"Chad Ferguson","pos":"F","skill":4},{"n":"16","name":"Chuck Webb","pos":"F","skill":2}]},"18965":{"gid":"18965","date":"2025-08-24","homeTeam":"Velodrome","awayTeam":"OS Offices","homeColor":"#9C47E4","awayColor":"#2C8A5E","videoUrl":"","homeRoster":[{"n":"5","name":"Jesse Theken","pos":"F","skill":4},{"n":"7","name":"Guy Girardeau","pos":"D","skill":3},{"n":"8","name":"Nicholas Lang","pos":"F","skill":5},{"n":"9","name":"Peter Husak","pos":"F","skill":2},{"n":"13","name":"Josh Theken","pos":"F","skill":5},{"n":"17","name":"Tyler Kettner","pos":"F","skill":5},{"n":"19","name":"Josh Gulledge","pos":"F","skill":4},{"n":"26","name":"Erika Tunning","pos":"F","skill":2},{"n":"38","name":"Casey Lang","pos":"G","skill":4},{"n":"46","name":"Mitchell Liebl","pos":"F","skill":5},{"n":"71","name":"Darren Rojas","pos":"D","skill":3},{"n":"74","name":"Kyle Meetze","pos":"D","skill":3},{"n":"83","name":"Jeremy Lindemann","pos":"D","skill":4},{"n":"92","name":"TJ Liebl","pos":"D","skill":6},{"n":"94","name":"Chris Tunning","pos":"F","skill":4}],"awayRoster":[{"n":"9","name":"Ronnie Pinnell","pos":"D","skill":4},{"n":"14","name":"Nick Ciampoli","pos":"F","skill":4},{"n":"22","name":"Robert Mayfield","pos":"D","skill":3},{"n":"24","name":"Jennifer Valente","pos":"F","skill":2},{"n":"39","name":"Wyatt Crandall","pos":"G","skill":5},{"n":"42","name":"Garrett Ashcroft","pos":"F","skill":5},{"n":"49","name":"Galen Wood","pos":"F","skill":5},{"n":"52","name":"Hayden Perea","pos":"D","skill":4},{"n":"55","name":"James Rynearson","pos":"F","skill":3},{"n":"61","name":"Kaitlyn Shain","pos":"F","skill":3},{"n":"70","name":"Sam Downs","pos":"F","skill":6},{"n":"75","name":"Nicole Downs","pos":"F","skill":2},{"n":"84","name":"Maxwell Donaty","pos":"D","skill":5},{"n":"87","name":"Josh Cronk","pos":"D","skill":5},{"n":"91","name":"Kevin White","pos":"F","skill":4}]},"18969":{"gid":"18969","date":"2025-09-07","homeTeam":"Platinum","awayTeam":"Velodrome","homeColor":"#919294","awayColor":"#9C47E4","videoUrl":"","homeRoster":[{"n":"3","name":"Alex Considine","pos":"D","skill":4},{"n":"8","name":"Jesse Chambless","pos":"D","skill":5},{"n":"12","name":"Karen Zietlow","pos":"F","skill":2},{"n":"21","name":"Andrew Marshall","pos":"F","skill":4},{"n":"34","name":"Chris Dube","pos":"F","skill":4},{"n":"45","name":"Keegan Mantaro","pos":"D","skill":6},{"n":"47","name":"Josh Simonds","pos":"F","skill":4},{"n":"53","name":"Chris Premo","pos":"F","skill":5},{"n":"78","name":"Matt Quinn","pos":"D","skill":3},{"n":"82","name":"JoLyn Maly","pos":"F","skill":2},{"n":"86","name":"Joshua Blumberg","pos":"F","skill":3},{"n":"20","name":"John Thien","pos":"F","skill":3},{"n":"99","name":"Francis Forte","pos":"G","skill":5}],"awayRoster":[{"n":"9","name":"Ronnie Pinnell","pos":"D","skill":4},{"n":"14","name":"Nick Ciampoli","pos":"F","skill":4},{"n":"22","name":"Robert Mayfield","pos":"D","skill":3},{"n":"39","name":"Wyatt Crandall","pos":"G","skill":5},{"n":"42","name":"Garrett Ashcroft","pos":"F","skill":5},{"n":"49","name":"Galen Wood","pos":"F","skill":5},{"n":"52","name":"Hayden Perea","pos":"D","skill":4},{"n":"55","name":"James Rynearson","pos":"F","skill":3},{"n":"61","name":"Kaitlyn Shain","pos":"F","skill":3},{"n":"70","name":"Sam Downs","pos":"F","skill":6},{"n":"75","name":"Nicole Downs","pos":"F","skill":2},{"n":"84","name":"Maxwell Donaty","pos":"D","skill":5},{"n":"91","name":"Kevin White","pos":"F","skill":4},{"n":"93","name":"Pat Major","pos":"D","skill":3}]},"18977":{"gid":"18977","date":"2025-09-14","homeTeam":"Velodrome","awayTeam":"HollowBrook","homeColor":"#9C47E4","awayColor":"#4D2640","videoUrl":"","homeRoster":[{"n":"9","name":"Ronnie Pinnell","pos":"D","skill":4},{"n":"14","name":"Nick Ciampoli","pos":"F","skill":4},{"n":"22","name":"Robert Mayfield","pos":"D","skill":3},{"n":"24","name":"Jennifer Valente","pos":"F","skill":2},{"n":"39","name":"Wyatt Crandall","pos":"G","skill":5},{"n":"42","name":"Garrett Ashcroft","pos":"F","skill":5},{"n":"49","name":"Galen Wood","pos":"F","skill":5},{"n":"52","name":"Hayden Perea","pos":"D","skill":4},{"n":"61","name":"Kaitlyn Shain","pos":"F","skill":3},{"n":"70","name":"Sam Downs","pos":"F","skill":6},{"n":"75","name":"Nicole Downs","pos":"F","skill":2},{"n":"87","name":"Josh Cronk","pos":"D","skill":5},{"n":"91","name":"Kevin White","pos":"F","skill":4}],"awayRoster":[{"n":"2","name":"Noel Black","pos":"D","skill":4},{"n":"5","name":"Kevin Moore","pos":"D","skill":3},{"n":"8","name":"Bert Loper","pos":"F","skill":2},{"n":"11","name":"Ty Smith","pos":"F","skill":6},{"n":"13","name":"Nathan Watts","pos":"F","skill":5},{"n":"18","name":"Todd Heffner","pos":"F","skill":4},{"n":"19","name":"Hayden Smith","pos":"F","skill":5},{"n":"22","name":"Steve Smith","pos":"F","skill":3},{"n":"26","name":"Nate Flint","pos":"F","skill":4},{"n":"27","name":"Beau Kelly","pos":"D","skill":4},{"n":"40","name":"Kirk Moore","pos":"F","skill":3},{"n":"99","name":"Jared Wolf","pos":"G","skill":4}]},"18981":{"gid":"18981","date":"2025-09-28","homeTeam":"Nelson","awayTeam":"Velodrome","homeColor":"#F3C323","awayColor":"#9C47E4","videoUrl":"","homeRoster":[{"n":"3","name":"Michelle Freddolino","pos":"F","skill":2},{"n":"7","name":"Bobby Dickinson","pos":"F","skill":2},{"n":"8","name":"Marko Somersalmi","pos":"D","skill":4},{"n":"10","name":"Kyle Popovich","pos":"F","skill":5},{"n":"15","name":"Andy Alm","pos":"F","skill":3},{"n":"16","name":"Zachary Coleman","pos":"F","skill":4},{"n":"23","name":"Eric Larson","pos":"D","skill":3},{"n":"31","name":"Thane Gilmore","pos":"G","skill":3},{"n":"37","name":"Eric Elliott","pos":"F","skill":5},{"n":"44","name":"Joe Lopez","pos":"F","skill":4},{"n":"79","name":"Brock Lofgren","pos":"F","skill":6},{"n":"80","name":"Samuel Yetsko","pos":"D","skill":5}],"awayRoster":[{"n":"9","name":"Ronnie Pinnell","pos":"D","skill":4},{"n":"14","name":"Nick Ciampoli","pos":"F","skill":4},{"n":"22","name":"Robert Mayfield","pos":"D","skill":3},{"n":"24","name":"Jennifer Valente","pos":"F","skill":2},{"n":"39","name":"Wyatt Crandall","pos":"G","skill":5},{"n":"42","name":"Garrett Ashcroft","pos":"F","skill":5},{"n":"49","name":"Galen Wood","pos":"F","skill":5},{"n":"52","name":"Hayden Perea","pos":"D","skill":4},{"n":"61","name":"Kaitlyn Shain","pos":"F","skill":3},{"n":"70","name":"Sam Downs","pos":"F","skill":6},{"n":"75","name":"Nicole Downs","pos":"F","skill":2},{"n":"84","name":"Maxwell Donaty","pos":"D","skill":5},{"n":"87","name":"Josh Cronk","pos":"D","skill":5},{"n":"91","name":"Kevin White","pos":"F","skill":4},{"n":"93","name":"Pat Major","pos":"D","skill":3}]},"18987":{"gid":"18987","date":"2025-10-05","homeTeam":"Outlaws","awayTeam":"Velodrome","homeColor":"#02007B","awayColor":"#9C47E4","videoUrl":"","homeRoster":[{"n":"3","name":"Cesar Shinall","pos":"D","skill":4},{"n":"4","name":"Trevor Chavez","pos":"D","skill":5},{"n":"12","name":"Ryan Kiehl","pos":"F","skill":4},{"n":"13","name":"Christopher Mihlon","pos":"F","skill":5},{"n":"18","name":"Colin Brewster","pos":"D","skill":3},{"n":"25","name":"Kennen Newsham","pos":"F","skill":4},{"n":"30","name":"Graham Peters","pos":"G","skill":5},{"n":"44","name":"Taylor Rogalsky","pos":"F","skill":3},{"n":"56","name":"Colby Rasplicka","pos":"F","skill":4},{"n":"68","name":"Brody Keene","pos":"D","skill":5},{"n":"77","name":"Samson Leifer","pos":"F","skill":6},{"n":"80","name":"Richie Villanueva","pos":"F","skill":3},{"n":"89","name":"Steve Klyn","pos":"F","skill":2},{"n":"91","name":"Philip Kerchner","pos":"F","skill":2}],"awayRoster":[{"n":"9","name":"Ronnie Pinnell","pos":"D","skill":4},{"n":"14","name":"Nick Ciampoli","pos":"F","skill":4},{"n":"22","name":"Robert Mayfield","pos":"D","skill":3},{"n":"24","name":"Jennifer Valente","pos":"F","skill":2},{"n":"39","name":"Wyatt Crandall","pos":"G","skill":5},{"n":"42","name":"Garrett Ashcroft","pos":"F","skill":5},{"n":"55","name":"James Rynearson","pos":"F","skill":3},{"n":"61","name":"Kaitlyn Shain","pos":"F","skill":3},{"n":"70","name":"Sam Downs","pos":"F","skill":6},{"n":"75","name":"Nicole Downs","pos":"F","skill":2},{"n":"84","name":"Maxwell Donaty","pos":"D","skill":5},{"n":"91","name":"Kevin White","pos":"F","skill":4}]},"18991":{"gid":"18991","date":"2025-10-12","homeTeam":"Triple J","awayTeam":"Velodrome","homeColor":"#4EB9E5","awayColor":"#9C47E4","videoUrl":"","homeRoster":[{"n":"1","name":"Rick Haenke","pos":"G","skill":5},{"n":"10","name":"Lucy Spreter","pos":"F","skill":2},{"n":"16","name":"Ryan Lewis","pos":"F","skill":3},{"n":"19","name":"Brian Myers","pos":"D","skill":4},{"n":"21","name":"Matt Lee","pos":"F","skill":5},{"n":"37","name":"Bob Colby","pos":"F","skill":4},{"n":"41","name":"Brad Hogan","pos":"D","skill":4},{"n":"57","name":"Jason Mantaro","pos":"D","skill":5},{"n":"69","name":"Jon Schuepbach","pos":"F","skill":3},{"n":"71","name":"Zach DeBlois","pos":"F","skill":4},{"n":"73","name":"Mike Flood","pos":"F","skill":5},{"n":"90","name":"Laura Hogan","pos":"F","skill":2}],"awayRoster":[{"n":"9","name":"Ronnie Pinnell","pos":"D","skill":4},{"n":"14","name":"Nick Ciampoli","pos":"F","skill":4},{"n":"22","name":"Robert Mayfield","pos":"D","skill":3},{"n":"24","name":"Jennifer Valente","pos":"F","skill":2},{"n":"39","name":"Wyatt Crandall","pos":"G","skill":5},{"n":"55","name":"James Rynearson","pos":"F","skill":3},{"n":"61","name":"Kaitlyn Shain","pos":"F","skill":3},{"n":"70","name":"Sam Downs","pos":"F","skill":6},{"n":"75","name":"Nicole Downs","pos":"F","skill":2},{"n":"84","name":"Maxwell Donaty","pos":"D","skill":5},{"n":"87","name":"Josh Cronk","pos":"D","skill":5},{"n":"91","name":"Kevin White","pos":"F","skill":4},{"n":"93","name":"Pat Major","pos":"D","skill":3}]},"18993":{"gid":"18993","date":"2025-10-19","homeTeam":"Ace","awayTeam":"Velodrome","homeColor":"#CA0527","awayColor":"#9C47E4","videoUrl":"","homeRoster":[{"n":"0","name":"Alyssa Richards","pos":"F","skill":4},{"n":"7","name":"John Storms","pos":"F","skill":3},{"n":"16","name":"Joe Diberardinis","pos":"F","skill":5},{"n":"18","name":"Ethan Kalbfleisch","pos":"F","skill":5},{"n":"20","name":"John Morrow","pos":"F","skill":3},{"n":"27","name":"Austin Storm","pos":"F","skill":6},{"n":"31","name":"Ian Gustafson","pos":"G","skill":3},{"n":"35","name":"Josh Engle","pos":"F","skill":3},{"n":"57","name":"Lee Chiarizia","pos":"D","skill":4},{"n":"65","name":"Nick Zellmann","pos":"D","skill":6},{"n":"69","name":"Nora Wilson","pos":"D","skill":4},{"n":"72","name":"Owen Kalbfleisch","pos":"D","skill":5},{"n":"81","name":"Kevin Kalbfleisch","pos":"F","skill":4},{"n":"88","name":"John Liersemann","pos":"F","skill":4},{"n":"98","name":"Shane Arnold","pos":"F","skill":2}],"awayRoster":[{"n":"9","name":"Ronnie Pinnell","pos":"D","skill":4},{"n":"14","name":"Nick Ciampoli","pos":"F","skill":4},{"n":"22","name":"Robert Mayfield","pos":"D","skill":3},{"n":"24","name":"Jennifer Valente","pos":"F","skill":2},{"n":"42","name":"Garrett Ashcroft","pos":"F","skill":5},{"n":"49","name":"Galen Wood","pos":"F","skill":5},{"n":"55","name":"James Rynearson","pos":"F","skill":3},{"n":"61","name":"Kaitlyn Shain","pos":"F","skill":3},{"n":"70","name":"Sam Downs","pos":"F","skill":6},{"n":"75","name":"Nicole Downs","pos":"F","skill":2},{"n":"84","name":"Maxwell Donaty","pos":"D","skill":5},{"n":"91","name":"Kevin White","pos":"F","skill":4},{"n":"93","name":"Pat Major","pos":"D","skill":3},{"n":"FA","name":"Francis Forte","pos":"G","skill":5}]}};
+
+// All 552 games from BLB dim_schedule for new game picker
+const ALL_SCHEDULE = [{"gid":"19022","date":"2025-11-23","home":"Ace","away":"Nelson","homeColor":"#CA0527","awayColor":"#F3C323","video":""},{"gid":"19021","date":"2025-11-23","home":"Amos","away":"OS Offices","homeColor":"#641C28","awayColor":"#2C8A5E","video":""},{"gid":"19020","date":"2025-11-23","home":"HollowBrook","away":"Velodrome","homeColor":"#4D2640","awayColor":"#9C47E4","video":""},{"gid":"19019","date":"2025-11-23","home":"Platinum","away":"Orphans","homeColor":"#919294","awayColor":"#000000","video":""},{"gid":"19018","date":"2025-11-23","home":"Outlaws","away":"Triple J","homeColor":"#02007B","awayColor":"#4EB9E5","video":""},{"gid":"19017","date":"2025-11-16","home":"Triple J","away":"Orphans","homeColor":"#4EB9E5","awayColor":"#000000","video":""},{"gid":"19016","date":"2025-11-16","home":"Amos","away":"HollowBrook","homeColor":"#641C28","awayColor":"#4D2640","video":""},{"gid":"19015","date":"2025-11-16","home":"Ace","away":"Outlaws","homeColor":"#CA0527","awayColor":"#02007B","video":""},{"gid":"19014","date":"2025-11-16","home":"Platinum","away":"Velodrome","homeColor":"#919294","awayColor":"#9C47E4","video":""},{"gid":"19013","date":"2025-11-16","home":"Nelson","away":"OS Offices","homeColor":"#F3C323","awayColor":"#2C8A5E","video":""},{"gid":"19012","date":"2025-11-09","home":"Nelson","away":"Platinum","homeColor":"#F3C323","awayColor":"#919294","video":""},{"gid":"19011","date":"2025-11-09","home":"Outlaws","away":"Orphans","homeColor":"#02007B","awayColor":"#000000","video":""},{"gid":"19010","date":"2025-11-09","home":"Ace","away":"HollowBrook","homeColor":"#CA0527","awayColor":"#4D2640","video":""},{"gid":"19009","date":"2025-11-09","home":"OS Offices","away":"Velodrome","homeColor":"#2C8A5E","awayColor":"#9C47E4","video":""},{"gid":"19008","date":"2025-11-09","home":"Amos","away":"Triple J","homeColor":"#641C28","awayColor":"#4EB9E5","video":""},{"gid":"19007","date":"2025-11-02","home":"Amos","away":"Velodrome","homeColor":"#641C28","awayColor":"#9C47E4","video":""},{"gid":"19006","date":"2025-11-02","home":"Ace","away":"Platinum","homeColor":"#CA0527","awayColor":"#919294","video":""},{"gid":"19005","date":"2025-11-02","home":"Nelson","away":"Triple J","homeColor":"#F3C323","awayColor":"#4EB9E5","video":""},{"gid":"19004","date":"2025-11-02","home":"HollowBrook","away":"Orphans","homeColor":"#4D2640","awayColor":"#000000","video":""},{"gid":"19003","date":"2025-11-02","home":"Outlaws","away":"OS Offices","homeColor":"#02007B","awayColor":"#2C8A5E","video":""},{"gid":"19002","date":"2025-10-26","home":"Ace","away":"OS Offices","homeColor":"#CA0527","awayColor":"#2C8A5E","video":""},{"gid":"19001","date":"2025-10-26","home":"Outlaws","away":"Platinum","homeColor":"#02007B","awayColor":"#919294","video":""},{"gid":"19000","date":"2025-10-26","home":"HollowBrook","away":"Triple J","homeColor":"#4D2640","awayColor":"#4EB9E5","video":""},{"gid":"18999","date":"2025-10-26","home":"Amos","away":"Nelson","homeColor":"#641C28","awayColor":"#F3C323","video":""},{"gid":"18998","date":"2025-10-26","home":"Orphans","away":"Velodrome","homeColor":"#000000","awayColor":"#9C47E4","video":""},{"gid":"18997","date":"2025-10-19","home":"Platinum","away":"Triple J","homeColor":"#919294","awayColor":"#4EB9E5","video":""},{"gid":"18996","date":"2025-10-19","home":"HollowBrook","away":"OS Offices","homeColor":"#4D2640","awayColor":"#2C8A5E","video":""},{"gid":"18995","date":"2025-10-19","home":"Nelson","away":"Outlaws","homeColor":"#F3C323","awayColor":"#02007B","video":""},{"gid":"18994","date":"2025-10-19","home":"Amos","away":"Orphans","homeColor":"#641C28","awayColor":"#000000","video":""},{"gid":"18993","date":"2025-10-19","home":"Ace","away":"Velodrome","homeColor":"#CA0527","awayColor":"#9C47E4","video":""},{"gid":"18992","date":"2025-10-12","home":"Amos","away":"Outlaws","homeColor":"#641C28","awayColor":"#02007B","video":""},{"gid":"18991","date":"2025-10-12","home":"Triple J","away":"Velodrome","homeColor":"#4EB9E5","awayColor":"#9C47E4","video":""},{"gid":"18990","date":"2025-10-12","home":"Platinum","away":"OS Offices","homeColor":"#919294","awayColor":"#2C8A5E","video":""},{"gid":"18989","date":"2025-10-12","home":"HollowBrook","away":"Nelson","homeColor":"#4D2640","awayColor":"#F3C323","video":""},{"gid":"18988","date":"2025-10-12","home":"Ace","away":"Orphans","homeColor":"#CA0527","awayColor":"#000000","video":""},{"gid":"18987","date":"2025-10-05","home":"Outlaws","away":"Velodrome","homeColor":"#02007B","awayColor":"#9C47E4","video":""},{"gid":"18986","date":"2025-10-05","home":"Nelson","away":"Orphans","homeColor":"#F3C323","awayColor":"#000000","video":""},{"gid":"18985","date":"2025-10-05","home":"OS Offices","away":"Triple J","homeColor":"#2C8A5E","awayColor":"#4EB9E5","video":""},{"gid":"18984","date":"2025-10-05","home":"Ace","away":"Amos","homeColor":"#CA0527","awayColor":"#641C28","video":""},{"gid":"18983","date":"2025-10-05","home":"HollowBrook","away":"Platinum","homeColor":"#4D2640","awayColor":"#919294","video":""},{"gid":"18982","date":"2025-09-28","home":"OS Offices","away":"Orphans","homeColor":"#2C8A5E","awayColor":"#000000","video":""},{"gid":"18981","date":"2025-09-28","home":"Nelson","away":"Velodrome","homeColor":"#F3C323","awayColor":"#9C47E4","video":""},{"gid":"18980","date":"2025-09-28","home":"Amos","away":"Platinum","homeColor":"#641C28","awayColor":"#919294","video":""},{"gid":"18979","date":"2025-09-28","home":"HollowBrook","away":"Outlaws","homeColor":"#4D2640","awayColor":"#02007B","video":""},{"gid":"18978","date":"2025-09-28","home":"Ace","away":"Triple J","homeColor":"#CA0527","awayColor":"#4EB9E5","video":""},{"gid":"18977","date":"2025-09-14","home":"Velodrome","away":"HollowBrook","homeColor":"#9C47E4","awayColor":"#4D2640","video":""},{"gid":"18976","date":"2025-09-14","home":"Ace","away":"Nelson","homeColor":"#CA0527","awayColor":"#F3C323","video":""},{"gid":"18975","date":"2025-09-14","home":"Amos","away":"OS Offices","homeColor":"#641C28","awayColor":"#2C8A5E","video":""},{"gid":"18974","date":"2025-09-14","home":"Outlaws","away":"Triple J","homeColor":"#02007B","awayColor":"#4EB9E5","video":""},{"gid":"18973","date":"2025-09-14","home":"Platinum","away":"Orphans","homeColor":"#919294","awayColor":"#000000","video":""},{"gid":"18972","date":"2025-09-07","home":"Amos","away":"HollowBrook","homeColor":"#641C28","awayColor":"#4D2640","video":""},{"gid":"18971","date":"2025-09-07","home":"Triple J","away":"Orphans","homeColor":"#4EB9E5","awayColor":"#000000","video":""},{"gid":"18970","date":"2025-09-07","home":"Ace","away":"Outlaws","homeColor":"#CA0527","awayColor":"#02007B","video":""},{"gid":"18969","date":"2025-09-07","home":"Platinum","away":"Velodrome","homeColor":"#919294","awayColor":"#9C47E4","video":""},{"gid":"18968","date":"2025-09-07","home":"Nelson","away":"OS Offices","homeColor":"#F3C323","awayColor":"#2C8A5E","video":""},{"gid":"18967","date":"2025-08-24","home":"Ace","away":"HollowBrook","homeColor":"#CA0527","awayColor":"#4D2640","video":""},{"gid":"18966","date":"2025-08-24","home":"Nelson","away":"Platinum","homeColor":"#F3C323","awayColor":"#919294","video":""},{"gid":"18965","date":"2025-08-24","home":"Velodrome","away":"OS Offices","homeColor":"#9C47E4","awayColor":"#2C8A5E","video":""},{"gid":"18964","date":"2025-08-24","home":"Outlaws","away":"Orphans","homeColor":"#02007B","awayColor":"#000000","video":""},{"gid":"18963","date":"2025-08-24","home":"Amos","away":"Triple J","homeColor":"#641C28","awayColor":"#4EB9E5","video":""},{"gid":"18962","date":"2025-08-17","home":"Nelson","away":"Triple J","homeColor":"#F3C323","awayColor":"#4EB9E5","video":""},{"gid":"18961","date":"2025-08-17","home":"Ace","away":"Platinum","homeColor":"#CA0527","awayColor":"#919294","video":""},{"gid":"18960","date":"2025-08-17","home":"HollowBrook","away":"Orphans","homeColor":"#4D2640","awayColor":"#000000","video":""},{"gid":"18959","date":"2025-08-17","home":"Amos","away":"Velodrome","homeColor":"#641C28","awayColor":"#9C47E4","video":""},{"gid":"18958","date":"2025-08-17","home":"Outlaws","away":"OS Offices","homeColor":"#02007B","awayColor":"#2C8A5E","video":""},{"gid":"18957","date":"2025-08-10","home":"Outlaws","away":"Platinum","homeColor":"#02007B","awayColor":"#919294","video":""},{"gid":"18956","date":"2025-08-10","home":"HollowBrook","away":"Triple J","homeColor":"#4D2640","awayColor":"#4EB9E5","video":""},{"gid":"18955","date":"2025-08-10","home":"Velodrome","away":"Orphans","homeColor":"#9C47E4","awayColor":"#000000","video":""},{"gid":"18954","date":"2025-08-10","home":"Ace","away":"OS Offices","homeColor":"#CA0527","awayColor":"#2C8A5E","video":""},{"gid":"18953","date":"2025-08-10","home":"Amos","away":"Nelson","homeColor":"#641C28","awayColor":"#F3C323","video":""},{"gid":"18619","date":"2025-07-13","home":"Red","away":"Green","homeColor":"#CA0527","awayColor":"#04c946","video":""},{"gid":"18051","date":"2025-03-09","home":"HollowBrook","away":"Orphans","homeColor":"#4D2640","awayColor":"#000000","video":""},{"gid":"18050","date":"2025-03-09","home":"Nelson","away":"Ace","homeColor":"#F3C323","awayColor":"#CA0527","video":""},{"gid":"18049","date":"2025-03-09","home":"Amos","away":"Triple J","homeColor":"#641C28","awayColor":"#4EB9E5","video":""},{"gid":"18048","date":"2025-03-09","home":"OS Offices","away":"Platinum","homeColor":"#2C8A5E","awayColor":"#919294","video":""},{"gid":"18046","date":"2025-03-02","home":"Nelson","away":"Outlaws","homeColor":"#F3C323","awayColor":"#02007B","video":""},{"gid":"18045","date":"2025-03-02","home":"Amos","away":"Orphans","homeColor":"#641C28","awayColor":"#000000","video":""},{"gid":"18044","date":"2025-03-02","home":"OS Offices","away":"Ace","homeColor":"#2C8A5E","awayColor":"#CA0527","video":""},{"gid":"18043","date":"2025-03-02","home":"Platinum","away":"Triple J","homeColor":"#919294","awayColor":"#4EB9E5","video":""},{"gid":"18041","date":"2025-02-23","home":"Amos","away":"HollowBrook","homeColor":"#641C28","awayColor":"#4D2640","video":""},{"gid":"18040","date":"2025-02-23","home":"OS Offices","away":"Outlaws","homeColor":"#2C8A5E","awayColor":"#02007B","video":""},{"gid":"18039","date":"2025-02-23","home":"Platinum","away":"Orphans","homeColor":"#919294","awayColor":"#000000","video":""},{"gid":"18038","date":"2025-02-23","home":"Triple J","away":"Ace","homeColor":"#4EB9E5","awayColor":"#CA0527","video":""},{"gid":"18036","date":"2025-02-09","home":"OS Offices","away":"Nelson","homeColor":"#2C8A5E","awayColor":"#F3C323","video":""},{"gid":"18035","date":"2025-02-09","home":"Platinum","away":"HollowBrook","homeColor":"#919294","awayColor":"#4D2640","video":""},{"gid":"18034","date":"2025-02-09","home":"Triple J","away":"Outlaws","homeColor":"#4EB9E5","awayColor":"#02007B","video":""},{"gid":"18033","date":"2025-02-09","home":"Ace","away":"Orphans","homeColor":"#CA0527","awayColor":"#000000","video":""},{"gid":"18031","date":"2025-02-02","home":"Platinum","away":"Amos","homeColor":"#919294","awayColor":"#641C28","video":""},{"gid":"18030","date":"2025-02-02","home":"Triple J","away":"Nelson","homeColor":"#4EB9E5","awayColor":"#F3C323","video":""},{"gid":"18029","date":"2025-02-02","home":"Ace","away":"HollowBrook","homeColor":"#CA0527","awayColor":"#4D2640","video":""},{"gid":"18028","date":"2025-02-02","home":"Orphans","away":"Outlaws","homeColor":"#000000","awayColor":"#02007B","video":""},{"gid":"18025","date":"2025-01-26","home":"Ace","away":"Amos","homeColor":"#CA0527","awayColor":"#641C28","video":""},{"gid":"18024","date":"2025-01-26","home":"Orphans","away":"Nelson","homeColor":"#000000","awayColor":"#F3C323","video":""},{"gid":"18023","date":"2025-01-26","home":"Outlaws","away":"HollowBrook","homeColor":"#02007B","awayColor":"#4D2640","video":""},{"gid":"18021","date":"2025-01-12","home":"Ace","away":"Platinum","homeColor":"#CA0527","awayColor":"#919294","video":""},{"gid":"18020","date":"2025-01-12","home":"Orphans","away":"OS Offices","homeColor":"#000000","awayColor":"#2C8A5E","video":""},{"gid":"18019","date":"2025-01-12","home":"Outlaws","away":"Amos","homeColor":"#02007B","awayColor":"#641C28","video":""},{"gid":"18018","date":"2025-01-12","home":"HollowBrook","away":"Nelson","homeColor":"#4D2640","awayColor":"#F3C323","video":""},{"gid":"18016","date":"2025-01-05","home":"Orphans","away":"Triple J","homeColor":"#000000","awayColor":"#4EB9E5","video":""},{"gid":"18015","date":"2025-01-05","home":"Outlaws","away":"Platinum","homeColor":"#02007B","awayColor":"#919294","video":""},{"gid":"18014","date":"2025-01-05","home":"HollowBrook","away":"OS Offices","homeColor":"#4D2640","awayColor":"#2C8A5E","video":""},{"gid":"18013","date":"2025-01-05","home":"Nelson","away":"Amos","homeColor":"#F3C323","awayColor":"#641C28","video":""},{"gid":"18011","date":"2024-12-22","home":"Outlaws","away":"Ace","homeColor":"#02007B","awayColor":"#CA0527","video":""},{"gid":"18010","date":"2024-12-22","home":"HollowBrook","away":"Triple J","homeColor":"#4D2640","awayColor":"#4EB9E5","video":""},{"gid":"18009","date":"2024-12-22","home":"Nelson","away":"Platinum","homeColor":"#F3C323","awayColor":"#919294","video":""},{"gid":"18008","date":"2024-12-22","home":"Amos","away":"OS Offices","homeColor":"#641C28","awayColor":"#2C8A5E","video":""},{"gid":"18006","date":"2024-12-15","home":"HollowBrook","away":"Orphans","homeColor":"#4D2640","awayColor":"#000000","video":""},{"gid":"18005","date":"2024-12-15","home":"Nelson","away":"Ace","homeColor":"#F3C323","awayColor":"#CA0527","video":""},{"gid":"18004","date":"2024-12-15","home":"Amos","away":"Triple J","homeColor":"#641C28","awayColor":"#4EB9E5","video":""},{"gid":"18003","date":"2024-12-15","home":"OS Offices","away":"Platinum","homeColor":"#2C8A5E","awayColor":"#919294","video":""},{"gid":"18001","date":"2025-03-16","home":"Nelson","away":"Outlaws","homeColor":"#F3C323","awayColor":"#02007B","video":""},{"gid":"18000","date":"2025-03-16","home":"Amos","away":"Orphans","homeColor":"#641C28","awayColor":"#000000","video":""},{"gid":"17999","date":"2025-03-16","home":"OS Offices","away":"Ace","homeColor":"#2C8A5E","awayColor":"#CA0527","video":""},{"gid":"17998","date":"2025-03-16","home":"Platinum","away":"Triple J","homeColor":"#919294","awayColor":"#4EB9E5","video":""},{"gid":"17996","date":"2024-11-24","home":"Amos","away":"HollowBrook","homeColor":"#641C28","awayColor":"#4D2640","video":""},{"gid":"17995","date":"2024-11-24","home":"OS Offices","away":"Outlaws","homeColor":"#2C8A5E","awayColor":"#02007B","video":""},{"gid":"17994","date":"2024-11-24","home":"Platinum","away":"Orphans","homeColor":"#919294","awayColor":"#000000","video":""},{"gid":"17993","date":"2024-11-24","home":"Triple J","away":"Ace","homeColor":"#4EB9E5","awayColor":"#CA0527","video":""},{"gid":"17991","date":"2024-11-17","home":"OS Offices","away":"Nelson","homeColor":"#2C8A5E","awayColor":"#F3C323","video":""},{"gid":"17990","date":"2024-11-17","home":"Platinum","away":"HollowBrook","homeColor":"#919294","awayColor":"#4D2640","video":""},{"gid":"17989","date":"2024-11-17","home":"Triple J","away":"Outlaws","homeColor":"#4EB9E5","awayColor":"#02007B","video":""},{"gid":"17988","date":"2024-11-17","home":"Ace","away":"Orphans","homeColor":"#CA0527","awayColor":"#000000","video":""},{"gid":"17986","date":"2024-11-10","home":"Platinum","away":"Amos","homeColor":"#919294","awayColor":"#641C28","video":""},{"gid":"17985","date":"2024-11-10","home":"Triple J","away":"Nelson","homeColor":"#4EB9E5","awayColor":"#F3C323","video":""},{"gid":"17984","date":"2024-11-10","home":"Ace","away":"HollowBrook","homeColor":"#CA0527","awayColor":"#4D2640","video":""},{"gid":"17983","date":"2024-11-10","home":"Orphans","away":"Outlaws","homeColor":"#000000","awayColor":"#02007B","video":""},{"gid":"17981","date":"2024-11-03","home":"Triple J","away":"OS Offices","homeColor":"#4EB9E5","awayColor":"#2C8A5E","video":""},{"gid":"17980","date":"2024-11-03","home":"Ace","away":"Amos","homeColor":"#CA0527","awayColor":"#641C28","video":""},{"gid":"17979","date":"2024-11-03","home":"Orphans","away":"Nelson","homeColor":"#000000","awayColor":"#F3C323","video":""},{"gid":"17978","date":"2024-11-03","home":"Outlaws","away":"HollowBrook","homeColor":"#02007B","awayColor":"#4D2640","video":""},{"gid":"17976","date":"2024-10-27","home":"Ace","away":"Platinum","homeColor":"#CA0527","awayColor":"#919294","video":""},{"gid":"17975","date":"2024-10-27","home":"Orphans","away":"OS Offices","homeColor":"#000000","awayColor":"#2C8A5E","video":""},{"gid":"17974","date":"2024-10-27","home":"Outlaws","away":"Amos","homeColor":"#02007B","awayColor":"#641C28","video":""},{"gid":"17973","date":"2024-10-27","home":"HollowBrook","away":"Nelson","homeColor":"#4D2640","awayColor":"#F3C323","video":""},{"gid":"17971","date":"2024-10-20","home":"Orphans","away":"Triple J","homeColor":"#000000","awayColor":"#4EB9E5","video":""},{"gid":"17970","date":"2024-10-20","home":"Outlaws","away":"Platinum","homeColor":"#02007B","awayColor":"#919294","video":""},{"gid":"17969","date":"2024-10-20","home":"HollowBrook","away":"OS Offices","homeColor":"#4D2640","awayColor":"#2C8A5E","video":""},{"gid":"17968","date":"2024-10-20","home":"Nelson","away":"Amos","homeColor":"#F3C323","awayColor":"#641C28","video":""},{"gid":"17966","date":"2024-10-13","home":"Outlaws","away":"Ace","homeColor":"#02007B","awayColor":"#CA0527","video":""},{"gid":"17965","date":"2024-10-13","home":"HollowBrook","away":"Triple J","homeColor":"#4D2640","awayColor":"#4EB9E5","video":""},{"gid":"17964","date":"2024-10-13","home":"Nelson","away":"Platinum","homeColor":"#F3C323","awayColor":"#919294","video":""},{"gid":"17963","date":"2024-10-13","home":"Amos","away":"OS Offices","homeColor":"#641C28","awayColor":"#2C8A5E","video":""},{"gid":"17961","date":"2024-10-06","home":"HollowBrook","away":"Orphans","homeColor":"#4D2640","awayColor":"#000000","video":""},{"gid":"17960","date":"2024-10-06","home":"Nelson","away":"Ace","homeColor":"#F3C323","awayColor":"#CA0527","video":""},{"gid":"17959","date":"2024-10-06","home":"Amos","away":"Triple J","homeColor":"#641C28","awayColor":"#4EB9E5","video":""},{"gid":"17958","date":"2024-10-06","home":"OS Offices","away":"Platinum","homeColor":"#2C8A5E","awayColor":"#919294","video":""},{"gid":"17956","date":"2024-09-29","home":"Nelson","away":"Outlaws","homeColor":"#F3C323","awayColor":"#02007B","video":""},{"gid":"17955","date":"2024-12-29","home":"Amos","away":"Orphans","homeColor":"#641C28","awayColor":"#000000","video":""},{"gid":"17954","date":"2024-09-29","home":"OS Offices","away":"Ace","homeColor":"#2C8A5E","awayColor":"#CA0527","video":""},{"gid":"17953","date":"2024-09-29","home":"Platinum","away":"Triple J","homeColor":"#919294","awayColor":"#4EB9E5","video":""},{"gid":"17951","date":"2024-09-22","home":"Amos","away":"HollowBrook","homeColor":"#641C28","awayColor":"#4D2640","video":""},{"gid":"17950","date":"2024-09-22","home":"OS Offices","away":"Outlaws","homeColor":"#2C8A5E","awayColor":"#02007B","video":""},{"gid":"17949","date":"2024-09-22","home":"Platinum","away":"Orphans","homeColor":"#919294","awayColor":"#000000","video":""},{"gid":"17948","date":"2024-09-22","home":"Triple J","away":"Ace","homeColor":"#4EB9E5","awayColor":"#CA0527","video":""},{"gid":"17946","date":"2024-09-15","home":"OS Offices","away":"Nelson","homeColor":"#2C8A5E","awayColor":"#F3C323","video":""},{"gid":"17945","date":"2024-09-15","home":"Platinum","away":"HollowBrook","homeColor":"#919294","awayColor":"#4D2640","video":""},{"gid":"17944","date":"2024-09-15","home":"Triple J","away":"Outlaws","homeColor":"#4EB9E5","awayColor":"#02007B","video":""},{"gid":"17943","date":"2024-09-15","home":"Ace","away":"Orphans","homeColor":"#CA0527","awayColor":"#000000","video":""},{"gid":"17941","date":"2024-09-08","home":"Platinum","away":"Amos","homeColor":"#919294","awayColor":"#641C28","video":""},{"gid":"17940","date":"2024-09-08","home":"Triple J","away":"Nelson","homeColor":"#4EB9E5","awayColor":"#F3C323","video":""},{"gid":"17939","date":"2024-09-08","home":"Ace","away":"HollowBrook","homeColor":"#CA0527","awayColor":"#4D2640","video":""},{"gid":"17938","date":"2024-09-08","home":"Orphans","away":"Outlaws","homeColor":"#000000","awayColor":"#02007B","video":""},{"gid":"17936","date":"2024-09-01","home":"Triple J","away":"OS Offices","homeColor":"#4EB9E5","awayColor":"#2C8A5E","video":""},{"gid":"17935","date":"2024-09-01","home":"Ace","away":"Amos","homeColor":"#CA0527","awayColor":"#641C28","video":""},{"gid":"17934","date":"2024-09-01","home":"Orphans","away":"Nelson","homeColor":"#000000","awayColor":"#F3C323","video":""},{"gid":"17933","date":"2024-09-01","home":"Outlaws","away":"HollowBrook","homeColor":"#02007B","awayColor":"#4D2640","video":""},{"gid":"17931","date":"2024-08-25","home":"Ace","away":"Platinum","homeColor":"#CA0527","awayColor":"#919294","video":""},{"gid":"17930","date":"2024-08-25","home":"Orphans","away":"OS Offices","homeColor":"#000000","awayColor":"#2C8A5E","video":""},{"gid":"17929","date":"2024-08-25","home":"Outlaws","away":"Amos","homeColor":"#02007B","awayColor":"#641C28","video":""},{"gid":"17928","date":"2024-08-25","home":"HollowBrook","away":"Nelson","homeColor":"#4D2640","awayColor":"#F3C323","video":""},{"gid":"17926","date":"2024-08-18","home":"Orphans","away":"Triple J","homeColor":"#000000","awayColor":"#4EB9E5","video":""},{"gid":"17925","date":"2024-08-18","home":"Outlaws","away":"Platinum","homeColor":"#02007B","awayColor":"#919294","video":""},{"gid":"17924","date":"2024-08-18","home":"HollowBrook","away":"OS Offices","homeColor":"#4D2640","awayColor":"#2C8A5E","video":""},{"gid":"17923","date":"2024-08-18","home":"Nelson","away":"Amos","homeColor":"#F3C323","awayColor":"#641C28","video":""},{"gid":"17921","date":"2024-08-11","home":"Outlaws","away":"Ace","homeColor":"#02007B","awayColor":"#CA0527","video":""},{"gid":"17920","date":"2024-08-11","home":"HollowBrook","away":"Triple J","homeColor":"#4D2640","awayColor":"#4EB9E5","video":""},{"gid":"17919","date":"2024-08-11","home":"Nelson","away":"Platinum","homeColor":"#F3C323","awayColor":"#919294","video":""},{"gid":"17918","date":"2024-08-11","home":"Amos","away":"OS Offices","homeColor":"#641C28","awayColor":"#2C8A5E","video":""},{"gid":"16895","date":"2024-04-21","home":"Triple J","away":"OS Offices","homeColor":"#4EB9E5","awayColor":"#2C8A5E","video":""},{"gid":"16894","date":"2024-04-21","home":"HollowBrook","away":"Ace","homeColor":"#4D2640","awayColor":"#CA0527","video":""},{"gid":"16893","date":"2024-04-21","home":"Platinum","away":"Nelson","homeColor":"#919294","awayColor":"#F3C323","video":""},{"gid":"16892","date":"2024-04-21","home":"Amos","away":"Orphans","homeColor":"#641C28","awayColor":"#000000","video":""},{"gid":"16891","date":"2024-04-14","home":"OS Offices","away":"Ace","homeColor":"#2C8A5E","awayColor":"#CA0527","video":""},{"gid":"16890","date":"2024-04-21","home":"Platinum","away":"Amos","homeColor":"#919294","awayColor":"#641C28","video":""},{"gid":"16889","date":"2024-04-14","home":"Nelson","away":"Orphans","homeColor":"#F3C323","awayColor":"#000000","video":""},{"gid":"16888","date":"2024-04-14","home":"Triple J","away":"HollowBrook","homeColor":"#4EB9E5","awayColor":"#4D2640","video":""},{"gid":"16887","date":"2024-04-07","home":"Orphans","away":"OS Offices","homeColor":"#000000","awayColor":"#2C8A5E","video":""},{"gid":"16886","date":"2024-04-07","home":"HollowBrook","away":"Platinum","homeColor":"#4D2640","awayColor":"#919294","video":""},{"gid":"16885","date":"2024-04-07","home":"Nelson","away":"Ace","homeColor":"#F3C323","awayColor":"#CA0527","video":""},{"gid":"16884","date":"2024-04-07","home":"Triple J","away":"Amos","homeColor":"#4EB9E5","awayColor":"#641C28","video":""},{"gid":"16883","date":"2024-03-24","home":"Orphans","away":"Triple J","homeColor":"#000000","awayColor":"#4EB9E5","video":""},{"gid":"16882","date":"2024-02-24","home":"OS Offices","away":"Platinum","homeColor":"#2C8A5E","awayColor":"#919294","video":""},{"gid":"16881","date":"2024-03-24","home":"Nelson","away":"HollowBrook","homeColor":"#F3C323","awayColor":"#4D2640","video":""},{"gid":"16880","date":"2024-03-17","home":"Amos","away":"Ace","homeColor":"#641C28","awayColor":"#CA0527","video":""},{"gid":"16875","date":"2024-03-10","home":"Triple J","away":"HollowBrook","homeColor":"#4EB9E5","awayColor":"#4D2640","video":""},{"gid":"16874","date":"2024-03-31","home":"Ace","away":"OS Offices","homeColor":"#CA0527","awayColor":"#2C8A5E","video":""},{"gid":"16873","date":"2024-03-24","home":"Platinum","away":"Amos","homeColor":"#919294","awayColor":"#641C28","video":""},{"gid":"16872","date":"2024-03-17","home":"Nelson","away":"Orphans","homeColor":"#F3C323","awayColor":"#000000","video":""},{"gid":"16871","date":"2024-03-10","home":"Amos","away":"Orphans","homeColor":"#641C28","awayColor":"#000000","video":""},{"gid":"16870","date":"2024-03-03","home":"Triple J","away":"OS Offices","homeColor":"#4EB9E5","awayColor":"#2C8A5E","video":""},{"gid":"16869","date":"2024-03-03","home":"Ace","away":"HollowBrook","homeColor":"#CA0527","awayColor":"#4D2640","video":""},{"gid":"16868","date":"2024-03-03","home":"Platinum","away":"Nelson","homeColor":"#919294","awayColor":"#F3C323","video":""},{"gid":"16867","date":"2024-02-25","home":"HollowBrook","away":"Amos","homeColor":"#4D2640","awayColor":"#641C28","video":""},{"gid":"16866","date":"2024-02-25","home":"Nelson","away":"OS Offices","homeColor":"#F3C323","awayColor":"#2C8A5E","video":""},{"gid":"16865","date":"2024-02-25","home":"Triple J","away":"Platinum","homeColor":"#4EB9E5","awayColor":"#919294","video":""},{"gid":"16864","date":"2024-02-25","home":"Ace","away":"Orphans","homeColor":"#CA0527","awayColor":"#000000","video":""},{"gid":"16863","date":"2024-02-18","home":"HollowBrook","away":"Platinum","homeColor":"#4D2640","awayColor":"#919294","video":""},{"gid":"16862","date":"2024-02-11","home":"Ace","away":"Nelson","homeColor":"#CA0527","awayColor":"#F3C323","video":""},{"gid":"16861","date":"2024-02-04","home":"Triple J","away":"Amos","homeColor":"#4EB9E5","awayColor":"#641C28","video":""},{"gid":"16860","date":"2024-02-04","home":"Orphans","away":"OS Offices","homeColor":"#000000","awayColor":"#2C8A5E","video":""},{"gid":"16859","date":"2024-01-28","home":"OS Offices","away":"Platinum","homeColor":"#2C8A5E","awayColor":"#919294","video":""},{"gid":"16858","date":"2024-02-11","home":"Nelson","away":"HollowBrook","homeColor":"#F3C323","awayColor":"#4D2640","video":""},{"gid":"16857","date":"2024-02-04","home":"Ace","away":"Amos","homeColor":"#CA0527","awayColor":"#641C28","video":""},{"gid":"16856","date":"2024-01-28","home":"Orphans","away":"Triple J","homeColor":"#000000","awayColor":"#4EB9E5","video":""},{"gid":"16855","date":"2024-01-21","home":"Amos","away":"Nelson","homeColor":"#641C28","awayColor":"#F3C323","video":""},{"gid":"16854","date":"2024-01-21","home":"Platinum","away":"Orphans","homeColor":"#919294","awayColor":"#000000","video":""},{"gid":"16853","date":"2024-01-21","home":"OS Offices","away":"HollowBrook","homeColor":"#2C8A5E","awayColor":"#4D2640","video":""},{"gid":"16852","date":"2024-01-21","home":"Triple J","away":"Ace","homeColor":"#4EB9E5","awayColor":"#CA0527","video":""},{"gid":"16851","date":"2024-01-07","home":"Platinum","away":"Ace","homeColor":"#919294","awayColor":"#CA0527","video":""},{"gid":"16850","date":"2024-01-07","home":"Nelson","away":"Triple J","homeColor":"#F3C323","awayColor":"#4EB9E5","video":""},{"gid":"16849","date":"2024-01-07","home":"Amos","away":"OS Offices","homeColor":"#641C28","awayColor":"#2C8A5E","video":""},{"gid":"16847","date":"2024-01-07","home":"OS Offices","away":"Nelson","homeColor":"#2C8A5E","awayColor":"#F3C323","video":""},{"gid":"16846","date":"2023-12-31","home":"HollowBrook","away":"Amos","homeColor":"#4D2640","awayColor":"#641C28","video":""},{"gid":"16845","date":"2023-12-24","home":"Orphans","away":"Ace","homeColor":"#000000","awayColor":"#CA0527","video":""},{"gid":"16844","date":"2023-12-17","home":"Triple J","away":"Platinum","homeColor":"#4EB9E5","awayColor":"#919294","video":""},{"gid":"16843","date":"2023-12-10","home":"Nelson","away":"Triple J","homeColor":"#F3C323","awayColor":"#4EB9E5","video":""},{"gid":"16842","date":"2023-12-24","home":"Amos","away":"OS Offices","homeColor":"#641C28","awayColor":"#2C8A5E","video":""},{"gid":"16841","date":"2023-12-17","home":"Orphans","away":"HollowBrook","homeColor":"#000000","awayColor":"#4D2640","video":""},{"gid":"16840","date":"2023-12-10","home":"Platinum","away":"Ace","homeColor":"#919294","awayColor":"#CA0527","video":""},{"gid":"16839","date":"2023-12-03","home":"Nelson","away":"Ace","homeColor":"#F3C323","awayColor":"#CA0527","video":""},{"gid":"16838","date":"2023-12-03","home":"Amos","away":"Triple J","homeColor":"#641C28","awayColor":"#4EB9E5","video":""},{"gid":"16837","date":"2023-12-03","home":"Orphans","away":"OS Offices","homeColor":"#000000","awayColor":"#2C8A5E","video":""},{"gid":"16836","date":"2023-12-03","home":"HollowBrook","away":"Platinum","homeColor":"#4D2640","awayColor":"#919294","video":""},{"gid":"16834","date":"2023-11-26","home":"Amos","away":"Ace","homeColor":"#641C28","awayColor":"#CA0527","video":""},{"gid":"16833","date":"2023-11-19","home":"Orphans","away":"Triple J","homeColor":"#000000","awayColor":"#4EB9E5","video":""},{"gid":"16832","date":"2023-11-19","home":"OS Offices","away":"Platinum","homeColor":"#2C8A5E","awayColor":"#919294","video":""},{"gid":"16831","date":"2023-11-12","home":"Platinum","away":"Orphans","homeColor":"#919294","awayColor":"#000000","video":""},{"gid":"16830","date":"2023-12-31","home":"Ace","away":"Triple J","homeColor":"#CA0527","awayColor":"#4EB9E5","video":""},{"gid":"16829","date":"2023-12-24","home":"OS Offices","away":"HollowBrook","homeColor":"#2C8A5E","awayColor":"#4D2640","video":""},{"gid":"16828","date":"2023-12-17","home":"Amos","away":"Nelson","homeColor":"#641C28","awayColor":"#F3C323","video":""},{"gid":"16827","date":"2023-12-10","home":"Platinum","away":"Amos","homeColor":"#919294","awayColor":"#641C28","video":""},{"gid":"16826","date":"2023-12-03","home":"Nelson","away":"Orphans","homeColor":"#F3C323","awayColor":"#000000","video":""},{"gid":"16824","date":"2023-11-26","home":"Ace","away":"OS Offices","homeColor":"#CA0527","awayColor":"#2C8A5E","video":""},{"gid":"16823","date":"2023-11-19","home":"Ace","away":"HollowBrook","homeColor":"#CA0527","awayColor":"#4D2640","video":""},{"gid":"16822","date":"2023-11-12","home":"Platinum","away":"Nelson","homeColor":"#919294","awayColor":"#F3C323","video":""},{"gid":"16821","date":"2023-11-05","home":"Amos","away":"Orphans","homeColor":"#641C28","awayColor":"#000000","video":""},{"gid":"16820","date":"2023-10-29","home":"Triple J","away":"OS Offices","homeColor":"#4EB9E5","awayColor":"#2C8A5E","video":""},{"gid":"16819","date":"2023-11-05","home":"HollowBrook","away":"Amos","homeColor":"#4D2640","awayColor":"#641C28","video":""},{"gid":"16818","date":"2023-10-29","home":"Ace","away":"Orphans","homeColor":"#CA0527","awayColor":"#000000","video":""},{"gid":"16817","date":"2023-10-22","home":"Triple J","away":"Platinum","homeColor":"#4EB9E5","awayColor":"#919294","video":""},{"gid":"16816","date":"2023-11-05","home":"OS Offices","away":"Nelson","homeColor":"#2C8A5E","awayColor":"#F3C323","video":""},{"gid":"16815","date":"2023-10-29","home":"OS Offices","away":"Amos","homeColor":"#2C8A5E","awayColor":"#641C28","video":""},{"gid":"16813","date":"2023-10-22","home":"Ace","away":"Platinum","homeColor":"#CA0527","awayColor":"#919294","video":""},{"gid":"16812","date":"2023-10-15","home":"Nelson","away":"Triple J","homeColor":"#F3C323","awayColor":"#4EB9E5","video":""},{"gid":"16811","date":"2023-10-08","home":"Triple J","away":"Platinum","homeColor":"#4EB9E5","awayColor":"#919294","video":""},{"gid":"16810","date":"2023-10-15","home":"Orphans","away":"OS Offices","homeColor":"#000000","awayColor":"#2C8A5E","video":""},{"gid":"16809","date":"2023-10-08","home":"Amos","away":"HollowBrook","homeColor":"#641C28","awayColor":"#4D2640","video":""},{"gid":"16807","date":"2023-10-08","home":"Ace","away":"Amos","homeColor":"#CA0527","awayColor":"#641C28","video":""},{"gid":"16806","date":"2023-10-01","home":"Orphans","away":"Triple J","homeColor":"#000000","awayColor":"#4EB9E5","video":""},{"gid":"16805","date":"2023-10-08","home":"OS Offices","away":"Platinum","homeColor":"#2C8A5E","awayColor":"#919294","video":""},{"gid":"16804","date":"2023-10-01","home":"HollowBrook","away":"Nelson","homeColor":"#4D2640","awayColor":"#F3C323","video":""},{"gid":"16803","date":"2023-09-24","home":"OS Offices","away":"Triple J","homeColor":"#2C8A5E","awayColor":"#4EB9E5","video":""},{"gid":"16802","date":"2023-10-08","home":"HollowBrook","away":"Ace","homeColor":"#4D2640","awayColor":"#CA0527","video":""},{"gid":"16801","date":"2023-10-01","home":"Amos","away":"Nelson","homeColor":"#641C28","awayColor":"#F3C323","video":""},{"gid":"16800","date":"2023-09-24","home":"Platinum","away":"Orphans","homeColor":"#919294","awayColor":"#000000","video":""},{"gid":"16799","date":"2023-10-01","home":"Nelson","away":"Orphans","homeColor":"#F3C323","awayColor":"#000000","video":""},{"gid":"16798","date":"2023-09-24","home":"HollowBrook","away":"Triple J","homeColor":"#4D2640","awayColor":"#4EB9E5","video":""},{"gid":"16797","date":"2023-09-17","home":"OS Offices","away":"Ace","homeColor":"#2C8A5E","awayColor":"#CA0527","video":""},{"gid":"16796","date":"2023-10-01","home":"Platinum","away":"Amos","homeColor":"#919294","awayColor":"#641C28","video":""},{"gid":"16795","date":"2023-09-24","home":"Platinum","away":"Nelson","homeColor":"#919294","awayColor":"#F3C323","video":""},{"gid":"16794","date":"2023-09-17","home":"Amos","away":"Orphans","homeColor":"#641C28","awayColor":"#000000","video":""},{"gid":"16793","date":"2023-09-10","home":"Triple J","away":"Ace","homeColor":"#4EB9E5","awayColor":"#CA0527","video":""},{"gid":"16791","date":"2023-09-03","home":"Orphans","away":"Ace","homeColor":"#000000","awayColor":"#CA0527","video":""},{"gid":"16790","date":"2023-09-03","home":"Triple J","away":"Platinum","homeColor":"#4EB9E5","awayColor":"#919294","video":""},{"gid":"16789","date":"2023-09-10","home":"OS Offices","away":"Nelson","homeColor":"#2C8A5E","awayColor":"#F3C323","video":""},{"gid":"16788","date":"2023-09-03","home":"HollowBrook","away":"Amos","homeColor":"#4D2640","awayColor":"#641C28","video":""},{"gid":"16787","date":"2023-08-27","home":"HollowBrook","away":"Orphans","homeColor":"#4D2640","awayColor":"#000000","video":""},{"gid":"16786","date":"2023-08-27","home":"Ace","away":"Platinum","homeColor":"#CA0527","awayColor":"#919294","video":""},{"gid":"16785","date":"2023-09-03","home":"Nelson","away":"Triple J","homeColor":"#F3C323","awayColor":"#4EB9E5","video":""},{"gid":"16784","date":"2023-08-27","home":"Amos","away":"OS Offices","homeColor":"#641C28","awayColor":"#2C8A5E","video":""},{"gid":"16783","date":"2023-08-20","home":"Amos","away":"Triple J","homeColor":"#641C28","awayColor":"#4EB9E5","video":""},{"gid":"16782","date":"2023-08-27","home":"Orphans","away":"OS Offices","homeColor":"#000000","awayColor":"#2C8A5E","video":""},{"gid":"16781","date":"2023-08-20","home":"HollowBrook","away":"Ace","homeColor":"#4D2640","awayColor":"#CA0527","video":""},{"gid":"16780","date":"2023-08-20","home":"Platinum","away":"Nelson","homeColor":"#919294","awayColor":"#F3C323","video":""},{"gid":"16779","date":"2023-08-13","home":"HollowBrook","away":"Nelson","homeColor":"#4D2640","awayColor":"#F3C323","video":""},{"gid":"16778","date":"2023-08-13","home":"OS Offices","away":"Triple J","homeColor":"#2C8A5E","awayColor":"#4EB9E5","video":""},{"gid":"16777","date":"2023-08-13","home":"Orphans","away":"Platinum","homeColor":"#000000","awayColor":"#919294","video":""},{"gid":"16776","date":"2023-08-13","home":"Ace","away":"Amos","homeColor":"#CA0527","awayColor":"#641C28","video":""},{"gid":"15169","date":"2023-04-16","home":"Platinum","away":"HollowBrook","homeColor":"#919294","awayColor":"#4D2640","video":""},{"gid":"15168","date":"2023-04-09","home":"Amos","away":"Nelson","homeColor":"#641C28","awayColor":"#F3C323","video":""},{"gid":"15167","date":"2023-04-02","home":"Canada","away":"Triple J","homeColor":"#B21A18","awayColor":"#4EB9E5","video":""},{"gid":"15166","date":"2023-03-26","home":"Triple J","away":"Orphans","homeColor":"#4EB9E5","awayColor":"#000000","video":""},{"gid":"15165","date":"2023-03-26","home":"Platinum","away":"OS Offices","homeColor":"#919294","awayColor":"#2C8A5E","video":""},{"gid":"15164","date":"2023-03-26","home":"HollowBrook","away":"Nelson","homeColor":"#4D2640","awayColor":"#F3C323","video":""},{"gid":"15163","date":"2023-04-16","home":"Amos","away":"Canada","homeColor":"#641C28","awayColor":"#B21A18","video":""},{"gid":"15162","date":"2023-04-09","home":"Triple J","away":"Amos","homeColor":"#4EB9E5","awayColor":"#641C28","video":""},{"gid":"15161","date":"2023-04-02","home":"Canada","away":"Nelson","homeColor":"#B21A18","awayColor":"#F3C323","video":""},{"gid":"15160","date":"2023-03-26","home":"Orphans","away":"Platinum","homeColor":"#000000","awayColor":"#919294","video":""},{"gid":"15159","date":"2023-03-19","home":"HollowBrook","away":"OS Offices","homeColor":"#4D2640","awayColor":"#2C8A5E","video":""},{"gid":"15158","date":"2023-03-12","home":"HollowBrook","away":"Triple J","homeColor":"#4D2640","awayColor":"#4EB9E5","video":""},{"gid":"15157","date":"2023-03-19","home":"OS Offices","away":"Amos","homeColor":"#2C8A5E","awayColor":"#641C28","video":""},{"gid":"15156","date":"2023-03-12","home":"Canada","away":"Platinum","homeColor":"#B21A18","awayColor":"#919294","video":""},{"gid":"15155","date":"2023-03-12","home":"Orphans","away":"Nelson","homeColor":"#000000","awayColor":"#F3C323","video":""},{"gid":"15154","date":"2023-03-05","home":"Orphans","away":"Canada","homeColor":"#000000","awayColor":"#B21A18","video":""},{"gid":"15153","date":"2023-03-05","home":"OS Offices","away":"Triple J","homeColor":"#2C8A5E","awayColor":"#4EB9E5","video":""},{"gid":"15152","date":"2023-03-12","home":"HollowBrook","away":"Amos","homeColor":"#4D2640","awayColor":"#641C28","video":""},{"gid":"15151","date":"2023-03-05","home":"Nelson","away":"Platinum","homeColor":"#F3C323","awayColor":"#919294","video":""},{"gid":"15150","date":"2023-02-26","home":"Platinum","away":"Triple J","homeColor":"#919294","awayColor":"#4EB9E5","video":""},{"gid":"15149","date":"2023-03-12","home":"OS Offices","away":"Nelson","homeColor":"#2C8A5E","awayColor":"#F3C323","video":""},{"gid":"15148","date":"2023-03-05","home":"Canada","away":"HollowBrook","homeColor":"#B21A18","awayColor":"#4D2640","video":""},{"gid":"15147","date":"2023-02-26","home":"Orphans","away":"Amos","homeColor":"#000000","awayColor":"#641C28","video":""},{"gid":"15146","date":"2023-02-19","home":"Amos","away":"Platinum","homeColor":"#641C28","awayColor":"#919294","video":""},{"gid":"15145","date":"2023-02-19","home":"Triple J","away":"Nelson","homeColor":"#4EB9E5","awayColor":"#F3C323","video":""},{"gid":"15144","date":"2023-02-19","home":"OS Offices","away":"Canada","homeColor":"#2C8A5E","awayColor":"#B21A18","video":""},{"gid":"15143","date":"2023-02-19","home":"HollowBrook","away":"Orphans","homeColor":"#4D2640","awayColor":"#000000","video":""},{"gid":"15142","date":"2023-02-26","home":"Platinum","away":"HollowBrook","homeColor":"#919294","awayColor":"#4D2640","video":""},{"gid":"15141","date":"2023-02-19","home":"Nelson","away":"Amos","homeColor":"#F3C323","awayColor":"#641C28","video":""},{"gid":"15140","date":"2023-02-12","home":"Canada","away":"Triple J","homeColor":"#B21A18","awayColor":"#4EB9E5","video":""},{"gid":"15139","date":"2023-02-05","home":"OS Offices","away":"Orphans","homeColor":"#2C8A5E","awayColor":"#000000","video":""},{"gid":"15138","date":"2023-02-19","home":"Platinum","away":"OS Offices","homeColor":"#919294","awayColor":"#2C8A5E","video":""},{"gid":"15137","date":"2023-02-12","home":"HollowBrook","away":"Nelson","homeColor":"#4D2640","awayColor":"#F3C323","video":""},{"gid":"15136","date":"2023-02-05","home":"Canada","away":"Amos","homeColor":"#B21A18","awayColor":"#641C28","video":""},{"gid":"15135","date":"2023-01-29","home":"Triple J","away":"Orphans","homeColor":"#4EB9E5","awayColor":"#000000","video":""},{"gid":"15134","date":"2023-01-22","home":"Nelson","away":"Canada","homeColor":"#F3C323","awayColor":"#B21A18","video":""},{"gid":"15133","date":"2023-01-22","home":"Orphans","away":"Platinum","homeColor":"#000000","awayColor":"#919294","video":""},{"gid":"15132","date":"2023-01-22","home":"HollowBrook","away":"OS Offices","homeColor":"#4D2640","awayColor":"#2C8A5E","video":""},{"gid":"15131","date":"2023-01-22","home":"Amos","away":"Triple J","homeColor":"#641C28","awayColor":"#4EB9E5","video":""},{"gid":"15126","date":"2023-01-08","home":"OS Offices","away":"Triple J","homeColor":"#2C8A5E","awayColor":"#4EB9E5","video":""},{"gid":"15125","date":"2023-01-08","home":"Amos","away":"HollowBrook","homeColor":"#641C28","awayColor":"#4D2640","video":""},{"gid":"15124","date":"2023-01-08","home":"Nelson","away":"Platinum","homeColor":"#F3C323","awayColor":"#919294","video":""},{"gid":"15123","date":"2023-01-08","home":"Orphans","away":"Canada","homeColor":"#000000","awayColor":"#B21A18","video":""},{"gid":"15122","date":"2023-01-08","home":"Nelson","away":"OS Offices","homeColor":"#F3C323","awayColor":"#2C8A5E","video":""},{"gid":"15121","date":"2023-01-01","home":"Canada","away":"HollowBrook","homeColor":"#B21A18","awayColor":"#4D2640","video":""},{"gid":"15120","date":"2022-12-25","home":"Amos","away":"Orphans","homeColor":"#641C28","awayColor":"#000000","video":""},{"gid":"15119","date":"2022-12-18","home":"Platinum","away":"Triple J","homeColor":"#919294","awayColor":"#4EB9E5","video":""},{"gid":"15118","date":"2022-12-11","home":"Triple J","away":"Nelson","homeColor":"#4EB9E5","awayColor":"#F3C323","video":""},{"gid":"15117","date":"2022-12-25","home":"OS Offices","away":"Canada","homeColor":"#2C8A5E","awayColor":"#B21A18","video":""},{"gid":"15116","date":"2022-12-18","home":"HollowBrook","away":"Orphans","homeColor":"#4D2640","awayColor":"#000000","video":""},{"gid":"15115","date":"2022-12-11","home":"Amos","away":"Platinum","homeColor":"#641C28","awayColor":"#919294","video":""},{"gid":"15114","date":"2022-12-04","home":"Amos","away":"Nelson","homeColor":"#641C28","awayColor":"#F3C323","video":""},{"gid":"15113","date":"2022-12-04","home":"Triple J","away":"Canada","homeColor":"#4EB9E5","awayColor":"#B21A18","video":""},{"gid":"15112","date":"2022-12-04","home":"OS Offices","away":"Orphans","homeColor":"#2C8A5E","awayColor":"#000000","video":""},{"gid":"15111","date":"2022-12-04","home":"Platinum","away":"HollowBrook","homeColor":"#919294","awayColor":"#4D2640","video":""},{"gid":"15110","date":"2022-12-04","home":"HollowBrook","away":"Nelson","homeColor":"#4D2640","awayColor":"#F3C323","video":""},{"gid":"15109","date":"2022-11-27","home":"Amos","away":"Canada","homeColor":"#641C28","awayColor":"#B21A18","video":""},{"gid":"15108","date":"2022-11-20","home":"Triple J","away":"Orphans","homeColor":"#4EB9E5","awayColor":"#000000","video":""},{"gid":"15107","date":"2022-11-20","home":"Platinum","away":"OS Offices","homeColor":"#919294","awayColor":"#2C8A5E","video":""},{"gid":"15106","date":"2022-12-04","home":"Orphans","away":"Platinum","homeColor":"#000000","awayColor":"#919294","video":""},{"gid":"15105","date":"2022-11-27","home":"HollowBrook","away":"OS Offices","homeColor":"#4D2640","awayColor":"#2C8A5E","video":""},{"gid":"15104","date":"2022-11-20","home":"Triple J","away":"Amos","homeColor":"#4EB9E5","awayColor":"#641C28","video":""},{"gid":"15103","date":"2022-11-13","home":"Nelson","away":"Canada","homeColor":"#F3C323","awayColor":"#B21A18","video":""},{"gid":"15102","date":"2022-11-06","home":"Canada","away":"Platinum","homeColor":"#B21A18","awayColor":"#919294","video":""},{"gid":"15101","date":"2022-11-13","home":"Orphans","away":"Nelson","homeColor":"#000000","awayColor":"#F3C323","video":""},{"gid":"15100","date":"2022-11-06","home":"HollowBrook","away":"Triple J","homeColor":"#4D2640","awayColor":"#4EB9E5","video":""},{"gid":"15099","date":"2022-11-20","home":"OS Offices","away":"Amos","homeColor":"#2C8A5E","awayColor":"#641C28","video":""},{"gid":"15098","date":"2022-11-13","home":"HollowBrook","away":"Amos","homeColor":"#4D2640","awayColor":"#641C28","video":""},{"gid":"15097","date":"2022-11-06","home":"Nelson","away":"Platinum","homeColor":"#F3C323","awayColor":"#919294","video":""},{"gid":"15096","date":"2022-10-30","home":"Orphans","away":"Canada","homeColor":"#000000","awayColor":"#B21A18","video":""},{"gid":"15095","date":"2022-10-30","home":"OS Offices","away":"Triple J","homeColor":"#2C8A5E","awayColor":"#4EB9E5","video":""},{"gid":"15094","date":"2022-11-06","home":"Canada","away":"HollowBrook","homeColor":"#B21A18","awayColor":"#4D2640","video":""},{"gid":"15093","date":"2022-10-30","home":"Orphans","away":"Amos","homeColor":"#000000","awayColor":"#641C28","video":""},{"gid":"15092","date":"2022-10-23","home":"Platinum","away":"Triple J","homeColor":"#919294","awayColor":"#4EB9E5","video":""},{"gid":"15091","date":"2022-11-13","home":"Nelson","away":"OS Offices","homeColor":"#F3C323","awayColor":"#2C8A5E","video":""},{"gid":"15090","date":"2022-11-06","home":"Canada","away":"OS Offices","homeColor":"#B21A18","awayColor":"#2C8A5E","video":""},{"gid":"15089","date":"2022-10-30","home":"HollowBrook","away":"Orphans","homeColor":"#4D2640","awayColor":"#000000","video":""},{"gid":"15088","date":"2022-10-23","home":"Platinum","away":"Amos","homeColor":"#919294","awayColor":"#641C28","video":""},{"gid":"15087","date":"2022-10-16","home":"Triple J","away":"Nelson","homeColor":"#4EB9E5","awayColor":"#F3C323","video":""},{"gid":"15086","date":"2022-10-09","home":"Triple J","away":"Canada","homeColor":"#4EB9E5","awayColor":"#B21A18","video":""},{"gid":"15085","date":"2022-10-30","home":"OS Offices","away":"Orphans","homeColor":"#2C8A5E","awayColor":"#000000","video":""},{"gid":"15084","date":"2022-10-23","home":"Platinum","away":"HollowBrook","homeColor":"#919294","awayColor":"#4D2640","video":""},{"gid":"15083","date":"2022-10-16","home":"Nelson","away":"Amos","homeColor":"#F3C323","awayColor":"#641C28","video":""},{"gid":"15082","date":"2022-10-09","home":"Canada","away":"Amos","homeColor":"#B21A18","awayColor":"#641C28","video":""},{"gid":"15081","date":"2022-10-02","home":"Triple J","away":"Orphans","homeColor":"#4EB9E5","awayColor":"#000000","video":""},{"gid":"15080","date":"2022-10-02","home":"Platinum","away":"OS Offices","homeColor":"#919294","awayColor":"#2C8A5E","video":""},{"gid":"15079","date":"2022-10-23","home":"Nelson","away":"HollowBrook","homeColor":"#F3C323","awayColor":"#4D2640","video":""},{"gid":"15078","date":"2022-10-16","home":"HollowBrook","away":"OS Offices","homeColor":"#4D2640","awayColor":"#2C8A5E","video":""},{"gid":"15077","date":"2022-10-09","home":"Amos","away":"Triple J","homeColor":"#641C28","awayColor":"#4EB9E5","video":""},{"gid":"15076","date":"2022-10-02","home":"Nelson","away":"Canada","homeColor":"#F3C323","awayColor":"#B21A18","video":""},{"gid":"15075","date":"2022-09-25","home":"Orphans","away":"Platinum","homeColor":"#000000","awayColor":"#919294","video":""},{"gid":"15074","date":"2022-09-25","home":"Orphans","away":"Nelson","homeColor":"#000000","awayColor":"#F3C323","video":""},{"gid":"15073","date":"2022-09-18","home":"Triple J","away":"HollowBrook","homeColor":"#4EB9E5","awayColor":"#4D2640","video":""},{"gid":"15072","date":"2022-10-02","home":"Amos","away":"OS Offices","homeColor":"#641C28","awayColor":"#2C8A5E","video":""},{"gid":"15071","date":"2022-09-25","home":"Canada","away":"Platinum","homeColor":"#B21A18","awayColor":"#919294","video":""},{"gid":"15070","date":"2022-09-18","home":"Nelson","away":"Platinum","homeColor":"#F3C323","awayColor":"#919294","video":""},{"gid":"15069","date":"2022-09-11","home":"Orphans","away":"Canada","homeColor":"#000000","awayColor":"#B21A18","video":""},{"gid":"15068","date":"2022-09-11","home":"OS Offices","away":"Triple J","homeColor":"#2C8A5E","awayColor":"#4EB9E5","video":""},{"gid":"15067","date":"2022-09-18","home":"Amos","away":"HollowBrook","homeColor":"#641C28","awayColor":"#4D2640","video":""},{"gid":"15066","date":"2022-09-11","home":"Amos","away":"Orphans","homeColor":"#641C28","awayColor":"#000000","video":""},{"gid":"15065","date":"2022-09-04","home":"Platinum","away":"Triple J","homeColor":"#919294","awayColor":"#4EB9E5","video":""},{"gid":"15064","date":"2022-09-25","home":"Nelson","away":"OS Offices","homeColor":"#F3C323","awayColor":"#2C8A5E","video":""},{"gid":"15063","date":"2022-09-18","home":"Canada","away":"HollowBrook","homeColor":"#B21A18","awayColor":"#4D2640","video":""},{"gid":"15062","date":"2022-09-11","home":"Orphans","away":"HollowBrook","homeColor":"#000000","awayColor":"#4D2640","video":""},{"gid":"15061","date":"2022-09-04","home":"Amos","away":"Platinum","homeColor":"#641C28","awayColor":"#919294","video":""},{"gid":"15060","date":"2022-08-28","home":"Triple J","away":"Nelson","homeColor":"#4EB9E5","awayColor":"#F3C323","video":""},{"gid":"15059","date":"2022-08-28","home":"OS Offices","away":"Canada","homeColor":"#2C8A5E","awayColor":"#B21A18","video":""},{"gid":"14169","date":"2022-08-21","home":"Triple J","away":"Canada","homeColor":"#4EB9E5","awayColor":"#B21A18","video":""},{"gid":"14168","date":"2022-09-04","home":"OS Offices","away":"Orphans","homeColor":"#2C8A5E","awayColor":"#000000","video":""},{"gid":"14167","date":"2022-08-28","home":"Platinum","away":"HollowBrook","homeColor":"#919294","awayColor":"#4D2640","video":""},{"gid":"14166","date":"2022-08-21","home":"Nelson","away":"Amos","homeColor":"#F3C323","awayColor":"#641C28","video":""},{"gid":"14165","date":"2022-08-14","home":"Triple J","away":"Orphans","homeColor":"#4EB9E5","awayColor":"#000000","video":""},{"gid":"14164","date":"2022-08-14","home":"Platinum","away":"OS Offices","homeColor":"#919294","awayColor":"#2C8A5E","video":""},{"gid":"14163","date":"2022-08-14","home":"Nelson","away":"HollowBrook","homeColor":"#F3C323","awayColor":"#4D2640","video":""},{"gid":"14162","date":"2022-08-14","home":"Canada","away":"Amos","homeColor":"#B21A18","awayColor":"#641C28","video":""},{"gid":"13498","date":"2022-03-13","home":"OS Offices","away":"HollowBrook","homeColor":"#2C8A5E","awayColor":"#4D2640","video":""},{"gid":"13497","date":"2022-03-06","home":"Triple J","away":"Platinum","homeColor":"#4EB9E5","awayColor":"#919294","video":""},{"gid":"13496","date":"2022-03-06","home":"Canada","away":"Orphans","homeColor":"#B21A18","awayColor":"#000000","video":""},{"gid":"13495","date":"2022-03-20","home":"Nelson","away":"Amos","homeColor":"#F3C323","awayColor":"#641C28","video":""},{"gid":"13494","date":"2022-03-13","home":"Amos","away":"Platinum","homeColor":"#641C28","awayColor":"#919294","video":""},{"gid":"13493","date":"2022-03-06","home":"Nelson","away":"HollowBrook","homeColor":"#F3C323","awayColor":"#4D2640","video":""},{"gid":"13492","date":"2022-02-27","home":"Canada","away":"Triple J","homeColor":"#B21A18","awayColor":"#4EB9E5","video":""},{"gid":"13491","date":"2022-02-27","home":"Orphans","away":"OS Offices","homeColor":"#000000","awayColor":"#2C8A5E","video":""},{"gid":"13490","date":"2022-02-20","home":"Orphans","away":"OS Offices","homeColor":"#000000","awayColor":"#2C8A5E","video":""},{"gid":"13489","date":"2022-03-06","home":"Amos","away":"Canada","homeColor":"#641C28","awayColor":"#B21A18","video":""},{"gid":"13488","date":"2022-02-27","home":"Triple J","away":"HollowBrook","homeColor":"#4EB9E5","awayColor":"#4D2640","video":""},{"gid":"13487","date":"2022-02-20","home":"Platinum","away":"Nelson","homeColor":"#919294","awayColor":"#F3C323","video":""},{"gid":"13486","date":"2022-02-13","home":"Triple J","away":"Orphans","homeColor":"#4EB9E5","awayColor":"#000000","video":""},{"gid":"13485","date":"2022-03-06","home":"HollowBrook","away":"Platinum","homeColor":"#4D2640","awayColor":"#919294","video":""},{"gid":"13484","date":"2022-02-27","home":"OS Offices","away":"Amos","homeColor":"#2C8A5E","awayColor":"#641C28","video":""},{"gid":"13482","date":"2022-02-20","home":"Canada","away":"HollowBrook","homeColor":"#B21A18","awayColor":"#4D2640","video":""},{"gid":"13481","date":"2022-02-13","home":"Orphans","away":"Amos","homeColor":"#000000","awayColor":"#641C28","video":""},{"gid":"13480","date":"2022-02-06","home":"Platinum","away":"OS Offices","homeColor":"#919294","awayColor":"#2C8A5E","video":""},{"gid":"13479","date":"2022-02-06","home":"Nelson","away":"Triple J","homeColor":"#F3C323","awayColor":"#4EB9E5","video":""},{"gid":"13478","date":"2022-02-06","home":"OS Offices","away":"HollowBrook","homeColor":"#2C8A5E","awayColor":"#4D2640","video":""},{"gid":"13477","date":"2022-01-30","home":"Triple J","away":"Platinum","homeColor":"#4EB9E5","awayColor":"#919294","video":""},{"gid":"13476","date":"2022-01-30","home":"Orphans","away":"Canada","homeColor":"#000000","awayColor":"#B21A18","video":""},{"gid":"13475","date":"2022-01-30","home":"Amos","away":"Nelson","homeColor":"#641C28","awayColor":"#F3C323","video":""},{"gid":"13474","date":"2022-01-23","home":"Canada","away":"OS Offices","homeColor":"#B21A18","awayColor":"#2C8A5E","video":""},{"gid":"13473","date":"2022-01-23","home":"Triple J","away":"HollowBrook","homeColor":"#4EB9E5","awayColor":"#4D2640","video":""},{"gid":"13472","date":"2022-01-23","home":"Amos","away":"Platinum","homeColor":"#641C28","awayColor":"#919294","video":""},{"gid":"13471","date":"2022-01-23","home":"Orphans","away":"Nelson","homeColor":"#000000","awayColor":"#F3C323","video":""},{"gid":"13466","date":"2022-01-09","home":"Nelson","away":"Platinum","homeColor":"#F3C323","awayColor":"#919294","video":""},{"gid":"13465","date":"2022-01-09","home":"Amos","away":"OS Offices","homeColor":"#641C28","awayColor":"#2C8A5E","video":""},{"gid":"13464","date":"2022-01-09","home":"Orphans","away":"HollowBrook","homeColor":"#000000","awayColor":"#4D2640","video":""},{"gid":"13463","date":"2022-01-09","home":"Canada","away":"Triple J","homeColor":"#B21A18","awayColor":"#4EB9E5","video":""},{"gid":"13462","date":"2021-12-19","home":"Canada","away":"Platinum","homeColor":"#B21A18","awayColor":"#919294","video":""},{"gid":"13461","date":"2021-12-19","home":"OS Offices","away":"Orphans","homeColor":"#2C8A5E","awayColor":"#000000","video":""},{"gid":"13460","date":"2022-01-02","home":"HollowBrook","away":"Nelson","homeColor":"#4D2640","awayColor":"#F3C323","video":""},{"gid":"13459","date":"2021-12-26","home":"Triple J","away":"Amos","homeColor":"#4EB9E5","awayColor":"#641C28","video":""},{"gid":"13458","date":"2021-12-19","home":"Nelson","away":"OS Offices","homeColor":"#F3C323","awayColor":"#2C8A5E","video":""},{"gid":"13457","date":"2021-12-12","home":"Orphans","away":"Triple J","homeColor":"#000000","awayColor":"#4EB9E5","video":""},{"gid":"13456","date":"2021-12-12","home":"Amos","away":"Canada","homeColor":"#641C28","awayColor":"#B21A18","video":""},{"gid":"13455","date":"2021-12-19","home":"Platinum","away":"HollowBrook","homeColor":"#919294","awayColor":"#4D2640","video":""},{"gid":"13454","date":"2021-12-12","home":"Orphans","away":"Amos","homeColor":"#000000","awayColor":"#641C28","video":""},{"gid":"13453","date":"2021-12-05","home":"OS Offices","away":"Platinum","homeColor":"#2C8A5E","awayColor":"#919294","video":""},{"gid":"13452","date":"2021-12-05","home":"Nelson","away":"Triple J","homeColor":"#F3C323","awayColor":"#4EB9E5","video":""},{"gid":"13451","date":"2021-12-05","home":"Canada","away":"HollowBrook","homeColor":"#B21A18","awayColor":"#4D2640","video":""},{"gid":"13450","date":"2021-11-21","home":"Platinum","away":"Triple J","homeColor":"#919294","awayColor":"#4EB9E5","video":""},{"gid":"13449","date":"2021-11-21","home":"Orphans","away":"Canada","homeColor":"#000000","awayColor":"#B21A18","video":""},{"gid":"13448","date":"2021-11-28","home":"HollowBrook","away":"OS Offices","homeColor":"#4D2640","awayColor":"#2C8A5E","video":""},{"gid":"13447","date":"2021-11-21","home":"Amos","away":"Nelson","homeColor":"#641C28","awayColor":"#F3C323","video":""},{"gid":"13446","date":"2021-11-14","home":"HollowBrook","away":"Triple J","homeColor":"#4D2640","awayColor":"#4EB9E5","video":""},{"gid":"13445","date":"2021-12-05","home":"Platinum","away":"Amos","homeColor":"#919294","awayColor":"#641C28","video":""},{"gid":"13444","date":"2021-11-28","home":"Nelson","away":"Orphans","homeColor":"#F3C323","awayColor":"#000000","video":""},{"gid":"13443","date":"2021-11-21","home":"OS Offices","away":"Canada","homeColor":"#2C8A5E","awayColor":"#B21A18","video":""},{"gid":"13442","date":"2021-11-14","home":"Canada","away":"Nelson","homeColor":"#B21A18","awayColor":"#F3C323","video":""},{"gid":"13441","date":"2021-11-07","home":"Orphans","away":"Platinum","homeColor":"#000000","awayColor":"#919294","video":""},{"gid":"13440","date":"2021-11-07","home":"Triple J","away":"OS Offices","homeColor":"#4EB9E5","awayColor":"#2C8A5E","video":""},{"gid":"13439","date":"2021-11-07","home":"Amos","away":"HollowBrook","homeColor":"#641C28","awayColor":"#4D2640","video":""},{"gid":"13438","date":"2021-10-31","home":"Platinum","away":"Nelson","homeColor":"#919294","awayColor":"#F3C323","video":""},{"gid":"13437","date":"2021-10-31","home":"Triple J","away":"Canada","homeColor":"#4EB9E5","awayColor":"#B21A18","video":""},{"gid":"13436","date":"2021-11-21","home":"OS Offices","away":"Amos","homeColor":"#2C8A5E","awayColor":"#641C28","video":""},{"gid":"13435","date":"2021-11-14","home":"HollowBrook","away":"Orphans","homeColor":"#4D2640","awayColor":"#000000","video":""},{"gid":"13434","date":"2021-11-07","home":"Amos","away":"Triple J","homeColor":"#641C28","awayColor":"#4EB9E5","video":""},{"gid":"13433","date":"2021-10-31","home":"Nelson","away":"HollowBrook","homeColor":"#F3C323","awayColor":"#4D2640","video":""},{"gid":"13432","date":"2021-10-24","home":"Platinum","away":"Canada","homeColor":"#919294","awayColor":"#B21A18","video":""},{"gid":"13431","date":"2021-10-24","home":"Orphans","away":"OS Offices","homeColor":"#000000","awayColor":"#2C8A5E","video":""},{"gid":"13430","date":"2021-10-24","home":"OS Offices","away":"Nelson","homeColor":"#2C8A5E","awayColor":"#F3C323","video":""},{"gid":"13428","date":"2021-10-17","home":"Triple J","away":"Orphans","homeColor":"#4EB9E5","awayColor":"#000000","video":""},{"gid":"13427","date":"2021-10-24","home":"HollowBrook","away":"Platinum","homeColor":"#4D2640","awayColor":"#919294","video":""},{"gid":"13426","date":"2021-10-17","home":"Amos","away":"Orphans","homeColor":"#641C28","awayColor":"#000000","video":""},{"gid":"13425","date":"2021-10-10","home":"Nelson","away":"Triple J","homeColor":"#F3C323","awayColor":"#4EB9E5","video":""},{"gid":"13424","date":"2021-10-17","home":"HollowBrook","away":"Canada","homeColor":"#4D2640","awayColor":"#B21A18","video":""},{"gid":"13423","date":"2021-10-10","home":"Platinum","away":"OS Offices","homeColor":"#919294","awayColor":"#2C8A5E","video":""},{"gid":"13244","date":"2021-03-03","home":"Canada","away":"Orphans","homeColor":"#B21A18","awayColor":"#000000","video":""},{"gid":"13243","date":"2021-10-03","home":"OS Offices","away":"HollowBrook","homeColor":"#2C8A5E","awayColor":"#4D2640","video":""},{"gid":"13242","date":"2021-10-03","home":"Nelson","away":"Amos","homeColor":"#F3C323","awayColor":"#641C28","video":""},{"gid":"13241","date":"2021-10-02","home":"Triple J","away":"Platinum","homeColor":"#4EB9E5","awayColor":"#919294","video":""},{"gid":"10826","date":"2025-01-26","home":"Triple J","away":"OS Offices","homeColor":"#4EB9E5","awayColor":"#2C8A5E","video":""},{"gid":"10074","date":"2025-04-13","home":"Platinum","away":"HollowBrook","homeColor":"#919294","awayColor":"#4D2640","video":""},{"gid":"10073","date":"2025-04-13","home":"Nelson","away":"Triple J","homeColor":"#F3C323","awayColor":"#4EB9E5","video":""},{"gid":"10072","date":"2025-03-23","home":"Nelson","away":"Ace","homeColor":"#F3C323","awayColor":"#CA0527","video":""},{"gid":"10071","date":"2025-03-23","home":"OS Offices","away":"Outlaws","homeColor":"#2C8A5E","awayColor":"#02007B","video":""},{"gid":"10070","date":"2025-03-23","home":"Triple J","away":"Orphans","homeColor":"#4EB9E5","awayColor":"#000000","video":""},{"gid":"10069","date":"2025-03-30","home":"Platinum","away":"Ace","homeColor":"#919294","awayColor":"#CA0527","video":""},{"gid":"10068","date":"2025-03-30","home":"HollowBrook","away":"Outlaws","homeColor":"#4D2640","awayColor":"#02007B","video":""},{"gid":"10067","date":"2025-03-30","home":"Amos","away":"Orphans","homeColor":"#641C28","awayColor":"#000000","video":""},{"gid":"10066","date":"2025-04-06","home":"Platinum","away":"Nelson","homeColor":"#919294","awayColor":"#F3C323","video":""},{"gid":"10065","date":"2025-04-06","home":"HollowBrook","away":"OS Offices","homeColor":"#4D2640","awayColor":"#2C8A5E","video":""},{"gid":"10064","date":"2025-04-06","home":"Amos","away":"Triple J","homeColor":"#641C28","awayColor":"#4EB9E5","video":""},{"gid":"10063","date":"2025-04-27","home":"HollowBrook","away":"Triple J","homeColor":"#4D2640","awayColor":"#4EB9E5","video":""},{"gid":"10062","date":"2022-04-17","home":"Canada","away":"Orphans","homeColor":"#B21A18","awayColor":"#000000","video":""},{"gid":"10061","date":"2022-03-27","home":"Canada","away":"Orphans","homeColor":"#B21A18","awayColor":"#000000","video":""},{"gid":"10060","date":"2023-05-04","home":"Triple J","away":"Orphans","homeColor":"#4EB9E5","awayColor":"#000000","video":""},{"gid":"10059","date":"2023-05-02","home":"Triple J","away":"Platinum","homeColor":"#4EB9E5","awayColor":"#919294","video":""},{"gid":"10058","date":"2023-04-25","home":"Platinum","away":"Orphans","homeColor":"#919294","awayColor":"#000000","video":""},{"gid":"10057","date":"2023-04-16","home":"Canada","away":"Platinum","homeColor":"#B21A18","awayColor":"#919294","video":""},{"gid":"10056","date":"2022-05-01","home":"Triple J","away":"Platinum","homeColor":"#4EB9E5","awayColor":"#919294","video":""},{"gid":"10055","date":"2022-04-24","home":"Canada","away":"Platinum","homeColor":"#B21A18","awayColor":"#919294","video":""},{"gid":"10054","date":"2022-04-17","home":"Triple J","away":"Platinum","homeColor":"#4EB9E5","awayColor":"#919294","video":""},{"gid":"10053","date":"2022-03-20","home":"Platinum","away":"Canada","homeColor":"#919294","awayColor":"#B21A18","video":""},{"gid":"10052","date":"2024-05-02","home":"OS Offices","away":"Platinum","homeColor":"#2C8A5E","awayColor":"#919294","video":""},{"gid":"10051","date":"2024-04-28","home":"OS Offices","away":"Triple J","homeColor":"#2C8A5E","awayColor":"#4EB9E5","video":""},{"gid":"10050","date":"2023-04-23","home":"OS Offices","away":"Platinum","homeColor":"#2C8A5E","awayColor":"#919294","video":""},{"gid":"10049","date":"2022-04-10","home":"OS Offices","away":"Triple J","homeColor":"#2C8A5E","awayColor":"#4EB9E5","video":""},{"gid":"10048","date":"2022-04-03","home":"OS Offices","away":"Platinum","homeColor":"#2C8A5E","awayColor":"#919294","video":""},{"gid":"10047","date":"2022-03-27","home":"Triple J","away":"OS Offices","homeColor":"#4EB9E5","awayColor":"#2C8A5E","video":""},{"gid":"10046","date":"2024-05-05","home":"Nelson","away":"Triple J","homeColor":"#F3C323","awayColor":"#4EB9E5","video":""},{"gid":"10045","date":"2024-04-28","home":"Orphans","away":"Nelson","homeColor":"#000000","awayColor":"#F3C323","video":""},{"gid":"10044","date":"2023-04-30","home":"Triple J","away":"Nelson","homeColor":"#4EB9E5","awayColor":"#F3C323","video":""},{"gid":"10043","date":"2023-04-27","home":"Nelson","away":"OS Offices","homeColor":"#F3C323","awayColor":"#2C8A5E","video":""},{"gid":"10042","date":"2023-04-23","home":"Nelson","away":"Orphans","homeColor":"#F3C323","awayColor":"#000000","video":""},{"gid":"10041","date":"2023-04-16","home":"Orphans","away":"Nelson","homeColor":"#000000","awayColor":"#F3C323","video":""},{"gid":"10040","date":"2022-04-10","home":"Canada","away":"Nelson","homeColor":"#B21A18","awayColor":"#F3C323","video":""},{"gid":"10039","date":"2022-04-03","home":"Nelson","away":"Orphans","homeColor":"#F3C323","awayColor":"#000000","video":""},{"gid":"10038","date":"2022-03-27","home":"Nelson","away":"Platinum","homeColor":"#F3C323","awayColor":"#919294","video":""},{"gid":"10037","date":"2022-03-20","home":"OS Offices","away":"Nelson","homeColor":"#2C8A5E","awayColor":"#F3C323","video":""},{"gid":"10036","date":"2024-05-09","home":"HollowBrook","away":"OS Offices","homeColor":"#4D2640","awayColor":"#2C8A5E","video":""},{"gid":"10035","date":"2024-05-02","home":"Nelson","away":"HollowBrook","homeColor":"#F3C323","awayColor":"#4D2640","video":""},{"gid":"10034","date":"2024-01-07","home":"Orphans","away":"HollowBrook","homeColor":"#000000","awayColor":"#4D2640","video":""},{"gid":"10033","date":"2023-11-12","home":"Nelson","away":"HollowBrook","homeColor":"#F3C323","awayColor":"#4D2640","video":""},{"gid":"10032","date":"2023-11-05","home":"Triple J","away":"HollowBrook","homeColor":"#4EB9E5","awayColor":"#4D2640","video":""},{"gid":"10031","date":"2023-10-15","home":"Orphans","away":"HollowBrook","homeColor":"#000000","awayColor":"#4D2640","video":""},{"gid":"10030","date":"2023-09-10","home":"OS Offices","away":"HollowBrook","homeColor":"#2C8A5E","awayColor":"#4D2640","video":""},{"gid":"10029","date":"2023-05-07","home":"Triple J","away":"HollowBrook","homeColor":"#4EB9E5","awayColor":"#4D2640","video":""},{"gid":"10028","date":"2023-05-02","home":"HollowBrook","away":"Orphans","homeColor":"#4D2640","awayColor":"#000000","video":""},{"gid":"10027","date":"2023-04-25","home":"HollowBrook","away":"Triple J","homeColor":"#4D2640","awayColor":"#4EB9E5","video":""},{"gid":"10026","date":"2023-04-23","home":"Canada","away":"HollowBrook","homeColor":"#B21A18","awayColor":"#4D2640","video":""},{"gid":"10025","date":"2023-04-16","home":"HollowBrook","away":"Triple J","homeColor":"#4D2640","awayColor":"#4EB9E5","video":""},{"gid":"10024","date":"2022-04-24","home":"Triple J","away":"HollowBrook","homeColor":"#4EB9E5","awayColor":"#4D2640","video":""},{"gid":"10023","date":"2022-04-17","home":"Nelson","away":"HollowBrook","homeColor":"#F3C323","awayColor":"#4D2640","video":""},{"gid":"10022","date":"2022-04-10","home":"Orphans","away":"HollowBrook","homeColor":"#000000","awayColor":"#4D2640","video":""},{"gid":"10021","date":"2022-04-03","home":"Canada","away":"HollowBrook","homeColor":"#B21A18","awayColor":"#4D2640","video":""},{"gid":"10020","date":"2022-03-20","home":"HollowBrook","away":"Orphans","homeColor":"#4D2640","awayColor":"#000000","video":""},{"gid":"10019","date":"2024-05-12","home":"HollowBrook","away":"Amos","homeColor":"#4D2640","awayColor":"#641C28","video":""},{"gid":"10018","date":"2024-05-11","home":"OS Offices","away":"Amos","homeColor":"#2C8A5E","awayColor":"#641C28","video":""},{"gid":"10017","date":"2024-05-08","home":"Amos","away":"Nelson","homeColor":"#641C28","awayColor":"#F3C323","video":""},{"gid":"10016","date":"2024-05-05","home":"Platinum","away":"Amos","homeColor":"#919294","awayColor":"#641C28","video":""},{"gid":"10015","date":"2024-04-30","home":"Orphans","away":"Amos","homeColor":"#000000","awayColor":"#641C28","video":""},{"gid":"10014","date":"2024-04-28","home":"Amos","away":"HollowBrook","homeColor":"#641C28","awayColor":"#4D2640","video":""},{"gid":"10013","date":"2023-04-30","home":"Platinum","away":"Amos","homeColor":"#919294","awayColor":"#641C28","video":""},{"gid":"10012","date":"2023-04-27","home":"Canada","away":"Amos","homeColor":"#B21A18","awayColor":"#641C28","video":""},{"gid":"10011","date":"2023-04-23","home":"Triple J","away":"Amos","homeColor":"#4EB9E5","awayColor":"#641C28","video":""},{"gid":"10010","date":"2023-04-16","home":"Amos","away":"OS Offices","homeColor":"#641C28","awayColor":"#2C8A5E","video":""},{"gid":"10009","date":"2022-04-17","home":"OS Offices","away":"Amos","homeColor":"#2C8A5E","awayColor":"#641C28","video":""},{"gid":"10008","date":"2022-04-10","home":"Amos","away":"Platinum","homeColor":"#641C28","awayColor":"#919294","video":""},{"gid":"10007","date":"2022-04-03","home":"Triple J","away":"Amos","homeColor":"#4EB9E5","awayColor":"#641C28","video":""},{"gid":"10006","date":"2022-03-27","home":"Amos","away":"HollowBrook","homeColor":"#641C28","awayColor":"#4D2640","video":""},{"gid":"10005","date":"2022-03-20","home":"Amos","away":"Triple J","homeColor":"#641C28","awayColor":"#4EB9E5","video":""},{"gid":"10004","date":"2021-10-17","home":"Canada","away":"Amos","homeColor":"#B21A18","awayColor":"#641C28","video":""},{"gid":"10003","date":"2024-04-30","home":"Triple J","away":"Ace","homeColor":"#4EB9E5","awayColor":"#CA0527","video":""},{"gid":"10002","date":"2023-10-15","home":"Platinum","away":"Ace","homeColor":"#919294","awayColor":"#CA0527","video":""},{"gid":"10001","date":"2023-10-08","home":"Ace","away":"Nelson","homeColor":"#CA0527","awayColor":"#F3C323","video":""}];
+let TRACKING_FILES = {}; // Maps gid -> tracking file path
+
+const ED = {
+  Shot:{d1:['Shot_OnNetSaved','Shot_Missed','Shot_Blocked','Shot_Goal','Shot_Deflected'],d2:['Wrist','Backhand','Slap','Snap','Tip','OneTime']},
+  Pass:{d1:['Pass_Completed','Pass_Missed','Pass_Intercepted','Pass_Deflected'],d2:['Forehand','Backhand','Rim','Stretch','Drop']},
+  Faceoff:{d1:['Faceoff_Won','Faceoff_Lost','Faceoff_GameStart'],d2:[]},
+  Goal:{d1:['Goal_Scored'],d2:['Wrist','Backhand','Tip','Deflection','Rebound']},
+  Zone:{d1:['Zone_Entry','Zone_Exit','Zone_Keepin','Zone_Entryfailed'],d2:['Rush','DumpIn','Pass','Chip','Clear']},
+  Turnover:{d1:['Turnover_Giveaway','Turnover_Takeaway'],d2:['PassIntercepted','Misplayed','PokeCheck','Giveaway-PassIntercepted']},
+  Poss:{d1:['PuckRetrieval','PuckRecovery','LoosePuck','Breakaway','Possession'],d2:[]},
+  Save:{d1:['Save_Rebound','Save_Freeze','Save_Played'],d2:['Glove','Blocker','Pad','Stick']},
+  Dead:{d1:['Dead_Ball','Dead_Icing','Dead_Offside','Dead_Penalty'],d2:[]},
+  Stop:{d1:['Stoppage_Goalie','Stoppage_Whistle','Stoppage_Icing'],d2:[]},
+  Rebound:{d1:['Rebound_Controlled','Rebound_Loose'],d2:[]},
+  Penalty:{d1:['Penalty_Minor','Penalty_Major','Penalty_Misconduct'],d2:['Tripping','Hooking','Slashing','Interference','Roughing']},
+  GameStart:{d1:[],d2:[]},
+  GameEnd:{d1:[],d2:[]},
+  PeriodStart:{d1:[],d2:[]},
+  PeriodEnd:{d1:[],d2:[]}
+};
+
+const PD = {
+  d1: ['FirstTouch','Assist1','Assist2','Shooter','Scorer','Loser','Winner','Receiver','Passer','Checker','Carrier'],
+  d2: ['OnIce','BehindNet','Slot','Point','Corner','InFront']
+};
+
+let S = {
+  gid: null,
+  team: 'home',
+  period: '1',
+  roster: {home: [], away: []},
+  slots: {home: {F1:'',F2:'',F3:'',D1:'',D2:'',G:'',X:''}, away: {F1:'',F2:'',F3:'',D1:'',D2:'',G:'',X:''}},
+  events: [],
+  shifts: [],
+  evtIdx: 0,
+  shiftIdx: 0,
+  currShift: null,
+  evtType: null,
+  evtPlayers: [],
+  oppPlayers: [],
+  puckXY: [],
+  mode: 'puck',
+  slot: 1,
+  maxXY: 3,
+  hGoals: 0,
+  aGoals: 0,
+  hC: '#667788',
+  aC: '#9C47E4',
+  videos: [],
+  activeVid: 0,
+  vidTime: 0,
+  boxScores: {},
+  timeOverride: false,
+  activeSlot: null,
+  modalItem: null,
+  modalType: null
+};
+
+// ========== HELPER FUNCTIONS ==========
+function str(v) { return v == null ? '' : String(v).trim(); }
+
+function fmtName(name) {
+  if (!name) return '';
+  const parts = name.trim().split(' ');
+  if (parts.length < 2) return name;
+  return parts[0][0] + '. ' + parts.slice(1).join(' ');
+}
+
+function genIdx(prefix, gameId, num) {
+  return `${prefix}${gameId}-${String(num + 1000).slice(1)}`;
+}
+
+function parseTime(str) {
+  if (!str) return null;
+  str = str.replace(/[^0-9]/g, '');
+  if (str.length === 3) str = '0' + str;
+  if (str.length === 4) {
+    return Math.min(parseInt(str.slice(0,2)), 20) + ':' + String(Math.min(parseInt(str.slice(2,4)), 59)).padStart(2,'0');
+  }
+  return null;
+}
+
+function formatTimeInput(el) {
+  const v = el.value.replace(/[^0-9:]/g, '');
+  if (v.includes(':')) { el.value = v; return; }
+  const parsed = parseTime(v);
+  if (parsed && v.length >= 3) el.value = parsed;
+}
+
+function clockToSec(str) {
+  if (!str) return 0;
+  const [m, s] = str.split(':').map(Number);
+  return (m || 0) * 60 + (s || 0);
+}
+
+function secToClock(sec) {
+  return Math.floor(sec/60) + ':' + String(sec % 60).padStart(2, '0');
+}
+
+function fmtTime(min, sec) {
+  if (min === undefined && sec === undefined) return '';
+  const m = parseInt(min) || 0;
+  const s = parseInt(sec) || 0;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+// ========== INIT ==========
+async function init() {
+  console.log('Loaded', Object.keys(GAMES).length, 'tracked games');
+  console.log('Schedule has', ALL_SCHEDULE.length, 'total games');
+  
+  populateGameDropdown();
+  populateDropdowns();
+  setupRink();
+  setupResizers();
+  setupKeys();
+  startAutoSave();
+  resetClock();
+  renderPuckXYBtns();
+  
+  // Auto-select first game if available
+  const gameIds = Object.keys(GAMES);
+  if (gameIds.length) {
+    document.getElementById('gameId').value = gameIds[0];
+    await selectGame(gameIds[0]);
+  }
+}
+
+function populateGameDropdown() {
+  const sel = document.getElementById('gameId');
+  sel.innerHTML = '<option value="">-- Select Game --</option>';
+  
+  // Sort games by ID descending (newest first)
+  const sortedIds = Object.keys(GAMES).sort((a, b) => parseInt(b) - parseInt(a));
+  
+  sortedIds.forEach(gid => {
+    const g = GAMES[gid];
+    const opt = document.createElement('option');
+    opt.value = gid;
+    opt.textContent = `${gid}: ${g.homeTeam || 'Home'} vs ${g.awayTeam || 'Away'}`;
+    if (g.date) opt.textContent += ` (${g.date})`;
+    sel.appendChild(opt);
+  });
+}
+
+async function selectGame(gid) {
+  if (!gid) return;
+  S.gid = parseInt(gid);
+  const g = GAMES[gid];
+  if (!g) {
+    console.error('Game not found:', gid);
+    return;
+  }
+  
+  // Load roster from config
+  S.roster.home = g.homeRoster || [];
+  S.roster.away = g.awayRoster || [];
+  S.hC = g.homeColor || '#667788';
+  S.aC = g.awayColor || '#9C47E4';
+  
+  document.documentElement.style.setProperty('--home', S.hC);
+  document.documentElement.style.setProperty('--away', S.aC);
+  
+  document.getElementById('hLabel').textContent = g.homeTeam || 'Home';
+  document.getElementById('aLabel').textContent = g.awayTeam || 'Away';
+  document.getElementById('homeTeamD').textContent = g.homeTeam || 'Home';
+  document.getElementById('awayTeamD').textContent = g.awayTeam || 'Away';
+  document.getElementById('homeDot').style.background = S.hC;
+  document.getElementById('awayDot').style.background = S.aC;
+  document.getElementById('hScore').style.background = S.hC;
+  document.getElementById('aScore').style.background = S.aC;
+  
+  // Reset state
+  S.events = [];
+  S.shifts = [];
+  S.evtIdx = 0;
+  S.shiftIdx = 0;
+  S.currShift = null;
+  S.hGoals = 0;
+  S.aGoals = 0;
+  
+  // Try to load from localStorage first
+  loadStorage();
+  
+  // If no data in localStorage, try to load from Excel tracking file
+  if (!S.events.length && !S.shifts.length) {
+    await loadTrackingExcel(gid);
+  }
+  
+  renderSlots();
+  renderRosterGrids();
+  updateLists();
+  updateQuickAdd();
+  
+  document.getElementById('hScore').textContent = S.hGoals;
+  document.getElementById('aScore').textContent = S.aGoals;
+}
+
+async function loadTrackingExcel(gid) {
+  const trackingPath = `../data/raw/games/${gid}/${gid}_tracking.xlsx`;
+  console.log('Trying to load tracking file:', trackingPath);
+  
+  try {
+    const response = await fetch(trackingPath);
+    if (!response.ok) {
+      console.log('No tracking file found for game', gid);
+      return;
+    }
+    
+    const arrayBuffer = await response.arrayBuffer();
+    const wb = XLSX.read(arrayBuffer, {type: 'array'});
+    console.log('Excel sheets:', wb.SheetNames);
+    
+    parseExcelData(wb);
+    
+  } catch (e) {
+    console.log('Could not load tracking file:', e.message);
+  }
+}
+
+function parseExcelData(wb) {
+  // Helper to get value from row with multiple possible column names
+  const getVal = (row, ...keys) => {
+    for (const k of keys) {
+      if (row[k] !== undefined && row[k] !== null && row[k] !== '') return row[k];
+      if (row[k + '_'] !== undefined && row[k + '_'] !== null && row[k + '_'] !== '') return row[k + '_'];
+    }
+    return '';
+  };
+  
+  // Map team venue to home/away
+  const mapTeam = (row) => {
+    const venue = getVal(row, 'team_venue', 'team_venue_abv', 'team');
+    if (venue === 'home' || venue === 'H' || venue === 'Home' || venue === 'h') return 'home';
+    if (venue === 'away' || venue === 'A' || venue === 'Away' || venue === 'a') return 'away';
+    return 'home';
+  };
+  
+  // Map event type - handle various formats
+  const mapEventType = (rawType) => {
+    if (!rawType) return 'Pass';
+    const t = String(rawType).trim();
+    // Direct mappings
+    const typeMap = {
+      'gamestart': 'GameStart', 'game_start': 'GameStart',
+      'faceoff': 'Faceoff',
+      'shot': 'Shot',
+      'pass': 'Pass',
+      'goal': 'Goal',
+      'zone': 'Zone', 'zone_entry': 'Zone', 'zone_exit': 'Zone',
+      'turnover': 'Turnover',
+      'possession': 'Poss', 'poss': 'Poss', 'puckretrieval': 'Poss', 'puckrecovery': 'Poss',
+      'save': 'Save',
+      'dead': 'Dead', 'deadball': 'Dead',
+      'stop': 'Stop', 'stoppage': 'Stop',
+      'rebound': 'Rebound',
+      'penalty': 'Penalty',
+      'gameend': 'GameEnd', 'game_end': 'GameEnd',
+      'periodstart': 'PeriodStart', 'period_start': 'PeriodStart',
+      'periodend': 'PeriodEnd', 'period_end': 'PeriodEnd'
+    };
+    const lowerType = t.toLowerCase();
+    if (typeMap[lowerType]) return typeMap[lowerType];
+    // Capitalize first letter
+    return t.charAt(0).toUpperCase() + t.slice(1).toLowerCase();
+  };
+  
+  // Parse events sheet
+  if (wb.SheetNames.includes('events') || wb.SheetNames.includes('Events')) {
+    const sheetName = wb.SheetNames.includes('events') ? 'events' : 'Events';
+    const evtRows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName]);
+    console.log('Event rows:', evtRows.length);
+    
+    // Group by event_index (tracking files use tracking_event_index or event_index)
+    const evtMap = {};
+    evtRows.forEach(row => {
+      const eid = getVal(row, 'tracking_event_index', 'event_index', 'event_id', 'idx');
+      if (!eid && eid !== 0) return;
+      
+      if (!evtMap[eid]) {
+        // Get raw type from Type or event_type column
+        const rawType = getVal(row, 'Type', 'event_type', 'type') || 'Pass';
+        const type = mapEventType(rawType);
+        
+        evtMap[eid] = {
+          idx: parseInt(eid) || Object.keys(evtMap).length + 1,
+          id: `E${S.gid}-${eid}`,
+          gid: S.gid,
+          period: str(getVal(row, 'period', 'Period')) || '1',
+          shiftIdx: parseInt(getVal(row, 'shift_index')) || 1,
+          shiftId: '',
+          team: mapTeam(row),
+          type: type,
+          d1: str(getVal(row, 'event_detail', 'detail_1', 'd1')),
+          d2: str(getVal(row, 'event_detail_2', 'event_detail_2', 'detail_2', 'd2')),
+          succ: (() => {
+            const s = getVal(row, 'event_successful', 'success', 'succ');
+            if (s === 'S' || s === 'Successful' || s === 's' || s === true || s === 1) return 's';
+            if (s === 'U' || s === 'Unsuccessful' || s === 'u' || s === false || s === 0) return 'u';
+            return null;
+          })(),
+          zone: str(getVal(row, 'event_team_zone', 'zone', 'event_team_zone2')),
+          clockS: fmtTime(getVal(row, 'event_start_min'), getVal(row, 'event_start_sec')),
+          clockE: fmtTime(getVal(row, 'event_end_min'), getVal(row, 'event_end_sec')),
+          linkTo: getVal(row, 'linked_event_index', 'linked_event_id') || null,
+          vidTime: parseFloat(getVal(row, 'running_video_time', 'event_running_start')) || 0,
+          puck: [],
+          evtPlayers: [],
+          oppPlayers: []
+        };
+      }
+      
+      // Add player to event
+      const pNum = getVal(row, 'player_game_number', 'player_num', 'player_number');
+      if (pNum) {
+        const pRole = str(getVal(row, 'player_role', 'role_abrev')) || 'evt_1';
+        const isOpp = pRole.toLowerCase().includes('opp');
+        const pObj = {
+          n: str(pNum),
+          role: pRole,
+          pd1: str(getVal(row, 'play_detail1', 'play_detail_1', 'pd1')),
+          pd2: str(getVal(row, 'play_detail2', 'play_detail_2', 'pd2')),
+          xy: []
+        };
+        if (isOpp) {
+          if (!evtMap[eid].oppPlayers.find(p => p.n === pObj.n)) evtMap[eid].oppPlayers.push(pObj);
+        } else {
+          if (!evtMap[eid].evtPlayers.find(p => p.n === pObj.n)) evtMap[eid].evtPlayers.push(pObj);
+        }
+      }
+    });
+    
+    // Sort events in ASCENDING order by idx
+    S.events = Object.values(evtMap).sort((a, b) => a.idx - b.idx);
+    S.evtIdx = Math.max(...S.events.map(e => e.idx), 0);
+    console.log('Parsed events:', S.events.length);
+  }
+  
+  // Parse shifts sheet
+  if (wb.SheetNames.includes('shifts') || wb.SheetNames.includes('Shifts')) {
+    const sheetName = wb.SheetNames.includes('shifts') ? 'shifts' : 'Shifts';
+    const shiftRows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName]);
+    console.log('Shift rows:', shiftRows.length);
+    
+    S.shifts = shiftRows.map((row, i) => {
+      return {
+        idx: parseInt(getVal(row, 'shift_index')) || i + 1,
+        id: genIdx('SH', S.gid, i + 1),
+        gid: S.gid,
+        period: str(getVal(row, 'Period', 'period')) || '1',
+        start: fmtTime(getVal(row, 'shift_start_min'), getVal(row, 'shift_start_sec')),
+        end: fmtTime(getVal(row, 'shift_end_min'), getVal(row, 'shift_end_sec')),
+        startType: str(getVal(row, 'shift_start_type', 'start_type')) || 'OtherFaceoff',
+        stopType: str(getVal(row, 'shift_stop_type', 'stop_type')) || '',
+        vidTime: parseFloat(getVal(row, 'running_video_time', 'shift_start_running_time')) || 0,
+        strength: str(getVal(row, 'strength', 'situation')) || '5v5',
+        homeSlots: {
+          F1: str(getVal(row, 'home_forward_1', 'home_f1')),
+          F2: str(getVal(row, 'home_forward_2', 'home_f2')),
+          F3: str(getVal(row, 'home_forward_3', 'home_f3')),
+          D1: str(getVal(row, 'home_defense_1', 'home_d1')),
+          D2: str(getVal(row, 'home_defense_2', 'home_d2')),
+          G: str(getVal(row, 'home_goalie', 'home_g')),
+          X: str(getVal(row, 'home_xtra', 'home_x'))
+        },
+        awaySlots: {
+          F1: str(getVal(row, 'away_forward_1', 'away_f1')),
+          F2: str(getVal(row, 'away_forward_2', 'away_f2')),
+          F3: str(getVal(row, 'away_forward_3', 'away_f3')),
+          D1: str(getVal(row, 'away_defense_1', 'away_d1')),
+          D2: str(getVal(row, 'away_defense_2', 'away_d2')),
+          G: str(getVal(row, 'away_goalie', 'away_g')),
+          X: str(getVal(row, 'away_xtra', 'away_x'))
+        }
+      };
+    });
+    
+    // Sort shifts in ASCENDING order by idx  
+    S.shifts = S.shifts.sort((a, b) => a.idx - b.idx);
+    S.shiftIdx = Math.max(...S.shifts.map(s => s.idx), 0);
+    if (S.shifts.length) {
+      S.currShift = S.shifts[S.shifts.length - 1];
+      S.slots.home = {...S.currShift.homeSlots};
+      S.slots.away = {...S.currShift.awaySlots};
+    }
+    console.log('Parsed shifts:', S.shifts.length);
+  }
+}
+
+function populateDropdowns() {
+  document.getElementById('linkType').innerHTML = Object.keys(ED).map(t => `<option>${t}</option>`).join('');
+}
+
+// ========== POSITION SLOTS ==========
+function selectSlot(el) {
+  document.querySelectorAll('.slot-btn').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+  S.activeSlot = {team: el.dataset.team, pos: el.dataset.pos};
+  
+  document.getElementById('homeRosterPicker').classList.remove('show');
+  document.getElementById('awayRosterPicker').classList.remove('show');
+  document.getElementById(el.dataset.team + 'RosterPicker').classList.add('show');
+}
+
+function assignPlayer(team, num) {
+  if (!S.activeSlot || S.activeSlot.team !== team) return;
+  
+  Object.keys(S.slots[team]).forEach(pos => {
+    if (S.slots[team][pos] === num) S.slots[team][pos] = '';
+  });
+  
+  S.slots[S.activeSlot.team][S.activeSlot.pos] = num;
+  
+  const order = ['F1','F2','F3','D1','D2','G','X'];
+  for (const pos of order) {
+    if (!S.slots[S.activeSlot.team][pos]) {
+      const nextSlot = document.querySelector(`.slot-btn[data-team="${S.activeSlot.team}"][data-pos="${pos}"]`);
+      if (nextSlot) { selectSlot(nextSlot); break; }
+    }
+  }
+  
+  renderSlots();
+  renderRosterGrids();
+}
+
+function renderSlots() {
+  ['home','away'].forEach(t => {
+    const c = t === 'home' ? S.hC : S.aC;
+    ['F1','F2','F3','D1','D2','G','X'].forEach(pos => {
+      const slot = document.querySelector(`.slot-btn[data-team="${t}"][data-pos="${pos}"]`);
+      if (slot) {
+        const num = S.slots[t][pos];
+        const player = num ? S.roster[t].find(p => str(p.n) === str(num)) : null;
+        slot.innerHTML = num ? `<span>${num}</span>` : pos;
+        slot.classList.toggle('filled', !!num);
+        slot.style.background = num ? c : '';
+        slot.style.color = num ? '#fff' : '';
+        if (player) slot.title = fmtName(player.name);
+      }
+    });
+  });
+}
+
+function renderRosterGrids() {
+  ['home','away'].forEach(t => {
+    const grid = document.getElementById(t + 'RosterGrid');
+    const inSlots = new Set(Object.values(S.slots[t]).filter(Boolean).map(str));
+    const c = t === 'home' ? S.hC : S.aC;
+    
+    grid.innerHTML = S.roster[t].map(p => 
+      `<div class="roster-btn ${inSlots.has(str(p.n))?'in-shift':''}" onclick="assignPlayer('${t}','${p.n}')" style="${!inSlots.has(str(p.n))?'background:'+c+';color:#fff':''}">
+        ${p.n} ${fmtName(p.name)}
+      </div>`
+    ).join('');
+  });
+}
+
+function clearTeam(team) {
+  S.slots[team] = {F1:'',F2:'',F3:'',D1:'',D2:'',G:'',X:''};
+  renderSlots();
+  renderRosterGrids();
+}
+
+// ========== EVENT TYPE ==========
+function setTeam(t) {
+  S.team = t;
+  document.getElementById('teamH').classList.toggle('on', t === 'home');
+  document.getElementById('teamA').classList.toggle('on', t === 'away');
+  updateQuickAdd();
+  renderPlayerCards();
+}
+
+function qEvt(type) {
+  S.evtType = type;
+  document.querySelectorAll('.evt-btn').forEach(b => b.classList.remove('on'));
+  const btn = document.getElementById('b' + type);
+  if (btn) btn.classList.add('on');
+  
+  const d = ED[type] || {d1: [], d2: []};
+  document.getElementById('evtD1').innerHTML = '<option value="">--</option>' + d.d1.map(v => `<option>${v}</option>`).join('');
+  document.getElementById('evtD2').innerHTML = '<option value="">--</option>' + d.d2.map(v => `<option>${v}</option>`).join('');
+}
+
+function onD1Change() {
+  const d1 = document.getElementById('evtD1').value;
+  if (d1.includes('Blocked') || d1.includes('Missed') || d1.includes('Lost') || d1.includes('Giveaway') || d1.includes('failed')) {
+    document.getElementById('evtSucc').value = 'u';
+  } else if (d1.includes('Goal') || d1.includes('Won') || d1.includes('Completed') || d1.includes('Takeaway') || d1.includes('Entry')) {
+    document.getElementById('evtSucc').value = 's';
+  }
+}
+
+function updateLinkDetails() {
+  const t = document.getElementById('linkType').value;
+  const d = ED[t] || {d1: []};
+  document.getElementById('linkD1').innerHTML = '<option value="">--</option>' + d.d1.map(v => `<option>${v}</option>`).join('');
+}
+
+// ========== QUICK ADD ==========
+function updateQuickAdd() {
+  const container = document.getElementById('quickAdd');
+  if (!S.currShift) {
+    container.innerHTML = '<span style="color:var(--muted)">Log a shift first</span>';
+    return;
+  }
+  
+  const slots = S.team === 'home' ? S.currShift.homeSlots : S.currShift.awaySlots;
+  const oppSlots = S.team === 'home' ? S.currShift.awaySlots : S.currShift.homeSlots;
+  
+  const evtNums = new Set(S.evtPlayers.map(p => str(p.n)));
+  const oppNums = new Set(S.oppPlayers.map(p => str(p.n)));
+  
+  let html = '<div style="display:flex;gap:2px;flex-wrap:wrap">';
+  
+  // Event team players
+  ['F1','F2','F3','D1','D2','G','X'].forEach(pos => {
+    const num = slots[pos];
+    if (num) {
+      const isIn = evtNums.has(str(num));
+      html += `<button class="quick-add-btn evt ${isIn?'in':''}" onclick="toggleEvtPlayer('${num}','${S.team}')">${num}</button>`;
+    }
+  });
+  
+  html += '</div><div style="margin:4px 0;font-size:8px;color:var(--muted)">Ctrl+click for opponents:</div><div style="display:flex;gap:2px;flex-wrap:wrap">';
+  
+  // Opponent players
+  const oppTeam = S.team === 'home' ? 'away' : 'home';
+  ['F1','F2','F3','D1','D2','G','X'].forEach(pos => {
+    const num = oppSlots[pos];
+    if (num) {
+      const isIn = oppNums.has(str(num));
+      html += `<button class="quick-add-btn opp ${isIn?'in':''}" onclick="toggleOppPlayer('${num}','${oppTeam}')">${num}</button>`;
+    }
+  });
+  
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function toggleEvtPlayer(num, team) {
+  const idx = S.evtPlayers.findIndex(p => str(p.n) === str(num));
+  if (idx >= 0) {
+    S.evtPlayers.splice(idx, 1);
+  } else {
+    const player = S.roster[team].find(p => str(p.n) === str(num));
+    S.evtPlayers.push({n: str(num), name: player?.name || '', team, role: 'evt_' + (S.evtPlayers.length + 1), xy: [], pd1: '', pd2: ''});
+  }
+  renderPlayerCards();
+  updateQuickAdd();
+}
+
+function toggleOppPlayer(num, team) {
+  const idx = S.oppPlayers.findIndex(p => str(p.n) === str(num));
+  if (idx >= 0) {
+    S.oppPlayers.splice(idx, 1);
+  } else {
+    const player = S.roster[team].find(p => str(p.n) === str(num));
+    S.oppPlayers.push({n: str(num), name: player?.name || '', team, role: 'opp_' + (S.oppPlayers.length + 1), xy: [], pd1: '', pd2: ''});
+  }
+  renderPlayerCards();
+  updateQuickAdd();
+}
+
+function addEvtPlayer() {
+  S.evtPlayers.push({n: '', name: '', team: S.team, role: 'evt_' + (S.evtPlayers.length + 1), xy: [], pd1: '', pd2: ''});
+  renderPlayerCards();
+}
+
+function addOppPlayer() {
+  const oppTeam = S.team === 'home' ? 'away' : 'home';
+  S.oppPlayers.push({n: '', name: '', team: oppTeam, role: 'opp_' + (S.oppPlayers.length + 1), xy: [], pd1: '', pd2: ''});
+  renderPlayerCards();
+}
+
+function renderPlayerCards() {
+  const container = document.getElementById('playerCards');
+  let html = '';
+  
+  S.evtPlayers.forEach((p, i) => {
+    const roster = S.roster[p.team] || [];
+    const opts = roster.map(r => `<option value="${r.n}" ${str(p.n)===str(r.n)?'selected':''}>${r.n} ${fmtName(r.name)}</option>`).join('');
+    html += `<div class="player-card">
+      <div class="player-card-header">
+        <div class="info"><span class="num">${p.n||'?'}</span><span class="name">${fmtName(p.name)}</span></div>
+        <button class="btn sm" onclick="S.evtPlayers.splice(${i},1);renderPlayerCards();updateQuickAdd()">✕</button>
+      </div>
+      <select onchange="updateEvtPlayer(${i},this.value)" style="width:100%;margin-bottom:4px;font-size:9px"><option value="">--</option>${opts}</select>
+      <div class="player-card-pd">
+        <select onchange="S.evtPlayers[${i}].pd1=this.value" style="font-size:8px"><option value="">PD1</option>${PD.d1.map(v=>`<option ${p.pd1===v?'selected':''}>${v}</option>`).join('')}</select>
+        <select onchange="S.evtPlayers[${i}].pd2=this.value" style="font-size:8px"><option value="">PD2</option>${PD.d2.map(v=>`<option ${p.pd2===v?'selected':''}>${v}</option>`).join('')}</select>
+      </div>
+    </div>`;
+  });
+  
+  S.oppPlayers.forEach((p, i) => {
+    const roster = S.roster[p.team] || [];
+    const opts = roster.map(r => `<option value="${r.n}" ${str(p.n)===str(r.n)?'selected':''}>${r.n} ${fmtName(r.name)}</option>`).join('');
+    html += `<div class="player-card opp">
+      <div class="player-card-header">
+        <div class="info"><span class="num">${p.n||'?'}</span><span class="name">${fmtName(p.name)} (opp)</span></div>
+        <button class="btn sm" onclick="S.oppPlayers.splice(${i},1);renderPlayerCards();updateQuickAdd()">✕</button>
+      </div>
+      <select onchange="updateOppPlayer(${i},this.value)" style="width:100%;margin-bottom:4px;font-size:9px"><option value="">--</option>${opts}</select>
+      <div class="player-card-pd">
+        <select onchange="S.oppPlayers[${i}].pd1=this.value" style="font-size:8px"><option value="">PD1</option>${PD.d1.map(v=>`<option ${p.pd1===v?'selected':''}>${v}</option>`).join('')}</select>
+        <select onchange="S.oppPlayers[${i}].pd2=this.value" style="font-size:8px"><option value="">PD2</option>${PD.d2.map(v=>`<option ${p.pd2===v?'selected':''}>${v}</option>`).join('')}</select>
+      </div>
+    </div>`;
+  });
+  
+  container.innerHTML = html || '<div style="color:var(--muted);font-size:9px;text-align:center">No players added</div>';
+}
+
+function updateEvtPlayer(idx, num) {
+  const player = S.roster[S.team].find(p => str(p.n) === str(num));
+  S.evtPlayers[idx].n = str(num);
+  S.evtPlayers[idx].name = player?.name || '';
+  renderPlayerCards();
+  updateQuickAdd();
+}
+
+function updateOppPlayer(idx, num) {
+  const oppTeam = S.team === 'home' ? 'away' : 'home';
+  const player = S.roster[oppTeam].find(p => str(p.n) === str(num));
+  S.oppPlayers[idx].n = str(num);
+  S.oppPlayers[idx].name = player?.name || '';
+  renderPlayerCards();
+  updateQuickAdd();
+}
+
+// ========== LOG EVENTS/SHIFTS ==========
+function logEvt() {
+  if (!S.evtType) { alert('Select event type'); return; }
+  if (!S.currShift) { alert('Log a shift first'); return; }
+  
+  S.evtIdx++;
+  const evt = {
+    idx: S.evtIdx,
+    id: genIdx('E', S.gid, S.evtIdx),
+    gid: S.gid,
+    period: S.period,
+    shiftIdx: S.currShift?.idx,
+    shiftId: S.currShift?.id,
+    team: S.team,
+    type: S.evtType,
+    d1: document.getElementById('evtD1').value,
+    d2: document.getElementById('evtD2').value,
+    succ: document.getElementById('evtSucc').value || null,
+    zone: document.getElementById('evtZone').value || null,
+    press: document.getElementById('evtPress').value || null,
+    clockS: document.getElementById('clockS').value,
+    clockE: document.getElementById('clockE').value,
+    vidTime: S.vidTime,
+    puck: [...S.puckXY],
+    evtPlayers: S.evtPlayers.map(p => ({...p, xy: [...(p.xy || [])]})),
+    oppPlayers: S.oppPlayers.map(p => ({...p, xy: [...(p.xy || [])]})),
+    linkTo: document.getElementById('linkOn').checked ? S.events.length > 0 ? S.events[S.events.length - 1].id : null : null
+  };
+  
+  // Linked event
+  if (document.getElementById('linkOn').checked) {
+    S.evtIdx++;
+    const linkEvt = {
+      idx: S.evtIdx,
+      id: genIdx('E', S.gid, S.evtIdx),
+      gid: S.gid,
+      period: S.period,
+      shiftIdx: S.currShift?.idx,
+      shiftId: S.currShift?.id,
+      team: S.team === 'home' ? 'away' : 'home',
+      type: document.getElementById('linkType').value,
+      d1: document.getElementById('linkD1').value,
+      d2: '',
+      clockS: evt.clockS,
+      clockE: evt.clockE,
+      vidTime: S.vidTime,
+      puck: [],
+      evtPlayers: [],
+      oppPlayers: [],
+      linkTo: evt.id
+    };
+    S.events.push(evt);
+    S.events.push(linkEvt);
+  } else {
+    S.events.push(evt);
+  }
+  
+  // Update goals
+  if (S.evtType === 'Goal') {
+    if (S.team === 'home') S.hGoals++; else S.aGoals++;
+    document.getElementById('hScore').textContent = S.hGoals;
+    document.getElementById('aScore').textContent = S.aGoals;
+  }
+  
+  // Advance clock
+  const adv = parseInt(document.getElementById('clockAdvance')?.value) || 2;
+  adjClock(-adv);
+  
+  clearEvtForm();
+  updateLists();
+  autoSave();
+}
+
+function clearEvtForm() {
+  S.evtType = null;
+  S.evtPlayers = [];
+  S.oppPlayers = [];
+  S.puckXY = [];
+  document.querySelectorAll('.evt-btn').forEach(b => b.classList.remove('on'));
+  document.getElementById('evtD1').innerHTML = '<option value="">--</option>';
+  document.getElementById('evtD2').innerHTML = '<option value="">--</option>';
+  document.getElementById('evtSucc').value = '';
+  document.getElementById('evtZone').value = '';
+  document.getElementById('evtPress').value = '';
+  document.getElementById('linkOn').checked = false;
+  document.getElementById('validation').style.display = 'none';
+  S.timeOverride = false;
+  renderPlayerCards();
+  updateQuickAdd();
+  clearMarkers();
+  renderPuckXYBtns();
+}
+
+function logShift() {
+  S.shiftIdx++;
+  const shift = {
+    idx: S.shiftIdx,
+    id: genIdx('SH', S.gid, S.shiftIdx),
+    gid: S.gid,
+    period: S.period,
+    start: document.getElementById('shiftStartTime').value || document.getElementById('clock').textContent,
+    end: document.getElementById('shiftEndTime').value || '',
+    startType: document.getElementById('shiftStart').value,
+    stopType: document.getElementById('shiftStop').value,
+    vidTime: S.vidTime,
+    homeSlots: {...S.slots.home},
+    awaySlots: {...S.slots.away}
+  };
+  
+  S.shifts.push(shift);
+  S.currShift = shift;
+  
+  // Clear shift form
+  document.getElementById('shiftStartTime').value = '';
+  document.getElementById('shiftEndTime').value = '';
+  document.getElementById('shiftStop').value = '';
+  
+  updateLists();
+  updateQuickAdd();
+  autoSave();
+}
+
+function copyLastShift() {
+  if (!S.currShift) return;
+  S.slots.home = {...S.currShift.homeSlots};
+  S.slots.away = {...S.currShift.awaySlots};
+  renderSlots();
+  renderRosterGrids();
+}
+
+function undoEvt() {
+  if (!S.events.length) return;
+  const last = S.events.pop();
+  if (last.type === 'Goal') {
+    if (last.team === 'home') S.hGoals = Math.max(0, S.hGoals - 1);
+    else S.aGoals = Math.max(0, S.aGoals - 1);
+    document.getElementById('hScore').textContent = S.hGoals;
+    document.getElementById('aScore').textContent = S.aGoals;
+  }
+  updateLists();
+  autoSave();
+}
+
+function copyLastEvt() {
+  if (!S.events.length) return;
+  const last = S.events[S.events.length - 1];
+  qEvt(last.type);
+  document.getElementById('evtD1').value = last.d1 || '';
+  document.getElementById('evtD2').value = last.d2 || '';
+}
+
+function autoStart() {
+  const st = document.getElementById('shiftStop').value;
+  let ns = 'OtherFaceoff';
+  if (st?.includes('Goal')) ns = 'FaceoffAfterGoal';
+  else if (st?.includes('Penalty')) ns = 'FaceoffAfterPenalty';
+  else if (st?.includes('Period')) ns = 'PeriodStart';
+  document.getElementById('shiftStart').value = ns;
+}
+
+function updateLists() {
+  updateEvtList();
+  updateShiftList();
+  document.getElementById('evtN').textContent = S.events.length;
+  document.getElementById('evtCount').textContent = S.events.length;
+  document.getElementById('shiftN').textContent = S.shiftIdx || '--';
+  document.getElementById('shiftCount').textContent = S.shifts.length;
+}
+
+function updateEvtList() {
+  const l = document.getElementById('evtList');
+  if (!S.events.length) {
+    l.innerHTML = '<div style="color:var(--muted);text-align:center;padding:8px">No events</div>';
+    return;
+  }
+  
+  // Sort by idx ASC (lowest first = oldest first)
+  const sorted = S.events.slice().sort((a, b) => a.idx - b.idx);
+  l.innerHTML = sorted.map(e => {
+    const si = e.succ === 's' ? '✓' : (e.succ === 'u' ? '✗' : '-');
+    const sc = e.succ === 's' ? 'color:var(--success)' : (e.succ === 'u' ? 'color:var(--danger)' : '');
+    const tc = e.team === 'home' ? S.hC : S.aC;
+    
+    return `<div class="list-item" style="border-left:3px solid ${tc}" onclick="showEvtDetail(${e.idx})">
+      <span class="idx">${e.id}</span>
+      <span style="font-family:monospace">${e.clockS}</span>
+      <span style="overflow:hidden;text-overflow:ellipsis">${e.type}${e.d1?':'+e.d1.split('_').pop():''}</span>
+      <span style="${sc}">${si}</span>
+    </div>`;
+  }).join('');
+}
+
+function updateShiftList() {
+  const l = document.getElementById('shiftList');
+  if (!S.shifts.length) {
+    l.innerHTML = '<div style="color:var(--muted);text-align:center;padding:8px">No shifts</div>';
+    return;
+  }
+  
+  // Sort by idx ASC (lowest first = oldest first)
+  const sorted = S.shifts.slice().sort((a, b) => a.idx - b.idx);
+  l.innerHTML = sorted.map(s => {
+    const evtCount = S.events.filter(e => e.shiftIdx === s.idx).length;
+    return `<div class="list-item ${S.currShift?.idx === s.idx ? 'active' : ''}" onclick="showShiftDetail(${s.idx})">
+      <span class="idx">${s.id}</span>
+      <span>${s.start}</span>
+      <span style="font-size:8px">${Object.values(s.homeSlots).filter(Boolean).slice(0,3).join(',')}|${Object.values(s.awaySlots).filter(Boolean).slice(0,3).join(',')}</span>
+      <span>${evtCount}</span>
+    </div>`;
+  }).join('');
+}
+
+// ========== CLOCK ==========
+function getPeriodLen() { return parseInt(document.getElementById('periodLen')?.value) || 18; }
+
+function resetClock() {
+  const t = getPeriodLen() + ':00';
+  document.getElementById('clockS').value = t;
+  document.getElementById('clockE').value = t;
+  document.getElementById('clock').textContent = t;
+}
+
+function adjClock(s) {
+  const inp = document.getElementById('clockS');
+  let [m, sec] = (inp.value || '18:00').split(':').map(Number);
+  let tot = Math.max(0, Math.min(getPeriodLen() * 60, m * 60 + sec + s));
+  const nt = `${Math.floor(tot / 60)}:${(tot % 60).toString().padStart(2, '0')}`;
+  inp.value = nt;
+  document.getElementById('clock').textContent = nt;
+  document.getElementById('clockE').value = nt;
+}
+
+// ========== VIDEO ==========
+function addVideo() {
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = 'video/*';
+  inp.onchange = e => {
+    const f = e.target.files[0];
+    if (f) {
+      S.videos.push({url: URL.createObjectURL(f), name: f.name.slice(0, 15)});
+      renderVideoTabs();
+      loadVideo(S.videos.length - 1);
+    }
+  };
+  inp.click();
+}
+
+function renderVideoTabs() {
+  const tabs = document.getElementById('videoTabs');
+  tabs.innerHTML = S.videos.map((v, i) => 
+    `<button class="video-tab ${i === S.activeVid ? 'active' : ''}" onclick="switchVideo(${i})">${v.name}</button>`
+  ).join('') + '<button class="video-tab" onclick="addVideo()">+</button>';
+}
+
+function switchVideo(idx) {
+  if (idx < S.videos.length) loadVideo(idx);
+}
+
+function loadVideo(idx) {
+  S.activeVid = idx;
+  renderVideoTabs();
+  const v = S.videos[idx];
+  if (!v) return;
+  
+  document.getElementById('videoWrapper').innerHTML = `<video id="vid" src="${v.url}"></video>`;
+  const vid = document.getElementById('vid');
+  
+  vid.addEventListener('loadedmetadata', () => {
+    document.getElementById('vidDuration').textContent = secToClock(Math.floor(vid.duration));
+  });
+  
+  vid.addEventListener('timeupdate', function() {
+    S.vidTime = Math.floor(this.currentTime);
+    document.getElementById('vidTime').textContent = S.vidTime;
+    document.getElementById('vidTimeDisplay').textContent = secToClock(S.vidTime);
+    
+    if (vid.duration) {
+      const pct = (this.currentTime / vid.duration) * 100;
+      document.getElementById('timelineProgress').style.width = pct + '%';
+      document.getElementById('timelineHandle').style.left = `calc(${pct}% - 6px)`;
+    }
+    
+    // Sync clock if enabled
+    if (document.getElementById('syncVid').checked && !S.timeOverride) {
+      const offset = parseInt(document.getElementById('vidOffP' + S.period)?.value) || 0;
+      const gameTime = Math.max(0, getPeriodLen() * 60 - (S.vidTime - offset));
+      const t = secToClock(gameTime);
+      document.getElementById('clockS').value = t;
+      document.getElementById('clockE').value = t;
+      document.getElementById('clock').textContent = t;
+    }
+  });
+}
+
+function togglePlay() {
+  const vid = document.getElementById('vid');
+  if (!vid) return;
+  vid.paused ? vid.play() : vid.pause();
+}
+
+function frameStep(dir) {
+  const vid = document.getElementById('vid');
+  if (!vid) return;
+  vid.currentTime = Math.max(0, vid.currentTime + (dir * 0.033));
+}
+
+function seekTimeline(e) {
+  const vid = document.getElementById('vid');
+  if (!vid || !vid.duration) return;
+  const rect = document.getElementById('timelineBar').getBoundingClientRect();
+  const pct = (e.clientX - rect.left) / rect.width;
+  vid.currentTime = pct * vid.duration;
+}
+
+// ========== RINK ==========
+function setupRink() {
+  const svg = document.getElementById('rinkSvg');
+  svg.addEventListener('click', e => {
+    const rect = svg.getBoundingClientRect();
+    const viewBox = svg.viewBox.baseVal;
+    const x = ((e.clientX - rect.left) / rect.width) * viewBox.width + viewBox.x;
+    const y = ((e.clientY - rect.top) / rect.height) * viewBox.height + viewBox.y;
+    addMarker(Math.round(x * 10) / 10, Math.round(y * 10) / 10);
+  });
+}
+
+function addMarker(x, y) {
+  if (S.mode === 'puck') {
+    if (S.puckXY.length < S.maxXY) {
+      S.puckXY.push({x, y, slot: S.slot});
+      renderMarkers();
+      renderPuckXYBtns();
+      if (S.puckXY.length < S.maxXY) S.slot = S.puckXY.length + 1;
+      updateZonePress(x);
+    }
+  }
+}
+
+function renderMarkers() {
+  const g = document.getElementById('markers');
+  g.innerHTML = '';
+  
+  S.puckXY.forEach((p, i) => {
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('cx', p.x);
+    circle.setAttribute('cy', p.y);
+    circle.setAttribute('r', 3);
+    circle.setAttribute('fill', '#000');
+    circle.setAttribute('stroke', '#fff');
+    circle.setAttribute('stroke-width', 1);
+    g.appendChild(circle);
+    
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('x', p.x);
+    text.setAttribute('y', p.y - 5);
+    text.setAttribute('fill', '#fff');
+    text.setAttribute('font-size', '6');
+    text.setAttribute('text-anchor', 'middle');
+    text.textContent = i + 1;
+    g.appendChild(text);
+  });
+}
+
+function clearMarkers() {
+  S.puckXY = [];
+  S.slot = 1;
+  document.getElementById('markers').innerHTML = '';
+  renderPuckXYBtns();
+}
+
+function renderPuckXYBtns() {
+  const container = document.getElementById('puckXYBtns');
+  let html = '';
+  for (let i = 0; i < S.maxXY; i++) {
+    const hasData = S.puckXY[i];
+    const isActive = S.slot === i + 1;
+    html += `<button class="btn sm ${hasData?'has':''} ${isActive?'active':''}" onclick="S.slot=${i+1};updateModeInd();renderPuckXYBtns()">${i+1}${hasData?'✓':''}</button>`;
+  }
+  container.innerHTML = html;
+}
+
+function setMaxXY(v) {
+  S.maxXY = parseInt(v) || 3;
+  renderPuckXYBtns();
+}
+
+function setMode(mode, slot) {
+  S.mode = mode;
+  S.slot = slot || 1;
+  updateModeInd();
+}
+
+function updateModeInd() {
+  const ind = document.getElementById('modeInd');
+  if (S.mode === 'puck') {
+    ind.className = 'mode-ind puck';
+    ind.textContent = `🏒 PUCK XY${S.slot}`;
+  }
+}
+
+function updateZonePress(x) {
+  let zone = 'n';
+  if (x < -25) zone = S.team === 'home' ? 'd' : 'o';
+  else if (x > 25) zone = S.team === 'home' ? 'o' : 'd';
+  document.getElementById('zoneD').textContent = zone === 'o' ? 'OFF' : zone === 'd' ? 'DEF' : 'NEU';
+  if (!document.getElementById('evtZone').value) document.getElementById('evtZone').value = zone;
+}
+
+// ========== MODALS ==========
+function showModal(type) {
+  document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+  document.getElementById('modalOverlay').classList.add('show');
+  document.getElementById(type + 'Modal').style.display = 'flex';
+}
+
+function hideModal() {
+  document.getElementById('modalOverlay').classList.remove('show');
+  S.modalItem = null;
+  S.modalType = null;
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById(tab + 'Panel').classList.add('active');
+}
+
+function showNewGameModal() {
+  // Populate schedule dropdown with all 552 games
+  const sel = document.getElementById('scheduleGamePicker');
+  sel.innerHTML = '<option value="">-- Select from BLB Schedule (552 games) --</option>';
+  ALL_SCHEDULE.forEach(g => {
+    const tracked = GAMES[g.gid] ? ' [TRACKED]' : '';
+    sel.innerHTML += `<option value="${g.gid}">${g.gid}: ${g.home} vs ${g.away} (${g.date})${tracked}</option>`;
+  });
+  
+  document.getElementById('newGameId').value = '';
+  document.getElementById('newGameDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('newHomeTeam').value = '';
+  document.getElementById('newAwayTeam').value = '';
+  document.getElementById('newHomeColor').value = '#667788';
+  document.getElementById('newAwayColor').value = '#9C47E4';
+  showModal('newGame');
+}
+
+function onScheduleGameSelect() {
+  const gid = document.getElementById('scheduleGamePicker').value;
+  if (!gid) return;
+  
+  const game = ALL_SCHEDULE.find(g => g.gid === gid);
+  if (game) {
+    document.getElementById('newGameId').value = game.gid;
+    document.getElementById('newGameDate').value = game.date;
+    document.getElementById('newHomeTeam').value = game.home;
+    document.getElementById('newAwayTeam').value = game.away;
+    document.getElementById('newHomeColor').value = game.homeColor || '#667788';
+    document.getElementById('newAwayColor').value = game.awayColor || '#9C47E4';
+  }
+}
+
+function createNewGame() {
+  const gid = document.getElementById('newGameId').value.trim();
+  if (!gid) { alert('Please enter a Game ID'); return; }
+  if (GAMES[gid]) { alert('Game ID already exists'); return; }
+  
+  GAMES[gid] = {
+    gid: gid,
+    date: document.getElementById('newGameDate').value,
+    homeTeam: document.getElementById('newHomeTeam').value || 'Home Team',
+    awayTeam: document.getElementById('newAwayTeam').value || 'Away Team',
+    homeColor: document.getElementById('newHomeColor').value,
+    awayColor: document.getElementById('newAwayColor').value,
+    homeRoster: [],
+    awayRoster: []
+  };
+  
+  populateGameDropdown();
+  document.getElementById('gameId').value = gid;
+  selectGame(gid);
+  hideModal();
+}
+
+// ========== EVENT/SHIFT DETAIL MODALS ==========
+function showEvtDetail(idx) {
+  const e = S.events.find(ev => ev.idx === idx);
+  if (!e) return;
+  S.modalItem = e;
+  S.modalType = 'event';
+  
+  document.getElementById('detailTitle').textContent = `Edit Event ${e.id}`;
+  
+  const typeOpts = Object.keys(ED).map(t => `<option ${e.type===t?'selected':''}>${t}</option>`).join('');
+  const d1Opts = (ED[e.type]?.d1 || []).map(d => `<option ${e.d1===d?'selected':''}>${d}</option>`).join('');
+  const d2Opts = (ED[e.type]?.d2 || []).map(d => `<option ${e.d2===d?'selected':''}>${d}</option>`).join('');
+  
+  const evtPlayerInputs = (e.evtPlayers || []).map((p, i) => {
+    const roster = S.roster[e.team] || [];
+    const opts = roster.map(r => `<option value="${r.n}" ${str(p.n)===str(r.n)?'selected':''}>${r.n} ${fmtName(r.name)}</option>`).join('');
+    return `<div class="edit-player">
+      <div style="display:flex;gap:4px;margin-bottom:4px">
+        <select id="editevtP${i}Num" style="flex:1"><option value="">--</option>${opts}</select>
+        <select id="editevtP${i}PD1"><option value="">PD1</option>${PD.d1.map(v=>`<option ${p.pd1===v?'selected':''}>${v}</option>`).join('')}</select>
+        <select id="editevtP${i}PD2"><option value="">PD2</option>${PD.d2.map(v=>`<option ${p.pd2===v?'selected':''}>${v}</option>`).join('')}</select>
+      </div>
+    </div>`;
+  }).join('');
+  
+  const oppPlayerInputs = (e.oppPlayers || []).map((p, i) => {
+    const oppTeam = e.team === 'home' ? 'away' : 'home';
+    const roster = S.roster[oppTeam] || [];
+    const opts = roster.map(r => `<option value="${r.n}" ${str(p.n)===str(r.n)?'selected':''}>${r.n} ${fmtName(r.name)}</option>`).join('');
+    return `<div class="edit-player opp">
+      <div style="display:flex;gap:4px;margin-bottom:4px">
+        <select id="editoppP${i}Num" style="flex:1"><option value="">--</option>${opts}</select>
+        <select id="editoppP${i}PD1"><option value="">PD1</option>${PD.d1.map(v=>`<option ${p.pd1===v?'selected':''}>${v}</option>`).join('')}</select>
+        <select id="editoppP${i}PD2"><option value="">PD2</option>${PD.d2.map(v=>`<option ${p.pd2===v?'selected':''}>${v}</option>`).join('')}</select>
+      </div>
+    </div>`;
+  }).join('');
+  
+  document.getElementById('detailBody').innerHTML = `
+    <div class="edit-section">
+      <h4>Event Info</h4>
+      <div class="form-row">
+        <div class="form-group"><label>Type</label><select id="editType" onchange="updateEditDetails()">${typeOpts}</select></div>
+        <div class="form-group"><label>Team</label><select id="editTeam"><option ${e.team==='home'?'selected':''}>home</option><option ${e.team==='away'?'selected':''}>away</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Detail 1</label><select id="editD1"><option value="">--</option>${d1Opts}</select></div>
+        <div class="form-group"><label>Detail 2</label><select id="editD2"><option value="">--</option>${d2Opts}</select></div>
+      </div>
+      <div class="form-row tri">
+        <div class="form-group"><label>Success</label><select id="editSucc"><option value="">--</option><option value="s" ${e.succ==='s'?'selected':''}>✓</option><option value="u" ${e.succ==='u'?'selected':''}>✗</option></select></div>
+        <div class="form-group"><label>Zone</label><select id="editZone"><option value="">--</option><option value="o" ${e.zone==='o'?'selected':''}>Off</option><option value="n" ${e.zone==='n'?'selected':''}>Neu</option><option value="d" ${e.zone==='d'?'selected':''}>Def</option></select></div>
+        <div class="form-group"><label>Period</label><select id="editPeriod"><option ${e.period==='1'?'selected':''}>1</option><option ${e.period==='2'?'selected':''}>2</option><option ${e.period==='3'?'selected':''}>3</option><option ${e.period==='OT'?'selected':''}>OT</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Start Time</label><input id="editClockS" class="time-input" value="${e.clockS||''}" oninput="formatTimeInput(this)"></div>
+        <div class="form-group"><label>End Time</label><input id="editClockE" class="time-input" value="${e.clockE||''}" oninput="formatTimeInput(this)"></div>
+      </div>
+    </div>
+    
+    <div class="edit-section">
+      <h4>Event Players</h4>
+      <div id="editEvtPlayers">${evtPlayerInputs || '<div style="color:var(--muted)">No players</div>'}</div>
+    </div>
+    
+    <div class="edit-section">
+      <h4>Opponent Players</h4>
+      <div id="editOppPlayers">${oppPlayerInputs || '<div style="color:var(--muted)">No players</div>'}</div>
+    </div>
+  `;
+  
+  showModal('detail');
+}
+
+function updateEditDetails() {
+  const type = document.getElementById('editType').value;
+  const d1Opts = (ED[type]?.d1 || []).map(d => `<option>${d}</option>`).join('');
+  const d2Opts = (ED[type]?.d2 || []).map(d => `<option>${d}</option>`).join('');
+  document.getElementById('editD1').innerHTML = '<option value="">--</option>' + d1Opts;
+  document.getElementById('editD2').innerHTML = '<option value="">--</option>' + d2Opts;
+}
+
+function saveEdit() {
+  const e = S.modalItem;
+  if (!e) return;
+  
+  e.type = document.getElementById('editType').value;
+  e.team = document.getElementById('editTeam').value;
+  e.d1 = document.getElementById('editD1').value;
+  e.d2 = document.getElementById('editD2').value;
+  e.succ = document.getElementById('editSucc').value || null;
+  e.zone = document.getElementById('editZone').value || null;
+  e.period = document.getElementById('editPeriod').value;
+  e.clockS = document.getElementById('editClockS').value;
+  e.clockE = document.getElementById('editClockE').value;
+  
+  // Event players
+  e.evtPlayers = [];
+  document.querySelectorAll('#editEvtPlayers .edit-player').forEach((el, i) => {
+    const num = document.getElementById(`editevtP${i}Num`)?.value;
+    if (num) {
+      const player = S.roster[e.team].find(p => str(p.n) === str(num));
+      e.evtPlayers.push({
+        n: str(num),
+        name: player?.name || '',
+        team: e.team,
+        role: 'evt_' + (i + 1),
+        xy: [],
+        pd1: document.getElementById(`editevtP${i}PD1`)?.value || '',
+        pd2: document.getElementById(`editevtP${i}PD2`)?.value || ''
+      });
+    }
+  });
+  
+  // Opp players
+  e.oppPlayers = [];
+  const oppTeam = e.team === 'home' ? 'away' : 'home';
+  document.querySelectorAll('#editOppPlayers .edit-player').forEach((el, i) => {
+    const num = document.getElementById(`editoppP${i}Num`)?.value;
+    if (num) {
+      const player = S.roster[oppTeam].find(p => str(p.n) === str(num));
+      e.oppPlayers.push({
+        n: str(num),
+        name: player?.name || '',
+        team: oppTeam,
+        role: 'opp_' + (i + 1),
+        xy: [],
+        pd1: document.getElementById(`editoppP${i}PD1`)?.value || '',
+        pd2: document.getElementById(`editoppP${i}PD2`)?.value || ''
+      });
+    }
+  });
+  
+  updateLists();
+  autoSave();
+  hideModal();
+}
+
+function deleteItem() {
+  if (!S.modalItem) return;
+  if (!confirm('Delete this item?')) return;
+  
+  const idx = S.events.findIndex(e => e.idx === S.modalItem.idx);
+  if (idx >= 0) S.events.splice(idx, 1);
+  
+  updateLists();
+  autoSave();
+  hideModal();
+}
+
+function showShiftDetail(idx) {
+  const s = S.shifts.find(sh => sh.idx === idx);
+  if (!s) return;
+  S.modalItem = s;
+  S.modalType = 'shift';
+  
+  document.getElementById('shiftEditTitle').textContent = `Edit Shift ${s.id}`;
+  
+  const slotInputs = (team, slots) => {
+    const roster = S.roster[team] || [];
+    return ['F1','F2','F3','D1','D2','G','X'].map(pos => {
+      // Use str() for comparison to handle number/string mismatch
+      const opts = roster.map(p => `<option value="${p.n}" ${str(slots[pos])===str(p.n)?'selected':''}>${p.n} ${fmtName(p.name)}</option>`).join('');
+      return `<div class="form-group" style="flex:1"><label>${pos}</label><select id="editShift${team}${pos}"><option value="">--</option>${opts}</select></div>`;
+    }).join('');
+  };
+  
+  document.getElementById('shiftEditBody').innerHTML = `
+    <div class="edit-section">
+      <h4>Shift Info</h4>
+      <div class="form-row">
+        <div class="form-group"><label>Start Time</label><input id="editShiftStart" class="time-input" value="${s.start||''}" oninput="formatTimeInput(this)"></div>
+        <div class="form-group"><label>End Time</label><input id="editShiftEnd" class="time-input" value="${s.end||''}" oninput="formatTimeInput(this)"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Start Type</label><select id="editShiftStartType">
+          <option ${s.startType==='OtherFaceoff'?'selected':''}>OtherFaceoff</option>
+          <option ${s.startType==='FaceoffAfterGoal'?'selected':''}>FaceoffAfterGoal</option>
+          <option ${s.startType==='PeriodStart'?'selected':''}>PeriodStart</option>
+          <option ${s.startType==='GameStart'?'selected':''}>GameStart</option>
+        </select></div>
+        <div class="form-group"><label>Stop Type</label><select id="editShiftStopType">
+          <option value="">--</option>
+          <option ${s.stopType==='Goalie_H'?'selected':''}>Goalie_H</option>
+          <option ${s.stopType==='Goalie_A'?'selected':''}>Goalie_A</option>
+          <option ${s.stopType==='Icing_H'?'selected':''}>Icing_H</option>
+          <option ${s.stopType==='Icing_A'?'selected':''}>Icing_A</option>
+          <option ${s.stopType==='Goal_H'?'selected':''}>Goal_H</option>
+          <option ${s.stopType==='Goal_A'?'selected':''}>Goal_A</option>
+          <option ${s.stopType==='Penalty'?'selected':''}>Penalty</option>
+          <option ${s.stopType==='Away Icing'?'selected':''}>Away Icing</option>
+          <option ${s.stopType==='Home Icing'?'selected':''}>Home Icing</option>
+        </select></div>
+      </div>
+    </div>
+    
+    <div class="edit-section">
+      <h4>Home Lineup</h4>
+      <div style="display:flex;gap:4px;flex-wrap:wrap">${slotInputs('home', s.homeSlots)}</div>
+    </div>
+    
+    <div class="edit-section">
+      <h4>Away Lineup</h4>
+      <div style="display:flex;gap:4px;flex-wrap:wrap">${slotInputs('away', s.awaySlots)}</div>
+    </div>
+    
+    <div style="font-size:10px;color:var(--muted);margin-top:12px">
+      Events in this shift: ${S.events.filter(e => e.shiftIdx === s.idx).length}
+    </div>
+  `;
+  
+  showModal('shiftEdit');
+}
+
+function saveShiftEdit() {
+  const s = S.modalItem;
+  if (!s) return;
+  
+  s.start = document.getElementById('editShiftStart').value;
+  s.end = document.getElementById('editShiftEnd').value;
+  s.startType = document.getElementById('editShiftStartType').value;
+  s.stopType = document.getElementById('editShiftStopType').value;
+  
+  ['F1','F2','F3','D1','D2','G','X'].forEach(pos => {
+    s.homeSlots[pos] = document.getElementById('editShifthome' + pos).value || '';
+    s.awaySlots[pos] = document.getElementById('editShiftaway' + pos).value || '';
+  });
+  
+  if (S.currShift && S.currShift.idx === s.idx) {
+    S.slots.home = {...s.homeSlots};
+    S.slots.away = {...s.awaySlots};
+    renderSlots();
+    renderRosterGrids();
+  }
+  
+  updateLists();
+  autoSave();
+  hideModal();
+}
+
+function deleteShift() {
+  if (!S.modalItem) return;
+  if (!confirm('Delete this shift and all its events?')) return;
+  
+  const shiftIdx = S.modalItem.idx;
+  S.shifts = S.shifts.filter(s => s.idx !== shiftIdx);
+  S.events = S.events.filter(e => e.shiftIdx !== shiftIdx);
+  
+  if (S.currShift?.idx === shiftIdx) {
+    S.currShift = S.shifts.length ? S.shifts[S.shifts.length - 1] : null;
+  }
+  
+  updateLists();
+  autoSave();
+  hideModal();
+}
+
+// ========== RESIZERS ==========
+function setupResizers() {
+  let active = null, startX = 0, startY = 0, startW = 0, startH = 0;
+  const leftP = document.getElementById('leftPanel');
+  const rightP = document.getElementById('rightPanel');
+  const vidA = document.getElementById('videoArea');
+  
+  document.getElementById('leftResizer').onmousedown = e => { active = 'left'; startX = e.clientX; startW = leftP.offsetWidth; };
+  document.getElementById('rightResizer').onmousedown = e => { active = 'right'; startX = e.clientX; startW = rightP.offsetWidth; };
+  document.getElementById('videoResizer').onmousedown = e => { active = 'vid'; startY = e.clientY; startH = vidA.offsetHeight; };
+  
+  document.onmousemove = e => {
+    if (!active) return;
+    if (active === 'left') leftP.style.width = Math.max(200, Math.min(400, startW + (e.clientX - startX))) + 'px';
+    else if (active === 'right') rightP.style.width = Math.max(250, Math.min(450, startW - (e.clientX - startX))) + 'px';
+    else if (active === 'vid') vidA.style.height = Math.max(80, Math.min(400, startH + (e.clientY - startY))) + 'px';
+  };
+  
+  document.onmouseup = () => { active = null; };
+}
+
+// ========== KEYBOARD ==========
+function setupKeys() {
+  document.onkeydown = e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+    const k = e.key.toLowerCase();
+    
+    if (e.ctrlKey && k >= '1' && k <= '9' && S.currShift) {
+      e.preventDefault();
+      const oppTeam = S.team === 'home' ? 'away' : 'home';
+      const slots = S.currShift[oppTeam + 'Slots'];
+      const nums = ['F1','F2','F3','D1','D2','G'].map(p => slots[p]).filter(Boolean);
+      if (nums[parseInt(k) - 1]) toggleOppPlayer(nums[parseInt(k) - 1], oppTeam);
+      return;
+    }
+    
+    if (k >= '1' && k <= '9' && !e.altKey && !e.ctrlKey && S.currShift) {
+      const slots = S.team === 'home' ? S.currShift.homeSlots : S.currShift.awaySlots;
+      const nums = ['F1','F2','F3','D1','D2','G'].map(p => slots[p]).filter(Boolean);
+      if (nums[parseInt(k) - 1]) { e.preventDefault(); toggleEvtPlayer(nums[parseInt(k) - 1], S.team); }
+      return;
+    }
+    
+    switch (k) {
+      case 's': if (!e.metaKey && !e.ctrlKey) { e.preventDefault(); qEvt('Shot'); } break;
+      case 'p': e.preventDefault(); qEvt('Pass'); break;
+      case 'f': e.preventDefault(); qEvt('Faceoff'); break;
+      case 'g': e.preventDefault(); qEvt('Goal'); break;
+      case 'z': if (!e.metaKey && !e.ctrlKey) { e.preventDefault(); qEvt('Zone'); } break;
+      case 't': e.preventDefault(); qEvt('Turnover'); break;
+      case 'o': e.preventDefault(); qEvt('Poss'); break;
+      case 'v': e.preventDefault(); qEvt('Save'); break;
+      case 'd': e.preventDefault(); qEvt('Dead'); break;
+      case 'x': e.preventDefault(); qEvt('Stop'); break;
+      case 'r': e.preventDefault(); qEvt('Rebound'); break;
+      case 'n': e.preventDefault(); qEvt('Penalty'); break;
+      case 'h': e.preventDefault(); setTeam('home'); break;
+      case 'a': e.preventDefault(); setTeam('away'); break;
+      case 'tab': e.preventDefault(); setTeam(S.team === 'home' ? 'away' : 'home'); break;
+      case '`': case '~': e.preventDefault(); setMode('puck', 1); break;
+      case 'q': e.preventDefault(); S.slot = 1; updateModeInd(); renderPlayerCards(); renderPuckXYBtns(); break;
+      case 'w': e.preventDefault(); S.slot = 2; updateModeInd(); renderPlayerCards(); renderPuckXYBtns(); break;
+      case 'e': if (!e.metaKey) { e.preventDefault(); S.slot = 3; updateModeInd(); renderPlayerCards(); renderPuckXYBtns(); } break;
+      case 'enter': e.preventDefault(); logEvt(); break;
+      case 'escape': e.preventDefault(); clearEvtForm(); hideModal(); break;
+      case '[': adjClock(-1); break;
+      case ']': adjClock(1); break;
+      case ' ': e.preventDefault(); togglePlay(); break;
+      case ',': frameStep(-1); break;
+      case '.': frameStep(1); break;
+    }
+    
+    if ((e.metaKey || e.ctrlKey) && k === 'z') { e.preventDefault(); undoEvt(); }
+    if (e.altKey && e.shiftKey && k === 's') { e.preventDefault(); logShift(); }
+  };
+}
+
+// ========== IMPORT/EXPORT ==========
+function startAutoSave() { setInterval(autoSave, 30000); }
+
+function autoSave() {
+  if (!S.gid) return;
+  localStorage.setItem('blb_' + S.gid, JSON.stringify({
+    events: S.events, shifts: S.shifts, hGoals: S.hGoals, aGoals: S.aGoals,
+    evtIdx: S.evtIdx, shiftIdx: S.shiftIdx, boxScores: S.boxScores
+  }));
+  document.getElementById('saveStatus').textContent = '💾' + new Date().toLocaleTimeString().slice(0,5);
+  
+  if (window.parent !== window) {
+    try { window.parent.postMessage({type: 'tracker_autosave', gid: S.gid}, '*'); } catch(e) {}
+  }
+}
+
+function loadStorage() {
+  if (!S.gid) return;
+  try {
+    const d = JSON.parse(localStorage.getItem('blb_' + S.gid));
+    if (d) {
+      S.events = d.events || [];
+      S.shifts = d.shifts || [];
+      S.hGoals = d.hGoals || 0;
+      S.aGoals = d.aGoals || 0;
+      S.evtIdx = d.evtIdx || 0;
+      S.shiftIdx = d.shiftIdx || 0;
+      S.boxScores = d.boxScores || {};
+      
+      if (S.shifts.length) {
+        S.currShift = S.shifts[S.shifts.length - 1];
+        S.slots.home = {...S.currShift.homeSlots};
+        S.slots.away = {...S.currShift.awaySlots};
+      }
+      
+      document.getElementById('hScore').textContent = S.hGoals;
+      document.getElementById('aScore').textContent = S.aGoals;
+      
+      renderSlots();
+      renderRosterGrids();
+      updateLists();
+      updateQuickAdd();
+    }
+  } catch (e) { console.error('Load error:', e); }
+}
+
+function downloadBackup() {
+  if (!S.gid) { alert('No game selected'); return; }
+  const d = {gid: S.gid, events: S.events, shifts: S.shifts, hGoals: S.hGoals, aGoals: S.aGoals, roster: S.roster, timestamp: new Date().toISOString()};
+  const blob = new Blob([JSON.stringify(d, null, 2)], {type: 'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `tracking_${S.gid}_backup.json`; a.click();
+}
+
+function exportJSON() {
+  const d = {gid: S.gid, events: S.events, shifts: S.shifts, hGoals: S.hGoals, aGoals: S.aGoals, roster: S.roster};
+  const blob = new Blob([JSON.stringify(d, null, 2)], {type: 'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `tracking_${S.gid}.json`; a.click();
+}
+
+function exportCSV(type) {
+  let csv = '';
+  if (type === 'events') {
+    csv = 'event_id,event_index,event_type,detail_1,detail_2,team,success,zone,clock_start,clock_end,shift_id,period,linked_event_id,player_number,player_role,play_detail1,play_detail2\n';
+    S.events.forEach(e => {
+      const allP = [...(e.evtPlayers||[]), ...(e.oppPlayers||[])];
+      if (!allP.length) {
+        csv += `${e.id},${e.idx},${e.type},${e.d1||''},${e.d2||''},${e.team},${e.succ||''},${e.zone||''},${e.clockS||''},${e.clockE||''},${e.shiftId||''},${e.period},${e.linkToId||''},,,,\n`;
+      } else {
+        allP.forEach(p => {
+          csv += `${e.id},${e.idx},${e.type},${e.d1||''},${e.d2||''},${e.team},${e.succ||''},${e.zone||''},${e.clockS||''},${e.clockE||''},${e.shiftId||''},${e.period},${e.linkToId||''},${p.n},${p.role},${p.pd1||''},${p.pd2||''}\n`;
+        });
+      }
+    });
+  } else {
+    csv = 'shift_id,shift_index,period,start,end,start_type,stop_type,home_f1,home_f2,home_f3,home_d1,home_d2,home_g,home_x,away_f1,away_f2,away_f3,away_d1,away_d2,away_g,away_x\n';
+    S.shifts.forEach(s => {
+      csv += `${s.id},${s.idx},${s.period},${s.start},${s.end},${s.startType||''},${s.stopType||''},${s.homeSlots.F1||''},${s.homeSlots.F2||''},${s.homeSlots.F3||''},${s.homeSlots.D1||''},${s.homeSlots.D2||''},${s.homeSlots.G||''},${s.homeSlots.X||''},${s.awaySlots.F1||''},${s.awaySlots.F2||''},${s.awaySlots.F3||''},${s.awaySlots.D1||''},${s.awaySlots.D2||''},${s.awaySlots.G||''},${s.awaySlots.X||''}\n`;
+    });
+  }
+  const blob = new Blob([csv], {type: 'text/csv'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${type}_${S.gid}.csv`; a.click();
+}
+
+function exportExcel() {
+  if (typeof XLSX === 'undefined') { alert('XLSX library not loaded'); return; }
+  
+  const wb = XLSX.utils.book_new();
+  
+  const evtData = S.events.flatMap(e => {
+    const allP = [...(e.evtPlayers||[]), ...(e.oppPlayers||[])];
+    if (!allP.length) return [{event_id:e.id,event_type:e.type,detail_1:e.d1,detail_2:e.d2,team:e.team,success:e.succ,zone:e.zone,clock_start:e.clockS,clock_end:e.clockE,shift_id:e.shiftId,period:e.period,linked_id:e.linkToId}];
+    return allP.map(p => ({event_id:e.id,event_type:e.type,detail_1:e.d1,detail_2:e.d2,team:e.team,success:e.succ,zone:e.zone,clock_start:e.clockS,clock_end:e.clockE,shift_id:e.shiftId,period:e.period,linked_id:e.linkToId,player_num:p.n,player_role:p.role,pd1:p.pd1,pd2:p.pd2}));
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(evtData), 'Events');
+  
+  const shiftData = S.shifts.map(s => ({shift_id:s.id,period:s.period,start:s.start,end:s.end,start_type:s.startType,stop_type:s.stopType,...Object.fromEntries(Object.entries(s.homeSlots).map(([k,v])=>['home_'+k.toLowerCase(),v])),...Object.fromEntries(Object.entries(s.awaySlots).map(([k,v])=>['away_'+k.toLowerCase(),v]))}));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(shiftData), 'Shifts');
+  
+  const rosterData = [...S.roster.home.map(p=>({...p,team:'home'})), ...S.roster.away.map(p=>({...p,team:'away'}))];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rosterData), 'Roster');
+  
+  XLSX.writeFile(wb, `tracking_${S.gid}.xlsx`);
+}
+
+function importJSON(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    try {
+      const d = JSON.parse(ev.target.result);
+      S.events = d.events || [];
+      S.shifts = d.shifts || [];
+      S.hGoals = d.hGoals || 0;
+      S.aGoals = d.aGoals || 0;
+      S.evtIdx = Math.max(...S.events.map(e => e.idx || 0), 0);
+      S.shiftIdx = Math.max(...S.shifts.map(s => s.idx || 0), 0);
+      if (S.shifts.length) S.currShift = S.shifts[S.shifts.length - 1];
+      document.getElementById('hScore').textContent = S.hGoals;
+      document.getElementById('aScore').textContent = S.aGoals;
+      updateLists();
+      updateQuickAdd();
+      alert('Imported successfully!');
+    } catch (err) { alert('Import error: ' + err.message); }
+  };
+  r.readAsText(f);
+}
+
+function importExcel(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  if (typeof XLSX === 'undefined') { alert('XLSX library not loaded'); return; }
+  
+  const fnMatch = f.name.match(/^(\d{5})_/);
+  if (fnMatch) {
+    const detectedGid = fnMatch[1];
+    if (GAMES[detectedGid]) {
+      S.gid = parseInt(detectedGid);
+      document.getElementById('gameId').value = detectedGid;
+    }
+  }
+  
+  const r = new FileReader();
+  r.onload = ev => {
+    try {
+      const wb = XLSX.read(ev.target.result, {type: 'array'});
+      parseExcelData(wb);
+      updateLists();
+      updateQuickAdd();
+      alert(`✅ Import successful!\n\n📊 Events: ${S.events.length}\n🔄 Shifts: ${S.shifts.length}`);
+    } catch (err) {
+      console.error('Import error:', err);
+      alert('❌ Import error: ' + err.message);
+    }
+  };
+  r.readAsArrayBuffer(f);
+}
+
+// Export function for admin portal integration
+function exportGameData() {
+  return {
+    gid: S.gid,
+    events: S.events,
+    shifts: S.shifts,
+    hGoals: S.hGoals,
+    aGoals: S.aGoals,
+    roster: S.roster,
+    boxScores: S.boxScores,
+    evtIdx: S.evtIdx,
+    shiftIdx: S.shiftIdx,
+    timestamp: new Date().toISOString()
+  };
+}
+
+window.exportGameData = exportGameData;
+
+// Initialize
+init();
+</script>
+</body>
+</html>

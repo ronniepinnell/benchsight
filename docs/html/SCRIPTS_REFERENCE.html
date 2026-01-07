@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scripts Reference - BenchSight</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --border: #30363d;
+  --text: #c9d1d9;
+  --muted: #8b949e;
+  --accent: #58a6ff;
+  --accent2: #3fb950;
+  --warn: #d29922;
+  --danger: #f85149;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  font-size: 14px;
+}
+.container { max-width: 1000px; margin: 0 auto; padding: 20px 40px; }
+header {
+  background: linear-gradient(135deg, #1a1f2e 0%, #0d1117 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 30px 0;
+}
+header h1 {
+  font-size: 28px;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+header p { color: var(--muted); }
+nav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+nav .container { display: flex; gap: 20px; flex-wrap: wrap; }
+nav a {
+  color: var(--muted);
+  text-decoration: none;
+  padding: 5px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+nav a:hover { color: var(--accent); background: rgba(88,166,255,0.1); }
+main { padding: 30px 0; }
+h2 {
+  color: var(--text);
+  font-size: 20px;
+  margin: 30px 0 15px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.script-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 15px 20px;
+  margin: 12px 0;
+}
+.script-card:hover { border-color: var(--accent); }
+.script-card h3 {
+  color: var(--accent);
+  font-size: 15px;
+  font-family: 'SF Mono', Consolas, monospace;
+  margin-bottom: 8px;
+}
+.script-card .path {
+  color: var(--muted);
+  font-size: 11px;
+  margin-bottom: 10px;
+  font-family: 'SF Mono', Consolas, monospace;
+}
+.script-card p { color: var(--text); font-size: 13px; margin-bottom: 10px; }
+.script-card .usage {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 10px 12px;
+  font-family: 'SF Mono', Consolas, monospace;
+  font-size: 12px;
+  overflow-x: auto;
+}
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+.badge.critical { background: var(--danger); color: #fff; }
+.badge.primary { background: var(--accent); color: #000; }
+.badge.util { background: var(--warn); color: #000; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 15px 0;
+  font-size: 13px;
+}
+th, td {
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  text-align: left;
+}
+th { background: var(--surface); color: var(--accent); }
+code {
+  font-family: 'SF Mono', Consolas, monospace;
+  background: var(--surface);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+.highlight {
+  background: rgba(88,166,255,0.1);
+  border-left: 3px solid var(--accent);
+  padding: 15px;
+  margin: 20px 0;
+  border-radius: 0 6px 6px 0;
+}
+footer {
+  border-top: 1px solid var(--border);
+  padding: 20px 0;
+  margin-top: 40px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1>📜 Scripts Reference</h1>
+    <p>Complete guide to all BenchSight automation scripts</p>
+  </div>
+</header>
+
+<nav>
+  <div class="container">
+    <a href="index.html">📊 Home</a>
+    <a href="tracker/index.html">🎮 Tracker</a>
+    <a href="tables.html">📋 Tables</a>
+    <a href="#delivery">🚀 Delivery</a>
+    <a href="#utilities">🔧 Utilities</a>
+    <a href="#validation">✓ Validation</a>
+  </div>
+</nav>
+
+<main>
+<div class="container">
+
+<div class="highlight">
+  <strong>🎯 Most Important Script:</strong> Always run <code>python scripts/pre_delivery.py</code> before creating any package.
+  This is the master pipeline that does everything.
+</div>
+
+<h2 id="delivery">🚀 Delivery & Verification Scripts</h2>
+
+<div class="script-card">
+  <h3>pre_delivery.py <span class="badge critical">CRITICAL</span></h3>
+  <div class="path">scripts/pre_delivery.py</div>
+  <p>Master pipeline that runs before every delivery. Does nuclear clean, runs ETL, verifies data, runs tests, bumps version, fixes docs, creates package.</p>
+  <div class="usage">python scripts/pre_delivery.py</div>
+</div>
+
+<div class="script-card">
+  <h3>bs_detector.py <span class="badge critical">CRITICAL</span></h3>
+  <div class="path">scripts/bs_detector.py</div>
+  <p>Detects broken outputs. Verifies table counts, goal counts, file integrity. Run this if you suspect something is wrong.</p>
+  <div class="usage">python scripts/bs_detector.py</div>
+</div>
+
+<div class="script-card">
+  <h3>verify_delivery.py <span class="badge primary">PRIMARY</span></h3>
+  <div class="path">scripts/utilities/verify_delivery.py</div>
+  <p>Final verification before accepting a package. Checks all requirements are met.</p>
+  <div class="usage">python scripts/utilities/verify_delivery.py</div>
+</div>
+
+<h2 id="utilities">🔧 Utility Scripts</h2>
+
+<div class="script-card">
+  <h3>doc_consistency.py <span class="badge util">UTIL</span></h3>
+  <div class="path">scripts/utilities/doc_consistency.py</div>
+  <p>Manages version numbers across all documentation. Auto-fixes inconsistencies.</p>
+  <div class="usage">
+# Check for issues
+python scripts/utilities/doc_consistency.py
+
+# Auto-fix all docs
+python scripts/utilities/doc_consistency.py --fix
+
+# Bump version (13.02 -> 13.03)
+python scripts/utilities/doc_consistency.py --bump
+
+# Start new chat (13.xx -> 14.01)
+python scripts/utilities/doc_consistency.py --new-chat
+  </div>
+</div>
+
+<div class="script-card">
+  <h3>doc_registry.py <span class="badge util">UTIL</span></h3>
+  <div class="path">scripts/utilities/doc_registry.py</div>
+  <p>Tracks documentation status. Auto-discovers tables, scripts, config files and checks if they're documented.</p>
+  <div class="usage">python scripts/utilities/doc_registry.py</div>
+</div>
+
+<div class="script-card">
+  <h3>fix_all_html_docs.py <span class="badge util">UTIL</span></h3>
+  <div class="path">scripts/utilities/fix_all_html_docs.py</div>
+  <p>Regenerates all HTML documentation with current stats, versions, and navigation.</p>
+  <div class="usage">python scripts/utilities/fix_all_html_docs.py</div>
+</div>
+
+<div class="script-card">
+  <h3>generate_enhanced_table_docs.py <span class="badge util">UTIL</span></h3>
+  <div class="path">scripts/utilities/generate_enhanced_table_docs.py</div>
+  <p>Creates individual HTML pages for each table with schema, sample data, and relationships.</p>
+  <div class="usage">python scripts/utilities/generate_enhanced_table_docs.py</div>
+</div>
+
+<div class="script-card">
+  <h3>generate_data_dictionary_complete.py <span class="badge util">UTIL</span></h3>
+  <div class="path">scripts/utilities/generate_data_dictionary_complete.py</div>
+  <p>Creates comprehensive data dictionary with all column definitions.</p>
+  <div class="usage">python scripts/utilities/generate_data_dictionary_complete.py</div>
+</div>
+
+<div class="script-card">
+  <h3>convert_docs_to_html.py <span class="badge util">UTIL</span></h3>
+  <div class="path">scripts/convert_docs_to_html.py</div>
+  <p>Converts markdown documentation to styled HTML.</p>
+  <div class="usage">python scripts/convert_docs_to_html.py</div>
+</div>
+
+<h2 id="validation">✓ Validation Scripts</h2>
+
+<div class="script-card">
+  <h3>validate_input.py <span class="badge primary">PRIMARY</span></h3>
+  <div class="path">scripts/utilities/validate_input.py</div>
+  <p>Validates input data before ETL processing. Checks required columns, data types, value ranges.</p>
+  <div class="usage">python scripts/utilities/validate_input.py data/raw/games/18977/18977_tracking.xlsx</div>
+</div>
+
+<div class="script-card">
+  <h3>schema_snapshot.py <span class="badge primary">PRIMARY</span></h3>
+  <div class="path">scripts/utilities/schema_snapshot.py</div>
+  <p>Creates and compares schema snapshots to detect unintended changes.</p>
+  <div class="usage">
+# Create snapshot
+python scripts/utilities/schema_snapshot.py --create
+
+# Compare to baseline
+python scripts/utilities/schema_snapshot.py --compare
+  </div>
+</div>
+
+<div class="script-card">
+  <h3>validate_dimensions_detailed.py <span class="badge util">UTIL</span></h3>
+  <div class="path">scripts/validate_dimensions_detailed.py</div>
+  <p>Validates dimension tables have proper foreign key relationships.</p>
+  <div class="usage">python scripts/validate_dimensions_detailed.py</div>
+</div>
+
+<div class="script-card">
+  <h3>scrape_noradhockey.py <span class="badge util">UTIL</span></h3>
+  <div class="path">scripts/utilities/scrape_noradhockey.py</div>
+  <p>Scrapes official goal data from noradhockey.com for validation.</p>
+  <div class="usage">python scripts/utilities/scrape_noradhockey.py</div>
+</div>
+
+<h2 id="etl">⚙️ ETL Scripts</h2>
+
+<div class="script-card">
+  <h3>etl_orchestrator.py <span class="badge critical">CRITICAL</span></h3>
+  <div class="path">src/etl_orchestrator.py</div>
+  <p>Main ETL orchestrator. Runs all table builds in correct order.</p>
+  <div class="usage">
+# Full ETL
+python -m src.etl_orchestrator full
+
+# Incremental (specific games)
+python -m src.etl_orchestrator incremental --games 18977 18981
+
+# Single table
+python -m src.etl_orchestrator table fact_events
+  </div>
+</div>
+
+<div class="script-card">
+  <h3>create_player_season_stats.py <span class="badge util">UTIL</span></h3>
+  <div class="path">scripts/create_player_season_stats.py</div>
+  <p>Aggregates player game stats into season totals.</p>
+  <div class="usage">python scripts/create_player_season_stats.py</div>
+</div>
+
+<div class="script-card">
+  <h3>enhance_player_game_stats.py <span class="badge util">UTIL</span></h3>
+  <div class="path">scripts/enhance_player_game_stats.py</div>
+  <p>Adds advanced metrics to player game stats.</p>
+  <div class="usage">python scripts/enhance_player_game_stats.py</div>
+</div>
+
+<div class="script-card">
+  <h3>enhance_team_game_stats.py <span class="badge util">UTIL</span></h3>
+  <div class="path">scripts/enhance_team_game_stats.py</div>
+  <p>Adds advanced metrics to team game stats.</p>
+  <div class="usage">python scripts/enhance_team_game_stats.py</div>
+</div>
+
+<h2>📋 Quick Reference</h2>
+
+<table>
+  <tr>
+    <th>Task</th>
+    <th>Command</th>
+  </tr>
+  <tr>
+    <td>Create delivery package</td>
+    <td><code>python scripts/pre_delivery.py</code></td>
+  </tr>
+  <tr>
+    <td>Verify package</td>
+    <td><code>python scripts/utilities/verify_delivery.py</code></td>
+  </tr>
+  <tr>
+    <td>Run full ETL</td>
+    <td><code>python -m src.etl_orchestrator full</code></td>
+  </tr>
+  <tr>
+    <td>Check goal counts</td>
+    <td><code>python scripts/bs_detector.py</code></td>
+  </tr>
+  <tr>
+    <td>Bump version</td>
+    <td><code>python scripts/utilities/doc_consistency.py --bump</code></td>
+  </tr>
+  <tr>
+    <td>Fix all docs</td>
+    <td><code>python scripts/utilities/doc_consistency.py --fix</code></td>
+  </tr>
+  <tr>
+    <td>New chat session</td>
+    <td><code>python scripts/utilities/doc_consistency.py --new-chat</code></td>
+  </tr>
+  <tr>
+    <td>Regenerate HTML</td>
+    <td><code>python scripts/utilities/fix_all_html_docs.py</code></td>
+  </tr>
+  <tr>
+    <td>Run tests</td>
+    <td><code>python -m pytest tests/test_etl.py -v</code></td>
+  </tr>
+</table>
+
+<h2>📁 Directory Structure</h2>
+
+<pre style="background: var(--surface); padding: 15px; border-radius: 6px; font-size: 12px;">
+scripts/
+├── pre_delivery.py          # Master pipeline (RUN THIS)
+├── bs_detector.py            # Verification
+├── convert_docs_to_html.py   # Doc conversion
+├── create_player_season_stats.py
+├── enhance_player_game_stats.py
+├── enhance_team_game_stats.py
+├── validate_dimensions_detailed.py
+└── utilities/
+    ├── doc_consistency.py    # Version management
+    ├── doc_registry.py       # Doc tracking
+    ├── doc_sync.py           # Doc syncing
+    ├── fix_all_html_docs.py  # HTML generation
+    ├── generate_data_dictionary_complete.py
+    ├── generate_enhanced_table_docs.py
+    ├── md_to_html.py
+    ├── schema_snapshot.py    # Schema tracking
+    ├── scrape_noradhockey.py # NORAD scraping
+    ├── update_all_html_docs.py
+    ├── validate_input.py     # Input validation
+    └── verify_delivery.py    # Final check
+</pre>
+
+</div>
+</main>
+
+<footer>
+  <div class="container">
+    BenchSight Scripts Reference • v14.01 • January 7, 2026
+  </div>
+</footer>
+
+</body>
+</html>

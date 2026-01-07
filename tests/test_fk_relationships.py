@@ -44,7 +44,7 @@ class TestPlayerForeignKeys:
     
     def test_events_player_player_exists(self):
         """Verify player_ids in events_player exist in dim_player."""
-        events = pd.read_csv(OUTPUT_DIR / "fact_events_player.csv", dtype=str)
+        events = pd.read_csv(OUTPUT_DIR / "fact_event_players.csv", dtype=str)
         dim_player = pd.read_csv(OUTPUT_DIR / "dim_player.csv", dtype=str)
         
         valid_players = set(dim_player['player_id'].dropna())
@@ -58,7 +58,7 @@ class TestPlayerForeignKeys:
     
     def test_shifts_player_player_exists(self):
         """Verify player_ids in shifts_player exist in dim_player."""
-        shifts = pd.read_csv(OUTPUT_DIR / "fact_shifts_player.csv", dtype=str)
+        shifts = pd.read_csv(OUTPUT_DIR / "fact_shift_players.csv", dtype=str)
         dim_player = pd.read_csv(OUTPUT_DIR / "dim_player.csv", dtype=str)
         
         valid_players = set(dim_player['player_id'].dropna())
@@ -173,7 +173,7 @@ class TestVenueForeignKeys:
     
     def test_shifts_have_valid_venue(self):
         """Verify venue values in shifts are valid."""
-        shifts = pd.read_csv(OUTPUT_DIR / "fact_shifts_player.csv", dtype=str)
+        shifts = pd.read_csv(OUTPUT_DIR / "fact_shift_players.csv", dtype=str)
         
         if 'venue' in shifts.columns:
             valid_venues = {'home', 'away', 'Home', 'Away'}
@@ -205,7 +205,7 @@ class TestCrossTableConsistency:
     def test_event_player_references_events(self):
         """Verify events_player references valid events."""
         events = pd.read_csv(OUTPUT_DIR / "fact_events.csv", dtype=str)
-        events_player = pd.read_csv(OUTPUT_DIR / "fact_events_player.csv", dtype=str)
+        events_player = pd.read_csv(OUTPUT_DIR / "fact_event_players.csv", dtype=str)
         
         # Create event identifiers
         events['event_key'] = events['game_id'].astype(str) + '_' + events['event_index'].astype(str)
@@ -226,7 +226,7 @@ class TestCrossTableConsistency:
             pytest.skip("fact_shifts.csv not found")
         
         shifts = pd.read_csv(OUTPUT_DIR / "fact_shifts.csv", dtype=str)
-        shifts_player = pd.read_csv(OUTPUT_DIR / "fact_shifts_player.csv", dtype=str)
+        shifts_player = pd.read_csv(OUTPUT_DIR / "fact_shift_players.csv", dtype=str)
         
         if 'shift_index' in shifts.columns and 'shift_index' in shifts_player.columns:
             shifts['shift_key'] = shifts['game_id'].astype(str) + '_' + shifts['shift_index'].astype(str)
@@ -251,7 +251,7 @@ class TestReferentialCompleteness:
         
         all_players = set()
         
-        for table_name in ['fact_gameroster', 'fact_player_game_stats', 'fact_events_player']:
+        for table_name in ['fact_gameroster', 'fact_player_game_stats', 'fact_event_players']:
             table_path = OUTPUT_DIR / f"{table_name}.csv"
             if table_path.exists():
                 df = pd.read_csv(table_path, dtype=str)

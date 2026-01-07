@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>TABLE LOGIC SHIFTS</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+               max-width: 1200px; margin: 0 auto; padding: 20px; line-height: 1.6; }
+        h1 { color: #1a1a2e; border-bottom: 2px solid #4a4a8a; padding-bottom: 10px; }
+        h2 { color: #2a2a4e; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 30px; }
+        h3 { color: #3a3a5e; }
+        table { border-collapse: collapse; width: 100%; margin: 15px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #4a4a8a; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: 'Consolas', monospace; }
+        pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        pre code { background: transparent; color: inherit; }
+        a { color: #4a4a8a; }
+        .nav { background: #f0f0f0; padding: 10px; margin-bottom: 20px; border-radius: 5px; }
+        .nav a { margin-right: 15px; }
+    </style>
+</head>
+<body>
+
+<!-- ================================================================== -->
+<!-- CHANGELOG - MUST BE UPDATED WITH EVERY MODIFICATION -->
+<!-- ================================================================== -->
+<!--
+CHANGELOG:
+---------------------------------------------------------------------------
+2026-01-06 v8.0.5:
+  - CRITICAL FIX: Restored 4 missing src/advanced/ modules:
+    * create_additional_tables.py
+    * enhance_all_stats.py
+    * final_stats_enhancement.py
+    * extended_tables.py
+  - Created fact_events_player.csv (7,476 rows)
+  - Extended tables now run: +15 tables created
+  - Table count: 131 (54 dim, 73 fact, 3 QA, 1 other)
+  - Added comprehensive code audit documentation
+  - Fixed column name mismatches (Type -> event_type)
+
+2026-01-06 v8.0.4:
+  - CRITICAL: Recovered 72 missing tables from v7 backup
+  - Table count restored from 53 to 130
+  - Created 4 new outcome dimension tables
+  - Regenerated ERD with all tables
+  - Added table integrity tests
+
+2026-01-05 v8.0.0:
+  - Major schema expansion: 96 -> 111 tables planned
+  - Added 317 player metrics
+  - Created comprehensive foreign key relationships
+  - Added QA validation tables
+
+RULES FOR UPDATING THIS CHANGELOG:
+1. ALWAYS add entry BEFORE making changes
+2. Include: date, version, what changed, table counts
+3. Never delete old entries
+4. Be specific about what was added/changed/removed
+---------------------------------------------------------------------------
+-->
+
+<div class="nav">
+    <a href="index.html">Home</a>
+    <a href="DATA_DICTIONARY.html">Data Dictionary</a>
+    <a href="LLM_HANDOFF.html">LLM Handoff</a>
+    <a href="TABLE_LOGIC_EVENTS.html">Events Logic</a>
+    <a href="TABLE_LOGIC_SHIFTS.html">Shifts Logic</a>
+    <a href="TABLE_LOGIC_RATINGS.html">Ratings Logic</a>
+    <a href="CHANGELOG.html">Changelog</a>
+</div>
+<p><h1>Shift Tables - Logic & Documentation</h1></p>
+<p><strong>Last Updated:</strong> January 7, 2026<strong>Version:</strong> 12.03</p>
+<p>---</p>
+<p><h2>Overview</h2></p>
+<p>Shift tables track player on-ice time during games. The hierarchy flows from wide (one row per shift) to player-level (one row per player per shift) to aggregated summaries.</p>
+<p>---</p>
+<p><h2>Table Hierarchy</h2></p>
+<p><pre><code>Raw Excel (shifts sheet)
+    │
+    ├── fact_shifts (398 rows, 24 cols) - Raw shift record
+    │
+    └── fact_shifts (398 rows, 137 cols) - Enhanced wide format
+            │
+            │ Unpivot 14 player slots
+            ▼
+        fact_shift_players (4,559 rows, 80 cols) - Player × Shift
+            │
+            │ Group by player + logical shift
+            ▼
+        fact_shift_quality (1,014 rows, 55 cols) - Logical shift aggregation
+            │
+            │ Aggregate to player-game
+            ▼
+        fact_shift_quality_logical (105 rows, 55 cols) - Player-game summary</code></pre></p>
+<p>---</p>
+<p><h2>fact_shifts (398 rows, 24 cols)</h2></p>
+<p><h3>WHY: Preserve original raw data from tracking Excel</h3></p>
+<p><h3>HOW: Direct extraction from shifts sheet</h3></p>
+<p><h3>GRAIN: One row per SHIFT (stoppage-to-stoppage)</h3></p>
+<p>---</p>
+<p><h2>fact_shifts (398 rows, 137 cols)</h2></p>
+<p><h3>WHY: Comprehensive shift analysis with all derived metrics</h3></p>
+<p><h3>HOW: See detailed documentation in previous section</h3></p>
+<p><h3>KEY ENHANCEMENTS:</h3>
+- 14 player ID columns (FK to dim_player)
+- 30 plus/minus columns (5 types × 2 teams × 3 metrics)
+- 21 shift stat columns (Corsi, Fenwick, chances, etc.)
+- Derived start/stop types with 'OnTheFly'
+- Zone derivation from events</p>
+<p><h3>GRAIN: One row per SHIFT</h3></p>
+<p>---</p>
+<p><h2>fact_shift_players (4,559 rows, 80 cols) - <strong>CONSOLIDATED</strong></h2></p>
+<p><h3>WHY: Player-level view of shifts with all enhanced metrics</h3></p>
+<p><h3>HOW:</h3>
+1. Unpivot fact_shifts (14 player slots → rows)
+2. Carry forward all plus/minus and shift stats from team perspective
+3. Calculate logical shift tracking (consecutive ice time)
+4. Add cumulative stats (running_toi)</p>
+<p><h3>KEY COLUMNS (80 total):</h3></p>
+<p><strong>Keys & Player (11):</strong>
+<table>
+<tr><th>Column</th><th>Description</th></tr>
+<tr><td>shift_player_key</td><td>PK: SP{game}{shift_idx}{venue}{position}</td></tr>
+<tr><td>shift_key</td><td>FK to fact_shifts</td></tr>
+<tr><td>player_id</td><td>FK to dim_player</td></tr>
+<tr><td>player_name</td><td>From dim_player</td></tr>
+<tr><td>player_number</td><td>Jersey number</td></tr>
+<tr><td>venue</td><td>'home' or 'away'</td></tr>
+<tr><td>slot</td><td>forward_1, defense_2, goalie, etc.</td></tr>
+<tr><td>position</td><td>Abbreviated: F1, D1, G, X</td></tr>
+</table></p>
+<p><strong>Team Context (4):</strong>
+<table>
+<tr><th>Column</th><th>Description</th></tr>
+<tr><td>team_name, team_id</td><td>Player's team</td></tr>
+<tr><td>opp_team_name, opp_team_id</td><td>Opponent team</td></tr>
+</table></p>
+<p><strong>Time & Tracking (11):</strong>
+<table>
+<tr><th>Column</th><th>Description</th></tr>
+<tr><td>shift_duration</td><td>Duration in seconds</td></tr>
+<tr><td>logical_shift_number</td><td>Continuous ice time segment number</td></tr>
+<tr><td>shift_segment</td><td>Segment within logical shift (1, 2, 3...)</td></tr>
+<tr><td>cumulative_shift_duration</td><td>Running total for player in game</td></tr>
+<tr><td>running_toi</td><td>Same as cumulative_shift_duration</td></tr>
+</table></p>
+<p><strong>Strength & Situation (8):</strong>
+<table>
+<tr><th>Column</th><th>Description</th></tr>
+<tr><td>strength, strength_id</td><td>5v5, 5v4, etc.</td></tr>
+<tr><td>situation, situation_id</td><td>Full Strength, PowerPlay, etc.</td></tr>
+<tr><td>team_pp, team_pk</td><td>Player's team on PP/PK</td></tr>
+<tr><td>team_en, opp_en</td><td>Empty net flags</td></tr>
+</table></p>
+<p><strong>Zones (4):</strong>
+<table>
+<tr><th>Column</th><th>Description</th></tr>
+<tr><td>start_zone, start_zone_id</td><td>Zone at shift start</td></tr>
+<tr><td>end_zone, end_zone_id</td><td>Zone at shift end</td></tr>
+</table></p>
+<p><strong>Plus/Minus - 5 Types (15):</strong>
+<table>
+<tr><th>Type</th><th>Columns</th><th>Description</th></tr>
+<tr><td>all</td><td>gf_all, ga_all, pm_all</td><td>All situations</td></tr>
+<tr><td>ev</td><td>gf_ev, ga_ev, pm_ev</td><td>Even strength (5v5)</td></tr>
+<tr><td>nen</td><td>gf_nen, ga_nen, pm_nen</td><td>No empty net</td></tr>
+<tr><td>pp</td><td>gf_pp, ga_pp, pm_pp</td><td>Power play</td></tr>
+<tr><td>pk</td><td>gf_pk, ga_pk, pm_pk</td><td>Penalty kill</td></tr>
+</table></p>
+<p><strong>Shift Stats (21):</strong>
+<table>
+<tr><th>Category</th><th>Columns</th></tr>
+<tr><td>Shots</td><td>sf, sa, shot_diff</td></tr>
+<tr><td>Corsi</td><td>cf, ca, cf_pct</td></tr>
+<tr><td>Fenwick</td><td>ff, fa, ff_pct</td></tr>
+<tr><td>Chances</td><td>scf, sca, hdf, hda</td></tr>
+<tr><td>Zone</td><td>zone_entries, zone_exits</td></tr>
+<tr><td>Turnovers</td><td>giveaways, takeaways</td></tr>
+<tr><td>Faceoffs</td><td>fo_won, fo_lost, fo_pct</td></tr>
+<tr><td>Events</td><td>event_count</td></tr>
+</table></p>
+<p><h3>GRAIN: One row per PLAYER per SHIFT</h3></p>
+<p><h3>CALCULATION - Logical Shift:</h3>
+<pre><code><h1>A logical shift = continuous ice time (player stays on through stoppages)</h1>
+<h1>If player is on shift N and shift N+1, same logical shift</h1>
+<h1>If player is NOT on shift N+1, new logical shift</h1></p>
+<p>player_shifts.sort(['game_id', 'player_id', 'shift_index'])
+is_new_logical = (shift_index != prev_shift_index + 1)
+logical_shift_number = cumsum(is_new_logical)</code></pre></p>
+<p>---</p>
+<p><h2>fact_shift_quality (1,014 rows, 55 cols)</h2></p>
+<p><h3>WHY: Aggregate metrics per logical shift (continuous ice time)</h3></p>
+<p><h3>HOW:</h3>
+1. Group fact_shift_players by (game, player, logical_shift_number)
+2. Sum durations and stats across segments
+3. Calculate quality score</p>
+<p><h3>KEY COLUMNS:</h3></p>
+<p><strong>Aggregations:</strong>
+<table>
+<tr><th>Column</th><th>Calculation</th></tr>
+<tr><td>num_segments</td><td>COUNT of shift segments in logical shift</td></tr>
+<tr><td>shift_duration</td><td>SUM of segment durations</td></tr>
+<tr><td>All plus/minus cols</td><td>SUM across segments</td></tr>
+<tr><td>All stat cols</td><td>SUM across segments</td></tr>
+</table></p>
+<p><strong>Derived:</strong>
+<table>
+<tr><th>Column</th><th>Calculation</th></tr>
+<tr><td>duration_category</td><td>short (<30s), medium (30-60), long (60-90), extra_long (>90)</td></tr>
+<tr><td>quality_score</td><td>Composite: 30% CF% + goals impact + chances impact</td></tr>
+<tr><td>tier_id</td><td>T01 (Elite) to T05 (Poor) based on quality_score</td></tr>
+</table></p>
+<p><h3>GRAIN: One row per PLAYER per LOGICAL SHIFT</h3></p>
+<p><h3>QUALITY SCORE FORMULA:</h3>
+<pre><code>quality_score = (
+    cf_pct * 0.3 +
+    gf_all * 20 - ga_all * 20 +
+    hdf * 10 - hda * 10 +
+    50  # baseline
+).clip(0, 100)</code></pre></p>
+<p>---</p>
+<p><h2>fact_shift_quality_logical (105 rows, 55 cols)</h2></p>
+<p><h3>WHY: Player-game summary for shift quality analysis</h3></p>
+<p><h3>HOW:</h3>
+1. Group fact_shift_quality by (game, player)
+2. Sum all counting stats
+3. Calculate per-shift and per-60 rates</p>
+<p><h3>KEY COLUMNS:</h3></p>
+<p><strong>Totals:</strong>
+<table>
+<tr><th>Column</th><th>Description</th></tr>
+<tr><td>logical_shifts</td><td>Total logical shifts in game</td></tr>
+<tr><td>total_segments</td><td>Total raw shift segments</td></tr>
+<tr><td>toi_seconds</td><td>Total time on ice</td></tr>
+<tr><td>toi_minutes</td><td>toi_seconds / 60</td></tr>
+<tr><td>avg_shift_duration</td><td>Mean shift length</td></tr>
+</table></p>
+<p><strong>Per-Shift Rates:</strong>
+<table>
+<tr><th>Column</th><th>Calculation</th></tr>
+<tr><td>gf_per_shift</td><td>gf_all / logical_shifts</td></tr>
+<tr><td>cf_per_shift</td><td>cf / logical_shifts</td></tr>
+<tr><td>scf_per_shift</td><td>scf / logical_shifts</td></tr>
+<tr><td>hdf_per_shift</td><td>hdf / logical_shifts</td></tr>
+</table></p>
+<p><strong>Per-60 Rates:</strong>
+<table>
+<tr><th>Column</th><th>Calculation</th></tr>
+<tr><td>gf_per_60</td><td>gf_all / toi_minutes * 60</td></tr>
+<tr><td>cf_per_60</td><td>cf / toi_minutes * 60</td></tr>
+<tr><td>scf_per_60</td><td>scf / toi_minutes * 60</td></tr>
+</table></p>
+<p><h3>GRAIN: One row per PLAYER per GAME</h3></p>
+<p>---</p>
+<p><h2>Removed Tables (Consolidated)</h2></p>
+<p>The following tables were <strong>removed</strong> as redundant:
+- <code>fact_shifts_long</code> → Absorbed into <code>fact_shift_players</code>
+- <code>fact_shift_players</code> → Absorbed into <code>fact_shift_players</code></p>
+<p><strong>Reasons:</strong>
+1. ~80% column overlap
+2. Inconsistent shift key formats
+3. Different game coverage
+4. No clear single source of truth</p>
+<p>---</p>
+<p><h2>FK Relationships</h2></p>
+<p><pre><code>fact_shifts
+    ├── game_id → dim_schedule
+    ├── season_id → dim_season
+    ├── period_id → dim_period
+    ├── {slot}_id → dim_player (14 columns)
+    ├── strength_id → dim_strength
+    ├── situation_id → dim_situation
+    └── time_bucket_id → dim_time_bucket</p>
+<p>fact_shift_players
+    ├── shift_key → fact_shifts
+    ├── player_id → dim_player
+    ├── team_id → dim_team
+    ├── period_id → dim_period
+    ├── strength_id → dim_strength
+    └── situation_id → dim_situation</p>
+<p>fact_shift_quality
+    ├── player_id → dim_player
+    ├── team_id → dim_team
+    └── tier_id → dim_shift_quality_tier</p>
+<p>fact_shift_quality_logical
+    ├── player_id → dim_player
+    └── team_id → dim_team</code></pre></p>
+<p>---</p>
+<p><h2>Data Flow Summary</h2></p>
+<p><pre><code>fact_shifts (398 shifts, 137 cols)
+    │
+    │ Unpivot: 14 slots × ~398 shifts = ~4,559 rows
+    │ Add: logical shift tracking, cumulative TOI
+    ▼
+fact_shift_players (4,559 rows, 80 cols)
+    │
+    │ Group by: player + logical_shift
+    │ Aggregate: sum durations and stats
+    │ Add: quality_score, tier
+    ▼
+fact_shift_quality (1,014 logical shifts, 55 cols)
+    │
+    │ Group by: player + game
+    │ Aggregate: sum all stats
+    │ Add: per-shift rates, per-60 rates
+    ▼
+fact_shift_quality_logical (105 player-games, 55 cols)</code></pre>
+</p>
+</body>
+</html>

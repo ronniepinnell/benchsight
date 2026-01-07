@@ -1,0 +1,6 @@
+matchup_id,matchup_name,min_diff,max_diff
+RM01,Dominated,-999.0,-1.5
+RM02,Disadvantage,-1.5,-0.5
+RM03,Even,-0.5,0.5
+RM04,Advantage,0.5,1.5
+RM05,Dominant,1.5,999.0

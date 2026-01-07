@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>SUPABASE DEPLOYMENT</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+               max-width: 1200px; margin: 0 auto; padding: 20px; line-height: 1.6; }
+        h1 { color: #1a1a2e; border-bottom: 2px solid #4a4a8a; padding-bottom: 10px; }
+        h2 { color: #2a2a4e; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 30px; }
+        h3 { color: #3a3a5e; }
+        table { border-collapse: collapse; width: 100%; margin: 15px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #4a4a8a; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: 'Consolas', monospace; }
+        pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        pre code { background: transparent; color: inherit; }
+        a { color: #4a4a8a; }
+        .nav { background: #f0f0f0; padding: 10px; margin-bottom: 20px; border-radius: 5px; }
+        .nav a { margin-right: 15px; }
+    </style>
+</head>
+<body>
+<div style="background:#f0f0f0;padding:10px;margin-bottom:20px;border-bottom:1px solid #ccc;">
+<strong>Last Updated:</strong> January 7, 2026| <strong>Version:</strong> 12.03
+</div>
+
+<!-- ================================================================== -->
+<!-- CHANGELOG - MUST BE UPDATED WITH EVERY MODIFICATION -->
+<!-- ================================================================== -->
+<!--
+CHANGELOG:
+---------------------------------------------------------------------------
+2026-01-06 v8.0.5:
+  - CRITICAL FIX: Restored 4 missing src/advanced/ modules:
+    * create_additional_tables.py
+    * enhance_all_stats.py
+    * final_stats_enhancement.py
+    * extended_tables.py
+  - Created fact_events_player.csv (7,476 rows)
+  - Extended tables now run: +15 tables created
+  - Table count: 131 (54 dim, 73 fact, 3 QA, 1 other)
+  - Added comprehensive code audit documentation
+  - Fixed column name mismatches (Type -> event_type)
+
+2026-01-06 v8.0.4:
+  - CRITICAL: Recovered 72 missing tables from v7 backup
+  - Table count restored from 53 to 130
+  - Created 4 new outcome dimension tables
+  - Regenerated ERD with all tables
+  - Added table integrity tests
+
+2026-01-05 v8.0.0:
+  - Major schema expansion: 96 -> 111 tables planned
+  - Added 317 player metrics
+  - Created comprehensive foreign key relationships
+  - Added QA validation tables
+
+RULES FOR UPDATING THIS CHANGELOG:
+1. ALWAYS add entry BEFORE making changes
+2. Include: date, version, what changed, table counts
+3. Never delete old entries
+4. Be specific about what was added/changed/removed
+---------------------------------------------------------------------------
+-->
+
+<div class="nav">
+    <a href="index.html">Home</a>
+    <a href="DATA_DICTIONARY.html">Data Dictionary</a>
+    <a href="LLM_HANDOFF.html">LLM Handoff</a>
+    <a href="TABLE_LOGIC_EVENTS.html">Events Logic</a>
+    <a href="TABLE_LOGIC_SHIFTS.html">Shifts Logic</a>
+    <a href="TABLE_LOGIC_RATINGS.html">Ratings Logic</a>
+    <a href="CHANGELOG.html">Changelog</a>
+</div>
+<p><h1>🚀 BenchSight Supabase Deployment Guide</h1></p>
+<p><h2>Complete Instructions for Database Deployment</h2></p>
+<p>---</p>
+<p><h2>Prerequisites</h2></p>
+<p>1. <strong>Python packages:</strong>
+   <pre><code>   pip install supabase pandas
+   ``<code></p>
+<p>2. <strong>Supabase project:</strong>
+   - Go to https://supabase.com
+   - Create a new project
+   - Note your Project URL and anon key (Settings > API)</p>
+<p>3. <strong>Local data:</strong>
+   - Run full ETL first: </code>python etl.py && python src/etl_orchestrator.py --all<code>
+   - Verify CSVs exist in </code>data/output/<code></p>
+<p>---</p>
+<p><h2>Step 1: Configure Credentials</h2></p>
+<p><h3>Option A: Environment Variables</h3></code></pre>bash
+export SUPABASE_URL="https://your-project.supabase.co"
+export SUPABASE_KEY="your-anon-key"
+<pre><code>
+<h3>Option B: Config File</h3>
+Edit </code>config/config_local.ini<code>:</code></pre>ini
+[supabase]
+url = https://your-project.supabase.co
+key = your-anon-key
+<pre><code>
+---</p>
+<p><h2>Step 2: Test Connection</h2>
+</code></pre>bash
+python scripts/supabase_test_connection.py
+<pre><code>
+Expected output:</code></pre>
+✓ supabase package installed
+✓ Credentials loaded
+✓ Client created successfully
+✓ Connection is working!
+<pre><code>
+---</p>
+<p><h2>Step 3: Choose Your Deployment Method</h2></p>
+<p><h3>Method A: Full Rebuild (Recommended for First Time)</h3>
+Drops all tables, recreates schema, uploads all data:</code></pre>bash
+python scripts/supabase_loader.py --rebuild
+<pre><code>
+<h3>Method B: Create Tables Only</h3>
+Create schema without uploading data:</code></pre>bash
+python scripts/supabase_loader.py --create-only
+<pre><code>
+<h3>Method C: Upload All Data</h3>
+Upload all tables (tables must exist):</code></pre>bash
+python scripts/supabase_loader.py --all
+<pre><code>
+<h3>Method D: Upload Specific Tables</h3></code></pre>bash
+<h1>Only dimension tables</h1>
+python scripts/supabase_loader.py --dims</p>
+<p><h1>Only fact tables</h1>
+python scripts/supabase_loader.py --facts</p>
+<p><h1>Specific tables</h1>
+python scripts/supabase_loader.py --tables dim_player,dim_team,fact_player_game_stats
+<pre><code>
+<h3>Method E: Upload Specific Games</h3></code></pre>bash
+<h1>Only data for specific games</h1>
+python scripts/supabase_loader.py --all --games 18969,18977
+<pre><code>
+---</p>
+<p><h2>Step 4: Choose Upload Mode</h2></p>
+<p><h3>Replace Mode (Default)</h3>
+Truncates existing data before inserting:</code></pre>bash
+python scripts/supabase_loader.py --all --mode replace
+<pre><code>
+<h3>Append Mode</h3>
+Adds to existing data (useful for incremental updates):</code></pre>bash
+python scripts/supabase_loader.py --all --mode append
+<pre><code>
+---</p>
+<p><h2>Step 5: Verify Deployment</h2></p>
+<p><h3>Automatic Verification</h3></code></pre>bash
+python scripts/supabase_loader.py --verify
+<pre><code>
+<h3>Manual Verification in Supabase</h3>
+1. Go to Table Editor in Supabase dashboard
+2. Check each table has correct row counts:</p>
+<p><table>
+<tr><th>Table</th><th>Expected Rows</th></tr>
+<tr><td>dim_player</td><td>~298</td></tr>
+<tr><td>dim_team</td><td>~15</td></tr>
+<tr><td>dim_schedule</td><td>~562</td></tr>
+<tr><td>fact_player_game_stats</td><td>~107</td></tr>
+<tr><td>fact_event_players</td><td>~11,635</td></tr>
+<tr><td>fact_shift_players</td><td>~4,626</td></tr>
+</table></p>
+<p>---</p>
+<p><h2>Teardown (Reset Everything)</h2></p>
+<p>To completely remove all BenchSight tables:</p>
+<p><h3>Option A: Using Loader</h3></code></pre>bash
+python scripts/supabase_loader.py --teardown
+<pre><code>
+<h3>Option B: Using SQL Editor</h3>
+1. Go to Supabase SQL Editor
+2. Copy contents of </code>sql/00_drop_all_tables.sql<code>
+3. Execute</p>
+<p>---</p>
+<p><h2>Troubleshooting</h2></p>
+<p><h3>"Connection failed"</h3>
+- Check URL and key are correct
+- Check project is active (not paused)
+- Check network connectivity</p>
+<p><h3>"Table does not exist"</h3>
+- Run </code>--create-only<code> first
+- Or use </code>--rebuild<code> for full setup</p>
+<p><h3>"Permission denied"</h3>
+- Check you're using correct key (anon vs service role)
+- Check RLS policies aren't blocking inserts</p>
+<p><h3>"Duplicate key"</h3>
+- Use </code>--mode replace<code> to clear existing data first
+- Or use </code>--teardown<code> then </code>--rebuild<code></p>
+<p><h3>"Rate limited"</h3>
+- Wait a few minutes and retry
+- Reduce batch size in </code>supabase_loader.py<code></p>
+<p>---</p>
+<p><h2>Common Workflows</h2></p>
+<p><h3>First-Time Setup</h3></code></pre>bash
+<h1>1. Test connection</h1>
+python scripts/supabase_test_connection.py</p>
+<p><h1>2. Full rebuild</h1>
+python scripts/supabase_loader.py --rebuild</p>
+<p><h1>3. Verify</h1>
+python scripts/supabase_loader.py --verify
+<pre><code>
+<h3>Adding New Game Data</h3></code></pre>bash
+<h1>1. Run ETL for new game</h1>
+python etl.py</p>
+<p><h1>2. Upload new data (append mode)</h1>
+python scripts/supabase_loader.py --facts --mode append
+<pre><code>
+<h3>Refreshing All Data</h3></code></pre>bash
+<h1>Replace all fact tables, keep dims</h1>
+python scripts/supabase_loader.py --facts --mode replace
+<pre><code>
+<h3>Complete Reset</h3></code></pre>bash
+<h1>Drop everything and start fresh</h1>
+python scripts/supabase_loader.py --rebuild
+<pre><code>
+---</p>
+<p><h2>Log Files</h2></p>
+<p>All uploads are logged to </code>logs/supabase_upload_YYYYMMDD_HHMMSS.log<code></p>
+<p>Log includes:
+- Tables processed
+- Row counts
+- Errors
+- Verification results</p>
+<p>---</p>
+<p><h2>Security Notes</h2></p>
+<p>1. <strong>Never commit credentials</strong> - Use environment variables or .gitignore config_local.ini
+2. <strong>Use anon key for uploads</strong> - Service role key has more permissions than needed
+3. <strong>Enable RLS</strong> - Row Level Security for production use
+4. <strong>Backup before teardown</strong> - Export data before dropping tables</p>
+<p>---</p>
+<p><h2>Quick Reference</h2>
+</code></pre>bash
+<h1>Test connection</h1>
+python scripts/supabase_test_connection.py</p>
+<p><h1>Full rebuild (drop + create + upload)</h1>
+python scripts/supabase_loader.py --rebuild</p>
+<p><h1>Upload all tables</h1>
+python scripts/supabase_loader.py --all</p>
+<p><h1>Upload dims only</h1>
+python scripts/supabase_loader.py --dims</p>
+<p><h1>Upload facts only</h1>
+python scripts/supabase_loader.py --facts</p>
+<p><h1>Upload specific tables</h1>
+python scripts/supabase_loader.py --tables dim_player,dim_team</p>
+<p><h1>Upload specific games</h1>
+python scripts/supabase_loader.py --all --games 18969,18977</p>
+<p><h1>Append mode (don't delete existing)</h1>
+python scripts/supabase_loader.py --all --mode append</p>
+<p><h1>Replace mode (delete then insert)</h1>
+python scripts/supabase_loader.py --all --mode replace</p>
+<p><h1>Verify upload</h1>
+python scripts/supabase_loader.py --verify</p>
+<p><h1>Teardown (drop all)</h1>
+python scripts/supabase_loader.py --teardown</p>
+<p><h1>Create tables only</h1>
+python scripts/supabase_loader.py --create-only</p>
+<p><h1>Dry run (see what would happen)</h1>
+python scripts/supabase_loader.py --all --dry-run
+</code>``
+</p>
+</body>
+</html>

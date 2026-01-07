@@ -14,8 +14,8 @@ TABLES LOADED:
     - dim_season: Season definitions
     - dim_schedule: Game schedule
     - fact_gameroster: Game rosters
-    - dim_rinkboxcoord: Rink zone coordinates
-    - dim_rinkcoordzones: Detailed rink zones
+    - dim_rink_zone: Rink zone coordinates
+    - dim_rink_zone: Detailed rink zones
     - And others...
 =============================================================================
 """
@@ -37,8 +37,8 @@ class BLBLoader:
         'dim_season',
         'dim_schedule',
         'dim_league',
-        'dim_rinkboxcoord',
-        'dim_rinkcoordzones',
+        'dim_rink_zone',
+        'dim_rink_zone',
         'dim_randomnames',
         'dim_playerurlref',
         'fact_gameroster',

@@ -1,0 +1,537 @@
+{
+  "_description": "Rich metadata for BenchSight tables - matches old documentation format",
+  "_updated": "2026-01-07",
+  "_note": "This file is human-maintained. Auto-sync preserves this content.",
+  
+  "critical_rules": {
+    "goal_counting": {
+      "rule": "event_type='Goal' AND event_detail='Goal_Scored'",
+      "warning": "Shot_Goal is the SHOT that resulted in a goal, NOT the goal itself!",
+      "example": "df[(df['event_type']=='Goal') & (df['event_detail']=='Goal_Scored')]"
+    },
+    "player_roles": {
+      "event_player_1": "PRIMARY player - scorer for goals, shooter for shots, passer for passes",
+      "event_player_2": "SECONDARY player - primary assist, pass receiver",
+      "event_player_3": "TERTIARY player - secondary assist",
+      "event_player_4-6": "Additional on-ice players at time of event"
+    },
+    "time_formats": {
+      "game_clock": "Time REMAINING in period (MM:SS format, counts down)",
+      "elapsed_time": "Time ELAPSED in period (seconds, counts up)",
+      "shift_duration": "Duration in seconds"
+    }
+  },
+  
+  "tables": {
+    "fact_shifts": {
+      "description": "Player shift data - when players are on the ice",
+      "purpose": "Track ice time, line combinations, and shift patterns.",
+      "source_module": "src/core/base_etl.py:create_derived_tables()",
+      "logic": "Shift start/end times with player assignments.",
+      "grain": "One row per shift per game",
+      "columns": {
+        "shift_id": {
+          "description": "Unique shift identifier (PK)",
+          "context": "Format: SH{game_id}{shift_index:05d}. Example: SH1896900001. One shift_id per line change.",
+          "calculation": "format_key(\"SH\", game_id, shift_index) in key_utils.py:84",
+          "type": "Derived"
+        },
+        "game_id": {
+          "description": "Game identifier from noradhockey.com",
+          "context": "Numeric ID from league website URL. Example: 18969. Links to dim_schedule.game_id. Used as prefix in all composite keys.",
+          "calculation": "Extracted from tracking file directory name (data/raw/games/{game_id}/)",
+          "type": "Explicit"
+        },
+        "shift_index": {
+          "description": "Sequential shift number within game",
+          "context": "Increments with each line change. Used to generate shift_id.",
+          "calculation": "From tracking spreadsheet shifts sheet",
+          "type": "Explicit"
+        },
+        "period": {
+          "description": "Period",
+          "context": "Game period 1, 2, 3, or OT",
+          "calculation": "",
+          "type": "Explicit"
+        },
+        "shift_start_min": {
+          "description": "Shift start minute within period",
+          "context": "When players came onto ice. Minutes 0-20.",
+          "calculation": "From tracking spreadsheet",
+          "type": "Explicit"
+        },
+        "shift_start_sec": {
+          "description": "Shift start second within minute",
+          "context": "Seconds 0-59.",
+          "calculation": "From tracking spreadsheet",
+          "type": "Explicit"
+        },
+        "shift_end_min": {
+          "description": "Shift end minute within period",
+          "context": "When players left ice.",
+          "calculation": "From tracking spreadsheet",
+          "type": "Explicit"
+        },
+        "shift_end_sec": {
+          "description": "Shift end second within minute",
+          "context": "Seconds 0-59.",
+          "calculation": "From tracking spreadsheet",
+          "type": "Explicit"
+        },
+        "shift_duration": {
+          "description": "Total shift duration in seconds",
+          "context": "Time on ice for this shift.",
+          "calculation": "(end_min*60 + end_sec) - (start_min*60 + start_sec)",
+          "type": "Calculated"
+        },
+        "shift_start_type": {
+          "description": "How the shift started",
+          "context": "GameStart, Faceoff, OnTheFly, etc.",
+          "calculation": "From tracking spreadsheet or inferred from prior event",
+          "type": "Explicit"
+        },
+        "shift_stop_type": {
+          "description": "How the shift ended",
+          "context": "Whistle, Goal, Penalty, OnTheFly, etc.",
+          "calculation": "From tracking spreadsheet or inferred from next event",
+          "type": "Explicit"
+        }
+      }
+    },
+    "fact_events": {
+      "description": "Core event table - every tracked event from game video",
+      "purpose": "Track all on-ice events including shots, goals, passes, faceoffs, hits, etc.",
+      "source_module": "src/core/base_etl.py:process_events()",
+      "logic": "Events parsed from tracking spreadsheet with player assignments and timestamps.",
+      "grain": "One row per event per game",
+      "columns": {
+        "event_id": {
+          "description": "Unique event identifier (PK)",
+          "context": "Format: EV{game_id}{event_index:05d}. Example: EV1896901000.",
+          "calculation": "format_key(\"EV\", game_id, event_index) in key_utils.py",
+          "type": "Derived"
+        },
+        "game_id": {
+          "description": "Game identifier from noradhockey.com",
+          "context": "Numeric ID from league website URL. Links to dim_schedule.game_id.",
+          "calculation": "Extracted from tracking file directory name",
+          "type": "Explicit"
+        },
+        "event_index": {
+          "description": "Sequential event number within game",
+          "context": "Starts at 1, increments for each event. Used in event_id.",
+          "calculation": "Row number in events sheet after sorting by time",
+          "type": "Explicit"
+        },
+        "event_type": {
+          "description": "Type of event",
+          "context": "Shot, Goal, Pass, Faceoff, Hit, Block, Takeaway, Giveaway, Save, Penalty, Stoppage, ZoneEntry",
+          "calculation": "From tracking spreadsheet event_type column",
+          "type": "Explicit"
+        },
+        "event_detail": {
+          "description": "Detailed event subtype",
+          "context": "Shot_OnNetSaved, Goal_Scored, Pass_Complete, Faceoff_Won, etc.",
+          "calculation": "From tracking spreadsheet event_detail column",
+          "type": "Explicit"
+        },
+        "period": {
+          "description": "Game period",
+          "context": "1, 2, 3, or OT",
+          "calculation": "From tracking spreadsheet",
+          "type": "Explicit"
+        },
+        "game_clock": {
+          "description": "Time remaining in period",
+          "context": "Format MM:SS, counts DOWN from 20:00",
+          "calculation": "From tracking spreadsheet or converted from elapsed",
+          "type": "Explicit"
+        },
+        "elapsed_time": {
+          "description": "Seconds elapsed in period",
+          "context": "Counts UP from 0. Max 1200 for regular period.",
+          "calculation": "(20*60) - (clock_min*60 + clock_sec)",
+          "type": "Calculated"
+        },
+        "event_player_1": {
+          "description": "Primary player in event",
+          "context": "Scorer for goals, shooter for shots, passer for passes, winner for faceoffs",
+          "calculation": "From tracking spreadsheet player columns",
+          "type": "Explicit"
+        },
+        "event_player_2": {
+          "description": "Secondary player in event",
+          "context": "Primary assist for goals, receiver for passes, loser for faceoffs",
+          "calculation": "From tracking spreadsheet player columns",
+          "type": "Explicit"
+        },
+        "event_player_3": {
+          "description": "Tertiary player in event",
+          "context": "Secondary assist for goals",
+          "calculation": "From tracking spreadsheet player columns",
+          "type": "Explicit"
+        },
+        "zone": {
+          "description": "Ice zone where event occurred",
+          "context": "Off (offensive), Def (defensive), Neu (neutral)",
+          "calculation": "From tracking spreadsheet zone column",
+          "type": "Explicit"
+        },
+        "x_coord": {
+          "description": "X coordinate on ice",
+          "context": "Range -100 to 100. Center ice = 0.",
+          "calculation": "From tracking spreadsheet if recorded",
+          "type": "Explicit"
+        },
+        "y_coord": {
+          "description": "Y coordinate on ice",
+          "context": "Range -42.5 to 42.5. Center ice = 0.",
+          "calculation": "From tracking spreadsheet if recorded",
+          "type": "Explicit"
+        }
+      }
+    },
+    "fact_event_players": {
+      "description": "Bridge table linking events to players with their roles",
+      "purpose": "Enable player-level stats from events. Query goals/assists/shots by player.",
+      "source_module": "src/core/base_etl.py:create_event_players()",
+      "logic": "Unpivots event_player_1 through event_player_6 from fact_events into rows.",
+      "grain": "One row per player per event",
+      "columns": {
+        "game_id": {
+          "description": "Game identifier",
+          "context": "FK to fact_events.game_id",
+          "calculation": "Copied from fact_events",
+          "type": "FK"
+        },
+        "event_index": {
+          "description": "Event identifier within game",
+          "context": "FK to fact_events.event_index",
+          "calculation": "Copied from fact_events",
+          "type": "FK"
+        },
+        "player_id": {
+          "description": "Player identifier",
+          "context": "FK to dim_player.player_id. Format P######.",
+          "calculation": "Lookup from player name in dim_player",
+          "type": "FK"
+        },
+        "player_role": {
+          "description": "Player's role in this event",
+          "context": "event_player_1 (primary), event_player_2 (secondary), etc.",
+          "calculation": "From column name during unpivot",
+          "type": "Derived"
+        },
+        "event_type": {
+          "description": "Type of event (denormalized)",
+          "context": "Copied from fact_events for query convenience",
+          "calculation": "Denormalized from fact_events.event_type",
+          "type": "Derived"
+        },
+        "event_detail": {
+          "description": "Event subtype (denormalized)",
+          "context": "Copied from fact_events for query convenience",
+          "calculation": "Denormalized from fact_events.event_detail",
+          "type": "Derived"
+        }
+      }
+    },
+    "fact_shift_players": {
+      "description": "Bridge table linking shifts to players",
+      "purpose": "Enable player-level TOI calculations. Track who was on ice for each shift.",
+      "source_module": "src/core/base_etl.py:create_shift_players()",
+      "logic": "Unpivots player columns from fact_shifts into rows.",
+      "grain": "One row per player per shift",
+      "columns": {
+        "game_id": {
+          "description": "Game identifier",
+          "context": "FK to fact_shifts.game_id",
+          "calculation": "Copied from fact_shifts",
+          "type": "FK"
+        },
+        "shift_index": {
+          "description": "Shift identifier within game",
+          "context": "FK to fact_shifts.shift_index",
+          "calculation": "Copied from fact_shifts",
+          "type": "FK"
+        },
+        "player_id": {
+          "description": "Player identifier",
+          "context": "FK to dim_player.player_id",
+          "calculation": "Lookup from player name",
+          "type": "FK"
+        },
+        "team_id": {
+          "description": "Team identifier",
+          "context": "FK to dim_team.team_id",
+          "calculation": "From roster lookup",
+          "type": "FK"
+        },
+        "shift_duration": {
+          "description": "Duration of this shift in seconds",
+          "context": "Denormalized for easy TOI aggregation",
+          "calculation": "Copied from fact_shifts.shift_duration",
+          "type": "Derived"
+        }
+      }
+    },
+    "dim_player": {
+      "description": "Player master data - names, positions, profile info",
+      "purpose": "Central player reference for all joins. Contains player attributes.",
+      "source_module": "src/core/base_etl.py:create_dim_player()",
+      "logic": "Combined from roster data and league profile scraping.",
+      "grain": "One row per player (all-time)",
+      "columns": {
+        "player_id": {
+          "description": "Unique player identifier (PK)",
+          "context": "Format: P######. Example: P100117. Derived from league profile URL.",
+          "calculation": "Extracted from noradhockey.com player profile URL",
+          "type": "Derived"
+        },
+        "player_name": {
+          "description": "Player full name",
+          "context": "As displayed on noradhockey.com",
+          "calculation": "From league roster/profile",
+          "type": "Explicit"
+        },
+        "first_name": {
+          "description": "Player first name",
+          "context": "Parsed from full name",
+          "calculation": "Split player_name on space, take first",
+          "type": "Calculated"
+        },
+        "last_name": {
+          "description": "Player last name",
+          "context": "Parsed from full name",
+          "calculation": "Split player_name on space, take last",
+          "type": "Calculated"
+        },
+        "primary_position": {
+          "description": "Primary playing position",
+          "context": "C (center), LW, RW, D (defense), G (goalie)",
+          "calculation": "From league roster",
+          "type": "Explicit"
+        }
+      }
+    },
+    "dim_team": {
+      "description": "Team master data",
+      "purpose": "Central team reference for all joins.",
+      "source_module": "src/core/base_etl.py:create_dim_team()",
+      "logic": "From league schedule and roster data.",
+      "grain": "One row per team",
+      "columns": {
+        "team_id": {
+          "description": "Unique team identifier (PK)",
+          "context": "Format varies. Example: N10008.",
+          "calculation": "From league data",
+          "type": "Explicit"
+        },
+        "team_name": {
+          "description": "Full team name",
+          "context": "Example: Platinum, Velodrome",
+          "calculation": "From league schedule",
+          "type": "Explicit"
+        }
+      }
+    },
+    "dim_event_type": {
+      "description": "Lookup table for event types",
+      "purpose": "Standardize event type codes and provide analytics flags.",
+      "source_module": "src/core/base_etl.py:create_dim_tables()",
+      "logic": "Static reference data with Corsi/Fenwick flags.",
+      "grain": "One row per event type",
+      "columns": {
+        "event_type_id": {
+          "description": "Event type identifier (PK)",
+          "context": "Format: ET####. Example: ET0001.",
+          "calculation": "Generated sequence",
+          "type": "Derived"
+        },
+        "event_type_code": {
+          "description": "Event type code used in data",
+          "context": "Shot, Goal, Pass, Faceoff, etc.",
+          "calculation": "From tracking spreadsheet values",
+          "type": "Explicit"
+        },
+        "is_corsi": {
+          "description": "Counts for Corsi stat",
+          "context": "True for shots, goals, misses, blocks",
+          "calculation": "Hardcoded flag based on event type",
+          "type": "Explicit"
+        },
+        "is_fenwick": {
+          "description": "Counts for Fenwick stat",
+          "context": "True for shots, goals, misses (excludes blocks)",
+          "calculation": "Hardcoded flag based on event type",
+          "type": "Explicit"
+        }
+      }
+    },
+    "dim_event_detail": {
+      "description": "Lookup table for event subtypes",
+      "purpose": "Detailed event classification with shot outcome flags.",
+      "source_module": "src/core/base_etl.py:create_dim_tables()",
+      "logic": "Derived from unique event_detail values with classification flags.",
+      "grain": "One row per event detail",
+      "columns": {
+        "event_detail_id": {
+          "description": "Event detail identifier (PK)",
+          "context": "Format: ED####. Example: ED0001.",
+          "calculation": "Generated sequence",
+          "type": "Derived"
+        },
+        "event_detail_code": {
+          "description": "Event detail code",
+          "context": "Shot_OnNetSaved, Goal_Scored, Pass_Complete, etc.",
+          "calculation": "From tracking spreadsheet values",
+          "type": "Explicit"
+        },
+        "is_shot_on_goal": {
+          "description": "Shot reached goalie",
+          "context": "True for Shot_OnNetSaved, Shot_Goal",
+          "calculation": "Parsed from event_detail_code",
+          "type": "Calculated"
+        },
+        "is_goal": {
+          "description": "Resulted in goal",
+          "context": "True ONLY for Goal_Scored",
+          "calculation": "event_detail_code == 'Goal_Scored'",
+          "type": "Calculated"
+        }
+      }
+    },
+    "qa_goal_accuracy": {
+      "description": "Quality assurance - verifies goal counts match official records",
+      "purpose": "Ensure ETL goal counting matches noradhockey.com box scores.",
+      "source_module": "src/core/base_etl.py:create_qa_tables()",
+      "logic": "Compares counted goals to IMMUTABLE_FACTS.json.",
+      "grain": "One row per game",
+      "columns": {
+        "game_id": {
+          "description": "Game being verified",
+          "context": "FK to dim_schedule",
+          "calculation": "From tracked games list",
+          "type": "FK"
+        },
+        "expected_goals": {
+          "description": "Official goal count",
+          "context": "From noradhockey.com box score",
+          "calculation": "Hardcoded in IMMUTABLE_FACTS.json",
+          "type": "Explicit"
+        },
+        "actual_goals": {
+          "description": "Goals counted by ETL",
+          "context": "Must match expected_goals",
+          "calculation": "COUNT WHERE event_type='Goal' AND event_detail='Goal_Scored'",
+          "type": "Calculated"
+        },
+        "match": {
+          "description": "Verification passed",
+          "context": "Must be True for all games",
+          "calculation": "expected_goals == actual_goals",
+          "type": "Calculated"
+        }
+      }
+    }
+  },
+  
+  "column_glossary": {
+    "game_id": {
+      "description": "Unique game identifier from NORAD league",
+      "context": "Numeric ID from league website URL. Example: 18969.",
+      "calculation": "Extracted from tracking file directory name (data/raw/games/{game_id}/)",
+      "type": "Explicit"
+    },
+    "player_id": {
+      "description": "Unique player identifier",
+      "context": "Format: P######. Example: P100117.",
+      "calculation": "Extracted from noradhockey.com player profile URL",
+      "type": "Derived"
+    },
+    "team_id": {
+      "description": "Unique team identifier",
+      "context": "Format varies by source.",
+      "calculation": "From league roster/schedule data",
+      "type": "Explicit"
+    },
+    "event_index": {
+      "description": "Sequential event number within a game",
+      "context": "Starts at 1, increments for each event. Unique within game.",
+      "calculation": "Row number in events sheet after sorting by time",
+      "type": "Explicit"
+    },
+    "shift_index": {
+      "description": "Sequential shift number within a game",
+      "context": "Starts at 1, increments for each line change. Unique within game.",
+      "calculation": "From tracking spreadsheet shifts sheet",
+      "type": "Explicit"
+    },
+    "period": {
+      "description": "Game period",
+      "context": "Values: 1, 2, 3, OT, SO",
+      "calculation": "From tracking spreadsheet",
+      "type": "Explicit"
+    },
+    "game_clock": {
+      "description": "Time REMAINING in period",
+      "context": "Format: MM:SS. Counts DOWN from 20:00.",
+      "calculation": "From tracking spreadsheet or converted from elapsed",
+      "type": "Explicit"
+    },
+    "elapsed_time": {
+      "description": "Seconds elapsed in current period",
+      "context": "Counts UP from 0. Max 1200 for regular period.",
+      "calculation": "(period_length*60) - (clock_min*60 + clock_sec)",
+      "type": "Calculated"
+    },
+    "toi": {
+      "description": "Time on ice in seconds",
+      "context": "Total ice time for a player in a game.",
+      "calculation": "SUM(shift_duration) for all player shifts",
+      "type": "Calculated"
+    },
+    "zone": {
+      "description": "Ice zone where event occurred",
+      "context": "Off (offensive), Def (defensive), Neu (neutral)",
+      "calculation": "From tracking spreadsheet zone column",
+      "type": "Explicit"
+    },
+    "event_player_1": {
+      "description": "PRIMARY player in event",
+      "context": "Scorer for goals, shooter for shots, passer for passes, faceoff winner",
+      "calculation": "From tracking spreadsheet player columns",
+      "type": "Explicit"
+    },
+    "event_player_2": {
+      "description": "SECONDARY player in event",
+      "context": "Primary assist for goals, pass receiver, faceoff loser",
+      "calculation": "From tracking spreadsheet player columns",
+      "type": "Explicit"
+    },
+    "event_player_3": {
+      "description": "TERTIARY player in event",
+      "context": "Secondary assist for goals",
+      "calculation": "From tracking spreadsheet player columns",
+      "type": "Explicit"
+    }
+  },
+  
+  "stat_formulas": {
+    "goals": "COUNT(fact_event_players) WHERE event_type='Goal' AND event_detail='Goal_Scored' AND player_role='event_player_1'",
+    "assists": "COUNT(fact_event_players) WHERE event_type='Goal' AND event_detail='Goal_Scored' AND player_role IN ('event_player_2','event_player_3')",
+    "primary_assists": "COUNT(fact_event_players) WHERE event_type='Goal' AND event_detail='Goal_Scored' AND player_role='event_player_2'",
+    "secondary_assists": "COUNT(fact_event_players) WHERE event_type='Goal' AND event_detail='Goal_Scored' AND player_role='event_player_3'",
+    "points": "goals + assists",
+    "shots": "COUNT(fact_event_players) WHERE event_type='Shot' AND player_role='event_player_1'",
+    "shots_on_goal": "COUNT(fact_event_players) WHERE event_type='Shot' AND event_detail LIKE 'Shot_OnNet%' AND player_role='event_player_1'",
+    "shooting_pct": "(goals / shots) * 100",
+    "faceoff_wins": "COUNT(fact_event_players) WHERE event_type='Faceoff' AND player_role='event_player_1'",
+    "faceoff_losses": "COUNT(fact_event_players) WHERE event_type='Faceoff' AND player_role='event_player_2'",
+    "faceoff_pct": "(faceoff_wins / (faceoff_wins + faceoff_losses)) * 100",
+    "toi_total": "SUM(fact_shift_players.shift_duration) WHERE player_id = X",
+    "toi_avg": "toi_total / games_played",
+    "shifts_per_game": "COUNT(fact_shift_players) / games_played",
+    "avg_shift_length": "toi_total / shift_count"
+  }
+}

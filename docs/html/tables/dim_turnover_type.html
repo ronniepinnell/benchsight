@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>dim_turnover_type - BenchSight</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #4a4e69; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>dim_turnover_type</h1>
+        
+        
+        
+        <div class="meta">
+            <strong>Rows:</strong> 21 | 
+            <strong>Columns:</strong> 10 |
+            <strong>Last Updated:</strong> 2026-01-07 05:03:20 |
+            <strong>Version:</strong> 12.03
+        </div>
+        
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>turnover_type_id</td><td>object</td><td>21</td><td>0.0%</td></tr><tr><td>turnover_type_code</td><td>object</td><td>21</td><td>0.0%</td></tr><tr><td>turnover_type_name</td><td>object</td><td>21</td><td>0.0%</td></tr><tr><td>category</td><td>object</td><td>21</td><td>0.0%</td></tr><tr><td>quality</td><td>object</td><td>21</td><td>0.0%</td></tr><tr><td>weight</td><td>float64</td><td>21</td><td>0.0%</td></tr><tr><td>description</td><td>object</td><td>21</td><td>0.0%</td></tr><tr><td>zone_context</td><td>object</td><td>21</td><td>0.0%</td></tr><tr><td>zone_danger_multiplier</td><td>float64</td><td>21</td><td>0.0%</td></tr><tr><td>old_equiv</td><td>object</td><td>14</td><td>33.3%</td></tr>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>turnover_type_id</th>
+      <th>turnover_type_code</th>
+      <th>turnover_type_name</th>
+      <th>category</th>
+      <th>quality</th>
+      <th>weight</th>
+      <th>description</th>
+      <th>zone_context</th>
+      <th>zone_danger_multiplier</th>
+      <th>old_equiv</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>TO0001</td>
+      <td>GIVE_MISPLAY</td>
+      <td>Misplayed Puck</td>
+      <td>giveaway</td>
+      <td>bad</td>
+      <td>1.0</td>
+      <td>Player error handling puck</td>
+      <td>any</td>
+      <td>1.0</td>
+      <td>Giveaway-Misplayed</td>
+    </tr>
+    <tr>
+      <td>TO0002</td>
+      <td>GIVE_PASS_INT</td>
+      <td>Pass Intercepted</td>
+      <td>giveaway</td>
+      <td>bad</td>
+      <td>1.0</td>
+      <td>Pass picked off by opponent</td>
+      <td>any</td>
+      <td>1.2</td>
+      <td>Giveaway-PassIntercepted</td>
+    </tr>
+    <tr>
+      <td>TO0003</td>
+      <td>GIVE_PASS_MISS</td>
+      <td>Pass Missed</td>
+      <td>giveaway</td>
+      <td>bad</td>
+      <td>0.8</td>
+      <td>Pass missed target</td>
+      <td>any</td>
+      <td>0.9</td>
+      <td>Giveaway-PassMissed</td>
+    </tr>
+    <tr>
+      <td>TO0004</td>
+      <td>GIVE_PASS_BLK</td>
+      <td>Pass Blocked</td>
+      <td>giveaway</td>
+      <td>bad</td>
+      <td>0.6</td>
+      <td>Pass blocked by stick/body</td>
+      <td>any</td>
+      <td>0.8</td>
+      <td>Giveaway-PassBlocked</td>
+    </tr>
+    <tr>
+      <td>TO0005</td>
+      <td>GIVE_BATTLE</td>
+      <td>Battle Lost</td>
+      <td>giveaway</td>
+      <td>bad</td>
+      <td>0.5</td>
+      <td>Lost puck battle</td>
+      <td>any</td>
+      <td>0.7</td>
+      <td>Giveaway-BattleLost</td>
+    </tr>
+    <tr>
+      <td>TO0006</td>
+      <td>GIVE_ZONE_MISPLAY</td>
+      <td>Zone Misplay</td>
+      <td>giveaway</td>
+      <td>bad</td>
+      <td>1.0</td>
+      <td>Zone entry/exit error</td>
+      <td>transition</td>
+      <td>1.5</td>
+      <td>Giveaway-ZoneEntry/ExitMisplay</td>
+    </tr>
+    <tr>
+      <td>TO0007</td>
+      <td>GIVE_OTHER</td>
+      <td>Other Giveaway</td>
+      <td>giveaway</td>
+      <td>bad</td>
+      <td>0.7</td>
+      <td>Unclassified giveaway</td>
+      <td>any</td>
+      <td>0.9</td>
+      <td>Giveaway-Other</td>
+    </tr>
+    <tr>
+      <td>TO0008</td>
+      <td>GIVE_DUMP</td>
+      <td>Intentional Dump</td>
+      <td>giveaway</td>
+      <td>neutral</td>
+      <td>0.0</td>
+      <td>Strategic dump-in</td>
+      <td>offensive</td>
+      <td>0.0</td>
+      <td>Giveaway-DumpInZone</td>
+    </tr>
+    <tr>
+      <td>TO0009</td>
+      <td>GIVE_CLEAR</td>
+      <td>Zone Clear</td>
+      <td>giveaway</td>
+      <td>neutral</td>
+      <td>0.0</td>
+      <td>Intentional clear</td>
+      <td>defensive</td>
+      <td>0.0</td>
+      <td>Giveaway-ZoneClear/Dump</td>
+    </tr>
+    <tr>
+      <td>TO0010</td>
+      <td>GIVE_SHOT_BLK</td>
+      <td>Shot Blocked</td>
+      <td>giveaway</td>
+      <td>neutral</td>
+      <td>0.0</td>
+      <td>Shot attempt blocked</td>
+      <td>offensive</td>
+      <td>0.0</td>
+      <td>Giveaway-ShotBlocked</td>
+    </tr>
+    <tr>
+      <td>TO0011</td>
+      <td>GIVE_SHOT_MISS</td>
+      <td>Shot Missed</td>
+      <td>giveaway</td>
+      <td>neutral</td>
+      <td>0.0</td>
+      <td>Shot missed net</td>
+      <td>offensive</td>
+      <td>0.0</td>
+      <td>Giveaway-ShotMissed</td>
+    </tr>
+    <tr>
+      <td>TO0012</td>
+      <td>GIVE_RCV_MISS</td>
+      <td>Receiver Missed</td>
+      <td>giveaway</td>
+      <td>neutral</td>
+      <td>0.2</td>
+      <td>Good pass, receiver error</td>
+      <td>any</td>
+      <td>0.3</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>TO0013</td>
+      <td>TAKE_BATTLE</td>
+      <td>Battle Won</td>
+      <td>takeaway</td>
+      <td>good</td>
+      <td>1.0</td>
+      <td>Won puck battle</td>
+      <td>any</td>
+      <td>1.0</td>
+      <td>Takeaway-BattleWon</td>
+    </tr>
+    <tr>
+      <td>TO0014</td>
+      <td>TAKE_POKE</td>
+      <td>Poke Check</td>
+      <td>takeaway</td>
+      <td>good</td>
+      <td>1.0</td>
+      <td>Poke check steal</td>
+      <td>any</td>
+      <td>1.1</td>
+      <td>Takeaway-PokeCheck</td>
+    </tr>
+    <tr>
+      <td>TO0015</td>
+      <td>TAKE_INTERCEPT</td>
+      <td>Interception</td>
+      <td>takeaway</td>
+      <td>good</td>
+      <td>1.2</td>
+      <td>Intercepted pass</td>
+      <td>any</td>
+      <td>1.3</td>
+      <td>Takeaway-PassIntercepted</td>
+    </tr>
+    <tr>
+      <td>TO0016</td>
+      <td>TAKE_PASS_BLK</td>
+      <td>Pass Block</td>
+      <td>takeaway</td>
+      <td>good</td>
+      <td>0.8</td>
+      <td>Blocked pass recovery</td>
+      <td>any</td>
+      <td>0.9</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>TO0017</td>
+      <td>TAKE_SHOT_BLK</td>
+      <td>Shot Block Recovery</td>
+      <td>takeaway</td>
+      <td>good</td>
+      <td>0.6</td>
+      <td>Recovered blocked shot</td>
+      <td>any</td>
+      <td>0.7</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>TO0018</td>
+      <td>TAKE_FORCED</td>
+      <td>Forced Turnover</td>
+      <td>takeaway</td>
+      <td>good</td>
+      <td>1.0</td>
+      <td>Pressure-caused turnover</td>
+      <td>any</td>
+      <td>1.2</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>TO0019</td>
+      <td>TAKE_RECOVERY</td>
+      <td>Puck Recovery</td>
+      <td>takeaway</td>
+      <td>good</td>
+      <td>0.5</td>
+      <td>Recovered loose puck</td>
+      <td>any</td>
+      <td>0.5</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>TO0020</td>
+      <td>TAKE_RETRIEVAL</td>
+      <td>Dump Retrieval</td>
+      <td>takeaway</td>
+      <td>good</td>
+      <td>0.4</td>
+      <td>Retrieved dump-in</td>
+      <td>any</td>
+      <td>0.4</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+        </div>
+        
+        <footer>
+            BenchSight v13.18 | Generated 2026-01-07 05:03:20
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,6 @@
+rating_id,rating_value,rating_name
+R02,2,Beginner
+R03,3,Developing
+R04,4,Average
+R05,5,Skilled
+R06,6,Elite

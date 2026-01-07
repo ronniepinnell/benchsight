@@ -1,155 +1,128 @@
 play_detail_id,play_detail_code,play_detail_name,play_category,skill_level,description
-PD0001,AssistPrimary,AssistPrimary,Other,Standard,Micro-play action describing HOW the event was executed
-PD0002,AttemptedBlockedShot,AttemptedBlockedShot,Defensive,Standard,Micro-play action describing HOW the event was executed
-PD0003,AttemptedBreakOutClear,AttemptedBreakOutClear,Other,Standard,Micro-play action describing HOW the event was executed
-PD0004,AttemptedBreakOutPass,AttemptedBreakOutPass,Other,Standard,Micro-play action describing HOW the event was executed
-PD0005,AttemptedBreakOutRush,AttemptedBreakOutRush,Transition,Standard,Micro-play action describing HOW the event was executed
-PD0006,AttemptedEntryDumpIn,AttemptedEntryDumpIn,Other,Standard,Micro-play action describing HOW the event was executed
-PD0007,AttemptedEntryPass,AttemptedEntryPass,Other,Standard,Micro-play action describing HOW the event was executed
-PD0008,AttemptedEntryRush,AttemptedEntryRush,Transition,Standard,Micro-play action describing HOW the event was executed
-PD0009,AttemptedKeepin,AttemptedKeepin,Other,Standard,Micro-play action describing HOW the event was executed
-PD0010,AttemptedShot,AttemptedShot,Other,Standard,Micro-play action describing HOW the event was executed
-PD0011,AttemptedTip/Deflection,AttemptedTip/Deflection,Offensive,Medium,Micro-play action describing HOW the event was executed
-PD0012,Backcheck,Backcheck,Defensive,Standard,Micro-play action describing HOW the event was executed
-PD0013,BeatDeke,BeatDeke,Offensive,High,Micro-play action describing HOW the event was executed
-PD0014,BeatMiddle,BeatMiddle,Other,Standard,Micro-play action describing HOW the event was executed
-PD0015,BeatWide,BeatWide,Other,Standard,Micro-play action describing HOW the event was executed
-PD0016,BlockedShot,BlockedShot,Defensive,Standard,Micro-play action describing HOW the event was executed
-PD0017,BoxOut,BoxOut,Other,Standard,Micro-play action describing HOW the event was executed
-PD0018,Breakout,Breakout,Transition,Standard,Micro-play action describing HOW the event was executed
-PD0019,CededZoneEntry,CededZoneEntry,Other,Standard,Micro-play action describing HOW the event was executed
-PD0020,Chip,Chip,Other,Standard,Micro-play action describing HOW the event was executed
-PD0021,CutBack,CutBack,Other,Standard,Micro-play action describing HOW the event was executed
-PD0022,DefensivePlay_Zone-PuckRecoveryFaceoff,DefensivePlay Zone PuckRecoveryFaceoff,Other,Standard,Micro-play action describing HOW the event was executed
-PD0023,DefensivePlay_Zone-PuckRetreivalFaceoff,DefensivePlay Zone PuckRetreivalFaceoff,Other,Standard,Micro-play action describing HOW the event was executed
-PD0024,DefensivePlay_Zone-PuckRetreivalOther,DefensivePlay Zone PuckRetreivalOther,Other,Standard,Micro-play action describing HOW the event was executed
-PD0025,Defensive_PlayPass-InShotPassLane,Defensive PlayPass InShotPassLane,Other,Standard,Micro-play action describing HOW the event was executed
-PD0026,Defensive_PlayPass-PassDeflected,Defensive PlayPass PassDeflected,Other,Standard,Micro-play action describing HOW the event was executed
-PD0027,Defensive_PlayPass-PassIntercepted,Defensive PlayPass PassIntercepted,Other,Standard,Micro-play action describing HOW the event was executed
-PD0028,Defensive_PlayPossession-Backcheck,Defensive PlayPossession Backcheck,Defensive,Standard,Micro-play action describing HOW the event was executed
-PD0029,Defensive_PlayPossession-BeatDeke,Defensive PlayPossession BeatDeke,Offensive,High,Micro-play action describing HOW the event was executed
-PD0030,Defensive_PlayPossession-BeatMiddle,Defensive PlayPossession BeatMiddle,Other,Standard,Micro-play action describing HOW the event was executed
-PD0031,Defensive_PlayPossession-BeatWide,Defensive PlayPossession BeatWide,Other,Standard,Micro-play action describing HOW the event was executed
-PD0032,Defensive_PlayPossession-Contain,Defensive PlayPossession Contain,Other,Standard,Micro-play action describing HOW the event was executed
-PD0033,Defensive_PlayPossession-FroceWide,Defensive PlayPossession FroceWide,Other,Standard,Micro-play action describing HOW the event was executed
-PD0034,Defensive_PlayPossession-ManOnMan,Defensive PlayPossession ManOnMan,Other,Standard,Micro-play action describing HOW the event was executed
-PD0035,Defensive_PlayPossession-PokeCheck,Defensive PlayPossession PokeCheck,Defensive,Standard,Micro-play action describing HOW the event was executed
-PD0036,Defensive_PlayPossession-Pressure,Defensive PlayPossession Pressure,Other,Standard,Micro-play action describing HOW the event was executed
-PD0037,Defensive_PlayPossession-SeperateFromPuck,Defensive PlayPossession SeperateFromPuck,Other,Standard,Micro-play action describing HOW the event was executed
-PD0038,Defensive_PlayPossession-StickCheck,Defensive PlayPossession StickCheck,Defensive,Standard,Micro-play action describing HOW the event was executed
-PD0039,Defensive_PlayPossession-Surf,Defensive PlayPossession Surf,Other,Standard,Micro-play action describing HOW the event was executed
-PD0040,Defensive_PlayShot-BlockedShot,Defensive PlayShot BlockedShot,Defensive,Standard,Micro-play action describing HOW the event was executed
-PD0041,Defensive_PlayShot-BoxOut,Defensive PlayShot BoxOut,Other,Standard,Micro-play action describing HOW the event was executed
-PD0042,Defensive_PlayShot-FrontofNet,Defensive PlayShot FrontofNet,Offensive,Standard,Micro-play action describing HOW the event was executed
-PD0043,Defensive_PlayZone-ForcedDumpin/Clear,Defensive PlayZone ForcedDumpin/Clear,Other,Standard,Micro-play action describing HOW the event was executed
-PD0044,Defensive_PlayZone-PuckRecoveryDumpIn,Defensive PlayZone PuckRecoveryDumpIn,Other,Standard,Micro-play action describing HOW the event was executed
-PD0045,Defensive_PlayZone-PuckRecoveryPass,Defensive PlayZone PuckRecoveryPass,Other,Standard,Micro-play action describing HOW the event was executed
-PD0046,Defensive_PlayZone-PuckRecoveryRebound,Defensive PlayZone PuckRecoveryRebound,Other,Standard,Micro-play action describing HOW the event was executed
-PD0047,Defensive_PlayZone-PuckRecoveryShot,Defensive PlayZone PuckRecoveryShot,Other,Standard,Micro-play action describing HOW the event was executed
-PD0048,Defensive_PlayZone-PuckRecoveryTurnover,Defensive PlayZone PuckRecoveryTurnover,Other,Standard,Micro-play action describing HOW the event was executed
-PD0049,Defensive_PlayZone-PuckRetreivalPass,Defensive PlayZone PuckRetreivalPass,Other,Standard,Micro-play action describing HOW the event was executed
-PD0050,Defensive_PlayZone-PuckRetreivalTurnover,Defensive PlayZone PuckRetreivalTurnover,Other,Standard,Micro-play action describing HOW the event was executed
-PD0051,Defensive_PlayZone-PuckRetrievalDumpIn,Defensive PlayZone PuckRetrievalDumpIn,Other,Standard,Micro-play action describing HOW the event was executed
-PD0052,Defensive_PlayZone-PuckRetrievalRebound,Defensive PlayZone PuckRetrievalRebound,Other,Standard,Micro-play action describing HOW the event was executed
-PD0053,Defensive_PlayZone-PuckRetrievalShot,Defensive PlayZone PuckRetrievalShot,Other,Standard,Micro-play action describing HOW the event was executed
-PD0054,Defensive_PlayZone-ZoneEntryDenial,Defensive PlayZone ZoneEntryDenial,Other,Standard,Micro-play action describing HOW the event was executed
-PD0055,Defensive_Zone-AttemptedBreakOutClear,Defensive Zone AttemptedBreakOutClear,Other,Standard,Micro-play action describing HOW the event was executed
-PD0056,Defensive_Zone-AttemptedBreakOutPass,Defensive Zone AttemptedBreakOutPass,Other,Standard,Micro-play action describing HOW the event was executed
-PD0057,Defensive_Zone-AttemptedBreakOutRush,Defensive Zone AttemptedBreakOutRush,Transition,Standard,Micro-play action describing HOW the event was executed
-PD0058,Defensive_Zone-CededZoneEntry,Defensive Zone CededZoneEntry,Other,Standard,Micro-play action describing HOW the event was executed
-PD0059,DeflectedShot,DeflectedShot,Other,Standard,Micro-play action describing HOW the event was executed
-PD0060,Deke,Deke,Offensive,High,Micro-play action describing HOW the event was executed
-PD0061,Delay,Delay,Other,Standard,Micro-play action describing HOW the event was executed
-PD0062,DriveCorner,DriveCorner,Offensive,Standard,Micro-play action describing HOW the event was executed
-PD0063,DriveMiddle,DriveMiddle,Offensive,Standard,Micro-play action describing HOW the event was executed
-PD0064,DriveNetMiddle,DriveNetMiddle,Offensive,Standard,Micro-play action describing HOW the event was executed
-PD0065,DriveWide,DriveWide,Offensive,Standard,Micro-play action describing HOW the event was executed
-PD0066,Dump/RimInZone,Dump/RimInZone,Other,Standard,Micro-play action describing HOW the event was executed
-PD0067,DumpChase,DumpChase,Other,Standard,Micro-play action describing HOW the event was executed
-PD0068,DumpInAttempt,DumpInAttempt,Other,Standard,Micro-play action describing HOW the event was executed
-PD0069,ForceWide,ForceWide,Other,Standard,Micro-play action describing HOW the event was executed
-PD0070,ForcedDumpin/Clear,ForcedDumpin/Clear,Other,Standard,Micro-play action describing HOW the event was executed
-PD0071,ForcedTurnover,ForcedTurnover,Other,Standard,Micro-play action describing HOW the event was executed
-PD0072,FrontofNet,FrontofNet,Offensive,Standard,Micro-play action describing HOW the event was executed
-PD0073,GiveAndGo,GiveAndGo,Other,Standard,Micro-play action describing HOW the event was executed
-PD0074,InShotPassLane,InShotPassLane,Other,Standard,Micro-play action describing HOW the event was executed
-PD0075,LoosePuckBattleLost,LoosePuckBattleLost,Other,Standard,Micro-play action describing HOW the event was executed
-PD0076,LoosePuckBattleWon,LoosePuckBattleWon,Other,Standard,Micro-play action describing HOW the event was executed
-PD0077,LostPuck,LostPuck,Other,Standard,Micro-play action describing HOW the event was executed
-PD0078,ManOnMan,ManOnMan,Other,Standard,Micro-play action describing HOW the event was executed
-PD0079,OffensivePlay_Pass-AssistPrimary,OffensivePlay Pass AssistPrimary,Other,Standard,Micro-play action describing HOW the event was executed
-PD0080,OffensivePlay_Pass-AssistSecondary,OffensivePlay Pass AssistSecondary,Other,Standard,Micro-play action describing HOW the event was executed
-PD0081,OffensivePlay_Pass-GiveAndGo,OffensivePlay Pass GiveAndGo,Other,Standard,Micro-play action describing HOW the event was executed
-PD0082,OffensivePlay_Pass-QuickUp,OffensivePlay Pass QuickUp,Other,Medium,Micro-play action describing HOW the event was executed
-PD0083,OffensivePlay_Pass-ReceiverMissed,OffensivePlay Pass ReceiverMissed,Other,Standard,Micro-play action describing HOW the event was executed
-PD0084,OffensivePlay_Pass-Reverse,OffensivePlay Pass Reverse,Other,Standard,Micro-play action describing HOW the event was executed
-PD0085,OffensivePlay_Pass-SecondTouch,OffensivePlay Pass SecondTouch,Other,Standard,Micro-play action describing HOW the event was executed
-PD0086,OffensivePlay_Possession-Chip,OffensivePlay Possession Chip,Other,Standard,Micro-play action describing HOW the event was executed
-PD0087,OffensivePlay_Possession-CrashNet,OffensivePlay Possession CrashNet,Offensive,Standard,Micro-play action describing HOW the event was executed
-PD0088,OffensivePlay_Possession-CutBack,OffensivePlay Possession CutBack,Other,Standard,Micro-play action describing HOW the event was executed
-PD0089,OffensivePlay_Possession-Deke,OffensivePlay Possession Deke,Offensive,High,Micro-play action describing HOW the event was executed
-PD0090,OffensivePlay_Possession-Delay,OffensivePlay Possession Delay,Other,Standard,Micro-play action describing HOW the event was executed
-PD0091,OffensivePlay_Possession-DriveCorner,OffensivePlay Possession DriveCorner,Offensive,Standard,Micro-play action describing HOW the event was executed
-PD0092,OffensivePlay_Possession-DriveMiddle,OffensivePlay Possession DriveMiddle,Offensive,Standard,Micro-play action describing HOW the event was executed
-PD0093,OffensivePlay_Possession-DriveNetMiddle,OffensivePlay Possession DriveNetMiddle,Offensive,Standard,Micro-play action describing HOW the event was executed
-PD0094,OffensivePlay_Possession-DriveNetWide,OffensivePlay Possession DriveNetWide,Offensive,Standard,Micro-play action describing HOW the event was executed
-PD0095,OffensivePlay_Possession-DriveWide,OffensivePlay Possession DriveWide,Offensive,Standard,Micro-play action describing HOW the event was executed
-PD0096,OffensivePlay_Possession-FrontofNet,OffensivePlay Possession FrontofNet,Offensive,Standard,Micro-play action describing HOW the event was executed
-PD0097,OffensivePlay_Possession-OpenIceDeke,OffensivePlay Possession OpenIceDeke,Offensive,High,Micro-play action describing HOW the event was executed
-PD0098,OffensivePlay_Shot-Screen,OffensivePlay Shot Screen,Offensive,Standard,Micro-play action describing HOW the event was executed
-PD0099,OffensivePlay_Zone-Breakout,OffensivePlay Zone Breakout,Transition,Standard,Micro-play action describing HOW the event was executed
-PD0100,OffensivePlay_Zone-Cycle,OffensivePlay Zone Cycle,Offensive,Standard,Micro-play action describing HOW the event was executed
-PD0101,OffensivePlay_Zone-Dump/RimInZone,OffensivePlay Zone Dump/RimInZone,Other,Standard,Micro-play action describing HOW the event was executed
-PD0102,OffensivePlay_Zone-DumpChase,OffensivePlay Zone DumpChase,Other,Standard,Micro-play action describing HOW the event was executed
-PD0103,OffensivePlay_Zone-DumpInAttempt,OffensivePlay Zone DumpInAttempt,Other,Standard,Micro-play action describing HOW the event was executed
-PD0104,OffensivePlay_Zone-Forecheck,OffensivePlay Zone Forecheck,Other,Standard,Micro-play action describing HOW the event was executed
-PD0105,OffensivePlay_Zone-PuckRecoveryDumpIn,OffensivePlay Zone PuckRecoveryDumpIn,Other,Standard,Micro-play action describing HOW the event was executed
-PD0106,OffensivePlay_Zone-PuckRecoveryFaceoff,OffensivePlay Zone PuckRecoveryFaceoff,Other,Standard,Micro-play action describing HOW the event was executed
-PD0107,OffensivePlay_Zone-PuckRecoveryOther,OffensivePlay Zone PuckRecoveryOther,Other,Standard,Micro-play action describing HOW the event was executed
-PD0108,OffensivePlay_Zone-PuckRecoveryPass,OffensivePlay Zone PuckRecoveryPass,Other,Standard,Micro-play action describing HOW the event was executed
-PD0109,OffensivePlay_Zone-PuckRecoveryRebound,OffensivePlay Zone PuckRecoveryRebound,Other,Standard,Micro-play action describing HOW the event was executed
-PD0110,OffensivePlay_Zone-PuckRecoveryShot,OffensivePlay Zone PuckRecoveryShot,Other,Standard,Micro-play action describing HOW the event was executed
-PD0111,OffensivePlay_Zone-PuckRecoveryTurnover,OffensivePlay Zone PuckRecoveryTurnover,Other,Standard,Micro-play action describing HOW the event was executed
-PD0112,OffensivePlay_Zone-PuckRetreivalFaceoff,OffensivePlay Zone PuckRetreivalFaceoff,Other,Standard,Micro-play action describing HOW the event was executed
-PD0113,OffensivePlay_Zone-PuckRetreivalPass,OffensivePlay Zone PuckRetreivalPass,Other,Standard,Micro-play action describing HOW the event was executed
-PD0114,OffensivePlay_Zone-PuckRetreivalRebound,OffensivePlay Zone PuckRetreivalRebound,Other,Standard,Micro-play action describing HOW the event was executed
-PD0115,OffensivePlay_Zone-PuckRetreivalShot,OffensivePlay Zone PuckRetreivalShot,Other,Standard,Micro-play action describing HOW the event was executed
-PD0116,OffensivePlay_Zone-PuckRetreivalTurnover,OffensivePlay Zone PuckRetreivalTurnover,Other,Standard,Micro-play action describing HOW the event was executed
-PD0117,OffensivePlay_Zone-PuckRetrievalDumpIn,OffensivePlay Zone PuckRetrievalDumpIn,Other,Standard,Micro-play action describing HOW the event was executed
-PD0118,OffensivePlay_Zone-PuckRetrievalShot,OffensivePlay Zone PuckRetrievalShot,Other,Standard,Micro-play action describing HOW the event was executed
-PD0119,Offensive_Zone-AttemptedEntryDumpIn,Offensive Zone AttemptedEntryDumpIn,Other,Standard,Micro-play action describing HOW the event was executed
-PD0120,Offensive_Zone-AttemptedEntryPass,Offensive Zone AttemptedEntryPass,Other,Standard,Micro-play action describing HOW the event was executed
-PD0121,Offensive_Zone-AttemptedEntryRush,Offensive Zone AttemptedEntryRush,Transition,Standard,Micro-play action describing HOW the event was executed
-PD0122,Offensive_Zone-AttemptedKeepin,Offensive Zone AttemptedKeepin,Other,Standard,Micro-play action describing HOW the event was executed
-PD0123,Offensive_Zone-CededZoneExit,Offensive Zone CededZoneExit,Other,Standard,Micro-play action describing HOW the event was executed
-PD0124,PassDeflected,PassDeflected,Other,Standard,Micro-play action describing HOW the event was executed
-PD0125,PassForTip,PassForTip,Offensive,Medium,Micro-play action describing HOW the event was executed
-PD0126,PassIntercepted,PassIntercepted,Other,Standard,Micro-play action describing HOW the event was executed
-PD0127,PokeCheck,PokeCheck,Defensive,Standard,Micro-play action describing HOW the event was executed
-PD0128,PuckRecoveryRetreivalAttemptedClear,PuckRecoveryRetreivalAttemptedClear,Other,Standard,Micro-play action describing HOW the event was executed
-PD0129,PuckRecoveryRetreivalClear,PuckRecoveryRetreivalClear,Other,Standard,Micro-play action describing HOW the event was executed
-PD0130,PuckRecoveryRetreivalDumpIn,PuckRecoveryRetreivalDumpIn,Other,Standard,Micro-play action describing HOW the event was executed
-PD0131,PuckRecoveryRetreivalFaceoff,PuckRecoveryRetreivalFaceoff,Other,Standard,Micro-play action describing HOW the event was executed
-PD0132,PuckRecoveryRetreivalLoosePuckBattle,PuckRecoveryRetreivalLoosePuckBattle,Other,Standard,Micro-play action describing HOW the event was executed
-PD0133,PuckRecoveryRetreivalOther,PuckRecoveryRetreivalOther,Other,Standard,Micro-play action describing HOW the event was executed
-PD0134,PuckRecoveryRetreivalPass,PuckRecoveryRetreivalPass,Other,Standard,Micro-play action describing HOW the event was executed
-PD0135,PuckRecoveryRetreivalRebound,PuckRecoveryRetreivalRebound,Other,Standard,Micro-play action describing HOW the event was executed
-PD0136,PuckRecoveryRetreivalShot,PuckRecoveryRetreivalShot,Other,Standard,Micro-play action describing HOW the event was executed
-PD0137,PuckRecoveryRetreivalTurnover,PuckRecoveryRetreivalTurnover,Other,Standard,Micro-play action describing HOW the event was executed
-PD0138,ReceiverMissed,ReceiverMissed,Other,Standard,Micro-play action describing HOW the event was executed
-PD0139,RecoveryRetreivalAttemptedClear,RecoveryRetreivalAttemptedClear,Other,Standard,Micro-play action describing HOW the event was executed
-PD0140,RecoveryRetreivalClear,RecoveryRetreivalClear,Other,Standard,Micro-play action describing HOW the event was executed
-PD0141,RecoveryRetreivalDumpIn,RecoveryRetreivalDumpIn,Other,Standard,Micro-play action describing HOW the event was executed
-PD0142,RecoveryRetreivalFaceoff,RecoveryRetreivalFaceoff,Other,Standard,Micro-play action describing HOW the event was executed
-PD0143,RecoveryRetreivalPass,RecoveryRetreivalPass,Other,Standard,Micro-play action describing HOW the event was executed
-PD0144,RecoveryRetreivalRebound,RecoveryRetreivalRebound,Other,Standard,Micro-play action describing HOW the event was executed
-PD0145,RecoveryRetreivalShot,RecoveryRetreivalShot,Other,Standard,Micro-play action describing HOW the event was executed
-PD0146,RecoveryRetreivalTurnover,RecoveryRetreivalTurnover,Other,Standard,Micro-play action describing HOW the event was executed
-PD0147,Screen,Screen,Offensive,Standard,Micro-play action describing HOW the event was executed
-PD0148,SecondTouch,SecondTouch,Other,Standard,Micro-play action describing HOW the event was executed
-PD0149,SeperateFromPuck,SeperateFromPuck,Other,Standard,Micro-play action describing HOW the event was executed
-PD0150,StickCheck,StickCheck,Defensive,Standard,Micro-play action describing HOW the event was executed
-PD0151,StoppedDeke,StoppedDeke,Offensive,High,Micro-play action describing HOW the event was executed
-PD0152,ZoneEntryDenial,ZoneEntryDenial,Other,Standard,Micro-play action describing HOW the event was executed
-PD0153,ZoneExitDenial,ZoneExitDenial,Other,Standard,Micro-play action describing HOW the event was executed
-PD0154,ZoneKeepin,ZoneKeepin,Other,Standard,Micro-play action describing HOW the event was executed
+PD0001,AssistPrimary,AssistPrimary,scoring,Standard,Primary assist on goal
+PD0002,AssistSecondary,AssistSecondary,scoring,Standard,Secondary assist on goal
+PD0003,StickCheck,StickCheck,defense,Standard,Stick check to disrupt opponent
+PD0004,PokeCheck,PokeCheck,defense,Standard,Poke check to steal puck
+PD0005,BlockedShot,BlockedShot,defense,Standard,Blocked an opponent shot
+PD0006,InShotPassLane,InShotPassLane,defense,Standard,Positioned in shot/pass lane
+PD0007,SeparateFromPuck,SeparateFromPuck,defense,Standard,Separated opponent from puck
+PD0008,Backcheck,Backcheck,defense,Standard,Backcheck effort
+PD0009,ZoneEntryDenial,ZoneEntryDenial,defense,Standard,Denied zone entry
+PD0010,ZoneExitDenial,ZoneExitDenial,defense,Standard,Denied zone exit
+PD0011,TakeAway,TakeAway,defense,Standard,Took puck from opponent
+PD0012,Deke,Deke,offense,Standard,Deke attempt
+PD0013,BeatDeke,BeatDeke,offense,Standard,Successfully beat defender with deke
+PD0014,Screen,Screen,offense,Standard,Screen on goalie
+PD0015,DumpAndChase,DumpAndChase,offense,Standard,Dump and chase play
+PD0016,Tip,Tip,offense,Standard,Tip/deflection attempt
+PD0017,OneTimer,OneTimer,offense,Standard,One-timer shot
+PD0018,DriveMiddle,DriveMiddle,drive,Standard,Drive to middle
+PD0019,DriveWide,DriveWide,drive,Standard,Drive wide
+PD0020,DriveCorner,DriveCorner,drive,Standard,Drive to corner
+PD0021,DriveNetMiddle,DriveNetMiddle,drive,Standard,Drive to net front
+PD0022,BeatMiddle,BeatMiddle,drive,Standard,Beat defender to middle
+PD0023,BeatWide,BeatWide,drive,Standard,Beat defender wide
+PD0024,Breakout,Breakout,transition,Standard,Breakout play
+PD0025,AttemptedBreakOutPass,AttemptedBreakOutPass,transition,Standard,Attempted breakout pass
+PD0026,AttemptedBreakOutRush,AttemptedBreakOutRush,transition,Standard,Attempted breakout rush
+PD0027,PuckRecovery,PuckRecovery,recovery,Standard,Recovered loose puck
+PD0028,BoardBattleWin,BoardBattleWin,recovery,Standard,Won board battle
+PD0029,BoardBattleLoss,BoardBattleLoss,recovery,Standard,Lost board battle
+PD0030,CrashNet,CrashNet,offense,Standard,Crash the net
+PD0031,Cycle,Cycle,offense,Standard,Cycle play in offensive zone
+PD0032,Forecheck,Forecheck,offense,Standard,Forecheck pressure
+PD0033,QuickUp,QuickUp,offense,Standard,Quick up pass
+PD0034,Reverse,Reverse,offense,Standard,Reverse play direction
+PD0035,Pressure,Pressure,defense,Standard,Defensive pressure on puck carrier
+PD0036,Contain,Contain,defense,Standard,Contain opponent positioning
+PD0037,Surf,Surf,defense,Standard,Surf/shadow defensive positioning
+PD0038,AttemptedBlockedShot,AttemptedBlockedShot,other,Standard,Micro-play action from tracking data
+PD0039,AttemptedBreakOutClear,AttemptedBreakOutClear,other,Standard,Micro-play action from tracking data
+PD0040,AttemptedEntryDumpIn,AttemptedEntryDumpIn,other,Standard,Micro-play action from tracking data
+PD0041,AttemptedEntryPass,AttemptedEntryPass,other,Standard,Micro-play action from tracking data
+PD0042,AttemptedEntryRush,AttemptedEntryRush,other,Standard,Micro-play action from tracking data
+PD0043,AttemptedKeepin,AttemptedKeepin,other,Standard,Micro-play action from tracking data
+PD0044,AttemptedShot,AttemptedShot,other,Standard,Micro-play action from tracking data
+PD0045,AttemptedTip_Deflection,AttemptedTip_Deflection,other,Standard,Micro-play action from tracking data
+PD0046,BoxOut,BoxOut,other,Standard,Micro-play action from tracking data
+PD0047,CededZoneEntry,CededZoneEntry,other,Standard,Micro-play action from tracking data
+PD0048,Chip,Chip,other,Standard,Micro-play action from tracking data
+PD0049,CutBack,CutBack,other,Standard,Micro-play action from tracking data
+PD0050,DefensivePlay_Zone_PuckRecoveryFaceoff,DefensivePlay_Zone_PuckRecoveryFaceoff,defensive,Standard,Micro-play action from tracking data
+PD0051,DefensivePlay_Zone_PuckRetreivalFaceoff,DefensivePlay_Zone_PuckRetreivalFaceoff,defensive,Standard,Micro-play action from tracking data
+PD0052,DefensivePlay_Zone_PuckRetreivalOther,DefensivePlay_Zone_PuckRetreivalOther,defensive,Standard,Micro-play action from tracking data
+PD0053,Defensive_PlayPass_PassDeflected,Defensive_PlayPass_PassDeflected,defensive,Standard,Micro-play action from tracking data
+PD0054,Defensive_PlayPass_PassIntercepted,Defensive_PlayPass_PassIntercepted,defensive,Standard,Micro-play action from tracking data
+PD0055,Defensive_PlayPossession_FroceWide,Defensive_PlayPossession_FroceWide,defensive,Standard,Micro-play action from tracking data
+PD0056,Defensive_PlayShot_BoxOut,Defensive_PlayShot_BoxOut,defensive,Standard,Micro-play action from tracking data
+PD0057,Defensive_PlayZone_ForcedDumpin_Clear,Defensive_PlayZone_ForcedDumpin_Clear,defensive,Standard,Micro-play action from tracking data
+PD0058,Defensive_PlayZone_PuckRecoveryDumpIn,Defensive_PlayZone_PuckRecoveryDumpIn,defensive,Standard,Micro-play action from tracking data
+PD0059,Defensive_PlayZone_PuckRecoveryPass,Defensive_PlayZone_PuckRecoveryPass,defensive,Standard,Micro-play action from tracking data
+PD0060,Defensive_PlayZone_PuckRecoveryRebound,Defensive_PlayZone_PuckRecoveryRebound,defensive,Standard,Micro-play action from tracking data
+PD0061,Defensive_PlayZone_PuckRecoveryShot,Defensive_PlayZone_PuckRecoveryShot,defensive,Standard,Micro-play action from tracking data
+PD0062,Defensive_PlayZone_PuckRecoveryTurnover,Defensive_PlayZone_PuckRecoveryTurnover,defensive,Standard,Micro-play action from tracking data
+PD0063,Defensive_PlayZone_PuckRetreivalPass,Defensive_PlayZone_PuckRetreivalPass,defensive,Standard,Micro-play action from tracking data
+PD0064,Defensive_PlayZone_PuckRetreivalTurnover,Defensive_PlayZone_PuckRetreivalTurnover,defensive,Standard,Micro-play action from tracking data
+PD0065,Defensive_PlayZone_PuckRetrievalDumpIn,Defensive_PlayZone_PuckRetrievalDumpIn,defensive,Standard,Micro-play action from tracking data
+PD0066,Defensive_PlayZone_PuckRetrievalRebound,Defensive_PlayZone_PuckRetrievalRebound,defensive,Standard,Micro-play action from tracking data
+PD0067,Defensive_PlayZone_PuckRetrievalShot,Defensive_PlayZone_PuckRetrievalShot,defensive,Standard,Micro-play action from tracking data
+PD0068,Defensive_Zone_AttemptedBreakOutClear,Defensive_Zone_AttemptedBreakOutClear,defensive,Standard,Micro-play action from tracking data
+PD0069,DeflectedShot,DeflectedShot,other,Standard,Micro-play action from tracking data
+PD0070,Delay,Delay,other,Standard,Micro-play action from tracking data
+PD0071,DumpChase,DumpChase,other,Standard,Micro-play action from tracking data
+PD0072,DumpInAttempt,DumpInAttempt,other,Standard,Micro-play action from tracking data
+PD0073,Dump_RimInZone,Dump_RimInZone,other,Standard,Micro-play action from tracking data
+PD0074,ForceWide,ForceWide,other,Standard,Micro-play action from tracking data
+PD0075,ForcedDumpin_Clear,ForcedDumpin_Clear,other,Standard,Micro-play action from tracking data
+PD0076,ForcedTurnover,ForcedTurnover,other,Standard,Micro-play action from tracking data
+PD0077,FrontofNet,FrontofNet,other,Standard,Micro-play action from tracking data
+PD0078,GiveAndGo,GiveAndGo,other,Standard,Micro-play action from tracking data
+PD0079,LoosePuckBattleLost,LoosePuckBattleLost,other,Standard,Micro-play action from tracking data
+PD0080,LoosePuckBattleWon,LoosePuckBattleWon,other,Standard,Micro-play action from tracking data
+PD0081,LostPuck,LostPuck,other,Standard,Micro-play action from tracking data
+PD0082,ManOnMan,ManOnMan,other,Standard,Micro-play action from tracking data
+PD0083,OffensivePlay_Possession_DriveNetWide,OffensivePlay_Possession_DriveNetWide,offensive,Standard,Micro-play action from tracking data
+PD0084,OffensivePlay_Possession_OpenIceDeke,OffensivePlay_Possession_OpenIceDeke,offensive,Standard,Micro-play action from tracking data
+PD0085,OffensivePlay_Zone_Dump_RimInZone,OffensivePlay_Zone_Dump_RimInZone,offensive,Standard,Micro-play action from tracking data
+PD0086,OffensivePlay_Zone_PuckRecoveryDumpIn,OffensivePlay_Zone_PuckRecoveryDumpIn,offensive,Standard,Micro-play action from tracking data
+PD0087,OffensivePlay_Zone_PuckRecoveryFaceoff,OffensivePlay_Zone_PuckRecoveryFaceoff,offensive,Standard,Micro-play action from tracking data
+PD0088,OffensivePlay_Zone_PuckRecoveryOther,OffensivePlay_Zone_PuckRecoveryOther,offensive,Standard,Micro-play action from tracking data
+PD0089,OffensivePlay_Zone_PuckRecoveryPass,OffensivePlay_Zone_PuckRecoveryPass,offensive,Standard,Micro-play action from tracking data
+PD0090,OffensivePlay_Zone_PuckRecoveryRebound,OffensivePlay_Zone_PuckRecoveryRebound,offensive,Standard,Micro-play action from tracking data
+PD0091,OffensivePlay_Zone_PuckRecoveryShot,OffensivePlay_Zone_PuckRecoveryShot,offensive,Standard,Micro-play action from tracking data
+PD0092,OffensivePlay_Zone_PuckRecoveryTurnover,OffensivePlay_Zone_PuckRecoveryTurnover,offensive,Standard,Micro-play action from tracking data
+PD0093,OffensivePlay_Zone_PuckRetreivalFaceoff,OffensivePlay_Zone_PuckRetreivalFaceoff,offensive,Standard,Micro-play action from tracking data
+PD0094,OffensivePlay_Zone_PuckRetreivalPass,OffensivePlay_Zone_PuckRetreivalPass,offensive,Standard,Micro-play action from tracking data
+PD0095,OffensivePlay_Zone_PuckRetreivalRebound,OffensivePlay_Zone_PuckRetreivalRebound,offensive,Standard,Micro-play action from tracking data
+PD0096,OffensivePlay_Zone_PuckRetreivalShot,OffensivePlay_Zone_PuckRetreivalShot,offensive,Standard,Micro-play action from tracking data
+PD0097,OffensivePlay_Zone_PuckRetreivalTurnover,OffensivePlay_Zone_PuckRetreivalTurnover,offensive,Standard,Micro-play action from tracking data
+PD0098,OffensivePlay_Zone_PuckRetrievalDumpIn,OffensivePlay_Zone_PuckRetrievalDumpIn,offensive,Standard,Micro-play action from tracking data
+PD0099,OffensivePlay_Zone_PuckRetrievalShot,OffensivePlay_Zone_PuckRetrievalShot,offensive,Standard,Micro-play action from tracking data
+PD0100,Offensive_Zone_AttemptedEntryDumpIn,Offensive_Zone_AttemptedEntryDumpIn,offensive,Standard,Micro-play action from tracking data
+PD0101,Offensive_Zone_AttemptedEntryRush,Offensive_Zone_AttemptedEntryRush,offensive,Standard,Micro-play action from tracking data
+PD0102,Offensive_Zone_CededZoneExit,Offensive_Zone_CededZoneExit,offensive,Standard,Micro-play action from tracking data
+PD0103,PassDeflected,PassDeflected,other,Standard,Micro-play action from tracking data
+PD0104,PassForTip,PassForTip,other,Standard,Micro-play action from tracking data
+PD0105,PassIntercepted,PassIntercepted,other,Standard,Micro-play action from tracking data
+PD0106,PuckRecoveryRetreivalAttemptedClear,PuckRecoveryRetreivalAttemptedClear,recovery,Standard,Micro-play action from tracking data
+PD0107,PuckRecoveryRetreivalClear,PuckRecoveryRetreivalClear,recovery,Standard,Micro-play action from tracking data
+PD0108,PuckRecoveryRetreivalDumpIn,PuckRecoveryRetreivalDumpIn,recovery,Standard,Micro-play action from tracking data
+PD0109,PuckRecoveryRetreivalFaceoff,PuckRecoveryRetreivalFaceoff,recovery,Standard,Micro-play action from tracking data
+PD0110,PuckRecoveryRetreivalLoosePuckBattle,PuckRecoveryRetreivalLoosePuckBattle,recovery,Standard,Micro-play action from tracking data
+PD0111,PuckRecoveryRetreivalOther,PuckRecoveryRetreivalOther,recovery,Standard,Micro-play action from tracking data
+PD0112,PuckRecoveryRetreivalPass,PuckRecoveryRetreivalPass,recovery,Standard,Micro-play action from tracking data
+PD0113,PuckRecoveryRetreivalRebound,PuckRecoveryRetreivalRebound,recovery,Standard,Micro-play action from tracking data
+PD0114,PuckRecoveryRetreivalShot,PuckRecoveryRetreivalShot,recovery,Standard,Micro-play action from tracking data
+PD0115,PuckRecoveryRetreivalTurnover,PuckRecoveryRetreivalTurnover,recovery,Standard,Micro-play action from tracking data
+PD0116,ReceiverMissed,ReceiverMissed,other,Standard,Micro-play action from tracking data
+PD0117,RecoveryRetreivalAttemptedClear,RecoveryRetreivalAttemptedClear,recovery,Standard,Micro-play action from tracking data
+PD0118,RecoveryRetreivalClear,RecoveryRetreivalClear,recovery,Standard,Micro-play action from tracking data
+PD0119,RecoveryRetreivalDumpIn,RecoveryRetreivalDumpIn,recovery,Standard,Micro-play action from tracking data
+PD0120,RecoveryRetreivalFaceoff,RecoveryRetreivalFaceoff,recovery,Standard,Micro-play action from tracking data
+PD0121,RecoveryRetreivalPass,RecoveryRetreivalPass,recovery,Standard,Micro-play action from tracking data
+PD0122,RecoveryRetreivalRebound,RecoveryRetreivalRebound,recovery,Standard,Micro-play action from tracking data
+PD0123,RecoveryRetreivalShot,RecoveryRetreivalShot,recovery,Standard,Micro-play action from tracking data
+PD0124,RecoveryRetreivalTurnover,RecoveryRetreivalTurnover,recovery,Standard,Micro-play action from tracking data
+PD0125,SecondTouch,SecondTouch,other,Standard,Micro-play action from tracking data
+PD0126,StoppedDeke,StoppedDeke,other,Standard,Micro-play action from tracking data
+PD0127,ZoneKeepin,ZoneKeepin,other,Standard,Micro-play action from tracking data

@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fact_player_boxscore_all - BenchSight</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #4a4e69; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>fact_player_boxscore_all</h1>
+        
+        <div class="alert alert-danger">⚠️ 15 suspicious stat entries for games in this table</div>
+        
+        <div class="meta">
+            <strong>Rows:</strong> 14,473 | 
+            <strong>Columns:</strong> 23 |
+            <strong>Last Updated:</strong> 2026-01-07 05:03:20 |
+            <strong>Version:</strong> 12.03
+        </div>
+        
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>game_id</td><td>int64</td><td>14,473</td><td>0.0%</td></tr><tr><td>player_id</td><td>object</td><td>14,473</td><td>0.0%</td></tr><tr><td>player_name</td><td>object</td><td>14,473</td><td>0.0%</td></tr><tr><td>player_number</td><td>object</td><td>14,194</td><td>1.9%</td></tr><tr><td>player_position</td><td>object</td><td>14,471</td><td>0.0%</td></tr><tr><td>team_venue</td><td>object</td><td>14,473</td><td>0.0%</td></tr><tr><td>team_name</td><td>object</td><td>14,473</td><td>0.0%</td></tr><tr><td>team_id</td><td>object</td><td>14,473</td><td>0.0%</td></tr><tr><td>opp_team_name</td><td>object</td><td>14,473</td><td>0.0%</td></tr><tr><td>date</td><td>object</td><td>14,473</td><td>0.0%</td></tr><tr><td>season</td><td>int64</td><td>14,473</td><td>0.0%</td></tr><tr><td>gp</td><td>int64</td><td>14,473</td><td>0.0%</td></tr><tr><td>g</td><td>int64</td><td>14,473</td><td>0.0%</td></tr><tr><td>a</td><td>int64</td><td>14,473</td><td>0.0%</td></tr><tr><td>pts</td><td>int64</td><td>14,473</td><td>0.0%</td></tr><tr><td>ga</td><td>int64</td><td>14,473</td><td>0.0%</td></tr><tr><td>pim</td><td>int64</td><td>14,473</td><td>0.0%</td></tr><tr><td>so</td><td>int64</td><td>14,473</td><td>0.0%</td></tr><tr><td>skill_rating</td><td>int64</td><td>14,473</td><td>0.0%</td></tr><tr><td>venue_id</td><td>object</td><td>14,473</td><td>0.0%</td></tr><tr><td>position_id</td><td>object</td><td>14,471</td><td>0.0%</td></tr><tr><td>season_id</td><td>object</td><td>14,473</td><td>0.0%</td></tr><tr><td>opp_team_id</td><td>object</td><td>14,473</td><td>0.0%</td></tr>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>game_id</th>
+      <th>player_id</th>
+      <th>player_name</th>
+      <th>player_number</th>
+      <th>player_position</th>
+      <th>team_venue</th>
+      <th>team_name</th>
+      <th>team_id</th>
+      <th>opp_team_name</th>
+      <th>date</th>
+      <th>season</th>
+      <th>gp</th>
+      <th>g</th>
+      <th>a</th>
+      <th>pts</th>
+      <th>ga</th>
+      <th>pim</th>
+      <th>so</th>
+      <th>skill_rating</th>
+      <th>venue_id</th>
+      <th>position_id</th>
+      <th>season_id</th>
+      <th>opp_team_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>10001</td>
+      <td>P100026</td>
+      <td>Austin Storm</td>
+      <td>20</td>
+      <td>Forward</td>
+      <td>away</td>
+      <td>Ace</td>
+      <td>N10002</td>
+      <td>Nelson</td>
+      <td>2023-10-08</td>
+      <td>20232024</td>
+      <td>1</td>
+      <td>3</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>6</td>
+      <td>VN0002</td>
+      <td>PS0004</td>
+      <td>N20232024F</td>
+      <td>N10004</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100277</td>
+      <td>Brent Bak</td>
+      <td>65</td>
+      <td>Forward</td>
+      <td>away</td>
+      <td>Ace</td>
+      <td>N10002</td>
+      <td>Nelson</td>
+      <td>2023-10-08</td>
+      <td>20232024</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>4</td>
+      <td>VN0002</td>
+      <td>PS0004</td>
+      <td>N20232024F</td>
+      <td>N10004</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100102</td>
+      <td>Darren Reck</td>
+      <td>12</td>
+      <td>Forward</td>
+      <td>away</td>
+      <td>Ace</td>
+      <td>N10002</td>
+      <td>Nelson</td>
+      <td>2023-10-08</td>
+      <td>20232024</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+      <td>3</td>
+      <td>VN0002</td>
+      <td>PS0004</td>
+      <td>N20232024F</td>
+      <td>N10004</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100061</td>
+      <td>Eric Larson</td>
+      <td>23</td>
+      <td>Defense</td>
+      <td>away</td>
+      <td>Nelson</td>
+      <td>N10004</td>
+      <td>Ace</td>
+      <td>2023-10-08</td>
+      <td>20232024</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>VN0002</td>
+      <td>PS0005</td>
+      <td>N20232024F</td>
+      <td>N10002</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100201</td>
+      <td>Garrett Ashcroft</td>
+      <td>5</td>
+      <td>Forward</td>
+      <td>away</td>
+      <td>Ace</td>
+      <td>N10002</td>
+      <td>Nelson</td>
+      <td>2023-10-08</td>
+      <td>20232024</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>5</td>
+      <td>VN0002</td>
+      <td>PS0004</td>
+      <td>N20232024F</td>
+      <td>N10004</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100062</td>
+      <td>Gary Buck</td>
+      <td>18</td>
+      <td>Forward</td>
+      <td>away</td>
+      <td>Nelson</td>
+      <td>N10004</td>
+      <td>Ace</td>
+      <td>2023-10-08</td>
+      <td>20232024</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>5</td>
+      <td>VN0002</td>
+      <td>PS0004</td>
+      <td>N20232024F</td>
+      <td>N10002</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100250</td>
+      <td>Geoff Nolan</td>
+      <td>2</td>
+      <td>Defense</td>
+      <td>away</td>
+      <td>Ace</td>
+      <td>N10002</td>
+      <td>Nelson</td>
+      <td>2023-10-08</td>
+      <td>20232024</td>
+      <td>1</td>
+      <td>0</td>
+      <td>2</td>
+      <td>2</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>4</td>
+      <td>VN0002</td>
+      <td>PS0005</td>
+      <td>N20232024F</td>
+      <td>N10004</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100243</td>
+      <td>Holly Sly</td>
+      <td>8</td>
+      <td>Forward</td>
+      <td>away</td>
+      <td>Nelson</td>
+      <td>N10004</td>
+      <td>Ace</td>
+      <td>2023-10-08</td>
+      <td>20232024</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>VN0002</td>
+      <td>PS0004</td>
+      <td>N20232024F</td>
+      <td>N10002</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100068</td>
+      <td>Ian Barr</td>
+      <td>4</td>
+      <td>Forward</td>
+      <td>away</td>
+      <td>Nelson</td>
+      <td>N10004</td>
+      <td>Ace</td>
+      <td>2023-10-08</td>
+      <td>20232024</td>
+      <td>1</td>
+      <td>0</td>
+      <td>3</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>VN0002</td>
+      <td>PS0004</td>
+      <td>N20232024F</td>
+      <td>N10002</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100241</td>
+      <td>Jacob Trivers</td>
+      <td>5</td>
+      <td>Defense</td>
+      <td>away</td>
+      <td>Nelson</td>
+      <td>N10004</td>
+      <td>Ace</td>
+      <td>2023-10-08</td>
+      <td>20232024</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>5</td>
+      <td>VN0002</td>
+      <td>PS0005</td>
+      <td>N20232024F</td>
+      <td>N10002</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100113</td>
+      <td>James McCarron</td>
+      <td>92</td>
+      <td>Defense</td>
+      <td>away</td>
+      <td>Ace</td>
+      <td>N10002</td>
+      <td>Nelson</td>
+      <td>2023-10-08</td>
+      <td>20232024</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>4</td>
+      <td>VN0002</td>
+      <td>PS0005</td>
+      <td>N20232024F</td>
+      <td>N10004</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100064</td>
+      <td>James Rynearson</td>
+      <td>51</td>
+      <td>Forward</td>
+      <td>away</td>
+      <td>Ace</td>
+      <td>N10002</td>
+      <td>Nelson</td>
+      <td>2023-10-08</td>
+      <td>20232024</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>VN0002</td>
+      <td>PS0004</td>
+      <td>N20232024F</td>
+      <td>N10004</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100219</td>
+      <td>John Morrow</td>
+      <td>25</td>
+      <td>Forward</td>
+      <td>away</td>
+      <td>Ace</td>
+      <td>N10002</td>
+      <td>Nelson</td>
+      <td>2023-10-08</td>
+      <td>20232024</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>VN0002</td>
+      <td>PS0004</td>
+      <td>N20232024F</td>
+      <td>N10004</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100065</td>
+      <td>Josh Twitchell</td>
+      <td>21</td>
+      <td>Forward</td>
+      <td>away</td>
+      <td>Nelson</td>
+      <td>N10004</td>
+      <td>Ace</td>
+      <td>2023-10-08</td>
+      <td>20232024</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>4</td>
+      <td>VN0002</td>
+      <td>PS0004</td>
+      <td>N20232024F</td>
+      <td>N10002</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100078</td>
+      <td>Kyle Popovich</td>
+      <td>0</td>
+      <td>Forward</td>
+      <td>away</td>
+      <td>Nelson</td>
+      <td>N10004</td>
+      <td>Ace</td>
+      <td>2023-10-08</td>
+      <td>20232024</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+      <td>5</td>
+      <td>VN0002</td>
+      <td>PS0004</td>
+      <td>N20232024F</td>
+      <td>N10002</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100132</td>
+      <td>Nick Ciampoli</td>
+      <td>28</td>
+      <td>Forward</td>
+      <td>away</td>
+      <td>Ace</td>
+      <td>N10002</td>
+      <td>Nelson</td>
+      <td>2023-10-08</td>
+      <td>20232024</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>4</td>
+      <td>VN0002</td>
+      <td>PS0004</td>
+      <td>N20232024F</td>
+      <td>N10004</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100237</td>
+      <td>Shawn Ryan</td>
+      <td>12</td>
+      <td>Forward</td>
+      <td>away</td>
+      <td>Nelson</td>
+      <td>N10004</td>
+      <td>Ace</td>
+      <td>2023-10-08</td>
+      <td>20232024</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>4</td>
+      <td>VN0002</td>
+      <td>PS0004</td>
+      <td>N20232024F</td>
+      <td>N10002</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100240</td>
+      <td>Tyler Walker</td>
+      <td>6</td>
+      <td>Defense</td>
+      <td>away</td>
+      <td>Nelson</td>
+      <td>N10004</td>
+      <td>Ace</td>
+      <td>2023-10-08</td>
+      <td>20232024</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>VN0002</td>
+      <td>PS0005</td>
+      <td>N20232024F</td>
+      <td>N10002</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100321</td>
+      <td>Zach Adams</td>
+      <td>NaN</td>
+      <td>Goalie</td>
+      <td>away</td>
+      <td>Ace</td>
+      <td>N10002</td>
+      <td>Nelson</td>
+      <td>2023-10-08</td>
+      <td>20232024</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>7</td>
+      <td>0</td>
+      <td>0</td>
+      <td>5</td>
+      <td>VN0002</td>
+      <td>PS0006</td>
+      <td>N20232024F</td>
+      <td>N10004</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100057</td>
+      <td>Alice Burley</td>
+      <td>24</td>
+      <td>Defense</td>
+      <td>home</td>
+      <td>Nelson</td>
+      <td>N10004</td>
+      <td>Ace</td>
+      <td>2023-10-08</td>
+      <td>20232024</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>4</td>
+      <td>VN0001</td>
+      <td>PS0005</td>
+      <td>N20232024F</td>
+      <td>N10002</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+        </div>
+        
+        <footer>
+            BenchSight v13.18 | Generated 2026-01-07 05:03:20
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>dim_rink_zone - BenchSight</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #4a4e69; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>dim_rink_zone</h1>
+        
+        
+        
+        <div class="meta">
+            <strong>Rows:</strong> 267 | 
+            <strong>Columns:</strong> 13 |
+            <strong>Last Updated:</strong> 2026-01-07 05:03:20 |
+            <strong>Version:</strong> 12.03
+        </div>
+        
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>rink_zone_id</td><td>object</td><td>267</td><td>0.0%</td></tr><tr><td>zone_code</td><td>object</td><td>267</td><td>0.0%</td></tr><tr><td>zone_name</td><td>object</td><td>267</td><td>0.0%</td></tr><tr><td>granularity</td><td>object</td><td>267</td><td>0.0%</td></tr><tr><td>x_min</td><td>float64</td><td>267</td><td>0.0%</td></tr><tr><td>x_max</td><td>float64</td><td>267</td><td>0.0%</td></tr><tr><td>y_min</td><td>float64</td><td>267</td><td>0.0%</td></tr><tr><td>y_max</td><td>float64</td><td>267</td><td>0.0%</td></tr><tr><td>zone</td><td>object</td><td>267</td><td>0.0%</td></tr><tr><td>danger</td><td>object</td><td>248</td><td>7.1%</td></tr><tr><td>side</td><td>object</td><td>248</td><td>7.1%</td></tr><tr><td>x_description</td><td>object</td><td>248</td><td>7.1%</td></tr><tr><td>y_description</td><td>object</td><td>248</td><td>7.1%</td></tr>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>rink_zone_id</th>
+      <th>zone_code</th>
+      <th>zone_name</th>
+      <th>granularity</th>
+      <th>x_min</th>
+      <th>x_max</th>
+      <th>y_min</th>
+      <th>y_max</th>
+      <th>zone</th>
+      <th>danger</th>
+      <th>side</th>
+      <th>x_description</th>
+      <th>y_description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>RC0001</td>
+      <td>OZ_SLOT</td>
+      <td>Offensive Zone - Slot</td>
+      <td>coarse</td>
+      <td>54.0</td>
+      <td>89.0</td>
+      <td>-22.0</td>
+      <td>22.0</td>
+      <td>offensive</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>RC0002</td>
+      <td>OZ_HIGH</td>
+      <td>Offensive Zone - High</td>
+      <td>coarse</td>
+      <td>25.0</td>
+      <td>54.0</td>
+      <td>-42.0</td>
+      <td>42.0</td>
+      <td>offensive</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>RC0003</td>
+      <td>OZ_LEFT</td>
+      <td>Offensive Zone - Left Wing</td>
+      <td>coarse</td>
+      <td>54.0</td>
+      <td>89.0</td>
+      <td>22.0</td>
+      <td>42.0</td>
+      <td>offensive</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>RC0004</td>
+      <td>OZ_RIGHT</td>
+      <td>Offensive Zone - Right Wing</td>
+      <td>coarse</td>
+      <td>54.0</td>
+      <td>89.0</td>
+      <td>-42.0</td>
+      <td>-22.0</td>
+      <td>offensive</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>RC0005</td>
+      <td>OZ_CREASE</td>
+      <td>Offensive Zone - Crease</td>
+      <td>coarse</td>
+      <td>84.0</td>
+      <td>100.0</td>
+      <td>-4.0</td>
+      <td>4.0</td>
+      <td>offensive</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>RC0006</td>
+      <td>OZ_CORNER_L</td>
+      <td>Offensive Zone - Left Corner</td>
+      <td>coarse</td>
+      <td>72.0</td>
+      <td>100.0</td>
+      <td>26.0</td>
+      <td>42.0</td>
+      <td>offensive</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>RC0007</td>
+      <td>OZ_CORNER_R</td>
+      <td>Offensive Zone - Right Corner</td>
+      <td>coarse</td>
+      <td>72.0</td>
+      <td>100.0</td>
+      <td>-42.0</td>
+      <td>-26.0</td>
+      <td>offensive</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>RC0008</td>
+      <td>NZ_CENTER</td>
+      <td>Neutral Zone - Center</td>
+      <td>coarse</td>
+      <td>-25.0</td>
+      <td>25.0</td>
+      <td>-22.0</td>
+      <td>22.0</td>
+      <td>neutral</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>RC0009</td>
+      <td>NZ_LEFT</td>
+      <td>Neutral Zone - Left</td>
+      <td>coarse</td>
+      <td>-25.0</td>
+      <td>25.0</td>
+      <td>22.0</td>
+      <td>42.0</td>
+      <td>neutral</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>RC0010</td>
+      <td>NZ_RIGHT</td>
+      <td>Neutral Zone - Right</td>
+      <td>coarse</td>
+      <td>-25.0</td>
+      <td>25.0</td>
+      <td>-42.0</td>
+      <td>-22.0</td>
+      <td>neutral</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>RC0011</td>
+      <td>DZ_SLOT</td>
+      <td>Defensive Zone - Slot</td>
+      <td>coarse</td>
+      <td>-89.0</td>
+      <td>-54.0</td>
+      <td>-22.0</td>
+      <td>22.0</td>
+      <td>defensive</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>RC0012</td>
+      <td>DZ_HIGH</td>
+      <td>Defensive Zone - High</td>
+      <td>coarse</td>
+      <td>-54.0</td>
+      <td>-25.0</td>
+      <td>-42.0</td>
+      <td>42.0</td>
+      <td>defensive</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>RC0013</td>
+      <td>DZ_LEFT</td>
+      <td>Defensive Zone - Left Wing</td>
+      <td>coarse</td>
+      <td>-89.0</td>
+      <td>-54.0</td>
+      <td>22.0</td>
+      <td>42.0</td>
+      <td>defensive</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>RC0014</td>
+      <td>DZ_RIGHT</td>
+      <td>Defensive Zone - Right Wing</td>
+      <td>coarse</td>
+      <td>-89.0</td>
+      <td>-54.0</td>
+      <td>-42.0</td>
+      <td>-22.0</td>
+      <td>defensive</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>RC0015</td>
+      <td>DZ_CREASE</td>
+      <td>Defensive Zone - Crease</td>
+      <td>coarse</td>
+      <td>-100.0</td>
+      <td>-84.0</td>
+      <td>-4.0</td>
+      <td>4.0</td>
+      <td>defensive</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>RC0016</td>
+      <td>DZ_CORNER_L</td>
+      <td>Defensive Zone - Left Corner</td>
+      <td>coarse</td>
+      <td>-100.0</td>
+      <td>-72.0</td>
+      <td>26.0</td>
+      <td>42.0</td>
+      <td>defensive</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>RC0017</td>
+      <td>DZ_CORNER_R</td>
+      <td>Defensive Zone - Right Corner</td>
+      <td>coarse</td>
+      <td>-100.0</td>
+      <td>-72.0</td>
+      <td>-42.0</td>
+      <td>-26.0</td>
+      <td>defensive</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>RC0018</td>
+      <td>OZ_BEHIND</td>
+      <td>Behind Offensive Net</td>
+      <td>coarse</td>
+      <td>89.0</td>
+      <td>100.0</td>
+      <td>-11.0</td>
+      <td>11.0</td>
+      <td>offensive</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>RC0019</td>
+      <td>DZ_BEHIND</td>
+      <td>Behind Defensive Net</td>
+      <td>coarse</td>
+      <td>-100.0</td>
+      <td>-89.0</td>
+      <td>-11.0</td>
+      <td>11.0</td>
+      <td>defensive</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>RBO01</td>
+      <td>O01</td>
+      <td>behind net - half</td>
+      <td>medium</td>
+      <td>89.0</td>
+      <td>100.0</td>
+      <td>-42.5</td>
+      <td>0.0</td>
+      <td>offensive</td>
+      <td>low</td>
+      <td>left</td>
+      <td>behind net</td>
+      <td>half</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+        </div>
+        
+        <footer>
+            BenchSight v13.18 | Generated 2026-01-07 05:03:20
+        </footer>
+    </div>
+</body>
+</html>

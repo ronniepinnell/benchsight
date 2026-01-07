@@ -1,121 +1,89 @@
-# Honest Assessment: BenchSight v17
+# Honest Technical Assessment
 
-## What Changed
+**Last Updated:** January 7, 2026  
+**Version:** 13.01
 
-**Before (v16.x)**: ETL generated ~15 tables. The other 96 were static CSVs with no generation code.
+## Executive Summary
 
-**After (v17)**: ETL generates ALL 111 tables from source data.
+**Overall Health: 🟢 GOOD** - Core ETL working, 4 games verified, goal accuracy 100%
 
----
+| Metric | Value |
+|--------|-------|
+| Working Tables | 61 (59 (33 dim, 24 fact, 2 qa)) |
+| Games Tracked | 4 (18969, 18977, 18981, 18987) |
+| Goal Accuracy | 100% verified |
+| Tests Passing | 17 (6 skipped) |
 
-## Current Status
+## What's Working ✅
 
-### What Works
+- **ETL Orchestrator** - Full, incremental, and single-game modes functional
+- **Core Tables** - fact_events, fact_event_players, fact_shifts generating correctly
+- **Goal Verification** - All 4 games verified against noradhockey.com
+- **Derived Tables** - Faceoffs, rushes, zone entries, saves, penalties working
+- **Player Linkage** - Jersey number to player_id mapping working
+- **Key Generation** - All composite keys generating correctly
+- **Documentation** - Comprehensive HTML docs with column metadata
 
-```
-python -m src.etl_complete --all
-```
+## Known Issues ⚠️
 
-Generates:
-- **111 tables** 
-- **~120,000 rows** (varies by games processed)
-- From 2 data sources: BLB_Tables.xlsx + game tracking files
+### 1. Missing Statistical Tables
+**Status:** PARTIAL
 
-### Verification Results (4 core games)
+Some tables exist in backup but not regenerated:
+- `fact_player_game_stats`
+- `fact_goalie_game_stats`
+- `fact_team_game_stats`
 
-| Category | Exact Match | Close | Different |
-|----------|-------------|-------|-----------|
-| Tables | 69 | 12 | 30 |
+**Impact:** Advanced analytics limited. Core data unaffected.
 
-The 30 "different" tables are mostly:
-- Empty placeholder tables (XY coordinates, video)
-- Analytics with different calculation approaches
-- Edge cases in derived stats
+### 2. XY Coordinate Integration
+**Status:** NOT STARTED
 
-**Core tables all match**: player stats, events, shifts, roster, dimensions.
+- Files exist in `data/raw/games/*/xy/`
+- `src/xy/xy_tables.py` exists but not called
 
----
+**Impact:** No heat maps or xG calculations.
 
-## What's Real Now
+### 3. SQL Injection
+**Status:** LOW RISK / MITIGATED
 
-### Generated from Source Data
-- All dimension tables (48)
-- All event tables (fact_events, fact_events_player, fact_events_tracking)
-- All shift tables (fact_shifts, fact_shifts_player, fact_shifts_long)
-- All player stats (17 tables)
-- All analytics (h2h, wowy, line_combos, etc.)
-- Team stats, goalie stats
-- QA and ETL log tables
+- Using f-strings but `src/core/safe_sql.py` provides validation
+- Game IDs validated as integers
+- Table names from controlled list
 
-### Still Static (By Design)
-- Lookup dimension values (event types, zones, positions)
-- These SHOULD be static - they define valid values
+## Table Status
 
----
+| Category | Count | Status |
+|----------|-------|--------|
+| Dimensions (dim_*) | 34 | ✅ Working |
+| Facts (fact_*) | 25 | ✅ Working |
+| QA (qa_*) | 2 | ✅ Working |
+| **Total** | **61** | |
 
-## Remaining Work
+## Code Quality
 
-### Minor Fixes (2-4 hours)
-- Fix empty placeholder tables (fact_video, fact_*_xy)
-- Match exact row counts on edge case tables
-- Clean up calculation differences in analytics
+| Metric | Status |
+|--------|--------|
+| Bare except clauses | ✅ Fixed |
+| Hard-coded values | ✅ Clean |
+| Test coverage | ⚠️ Partial (23 tests) |
+| Documentation | ✅ Good |
+| Error handling | ✅ Good |
 
-### Nice to Have
-- More sophisticated xG model
-- Better plus/minus calculation (needs opponent data)
-- Real video URL integration
+## Recommendations
 
----
+### Priority 1 (Next Session)
+- Regenerate player/team game stats tables
+- Process additional Fall 2024 games
 
-## Architecture
+### Priority 2 (Soon)
+- Integrate XY coordinate data
+- Build shot charts and heat maps
 
-```
-BLB_Tables.xlsx              Game Tracking Files
-       │                            │
-       ▼                            ▼
-┌──────────────────────────────────────────────┐
-│            src/etl_complete.py               │
-│                                              │
-│  • Load BLB data                             │
-│  • Load game tracking                        │
-│  • Generate dimensions                       │
-│  • Build fact_events, fact_events_player     │
-│  • Build fact_shifts, fact_shifts_player     │
-│  • Calculate player_game_stats               │
-│  • Generate analytics (h2h, wowy, combos)    │
-│  • Create support/QA tables                  │
-└──────────────────────────────────────────────┘
-                    │
-                    ▼
-            data/output/*.csv (111 files)
-                    │
-                    ▼
-         scripts/deploy_supabase.py
-                    │
-                    ▼
-              Supabase/PostgreSQL
-```
+### Priority 3 (Future)
+- Complete Streamlit dashboard
+- Deploy to Supabase
 
 ---
 
-## Bottom Line
-
-**You now have a real ETL pipeline.** 
-
-You can:
-- Add new games and regenerate everything
-- Fix calculation bugs and re-run
-- Rebuild from scratch if needed
-
-The system is no longer a "CSV delivery mechanism" - it's an actual data pipeline.
-
----
-
-## Recommended Next Steps
-
-1. **Test with your 4 games** - verify numbers match what you expect
-2. **Add remaining games** - process 18965, 18991, 18993, 19032
-3. **Deploy to Supabase** - use upsert mode
-4. **Build dashboards** - data is ready
-
-Total effort remaining: ~4-8 hours for polish, then ship it.
+See also: [HTML Version](html/HONEST_ASSESSMENT.html)

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fact_goalie_game_stats - BenchSight</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #4a4e69; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>fact_goalie_game_stats</h1>
+        
+        <div class="alert alert-danger">⚠️ 15 suspicious stat entries for games in this table</div>
+        
+        <div class="meta">
+            <strong>Rows:</strong> 8 | 
+            <strong>Columns:</strong> 23 |
+            <strong>Last Updated:</strong> 2026-01-07 05:03:20 |
+            <strong>Version:</strong> 12.03
+        </div>
+        
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>goalie_game_key</td><td>object</td><td>8</td><td>0.0%</td></tr><tr><td>game_id</td><td>int64</td><td>8</td><td>0.0%</td></tr><tr><td>season_id</td><td>object</td><td>8</td><td>0.0%</td></tr><tr><td>player_id</td><td>object</td><td>8</td><td>0.0%</td></tr><tr><td>player_name</td><td>object</td><td>8</td><td>0.0%</td></tr><tr><td>team_name</td><td>object</td><td>8</td><td>0.0%</td></tr><tr><td>saves</td><td>int64</td><td>8</td><td>0.0%</td></tr><tr><td>goals_against</td><td>int64</td><td>8</td><td>0.0%</td></tr><tr><td>shots_against</td><td>int64</td><td>8</td><td>0.0%</td></tr><tr><td>save_pct</td><td>float64</td><td>8</td><td>0.0%</td></tr><tr><td>toi_seconds</td><td>int64</td><td>8</td><td>0.0%</td></tr><tr><td>empty_net_ga</td><td>int64</td><td>8</td><td>0.0%</td></tr><tr><td>saves_rebound</td><td>float64</td><td>8</td><td>0.0%</td></tr><tr><td>saves_freeze</td><td>float64</td><td>8</td><td>0.0%</td></tr><tr><td>saves_glove</td><td>float64</td><td>8</td><td>0.0%</td></tr><tr><td>saves_blocker</td><td>float64</td><td>8</td><td>0.0%</td></tr><tr><td>saves_left_pad</td><td>float64</td><td>8</td><td>0.0%</td></tr><tr><td>saves_right_pad</td><td>float64</td><td>8</td><td>0.0%</td></tr><tr><td>rebound_control_pct</td><td>float64</td><td>8</td><td>0.0%</td></tr><tr><td>total_save_events</td><td>float64</td><td>8</td><td>0.0%</td></tr><tr><td>team_id</td><td>object</td><td>8</td><td>0.0%</td></tr><tr><td>home_team_id</td><td>object</td><td>8</td><td>0.0%</td></tr><tr><td>away_team_id</td><td>object</td><td>8</td><td>0.0%</td></tr>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>goalie_game_key</th>
+      <th>game_id</th>
+      <th>season_id</th>
+      <th>player_id</th>
+      <th>player_name</th>
+      <th>team_name</th>
+      <th>saves</th>
+      <th>goals_against</th>
+      <th>shots_against</th>
+      <th>save_pct</th>
+      <th>toi_seconds</th>
+      <th>empty_net_ga</th>
+      <th>saves_rebound</th>
+      <th>saves_freeze</th>
+      <th>saves_glove</th>
+      <th>saves_blocker</th>
+      <th>saves_left_pad</th>
+      <th>saves_right_pad</th>
+      <th>rebound_control_pct</th>
+      <th>total_save_events</th>
+      <th>team_id</th>
+      <th>home_team_id</th>
+      <th>away_team_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>GK1896900001</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100202</td>
+      <td>5 – Francis Forte (G)</td>
+      <td>Platinum</td>
+      <td>21</td>
+      <td>3</td>
+      <td>24</td>
+      <td>87.5</td>
+      <td>2700</td>
+      <td>0</td>
+      <td>54.0</td>
+      <td>21.0</td>
+      <td>11.0</td>
+      <td>1.0</td>
+      <td>9.0</td>
+      <td>12.0</td>
+      <td>28.0</td>
+      <td>75.0</td>
+      <td>N10008</td>
+      <td>N10008</td>
+      <td>N10010</td>
+    </tr>
+    <tr>
+      <td>GK1896900002</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100016</td>
+      <td>Wyatt Crandall – 5</td>
+      <td>Velodrome</td>
+      <td>37</td>
+      <td>4</td>
+      <td>41</td>
+      <td>90.2</td>
+      <td>2700</td>
+      <td>0</td>
+      <td>57.0</td>
+      <td>23.0</td>
+      <td>12.0</td>
+      <td>1.0</td>
+      <td>10.0</td>
+      <td>15.0</td>
+      <td>28.7</td>
+      <td>80.0</td>
+      <td>N10010</td>
+      <td>N10008</td>
+      <td>N10010</td>
+    </tr>
+    <tr>
+      <td>GK1897700001</td>
+      <td>18977</td>
+      <td>N20252026F</td>
+      <td>P100096</td>
+      <td>5 – Jared Wolf (G)</td>
+      <td>HollowBrook</td>
+      <td>24</td>
+      <td>3</td>
+      <td>27</td>
+      <td>88.9</td>
+      <td>2700</td>
+      <td>0</td>
+      <td>53.0</td>
+      <td>20.0</td>
+      <td>5.0</td>
+      <td>11.0</td>
+      <td>7.0</td>
+      <td>14.0</td>
+      <td>27.0</td>
+      <td>74.0</td>
+      <td>N10003</td>
+      <td>N10010</td>
+      <td>N10003</td>
+    </tr>
+    <tr>
+      <td>GK1897700002</td>
+      <td>18977</td>
+      <td>N20252026F</td>
+      <td>P100016</td>
+      <td>Wyatt Crandall – 5</td>
+      <td>Velodrome</td>
+      <td>36</td>
+      <td>2</td>
+      <td>38</td>
+      <td>94.7</td>
+      <td>2700</td>
+      <td>0</td>
+      <td>56.0</td>
+      <td>18.0</td>
+      <td>6.0</td>
+      <td>10.0</td>
+      <td>6.0</td>
+      <td>16.0</td>
+      <td>24.0</td>
+      <td>75.0</td>
+      <td>N10010</td>
+      <td>N10010</td>
+      <td>N10003</td>
+    </tr>
+    <tr>
+      <td>GK1898100001</td>
+      <td>18981</td>
+      <td>N20252026F</td>
+      <td>P100138</td>
+      <td>Thane Gilmore – 3</td>
+      <td>Nelson</td>
+      <td>13</td>
+      <td>1</td>
+      <td>14</td>
+      <td>92.9</td>
+      <td>2700</td>
+      <td>0</td>
+      <td>36.0</td>
+      <td>19.0</td>
+      <td>9.0</td>
+      <td>0.0</td>
+      <td>12.0</td>
+      <td>7.0</td>
+      <td>34.5</td>
+      <td>55.0</td>
+      <td>N10004</td>
+      <td>N10004</td>
+      <td>N10010</td>
+    </tr>
+    <tr>
+      <td>GK1898100002</td>
+      <td>18981</td>
+      <td>N20252026F</td>
+      <td>P100016</td>
+      <td>Wyatt Crandall – 5</td>
+      <td>Velodrome</td>
+      <td>32</td>
+      <td>2</td>
+      <td>34</td>
+      <td>94.1</td>
+      <td>2700</td>
+      <td>0</td>
+      <td>43.0</td>
+      <td>22.0</td>
+      <td>11.0</td>
+      <td>0.0</td>
+      <td>11.0</td>
+      <td>10.0</td>
+      <td>33.8</td>
+      <td>65.0</td>
+      <td>N10010</td>
+      <td>N10004</td>
+      <td>N10010</td>
+    </tr>
+    <tr>
+      <td>GK1898700001</td>
+      <td>18987</td>
+      <td>N20252026F</td>
+      <td>P100009</td>
+      <td>Graham Peters – 5</td>
+      <td>Outlaws</td>
+      <td>16</td>
+      <td>1</td>
+      <td>17</td>
+      <td>94.1</td>
+      <td>2700</td>
+      <td>0</td>
+      <td>37.0</td>
+      <td>25.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>39.1</td>
+      <td>64.0</td>
+      <td>N10007</td>
+      <td>N10007</td>
+      <td>N10010</td>
+    </tr>
+    <tr>
+      <td>GK1898700002</td>
+      <td>18987</td>
+      <td>N20252026F</td>
+      <td>P100016</td>
+      <td>Wyatt Crandall – 5</td>
+      <td>Velodrome</td>
+      <td>34</td>
+      <td>0</td>
+      <td>34</td>
+      <td>100.0</td>
+      <td>2700</td>
+      <td>0</td>
+      <td>36.0</td>
+      <td>30.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>44.1</td>
+      <td>68.0</td>
+      <td>N10010</td>
+      <td>N10007</td>
+      <td>N10010</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+        </div>
+        
+        <footer>
+            BenchSight v13.18 | Generated 2026-01-07 05:03:20
+        </footer>
+    </div>
+</body>
+</html>

@@ -160,15 +160,15 @@ class TestEventChainsTable:
     
     @pytest.fixture
     def event_chains_df(self):
-        path = OUTPUT_DIR / "fact_event_chains.csv"
+        path = OUTPUT_DIR / "fact_shot_chains.csv"
         if path.exists():
             return pd.read_csv(path)
         return pd.DataFrame()
     
     def test_event_chains_exists(self, event_chains_df):
-        """Verify fact_event_chains.csv exists."""
-        assert len(event_chains_df) > 0 or (OUTPUT_DIR / "fact_event_chains.csv").exists(), \
-            "fact_event_chains.csv not found"
+        """Verify fact_shot_chains.csv exists."""
+        assert len(event_chains_df) > 0 or (OUTPUT_DIR / "fact_shot_chains.csv").exists(), \
+            "fact_shot_chains.csv not found"
     
     def test_event_chains_has_sequence(self, event_chains_df):
         """Verify event chains has sequence/chain identifier."""

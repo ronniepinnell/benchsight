@@ -18,6 +18,7 @@ NAMING CONVENTION:
 """
 
 import pandas as pd
+from src.core.safe_sql import safe_table_name
 from typing import List, Optional
 from datetime import datetime
 
@@ -314,5 +315,7 @@ def get_row_count(table_name: str) -> int:
     
     with get_connection() as conn:
         # WHY COUNT(*): Most efficient way to count rows
-        result = conn.execute(text(f"SELECT COUNT(*) FROM {table_name}"))
+        # Validate table name to prevent SQL injection
+        validated_table = safe_table_name(table_name)
+        result = conn.execute(text(f"SELECT COUNT(*) FROM {validated_table}"))
         return result.scalar()

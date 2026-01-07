@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fact_event_players - BenchSight v0.02</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #333; line-height: 1.6; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #4a4e69 100%); color: white; padding: 20px 40px; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .nav { background: #4a4e69; padding: 0 20px; display: flex; flex-wrap: wrap; }
+        .nav a { color: white; text-decoration: none; padding: 10px 14px; font-size: 13px; }
+        .nav a:hover { background: rgba(255,255,255,0.1); }
+        .container { max-width: 1600px; margin: 0 auto; padding: 30px; }
+        
+        /* Table Overview Section */
+        .table-overview { background: white; border-radius: 8px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .table-overview h2 { margin-top: 0; color: #4a4e69; border-bottom: 2px solid #4a4e69; padding-bottom: 10px; }
+        .overview-desc { background: #e3f2fd; border-left: 4px solid #1976d2; padding: 15px; margin-bottom: 20px; font-size: 15px; }
+        .overview-grid { display: grid; grid-template-columns: 120px 1fr; gap: 10px 20px; }
+        .overview-label { font-weight: 600; color: #555; }
+        .overview-value { color: #333; }
+        .overview-value code { background: #f5f5f5; padding: 2px 8px; border-radius: 4px; font-family: 'SF Mono', Monaco, monospace; font-size: 12px; }
+        
+        /* Column Documentation Section */
+        .column-docs { background: white; border-radius: 8px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .column-docs h2 { margin-top: 0; color: #4a4e69; border-bottom: 2px solid #4a4e69; padding-bottom: 10px; }
+        
+        /* Legend */
+        .legend { margin-bottom: 20px; padding: 15px; background: #fafafa; border-radius: 6px; }
+        .legend-title { font-weight: 600; margin-right: 10px; }
+        .legend-item { display: inline-flex; align-items: center; margin-right: 20px; }
+        
+        /* Type badges */
+        .type-badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+        .badge-explicit { background: #e8f5e9; color: #2e7d32; }
+        .badge-calculated { background: #fff3e0; color: #e65100; }
+        .badge-derived { background: #e3f2fd; color: #1565c0; }
+        .badge-fk { background: #fce4ec; color: #c2185b; }
+        .badge-unknown { background: #f5f5f5; color: #757575; }
+        
+        /* Table styling */
+        table { border-collapse: collapse; width: 100%; margin: 15px 0; background: white; }
+        th { background: #4a4e69; color: white; padding: 12px 10px; text-align: left; font-size: 12px; font-weight: 600; position: sticky; top: 0; }
+        td { border: 1px solid #e0e0e0; padding: 10px; font-size: 13px; vertical-align: top; }
+        tr:nth-child(even) { background: #fafafa; }
+        tr:hover { background: #f0f7ff; }
+        code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-family: 'SF Mono', Monaco, monospace; font-size: 11px; }
+        
+        /* Column-specific styling */
+        .context-cell { max-width: 300px; font-size: 12px; color: #555; }
+        .calc-cell { max-width: 250px; font-size: 11px; }
+        .calc-cell code { background: #fff8e1; }
+        .stat-cell { text-align: right; font-size: 12px; }
+        .null-low { color: #2e7d32; }
+        .null-med { color: #f57c00; }
+        .null-high { color: #c62828; font-weight: 600; }
+        
+        /* Badge styles */
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+        .badge-blue { background: #1976d2; color: white; }
+        .badge-green { background: #388e3c; color: white; }
+        .badge-yellow { background: #f9a825; color: #333; }
+        
+        /* Sample data */
+        .data-table { font-size: 11px; overflow-x: auto; }
+        .data-table th { font-size: 11px; padding: 8px; }
+        .data-table td { padding: 6px 8px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        
+        footer { text-align: center; padding: 20px; color: #888; font-size: 11px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏒 BenchSight <span style="font-size: 14px; opacity: 0.8;">v0.02</span></h1>
+    </div>
+    
+    <nav class="nav">
+        <a href="../index.html">🏠 Home</a>
+        <a href="../tables.html">📊 Tables (59)</a>
+        <a href="../BS_DETECTOR.html">🔍 BS Detector</a>
+        <a href="../DOC_MAINTENANCE.html">📝 Doc Guide</a>
+    </nav>
+
+    <div class="container">
+        <h1>fact_event_players <span class="badge badge-green">Fact</span></h1>
+        
+        <!-- Table Overview Section -->
+        <div class="table-overview">
+            <h2>Table Overview</h2>
+            
+            <div class="overview-desc">
+                <strong>Description:</strong> Bridge table linking events to players with their roles
+            </div>
+            
+            <div class="overview-grid">
+                <div class="overview-label">Purpose:</div>
+                <div class="overview-value">Enable player-level stats from events. Query goals/assists/shots by player.</div>
+                
+                <div class="overview-label">Source Module:</div>
+                <div class="overview-value"><code>src/core/base_etl.py:create_event_players()</code></div>
+                
+                <div class="overview-label">Logic:</div>
+                <div class="overview-value">Unpivots event_player_1 through event_player_6 from fact_events into rows.</div>
+                
+                <div class="overview-label">Grain:</div>
+                <div class="overview-value">One row per player per event</div>
+                
+                <div class="overview-label">Rows:</div>
+                <div class="overview-value">100</div>
+                
+                <div class="overview-label">Columns:</div>
+                <div class="overview-value">61</div>
+            </div>
+        </div>
+        
+        <!-- Column Documentation Section -->
+        <div class="column-docs">
+            <h2>Column Documentation</h2>
+            
+            <div class="legend">
+                <span class="legend-title">Legend:</span>
+                <span class="legend-item"><span class="type-badge badge-explicit">Explicit</span> = From raw data</span>
+                <span class="legend-item"><span class="type-badge badge-calculated">Calculated</span> = Formula-based</span>
+                <span class="legend-item"><span class="type-badge badge-derived">Derived</span> = Generated key/aggregate</span>
+                <span class="legend-item"><span class="type-badge badge-fk">FK</span> = Foreign key lookup</span>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Column</th>
+                        <th>Data Type</th>
+                        <th>Description</th>
+                        <th>Context / Mapping</th>
+                        <th>Calculation / Formula</th>
+                        <th>Type</th>
+                        <th>Non-Null</th>
+                        <th>Null %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+            <tr>
+                <td><code>event_id</code></td>
+                <td>object</td>
+                <td>Unique event identifier</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>game_id</code></td>
+                <td>int64</td>
+                <td>Game identifier</td>
+                <td class="context-cell">FK to fact_events.game_id</td>
+                <td class="calc-cell"><code>Copied from fact_events</code></td>
+                <td><span class="type-badge badge-fk">FK</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>player_id</code></td>
+                <td>object</td>
+                <td>Player identifier</td>
+                <td class="context-cell">FK to dim_player.player_id. Format P######.</td>
+                <td class="calc-cell"><code>Lookup from player name in dim_player</code></td>
+                <td><span class="type-badge badge-fk">FK</span></td>
+                <td class="stat-cell">99</td>
+                <td class="stat-cell null-low">1.0%</td>
+            </tr>
+            <tr>
+                <td><code>player_game_number</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">99</td>
+                <td class="stat-cell null-low">1.0%</td>
+            </tr>
+            <tr>
+                <td><code>sequence_key</code></td>
+                <td>object</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">99</td>
+                <td class="stat-cell null-low">1.0%</td>
+            </tr>
+            <tr>
+                <td><code>play_key</code></td>
+                <td>object</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">99</td>
+                <td class="stat-cell null-low">1.0%</td>
+            </tr>
+            <tr>
+                <td><code>shift_key</code></td>
+                <td>object</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">99</td>
+                <td class="stat-cell null-low">1.0%</td>
+            </tr>
+            <tr>
+                <td><code>linked_event_key</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">0</td>
+                <td class="stat-cell null-high">100.0%</td>
+            </tr>
+            <tr>
+                <td><code>event_chain_key</code></td>
+                <td>object</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>tracking_event_key</code></td>
+                <td>object</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>zone_change_key</code></td>
+                <td>object</td>
+                <td>Ice zone (Off, Def, Neu)</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>period_id</code></td>
+                <td>object</td>
+                <td>Game period (1, 2, 3, OT)</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_team_id</code></td>
+                <td>object</td>
+                <td>Unique team identifier</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_team_id</code></td>
+                <td>object</td>
+                <td>Unique team identifier</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>player_team_id</code></td>
+                <td>object</td>
+                <td>Unique team identifier</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">99</td>
+                <td class="stat-cell null-low">1.0%</td>
+            </tr>
+            <tr>
+                <td><code>period</code></td>
+                <td>int64</td>
+                <td>Game period</td>
+                <td class="context-cell">Values: 1, 2, 3, OT, SO</td>
+                <td class="calc-cell"><code>From tracking spreadsheet</code></td>
+                <td><span class="type-badge badge-explicit">Explicit</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>event_start_min</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">99</td>
+                <td class="stat-cell null-low">1.0%</td>
+            </tr>
+            <tr>
+                <td><code>event_start_sec</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">99</td>
+                <td class="stat-cell null-low">1.0%</td>
+            </tr>
+            <tr>
+                <td><code>event_end_min</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">48</td>
+                <td class="stat-cell null-high">52.0%</td>
+            </tr>
+            <tr>
+                <td><code>event_end_sec</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">48</td>
+                <td class="stat-cell null-high">52.0%</td>
+            </tr>
+            <tr>
+                <td><code>event_team_zone</code></td>
+                <td>object</td>
+                <td>Ice zone (Off, Def, Neu)</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">99</td>
+                <td class="stat-cell null-low">1.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_team_zone</code></td>
+                <td>object</td>
+                <td>Ice zone (Off, Def, Neu)</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">99</td>
+                <td class="stat-cell null-low">1.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_team_zone</code></td>
+                <td>object</td>
+                <td>Ice zone (Off, Def, Neu)</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">99</td>
+                <td class="stat-cell null-low">1.0%</td>
+            </tr>
+            <tr>
+                <td><code>team_venue</code></td>
+                <td>object</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">99</td>
+                <td class="stat-cell null-low">1.0%</td>
+            </tr>
+            <tr>
+                <td><code>side_of_puck</code></td>
+                <td>object</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">99</td>
+                <td class="stat-cell null-low">1.0%</td>
+            </tr>
+            <tr>
+                <td><code>play_detail1</code></td>
+                <td>object</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">40</td>
+                <td class="stat-cell null-high">60.0%</td>
+            </tr>
+            <tr>
+                <td><code>play_detail_2</code></td>
+                <td>object</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">1</td>
+                <td class="stat-cell null-high">99.0%</td>
+            </tr>
+            <tr>
+                <td><code>play_detail_successful</code></td>
+                <td>object</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">33</td>
+                <td class="stat-cell null-high">67.0%</td>
+            </tr>
+            <tr>
+                <td><code>pressured_pressurer</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">29</td>
+                <td class="stat-cell null-high">71.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_team</code></td>
+                <td>object</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_team</code></td>
+                <td>object</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>event_type</code></td>
+                <td>object</td>
+                <td>Type of event (denormalized)</td>
+                <td class="context-cell">Copied from fact_events for query convenience</td>
+                <td class="calc-cell"><code>Denormalized from fact_events.event_type</code></td>
+                <td><span class="type-badge badge-derived">Derived</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>event_detail</code></td>
+                <td>object</td>
+                <td>Event subtype (denormalized)</td>
+                <td class="context-cell">Copied from fact_events for query convenience</td>
+                <td class="calc-cell"><code>Denormalized from fact_events.event_detail</code></td>
+                <td><span class="type-badge badge-derived">Derived</span></td>
+                <td class="stat-cell">81</td>
+                <td class="stat-cell null-high">19.0%</td>
+            </tr>
+            <tr>
+                <td><code>event_detail_2</code></td>
+                <td>object</td>
+                <td>Detailed event subtype</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">50</td>
+                <td class="stat-cell null-high">50.0%</td>
+            </tr>
+            <tr>
+                <td><code>event_successful</code></td>
+                <td>object</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">73</td>
+                <td class="stat-cell null-high">27.0%</td>
+            </tr>
+            <tr>
+                <td><code>duration</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">99</td>
+                <td class="stat-cell null-low">1.0%</td>
+            </tr>
+            <tr>
+                <td><code>time_start_total_seconds</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">99</td>
+                <td class="stat-cell null-low">1.0%</td>
+            </tr>
+            <tr>
+                <td><code>time_end_total_seconds</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">99</td>
+                <td class="stat-cell null-low">1.0%</td>
+            </tr>
+            <tr>
+                <td><code>running_intermission_duration</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">99</td>
+                <td class="stat-cell null-low">1.0%</td>
+            </tr>
+            <tr>
+                <td><code>period_start_total_running_seconds</code></td>
+                <td>float64</td>
+                <td>Game period (1, 2, 3, OT)</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>running_video_time</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>event_running_start</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>event_running_end</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>player_role</code></td>
+                <td>object</td>
+                <td>Player's role in this event</td>
+                <td class="context-cell">event_player_1 (primary), event_player_2 (secondary), etc.</td>
+                <td class="calc-cell"><code>From column name during unpivot</code></td>
+                <td><span class="type-badge badge-derived">Derived</span></td>
+                <td class="stat-cell">99</td>
+                <td class="stat-cell null-low">1.0%</td>
+            </tr>
+            <tr>
+                <td><code>player_team</code></td>
+                <td>object</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">99</td>
+                <td class="stat-cell null-low">1.0%</td>
+            </tr>
+            <tr>
+                <td><code>is_goal</code></td>
+                <td>int64</td>
+                <td>Boolean flag</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>player_name</code></td>
+                <td>object</td>
+                <td>Player full name</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">99</td>
+                <td class="stat-cell null-low">1.0%</td>
+            </tr>
+            <tr>
+                <td><code>season_id</code></td>
+                <td>object</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>position_id</code></td>
+                <td>float64</td>
+                <td>Player position (C, LW, RW, D, G)</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">99</td>
+                <td class="stat-cell null-low">1.0%</td>
+            </tr>
+            <tr>
+                <td><code>shot_type_id</code></td>
+                <td>float64</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">0</td>
+                <td class="stat-cell null-high">100.0%</td>
+            </tr>
+            <tr>
+                <td><code>zone_entry_type_id</code></td>
+                <td>object</td>
+                <td>Ice zone (Off, Def, Neu)</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">8</td>
+                <td class="stat-cell null-high">92.0%</td>
+            </tr>
+            <tr>
+                <td><code>zone_exit_type_id</code></td>
+                <td>float64</td>
+                <td>Ice zone (Off, Def, Neu)</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">0</td>
+                <td class="stat-cell null-high">100.0%</td>
+            </tr>
+            <tr>
+                <td><code>stoppage_type_id</code></td>
+                <td>float64</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">0</td>
+                <td class="stat-cell null-high">100.0%</td>
+            </tr>
+            <tr>
+                <td><code>giveaway_type_id</code></td>
+                <td>object</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">7</td>
+                <td class="stat-cell null-high">93.0%</td>
+            </tr>
+            <tr>
+                <td><code>takeaway_type_id</code></td>
+                <td>object</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">2</td>
+                <td class="stat-cell null-high">98.0%</td>
+            </tr>
+            <tr>
+                <td><code>turnover_type_id</code></td>
+                <td>object</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">9</td>
+                <td class="stat-cell null-high">91.0%</td>
+            </tr>
+            <tr>
+                <td><code>pass_type_id</code></td>
+                <td>float64</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">0</td>
+                <td class="stat-cell null-high">100.0%</td>
+            </tr>
+            <tr>
+                <td><code>time_bucket_id</code></td>
+                <td>object</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">99</td>
+                <td class="stat-cell null-low">1.0%</td>
+            </tr>
+            <tr>
+                <td><code>strength_id</code></td>
+                <td>object</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">99</td>
+                <td class="stat-cell null-low">1.0%</td>
+            </tr>
+            <tr>
+                <td><code>cycle_key</code></td>
+                <td>object</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">15</td>
+                <td class="stat-cell null-high">85.0%</td>
+            </tr>
+            <tr>
+                <td><code>is_cycle</code></td>
+                <td>int64</td>
+                <td>Boolean flag</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">100</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Sample Data Section -->
+        <div class="column-docs">
+            <h2>Sample Data (First 5 Rows)</h2>
+            <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>event_id</th>
+      <th>game_id</th>
+      <th>player_id</th>
+      <th>player_game_number</th>
+      <th>sequence_key</th>
+      <th>play_key</th>
+      <th>shift_key</th>
+      <th>linked_event_key</th>
+      <th>event_chain_key</th>
+      <th>tracking_event_key</th>
+      <th>zone_change_key</th>
+      <th>period_id</th>
+      <th>home_team_id</th>
+      <th>away_team_id</th>
+      <th>player_team_id</th>
+      <th>period</th>
+      <th>event_start_min</th>
+      <th>event_start_sec</th>
+      <th>event_end_min</th>
+      <th>event_end_sec</th>
+      <th>event_team_zone</th>
+      <th>home_team_zone</th>
+      <th>away_team_zone</th>
+      <th>team_venue</th>
+      <th>side_of_puck</th>
+      <th>play_detail1</th>
+      <th>play_detail_2</th>
+      <th>play_detail_successful</th>
+      <th>pressured_pressurer</th>
+      <th>home_team</th>
+      <th>away_team</th>
+      <th>event_type</th>
+      <th>event_detail</th>
+      <th>event_detail_2</th>
+      <th>event_successful</th>
+      <th>duration</th>
+      <th>time_start_total_seconds</th>
+      <th>time_end_total_seconds</th>
+      <th>running_intermission_duration</th>
+      <th>period_start_total_running_seconds</th>
+      <th>running_video_time</th>
+      <th>event_running_start</th>
+      <th>event_running_end</th>
+      <th>player_role</th>
+      <th>player_team</th>
+      <th>is_goal</th>
+      <th>player_name</th>
+      <th>season_id</th>
+      <th>position_id</th>
+      <th>shot_type_id</th>
+      <th>zone_entry_type_id</th>
+      <th>zone_exit_type_id</th>
+      <th>stoppage_type_id</th>
+      <th>giveaway_type_id</th>
+      <th>takeaway_type_id</th>
+      <th>turnover_type_id</th>
+      <th>pass_type_id</th>
+      <th>time_bucket_id</th>
+      <th>strength_id</th>
+      <th>cycle_key</th>
+      <th>is_cycle</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>EV1896901000</td>
+      <td>18969</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>EC18969001000</td>
+      <td>TV1896901000</td>
+      <td>ZC1896900001</td>
+      <td>P01</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>NaN</td>
+      <td>1</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>GameStart</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>5.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>N20252026F</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>EV1896901001</td>
+      <td>18969</td>
+      <td>P100192</td>
+      <td>53.0</td>
+      <td>SQ1896900001</td>
+      <td>PL1896900101</td>
+      <td>SH1896900001</td>
+      <td>NaN</td>
+      <td>EC18969001001</td>
+      <td>TV1896901001</td>
+      <td>ZC1896900001</td>
+      <td>P01</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>N10008</td>
+      <td>1</td>
+      <td>18.0</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>n</td>
+      <td>n</td>
+      <td>n</td>
+      <td>Home</td>
+      <td>Offensive</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>Faceoff</td>
+      <td>Faceoff_GameStart</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>1080.0</td>
+      <td>1080.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>5.0</td>
+      <td>event_player_1</td>
+      <td>Platinum</td>
+      <td>0</td>
+      <td>Chris Premo</td>
+      <td>N20252026F</td>
+      <td>4.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TB01</td>
+      <td>STR0001</td>
+      <td>NaN</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>EV1896901001</td>
+      <td>18969</td>
+      <td>P100025</td>
+      <td>21.0</td>
+      <td>SQ1896900001</td>
+      <td>PL1896900101</td>
+      <td>SH1896900001</td>
+      <td>NaN</td>
+      <td>EC18969001001</td>
+      <td>TV1896901001</td>
+      <td>ZC1896900001</td>
+      <td>P01</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>N10008</td>
+      <td>1</td>
+      <td>18.0</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>n</td>
+      <td>n</td>
+      <td>n</td>
+      <td>Home</td>
+      <td>Offensive</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>Faceoff</td>
+      <td>Faceoff_GameStart</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>1080.0</td>
+      <td>1080.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>5.0</td>
+      <td>event_player_2</td>
+      <td>Platinum</td>
+      <td>0</td>
+      <td>Andrew Marshall</td>
+      <td>N20252026F</td>
+      <td>4.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TB01</td>
+      <td>STR0001</td>
+      <td>NaN</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>EV1896901001</td>
+      <td>18969</td>
+      <td>P100001</td>
+      <td>70.0</td>
+      <td>SQ1896900001</td>
+      <td>PL1896900101</td>
+      <td>SH1896900001</td>
+      <td>NaN</td>
+      <td>EC18969001001</td>
+      <td>TV1896901001</td>
+      <td>ZC1896900001</td>
+      <td>P01</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>N10010</td>
+      <td>1</td>
+      <td>18.0</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>n</td>
+      <td>n</td>
+      <td>n</td>
+      <td>Home</td>
+      <td>Defensive</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>Faceoff</td>
+      <td>Faceoff_GameStart</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>1080.0</td>
+      <td>1080.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>5.0</td>
+      <td>opp_player_1</td>
+      <td>Velodrome</td>
+      <td>0</td>
+      <td>Sam Downs</td>
+      <td>N20252026F</td>
+      <td>4.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TB01</td>
+      <td>STR0001</td>
+      <td>NaN</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>EV1896901002</td>
+      <td>18969</td>
+      <td>P100025</td>
+      <td>21.0</td>
+      <td>SQ1896900001</td>
+      <td>PL1896900101</td>
+      <td>SH1896900001</td>
+      <td>NaN</td>
+      <td>EC18969001002</td>
+      <td>TV1896901002</td>
+      <td>ZC1896900001</td>
+      <td>P01</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>N10008</td>
+      <td>1</td>
+      <td>17.0</td>
+      <td>59.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>n</td>
+      <td>n</td>
+      <td>n</td>
+      <td>Home</td>
+      <td>Offensive</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>Pass</td>
+      <td>Pass_Completed</td>
+      <td>Pass_Forehand</td>
+      <td>s</td>
+      <td>0.0</td>
+      <td>1079.0</td>
+      <td>1079.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>5.0</td>
+      <td>event_player_1</td>
+      <td>Platinum</td>
+      <td>0</td>
+      <td>Andrew Marshall</td>
+      <td>N20252026F</td>
+      <td>4.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TB01</td>
+      <td>STR0001</td>
+      <td>NaN</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+        </div>
+        
+        <footer>
+            BenchSight v0.02 | Generated: 2026-01-07 14:30 | <a href="../tables.html">Back to Tables</a>
+        </footer>
+    </div>
+</body>
+</html>

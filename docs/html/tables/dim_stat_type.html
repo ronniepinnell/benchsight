@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>dim_stat_type - BenchSight</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #4a4e69; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>dim_stat_type</h1>
+        
+        
+        
+        <div class="meta">
+            <strong>Rows:</strong> 57 | 
+            <strong>Columns:</strong> 6 |
+            <strong>Last Updated:</strong> 2026-01-07 05:03:20 |
+            <strong>Version:</strong> 12.03
+        </div>
+        
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>stat_id</td><td>object</td><td>57</td><td>0.0%</td></tr><tr><td>stat_name</td><td>object</td><td>57</td><td>0.0%</td></tr><tr><td>stat_category</td><td>object</td><td>57</td><td>0.0%</td></tr><tr><td>stat_level</td><td>object</td><td>57</td><td>0.0%</td></tr><tr><td>computable_now</td><td>object</td><td>57</td><td>0.0%</td></tr><tr><td>description</td><td>object</td><td>57</td><td>0.0%</td></tr>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>stat_id</th>
+      <th>stat_name</th>
+      <th>stat_category</th>
+      <th>stat_level</th>
+      <th>computable_now</th>
+      <th>description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>MS0001</td>
+      <td>Goals</td>
+      <td>core</td>
+      <td>player_game</td>
+      <td>yes</td>
+      <td>Goals scored</td>
+    </tr>
+    <tr>
+      <td>MS0002</td>
+      <td>Primary Assists</td>
+      <td>core</td>
+      <td>player_game</td>
+      <td>yes</td>
+      <td>Primary assists</td>
+    </tr>
+    <tr>
+      <td>MS0003</td>
+      <td>Secondary Assists</td>
+      <td>core</td>
+      <td>player_game</td>
+      <td>yes</td>
+      <td>Secondary assists</td>
+    </tr>
+    <tr>
+      <td>MS0004</td>
+      <td>Points</td>
+      <td>core</td>
+      <td>player_game</td>
+      <td>yes</td>
+      <td>Goals + Assists</td>
+    </tr>
+    <tr>
+      <td>MS0005</td>
+      <td>Penalty Minutes</td>
+      <td>core</td>
+      <td>player_game</td>
+      <td>yes</td>
+      <td>Penalty minutes</td>
+    </tr>
+    <tr>
+      <td>MS0006</td>
+      <td>Time on Ice</td>
+      <td>core</td>
+      <td>player_game</td>
+      <td>yes</td>
+      <td>Total time on ice in seconds</td>
+    </tr>
+    <tr>
+      <td>MS0007</td>
+      <td>Games Played</td>
+      <td>core</td>
+      <td>player_season</td>
+      <td>yes</td>
+      <td>Games played</td>
+    </tr>
+    <tr>
+      <td>MS0008</td>
+      <td>Plus/Minus</td>
+      <td>core</td>
+      <td>player_game</td>
+      <td>yes</td>
+      <td>Goals for minus goals against at EV</td>
+    </tr>
+    <tr>
+      <td>MS0009</td>
+      <td>Shots on Goal</td>
+      <td>shot</td>
+      <td>player_game</td>
+      <td>yes</td>
+      <td>Shots on goal</td>
+    </tr>
+    <tr>
+      <td>MS0010</td>
+      <td>Missed Shots</td>
+      <td>shot</td>
+      <td>player_game</td>
+      <td>yes</td>
+      <td>Shots that missed net</td>
+    </tr>
+    <tr>
+      <td>MS0011</td>
+      <td>Blocked Shots</td>
+      <td>shot</td>
+      <td>player_game</td>
+      <td>yes</td>
+      <td>Shots blocked by opponent</td>
+    </tr>
+    <tr>
+      <td>MS0012</td>
+      <td>Corsi For</td>
+      <td>shot</td>
+      <td>player_onice</td>
+      <td>yes</td>
+      <td>All shot attempts for while on ice</td>
+    </tr>
+    <tr>
+      <td>MS0013</td>
+      <td>Corsi Against</td>
+      <td>shot</td>
+      <td>player_onice</td>
+      <td>yes</td>
+      <td>All shot attempts against while on ice</td>
+    </tr>
+    <tr>
+      <td>MS0014</td>
+      <td>Corsi %</td>
+      <td>shot</td>
+      <td>player_onice</td>
+      <td>yes</td>
+      <td>CF / (CF + CA)</td>
+    </tr>
+    <tr>
+      <td>MS0015</td>
+      <td>Fenwick For</td>
+      <td>shot</td>
+      <td>player_onice</td>
+      <td>yes</td>
+      <td>Unblocked shot attempts for</td>
+    </tr>
+    <tr>
+      <td>MS0016</td>
+      <td>Fenwick Against</td>
+      <td>shot</td>
+      <td>player_onice</td>
+      <td>yes</td>
+      <td>Unblocked shot attempts against</td>
+    </tr>
+    <tr>
+      <td>MS0017</td>
+      <td>High-Danger Corsi For</td>
+      <td>shot</td>
+      <td>player_onice</td>
+      <td>needs_xy</td>
+      <td>Shot attempts from HD areas</td>
+    </tr>
+    <tr>
+      <td>MS0018</td>
+      <td>Expected Goals</td>
+      <td>xg</td>
+      <td>player_game</td>
+      <td>needs_xy</td>
+      <td>Sum of xG for shots taken</td>
+    </tr>
+    <tr>
+      <td>MS0019</td>
+      <td>On-Ice xG For</td>
+      <td>xg</td>
+      <td>player_onice</td>
+      <td>needs_xy</td>
+      <td>xG for team while on ice</td>
+    </tr>
+    <tr>
+      <td>MS0020</td>
+      <td>On-Ice xG Against</td>
+      <td>xg</td>
+      <td>player_onice</td>
+      <td>needs_xy</td>
+      <td>xG against while on ice</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+        </div>
+        
+        <footer>
+            BenchSight v13.18 | Generated 2026-01-07 05:03:20
+        </footer>
+    </div>
+</body>
+</html>

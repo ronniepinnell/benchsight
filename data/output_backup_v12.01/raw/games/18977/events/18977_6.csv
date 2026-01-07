@@ -1,0 +1,13 @@
+event_index,Team,Player,X,Y,X2,Y2,X3,Y3,Distance,game_id,home_team,away_team
+115,e,70,-69.15,-22.16,-62.46,-40.01,,,19.06,18977,Velodrome,HollowBrook
+115,o,19,-66.92,-21.09,-61.85,-36.55,,,16.27,18977,Velodrome,HollowBrook
+116,e,70,-62.08,-40.01,-24.62,-39.70,,,37.46,18977,Velodrome,HollowBrook
+117,e,70,-24.77,-40.01,25.31,-39.32,,,50.08,18977,Velodrome,HollowBrook
+118,e,27,27.92,-39.32,56.00,-22.09,,,32.94,18977,Velodrome,HollowBrook
+119,e,27,55.69,-22.39,-13.00,39.22,,,92.28,18977,Velodrome,HollowBrook
+119,e,11,-13.85,39.84,,,,,85.06,18977,Velodrome,HollowBrook
+120,e,11,-13.54,39.07,-13.31,-6.78,,,45.85,18977,Velodrome,HollowBrook
+120,o,49,-19.77,-8.16,-13.23,-7.09,,,6.63,18977,Velodrome,HollowBrook
+121,e,49,22.23,34.07,61.54,9.30,,,46.46,18977,Velodrome,HollowBrook
+122,e,49,21.77,34.14,61.85,8.84,,,47.40,18977,Velodrome,HollowBrook
+122,o,27,61.54,8.99,,,,,28.90,18977,Velodrome,HollowBrook

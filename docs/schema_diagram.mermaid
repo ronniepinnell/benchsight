@@ -1,0 +1,71 @@
+erDiagram
+    %% ============================================
+    %% BENCHSIGHT SCHEMA DIAGRAM (SIMPLIFIED)
+    %% Version: 13.18 | January 7, 2026
+    %% 62 Tables Total
+    %% ============================================
+
+    dim_player ||--o{ fact_event_players : player_id
+    dim_player ||--o{ fact_gameroster : player_id
+    dim_player ||--o{ fact_shift_players : player_id
+    
+    dim_team ||--o{ dim_schedule : home_team
+    dim_team ||--o{ dim_schedule : away_team
+    
+    dim_schedule ||--o{ fact_events : game_id
+    dim_schedule ||--o{ fact_shifts : game_id
+    dim_schedule ||--o{ fact_gameroster : game_id
+    
+    fact_events ||--o{ fact_event_players : event_id
+    fact_events ||--o{ fact_faceoffs : event_id
+    fact_events ||--o{ fact_rushes : event_id
+    fact_events ||--o{ fact_zone_entries : event_id
+    fact_events ||--o{ fact_saves : event_id
+    
+    fact_shifts ||--o{ fact_shift_players : shift_id
+
+    dim_player {
+        string player_id PK
+        string player_full_name
+        int skill_rating
+    }
+
+    dim_team {
+        string team_id PK
+        string team_name
+    }
+
+    dim_schedule {
+        int game_id PK
+        date game_date
+        string home_team FK
+        string away_team FK
+    }
+
+    fact_events {
+        string event_id PK
+        int game_id FK
+        string event_type
+        string event_detail
+        int is_goal
+    }
+
+    fact_event_players {
+        string event_player_key PK
+        string event_id FK
+        string player_id FK
+        string player_role
+    }
+
+    fact_shifts {
+        string shift_id PK
+        int game_id FK
+        int shift_duration
+    }
+
+    fact_gameroster {
+        string roster_key PK
+        int game_id FK
+        string player_id FK
+        int jersey_number
+    }

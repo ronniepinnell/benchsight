@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BenchSight - Stats & Calculations Reference</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #1e40af;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1f2937;
+            --light: #f3f4f6;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--light);
+            padding: 1rem;
+            line-height: 1.6;
+            color: var(--dark);
+        }
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .header h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .header p { opacity: 0.9; }
+        .nav {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .nav a {
+            color: var(--primary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .nav a:hover { background: var(--light); border-color: var(--primary); }
+        .toc {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .toc h2 { color: var(--primary); margin-bottom: 1rem; font-size: 1.25rem; }
+        .toc ul { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 0.5rem; }
+        .toc a { color: var(--dark); text-decoration: none; }
+        .toc a:hover { color: var(--primary); }
+        .section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .section h2 {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .section h3 { color: var(--secondary); margin: 1.5rem 0 0.75rem; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        th { background: var(--light); font-weight: 600; color: var(--dark); }
+        tr:hover { background: #f9fafb; }
+        code {
+            background: #e5e7eb;
+            padding: 0.125rem 0.375rem;
+            border-radius: 3px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 0.85em;
+        }
+        pre {
+            background: var(--dark);
+            color: #e5e7eb;
+            padding: 1rem;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.125rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .badge-primary { background: #dbeafe; color: var(--primary); }
+        .badge-success { background: #d1fae5; color: #059669; }
+        .badge-warning { background: #fef3c7; color: #d97706; }
+        .badge-danger { background: #fee2e2; color: #dc2626; }
+        .formula-box {
+            background: #eff6ff;
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+        .formula-box code { background: white; }
+    </style>
+</head>
+<body>
+<div style="background:#f0f0f0;padding:10px;margin-bottom:20px;border-bottom:1px solid #ccc;">
+<strong>Last Updated:</strong> January 7, 2026| <strong>Version:</strong> 12.03
+</div>
+
+<!-- ================================================================== -->
+<!-- CHANGELOG - MUST BE UPDATED WITH EVERY MODIFICATION -->
+<!-- ================================================================== -->
+<!--
+CHANGELOG:
+---------------------------------------------------------------------------
+2026-01-06 v8.0.5:
+  - CRITICAL FIX: Restored 4 missing src/advanced/ modules:
+    * create_additional_tables.py
+    * enhance_all_stats.py
+    * final_stats_enhancement.py
+    * extended_tables.py
+  - Created fact_events_player.csv (7,476 rows)
+  - Extended tables now run: +15 tables created
+  - Table count: 131 (54 dim, 73 fact, 3 QA, 1 other)
+  - Added comprehensive code audit documentation
+  - Fixed column name mismatches (Type -> event_type)
+
+2026-01-06 v8.0.4:
+  - CRITICAL: Recovered 72 missing tables from v7 backup
+  - Table count restored from 53 to 130
+  - Created 4 new outcome dimension tables
+  - Regenerated ERD with all tables
+  - Added table integrity tests
+
+2026-01-05 v8.0.0:
+  - Major schema expansion: 96 -> 111 tables planned
+  - Added 317 player metrics
+  - Created comprehensive foreign key relationships
+  - Added QA validation tables
+
+RULES FOR UPDATING THIS CHANGELOG:
+1. ALWAYS add entry BEFORE making changes
+2. Include: date, version, what changed, table counts
+3. Never delete old entries
+4. Be specific about what was added/changed/removed
+---------------------------------------------------------------------------
+-->
+
+    <div class="header">
+        <h1>📊 Stats & Calculations Reference</h1>
+        <p>Complete documentation of all derived columns, calculations, filters, and table logic</p>
+    </div>
+
+    <div class="nav">
+        <a href="index.html">← Documentation Hub</a>
+        <a href="diagrams/ERD_VIEWER.html">ERD Diagram</a>
+        <a href="DATA_DICTIONARY.html">Data Dictionary</a>
+        <a href="TABLE_LOGIC_EVENTS.html">Event Logic</a>
+    </div>
+
+    <div class="toc">
+        <h2>📑 Table of Contents</h2>
+        <ul>
+            <li><a href="#core-hockey-stats">1. Core Hockey Statistics</a></li>
+            <li><a href="#shot-metrics">2. Shot & Scoring Metrics</a></li>
+            <li><a href="#possession-metrics">3. Possession & Zone Metrics</a></li>
+            <li><a href="#boolean-flags">4. Boolean Event Flags</a></li>
+            <li><a href="#key-generation">5. Key Generation Logic</a></li>
+            <li><a href="#position-detection">6. Position Detection</a></li>
+            <li><a href="#cycle-detection">7. Cycle Detection Algorithm</a></li>
+            <li><a href="#filters">8. Standard Filters</a></li>
+            <li><a href="#aggregations">9. Aggregation Rules</a></li>
+        </ul>
+    </div>
+
+    <div class="section" id="core-hockey-stats">
+        <h2>1. Core Hockey Statistics</h2>
+        
+        <h3>Points & Scoring</h3>
+        <table>
+            <tr><th>Stat</th><th>Formula</th><th>Table</th><th>Notes</th></tr>
+            <tr>
+                <td><code>points</code></td>
+                <td><code>goals + assists</code></td>
+                <td>fact_gameroster</td>
+                <td>Total points for player in game</td>
+            </tr>
+            <tr>
+                <td><code>goals</code></td>
+                <td>Count of <code>is_goal = 1</code></td>
+                <td>fact_events</td>
+                <td>Only event_player_1 with event_type='Goal' AND event_detail='Goal_Scored'</td>
+            </tr>
+            <tr>
+                <td><code>primary_assists</code></td>
+                <td>Count where player in <code>play_detail1</code></td>
+                <td>fact_event_players</td>
+                <td>First assist on goal</td>
+            </tr>
+            <tr>
+                <td><code>secondary_assists</code></td>
+                <td>Count where player in <code>play_detail2</code></td>
+                <td>fact_event_players</td>
+                <td>Second assist on goal</td>
+            </tr>
+        </table>
+
+        <h3>Plus/Minus Calculations</h3>
+        <div class="formula-box">
+            <strong>Standard Plus/Minus:</strong><br>
+            <code>plus_minus = goals_for_on_ice - goals_against_on_ice</code><br><br>
+            <strong>Calculated per shift in fact_shifts:</strong>
+            <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+                <li><code>home_pm_5v5</code> - Even strength</li>
+                <li><code>home_pm_pp</code> - Power play</li>
+                <li><code>home_pm_pk</code> - Penalty kill</li>
+                <li><code>home_pm_4v4</code> - 4-on-4</li>
+                <li><code>home_pm_other</code> - Other situations</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="section" id="shot-metrics">
+        <h2>2. Shot & Scoring Metrics</h2>
+        
+        <h3>Corsi (All Shot Attempts)</h3>
+        <div class="formula-box">
+            <code>Corsi For (CF) = Shots + Missed Shots + Blocked Shots</code><br>
+            <code>Corsi Against (CA) = Opponent CF</code><br>
+            <code>Corsi % = CF / (CF + CA) × 100</code>
+        </div>
+        <table>
+            <tr><th>Flag</th><th>Included in Corsi</th><th>Detection</th></tr>
+            <tr><td><code>is_shot</code></td><td>✅ Yes</td><td>event_type = 'Shot'</td></tr>
+            <tr><td><code>is_missed_shot</code></td><td>✅ Yes</td><td>event_detail IN ('Missed_Net', 'Shot_Missed', 'Wide', 'High')</td></tr>
+            <tr><td><code>is_blocked_shot</code></td><td>✅ Yes</td><td>event_detail = 'Shot_Blocked'</td></tr>
+        </table>
+
+        <h3>Fenwick (Unblocked Shot Attempts)</h3>
+        <div class="formula-box">
+            <code>Fenwick For (FF) = Shots + Missed Shots</code><br>
+            <code>Fenwick Against (FA) = Opponent FF</code><br>
+            <code>Fenwick % = FF / (FF + FA) × 100</code>
+        </div>
+
+        <h3>Shots on Goal (SOG)</h3>
+        <div class="formula-box">
+            <code>SOG = Shots that reach the goalie (is_sog = 1)</code><br>
+            <code>Save % = Saves / SOG</code>
+        </div>
+        <table>
+            <tr><th>Flag</th><th>Definition</th></tr>
+            <tr><td><code>is_sog</code></td><td>event_type = 'Shot' AND event_detail NOT IN ('Shot_Blocked', 'Missed_Net', 'Wide', 'High')</td></tr>
+        </table>
+
+        <h3>Scoring Chances</h3>
+        <table>
+            <tr><th>Type</th><th>Flag</th><th>Criteria</th></tr>
+            <tr>
+                <td>Scoring Chance</td>
+                <td><code>is_scoring_chance</code></td>
+                <td>Shot from slot or inner slot area</td>
+            </tr>
+            <tr>
+                <td>High Danger</td>
+                <td><code>is_high_danger</code></td>
+                <td>Shot from inner slot (closest to net)</td>
+            </tr>
+            <tr>
+                <td>Expected Goals (xG)</td>
+                <td><code>xg</code></td>
+                <td>Probability based on shot location, type, and situation</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section" id="possession-metrics">
+        <h2>3. Possession & Zone Metrics</h2>
+        
+        <h3>Zone Entry Success</h3>
+        <table>
+            <tr><th>Metric</th><th>Formula</th></tr>
+            <tr>
+                <td>Entry Success %</td>
+                <td><code>successful_entries / total_entry_attempts × 100</code></td>
+            </tr>
+            <tr>
+                <td>Carry-in %</td>
+                <td><code>carry_entries / total_entries × 100</code></td>
+            </tr>
+            <tr>
+                <td>Dump-in %</td>
+                <td><code>dump_entries / total_entries × 100</code></td>
+            </tr>
+        </table>
+
+        <h3>Zone Exit Success</h3>
+        <table>
+            <tr><th>Type</th><th>Description</th></tr>
+            <tr><td>Controlled Exit</td><td>Puck carried or passed out of defensive zone</td></tr>
+            <tr><td>Uncontrolled Exit</td><td>Puck dumped/cleared out of defensive zone</td></tr>
+            <tr><td>Failed Exit</td><td>Attempt to exit that doesn't clear the zone</td></tr>
+        </table>
+
+        <h3>Faceoff Metrics</h3>
+        <div class="formula-box">
+            <code>FO% = Faceoffs Won / Total Faceoffs × 100</code><br>
+            <code>OZ FO% = Offensive Zone FO Won / OZ Total × 100</code><br>
+            <code>DZ FO% = Defensive Zone FO Won / DZ Total × 100</code>
+        </div>
+    </div>
+
+    <div class="section" id="boolean-flags">
+        <h2>4. Boolean Event Flags</h2>
+        <p>All flags are 0/1 integers in fact_events and fact_event_players:</p>
+        
+        <table>
+            <tr><th>Flag</th><th>Detection Logic</th><th>Notes</th></tr>
+            <tr>
+                <td><code>is_goal</code></td>
+                <td><code>event_type='Goal' AND event_detail='Goal_Scored' AND player_role='event_player_1'</code></td>
+                <td><span class="badge badge-danger">CRITICAL</span> Only scorer gets flag</td>
+            </tr>
+            <tr>
+                <td><code>is_shot</code></td>
+                <td><code>event_type = 'Shot'</code></td>
+                <td>All shot attempts</td>
+            </tr>
+            <tr>
+                <td><code>is_sog</code></td>
+                <td><code>is_shot=1 AND NOT (blocked OR missed)</code></td>
+                <td>Shots on goal only</td>
+            </tr>
+            <tr>
+                <td><code>is_save</code></td>
+                <td><code>event_type = 'Save'</code></td>
+                <td>Goalie saves</td>
+            </tr>
+            <tr>
+                <td><code>is_pass</code></td>
+                <td><code>event_type = 'Pass'</code></td>
+                <td>All pass attempts</td>
+            </tr>
+            <tr>
+                <td><code>is_faceoff</code></td>
+                <td><code>event_type = 'Faceoff'</code></td>
+                <td>Faceoff events</td>
+            </tr>
+            <tr>
+                <td><code>is_zone_entry</code></td>
+                <td><code>event_type = 'Zone_Entry'</code></td>
+                <td>Offensive zone entries</td>
+            </tr>
+            <tr>
+                <td><code>is_zone_exit</code></td>
+                <td><code>event_type = 'Zone_Exit' OR event_detail LIKE '%Exit%'</code></td>
+                <td>Defensive zone exits</td>
+            </tr>
+            <tr>
+                <td><code>is_giveaway</code></td>
+                <td><code>event_type = 'Giveaway'</code></td>
+                <td>Turnovers</td>
+            </tr>
+            <tr>
+                <td><code>is_takeaway</code></td>
+                <td><code>event_type = 'Takeaway'</code></td>
+                <td>Puck recoveries</td>
+            </tr>
+            <tr>
+                <td><code>is_penalty</code></td>
+                <td><code>event_type = 'Penalty'</code></td>
+                <td>Penalty events</td>
+            </tr>
+            <tr>
+                <td><code>is_cycle</code></td>
+                <td><code>Part of cycle sequence (3+ passes in OZ)</code></td>
+                <td>See Cycle Detection</td>
+            </tr>
+            <tr>
+                <td><code>is_deflected</code></td>
+                <td><code>event_detail LIKE '%Deflect%'</code></td>
+                <td>Deflected shots/passes</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section" id="key-generation">
+        <h2>5. Key Generation Logic</h2>
+        <p>All keys follow the format: <code>PREFIX + game_id + index</code></p>
+        
+        <table>
+            <tr><th>Key</th><th>Format</th><th>Example</th></tr>
+            <tr>
+                <td><code>event_id</code></td>
+                <td><code>EV{game_id}{event_index:05d}</code></td>
+                <td>EV1896900001</td>
+            </tr>
+            <tr>
+                <td><code>shift_id</code></td>
+                <td><code>SH{game_id}{shift_index:05d}</code></td>
+                <td>SH1896900001</td>
+            </tr>
+            <tr>
+                <td><code>sequence_key</code></td>
+                <td><code>SEQ{game_id}{sequence_index:05d}</code></td>
+                <td>SEQ1896900001</td>
+            </tr>
+            <tr>
+                <td><code>play_key</code></td>
+                <td><code>PL{game_id}{play_index:05d}</code></td>
+                <td>PL1896900001</td>
+            </tr>
+            <tr>
+                <td><code>cycle_key</code></td>
+                <td><code>CY{game_id}{cycle_num:04d}</code></td>
+                <td>CY189690001</td>
+            </tr>
+        </table>
+
+        <h3>Composite Keys</h3>
+        <table>
+            <tr><th>Key</th><th>Components</th></tr>
+            <tr>
+                <td><code>player_game_key</code></td>
+                <td><code>game_id + player_id</code></td>
+            </tr>
+            <tr>
+                <td><code>shift_player_id</code></td>
+                <td><code>shift_id + team + slot</code></td>
+            </tr>
+            <tr>
+                <td><code>event_chain_key</code></td>
+                <td><code>sequence_key + play_key + event_id</code></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section" id="position-detection">
+        <h2>6. Position Detection from Shifts</h2>
+        <p>For tracked games, player position is determined from actual shift data:</p>
+        
+        <div class="formula-box">
+            <strong>Slot → Position Mapping:</strong>
+            <pre style="background: transparent; color: inherit; padding: 0.5rem 0;">
+LW, C, RW, LW1, C1, RW1, LW2, C2, RW2 → Forward
+LD, RD, LD1, RD1, LD2, RD2            → Defense  
+G                                      → Goalie</pre>
+            <strong>Dominant Position:</strong><br>
+            <code>dominant_position = position with most shifts</code><br>
+            <code>dominant_position_pct = (dominant_shifts / total_shifts) × 100</code>
+        </div>
+        
+        <p>Stored in <code>fact_player_game_position</code> and used to update <code>fact_gameroster.player_position</code> for tracked games.</p>
+    </div>
+
+    <div class="section" id="cycle-detection">
+        <h2>7. Cycle Detection Algorithm</h2>
+        
+        <h3>Definition</h3>
+        <p>A cycle is <strong>3+ consecutive successful passes in the offensive zone</strong> without losing possession.</p>
+        
+        <h3>Algorithm</h3>
+        <pre>
+1. Track zone state using Zone_Entry/Zone_Exit events
+2. When in offensive zone:
+   - Count consecutive successful passes (event_successful = 's')
+   - If pass_count >= 3, mark as cycle
+3. Cycle ends when:
+   - Zone exit occurs
+   - Possession lost (giveaway, turnover)
+   - Shot taken
+   - Period ends</pre>
+
+        <h3>Cycle Ending Events</h3>
+        <table>
+            <tr><th>Event Type</th><th>End Type</th></tr>
+            <tr><td>Shot, Goal</td><td>shot</td></tr>
+            <tr><td>Zone_Exit</td><td>zone_exit</td></tr>
+            <tr><td>Giveaway, Turnover</td><td>turnover</td></tr>
+            <tr><td>Faceoff</td><td>stoppage</td></tr>
+            <tr><td>Period end</td><td>period_end</td></tr>
+        </table>
+    </div>
+
+    <div class="section" id="filters">
+        <h2>8. Standard Filters</h2>
+        
+        <h3>Game State Filters</h3>
+        <table>
+            <tr><th>Filter</th><th>Condition</th></tr>
+            <tr><td>5v5 (Even Strength)</td><td><code>home_skaters = 5 AND away_skaters = 5</code></td></tr>
+            <tr><td>Power Play</td><td><code>team_skaters > opp_skaters</code></td></tr>
+            <tr><td>Penalty Kill</td><td><code>team_skaters < opp_skaters</code></td></tr>
+            <tr><td>4v4</td><td><code>home_skaters = 4 AND away_skaters = 4</code></td></tr>
+            <tr><td>Empty Net</td><td><code>goalie_pulled = 1</code></td></tr>
+        </table>
+
+        <h3>Zone Filters</h3>
+        <table>
+            <tr><th>Zone</th><th>Code</th><th>Description</th></tr>
+            <tr><td>Offensive</td><td>O, OZ</td><td>Attacking zone (opponent's end)</td></tr>
+            <tr><td>Defensive</td><td>D, DZ</td><td>Defending zone (own end)</td></tr>
+            <tr><td>Neutral</td><td>N, NZ</td><td>Between blue lines</td></tr>
+        </table>
+
+        <h3>Goal Identification</h3>
+        <div class="formula-box">
+            <span class="badge badge-danger">CRITICAL RULE</span><br><br>
+            Goals are identified by:<br>
+            <code>event_type = 'Goal' AND event_detail = 'Goal_Scored'</code><br><br>
+            <strong>NOT</strong> by <code>Shot_Goal</code> (which is the shot that resulted in a goal, not the goal itself)
+        </div>
+    </div>
+
+    <div class="section" id="aggregations">
+        <h2>9. Aggregation Rules</h2>
+        
+        <h3>Player Game Stats</h3>
+        <table>
+            <tr><th>Level</th><th>Table</th><th>Grain</th></tr>
+            <tr><td>Per Event</td><td>fact_event_players</td><td>One row per player per event</td></tr>
+            <tr><td>Per Event (dedupe)</td><td>fact_events</td><td>One row per event (player aggregated)</td></tr>
+            <tr><td>Per Shift</td><td>fact_shifts</td><td>One row per shift with stats</td></tr>
+            <tr><td>Per Game</td><td>fact_gameroster</td><td>One row per player per game</td></tr>
+        </table>
+
+        <h3>Event-to-Player Assignment</h3>
+        <div class="formula-box">
+            <code>event_player_1</code> = Primary player (scorer, passer, shooter)<br>
+            <code>event_player_2-6</code> = Supporting players on same team<br>
+            <code>opp_player_1-6</code> = Opposing players on ice<br>
+            <code>event_goalie</code> = Goalie for event team<br>
+            <code>opp_goalie</code> = Opposing goalie
+        </div>
+    </div>
+
+    <footer style="text-align: center; padding: 2rem; color: #6b7280; font-size: 0.875rem;">
+        BenchSight v13.18.4 | 128 Tables | Generated January 2026
+    </footer>
+</body>
+</html>

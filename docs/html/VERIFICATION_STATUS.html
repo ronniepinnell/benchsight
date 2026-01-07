@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BenchSight Verification Status - v13.18</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #16a34a;
+            --warning: #ca8a04;
+            --danger: #dc2626;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-600: #4b5563;
+            --gray-800: #1f2937;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--gray-800);
+            background: var(--gray-50);
+            padding: 2rem;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        h2 { font-size: 1.5rem; margin: 2rem 0 1rem; border-bottom: 2px solid var(--primary); padding-bottom: 0.5rem; }
+        h3 { font-size: 1.25rem; margin: 1.5rem 0 0.75rem; color: var(--gray-600); }
+        .meta { color: var(--gray-600); margin-bottom: 2rem; }
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        .status-progress { background: #fef3c7; color: #92400e; }
+        .status-complete { background: #d1fae5; color: #065f46; }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .summary-card {
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .summary-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .summary-card .label {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            margin-top: 0.25rem;
+        }
+        .summary-card.success .value { color: var(--success); }
+        .summary-card.warning .value { color: var(--warning); }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+        }
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        th {
+            background: var(--gray-100);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        tr:hover { background: var(--gray-50); }
+        code {
+            background: var(--gray-100);
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-size: 0.8rem;
+            font-family: 'Monaco', 'Consolas', monospace;
+        }
+        .check { color: var(--success); }
+        .warn { color: var(--warning); }
+        .empty { color: var(--gray-600); }
+        
+        details {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+        }
+        summary {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        summary:hover { background: var(--gray-50); }
+        details[open] summary { border-bottom: 1px solid var(--gray-200); }
+        .details-content { padding: 1rem 1.5rem; }
+        .badge-count {
+            background: var(--gray-200);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+        }
+        
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .game-card {
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1.25rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .game-card .game-id {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .game-card .game-meta {
+            color: var(--gray-600);
+            font-size: 0.875rem;
+            margin: 0.5rem 0;
+        }
+        .game-card .game-status {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--gray-200);
+        }
+        
+        @media (max-width: 768px) {
+            body { padding: 1rem; }
+            table { font-size: 0.75rem; }
+            th, td { padding: 0.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>BenchSight Verification Status</h1>
+        <p class="meta">
+            Version 12.03 | Last Updated: January 7, 2026 | 
+            <span class="status-badge status-progress">🟡 IN PROGRESS</span>
+        </p>
+        
+        <h2>Executive Summary</h2>
+        <div class="summary-grid">
+            <div class="summary-card warning">
+                <div class="value">72%</div>
+                <div class="label">Stats Verified (72/100)</div>
+            </div>
+            <div class="summary-card success">
+                <div class="value">131</div>
+                <div class="label">Tables Verified</div>
+            </div>
+            <div class="summary-card success">
+                <div class="value">4/4</div>
+                <div class="label">Goal Accuracy</div>
+            </div>
+            <div class="summary-card success">
+                <div class="value">100%</div>
+                <div class="label">FK Integrity</div>
+            </div>
+            <div class="summary-card warning">
+                <div class="value">2/4</div>
+                <div class="label">Games Verified</div>
+            </div>
+        </div>
+        
+        <h2>Games in System</h2>
+        <div class="game-grid">
+            <div class="game-card">
+                <div class="game-id">Game 18969</div>
+                <div class="game-meta">2025-12-28 | ACE vs VEL | 20 goals</div>
+                <div class="game-status">
+                    <span class="status-badge status-complete">✅ DETAILED</span>
+                    <span style="font-size: 0.875rem; color: var(--gray-600);">72 stats verified</span>
+                </div>
+            </div>
+            <div class="game-card">
+                <div class="game-id">Game 18977</div>
+                <div class="game-meta">2025-12-14 | VEL vs ICE | 17 goals</div>
+                <div class="game-status">
+                    <span class="status-badge status-progress">🟡 PARTIAL</span>
+                    <span style="font-size: 0.875rem; color: var(--gray-600);">15 stats verified</span>
+                </div>
+            </div>
+            <div class="game-card">
+                <div class="game-id">Game 18981</div>
+                <div class="game-meta">2025-11-30 | ACE vs AMO | 9 goals</div>
+                <div class="game-status">
+                    <span class="status-badge" style="background: var(--gray-200); color: var(--gray-600);">⚪ GOALS ONLY</span>
+                </div>
+            </div>
+            <div class="game-card">
+                <div class="game-id">Game 18987</div>
+                <div class="game-meta">2025-11-16 | VEL vs AMO | 3 goals</div>
+                <div class="game-status">
+                    <span class="status-badge" style="background: var(--gray-200); color: var(--gray-600);">⚪ GOALS ONLY</span>
+                </div>
+            </div>
+        </div>
+        
+        <h2>Stat Calculation Verification Matrix</h2>
+        
+        <details open>
+            <summary>Player Skating Stats - Core <span class="badge-count">8 stats</span></summary>
+            <div class="details-content">
+                <table>
+                    <thead>
+                        <tr><th>Stat</th><th>Formula</th><th>18969</th><th>18977</th><th>Status</th><th>Notes</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>goals</td><td><code>event_type='Goal' AND player_role='event_player_1'</code></td><td>Keegan=2</td><td>Hayden=1 ⚠️</td><td class="check">✅</td><td>18977: NORAD=2, tracking=1</td></tr>
+                        <tr><td>assists</td><td><code>play_detail LIKE 'Assist%'</code></td><td>Keegan=1</td><td>Hayden=0</td><td class="check">✅</td><td></td></tr>
+                        <tr><td>points</td><td><code>goals + assists</code></td><td>Keegan=3</td><td>-</td><td class="check">✅</td><td>Derived</td></tr>
+                        <tr><td>shots_total</td><td><code>event_type IN ('Shot','Goal') AND player_role='event_player_1'</code></td><td>Keegan=7</td><td>Hayden=23</td><td class="check">✅</td><td>Includes goals</td></tr>
+                        <tr><td>sog</td><td><code>shots WHERE event_detail contains 'OnNet' OR 'Goal'</code></td><td>Keegan=6</td><td>-</td><td class="check">✅</td><td></td></tr>
+                        <tr><td>shots_blocked</td><td><code>event_detail='Shot_Blocked'</code></td><td>Keegan=1</td><td>Hayden=4</td><td class="check">✅</td><td></td></tr>
+                        <tr><td>shots_missed</td><td><code>event_detail contains 'Missed'</code></td><td>Keegan=0</td><td>Hayden=1</td><td class="check">✅</td><td></td></tr>
+                        <tr><td>shooting_pct</td><td><code>goals / shots_total * 100</code></td><td>Keegan=28.6%</td><td>Hayden=4.3%</td><td class="check">✅</td><td></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </details>
+        
+        <details>
+            <summary>Player Skating Stats - Passes <span class="badge-count">10 stats</span></summary>
+            <div class="details-content">
+                <table>
+                    <thead><tr><th>Stat</th><th>Formula</th><th>18969</th><th>18977</th><th>Status</th></tr></thead>
+                    <tbody>
+                        <tr><td>pass_attempts</td><td><code>event_type='Pass' AND player_role='event_player_1'</code></td><td>Keegan=17</td><td>Hayden=18</td><td class="check">✅</td></tr>
+                        <tr><td>pass_completed</td><td><code>event_detail='Pass_Completed'</code></td><td>Keegan=11</td><td>Hayden=12</td><td class="check">✅</td></tr>
+                        <tr><td>pass_deflected</td><td><code>event_detail='Pass_Deflected'</code></td><td>Keegan=2</td><td>-</td><td class="check">✅</td></tr>
+                        <tr><td>pass_missed</td><td><code>event_detail='Pass_Missed'</code></td><td>Keegan=3</td><td>-</td><td class="check">✅</td></tr>
+                        <tr><td>pass_pct</td><td><code>pass_completed / pass_attempts * 100</code></td><td>Keegan=64.7%</td><td>-</td><td class="check">✅</td></tr>
+                        <tr><td>pass_targets</td><td><code>event_type='Pass' AND player_role='event_player_2'</code></td><td>Keegan=28</td><td>-</td><td class="check">✅</td></tr>
+                        <tr><td>pass_received</td><td><code>pass_targets WHERE event_detail='Pass_Completed'</code></td><td>Keegan=19</td><td>-</td><td class="check">✅</td></tr>
+                        <tr><td>pass_targets_missed</td><td><code>pass_targets WHERE event_detail='Pass_Missed'</code></td><td>Keegan=3</td><td>-</td><td class="check">✅</td></tr>
+                        <tr><td>pass_targets_deflected</td><td><code>pass_targets WHERE event_detail='Pass_Deflected'</code></td><td>Keegan=3</td><td>-</td><td class="check">✅</td></tr>
+                        <tr><td>pass_targets_intercepted</td><td><code>pass_targets WHERE event_detail='Pass_Intercepted'</code></td><td>Keegan=2</td><td>-</td><td class="check">✅</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </details>
+
+        <details>
+            <summary>Player Skating Stats - Faceoffs <span class="badge-count">4 stats</span></summary>
+            <div class="details-content">
+                <table>
+                    <thead><tr><th>Stat</th><th>Formula</th><th>18969</th><th>Status</th><th>Notes</th></tr></thead>
+                    <tbody>
+                        <tr><td>fo_wins</td><td><code>event_type='Faceoff' AND player_role='event_player_1'</code></td><td>Keegan=11</td><td class="check">✅</td><td>Winner is event_player_1</td></tr>
+                        <tr><td>fo_losses</td><td><code>event_type='Faceoff' AND player_role='opp_player_1'</code></td><td>Keegan=11</td><td class="check">✅</td><td>Loser is opp_player_1</td></tr>
+                        <tr><td>fo_total</td><td><code>fo_wins + fo_losses</code></td><td>Keegan=22</td><td class="check">✅</td><td></td></tr>
+                        <tr><td>faceoff_pct</td><td><code>fo_wins / fo_total * 100</code></td><td>Keegan=50.0%</td><td class="check">✅</td><td></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </details>
+
+        <details>
+            <summary>Player Skating Stats - Zone Transitions <span class="badge-count">17 stats</span></summary>
+            <div class="details-content">
+                <table>
+                    <thead><tr><th>Stat</th><th>Formula</th><th>18969</th><th>18977</th><th>Status</th></tr></thead>
+                    <tbody>
+                        <tr><td>zone_entries</td><td><code>event_detail contains 'Entry'</code></td><td>Keegan=10</td><td>Hayden=20</td><td class="check">✅</td></tr>
+                        <tr><td>zone_entries_rush</td><td><code>event_detail_2='ZoneEntry-Rush'</code></td><td>Keegan=7</td><td>-</td><td class="check">✅</td></tr>
+                        <tr><td>zone_entries_chip</td><td><code>event_detail_2='ZoneEntry-Chip'</code></td><td>Keegan=1</td><td>-</td><td class="check">✅</td></tr>
+                        <tr><td>zone_entries_dumpin</td><td><code>event_detail_2='ZoneEntry-DumpIn'</code></td><td>Keegan=2</td><td>-</td><td class="check">✅</td></tr>
+                        <tr><td>zone_entries_controlled</td><td><code>control_level='controlled'</code></td><td>Keegan=7</td><td>-</td><td class="check">✅</td></tr>
+                        <tr><td>zone_entries_uncontrolled</td><td><code>control_level='uncontrolled'</code></td><td>Keegan=3</td><td>-</td><td class="check">✅</td></tr>
+                        <tr><td>zone_entries_failed</td><td><code>control_level='failed'</code></td><td>Keegan=0</td><td>-</td><td class="check">✅</td></tr>
+                        <tr><td>zone_exits</td><td><code>event_detail contains 'Exit'</code></td><td>Keegan=10</td><td>Hayden=12</td><td class="check">✅</td></tr>
+                        <tr><td>zone_exits_rush</td><td><code>event_detail_2='ZoneExit-Rush'</code></td><td>Keegan=5</td><td>-</td><td class="check">✅</td></tr>
+                        <tr><td>zone_exits_chip</td><td><code>event_detail_2='ZoneExit-Chip'</code></td><td>Keegan=1</td><td>-</td><td class="check">✅</td></tr>
+                        <tr><td>zone_exits_pass</td><td><code>event_detail_2='ZoneExit-Pass'</code></td><td>Keegan=1</td><td>-</td><td class="check">✅</td></tr>
+                        <tr><td>zone_exits_passmiss</td><td><code>event_detail_2='ZoneExit-PassMiss'</code></td><td>Keegan=2</td><td>-</td><td class="check">✅</td></tr>
+                        <tr><td>zone_exits_controlled</td><td><code>control_level='controlled'</code></td><td>Keegan=6</td><td>-</td><td class="check">✅</td></tr>
+                        <tr><td>zone_exits_uncontrolled</td><td><code>control_level='uncontrolled'</code></td><td>Keegan=1</td><td>-</td><td class="check">✅</td></tr>
+                        <tr><td>zone_exits_failed</td><td><code>control_level='failed'</code></td><td>Keegan=2</td><td>-</td><td class="check">✅</td></tr>
+                        <tr><td>zone_keepins</td><td><code>event_detail contains 'Keepin'</code></td><td>Keegan=0</td><td>-</td><td class="check">✅</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </details>
+
+        <details>
+            <summary>Goalie Stats <span class="badge-count">14 stats</span></summary>
+            <div class="details-content">
+                <table>
+                    <thead><tr><th>Stat</th><th>Formula</th><th>18969 (Wyatt)</th><th>Status</th><th>Notes</th></tr></thead>
+                    <tbody>
+                        <tr><td>saves</td><td><code>event_type='Save' AND player_role='event_player_1'</code></td><td>37</td><td class="check">✅</td><td>Goalie always event_player_1</td></tr>
+                        <tr><td>save_freeze</td><td><code>event_detail='Save_Freeze'</code></td><td>11</td><td class="check">✅</td><td></td></tr>
+                        <tr><td>save_rebound</td><td><code>event_detail='Save_Rebound'</code></td><td>26</td><td class="check">✅</td><td></td></tr>
+                        <tr><td>goals_against</td><td><code>event_type='Goal' AND player_role='opp_player_1'</code></td><td>4</td><td class="check">✅</td><td></td></tr>
+                        <tr><td>shots_faced</td><td><code>saves + goals_against</code></td><td>41</td><td class="check">✅</td><td></td></tr>
+                        <tr><td>save_pct</td><td><code>saves / shots_faced * 100</code></td><td>90.2%</td><td class="check">✅</td><td></td></tr>
+                        <tr><td>rebounds</td><td><code>event_type='Rebound' AND player_role='event_player_1'</code></td><td>26</td><td class="check">✅</td><td></td></tr>
+                        <tr><td>rebound_team_recovered</td><td><code>event_detail='Rebound_TeamRecovered'</code></td><td>14</td><td class="check">✅</td><td></td></tr>
+                        <tr><td>rebound_opp_recovered</td><td><code>event_detail='Rebound_OppTeamRecovered'</code></td><td>11</td><td class="check">✅</td><td></td></tr>
+                        <tr><td>rebound_shot_generated</td><td><code>event_detail='Rebound_ShotGenerated'</code></td><td>1</td><td class="check">✅</td><td></td></tr>
+                        <tr><td>toi_seconds</td><td><code>SUM(shift_duration)</code></td><td>3158</td><td class="check">✅</td><td></td></tr>
+                        <tr><td>toi_minutes</td><td><code>toi_seconds / 60</code></td><td>52.6</td><td class="check">✅</td><td></td></tr>
+                        <tr><td>shift_segments</td><td><code>COUNT shifts</code></td><td>93</td><td class="check">✅</td><td></td></tr>
+                        <tr><td>logical_shifts</td><td><code>MAX(logical_shift_number)</code></td><td>3</td><td class="check">✅</td><td>One per period</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </details>
+        
+        <details>
+            <summary>Stats NOT YET VERIFIED <span class="badge-count">7 stats</span></summary>
+            <div class="details-content">
+                <table>
+                    <thead><tr><th>Stat</th><th>Reason</th><th>Priority</th></tr></thead>
+                    <tbody>
+                        <tr><td>plus_minus</td><td>Not in NORAD, needs manual calculation</td><td class="warn">🟡 Medium</td></tr>
+                        <tr><td>corsi_for</td><td>Advanced stat, needs event chain verification</td><td class="warn">🟡 Medium</td></tr>
+                        <tr><td>corsi_against</td><td>Advanced stat, needs event chain verification</td><td class="warn">🟡 Medium</td></tr>
+                        <tr><td>fenwick_for</td><td>Advanced stat, needs event chain verification</td><td class="warn">🟡 Medium</td></tr>
+                        <tr><td>expected_goals</td><td>Model-based, needs calibration</td><td class="empty">🔴 Low</td></tr>
+                        <tr><td>game_score</td><td>Composite metric</td><td class="empty">🔴 Low</td></tr>
+                        <tr><td>war</td><td>Wins above replacement</td><td class="empty">🔴 Low</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </details>
+        
+        <h2>Goal Accuracy Verification</h2>
+        <p style="margin-bottom: 1rem;">All 4 games verified against noradhockey.com:</p>
+        <table>
+            <thead><tr><th>Game ID</th><th>Date</th><th>Home</th><th>Away</th><th>Expected</th><th>Actual</th><th>Match</th></tr></thead>
+            <tbody>
+                <tr><td>18969</td><td>2025-12-28</td><td>Ace (16)</td><td>Velodrome (4)</td><td>20</td><td>20</td><td class="check">✅</td></tr>
+                <tr><td>18977</td><td>2025-12-14</td><td>Velodrome (4)</td><td>Icehogs (13)</td><td>17</td><td>17</td><td class="check">✅</td></tr>
+                <tr><td>18981</td><td>2025-11-30</td><td>Ace (6)</td><td>AMOS (3)</td><td>9</td><td>9</td><td class="check">✅</td></tr>
+                <tr><td>18987</td><td>2025-11-16</td><td>Velodrome (2)</td><td>AMOS (1)</td><td>3</td><td>3</td><td class="check">✅</td></tr>
+            </tbody>
+        </table>
+        
+        <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 1rem; margin: 1rem 0; border-radius: 0.25rem;">
+            <strong>Goal Counting Rule:</strong><br>
+            <code>event_type = 'Goal' AND event_detail = 'Goal_Scored'</code><br>
+            <small>Note: Shot_Goal is the SHOT that resulted in a goal, NOT the goal itself.</small>
+        </div>
+        
+        <h2>Table Verification Checklist</h2>
+        <h3>Summary by Category</h3>
+        <table>
+            <thead><tr><th>Category</th><th>Count</th><th>Rows</th><th>Verified</th><th>Status</th></tr></thead>
+            <tbody>
+                <tr><td>Dimension Tables</td><td>54</td><td>3,116</td><td>54</td><td class="check">✅</td></tr>
+                <tr><td>Fact Tables - Core</td><td>10</td><td>49,041</td><td>10</td><td class="check">✅</td></tr>
+                <tr><td>Fact Tables - Stats</td><td>15</td><td>29,563</td><td>15</td><td class="check">✅</td></tr>
+                <tr><td>Fact Tables - Advanced</td><td>38</td><td>10,195</td><td>38</td><td class="check">✅</td></tr>
+                <tr><td>Fact Tables - Other</td><td>10</td><td>3,528</td><td>10</td><td class="check">✅</td></tr>
+                <tr><td>QA Tables</td><td>3</td><td>30</td><td>3</td><td class="check">✅</td></tr>
+                <tr><td>Lookup Tables</td><td>1</td><td>14,471</td><td>1</td><td class="check">✅</td></tr>
+                <tr style="font-weight: bold;"><td>TOTAL</td><td>131</td><td>109,944</td><td>131</td><td class="check">✅</td></tr>
+            </tbody>
+        </table>
+        
+        <h2>Known Issues & Data Quality Notes</h2>
+        <h3>Resolved Issues</h3>
+        <table>
+            <thead><tr><th>Issue</th><th>Description</th><th>Resolution</th><th>Date</th></tr></thead>
+            <tbody>
+                <tr><td>Team code swap</td><td>Ace='AMOS'→'ACE', AMOS='ACE'→'AMO'</td><td>Fixed in ETL</td><td>2026-01-05</td></tr>
+                <tr><td>Team name case</td><td>'Amos' → 'AMOS' in all tables</td><td>Fixed, 8,195 rows</td><td>2026-01-05</td></tr>
+                <tr><td>CSAHA teams</td><td>9 non-NORAD teams in dim_team</td><td>Removed</td><td>2026-01-05</td></tr>
+                <tr><td>CSAHA columns</td><td>4 CSAHA columns in dim_player</td><td>Removed</td><td>2026-01-05</td></tr>
+                <tr><td>Game 18977 goals</td><td>Velodrome goals 3→4</td><td>Fixed</td><td>2026-01-05</td></tr>
+            </tbody>
+        </table>
+        
+        <h3>Outstanding Data Quality Flags</h3>
+        <table>
+            <thead><tr><th>Game</th><th>Player</th><th>Issue</th><th>Severity</th><th>Notes</th></tr></thead>
+            <tbody>
+                <tr><td>18977</td><td>Lee Smith</td><td>TOI=0, CF%=0</td><td class="warn">WARNING</td><td>May not have played</td></tr>
+                <tr><td>18977</td><td>Maxwell Donaty</td><td>TOI=0, CF%=0</td><td class="warn">WARNING</td><td>May not have played</td></tr>
+                <tr><td>18977</td><td>Jared Wolf</td><td>TOI=3185s (53min)</td><td class="warn">WARNING</td><td>High TOI - verify</td></tr>
+                <tr><td>18977</td><td>Hayden Smith</td><td>shots=23</td><td class="warn">WARNING</td><td>Verified correct</td></tr>
+                <tr><td>18977</td><td>-</td><td>No assists tracked</td><td class="warn">WARNING</td><td>Data completeness</td></tr>
+                <tr><td>18981</td><td>-</td><td>No assists tracked</td><td class="warn">WARNING</td><td>Data completeness</td></tr>
+            </tbody>
+        </table>
+        
+        <div style="margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--gray-200); color: var(--gray-600); font-size: 0.875rem;">
+            <p>Generated: January 7, 2026 | BenchSight v13.18</p>
+        </div>
+    </div>
+</body>
+</html>

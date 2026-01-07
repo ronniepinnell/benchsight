@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation Home - BenchSight v13.18</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #333; line-height: 1.6; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #4a4e69 100%); color: white; padding: 20px 40px; }
+        .header h1 { margin: 0; font-size: 24px; display: flex; align-items: center; gap: 10px; }
+        .header .version { background: rgba(255,255,255,0.2); padding: 3px 10px; border-radius: 12px; font-size: 12px; }
+        .nav { background: #4a4e69; padding: 0 20px; display: flex; flex-wrap: wrap; gap: 0; }
+        .nav a { color: white; text-decoration: none; padding: 10px 14px; font-size: 13px; font-weight: 500; white-space: nowrap; }
+        .nav a:hover { background: rgba(255,255,255,0.1); }
+        .nav a.active { background: rgba(255,255,255,0.2); }
+        .container { max-width: 1400px; margin: 0 auto; padding: 30px; }
+        h1, h2, h3 { color: #1a1a2e; }
+        h2 { border-bottom: 2px solid #4a4e69; padding-bottom: 8px; margin-top: 35px; }
+        h3 { color: #4a4e69; margin-top: 25px; }
+        table { border-collapse: collapse; width: 100%; margin: 15px 0; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        code { background: #e9ecef; padding: 2px 6px; border-radius: 3px; font-family: 'Consolas', monospace; font-size: 0.9em; }
+        pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 8px; overflow-x: auto; font-size: 13px; }
+        pre code { background: transparent; color: inherit; }
+        a { color: #4a4e69; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); margin: 15px 0; }
+        .card h3 { margin-top: 0; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+        .alert { padding: 12px 18px; border-radius: 6px; margin: 15px 0; }
+        .alert-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .alert-warning { background: #fff3cd; color: #856404; border: 1px solid #ffc107; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #28a745; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+        .badge-green { background: #28a745; color: white; }
+        .badge-blue { background: #007bff; color: white; }
+        .badge-yellow { background: #ffc107; color: #333; }
+        .badge-red { background: #dc3545; color: white; }
+        .badge-gray { background: #6c757d; color: white; }
+        .mermaid { background: white; padding: 20px; border-radius: 8px; overflow-x: auto; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; margin: 20px 0; }
+        .stat-card { background: white; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
+        .stat-card .number { font-size: 36px; font-weight: bold; color: #4a4e69; }
+        .stat-card .label { color: #888; font-size: 13px; margin-top: 5px; }
+        footer { text-align: center; padding: 25px; color: #888; font-size: 11px; border-top: 1px solid #ddd; margin-top: 40px; }
+        ul { padding-left: 20px; }
+        li { margin: 5px 0; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({startOnLoad:true, theme:'default'});</script>
+</head>
+<body>
+    <div class="header">
+        <h1>🏒 BenchSight <span class="version">v14.01</span></h1>
+    </div>
+    
+    <nav class="nav">
+        <a href="index.html" class='active'>🏠 Home</a>
+        <a href="tracker/index.html" style="background:#00d4aa;color:#000;">🎮 Tracker</a>
+        <a href="tables.html" >📊 Tables (59)</a>
+        <a href="diagrams/ERD_VIEWER.html" >🗂️ ERD</a>
+        <a href="pipeline_visualization.html" >⚡ Pipeline</a>
+        <a href="SCRIPTS_REFERENCE.html" >📜 Scripts</a>
+        <a href="MODULE_REFERENCE.html" >📦 Modules</a>
+        <a href="KEY_FORMATS.html" >🔑 Keys</a>
+        <a href="DATA_DICTIONARY.html" >📖 Dictionary</a>
+        <a href="VERIFICATION_STATUS.html" >✅ QA</a>
+        <a href="LLM_HANDOFF.html" >🤖 LLM Guide</a>
+        <a href="BS_DETECTOR.html" style="background:#e94560;">🔍 BS Detector</a>
+        <a href="CHANGELOG.html" >📋 Changelog</a>
+    </nav>
+
+    <div class="container">
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="number">33</div>
+                <div class="label">Dimensions</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">24</div>
+                <div class="label">Facts</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">2</div>
+                <div class="label">QA Tables</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">4</div>
+                <div class="label">Games</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">17</div>
+                <div class="label">Total Goals</div>
+            </div>
+        </div>
+        
+        <div class="alert alert-success">✅ All 4 games verified against noradhockey.com - 17 total goals</div>
+        
+        <h2>🔍 Verification & Quality</h2>
+        <div class="grid">
+            <div class="card" style="border-left: 4px solid #e94560;">
+                <h3><a href="BS_DETECTOR.html" style="color: #e94560;">🔍 BS Detector</a></h3>
+                <p>Verify LLM work before accepting. One-command verification, red flags checklist, and questions to ask.</p>
+                <code>python scripts/pre_delivery.py</code>
+            </div>
+            <div class="card" style="border-left: 4px solid #4da6ff;">
+                <h3><a href="DOC_MAINTENANCE.html">📝 Doc Maintenance</a></h3>
+                <p>How to keep docs consistent. Version management, doc consistency system, and common workflows.</p>
+                <code>python scripts/utilities/doc_consistency.py --fix</code>
+            </div>
+        </div>
+        
+        <h2>📚 Core Documentation</h2>
+        <div class="grid">
+            <div class="card">
+                <h3><a href="tables.html">📊 Table Browser</a></h3>
+                <p>Browse all 59 tables with schemas, sample data, and column metadata.</p>
+            </div>
+            <div class="card">
+                <h3><a href="diagrams/ERD_VIEWER.html">🗂️ Schema / ERD</a></h3>
+                <p>Entity-relationship diagram showing table connections.</p>
+            </div>
+            <div class="card">
+                <h3><a href="DATA_DICTIONARY.html">📖 Data Dictionary</a></h3>
+                <p>Complete column definitions and relationships.</p>
+            </div>
+            <div class="card">
+                <h3><a href="MODULE_REFERENCE.html">📦 Module Reference</a></h3>
+                <p>Source code documentation with flowcharts.</p>
+            </div>
+        </div>
+        
+        <h2>⚙️ Technical Docs</h2>
+        <div class="grid">
+            <div class="card">
+                <h3><a href="pipeline_visualization.html">⚡ ETL Pipeline</a></h3>
+                <p>Visual flowchart of data processing.</p>
+            </div>
+            <div class="card">
+                <h3><a href="KEY_FORMATS.html">🔑 Key Formats</a></h3>
+                <p>Primary key conventions and generation rules.</p>
+            </div>
+            <div class="card">
+                <h3><a href="VERIFICATION_STATUS.html">✅ Verification</a></h3>
+                <p>QA results and data quality metrics.</p>
+            </div>
+            <div class="card">
+                <h3><a href="STAT_CALCS.html">📈 Stat Calculations</a></h3>
+                <p>Formulas for calculated statistics.</p>
+            </div>
+        </div>
+        
+        <h2>📋 Table Logic</h2>
+        <div class="grid">
+            <div class="card">
+                <h3><a href="TABLE_LOGIC_EVENTS.html">🎯 Events Logic</a></h3>
+                <p>How fact_events is generated.</p>
+            </div>
+            <div class="card">
+                <h3><a href="TABLE_LOGIC_SHIFTS.html">🔄 Shifts Logic</a></h3>
+                <p>Shift tracking and duration.</p>
+            </div>
+            <div class="card">
+                <h3><a href="TABLE_LOGIC_CYCLES.html">🔁 Cycles Logic</a></h3>
+                <p>Offensive zone cycles.</p>
+            </div>
+            <div class="card">
+                <h3><a href="TABLE_LOGIC_RATINGS.html">⭐ Ratings Logic</a></h3>
+                <p>Player ratings and tiers.</p>
+            </div>
+        </div>
+        
+        <h2>🤖 LLM / Developer</h2>
+        <div class="grid">
+            <div class="card">
+                <h3><a href="LLM_HANDOFF.html">🤖 LLM Handoff</a></h3>
+                <p>Complete context for AI assistants.</p>
+            </div>
+            <div class="card">
+                <h3><a href="HONEST_ASSESSMENT.html">💯 Honest Assessment</a></h3>
+                <p>Current status and known issues.</p>
+            </div>
+            <div class="card">
+                <h3><a href="FUTURE_ROADMAP.html">🚀 Roadmap</a></h3>
+                <p>Planned features and priorities.</p>
+            </div>
+            <div class="card">
+                <h3><a href="CHANGELOG.html">📝 Changelog</a></h3>
+                <p>Version history.</p>
+            </div>
+        </div>
+        
+        <h2>📁 Additional</h2>
+        <div class="grid">
+            <div class="card">
+                <h3><a href="MISSING_TABLES.html">📋 Missing Tables</a></h3>
+                <p>Tables planned but not yet built.</p>
+            </div>
+            <div class="card">
+                <h3><a href="OUTCOME_DIMENSIONS.html">🎯 Outcomes</a></h3>
+                <p>Shot, pass, save classifications.</p>
+            </div>
+            <div class="card">
+                <h3><a href="STAT_DICTIONARY.html">📊 Stat Dictionary</a></h3>
+                <p>All statistics defined.</p>
+            </div>
+            <div class="card">
+                <h3><a href="SUPABASE_DEPLOYMENT.html">☁️ Supabase</a></h3>
+                <p>Cloud database setup.</p>
+            </div>
+        </div>
+        
+        <h2>🚀 Quick Start</h2>
+        <div class="card">
+            <pre>python -m src.etl_orchestrator full      # Run full ETL
+python -m src.etl_orchestrator status    # Check status
+python3 -m pytest tests/test_etl.py -v   # Run tests</pre>
+        </div>
+        
+        <div class="alert alert-info">
+            📋 <strong>First time?</strong> Start with <a href="LLM_HANDOFF.html">LLM Handoff Guide</a>, then explore <a href="tables.html">Tables</a>.
+        </div>
+
+    </div>
+    <footer>
+        BenchSight v13.18 | NORAD Hockey Analytics | Generated: January 7, 2026<br>
+        <a href="index.html">Home</a> · <a href="tables.html">Tables</a> · <a href="LLM_HANDOFF.html">LLM Guide</a>
+    </footer>
+</body>
+</html>

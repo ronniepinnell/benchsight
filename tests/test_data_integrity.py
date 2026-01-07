@@ -16,7 +16,6 @@ EXCLUDED_GAMES = []  # No games are explicitly excluded
 class TestTableExistence:
     """Verify all required tables exist"""
     
-    # Core tables that must exist
     REQUIRED_TABLES = [
         # Dimensions
         'dim_player', 'dim_team', 'dim_league', 'dim_season', 'dim_schedule',
@@ -24,10 +23,9 @@ class TestTableExistence:
         'dim_playerurlref', 'dim_rinkboxcoord', 'dim_rinkcoordzones', 'dim_randomnames',
         'dim_event_type', 'dim_shift_slot', 'dim_strength',
         # Facts
-        'fact_gameroster', 'fact_events', 'fact_events_player', 'fact_events_tracking',
-        'fact_shifts', 'fact_shifts_long', 'fact_shifts_player',
-        'fact_draft', 'fact_registration', 'fact_leadership',
-        'fact_player_game_stats', 'fact_team_game_stats',
+        'fact_gameroster', 'fact_events', 'fact_events_long', 'fact_event_players',
+        'fact_shifts', 'fact_shifts_long', 'fact_shifts',
+        'fact_playergames', 'fact_draft', 'fact_registration', 'fact_leadership',
     ]
     
     @pytest.mark.parametrize("table", REQUIRED_TABLES)
@@ -39,7 +37,6 @@ class TestTableExistence:
 class TestPrimaryKeyIntegrity:
     """Verify primary keys have no nulls and no duplicates"""
     
-    # Primary keys are first column of each CSV
     PRIMARY_KEYS = [
         ('dim_player', 'player_id'),
         ('dim_team', 'team_id'),
@@ -51,11 +48,11 @@ class TestPrimaryKeyIntegrity:
         ('dim_period', 'period_id'),
         ('dim_venue', 'venue_id'),
         ('dim_zone', 'zone_id'),
-        ('fact_gameroster', 'roster_key'),
-        ('fact_events', 'event_key'),
-        ('fact_events_player', 'event_player_key'),
-        ('fact_shifts', 'shift_key'),
-        ('fact_shifts_long', 'shift_player_key'),
+        ('fact_gameroster', 'player_game_id'),
+        ('fact_events', 'event_id'),
+        ('fact_events_long', 'event_player_id'),
+        ('fact_shifts', 'shift_id'),
+        ('fact_shifts_long', 'shift_player_id'),
     ]
     
     @pytest.mark.parametrize("table,pk", PRIMARY_KEYS)
@@ -81,10 +78,10 @@ class TestForeignKeyPresence:
     """Verify FK columns exist in fact tables"""
     
     FK_REQUIREMENTS = [
-        ('fact_events', ['game_id']),
-        ('fact_events_player', ['game_id', 'player_id', 'event_key']),
-        ('fact_shifts', ['game_id']),
-        ('fact_shifts_long', ['game_id', 'player_id']),
+        ('fact_events', ['game_id', 'period_id', 'event_type_id']),
+        ('fact_events_long', ['game_id', 'player_id', 'period_id', 'event_type_id']),
+        ('fact_shifts', ['game_id', 'period_id']),
+        ('fact_shifts_long', ['game_id', 'player_id', 'slot_id', 'venue_id', 'period_id']),
         ('fact_gameroster', ['game_id', 'player_id', 'team_id']),
     ]
     
@@ -100,7 +97,7 @@ class TestForeignKeyPresence:
 class TestGameCoverage:
     """Verify correct games in tracking tables"""
     
-    TRACKING_TABLES = ['fact_events', 'fact_shifts', 'fact_events_player', 'fact_shifts_long']
+    TRACKING_TABLES = ['fact_events', 'fact_shifts', 'fact_events_long', 'fact_shifts_long']
     
     @pytest.mark.parametrize("table", TRACKING_TABLES)
     def test_valid_games_present(self, table):
@@ -125,7 +122,7 @@ class TestPlayerIdLinkage:
     """Verify player_id linkage"""
     
     PLAYER_TABLES = [
-        ('fact_events_player', 0.95),
+        ('fact_events_long', 0.95),
         ('fact_shifts_long', 0.95),
         ('fact_gameroster', 0.99),
     ]
@@ -186,7 +183,7 @@ class TestWideVsLongRelationship:
     def test_events_long_references_events(self):
         """Verify events_long references valid events via game_id + event_index."""
         events = pd.read_csv(OUTPUT_DIR / "fact_events.csv", dtype=str)
-        events_long = pd.read_csv(OUTPUT_DIR / "fact_events_player.csv", dtype=str)
+        events_long = pd.read_csv(OUTPUT_DIR / "fact_events_long.csv", dtype=str)
         
         # Use game_id + event_index as composite key
         events['event_key'] = events['game_id'] + '_' + events['event_index'].astype(str)

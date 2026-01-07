@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETL Pipeline - BenchSight v13.18</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #333; line-height: 1.6; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #4a4e69 100%); color: white; padding: 20px 40px; }
+        .header h1 { margin: 0; font-size: 24px; display: flex; align-items: center; gap: 10px; }
+        .header .version { background: rgba(255,255,255,0.2); padding: 3px 10px; border-radius: 12px; font-size: 12px; }
+        .nav { background: #4a4e69; padding: 0 20px; display: flex; flex-wrap: wrap; gap: 0; }
+        .nav a { color: white; text-decoration: none; padding: 10px 14px; font-size: 13px; font-weight: 500; white-space: nowrap; }
+        .nav a:hover { background: rgba(255,255,255,0.1); }
+        .nav a.active { background: rgba(255,255,255,0.2); }
+        .container { max-width: 1400px; margin: 0 auto; padding: 30px; }
+        h1, h2, h3 { color: #1a1a2e; }
+        h2 { border-bottom: 2px solid #4a4e69; padding-bottom: 8px; margin-top: 35px; }
+        h3 { color: #4a4e69; margin-top: 25px; }
+        table { border-collapse: collapse; width: 100%; margin: 15px 0; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        code { background: #e9ecef; padding: 2px 6px; border-radius: 3px; font-family: 'Consolas', monospace; font-size: 0.9em; }
+        pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 8px; overflow-x: auto; font-size: 13px; }
+        pre code { background: transparent; color: inherit; }
+        a { color: #4a4e69; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); margin: 15px 0; }
+        .card h3 { margin-top: 0; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+        .alert { padding: 12px 18px; border-radius: 6px; margin: 15px 0; }
+        .alert-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .alert-warning { background: #fff3cd; color: #856404; border: 1px solid #ffc107; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #28a745; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+        .badge-green { background: #28a745; color: white; }
+        .badge-blue { background: #007bff; color: white; }
+        .badge-yellow { background: #ffc107; color: #333; }
+        .badge-red { background: #dc3545; color: white; }
+        .badge-gray { background: #6c757d; color: white; }
+        .mermaid { background: white; padding: 20px; border-radius: 8px; overflow-x: auto; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; margin: 20px 0; }
+        .stat-card { background: white; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
+        .stat-card .number { font-size: 36px; font-weight: bold; color: #4a4e69; }
+        .stat-card .label { color: #888; font-size: 13px; margin-top: 5px; }
+        footer { text-align: center; padding: 25px; color: #888; font-size: 11px; border-top: 1px solid #ddd; margin-top: 40px; }
+        ul { padding-left: 20px; }
+        li { margin: 5px 0; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({startOnLoad:true, theme:'default'});</script>
+</head>
+<body>
+    <div class="header">
+        <h1>🏒 BenchSight <span class="version">v13.18</span></h1>
+    </div>
+    
+    <nav class="nav">
+        <a href="index.html" >🏠 Home</a>
+        <a href="tables.html" >📊 Tables (59)</a>
+        <a href="diagrams/ERD_VIEWER.html" >🗂️ ERD</a>
+        <a href="pipeline_visualization.html" class='active'>⚡ Pipeline</a>
+        <a href="MODULE_REFERENCE.html" >📦 Modules</a>
+        <a href="KEY_FORMATS.html" >🔑 Keys</a>
+        <a href="DATA_DICTIONARY.html" >📖 Dictionary</a>
+        <a href="VERIFICATION_STATUS.html" >✅ QA</a>
+        <a href="LLM_HANDOFF.html" >🤖 LLM Guide</a>
+        <a href="HONEST_ASSESSMENT.html" >💯 Assessment</a>
+        <a href="CHANGELOG.html" >📝 Changelog</a>
+    </nav>
+
+    <div class="container">
+
+        <h1>⚡ ETL Pipeline Visualization</h1>
+        <p><strong>Last Updated:</strong> January 7, 2026 | <strong>Version:</strong> 12.03</p>
+        
+        <h2>High-Level Data Flow</h2>
+        <div class="mermaid">
+flowchart LR
+    subgraph Sources["📁 Data Sources"]
+        BLB[BLB_Tables.xlsx]
+        TRACK[tracking.xlsx]
+        ROSTER[roster.json]
+    end
+    
+    subgraph ETL["⚙️ ETL Engine"]
+        ORCH[ETLOrchestrator]
+        BASE[base_etl.py]
+        ADV[advanced/]
+    end
+    
+    subgraph Output["📤 Output"]
+        DIM[Dimensions<br/>34 tables]
+        FACT[Facts<br/>25 tables]
+        QA[QA Tables<br/>2 tables]
+    end
+    
+    Sources --> ORCH
+    ORCH --> BASE
+    BASE --> ADV
+    ADV --> Output
+        </div>
+        
+        <h2>Detailed Processing Pipeline</h2>
+        <div class="mermaid">
+flowchart TB
+    subgraph Phase1["Phase 1: Load BLB Master Data"]
+        A1[Load BLB_Tables.xlsx] --> A2[Create dim_player<br/>337 players]
+        A1 --> A3[Create dim_team<br/>Team definitions]
+        A1 --> A4[Create dim_schedule<br/>Game schedule]
+        A1 --> A5[Create 30+ ref dims<br/>Event types, zones, etc.]
+    end
+    
+    subgraph Phase2["Phase 2: Process Each Game"]
+        B1[Load tracking.xlsx] --> B2[Parse events sheet]
+        B1 --> B3[Parse shifts sheet]
+        B4[Load roster.json] --> B5[Build player lookup]
+        B2 --> B6[Create fact_event_players<br/>11,181 rows]
+        B3 --> B7[Create fact_shifts<br/>398 shifts]
+        B5 --> B8[Create fact_gameroster<br/>88 roster entries]
+    end
+    
+    subgraph Phase3["Phase 3: Derive Tables"]
+        C1[Group by event_id] --> C2[fact_events<br/>5,831 rows]
+        C2 --> C3[fact_faceoffs<br/>171]
+        C2 --> C4[fact_rushes<br/>314]
+        C2 --> C5[fact_zone_entries<br/>508]
+        C2 --> C6[fact_saves<br/>212]
+        C2 --> C7[fact_penalties<br/>20]
+    end
+    
+    subgraph Phase4["Phase 4: Advanced"]
+        D1[Create sequences] --> D2[fact_sequences<br/>397]
+        D1 --> D3[fact_plays<br/>1,956]
+        D4[Link events] --> D5[fact_event_chains]
+    end
+    
+    Phase1 --> Phase2
+    Phase2 --> Phase3
+    Phase3 --> Phase4
+        </div>
+        
+        <h2>ETL Orchestrator Flow</h2>
+        <div class="mermaid">
+sequenceDiagram
+    participant User
+    participant CLI
+    participant Orchestrator
+    participant BaseETL
+    participant Advanced
+    participant Output
+    
+    User->>CLI: python -m src.etl_orchestrator full
+    CLI->>Orchestrator: run_full()
+    Orchestrator->>BaseETL: load_blb_data()
+    BaseETL->>Output: Save dimension tables
+    
+    loop For each game
+        Orchestrator->>BaseETL: load_game(game_id)
+        BaseETL->>Output: Save tracking tables
+    end
+    
+    Orchestrator->>BaseETL: create_derived_tables()
+    BaseETL->>Output: Save derived facts
+    
+    Orchestrator->>Advanced: extended_tables.py
+    Advanced->>Output: Save advanced tables
+    
+    Orchestrator-->>User: Complete! 59 tables
+        </div>
+        
+        <h2>Key Transformations</h2>
+        <table>
+            <tr><th>Transformation</th><th>Input</th><th>Output</th><th>Logic</th></tr>
+            <tr>
+                <td>Event Grouping</td>
+                <td>fact_event_players<br/>(11,181 rows)</td>
+                <td>fact_events<br/>(5,831 rows)</td>
+                <td>GROUP BY event_id, keep priority: Goal > Shot > Faceoff</td>
+            </tr>
+            <tr>
+                <td>Goal Identification</td>
+                <td>fact_events</td>
+                <td>is_goal column</td>
+                <td><code>event_type='Goal' AND event_detail='Goal_Scored'</code></td>
+            </tr>
+            <tr>
+                <td>Player Linkage</td>
+                <td>jersey_number + team + game</td>
+                <td>player_id</td>
+                <td>JOIN with fact_gameroster</td>
+            </tr>
+            <tr>
+                <td>Shift Duration</td>
+                <td>shift_end - shift_start</td>
+                <td>shift_duration</td>
+                <td>In seconds, typically 45-60s</td>
+            </tr>
+        </table>
+        
+        <h2>CLI Commands</h2>
+        <div class="card">
+            <pre># Full ETL - process all games
+python -m src.etl_orchestrator full
+
+# Incremental - only new/changed games
+python -m src.etl_orchestrator incremental
+
+# Single game
+python -m src.etl_orchestrator single 18969
+
+# Check status
+python -m src.etl_orchestrator status
+
+# Reset and rerun
+python -m src.etl_orchestrator reset</pre>
+        </div>
+
+    </div>
+    <footer>
+        BenchSight v13.18 | NORAD Hockey Analytics | Generated: January 7, 2026<br>
+        <a href="index.html">Home</a> · <a href="tables.html">Tables</a> · <a href="LLM_HANDOFF.html">LLM Guide</a>
+    </footer>
+</body>
+</html>

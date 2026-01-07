@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>TABLE LOGIC EVENTS</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+               max-width: 1200px; margin: 0 auto; padding: 20px; line-height: 1.6; }
+        h1 { color: #1a1a2e; border-bottom: 2px solid #4a4a8a; padding-bottom: 10px; }
+        h2 { color: #2a2a4e; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 30px; }
+        h3 { color: #3a3a5e; }
+        table { border-collapse: collapse; width: 100%; margin: 15px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #4a4a8a; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: 'Consolas', monospace; }
+        pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        pre code { background: transparent; color: inherit; }
+        a { color: #4a4a8a; }
+        .nav { background: #f0f0f0; padding: 10px; margin-bottom: 20px; border-radius: 5px; }
+        .nav a { margin-right: 15px; }
+    </style>
+</head>
+<body>
+
+<!-- ================================================================== -->
+<!-- CHANGELOG - MUST BE UPDATED WITH EVERY MODIFICATION -->
+<!-- ================================================================== -->
+<!--
+CHANGELOG:
+---------------------------------------------------------------------------
+2026-01-06 v8.0.5:
+  - CRITICAL FIX: Restored 4 missing src/advanced/ modules:
+    * create_additional_tables.py
+    * enhance_all_stats.py
+    * final_stats_enhancement.py
+    * extended_tables.py
+  - Created fact_events_player.csv (7,476 rows)
+  - Extended tables now run: +15 tables created
+  - Table count: 131 (54 dim, 73 fact, 3 QA, 1 other)
+  - Added comprehensive code audit documentation
+  - Fixed column name mismatches (Type -> event_type)
+
+2026-01-06 v8.0.4:
+  - CRITICAL: Recovered 72 missing tables from v7 backup
+  - Table count restored from 53 to 130
+  - Created 4 new outcome dimension tables
+  - Regenerated ERD with all tables
+  - Added table integrity tests
+
+2026-01-05 v8.0.0:
+  - Major schema expansion: 96 -> 111 tables planned
+  - Added 317 player metrics
+  - Created comprehensive foreign key relationships
+  - Added QA validation tables
+
+RULES FOR UPDATING THIS CHANGELOG:
+1. ALWAYS add entry BEFORE making changes
+2. Include: date, version, what changed, table counts
+3. Never delete old entries
+4. Be specific about what was added/changed/removed
+---------------------------------------------------------------------------
+-->
+
+<div class="nav">
+    <a href="index.html">Home</a>
+    <a href="DATA_DICTIONARY.html">Data Dictionary</a>
+    <a href="LLM_HANDOFF.html">LLM Handoff</a>
+    <a href="TABLE_LOGIC_EVENTS.html">Events Logic</a>
+    <a href="TABLE_LOGIC_SHIFTS.html">Shifts Logic</a>
+    <a href="TABLE_LOGIC_RATINGS.html">Ratings Logic</a>
+    <a href="CHANGELOG.html">Changelog</a>
+</div>
+<p><h1>Event Tables - Logic & Documentation</h1></p>
+<p><strong>Last Updated:</strong> January 7, 2026<strong>Version:</strong> 12.03</p>
+<p>---</p>
+<p><h2>Overview</h2></p>
+<p>Event tables capture every on-ice action during a game. Events are organized hierarchically: Sequences → Plays → Events → Player Events. Each level provides different analytical perspectives.</p>
+<p>---</p>
+<p><h2>Data Hierarchy</h2></p>
+<p><pre><code>Raw Excel (events sheet)
+    │
+    └── fact_event_players (11,181) - Raw player-event rows
+            │
+            ├── fact_events (5,117) - Deduplicated event rows
+            │       │
+            │       ├── fact_tracking (5,117) - Time/location context
+            │       │
+            │       ├── fact_plays (1,958) - Possession units
+            │       │       │
+            │       │       └── fact_sequences (397) - Whistle-to-whistle
+            │       │
+            │       ├── fact_rushes (312) - Rush events
+            │       ├── fact_breakouts (137) - Breakout events
+            │       ├── fact_zone_entries (474) - Zone entries
+            │       ├── fact_zone_exits (427) - Zone exits
+            │       ├── fact_scoring_chances_detailed (457) - Shots/goals
+            │       │       └── fact_high_danger_chances (25)
+            │       ├── fact_saves (118) - Goalie saves
+            │       ├── fact_turnovers_detailed (530) - Turnovers
+            │       ├── fact_faceoffs (168) - Faceoffs
+            │       └── fact_penalties (19) - Penalties
+            │
+            ├── fact_shot_chains (227) - Zone-entry-to-shot chains
+            ├── fact_player_shot_chains (5,117) - Player context
+            ├── fact_linked_events (473) - Simultaneous events
+            └── fact_scoring_chances (451) - Original scoring chances</code></pre></p>
+<p>---</p>
+<p><h2>fact_event_players (11,181 rows, 93 cols)</h2></p>
+<p><h3>WHY: Raw player-event data preserving all tracking detail</h3></p>
+<p><h3>HOW:</h3>
+1. Read events sheet from <code>{game_id}_tracking.xlsx</code>
+2. Each row = one player involvement in one event
+3. Multiple rows per event (one per player involved)
+4. event_player_1 row = primary player for that event</p>
+<p><h3>KEY COLUMNS:</h3>
+- <strong>event_id</strong>: FK to fact_events
+- <strong>player_id</strong>: Player involved
+- <strong>player_role</strong>: event_player_1, event_player_2, opp_player_1, etc.
+- <strong>event_type</strong>: Faceoff, Shot, Pass, Turnover, etc.
+- <strong>play_detail1</strong>: Detailed play description</p>
+<p><h3>GRAIN: One row per PLAYER per EVENT</h3></p>
+<p><h3>IMPORTANT: </h3>
+- <strong>event_player_1</strong> = Primary player responsible for event
+- Filter to player_role = 'event_player_1' for one row per event</p>
+<p>---</p>
+<p><h2>fact_events (5,117 rows, 72 cols)</h2></p>
+<p><h3>WHY: Deduplicated event table for analysis</h3></p>
+<p><h3>HOW:</h3>
+1. Take first row (event_player_1) from each event in fact_event_players
+2. Add derived FK columns for dimensional analysis
+3. Add boolean flags for event classification
+4. Add time columns from tracking</p>
+<p><h3>KEY COLUMNS (Original):</h3>
+- <strong>event_id</strong>: PK, format EV{game:5}{index:05d}
+- <strong>event_type</strong>: Primary classification (20 types)
+- <strong>event_detail</strong>: Subtype (47 values)
+- <strong>event_detail_2</strong>: Secondary detail (97 values)
+- <strong>event_successful</strong>: 's' = success, 'u' = unsuccessful</p>
+<p><h3>KEY COLUMNS (Derived FKs):</h3>
+<table>
+<tr><th>Column</th><th>Fill %</th><th>Calculation</th></tr>
+<tr><td>player_name</td><td>99%</td><td>dim_player lookup via player_id</td></tr>
+<tr><td>season_id</td><td>100%</td><td>dim_schedule lookup via game_id</td></tr>
+<tr><td>position_id</td><td>99%</td><td>fact_gameroster lookup via player_id + game_id</td></tr>
+<tr><td>time_bucket_id</td><td>100%</td><td>Based on period + event_start_min</td></tr>
+<tr><td>strength_id</td><td>99%</td><td>Count skaters from fact_shifts</td></tr>
+<tr><td>shot_type_id</td><td>6%</td><td>Only for Shot/Goal events</td></tr>
+<tr><td>zone_entry_type_id</td><td>7%</td><td>Only for Zone_Entry_Exit events</td></tr>
+<tr><td>zone_exit_type_id</td><td>7%</td><td>Only for Zone_Entry_Exit events</td></tr>
+<tr><td>pass_type_id</td><td>15%</td><td>Only for Pass events</td></tr>
+<tr><td>turnover_type_id</td><td>15%</td><td>Only for Turnover events</td></tr>
+<tr><td>giveaway_type_id</td><td>12%</td><td>Only for Giveaway events</td></tr>
+<tr><td>takeaway_type_id</td><td>3%</td><td>Only for Takeaway events</td></tr>
+</table></p>
+<p><h3>KEY COLUMNS (Boolean Flags):</h3>
+<table>
+<tr><th>Flag</th><th>Count</th><th>Calculation</th></tr>
+<tr><td>is_rush</td><td>312</td><td>event_detail_2 CONTAINS 'Rush'</td></tr>
+<tr><td>is_rebound</td><td>162</td><td>event_detail CONTAINS 'Rebound'</td></tr>
+<tr><td>is_breakout</td><td>137</td><td>play_detail1 CONTAINS 'Breakout'</td></tr>
+<tr><td>is_zone_entry</td><td>474</td><td>zone_entry_type_id NOT NULL OR event_detail = 'Zone_Entry'</td></tr>
+<tr><td>is_zone_exit</td><td>427</td><td>zone_exit_type_id NOT NULL OR event_detail = 'Zone_Exit'</td></tr>
+<tr><td>is_shot</td><td>441</td><td>event_type IN ('Shot', 'Goal')</td></tr>
+<tr><td>is_goal</td><td>42</td><td>event_type = 'Goal' OR event_detail CONTAINS 'Goal'</td></tr>
+<tr><td>is_save</td><td>118</td><td>event_detail STARTS WITH 'Save'</td></tr>
+<tr><td>is_turnover</td><td>530</td><td>event_type = 'Turnover'</td></tr>
+<tr><td>is_giveaway</td><td>610</td><td>giveaway_type_id NOT NULL</td></tr>
+<tr><td>is_takeaway</td><td>135</td><td>takeaway_type_id NOT NULL</td></tr>
+<tr><td>is_scoring_chance</td><td>457</td><td>is_shot OR is_goal</td></tr>
+<tr><td>is_high_danger</td><td>25</td><td>(is_shot OR is_goal) AND (is_rebound OR Tip/OneTime)</td></tr>
+</table></p>
+<p><h3>KEY COLUMNS (Danger):</h3>
+<table>
+<tr><th>Column</th><th>Calculation</th></tr>
+<tr><td>danger_level</td><td>'high' if is_high_danger, 'medium' if is_rush or zone='o', else 'low'</td></tr>
+<tr><td>danger_level_id</td><td>FK to dim_danger_level</td></tr>
+<tr><td>scoring_chance_key</td><td>Format SC{game}{idx} for shots/goals only</td></tr>
+</table></p>
+<p><h3>GRAIN: One row per EVENT</h3></p>
+<p>---</p>
+<p><h2>fact_sequences (397 rows, 37 cols)</h2></p>
+<p><h3>WHY: Whistle-to-whistle analysis (possession sequences)</h3></p>
+<p><h3>HOW:</h3>
+1. Group events by sequence_key (assigned during tracking)
+2. Aggregate event counts, zone entries, shots, goals
+3. Calculate duration and pass success rate</p>
+<p><h3>KEY COLUMNS:</h3>
+- <strong>sequence_key</strong>: PK, format SQ{game:5}{index:05d}
+- <strong>event_count</strong>: COUNT of events in sequence
+- <strong>duration_seconds</strong>: SUM of event durations
+- <strong>has_goal</strong>: TRUE if any goal event
+- <strong>shot_count</strong>: COUNT of shot/goal events
+- <strong>zone_entry_count</strong>: COUNT of zone entries
+- <strong>pass_success_rate</strong>: pass_success_count / pass_count</p>
+<p><h3>GRAIN: One row per SEQUENCE (whistle-to-whistle)</h3></p>
+<p><h3>CALCULATION:</h3>
+<pre><code>for sequence_key, events in groupby(fact_events, 'sequence_key'):
+    sequence = {
+        'sequence_key': sequence_key,
+        'first_event_key': events.iloc[0]['event_id'],
+        'last_event_key': events.iloc[-1]['event_id'],
+        'event_count': len(events),
+        'duration_seconds': events['duration'].sum(),
+        'has_goal': (events['event_type'] == 'Goal').any(),
+        'shot_count': events['event_type'].isin(['Shot', 'Goal']).sum(),
+        ...
+    }</code></pre></p>
+<p>---</p>
+<p><h2>fact_plays (1,958 rows, 38 cols)</h2></p>
+<p><h3>WHY: Possession-level analysis within sequences</h3></p>
+<p><h3>HOW:</h3>
+1. Group events by play_key (assigned during tracking)
+2. Similar aggregation to sequences
+3. Plays are smaller units within sequences</p>
+<p><h3>KEY COLUMNS:</h3>
+- <strong>play_key</strong>: PK, format PL{game:5}{index:05d}
+- <strong>sequence_key</strong>: FK to parent sequence
+- <strong>event_count</strong>: COUNT of events in play
+- <strong>has_goal</strong>: TRUE if any goal event
+- <strong>has_shot</strong>: TRUE if any shot event</p>
+<p><h3>GRAIN: One row per PLAY (possession unit)</h3></p>
+<p><h3>RELATIONSHIP:</h3>
+- Average ~5 plays per sequence
+- A sequence can have 1-48 plays</p>
+<p>---</p>
+<p><h2>Derived Event Tables</h2></p>
+<p><h3>fact_rushes (312 rows, 31 cols)</h3></p>
+<p><strong>WHY:</strong> Analyze rush attacks specifically</p>
+<p><strong>HOW:</strong> Filter fact_events WHERE is_rush = 1</p>
+<p><strong>KEY COLUMNS:</strong>
+- rush_key: PK
+- rush_outcome: 'goal', 'shot', 'zone_entry', 'other'
+- All common event columns</p>
+<p><h3>fact_breakouts (137 rows, 29 cols)</h3></p>
+<p><strong>WHY:</strong> Analyze defensive zone breakouts</p>
+<p><strong>HOW:</strong> Filter fact_events WHERE is_breakout = 1</p>
+<p><strong>KEY COLUMNS:</strong>
+- breakout_key: PK
+- breakout_outcome: 'successful', 'turnover', 'zone_exit', 'other'</p>
+<p><h3>fact_zone_entries (474 rows, 28 cols)</h3></p>
+<p><strong>WHY:</strong> Analyze offensive zone entries</p>
+<p><strong>HOW:</strong> Filter fact_events WHERE is_zone_entry = 1</p>
+<p><strong>KEY COLUMNS:</strong>
+- zone_entry_key: PK
+- entry_method: 'rush', 'dump_in', 'carry', 'other'
+- led_to_shot: 1 if sequence had a shot</p>
+<p><h3>fact_zone_exits (427 rows, 27 cols)</h3></p>
+<p><strong>WHY:</strong> Analyze defensive zone exits</p>
+<p><strong>HOW:</strong> Filter fact_events WHERE is_zone_exit = 1</p>
+<p><strong>KEY COLUMNS:</strong>
+- zone_exit_key: PK
+- exit_method: 'rush', 'clear', 'pass', 'other'</p>
+<p><h3>fact_scoring_chances_detailed (457 rows, 35 cols)</h3></p>
+<p><strong>WHY:</strong> Comprehensive shot/goal analysis</p>
+<p><strong>HOW:</strong> Filter fact_events WHERE is_scoring_chance = 1</p>
+<p><strong>KEY COLUMNS:</strong>
+- scoring_chance_key: PK
+- shot_type: Wrist, Backhand, Tip, etc.
+- danger_level: high/medium/low
+- is_goal, is_sog, is_blocked_shot, is_missed_shot</p>
+<p><h3>fact_high_danger_chances (25 rows, 29 cols)</h3></p>
+<p><strong>WHY:</strong> Focus on highest quality chances</p>
+<p><strong>HOW:</strong> Filter fact_events WHERE is_high_danger = 1</p>
+<p><strong>KEY COLUMNS:</strong>
+- high_danger_key: PK
+- is_rebound: Boolean
+- is_goal: Boolean</p>
+<p><h3>fact_saves (118 rows, 26 cols)</h3></p>
+<p><strong>WHY:</strong> Goalie save analysis</p>
+<p><strong>HOW:</strong> Filter fact_events WHERE is_save = 1</p>
+<p><strong>KEY COLUMNS:</strong>
+- save_key: PK
+- save_type: Butterfly, Freeze, etc.
+- generated_rebound: 1 if save created rebound</p>
+<p><h3>fact_turnovers_detailed (530 rows, 30 cols)</h3></p>
+<p><strong>WHY:</strong> Turnover analysis</p>
+<p><strong>HOW:</strong> Filter fact_events WHERE is_turnover = 1</p>
+<p><strong>KEY COLUMNS:</strong>
+- turnover_key_new: PK
+- turnover_type: 'giveaway', 'takeaway', 'other'</p>
+<p><h3>fact_faceoffs (168 rows, 26 cols)</h3></p>
+<p><strong>WHY:</strong> Faceoff analysis</p>
+<p><strong>HOW:</strong> Filter fact_events WHERE is_faceoff = 1</p>
+<p><strong>KEY COLUMNS:</strong>
+- faceoff_key: PK
+- faceoff_type: 'after_goal', 'after_stoppage', 'game_start', 'other'</p>
+<p><h3>fact_penalties (19 rows, 24 cols)</h3></p>
+<p><strong>WHY:</strong> Penalty tracking</p>
+<p><strong>HOW:</strong> Filter fact_events WHERE is_penalty = 1</p>
+<p><strong>KEY COLUMNS:</strong>
+- penalty_key: PK</p>
+<p>---</p>
+<p><h2>Time Bucket Calculation</h2></p>
+<p><pre><code>def get_time_bucket(period, start_min):
+    if period > 3:
+        return 'TB06'  # Overtime
+    if start_min >= 15:
+        return 'TB01'  # Early period
+    elif start_min >= 10:
+        return 'TB02'
+    elif start_min >= 5:
+        return 'TB03'
+    elif start_min >= 2:
+        return 'TB04'
+    else:
+        return 'TB05'  # Late period</code></pre></p>
+<p>---</p>
+<p><h2>Strength Calculation</h2></p>
+<p><pre><code>def get_strength(shift):
+    # Count non-null skater slots
+    home_skaters = count_not_null(
+        home_forward_1, home_forward_2, home_forward_3,
+        home_defense_1, home_defense_2
+    )
+    away_skaters = count_not_null(
+        away_forward_1, away_forward_2, away_forward_3,
+        away_defense_1, away_defense_2
+    )
+    
+    strength_map = {
+        (5, 5): 'STR0001',  # 5v5
+        (5, 4): 'STR0002',  # 5v4 Power Play
+        (4, 5): 'STR0004',  # 4v5 Penalty Kill
+        ...
+    }
+    return strength_map.get((home_skaters, away_skaters))</code></pre></p>
+<p>---</p>
+<p><h2>ETL Phases</h2></p>
+<p><table>
+<tr><th>Phase</th><th>Function</th><th>Tables Created</th></tr>
+<tr><td>5.5</td><td>enhance_event_tables()</td><td>Adds FKs to fact_events, fact_event_players</td></tr>
+<tr><td>5.6</td><td>enhance_derived_event_tables()</td><td>Adds FKs to chains, linked, scoring</td></tr>
+<tr><td>5.7</td><td>create_fact_sequences()</td><td>fact_sequences</td></tr>
+<tr><td>5.8</td><td>create_fact_plays()</td><td>fact_plays</td></tr>
+<tr><td>5.9</td><td>enhance_events_with_flags()</td><td>Adds 22 flags to fact_events</td></tr>
+<tr><td>5.10</td><td>create_derived_event_tables()</td><td>10 derived tables</td></tr>
+</table>
+</p>
+</body>
+</html>

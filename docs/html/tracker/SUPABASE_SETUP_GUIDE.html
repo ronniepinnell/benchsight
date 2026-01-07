@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BenchSight Supabase Setup Guide - BenchSight</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --border: #30363d;
+  --text: #c9d1d9;
+  --muted: #8b949e;
+  --accent: #58a6ff;
+  --accent2: #3fb950;
+  --warn: #d29922;
+  --danger: #f85149;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  font-size: 14px;
+}
+.container { max-width: 900px; margin: 0 auto; padding: 20px 40px; }
+header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 15px 0;
+}
+header .container { display: flex; justify-content: space-between; align-items: center; }
+header h1 {
+  font-size: 18px;
+  color: var(--accent);
+}
+header nav a {
+  color: var(--muted);
+  text-decoration: none;
+  margin-left: 15px;
+  font-size: 13px;
+}
+header nav a:hover { color: var(--accent); }
+main { padding: 30px 0; }
+h1 { font-size: 28px; color: var(--accent); margin-bottom: 20px; }
+h2 { font-size: 22px; color: var(--text); margin: 30px 0 15px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+h3 { font-size: 18px; color: var(--accent2); margin: 25px 0 12px; }
+h4 { font-size: 15px; color: var(--text); margin: 20px 0 10px; }
+p { margin: 12px 0; color: var(--text); }
+ul, ol { margin: 12px 0 12px 25px; }
+li { margin: 6px 0; }
+code {
+  font-family: 'SF Mono', Consolas, monospace;
+  background: var(--surface);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+  border: 1px solid var(--border);
+}
+pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 15px;
+  overflow-x: auto;
+  margin: 15px 0;
+  font-size: 12px;
+}
+pre code { background: none; border: none; padding: 0; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 15px 0;
+  font-size: 13px;
+}
+th, td {
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  text-align: left;
+}
+th { background: var(--surface); color: var(--accent); }
+tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 10px 15px;
+  margin: 15px 0;
+  background: rgba(88,166,255,0.1);
+  border-radius: 0 6px 6px 0;
+}
+hr { border: none; border-top: 1px solid var(--border); margin: 30px 0; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+strong { color: var(--text); }
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.badge-done { background: var(--accent2); color: #000; }
+.badge-pending { background: var(--warn); color: #000; }
+footer {
+  border-top: 1px solid var(--border);
+  padding: 20px 0;
+  margin-top: 40px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="container">
+    <h1>⚡ BenchSight</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="tracker/index.html">Tracker</a>
+      <a href="tables.html">Tables</a>
+      <a href="diagrams/ERD_VIEWER.html">ERD</a>
+    </nav>
+  </div>
+</header>
+<main>
+<div class="container">
+<h1>BenchSight Supabase Setup Guide</h1>
+
+<strong>Version:</strong> 1.0  
+<strong>Date:</strong> 2026-01-07  
+<strong>Purpose:</strong> Step-by-step guide to set up Supabase for BenchSight Tracker
+<p>---</p>
+
+<h2>Table of Contents</h2>
+
+<ol>
+<li>1. <a href="#quick-start">Quick Start</a></li>
+<li>2. <a href="#create-supabase-project">Create Supabase Project</a></li>
+<li>3. <a href="#required-tables">Required Tables</a></li>
+<li>4. <a href="#sample-data-setup">Sample Data Setup</a></li>
+<li>5. <a href="#api-configuration">API Configuration</a></li>
+<li>6. <a href="#testing-connection">Testing Connection</a></li>
+<li>7. <a href="#troubleshooting">Troubleshooting</a></li>
+</ul>
+<p>---</p>
+
+<h2>Quick Start</h2>
+
+<strong>Do you need to set up Supabase first?</strong> YES, before the tracker can pull real data.
+
+<strong>What you need:</strong>
+<ol>
+<li>1. Supabase account (free tier works)</li>
+<li>2. Project URL: <code>https://xxxx.supabase.co</code></li>
+<li>3. Anon Key: <code>eyJhbGc...</code> (public, safe to expose)</li>
+</ul>
+
+<strong>Time estimate:</strong> 30-60 minutes for full setup
+<p>---</p>
+
+<h2>Create Supabase Project</h2>
+
+<h3>Step 1: Create Account</h3>
+
+<ol>
+<li>1. Go to https://supabase.com</li>
+<li>2. Click "Start your project"</li>
+<li>3. Sign up with GitHub (recommended) or email</li>
+</ul>
+
+<h3>Step 2: Create New Project</h3>
+
+<ol>
+<li>1. Click "New Project"</li>
+<li>2. Settings:</li>
+</ul>
+   - <strong>Name:</strong> <code>benchsight</code> or <code>norad-hockey</code>
+   - <strong>Database Password:</strong> Save this somewhere secure!
+   - <strong>Region:</strong> Choose closest to you (e.g., <code>us-east-1</code>)
+<ol>
+<li>3. Click "Create new project"</li>
+<li>4. Wait 2-3 minutes for provisioning</li>
+</ul>
+
+<h3>Step 3: Get Your Credentials</h3>
+
+<ol>
+<li>1. Go to <strong>Settings → API</strong></li>
+<li>2. Copy these values:</li>
+</ul>
+   - <strong>Project URL:</strong> <code>https://xxxxxx.supabase.co</code>
+   - <strong>anon/public key:</strong> <code>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</code>
+<p>Save these - you'll enter them in the tracker settings.</p>
+
+<hr>
+
+<h2>Required Tables</h2>
+<p>The tracker needs these tables at minimum. Run these SQL commands in the Supabase SQL Editor.</p>
+
+<h3>Core Tables (REQUIRED)</h3>
+
+<pre><code class="language-sql">-- ============================================================
+-- dim_games: Game schedule and basic info
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dim_games (
+    game_id SERIAL PRIMARY KEY,
+    game_date DATE NOT NULL,
+    season_id INT,
+    home_team_id INT,
+    away_team_id INT,
+    home_team_name VARCHAR(100),
+    away_team_name VARCHAR(100),
+    home_team_color VARCHAR(20) DEFAULT '#3b82f6',
+    away_team_color VARCHAR(20) DEFAULT '#ef4444',
+    venue VARCHAR(200),
+    game_time VARCHAR(20),
+    home_score INT,
+    away_score INT,
+    game_status VARCHAR(50) DEFAULT 'scheduled',
+    norad_game_id VARCHAR(50),
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+<p>-- ============================================================</p>
+-- dim_teams: Team reference data
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dim_teams (
+    team_id SERIAL PRIMARY KEY,
+    team_name VARCHAR(100) NOT NULL,
+    team_short_name VARCHAR(20),
+    team_color VARCHAR(20),
+    team_alt_color VARCHAR(20),
+    league VARCHAR(50) DEFAULT 'NORAD',
+    division VARCHAR(50),
+    active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+<p>-- ============================================================</p>
+-- dim_players: Player master data
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dim_players (
+    player_id SERIAL PRIMARY KEY,
+    norad_player_id VARCHAR(50),
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    full_name VARCHAR(200),
+    jersey_number VARCHAR(10),
+    position VARCHAR(10),  -- F, D, G
+    skill_level INT,
+    shoots VARCHAR(5),     -- L, R
+    active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+<p>-- ============================================================</p>
+-- dim_game_rosters: Which players played in which games
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dim_game_rosters (
+    roster_id SERIAL PRIMARY KEY,
+    game_id INT REFERENCES dim_games(game_id),
+    player_id INT REFERENCES dim_players(player_id),
+    team_id INT REFERENCES dim_teams(team_id),
+    team_venue VARCHAR(10) NOT NULL,  -- 'home' or 'away'
+    jersey_number VARCHAR(10),
+    player_name VARCHAR(200),
+    position VARCHAR(10),
+    is_starter BOOLEAN DEFAULT false,
+    is_goalie BOOLEAN DEFAULT false,
+    created_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE(game_id, player_id)
+);
+<p>-- ============================================================</p>
+-- dim_youtube_videos: Video links per game
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dim_youtube_videos (
+    video_id SERIAL PRIMARY KEY,
+    game_id INT REFERENCES dim_games(game_id),
+    angle_name VARCHAR(50) DEFAULT 'Main',
+    youtube_url VARCHAR(500),
+    youtube_video_id VARCHAR(50),  -- Extracted from URL
+    start_offset_seconds INT DEFAULT 0,
+    duration_seconds INT,
+    is_primary BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+<p>-- Indexes for performance</p>
+CREATE INDEX IF NOT EXISTS idx_game_rosters_game ON dim_game_rosters(game_id);
+CREATE INDEX IF NOT EXISTS idx_game_rosters_player ON dim_game_rosters(player_id);
+CREATE INDEX IF NOT EXISTS idx_games_date ON dim_games(game_date DESC);
+CREATE INDEX IF NOT EXISTS idx_videos_game ON dim_youtube_videos(game_id);
+</code></pre>
+
+<h3>Dimension Tables for Dropdowns</h3>
+
+<pre><code class="language-sql">-- ============================================================
+-- dim_event_types: Event type definitions
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dim_event_types (
+    event_type_id SERIAL PRIMARY KEY,
+    event_type VARCHAR(50) NOT NULL UNIQUE,
+    display_name VARCHAR(100),
+    hotkey VARCHAR(5),
+    sort_order INT,
+    active BOOLEAN DEFAULT true
+);
+<p>INSERT INTO dim_event_types (event_type, display_name, hotkey, sort_order) VALUES</p>
+('Shot', 'Shot', 'S', 1),
+('Pass', 'Pass', 'P', 2),
+('Faceoff', 'Faceoff', 'F', 3),
+('Goal', 'Goal', 'G', 4),
+('Zone', 'Zone Entry/Exit', 'Z', 5),
+('Turnover', 'Turnover', 'T', 6),
+('Possession', 'Possession', 'O', 7),
+('Save', 'Save', 'V', 8),
+('Rebound', 'Rebound', 'R', 9),
+('DeadIce', 'Dead Ice', 'D', 10),
+('Stoppage', 'Stoppage', 'X', 11),
+('Penalty', 'Penalty', 'N', 12)
+ON CONFLICT (event_type) DO NOTHING;
+<p>-- ============================================================</p>
+-- dim_event_details: Detail options per event type
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dim_event_details (
+    detail_id SERIAL PRIMARY KEY,
+    event_type VARCHAR(50) NOT NULL,
+    detail_level INT NOT NULL,  -- 1 or 2
+    detail_value VARCHAR(100) NOT NULL,
+    display_name VARCHAR(100),
+    parent_detail VARCHAR(100),  -- For cascading (detail2 depends on detail1)
+    sort_order INT,
+    active BOOLEAN DEFAULT true,
+    UNIQUE(event_type, detail_level, detail_value)
+);
+<p>-- Shot details</p>
+INSERT INTO dim_event_details (event_type, detail_level, detail_value, sort_order) VALUES
+('Shot', 1, 'OnNetSaved', 1),
+('Shot', 1, 'Missed', 2),
+('Shot', 1, 'Blocked', 3),
+('Shot', 1, 'Goal', 4),
+('Shot', 2, 'Wrist', 1),
+('Shot', 2, 'Slap', 2),
+('Shot', 2, 'Snap', 3),
+('Shot', 2, 'Backhand', 4),
+('Shot', 2, 'Tip', 5),
+('Shot', 2, 'Deflection', 6)
+ON CONFLICT DO NOTHING;
+<p>-- Pass details</p>
+INSERT INTO dim_event_details (event_type, detail_level, detail_value, sort_order) VALUES
+('Pass', 1, 'Completed', 1),
+('Pass', 1, 'Missed', 2),
+('Pass', 1, 'Intercepted', 3),
+('Pass', 2, 'Tape', 1),
+('Pass', 2, 'Saucer', 2),
+('Pass', 2, 'Bank', 3),
+('Pass', 2, 'Cross_Ice', 4),
+('Pass', 2, 'Backhand', 5)
+ON CONFLICT DO NOTHING;
+<p>-- Goal details</p>
+INSERT INTO dim_event_details (event_type, detail_level, detail_value, sort_order) VALUES
+('Goal', 1, 'Even', 1),
+('Goal', 1, 'PP', 2),
+('Goal', 1, 'SH', 3),
+('Goal', 1, 'EN', 4),
+('Goal', 2, 'Wrist', 1),
+('Goal', 2, 'Slap', 2),
+('Goal', 2, 'Snap', 3),
+('Goal', 2, 'Backhand', 4),
+('Goal', 2, 'Tip', 5),
+('Goal', 2, 'Rebound', 6)
+ON CONFLICT DO NOTHING;
+<p>-- Turnover details</p>
+INSERT INTO dim_event_details (event_type, detail_level, detail_value, sort_order) VALUES
+('Turnover', 1, 'Giveaway', 1),
+('Turnover', 1, 'Takeaway', 2),
+('Turnover', 2, 'Pass', 1),
+('Turnover', 2, 'Poke', 2),
+('Turnover', 2, 'Lost_Battle', 3),
+('Turnover', 2, 'Bad_Clear', 4)
+ON CONFLICT DO NOTHING;
+<p>-- Faceoff details</p>
+INSERT INTO dim_event_details (event_type, detail_level, detail_value, sort_order) VALUES
+('Faceoff', 1, 'Won', 1),
+('Faceoff', 1, 'Lost', 2),
+('Faceoff', 2, 'Clean', 1),
+('Faceoff', 2, 'Tie_Back', 2),
+('Faceoff', 2, 'Tie_Forward', 3)
+ON CONFLICT DO NOTHING;
+<p>-- Zone details</p>
+INSERT INTO dim_event_details (event_type, detail_level, detail_value, sort_order) VALUES
+('Zone', 1, 'Entry', 1),
+('Zone', 1, 'Exit', 2),
+('Zone', 1, 'Clear', 3),
+('Zone', 2, 'Carry', 1),
+('Zone', 2, 'Dump', 2),
+('Zone', 2, 'Pass', 3),
+('Zone', 2, 'Chip', 4)
+ON CONFLICT DO NOTHING;
+<p>-- Save details</p>
+INSERT INTO dim_event_details (event_type, detail_level, detail_value, sort_order) VALUES
+('Save', 1, 'Rebound', 1),
+('Save', 1, 'Freeze', 2),
+('Save', 1, 'Played', 3),
+('Save', 1, 'Cover', 4),
+('Save', 2, 'Blocker', 1),
+('Save', 2, 'Glove', 2),
+('Save', 2, 'Pad', 3),
+('Save', 2, 'Stick', 4),
+('Save', 2, 'Body', 5)
+ON CONFLICT DO NOTHING;
+<p>-- Possession details</p>
+INSERT INTO dim_event_details (event_type, detail_level, detail_value, sort_order) VALUES
+('Possession', 1, 'PuckRetrieval', 1),
+('Possession', 1, 'PuckRecovery', 2),
+('Possession', 1, 'LoosePuck', 3)
+ON CONFLICT DO NOTHING;
+<p>-- Rebound details</p>
+INSERT INTO dim_event_details (event_type, detail_level, detail_value, sort_order) VALUES
+('Rebound', 1, 'TeamRecovered', 1),
+('Rebound', 1, 'OppTeamRecovered', 2),
+('Rebound', 1, 'ShotGenerated', 3)
+ON CONFLICT DO NOTHING;
+<p>-- DeadIce details</p>
+INSERT INTO dim_event_details (event_type, detail_level, detail_value, sort_order) VALUES
+('DeadIce', 1, 'Icing', 1),
+('DeadIce', 1, 'Offside', 2),
+('DeadIce', 1, 'Puck_Out', 3),
+('DeadIce', 1, 'Net_Off', 4),
+('DeadIce', 1, 'Other', 5)
+ON CONFLICT DO NOTHING;
+<p>-- Stoppage details</p>
+INSERT INTO dim_event_details (event_type, detail_level, detail_value, sort_order) VALUES
+('Stoppage', 1, 'Play', 1),
+('Stoppage', 1, 'Penalty', 2),
+('Stoppage', 1, 'Goal', 3),
+('Stoppage', 1, 'Period_End', 4),
+('Stoppage', 1, 'TV_Timeout', 5)
+ON CONFLICT DO NOTHING;
+<p>-- Penalty details</p>
+INSERT INTO dim_event_details (event_type, detail_level, detail_value, sort_order) VALUES
+('Penalty', 1, 'Minor', 1),
+('Penalty', 1, 'Major', 2),
+('Penalty', 1, 'Misconduct', 3),
+('Penalty', 2, 'Tripping', 1),
+('Penalty', 2, 'Hooking', 2),
+('Penalty', 2, 'Slashing', 3),
+('Penalty', 2, 'Interference', 4),
+('Penalty', 2, 'Holding', 5),
+('Penalty', 2, 'Roughing', 6),
+('Penalty', 2, 'High_Sticking', 7),
+('Penalty', 2, 'Cross_Check', 8),
+('Penalty', 2, 'Boarding', 9),
+('Penalty', 2, 'Other', 10)
+ON CONFLICT DO NOTHING;
+<p>-- ============================================================</p>
+-- dim_zones: Zone reference
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dim_zones (
+    zone_id SERIAL PRIMARY KEY,
+    zone_code VARCHAR(5) NOT NULL UNIQUE,
+    zone_name VARCHAR(50),
+    sort_order INT
+);
+<p>INSERT INTO dim_zones (zone_code, zone_name, sort_order) VALUES</p>
+('o', 'Offensive', 1),
+('n', 'Neutral', 2),
+('d', 'Defensive', 3)
+ON CONFLICT DO NOTHING;
+<p>-- ============================================================</p>
+-- dim_shift_types: Shift start/stop types
+-- ============================================================
+CREATE TABLE IF NOT EXISTS dim_shift_types (
+    type_id SERIAL PRIMARY KEY,
+    type_code VARCHAR(50) NOT NULL,
+    type_category VARCHAR(20) NOT NULL,  -- 'start' or 'stop'
+    display_name VARCHAR(100),
+    sort_order INT,
+    UNIQUE(type_code, type_category)
+);
+<p>INSERT INTO dim_shift_types (type_code, type_category, display_name, sort_order) VALUES</p>
+('On_Fly', 'start', 'On the Fly', 1),
+('Faceoff', 'start', 'Faceoff', 2),
+('Period_Start', 'start', 'Period Start', 3),
+('On_Fly', 'stop', 'On the Fly', 1),
+('Whistle', 'stop', 'Whistle', 2),
+('Period_End', 'stop', 'Period End', 3),
+('Goal', 'stop', 'Goal', 4)
+ON CONFLICT DO NOTHING;
+</code></pre>
+
+<h3>NORAD Official Data (For Validation)</h3>
+
+<pre><code class="language-sql">-- ============================================================
+-- fact_norad_goals: Official goal records from noradhockey.com
+-- ============================================================
+CREATE TABLE IF NOT EXISTS fact_norad_goals (
+    norad_goal_id SERIAL PRIMARY KEY,
+    game_id INT REFERENCES dim_games(game_id),
+    norad_game_id VARCHAR(50),
+    period INT,
+    time_min INT,
+    time_sec INT,
+    scoring_team VARCHAR(100),
+    scoring_team_venue VARCHAR(10),  -- 'home' or 'away'
+    goal_scorer VARCHAR(200),
+    goal_scorer_number VARCHAR(10),
+    assist_1 VARCHAR(200),
+    assist_1_number VARCHAR(10),
+    assist_2 VARCHAR(200),
+    assist_2_number VARCHAR(10),
+    goal_type VARCHAR(50),  -- 'Even', 'PP', 'SH', 'EN'
+    home_score_after INT,
+    away_score_after INT,
+    scraped_at TIMESTAMP DEFAULT NOW()
+);
+<p>CREATE INDEX IF NOT EXISTS idx_norad_goals_game ON fact_norad_goals(game_id);</p>
+</code></pre>
+
+<h3>Tracker Output Tables (Where tracker saves data)</h3>
+
+<pre><code class="language-sql">-- ============================================================
+-- stage_tracker_events: Raw events from tracker (before ETL)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS stage_tracker_events (
+    id SERIAL PRIMARY KEY,
+    event_id VARCHAR(50) NOT NULL,
+    game_id INT REFERENCES dim_games(game_id),
+    period INT,
+    team_venue VARCHAR(10),
+    event_type VARCHAR(50),
+    event_detail VARCHAR(100),
+    event_detail_2 VARCHAR(100),
+    event_start_min INT,
+    event_start_sec INT,
+    event_end_min INT,
+    event_end_sec INT,
+    event_zone VARCHAR(5),
+    event_successful VARCHAR(5),
+    is_highlight BOOLEAN DEFAULT false,
+    linked_event_key VARCHAR(50),
+    
+    -- Players (JSON arrays)
+    event_players JSONB,  -- [{num, name, pos, id}]
+    opp_players JSONB,
+    
+    -- XY data (JSON)
+    puck_xy JSONB,        -- [{seq, x, y}]
+    player_xy JSONB,      -- [{player_id, num, positions: [{seq, x, y}]}]
+    shot_net_xy JSONB,    -- {x, y}
+    
+    -- Metadata
+    tracker_idx INT,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+<p>-- ============================================================</p>
+-- stage_tracker_shifts: Raw shifts from tracker (before ETL)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS stage_tracker_shifts (
+    id SERIAL PRIMARY KEY,
+    shift_id VARCHAR(50) NOT NULL,
+    game_id INT REFERENCES dim_games(game_id),
+    shift_index INT,
+    period INT,
+    shift_start_type VARCHAR(50),
+    shift_stop_type VARCHAR(50),
+    shift_start_min INT,
+    shift_start_sec INT,
+    shift_end_min INT,
+    shift_end_sec INT,
+    
+    -- Home lineup
+    home_f1 VARCHAR(10),
+    home_f2 VARCHAR(10),
+    home_f3 VARCHAR(10),
+    home_d1 VARCHAR(10),
+    home_d2 VARCHAR(10),
+    home_g VARCHAR(10),
+    home_x VARCHAR(10),
+    
+    -- Away lineup
+    away_f1 VARCHAR(10),
+    away_f2 VARCHAR(10),
+    away_f3 VARCHAR(10),
+    away_d1 VARCHAR(10),
+    away_d2 VARCHAR(10),
+    away_g VARCHAR(10),
+    away_x VARCHAR(10),
+    
+    -- Video times
+    video_start_seconds INT,
+    video_end_seconds INT,
+    
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+<p>CREATE INDEX IF NOT EXISTS idx_tracker_events_game ON stage_tracker_events(game_id);</p>
+CREATE INDEX IF NOT EXISTS idx_tracker_shifts_game ON stage_tracker_shifts(game_id);
+</code></pre>
+<p>---</p>
+
+<h2>Sample Data Setup</h2>
+
+<h3>Add Sample Teams</h3>
+
+<pre><code class="language-sql">INSERT INTO dim_teams (team_name, team_short_name, team_color) VALUES
+('Velodrome', 'VEL', '#9C47E4'),
+('Orphans', 'ORP', '#000000'),
+('OS Offices', 'OSO', '#2C8A5E'),
+('Platinum', 'PLT', '#919294'),
+('HollowBrook', 'HBK', '#4D2640'),
+('Nelson', 'NEL', '#F3C323'),
+('Outlaws', 'OUT', '#02007B'),
+('Triple J', 'TJJ', '#4EB9E5'),
+('Ace', 'ACE', '#CA0527'),
+('Amos', 'AMS', '#641C28');
+</code></pre>
+
+<h3>Add Sample Game</h3>
+
+<pre><code class="language-sql">INSERT INTO dim_games (game_id, game_date, home_team_name, away_team_name, home_team_color, away_team_color, norad_game_id)
+VALUES (18969, '2025-09-07', 'Platinum', 'Velodrome', '#919294', '#9C47E4', '18969');
+</code></pre>
+
+<h3>Add Sample Rosters</h3>
+
+<pre><code class="language-sql">-- Velodrome roster for game 18969
+INSERT INTO dim_game_rosters (game_id, player_id, team_venue, jersey_number, player_name, position) VALUES
+(18969, 1, 'away', '9', 'Pinnell', 'D'),
+(18969, 2, 'away', '14', 'Ciampoli', 'F'),
+(18969, 3, 'away', '22', 'Mayfield', 'D'),
+(18969, 4, 'away', '39', 'Crandall', 'G'),
+(18969, 5, 'away', '42', 'Ashcroft', 'F'),
+(18969, 6, 'away', '70', 'S.Downs', 'F'),
+(18969, 7, 'away', '75', 'N.Downs', 'F'),
+(18969, 8, 'away', '84', 'Donaty', 'D'),
+(18969, 9, 'away', '91', 'White', 'F');
+<p>-- Platinum roster for game 18969</p>
+INSERT INTO dim_game_rosters (game_id, player_id, team_venue, jersey_number, player_name, position) VALUES
+(18969, 101, 'home', '3', 'Considine', 'D'),
+(18969, 102, 'home', '8', 'Chambless', 'D'),
+(18969, 103, 'home', '21', 'Marshall', 'F'),
+(18969, 104, 'home', '34', 'Dube', 'F'),
+(18969, 105, 'home', '45', 'Mantaro', 'D'),
+(18969, 106, 'home', '53', 'Premo', 'F'),
+(18969, 107, 'home', '99', 'Forte', 'G');
+</code></pre>
+<p>---</p>
+
+<h2>API Configuration</h2>
+
+<h3>Row Level Security (RLS)</h3>
+<p>For public read access (tracker needs this):</p>
+
+<pre><code class="language-sql">-- Enable RLS
+ALTER TABLE dim_games ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dim_teams ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dim_players ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dim_game_rosters ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dim_event_types ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dim_event_details ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dim_youtube_videos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE fact_norad_goals ENABLE ROW LEVEL SECURITY;
+ALTER TABLE stage_tracker_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE stage_tracker_shifts ENABLE ROW LEVEL SECURITY;
+<p>-- Allow public read access</p>
+CREATE POLICY "Public read access" ON dim_games FOR SELECT USING (true);
+CREATE POLICY "Public read access" ON dim_teams FOR SELECT USING (true);
+CREATE POLICY "Public read access" ON dim_players FOR SELECT USING (true);
+CREATE POLICY "Public read access" ON dim_game_rosters FOR SELECT USING (true);
+CREATE POLICY "Public read access" ON dim_event_types FOR SELECT USING (true);
+CREATE POLICY "Public read access" ON dim_event_details FOR SELECT USING (true);
+CREATE POLICY "Public read access" ON dim_youtube_videos FOR SELECT USING (true);
+CREATE POLICY "Public read access" ON fact_norad_goals FOR SELECT USING (true);
+<p>-- Allow public insert/update for tracker data</p>
+CREATE POLICY "Public write access" ON stage_tracker_events FOR ALL USING (true);
+CREATE POLICY "Public write access" ON stage_tracker_shifts FOR ALL USING (true);
+</code></pre>
+<p>---</p>
+
+<h2>Testing Connection</h2>
+
+<h3>Test in Browser Console</h3>
+
+<pre><code class="language-javascript">const { createClient } = supabase;
+<p>const sb = createClient(</p>
+  'https://YOUR_PROJECT.supabase.co',
+  'YOUR_ANON_KEY'
+);
+<p>// Test games</p>
+const { data: games, error } = await sb
+  .from('dim_games')
+  .select('*')
+  .limit(5);
+<p>console.log('Games:', games);</p>
+console.log('Error:', error);
+</code></pre>
+
+<h3>Test in Tracker</h3>
+
+<ol>
+<li>1. Open tracker HTML</li>
+<li>2. Click ⚙️ Settings</li>
+<li>3. Enter Supabase URL and Key</li>
+<li>4. Click Save</li>
+<li>5. Click 🔄 Refresh</li>
+<li>6. Check console for "Loaded X games from Supabase"</li>
+</ul>
+<p>---</p>
+
+<h2>Troubleshooting</h2>
+
+<h3>"Failed to fetch" error</h3>
+<ul>
+<li>Check URL is correct (https://xxxx.supabase.co)</li>
+<li>Check anon key is correct</li>
+<li>Check CORS settings in Supabase dashboard</li>
+</ul>
+
+<h3>"Permission denied" error</h3>
+<ul>
+<li>RLS policies not set up</li>
+<li>Run the RLS commands above</li>
+</ul>
+
+<h3>"Table not found" error</h3>
+<ul>
+<li>Table doesn't exist</li>
+<li>Run the CREATE TABLE commands</li>
+</ul>
+
+<h3>No games showing</h3>
+<ul>
+<li>No data in dim_games</li>
+<li>Run the sample data INSERT commands</li>
+</ul>
+
+<h3>Rosters not loading</h3>
+<ul>
+<li>No data in dim_game_rosters for that game_id</li>
+<li>Add roster data for the specific game</li>
+</ul>
+<p>---</p>
+
+<h2>Next Steps After Supabase Setup</h2>
+
+<ol>
+<li>1. <strong>Import your existing data</strong></li>
+</ol>
+   - Games from your tracking Excel files
+   - Rosters from NORAD scraper
+   
+<ol>
+<li>2. <strong>Configure tracker</strong></li>
+</ol>
+   - Enter Supabase URL and key
+   - Test connection
+   
+<ol>
+<li>3. <strong>Start tracking!</strong></li>
+</ol>
+   - Select game
+   - Track events
+   - Export to Excel for ETL
+<p>---</p>
+
+<h2>Support</h2>
+<p>If you have issues:</p>
+<ol>
+<li>1. Check browser console (F12) for errors</li>
+<li>2. Test SQL queries directly in Supabase SQL Editor</li>
+<li>3. Verify RLS policies are applied</li>
+</ul>
+
+</div>
+</main>
+<footer>
+  <div class="container">
+    BenchSight Documentation • v14.01 • January 7, 2026
+  </div>
+</footer>
+</body>
+</html>

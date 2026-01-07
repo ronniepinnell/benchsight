@@ -120,47 +120,30 @@ class TestBackupIntegrity:
 
 
 class TestETLOrchestratorPreservation:
-    """Test ETL pipeline has preservation logic."""
+    """Test ETL orchestrator preserves columns."""
     
     def test_etl_orchestrator_exists(self):
-        """Verify ETL pipeline exists."""
-        # Check for either location
+        """Verify ETL orchestrator module exists."""
         etl_file = Path("src/etl_orchestrator.py")
-        pipeline_dir = Path("src/pipeline")
-        assert etl_file.exists() or pipeline_dir.exists(), "ETL code not found"
+        assert etl_file.exists(), "src/etl_orchestrator.py not found"
     
     def test_etl_orchestrator_has_preservation_logic(self):
-        """Verify pipeline has column preservation logic."""
-        # Check pipeline files for preservation/merge logic
-        pipeline_dir = Path("src/pipeline")
-        if not pipeline_dir.exists():
-            pytest.skip("Pipeline directory not found")
+        """Verify ETL orchestrator has column preservation logic."""
+        etl_file = Path("src/etl_orchestrator.py")
+        content = etl_file.read_text()
         
-        found = False
-        for py_file in pipeline_dir.glob("*.py"):
-            content = py_file.read_text()
-            if "existing" in content or "merge" in content.lower() or "preserve" in content.lower():
-                found = True
-                break
-        
-        assert found, "No preservation logic found in pipeline"
+        # Check for the bug fix code
+        assert "existing_df" in content or "preserve" in content.lower() or "merge" in content.lower(), \
+            "ETL orchestrator may not have column preservation logic"
     
     def test_etl_orchestrator_loads_existing_columns(self):
-        """Verify pipeline references stats tables."""
-        pipeline_dir = Path("src/pipeline")
-        if not pipeline_dir.exists():
-            pytest.skip("Pipeline directory not found")
+        """Verify ETL orchestrator loads existing file."""
+        etl_file = Path("src/etl_orchestrator.py")
+        content = etl_file.read_text()
         
-        found = False
-        for py_file in pipeline_dir.glob("**/*.py"):
-            content = py_file.read_text()
-            if "player_game_stats" in content or "game_stats" in content:
-                found = True
-                break
-        
-        # Skip if not found - may use different architecture
-        if not found:
-            pytest.skip("Stats reference not found - architecture may differ")
+        # Should load existing file before overwriting
+        assert "fact_player_game_stats.csv" in content, \
+            "ETL orchestrator should reference fact_player_game_stats.csv"
 
 
 class TestColumnConsistency:

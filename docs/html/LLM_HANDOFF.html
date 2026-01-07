@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>LLM Handoff - BenchSight</title>
+<style>
+:root{--bg:#0d1117;--surface:#161b22;--border:#30363d;--text:#c9d1d9;--accent:#58a6ff;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;font-size:14px;padding:40px;}
+.container{max-width:800px;margin:0 auto;}
+h1{color:var(--accent);margin-bottom:20px;}
+h2{color:var(--text);margin:25px 0 15px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+h3{color:#3fb950;margin:20px 0 10px;}
+p{margin:10px 0;}
+code{font-family:monospace;background:var(--surface);padding:2px 6px;border-radius:3px;font-size:13px;}
+pre{background:var(--surface);padding:15px;border-radius:6px;overflow-x:auto;margin:15px 0;}
+pre code{background:none;padding:0;}
+table{width:100%;border-collapse:collapse;margin:15px 0;}
+th,td{border:1px solid var(--border);padding:10px;text-align:left;}
+th{background:var(--surface);color:var(--accent);}
+hr{border:none;border-top:1px solid var(--border);margin:25px 0;}
+</style></head><body><div class="container">
+<h1>LLM Handoff Guide</h1>
+
+<strong>Version:</strong> 14.01  
+<strong>Updated:</strong> January 7, 2026
+
+<hr>
+
+<h2>Quick Start for New Chat</h2>
+
+1. Read <code>LLM_REQUIREMENTS.md</code> first (CRITICAL)
+2. Check <code>config/VERSION.json</code> for current version
+3. Run <code>python scripts/utilities/doc_consistency.py --new-chat</code> to bump version
+4. Read <code>CHANGELOG.md</code> for recent history
+
+<hr>
+
+<h2>Current State</h2>
+
+| Component | Status |
+|-----------|--------|
+| <strong>ETL Pipeline</strong> | ✅ 59 tables, 17 goals verified |
+| <strong>Tracker App</strong> | ✅ v3 complete at <code>docs/html/tracker/</code> |
+| <strong>Supabase Setup</strong> | ⏳ Needs user to configure |
+| <strong>Documentation</strong> | ✅ All HTML generated |
+| <strong>Tests</strong> | ✅ 32 Tier 1, 17 Tier 2 passing |
+
+<hr>
+
+<h2>Key Files</h2>
+
+<h3>Must Read</h3>
+- <code>LLM_REQUIREMENTS.md</code> - Critical rules
+- <code>config/IMMUTABLE_FACTS.json</code> - Verified goal counts (DO NOT MODIFY)
+- <code>config/VERSION.json</code> - Version control
+
+<h3>Tracker Docs</h3>
+- <code>docs/TRACKER_ETL_SPECIFICATION.md</code> - Export format
+- <code>docs/TRACKER_REQUIREMENTS.md</code> - Requirements
+- <code>docs/SUPABASE_SETUP_GUIDE.md</code> - Database setup
+
+<h3>Scripts</h3>
+- <code>scripts/pre_delivery.py</code> - Master pipeline (RUN THIS)
+- <code>scripts/bs_detector.py</code> - Verification
+- <code>scripts/utilities/doc_consistency.py</code> - Version management
+
+<hr>
+
+<h2>Goal Counting Rule (MEMORIZE)</h2>
+
+<pre><code># CORRECT
+event_type = 'Goal' AND event_detail = 'Goal_Scored'
+
+<h1>WRONG - Shot_Goal is the shot, not the goal</h1>
+event_detail = 'Shot_Goal'  # THIS IS WRONG
+</code></pre>
+
+<hr>
+
+<h2>Version Naming</h2>
+
+<strong>Format:</strong> <code>v{CHAT}.{OUTPUT}</code>
+
+- New chat: Run <code>doc_consistency.py --new-chat</code>
+- New output: Run <code>doc_consistency.py --bump</code>
+
+<hr>
+
+<h2>Pre-Delivery Checklist</h2>
+
+<pre><code># Run this BEFORE creating any package
+python scripts/pre_delivery.py
+</code></pre>
+
+This automatically:
+1. Wipes output
+2. Runs ETL
+3. Verifies goals
+4. Runs tests
+5. Bumps version
+6. Fixes docs
+7. Creates package
+
+<hr>
+
+<h2>Recent Work (Chat 13-14)</h2>
+
+1. ✅ Tracker MVP implemented
+2. ✅ Tracker v3 with all features
+3. ✅ ETL export format specified
+4. ✅ Cascading dropdowns from Lists tab
+5. ✅ XY tracking (10 pts/player/event)
+6. ✅ Play details per player with s/u
+7. ✅ Shift tracking with intermissions
+8. ⏳ Supabase needs user setup
+9. ⏳ NORAD validation needs Supabase
+
+<hr>
+
+<h2>Next Steps</h2>
+
+1. User sets up Supabase using guide
+2. Upload dim tables to Supabase
+3. Test tracker with real data
+4. Track new games
+5. Run ETL on tracked data
+
+<hr>
+
+<strong>END OF HANDOFF</strong>
+
+</div></body></html>

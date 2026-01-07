@@ -1,0 +1,4 @@
+danger_level_id,danger_level_code,danger_level_name,xg_multiplier
+DL01,high,High Danger,1.5
+DL02,medium,Medium Danger,1.0
+DL03,low,Low Danger,0.5

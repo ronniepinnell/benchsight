@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BenchSight Tracker v19</title>
+<style>
+:root{--bg:#0d1117;--card:#161b22;--border:#30363d;--text:#c9d1d9;--muted:#8b949e;--accent:#58a6ff;--home:#4493f8;--away:#f85149;--input:#21262d}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:11px;overflow:hidden}
+.container{display:grid;grid-template-columns:200px 1fr 220px;grid-template-rows:auto 1fr;height:100vh;gap:4px;padding:4px}
+header{grid-column:1/-1;display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--card);border-radius:6px}
+header h1{font-size:14px;font-weight:600;color:var(--accent)}
+header select,header input,header button{background:var(--input);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:4px;font-size:10px}
+header button{cursor:pointer}
+header button:hover{background:var(--border)}
+.btn-success{background:#238636!important;border-color:#238636!important}
+.btn-success:hover{background:#2ea043!important}
+
+.left-panel{display:flex;flex-direction:column;gap:4px;overflow:hidden}
+.center-panel{display:flex;flex-direction:column;gap:4px;overflow:hidden}
+.right-panel{display:flex;flex-direction:column;gap:4px;overflow:hidden}
+
+.panel{background:var(--card);border-radius:6px;padding:6px;overflow:hidden;display:flex;flex-direction:column}
+.panel h3{font-size:10px;color:var(--muted);margin-bottom:4px;text-transform:uppercase}
+
+.roster-section{flex:1;overflow-y:auto;min-height:0}
+.roster-header{display:flex;gap:4px;margin-bottom:4px}
+.roster-header button{flex:1;padding:4px;border:none;border-radius:4px;cursor:pointer;font-weight:600;font-size:10px}
+.roster-header button.home{background:var(--home);color:white}
+.roster-header button.away{background:var(--away);color:white}
+.roster-header button.active{box-shadow:0 0 0 2px white}
+
+.player-chip{display:inline-flex;align-items:center;gap:2px;padding:2px 6px;margin:2px;border-radius:4px;font-size:9px;cursor:pointer;border:1px solid var(--border);background:var(--input)}
+.player-chip.selected{background:var(--accent);color:white;border-color:var(--accent)}
+.player-chip .num{font-weight:700}
+.player-chip .pos{color:var(--muted);font-size:8px}
+
+.slot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-bottom:4px}
+.slot{background:var(--input);border:1px solid var(--border);border-radius:4px;padding:4px;text-align:center;cursor:pointer;min-height:36px}
+.slot.active{border-color:var(--accent);background:var(--card)}
+.slot .label{font-size:8px;color:var(--muted)}
+.slot .player{font-size:10px;font-weight:600}
+
+.rink-container{flex:1;display:flex;justify-content:center;align-items:center;min-height:0}
+.rink-svg{max-width:100%;max-height:100%;width:auto;height:auto}
+
+.video-section{height:180px;background:#000;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+
+.evt-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-bottom:6px}
+.evt-btn{padding:6px 2px;display:flex;flex-direction:column;align-items:center;gap:1px;border-radius:5px;border:1px solid var(--border);background:var(--input);cursor:pointer;transition:all 0.1s}
+.evt-btn:hover{background:var(--card);border-color:var(--accent)}
+.evt-btn.active{background:var(--accent);color:white;border-color:var(--accent)}
+.evt-btn span{font-size:9px;font-weight:600}
+.evt-btn kbd{font-size:7px;color:var(--muted)}
+
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px}
+.form-row.tri{grid-template-columns:1fr 1fr 1fr}
+.form-group{display:flex;flex-direction:column;gap:2px}
+.form-group label{font-size:8px;color:var(--muted);text-transform:uppercase}
+.form-group select,.form-group input{background:var(--input);border:1px solid var(--border);color:var(--text);padding:4px;border-radius:4px;font-size:10px}
+
+.list-container{flex:1;overflow-y:auto;min-height:0}
+.list-item{display:grid;grid-template-columns:50px 1fr 60px 30px;gap:4px;padding:4px;border-bottom:1px solid var(--border);cursor:pointer;font-size:9px;align-items:center}
+.list-item:hover{background:var(--input)}
+.list-item.active{background:var(--accent);color:white}
+.list-item .idx{font-weight:700;font-family:monospace}
+
+.tab-bar{display:flex;gap:2px;margin-bottom:4px}
+.tab{flex:1;padding:4px;text-align:center;background:var(--input);border:none;border-radius:4px 4px 0 0;cursor:pointer;font-size:9px;color:var(--muted)}
+.tab.active{background:var(--card);color:var(--text)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--card);border-radius:8px;padding:12px;max-width:400px;width:90%;max-height:80vh;overflow-y:auto}
+.modal h3{margin-bottom:8px}
+.modal-actions{display:flex;gap:4px;margin-top:8px;justify-content:flex-end}
+.modal-actions button{padding:6px 12px}
+
+.clock-display{font-family:monospace;font-size:18px;font-weight:700;text-align:center;padding:8px;background:var(--input);border-radius:4px;margin-bottom:4px}
+</style>
+</head>
+<body>
+
+<!-- ================================================================== -->
+<!-- CHANGELOG - MUST BE UPDATED WITH EVERY MODIFICATION -->
+<!-- ================================================================== -->
+<!--
+CHANGELOG:
+---------------------------------------------------------------------------
+2026-01-06 v8.0.5:
+  - CRITICAL FIX: Restored 4 missing src/advanced/ modules:
+    * create_additional_tables.py
+    * enhance_all_stats.py
+    * final_stats_enhancement.py
+    * extended_tables.py
+  - Created fact_events_player.csv (7,476 rows)
+  - Extended tables now run: +15 tables created
+  - Table count: 131 (54 dim, 73 fact, 3 QA, 1 other)
+  - Added comprehensive code audit documentation
+  - Fixed column name mismatches (Type -> event_type)
+
+2026-01-06 v8.0.4:
+  - CRITICAL: Recovered 72 missing tables from v7 backup
+  - Table count restored from 53 to 130
+  - Created 4 new outcome dimension tables
+  - Regenerated ERD with all tables
+  - Added table integrity tests
+
+2026-01-05 v8.0.0:
+  - Major schema expansion: 96 -> 111 tables planned
+  - Added 317 player metrics
+  - Created comprehensive foreign key relationships
+  - Added QA validation tables
+
+RULES FOR UPDATING THIS CHANGELOG:
+1. ALWAYS add entry BEFORE making changes
+2. Include: date, version, what changed, table counts
+3. Never delete old entries
+4. Be specific about what was added/changed/removed
+---------------------------------------------------------------------------
+-->
+
+<div class="container">
+<header>
+  <h1>🏒 Tracker v19</h1>
+  <select id="gameId" onchange="selectGame(this.value)" style="width:200px">
+    <option value="">-- Select Game --</option>
+  </select>
+  <button onclick="showNewGameModal()" class="btn-success">+ New</button>
+  <div style="flex:1"></div>
+  <span id="statusText" style="color:var(--muted);font-size:9px"></span>
+  <button onclick="downloadBackup()" title="Download backup">💾</button>
+  <button onclick="exportExcel()" title="Export Excel">📥</button>
+</header>
+
+<div class="left-panel">
+  <div class="panel" style="flex:0 0 auto">
+    <h3>Team / Period</h3>
+    <div class="roster-header">
+      <button class="home active" onclick="setTeam('home')">HOME</button>
+      <button class="away" onclick="setTeam('away')">AWAY</button>
+    </div>
+    <div class="form-row tri">
+      <button onclick="setPeriod('1')" id="p1Btn" class="tab active">P1</button>
+      <button onclick="setPeriod('2')" id="p2Btn" class="tab">P2</button>
+      <button onclick="setPeriod('3')" id="p3Btn" class="tab">P3</button>
+    </div>
+  </div>
+  
+  <div class="panel" style="flex:1;min-height:0">
+    <h3>On-Ice Slots</h3>
+    <div class="slot-grid" id="slotGrid"></div>
+    <h3>Roster</h3>
+    <div class="roster-section" id="rosterList"></div>
+  </div>
+</div>
+
+<div class="center-panel">
+  <div class="panel" style="flex:0 0 auto">
+    <div class="clock-display" id="clock">18:00</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Start</label>
+        <input type="text" id="clockS" value="18:00" class="time-input" onblur="formatTimeInput(this)">
+      </div>
+      <div class="form-group">
+        <label>End</label>
+        <input type="text" id="clockE" value="18:00" class="time-input" onblur="formatTimeInput(this)">
+      </div>
+    </div>
+  </div>
+  
+  <div class="panel" style="flex:1;min-height:0">
+    <div class="rink-container">
+      <svg class="rink-svg" id="rinkSvg" viewBox="0 0 200 85" onclick="handleRinkClick(event)">
+        <rect x="0" y="0" width="200" height="85" fill="#fff" stroke="#000" rx="15"/>
+        <line x1="100" y1="0" x2="100" y2="85" stroke="red" stroke-width="2"/>
+        <line x1="25" y1="0" x2="25" y2="85" stroke="blue" stroke-width="1"/>
+        <line x1="175" y1="0" x2="175" y2="85" stroke="blue" stroke-width="1"/>
+        <circle cx="100" cy="42.5" r="15" fill="none" stroke="blue"/>
+        <circle cx="100" cy="42.5" r="2" fill="blue"/>
+        <circle cx="31" cy="20.5" r="15" fill="none" stroke="red"/>
+        <circle cx="31" cy="64.5" r="15" fill="none" stroke="red"/>
+        <circle cx="169" cy="20.5" r="15" fill="none" stroke="red"/>
+        <circle cx="169" cy="64.5" r="15" fill="none" stroke="red"/>
+        <rect x="0" y="35.5" width="4" height="14" fill="red"/>
+        <rect x="196" y="35.5" width="4" height="14" fill="red"/>
+        <g id="rinkMarkers"></g>
+      </svg>
+    </div>
+    <div id="xyStatus" style="text-align:center;font-size:9px;color:var(--muted)">Click rink to mark location</div>
+  </div>
+  
+  <div class="video-section">
+    <span>Video sync coming soon</span>
+  </div>
+</div>
+
+<div class="right-panel">
+  <div class="panel" style="flex:0 0 auto">
+    <h3>Event Type</h3>
+    <div class="evt-grid">
+      <button class="evt-btn" onclick="setEvtType('Shot')" id="btnShot"><span>Shot</span><kbd>S</kbd></button>
+      <button class="evt-btn" onclick="setEvtType('Goal')" id="btnGoal"><span>Goal</span><kbd>G</kbd></button>
+      <button class="evt-btn" onclick="setEvtType('Pass')" id="btnPass"><span>Pass</span><kbd>P</kbd></button>
+      <button class="evt-btn" onclick="setEvtType('Turnover')" id="btnTurnover"><span>Turn</span><kbd>T</kbd></button>
+      <button class="evt-btn" onclick="setEvtType('Faceoff')" id="btnFaceoff"><span>Face</span><kbd>F</kbd></button>
+      <button class="evt-btn" onclick="setEvtType('Zone')" id="btnZone"><span>Zone</span><kbd>Z</kbd></button>
+      <button class="evt-btn" onclick="setEvtType('Poss')" id="btnPoss"><span>Poss</span><kbd>O</kbd></button>
+      <button class="evt-btn" onclick="setEvtType('Save')" id="btnSave"><span>Save</span><kbd>V</kbd></button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Detail 1</label>
+        <select id="evtD1"><option value="">--</option></select>
+      </div>
+      <div class="form-group">
+        <label>Detail 2</label>
+        <select id="evtD2"><option value="">--</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Success</label>
+        <select id="evtSuccess">
+          <option value="">--</option>
+          <option value="1">Yes</option>
+          <option value="0">No</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <button onclick="saveEvent()" style="margin-top:14px;width:100%;padding:6px;background:var(--accent);border:none;color:white;border-radius:4px;cursor:pointer">Save Event</button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="panel" style="flex:1;min-height:0">
+    <div class="tab-bar">
+      <button class="tab active" onclick="switchTab('events')">Events</button>
+      <button class="tab" onclick="switchTab('shifts')">Shifts</button>
+    </div>
+    <div id="eventsPanel" class="tab-panel active">
+      <div class="list-container" id="evtList"></div>
+    </div>
+    <div id="shiftsPanel" class="tab-panel">
+      <button onclick="startNewShift()" style="width:100%;padding:4px;margin-bottom:4px;background:var(--accent);border:none;color:white;border-radius:4px;cursor:pointer">+ New Shift</button>
+      <div class="list-container" id="shiftList"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)hideModal()">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+// ========== EMBEDDED DATA - NO FETCH REQUIRED ==========
+const GAMES = {"18955":{"gid":"18955","date":"2025-08-10","homeTeam":"Velodrome","awayTeam":"Orphans","homeColor":"#9C47E4","awayColor":"#000000","videoUrl":"","homeRoster":[{"n":"9","name":"Ronnie Pinnell","pos":"D","skill":4},{"n":"14","name":"Nick Ciampoli","pos":"F","skill":4},{"n":"22","name":"Robert Mayfield","pos":"D","skill":3},{"n":"24","name":"Jennifer Valente","pos":"F","skill":2},{"n":"39","name":"Wyatt Crandall","pos":"G","skill":5},{"n":"42","name":"Garrett Ashcroft","pos":"F","skill":5},{"n":"55","name":"James Rynearson","pos":"F","skill":3},{"n":"61","name":"Kaitlyn Shain","pos":"F","skill":3},{"n":"70","name":"Sam Downs","pos":"F","skill":6},{"n":"75","name":"Nicole Downs","pos":"F","skill":2},{"n":"84","name":"Maxwell Donaty","pos":"D","skill":5},{"n":"87","name":"Josh Cronk","pos":"D","skill":5},{"n":"91","name":"Kevin White","pos":"F","skill":4}],"awayRoster":[{"n":"1","name":"Michael Gipson","pos":"G","skill":5},{"n":"3","name":"Ryan Case","pos":"F","skill":5},{"n":"4","name":"Greg Hoyt","pos":"F","skill":3},{"n":"5","name":"Matt Rocco","pos":"F","skill":3},{"n":"6","name":"Matt Vivian","pos":"F","skill":3},{"n":"7","name":"Marc Smith","pos":"F","skill":4},{"n":"9","name":"Joshua Parmiter","pos":"D","skill":5},{"n":"10","name":"Wayne Kohut","pos":"F","skill":3},{"n":"11","name":"Ross Thompson","pos":"F","skill":6},{"n":"12","name":"Daniel Heck","pos":"D","skill":4},{"n":"13","name":"Dean Porter","pos":"D","skill":4},{"n":"14","name":"Austin Webb","pos":"F","skill":5},{"n":"15","name":"Chad Ferguson","pos":"F","skill":4},{"n":"16","name":"Chuck Webb","pos":"F","skill":2}]},"18965":{"gid":"18965","date":"2025-08-24","homeTeam":"Velodrome","awayTeam":"OS Offices","homeColor":"#9C47E4","awayColor":"#2C8A5E","videoUrl":"","homeRoster":[{"n":"5","name":"Jesse Theken","pos":"F","skill":4},{"n":"7","name":"Guy Girardeau","pos":"D","skill":3},{"n":"8","name":"Nicholas Lang","pos":"F","skill":5},{"n":"9","name":"Peter Husak","pos":"F","skill":2},{"n":"13","name":"Josh Theken","pos":"F","skill":5},{"n":"17","name":"Tyler Kettner","pos":"F","skill":5},{"n":"19","name":"Josh Gulledge","pos":"F","skill":4},{"n":"26","name":"Erika Tunning","pos":"F","skill":2},{"n":"38","name":"Casey Lang","pos":"G","skill":4},{"n":"46","name":"Mitchell Liebl","pos":"F","skill":5},{"n":"71","name":"Darren Rojas","pos":"D","skill":3},{"n":"74","name":"Kyle Meetze","pos":"D","skill":3},{"n":"83","name":"Jeremy Lindemann","pos":"D","skill":4},{"n":"92","name":"TJ Liebl","pos":"D","skill":6},{"n":"94","name":"Chris Tunning","pos":"F","skill":4}],"awayRoster":[{"n":"9","name":"Ronnie Pinnell","pos":"D","skill":4},{"n":"14","name":"Nick Ciampoli","pos":"F","skill":4},{"n":"22","name":"Robert Mayfield","pos":"D","skill":3},{"n":"24","name":"Jennifer Valente","pos":"F","skill":2},{"n":"39","name":"Wyatt Crandall","pos":"G","skill":5},{"n":"42","name":"Garrett Ashcroft","pos":"F","skill":5},{"n":"49","name":"Galen Wood","pos":"F","skill":5},{"n":"52","name":"Hayden Perea","pos":"D","skill":4},{"n":"55","name":"James Rynearson","pos":"F","skill":3},{"n":"61","name":"Kaitlyn Shain","pos":"F","skill":3},{"n":"70","name":"Sam Downs","pos":"F","skill":6},{"n":"75","name":"Nicole Downs","pos":"F","skill":2},{"n":"84","name":"Maxwell Donaty","pos":"D","skill":5},{"n":"87","name":"Josh Cronk","pos":"D","skill":5},{"n":"91","name":"Kevin White","pos":"F","skill":4}]},"18969":{"gid":"18969","date":"2025-09-07","homeTeam":"Platinum","awayTeam":"Velodrome","homeColor":"#919294","awayColor":"#9C47E4","videoUrl":"","homeRoster":[{"n":"3","name":"Alex Considine","pos":"D","skill":4},{"n":"8","name":"Jesse Chambless","pos":"D","skill":5},{"n":"12","name":"Karen Zietlow","pos":"F","skill":2},{"n":"21","name":"Andrew Marshall","pos":"F","skill":4},{"n":"34","name":"Chris Dube","pos":"F","skill":4},{"n":"45","name":"Keegan Mantaro","pos":"D","skill":6},{"n":"47","name":"Josh Simonds","pos":"F","skill":4},{"n":"53","name":"Chris Premo","pos":"F","skill":5},{"n":"78","name":"Matt Quinn","pos":"D","skill":3},{"n":"82","name":"JoLyn Maly","pos":"F","skill":2},{"n":"86","name":"Joshua Blumberg","pos":"F","skill":3},{"n":"20","name":"John Thien","pos":"F","skill":3},{"n":"99","name":"Francis Forte","pos":"G","skill":5}],"awayRoster":[{"n":"9","name":"Ronnie Pinnell","pos":"D","skill":4},{"n":"14","name":"Nick Ciampoli","pos":"F","skill":4},{"n":"22","name":"Robert Mayfield","pos":"D","skill":3},{"n":"39","name":"Wyatt Crandall","pos":"G","skill":5},{"n":"42","name":"Garrett Ashcroft","pos":"F","skill":5},{"n":"49","name":"Galen Wood","pos":"F","skill":5},{"n":"52","name":"Hayden Perea","pos":"D","skill":4},{"n":"55","name":"James Rynearson","pos":"F","skill":3},{"n":"61","name":"Kaitlyn Shain","pos":"F","skill":3},{"n":"70","name":"Sam Downs","pos":"F","skill":6},{"n":"75","name":"Nicole Downs","pos":"F","skill":2},{"n":"84","name":"Maxwell Donaty","pos":"D","skill":5},{"n":"91","name":"Kevin White","pos":"F","skill":4},{"n":"93","name":"Pat Major","pos":"D","skill":3}]},"18977":{"gid":"18977","date":"2025-09-14","homeTeam":"Velodrome","awayTeam":"HollowBrook","homeColor":"#9C47E4","awayColor":"#4D2640","videoUrl":"","homeRoster":[{"n":"9","name":"Ronnie Pinnell","pos":"D","skill":4},{"n":"14","name":"Nick Ciampoli","pos":"F","skill":4},{"n":"22","name":"Robert Mayfield","pos":"D","skill":3},{"n":"24","name":"Jennifer Valente","pos":"F","skill":2},{"n":"39","name":"Wyatt Crandall","pos":"G","skill":5},{"n":"42","name":"Garrett Ashcroft","pos":"F","skill":5},{"n":"49","name":"Galen Wood","pos":"F","skill":5},{"n":"52","name":"Hayden Perea","pos":"D","skill":4},{"n":"61","name":"Kaitlyn Shain","pos":"F","skill":3},{"n":"70","name":"Sam Downs","pos":"F","skill":6},{"n":"75","name":"Nicole Downs","pos":"F","skill":2},{"n":"87","name":"Josh Cronk","pos":"D","skill":5},{"n":"91","name":"Kevin White","pos":"F","skill":4}],"awayRoster":[{"n":"2","name":"Noel Black","pos":"D","skill":4},{"n":"5","name":"Kevin Moore","pos":"D","skill":3},{"n":"8","name":"Bert Loper","pos":"F","skill":2},{"n":"11","name":"Ty Smith","pos":"F","skill":6},{"n":"13","name":"Nathan Watts","pos":"F","skill":5},{"n":"18","name":"Todd Heffner","pos":"F","skill":4},{"n":"19","name":"Hayden Smith","pos":"F","skill":5},{"n":"22","name":"Steve Smith","pos":"F","skill":3},{"n":"26","name":"Nate Flint","pos":"F","skill":4},{"n":"27","name":"Beau Kelly","pos":"D","skill":4},{"n":"40","name":"Kirk Moore","pos":"F","skill":3},{"n":"99","name":"Jared Wolf","pos":"G","skill":4}]},"18981":{"gid":"18981","date":"2025-09-28","homeTeam":"Nelson","awayTeam":"Velodrome","homeColor":"#F3C323","awayColor":"#9C47E4","videoUrl":"","homeRoster":[{"n":"3","name":"Michelle Freddolino","pos":"F","skill":2},{"n":"7","name":"Bobby Dickinson","pos":"F","skill":2},{"n":"8","name":"Marko Somersalmi","pos":"D","skill":4},{"n":"10","name":"Kyle Popovich","pos":"F","skill":5},{"n":"15","name":"Andy Alm","pos":"F","skill":3},{"n":"16","name":"Zachary Coleman","pos":"F","skill":4},{"n":"23","name":"Eric Larson","pos":"D","skill":3},{"n":"31","name":"Thane Gilmore","pos":"G","skill":3},{"n":"37","name":"Eric Elliott","pos":"F","skill":5},{"n":"44","name":"Joe Lopez","pos":"F","skill":4},{"n":"79","name":"Brock Lofgren","pos":"F","skill":6},{"n":"80","name":"Samuel Yetsko","pos":"D","skill":5}],"awayRoster":[{"n":"9","name":"Ronnie Pinnell","pos":"D","skill":4},{"n":"14","name":"Nick Ciampoli","pos":"F","skill":4},{"n":"22","name":"Robert Mayfield","pos":"D","skill":3},{"n":"24","name":"Jennifer Valente","pos":"F","skill":2},{"n":"39","name":"Wyatt Crandall","pos":"G","skill":5},{"n":"42","name":"Garrett Ashcroft","pos":"F","skill":5},{"n":"49","name":"Galen Wood","pos":"F","skill":5},{"n":"52","name":"Hayden Perea","pos":"D","skill":4},{"n":"61","name":"Kaitlyn Shain","pos":"F","skill":3},{"n":"70","name":"Sam Downs","pos":"F","skill":6},{"n":"75","name":"Nicole Downs","pos":"F","skill":2},{"n":"84","name":"Maxwell Donaty","pos":"D","skill":5},{"n":"87","name":"Josh Cronk","pos":"D","skill":5},{"n":"91","name":"Kevin White","pos":"F","skill":4},{"n":"93","name":"Pat Major","pos":"D","skill":3}]},"18987":{"gid":"18987","date":"2025-10-05","homeTeam":"Outlaws","awayTeam":"Velodrome","homeColor":"#02007B","awayColor":"#9C47E4","videoUrl":"","homeRoster":[{"n":"3","name":"Cesar Shinall","pos":"D","skill":4},{"n":"4","name":"Trevor Chavez","pos":"D","skill":5},{"n":"12","name":"Ryan Kiehl","pos":"F","skill":4},{"n":"13","name":"Christopher Mihlon","pos":"F","skill":5},{"n":"18","name":"Colin Brewster","pos":"D","skill":3},{"n":"25","name":"Kennen Newsham","pos":"F","skill":4},{"n":"30","name":"Graham Peters","pos":"G","skill":5},{"n":"44","name":"Taylor Rogalsky","pos":"F","skill":3},{"n":"56","name":"Colby Rasplicka","pos":"F","skill":4},{"n":"68","name":"Brody Keene","pos":"D","skill":5},{"n":"77","name":"Samson Leifer","pos":"F","skill":6},{"n":"80","name":"Richie Villanueva","pos":"F","skill":3},{"n":"89","name":"Steve Klyn","pos":"F","skill":2},{"n":"91","name":"Philip Kerchner","pos":"F","skill":2}],"awayRoster":[{"n":"9","name":"Ronnie Pinnell","pos":"D","skill":4},{"n":"14","name":"Nick Ciampoli","pos":"F","skill":4},{"n":"22","name":"Robert Mayfield","pos":"D","skill":3},{"n":"24","name":"Jennifer Valente","pos":"F","skill":2},{"n":"39","name":"Wyatt Crandall","pos":"G","skill":5},{"n":"42","name":"Garrett Ashcroft","pos":"F","skill":5},{"n":"55","name":"James Rynearson","pos":"F","skill":3},{"n":"61","name":"Kaitlyn Shain","pos":"F","skill":3},{"n":"70","name":"Sam Downs","pos":"F","skill":6},{"n":"75","name":"Nicole Downs","pos":"F","skill":2},{"n":"84","name":"Maxwell Donaty","pos":"D","skill":5},{"n":"91","name":"Kevin White","pos":"F","skill":4}]},"18991":{"gid":"18991","date":"2025-10-12","homeTeam":"Triple J","awayTeam":"Velodrome","homeColor":"#4EB9E5","awayColor":"#9C47E4","videoUrl":"","homeRoster":[{"n":"1","name":"Rick Haenke","pos":"G","skill":5},{"n":"10","name":"Lucy Spreter","pos":"F","skill":2},{"n":"16","name":"Ryan Lewis","pos":"F","skill":3},{"n":"19","name":"Brian Myers","pos":"D","skill":4},{"n":"21","name":"Matt Lee","pos":"F","skill":5},{"n":"37","name":"Bob Colby","pos":"F","skill":4},{"n":"41","name":"Brad Hogan","pos":"D","skill":4},{"n":"57","name":"Jason Mantaro","pos":"D","skill":5},{"n":"69","name":"Jon Schuepbach","pos":"F","skill":3},{"n":"71","name":"Zach DeBlois","pos":"F","skill":4},{"n":"73","name":"Mike Flood","pos":"F","skill":5},{"n":"90","name":"Laura Hogan","pos":"F","skill":2}],"awayRoster":[{"n":"9","name":"Ronnie Pinnell","pos":"D","skill":4},{"n":"14","name":"Nick Ciampoli","pos":"F","skill":4},{"n":"22","name":"Robert Mayfield","pos":"D","skill":3},{"n":"24","name":"Jennifer Valente","pos":"F","skill":2},{"n":"39","name":"Wyatt Crandall","pos":"G","skill":5},{"n":"55","name":"James Rynearson","pos":"F","skill":3},{"n":"61","name":"Kaitlyn Shain","pos":"F","skill":3},{"n":"70","name":"Sam Downs","pos":"F","skill":6},{"n":"75","name":"Nicole Downs","pos":"F","skill":2},{"n":"84","name":"Maxwell Donaty","pos":"D","skill":5},{"n":"87","name":"Josh Cronk","pos":"D","skill":5},{"n":"91","name":"Kevin White","pos":"F","skill":4},{"n":"93","name":"Pat Major","pos":"D","skill":3}]},"18993":{"gid":"18993","date":"2025-10-19","homeTeam":"Ace","awayTeam":"Velodrome","homeColor":"#CA0527","awayColor":"#9C47E4","videoUrl":"","homeRoster":[{"n":"0","name":"Alyssa Richards","pos":"F","skill":4},{"n":"7","name":"John Storms","pos":"F","skill":3},{"n":"16","name":"Joe Diberardinis","pos":"F","skill":5},{"n":"18","name":"Ethan Kalbfleisch","pos":"F","skill":5},{"n":"20","name":"John Morrow","pos":"F","skill":3},{"n":"27","name":"Austin Storm","pos":"F","skill":6},{"n":"31","name":"Ian Gustafson","pos":"G","skill":3},{"n":"35","name":"Josh Engle","pos":"F","skill":3},{"n":"57","name":"Lee Chiarizia","pos":"D","skill":4},{"n":"65","name":"Nick Zellmann","pos":"D","skill":6},{"n":"69","name":"Nora Wilson","pos":"D","skill":4},{"n":"72","name":"Owen Kalbfleisch","pos":"D","skill":5},{"n":"81","name":"Kevin Kalbfleisch","pos":"F","skill":4},{"n":"88","name":"John Liersemann","pos":"F","skill":4},{"n":"98","name":"Shane Arnold","pos":"F","skill":2}],"awayRoster":[{"n":"9","name":"Ronnie Pinnell","pos":"D","skill":4},{"n":"14","name":"Nick Ciampoli","pos":"F","skill":4},{"n":"22","name":"Robert Mayfield","pos":"D","skill":3},{"n":"24","name":"Jennifer Valente","pos":"F","skill":2},{"n":"42","name":"Garrett Ashcroft","pos":"F","skill":5},{"n":"49","name":"Galen Wood","pos":"F","skill":5},{"n":"55","name":"James Rynearson","pos":"F","skill":3},{"n":"61","name":"Kaitlyn Shain","pos":"F","skill":3},{"n":"70","name":"Sam Downs","pos":"F","skill":6},{"n":"75","name":"Nicole Downs","pos":"F","skill":2},{"n":"84","name":"Maxwell Donaty","pos":"D","skill":5},{"n":"91","name":"Kevin White","pos":"F","skill":4},{"n":"93","name":"Pat Major","pos":"D","skill":3},{"n":"FA","name":"Francis Forte","pos":"G","skill":5}]}};
+const ALL_SCHEDULE = [{"gid":"19022","date":"2025-11-23","home":"Ace","away":"Nelson","homeColor":"#CA0527","awayColor":"#F3C323","video":""},{"gid":"19021","date":"2025-11-23","home":"Amos","away":"OS Offices","homeColor":"#641C28","awayColor":"#2C8A5E","video":""},{"gid":"19020","date":"2025-11-23","home":"HollowBrook","away":"Velodrome","homeColor":"#4D2640","awayColor":"#9C47E4","video":""},{"gid":"19019","date":"2025-11-23","home":"Platinum","away":"Orphans","homeColor":"#919294","awayColor":"#000000","video":""},{"gid":"19018","date":"2025-11-23","home":"Outlaws","away":"Triple J","homeColor":"#02007B","awayColor":"#4EB9E5","video":""},{"gid":"19017","date":"2025-11-16","home":"Triple J","away":"Orphans","homeColor":"#4EB9E5","awayColor":"#000000","video":""},{"gid":"19016","date":"2025-11-16","home":"Amos","away":"HollowBrook","homeColor":"#641C28","awayColor":"#4D2640","video":""},{"gid":"19015","date":"2025-11-16","home":"Ace","away":"Outlaws","homeColor":"#CA0527","awayColor":"#02007B","video":""},{"gid":"19014","date":"2025-11-16","home":"Platinum","away":"Velodrome","homeColor":"#919294","awayColor":"#9C47E4","video":""},{"gid":"19013","date":"2025-11-16","home":"Nelson","away":"OS Offices","homeColor":"#F3C323","awayColor":"#2C8A5E","video":""},{"gid":"19012","date":"2025-11-09","home":"Nelson","away":"Platinum","homeColor":"#F3C323","awayColor":"#919294","video":""},{"gid":"19011","date":"2025-11-09","home":"Outlaws","away":"Orphans","homeColor":"#02007B","awayColor":"#000000","video":""},{"gid":"19010","date":"2025-11-09","home":"Ace","away":"HollowBrook","homeColor":"#CA0527","awayColor":"#4D2640","video":""},{"gid":"19009","date":"2025-11-09","home":"OS Offices","away":"Velodrome","homeColor":"#2C8A5E","awayColor":"#9C47E4","video":""},{"gid":"19008","date":"2025-11-09","home":"Amos","away":"Triple J","homeColor":"#641C28","awayColor":"#4EB9E5","video":""},{"gid":"19007","date":"2025-11-02","home":"Amos","away":"Velodrome","homeColor":"#641C28","awayColor":"#9C47E4","video":""},{"gid":"19006","date":"2025-11-02","home":"Ace","away":"Platinum","homeColor":"#CA0527","awayColor":"#919294","video":""},{"gid":"19005","date":"2025-11-02","home":"Nelson","away":"Triple J","homeColor":"#F3C323","awayColor":"#4EB9E5","video":""},{"gid":"19004","date":"2025-11-02","home":"HollowBrook","away":"Orphans","homeColor":"#4D2640","awayColor":"#000000","video":""},{"gid":"19003","date":"2025-11-02","home":"Outlaws","away":"OS Offices","homeColor":"#02007B","awayColor":"#2C8A5E","video":""},{"gid":"19002","date":"2025-10-26","home":"Ace","away":"OS Offices","homeColor":"#CA0527","awayColor":"#2C8A5E","video":""},{"gid":"19001","date":"2025-10-26","home":"Outlaws","away":"Platinum","homeColor":"#02007B","awayColor":"#919294","video":""},{"gid":"19000","date":"2025-10-26","home":"HollowBrook","away":"Triple J","homeColor":"#4D2640","awayColor":"#4EB9E5","video":""},{"gid":"18999","date":"2025-10-26","home":"Amos","away":"Nelson","homeColor":"#641C28","awayColor":"#F3C323","video":""},{"gid":"18998","date":"2025-10-26","home":"Orphans","away":"Velodrome","homeColor":"#000000","awayColor":"#9C47E4","video":""},{"gid":"18997","date":"2025-10-19","home":"Platinum","away":"Triple J","homeColor":"#919294","awayColor":"#4EB9E5","video":""},{"gid":"18996","date":"2025-10-19","home":"HollowBrook","away":"OS Offices","homeColor":"#4D2640","awayColor":"#2C8A5E","video":""},{"gid":"18995","date":"2025-10-19","home":"Nelson","away":"Outlaws","homeColor":"#F3C323","awayColor":"#02007B","video":""},{"gid":"18994","date":"2025-10-19","home":"Amos","away":"Orphans","homeColor":"#641C28","awayColor":"#000000","video":""},{"gid":"18993","date":"2025-10-19","home":"Ace","away":"Velodrome","homeColor":"#CA0527","awayColor":"#9C47E4","video":""},{"gid":"18992","date":"2025-10-12","home":"Amos","away":"Outlaws","homeColor":"#641C28","awayColor":"#02007B","video":""},{"gid":"18991","date":"2025-10-12","home":"Triple J","away":"Velodrome","homeColor":"#4EB9E5","awayColor":"#9C47E4","video":""},{"gid":"18990","date":"2025-10-12","home":"Platinum","away":"OS Offices","homeColor":"#919294","awayColor":"#2C8A5E","video":""},{"gid":"18989","date":"2025-10-12","home":"HollowBrook","away":"Nelson","homeColor":"#4D2640","awayColor":"#F3C323","video":""},{"gid":"18988","date":"2025-10-12","home":"Ace","away":"Orphans","homeColor":"#CA0527","awayColor":"#000000","video":""},{"gid":"18987","date":"2025-10-05","home":"Outlaws","away":"Velodrome","homeColor":"#02007B","awayColor":"#9C47E4","video":""},{"gid":"18986","date":"2025-10-05","home":"Nelson","away":"Orphans","homeColor":"#F3C323","awayColor":"#000000","video":""},{"gid":"18985","date":"2025-10-05","home":"OS Offices","away":"Triple J","homeColor":"#2C8A5E","awayColor":"#4EB9E5","video":""},{"gid":"18984","date":"2025-10-05","home":"Ace","away":"Amos","homeColor":"#CA0527","awayColor":"#641C28","video":""},{"gid":"18983","date":"2025-10-05","home":"HollowBrook","away":"Platinum","homeColor":"#4D2640","awayColor":"#919294","video":""},{"gid":"18982","date":"2025-09-28","home":"OS Offices","away":"Orphans","homeColor":"#2C8A5E","awayColor":"#000000","video":""},{"gid":"18981","date":"2025-09-28","home":"Nelson","away":"Velodrome","homeColor":"#F3C323","awayColor":"#9C47E4","video":""},{"gid":"18980","date":"2025-09-28","home":"Amos","away":"Platinum","homeColor":"#641C28","awayColor":"#919294","video":""},{"gid":"18979","date":"2025-09-28","home":"HollowBrook","away":"Outlaws","homeColor":"#4D2640","awayColor":"#02007B","video":""},{"gid":"18978","date":"2025-09-28","home":"Ace","away":"Triple J","homeColor":"#CA0527","awayColor":"#4EB9E5","video":""},{"gid":"18977","date":"2025-09-14","home":"Velodrome","away":"HollowBrook","homeColor":"#9C47E4","awayColor":"#4D2640","video":""},{"gid":"18976","date":"2025-09-14","home":"Ace","away":"Nelson","homeColor":"#CA0527","awayColor":"#F3C323","video":""},{"gid":"18975","date":"2025-09-14","home":"Amos","away":"OS Offices","homeColor":"#641C28","awayColor":"#2C8A5E","video":""},{"gid":"18974","date":"2025-09-14","home":"Outlaws","away":"Triple J","homeColor":"#02007B","awayColor":"#4EB9E5","video":""},{"gid":"18973","date":"2025-09-14","home":"Platinum","away":"Orphans","homeColor":"#919294","awayColor":"#000000","video":""},{"gid":"18972","date":"2025-09-07","home":"Amos","away":"HollowBrook","homeColor":"#641C28","awayColor":"#4D2640","video":""},{"gid":"18971","date":"2025-09-07","home":"Triple J","away":"Orphans","homeColor":"#4EB9E5","awayColor":"#000000","video":""},{"gid":"18970","date":"2025-09-07","home":"Ace","away":"Outlaws","homeColor":"#CA0527","awayColor":"#02007B","video":""},{"gid":"18969","date":"2025-09-07","home":"Platinum","away":"Velodrome","homeColor":"#919294","awayColor":"#9C47E4","video":""},{"gid":"18968","date":"2025-09-07","home":"Nelson","away":"OS Offices","homeColor":"#F3C323","awayColor":"#2C8A5E","video":""},{"gid":"18967","date":"2025-08-24","home":"Ace","away":"HollowBrook","homeColor":"#CA0527","awayColor":"#4D2640","video":""},{"gid":"18966","date":"2025-08-24","home":"Nelson","away":"Platinum","homeColor":"#F3C323","awayColor":"#919294","video":""},{"gid":"18965","date":"2025-08-24","home":"Velodrome","away":"OS Offices","homeColor":"#9C47E4","awayColor":"#2C8A5E","video":""},{"gid":"18964","date":"2025-08-24","home":"Outlaws","away":"Orphans","homeColor":"#02007B","awayColor":"#000000","video":""},{"gid":"18963","date":"2025-08-24","home":"Amos","away":"Triple J","homeColor":"#641C28","awayColor":"#4EB9E5","video":""},{"gid":"18962","date":"2025-08-17","home":"Nelson","away":"Triple J","homeColor":"#F3C323","awayColor":"#4EB9E5","video":""},{"gid":"18961","date":"2025-08-17","home":"Ace","away":"Platinum","homeColor":"#CA0527","awayColor":"#919294","video":""},{"gid":"18960","date":"2025-08-17","home":"HollowBrook","away":"Orphans","homeColor":"#4D2640","awayColor":"#000000","video":""},{"gid":"18959","date":"2025-08-17","home":"Amos","away":"Velodrome","homeColor":"#641C28","awayColor":"#9C47E4","video":""},{"gid":"18958","date":"2025-08-17","home":"Outlaws","away":"OS Offices","homeColor":"#02007B","awayColor":"#2C8A5E","video":""},{"gid":"18957","date":"2025-08-10","home":"Outlaws","away":"Platinum","homeColor":"#02007B","awayColor":"#919294","video":""},{"gid":"18956","date":"2025-08-10","home":"HollowBrook","away":"Triple J","homeColor":"#4D2640","awayColor":"#4EB9E5","video":""},{"gid":"18955","date":"2025-08-10","home":"Velodrome","away":"Orphans","homeColor":"#9C47E4","awayColor":"#000000","video":""},{"gid":"18954","date":"2025-08-10","home":"Ace","away":"OS Offices","homeColor":"#CA0527","awayColor":"#2C8A5E","video":""},{"gid":"18953","date":"2025-08-10","home":"Amos","away":"Nelson","homeColor":"#641C28","awayColor":"#F3C323","video":""},{"gid":"18619","date":"2025-07-13","home":"Red","away":"Green","homeColor":"#CA0527","awayColor":"#04c946","video":""},{"gid":"18051","date":"2025-03-09","home":"HollowBrook","away":"Orphans","homeColor":"#4D2640","awayColor":"#000000","video":""},{"gid":"18050","date":"2025-03-09","home":"Nelson","away":"Ace","homeColor":"#F3C323","awayColor":"#CA0527","video":""},{"gid":"18049","date":"2025-03-09","home":"Amos","away":"Triple J","homeColor":"#641C28","awayColor":"#4EB9E5","video":""},{"gid":"18048","date":"2025-03-09","home":"OS Offices","away":"Platinum","homeColor":"#2C8A5E","awayColor":"#919294","video":""},{"gid":"18046","date":"2025-03-02","home":"Nelson","away":"Outlaws","homeColor":"#F3C323","awayColor":"#02007B","video":""},{"gid":"18045","date":"2025-03-02","home":"Amos","away":"Orphans","homeColor":"#641C28","awayColor":"#000000","video":""},{"gid":"18044","date":"2025-03-02","home":"OS Offices","away":"Ace","homeColor":"#2C8A5E","awayColor":"#CA0527","video":""},{"gid":"18043","date":"2025-03-02","home":"Platinum","away":"Triple J","homeColor":"#919294","awayColor":"#4EB9E5","video":""},{"gid":"18041","date":"2025-02-23","home":"Amos","away":"HollowBrook","homeColor":"#641C28","awayColor":"#4D2640","video":""},{"gid":"18040","date":"2025-02-23","home":"OS Offices","away":"Outlaws","homeColor":"#2C8A5E","awayColor":"#02007B","video":""},{"gid":"18039","date":"2025-02-23","home":"Platinum","away":"Orphans","homeColor":"#919294","awayColor":"#000000","video":""},{"gid":"18038","date":"2025-02-23","home":"Triple J","away":"Ace","homeColor":"#4EB9E5","awayColor":"#CA0527","video":""},{"gid":"18036","date":"2025-02-09","home":"OS Offices","away":"Nelson","homeColor":"#2C8A5E","awayColor":"#F3C323","video":""},{"gid":"18035","date":"2025-02-09","home":"Platinum","away":"HollowBrook","homeColor":"#919294","awayColor":"#4D2640","video":""},{"gid":"18034","date":"2025-02-09","home":"Triple J","away":"Outlaws","homeColor":"#4EB9E5","awayColor":"#02007B","video":""},{"gid":"18033","date":"2025-02-09","home":"Ace","away":"Orphans","homeColor":"#CA0527","awayColor":"#000000","video":""},{"gid":"18031","date":"2025-02-02","home":"Platinum","away":"Amos","homeColor":"#919294","awayColor":"#641C28","video":""},{"gid":"18030","date":"2025-02-02","home":"Triple J","away":"Nelson","homeColor":"#4EB9E5","awayColor":"#F3C323","video":""},{"gid":"18029","date":"2025-02-02","home":"Ace","away":"HollowBrook","homeColor":"#CA0527","awayColor":"#4D2640","video":""},{"gid":"18028","date":"2025-02-02","home":"Orphans","away":"Outlaws","homeColor":"#000000","awayColor":"#02007B","video":""},{"gid":"18025","date":"2025-01-26","home":"Ace","away":"Amos","homeColor":"#CA0527","awayColor":"#641C28","video":""},{"gid":"18024","date":"2025-01-26","home":"Orphans","away":"Nelson","homeColor":"#000000","awayColor":"#F3C323","video":""},{"gid":"18023","date":"2025-01-26","home":"Outlaws","away":"HollowBrook","homeColor":"#02007B","awayColor":"#4D2640","video":""},{"gid":"18021","date":"2025-01-12","home":"Ace","away":"Platinum","homeColor":"#CA0527","awayColor":"#919294","video":""},{"gid":"18020","date":"2025-01-12","home":"Orphans","away":"OS Offices","homeColor":"#000000","awayColor":"#2C8A5E","video":""},{"gid":"18019","date":"2025-01-12","home":"Outlaws","away":"Amos","homeColor":"#02007B","awayColor":"#641C28","video":""},{"gid":"18018","date":"2025-01-12","home":"HollowBrook","away":"Nelson","homeColor":"#4D2640","awayColor":"#F3C323","video":""},{"gid":"18016","date":"2025-01-05","home":"Orphans","away":"Triple J","homeColor":"#000000","awayColor":"#4EB9E5","video":""},{"gid":"18015","date":"2025-01-05","home":"Outlaws","away":"Platinum","homeColor":"#02007B","awayColor":"#919294","video":""},{"gid":"18014","date":"2025-01-05","home":"HollowBrook","away":"OS Offices","homeColor":"#4D2640","awayColor":"#2C8A5E","video":""},{"gid":"18013","date":"2025-01-05","home":"Nelson","away":"Amos","homeColor":"#F3C323","awayColor":"#641C28","video":""},{"gid":"18011","date":"2024-12-22","home":"Outlaws","away":"Ace","homeColor":"#02007B","awayColor":"#CA0527","video":""},{"gid":"18010","date":"2024-12-22","home":"HollowBrook","away":"Triple J","homeColor":"#4D2640","awayColor":"#4EB9E5","video":""},{"gid":"18009","date":"2024-12-22","home":"Nelson","away":"Platinum","homeColor":"#F3C323","awayColor":"#919294","video":""},{"gid":"18008","date":"2024-12-22","home":"Amos","away":"OS Offices","homeColor":"#641C28","awayColor":"#2C8A5E","video":""},{"gid":"18006","date":"2024-12-15","home":"HollowBrook","away":"Orphans","homeColor":"#4D2640","awayColor":"#000000","video":""},{"gid":"18005","date":"2024-12-15","home":"Nelson","away":"Ace","homeColor":"#F3C323","awayColor":"#CA0527","video":""},{"gid":"18004","date":"2024-12-15","home":"Amos","away":"Triple J","homeColor":"#641C28","awayColor":"#4EB9E5","video":""},{"gid":"18003","date":"2024-12-15","home":"OS Offices","away":"Platinum","homeColor":"#2C8A5E","awayColor":"#919294","video":""},{"gid":"18001","date":"2025-03-16","home":"Nelson","away":"Outlaws","homeColor":"#F3C323","awayColor":"#02007B","video":""},{"gid":"18000","date":"2025-03-16","home":"Amos","away":"Orphans","homeColor":"#641C28","awayColor":"#000000","video":""},{"gid":"17999","date":"2025-03-16","home":"OS Offices","away":"Ace","homeColor":"#2C8A5E","awayColor":"#CA0527","video":""},{"gid":"17998","date":"2025-03-16","home":"Platinum","away":"Triple J","homeColor":"#919294","awayColor":"#4EB9E5","video":""},{"gid":"17996","date":"2024-11-24","home":"Amos","away":"HollowBrook","homeColor":"#641C28","awayColor":"#4D2640","video":""},{"gid":"17995","date":"2024-11-24","home":"OS Offices","away":"Outlaws","homeColor":"#2C8A5E","awayColor":"#02007B","video":""},{"gid":"17994","date":"2024-11-24","home":"Platinum","away":"Orphans","homeColor":"#919294","awayColor":"#000000","video":""},{"gid":"17993","date":"2024-11-24","home":"Triple J","away":"Ace","homeColor":"#4EB9E5","awayColor":"#CA0527","video":""},{"gid":"17991","date":"2024-11-17","home":"OS Offices","away":"Nelson","homeColor":"#2C8A5E","awayColor":"#F3C323","video":""},{"gid":"17990","date":"2024-11-17","home":"Platinum","away":"HollowBrook","homeColor":"#919294","awayColor":"#4D2640","video":""},{"gid":"17989","date":"2024-11-17","home":"Triple J","away":"Outlaws","homeColor":"#4EB9E5","awayColor":"#02007B","video":""},{"gid":"17988","date":"2024-11-17","home":"Ace","away":"Orphans","homeColor":"#CA0527","awayColor":"#000000","video":""},{"gid":"17986","date":"2024-11-10","home":"Platinum","away":"Amos","homeColor":"#919294","awayColor":"#641C28","video":""},{"gid":"17985","date":"2024-11-10","home":"Triple J","away":"Nelson","homeColor":"#4EB9E5","awayColor":"#F3C323","video":""},{"gid":"17984","date":"2024-11-10","home":"Ace","away":"HollowBrook","homeColor":"#CA0527","awayColor":"#4D2640","video":""},{"gid":"17983","date":"2024-11-10","home":"Orphans","away":"Outlaws","homeColor":"#000000","awayColor":"#02007B","video":""},{"gid":"17981","date":"2024-11-03","home":"Triple J","away":"OS Offices","homeColor":"#4EB9E5","awayColor":"#2C8A5E","video":""},{"gid":"17980","date":"2024-11-03","home":"Ace","away":"Amos","homeColor":"#CA0527","awayColor":"#641C28","video":""},{"gid":"17979","date":"2024-11-03","home":"Orphans","away":"Nelson","homeColor":"#000000","awayColor":"#F3C323","video":""},{"gid":"17978","date":"2024-11-03","home":"Outlaws","away":"HollowBrook","homeColor":"#02007B","awayColor":"#4D2640","video":""},{"gid":"17976","date":"2024-10-27","home":"Ace","away":"Platinum","homeColor":"#CA0527","awayColor":"#919294","video":""},{"gid":"17975","date":"2024-10-27","home":"Orphans","away":"OS Offices","homeColor":"#000000","awayColor":"#2C8A5E","video":""},{"gid":"17974","date":"2024-10-27","home":"Outlaws","away":"Amos","homeColor":"#02007B","awayColor":"#641C28","video":""},{"gid":"17973","date":"2024-10-27","home":"HollowBrook","away":"Nelson","homeColor":"#4D2640","awayColor":"#F3C323","video":""},{"gid":"17971","date":"2024-10-20","home":"Orphans","away":"Triple J","homeColor":"#000000","awayColor":"#4EB9E5","video":""},{"gid":"17970","date":"2024-10-20","home":"Outlaws","away":"Platinum","homeColor":"#02007B","awayColor":"#919294","video":""},{"gid":"17969","date":"2024-10-20","home":"HollowBrook","away":"OS Offices","homeColor":"#4D2640","awayColor":"#2C8A5E","video":""},{"gid":"17968","date":"2024-10-20","home":"Nelson","away":"Amos","homeColor":"#F3C323","awayColor":"#641C28","video":""},{"gid":"17966","date":"2024-10-13","home":"Outlaws","away":"Ace","homeColor":"#02007B","awayColor":"#CA0527","video":""},{"gid":"17965","date":"2024-10-13","home":"HollowBrook","away":"Triple J","homeColor":"#4D2640","awayColor":"#4EB9E5","video":""},{"gid":"17964","date":"2024-10-13","home":"Nelson","away":"Platinum","homeColor":"#F3C323","awayColor":"#919294","video":""},{"gid":"17963","date":"2024-10-13","home":"Amos","away":"OS Offices","homeColor":"#641C28","awayColor":"#2C8A5E","video":""},{"gid":"17961","date":"2024-10-06","home":"HollowBrook","away":"Orphans","homeColor":"#4D2640","awayColor":"#000000","video":""},{"gid":"17960","date":"2024-10-06","home":"Nelson","away":"Ace","homeColor":"#F3C323","awayColor":"#CA0527","video":""},{"gid":"17959","date":"2024-10-06","home":"Amos","away":"Triple J","homeColor":"#641C28","awayColor":"#4EB9E5","video":""},{"gid":"17958","date":"2024-10-06","home":"OS Offices","away":"Platinum","homeColor":"#2C8A5E","awayColor":"#919294","video":""},{"gid":"17956","date":"2024-09-29","home":"Nelson","away":"Outlaws","homeColor":"#F3C323","awayColor":"#02007B","video":""},{"gid":"17955","date":"2024-12-29","home":"Amos","away":"Orphans","homeColor":"#641C28","awayColor":"#000000","video":""},{"gid":"17954","date":"2024-09-29","home":"OS Offices","away":"Ace","homeColor":"#2C8A5E","awayColor":"#CA0527","video":""},{"gid":"17953","date":"2024-09-29","home":"Platinum","away":"Triple J","homeColor":"#919294","awayColor":"#4EB9E5","video":""},{"gid":"17951","date":"2024-09-22","home":"Amos","away":"HollowBrook","homeColor":"#641C28","awayColor":"#4D2640","video":""},{"gid":"17950","date":"2024-09-22","home":"OS Offices","away":"Outlaws","homeColor":"#2C8A5E","awayColor":"#02007B","video":""},{"gid":"17949","date":"2024-09-22","home":"Platinum","away":"Orphans","homeColor":"#919294","awayColor":"#000000","video":""},{"gid":"17948","date":"2024-09-22","home":"Triple J","away":"Ace","homeColor":"#4EB9E5","awayColor":"#CA0527","video":""},{"gid":"17946","date":"2024-09-15","home":"OS Offices","away":"Nelson","homeColor":"#2C8A5E","awayColor":"#F3C323","video":""},{"gid":"17945","date":"2024-09-15","home":"Platinum","away":"HollowBrook","homeColor":"#919294","awayColor":"#4D2640","video":""},{"gid":"17944","date":"2024-09-15","home":"Triple J","away":"Outlaws","homeColor":"#4EB9E5","awayColor":"#02007B","video":""},{"gid":"17943","date":"2024-09-15","home":"Ace","away":"Orphans","homeColor":"#CA0527","awayColor":"#000000","video":""},{"gid":"17941","date":"2024-09-08","home":"Platinum","away":"Amos","homeColor":"#919294","awayColor":"#641C28","video":""},{"gid":"17940","date":"2024-09-08","home":"Triple J","away":"Nelson","homeColor":"#4EB9E5","awayColor":"#F3C323","video":""},{"gid":"17939","date":"2024-09-08","home":"Ace","away":"HollowBrook","homeColor":"#CA0527","awayColor":"#4D2640","video":""},{"gid":"17938","date":"2024-09-08","home":"Orphans","away":"Outlaws","homeColor":"#000000","awayColor":"#02007B","video":""},{"gid":"17936","date":"2024-09-01","home":"Triple J","away":"OS Offices","homeColor":"#4EB9E5","awayColor":"#2C8A5E","video":""},{"gid":"17935","date":"2024-09-01","home":"Ace","away":"Amos","homeColor":"#CA0527","awayColor":"#641C28","video":""},{"gid":"17934","date":"2024-09-01","home":"Orphans","away":"Nelson","homeColor":"#000000","awayColor":"#F3C323","video":""},{"gid":"17933","date":"2024-09-01","home":"Outlaws","away":"HollowBrook","homeColor":"#02007B","awayColor":"#4D2640","video":""},{"gid":"17931","date":"2024-08-25","home":"Ace","away":"Platinum","homeColor":"#CA0527","awayColor":"#919294","video":""},{"gid":"17930","date":"2024-08-25","home":"Orphans","away":"OS Offices","homeColor":"#000000","awayColor":"#2C8A5E","video":""},{"gid":"17929","date":"2024-08-25","home":"Outlaws","away":"Amos","homeColor":"#02007B","awayColor":"#641C28","video":""},{"gid":"17928","date":"2024-08-25","home":"HollowBrook","away":"Nelson","homeColor":"#4D2640","awayColor":"#F3C323","video":""},{"gid":"17926","date":"2024-08-18","home":"Orphans","away":"Triple J","homeColor":"#000000","awayColor":"#4EB9E5","video":""},{"gid":"17925","date":"2024-08-18","home":"Outlaws","away":"Platinum","homeColor":"#02007B","awayColor":"#919294","video":""},{"gid":"17924","date":"2024-08-18","home":"HollowBrook","away":"OS Offices","homeColor":"#4D2640","awayColor":"#2C8A5E","video":""},{"gid":"17923","date":"2024-08-18","home":"Nelson","away":"Amos","homeColor":"#F3C323","awayColor":"#641C28","video":""},{"gid":"17921","date":"2024-08-11","home":"Outlaws","away":"Ace","homeColor":"#02007B","awayColor":"#CA0527","video":""},{"gid":"17920","date":"2024-08-11","home":"HollowBrook","away":"Triple J","homeColor":"#4D2640","awayColor":"#4EB9E5","video":""},{"gid":"17919","date":"2024-08-11","home":"Nelson","away":"Platinum","homeColor":"#F3C323","awayColor":"#919294","video":""},{"gid":"17918","date":"2024-08-11","home":"Amos","away":"OS Offices","homeColor":"#641C28","awayColor":"#2C8A5E","video":""},{"gid":"16895","date":"2024-04-21","home":"Triple J","away":"OS Offices","homeColor":"#4EB9E5","awayColor":"#2C8A5E","video":""},{"gid":"16894","date":"2024-04-21","home":"HollowBrook","away":"Ace","homeColor":"#4D2640","awayColor":"#CA0527","video":""},{"gid":"16893","date":"2024-04-21","home":"Platinum","away":"Nelson","homeColor":"#919294","awayColor":"#F3C323","video":""},{"gid":"16892","date":"2024-04-21","home":"Amos","away":"Orphans","homeColor":"#641C28","awayColor":"#000000","video":""},{"gid":"16891","date":"2024-04-14","home":"OS Offices","away":"Ace","homeColor":"#2C8A5E","awayColor":"#CA0527","video":""},{"gid":"16890","date":"2024-04-21","home":"Platinum","away":"Amos","homeColor":"#919294","awayColor":"#641C28","video":""},{"gid":"16889","date":"2024-04-14","home":"Nelson","away":"Orphans","homeColor":"#F3C323","awayColor":"#000000","video":""},{"gid":"16888","date":"2024-04-14","home":"Triple J","away":"HollowBrook","homeColor":"#4EB9E5","awayColor":"#4D2640","video":""},{"gid":"16887","date":"2024-04-07","home":"Orphans","away":"OS Offices","homeColor":"#000000","awayColor":"#2C8A5E","video":""},{"gid":"16886","date":"2024-04-07","home":"HollowBrook","away":"Platinum","homeColor":"#4D2640","awayColor":"#919294","video":""},{"gid":"16885","date":"2024-04-07","home":"Nelson","away":"Ace","homeColor":"#F3C323","awayColor":"#CA0527","video":""},{"gid":"16884","date":"2024-04-07","home":"Triple J","away":"Amos","homeColor":"#4EB9E5","awayColor":"#641C28","video":""},{"gid":"16883","date":"2024-03-24","home":"Orphans","away":"Triple J","homeColor":"#000000","awayColor":"#4EB9E5","video":""},{"gid":"16882","date":"2024-02-24","home":"OS Offices","away":"Platinum","homeColor":"#2C8A5E","awayColor":"#919294","video":""},{"gid":"16881","date":"2024-03-24","home":"Nelson","away":"HollowBrook","homeColor":"#F3C323","awayColor":"#4D2640","video":""},{"gid":"16880","date":"2024-03-17","home":"Amos","away":"Ace","homeColor":"#641C28","awayColor":"#CA0527","video":""},{"gid":"16875","date":"2024-03-10","home":"Triple J","away":"HollowBrook","homeColor":"#4EB9E5","awayColor":"#4D2640","video":""},{"gid":"16874","date":"2024-03-31","home":"Ace","away":"OS Offices","homeColor":"#CA0527","awayColor":"#2C8A5E","video":""},{"gid":"16873","date":"2024-03-24","home":"Platinum","away":"Amos","homeColor":"#919294","awayColor":"#641C28","video":""},{"gid":"16872","date":"2024-03-17","home":"Nelson","away":"Orphans","homeColor":"#F3C323","awayColor":"#000000","video":""},{"gid":"16871","date":"2024-03-10","home":"Amos","away":"Orphans","homeColor":"#641C28","awayColor":"#000000","video":""},{"gid":"16870","date":"2024-03-03","home":"Triple J","away":"OS Offices","homeColor":"#4EB9E5","awayColor":"#2C8A5E","video":""},{"gid":"16869","date":"2024-03-03","home":"Ace","away":"HollowBrook","homeColor":"#CA0527","awayColor":"#4D2640","video":""},{"gid":"16868","date":"2024-03-03","home":"Platinum","away":"Nelson","homeColor":"#919294","awayColor":"#F3C323","video":""},{"gid":"16867","date":"2024-02-25","home":"HollowBrook","away":"Amos","homeColor":"#4D2640","awayColor":"#641C28","video":""},{"gid":"16866","date":"2024-02-25","home":"Nelson","away":"OS Offices","homeColor":"#F3C323","awayColor":"#2C8A5E","video":""},{"gid":"16865","date":"2024-02-25","home":"Triple J","away":"Platinum","homeColor":"#4EB9E5","awayColor":"#919294","video":""},{"gid":"16864","date":"2024-02-25","home":"Ace","away":"Orphans","homeColor":"#CA0527","awayColor":"#000000","video":""},{"gid":"16863","date":"2024-02-18","home":"HollowBrook","away":"Platinum","homeColor":"#4D2640","awayColor":"#919294","video":""},{"gid":"16862","date":"2024-02-11","home":"Ace","away":"Nelson","homeColor":"#CA0527","awayColor":"#F3C323","video":""},{"gid":"16861","date":"2024-02-04","home":"Triple J","away":"Amos","homeColor":"#4EB9E5","awayColor":"#641C28","video":""},{"gid":"16860","date":"2024-02-04","home":"Orphans","away":"OS Offices","homeColor":"#000000","awayColor":"#2C8A5E","video":""},{"gid":"16859","date":"2024-01-28","home":"OS Offices","away":"Platinum","homeColor":"#2C8A5E","awayColor":"#919294","video":""},{"gid":"16858","date":"2024-02-11","home":"Nelson","away":"HollowBrook","homeColor":"#F3C323","awayColor":"#4D2640","video":""},{"gid":"16857","date":"2024-02-04","home":"Ace","away":"Amos","homeColor":"#CA0527","awayColor":"#641C28","video":""},{"gid":"16856","date":"2024-01-28","home":"Orphans","away":"Triple J","homeColor":"#000000","awayColor":"#4EB9E5","video":""},{"gid":"16855","date":"2024-01-21","home":"Amos","away":"Nelson","homeColor":"#641C28","awayColor":"#F3C323","video":""},{"gid":"16854","date":"2024-01-21","home":"Platinum","away":"Orphans","homeColor":"#919294","awayColor":"#000000","video":""},{"gid":"16853","date":"2024-01-21","home":"OS Offices","away":"HollowBrook","homeColor":"#2C8A5E","awayColor":"#4D2640","video":""},{"gid":"16852","date":"2024-01-21","home":"Triple J","away":"Ace","homeColor":"#4EB9E5","awayColor":"#CA0527","video":""},{"gid":"16851","date":"2024-01-07","home":"Platinum","away":"Ace","homeColor":"#919294","awayColor":"#CA0527","video":""},{"gid":"16850","date":"2024-01-07","home":"Nelson","away":"Triple J","homeColor":"#F3C323","awayColor":"#4EB9E5","video":""},{"gid":"16849","date":"2024-01-07","home":"Amos","away":"OS Offices","homeColor":"#641C28","awayColor":"#2C8A5E","video":""},{"gid":"16847","date":"2024-01-07","home":"OS Offices","away":"Nelson","homeColor":"#2C8A5E","awayColor":"#F3C323","video":""},{"gid":"16846","date":"2023-12-31","home":"HollowBrook","away":"Amos","homeColor":"#4D2640","awayColor":"#641C28","video":""},{"gid":"16845","date":"2023-12-24","home":"Orphans","away":"Ace","homeColor":"#000000","awayColor":"#CA0527","video":""},{"gid":"16844","date":"2023-12-17","home":"Triple J","away":"Platinum","homeColor":"#4EB9E5","awayColor":"#919294","video":""},{"gid":"16843","date":"2023-12-10","home":"Nelson","away":"Triple J","homeColor":"#F3C323","awayColor":"#4EB9E5","video":""},{"gid":"16842","date":"2023-12-24","home":"Amos","away":"OS Offices","homeColor":"#641C28","awayColor":"#2C8A5E","video":""},{"gid":"16841","date":"2023-12-17","home":"Orphans","away":"HollowBrook","homeColor":"#000000","awayColor":"#4D2640","video":""},{"gid":"16840","date":"2023-12-10","home":"Platinum","away":"Ace","homeColor":"#919294","awayColor":"#CA0527","video":""},{"gid":"16839","date":"2023-12-03","home":"Nelson","away":"Ace","homeColor":"#F3C323","awayColor":"#CA0527","video":""},{"gid":"16838","date":"2023-12-03","home":"Amos","away":"Triple J","homeColor":"#641C28","awayColor":"#4EB9E5","video":""},{"gid":"16837","date":"2023-12-03","home":"Orphans","away":"OS Offices","homeColor":"#000000","awayColor":"#2C8A5E","video":""},{"gid":"16836","date":"2023-12-03","home":"HollowBrook","away":"Platinum","homeColor":"#4D2640","awayColor":"#919294","video":""},{"gid":"16834","date":"2023-11-26","home":"Amos","away":"Ace","homeColor":"#641C28","awayColor":"#CA0527","video":""},{"gid":"16833","date":"2023-11-19","home":"Orphans","away":"Triple J","homeColor":"#000000","awayColor":"#4EB9E5","video":""},{"gid":"16832","date":"2023-11-19","home":"OS Offices","away":"Platinum","homeColor":"#2C8A5E","awayColor":"#919294","video":""},{"gid":"16831","date":"2023-11-12","home":"Platinum","away":"Orphans","homeColor":"#919294","awayColor":"#000000","video":""},{"gid":"16830","date":"2023-12-31","home":"Ace","away":"Triple J","homeColor":"#CA0527","awayColor":"#4EB9E5","video":""},{"gid":"16829","date":"2023-12-24","home":"OS Offices","away":"HollowBrook","homeColor":"#2C8A5E","awayColor":"#4D2640","video":""},{"gid":"16828","date":"2023-12-17","home":"Amos","away":"Nelson","homeColor":"#641C28","awayColor":"#F3C323","video":""},{"gid":"16827","date":"2023-12-10","home":"Platinum","away":"Amos","homeColor":"#919294","awayColor":"#641C28","video":""},{"gid":"16826","date":"2023-12-03","home":"Nelson","away":"Orphans","homeColor":"#F3C323","awayColor":"#000000","video":""},{"gid":"16824","date":"2023-11-26","home":"Ace","away":"OS Offices","homeColor":"#CA0527","awayColor":"#2C8A5E","video":""},{"gid":"16823","date":"2023-11-19","home":"Ace","away":"HollowBrook","homeColor":"#CA0527","awayColor":"#4D2640","video":""},{"gid":"16822","date":"2023-11-12","home":"Platinum","away":"Nelson","homeColor":"#919294","awayColor":"#F3C323","video":""},{"gid":"16821","date":"2023-11-05","home":"Amos","away":"Orphans","homeColor":"#641C28","awayColor":"#000000","video":""},{"gid":"16820","date":"2023-10-29","home":"Triple J","away":"OS Offices","homeColor":"#4EB9E5","awayColor":"#2C8A5E","video":""},{"gid":"16819","date":"2023-11-05","home":"HollowBrook","away":"Amos","homeColor":"#4D2640","awayColor":"#641C28","video":""},{"gid":"16818","date":"2023-10-29","home":"Ace","away":"Orphans","homeColor":"#CA0527","awayColor":"#000000","video":""},{"gid":"16817","date":"2023-10-22","home":"Triple J","away":"Platinum","homeColor":"#4EB9E5","awayColor":"#919294","video":""},{"gid":"16816","date":"2023-11-05","home":"OS Offices","away":"Nelson","homeColor":"#2C8A5E","awayColor":"#F3C323","video":""},{"gid":"16815","date":"2023-10-29","home":"OS Offices","away":"Amos","homeColor":"#2C8A5E","awayColor":"#641C28","video":""},{"gid":"16813","date":"2023-10-22","home":"Ace","away":"Platinum","homeColor":"#CA0527","awayColor":"#919294","video":""},{"gid":"16812","date":"2023-10-15","home":"Nelson","away":"Triple J","homeColor":"#F3C323","awayColor":"#4EB9E5","video":""},{"gid":"16811","date":"2023-10-08","home":"Triple J","away":"Platinum","homeColor":"#4EB9E5","awayColor":"#919294","video":""},{"gid":"16810","date":"2023-10-15","home":"Orphans","away":"OS Offices","homeColor":"#000000","awayColor":"#2C8A5E","video":""},{"gid":"16809","date":"2023-10-08","home":"Amos","away":"HollowBrook","homeColor":"#641C28","awayColor":"#4D2640","video":""},{"gid":"16807","date":"2023-10-08","home":"Ace","away":"Amos","homeColor":"#CA0527","awayColor":"#641C28","video":""},{"gid":"16806","date":"2023-10-01","home":"Orphans","away":"Triple J","homeColor":"#000000","awayColor":"#4EB9E5","video":""},{"gid":"16805","date":"2023-10-08","home":"OS Offices","away":"Platinum","homeColor":"#2C8A5E","awayColor":"#919294","video":""},{"gid":"16804","date":"2023-10-01","home":"HollowBrook","away":"Nelson","homeColor":"#4D2640","awayColor":"#F3C323","video":""},{"gid":"16803","date":"2023-09-24","home":"OS Offices","away":"Triple J","homeColor":"#2C8A5E","awayColor":"#4EB9E5","video":""},{"gid":"16802","date":"2023-10-08","home":"HollowBrook","away":"Ace","homeColor":"#4D2640","awayColor":"#CA0527","video":""},{"gid":"16801","date":"2023-10-01","home":"Amos","away":"Nelson","homeColor":"#641C28","awayColor":"#F3C323","video":""},{"gid":"16800","date":"2023-09-24","home":"Platinum","away":"Orphans","homeColor":"#919294","awayColor":"#000000","video":""},{"gid":"16799","date":"2023-10-01","home":"Nelson","away":"Orphans","homeColor":"#F3C323","awayColor":"#000000","video":""},{"gid":"16798","date":"2023-09-24","home":"HollowBrook","away":"Triple J","homeColor":"#4D2640","awayColor":"#4EB9E5","video":""},{"gid":"16797","date":"2023-09-17","home":"OS Offices","away":"Ace","homeColor":"#2C8A5E","awayColor":"#CA0527","video":""},{"gid":"16796","date":"2023-10-01","home":"Platinum","away":"Amos","homeColor":"#919294","awayColor":"#641C28","video":""},{"gid":"16795","date":"2023-09-24","home":"Platinum","away":"Nelson","homeColor":"#919294","awayColor":"#F3C323","video":""},{"gid":"16794","date":"2023-09-17","home":"Amos","away":"Orphans","homeColor":"#641C28","awayColor":"#000000","video":""},{"gid":"16793","date":"2023-09-10","home":"Triple J","away":"Ace","homeColor":"#4EB9E5","awayColor":"#CA0527","video":""},{"gid":"16791","date":"2023-09-03","home":"Orphans","away":"Ace","homeColor":"#000000","awayColor":"#CA0527","video":""},{"gid":"16790","date":"2023-09-03","home":"Triple J","away":"Platinum","homeColor":"#4EB9E5","awayColor":"#919294","video":""},{"gid":"16789","date":"2023-09-10","home":"OS Offices","away":"Nelson","homeColor":"#2C8A5E","awayColor":"#F3C323","video":""},{"gid":"16788","date":"2023-09-03","home":"HollowBrook","away":"Amos","homeColor":"#4D2640","awayColor":"#641C28","video":""},{"gid":"16787","date":"2023-08-27","home":"HollowBrook","away":"Orphans","homeColor":"#4D2640","awayColor":"#000000","video":""},{"gid":"16786","date":"2023-08-27","home":"Ace","away":"Platinum","homeColor":"#CA0527","awayColor":"#919294","video":""},{"gid":"16785","date":"2023-09-03","home":"Nelson","away":"Triple J","homeColor":"#F3C323","awayColor":"#4EB9E5","video":""},{"gid":"16784","date":"2023-08-27","home":"Amos","away":"OS Offices","homeColor":"#641C28","awayColor":"#2C8A5E","video":""},{"gid":"16783","date":"2023-08-20","home":"Amos","away":"Triple J","homeColor":"#641C28","awayColor":"#4EB9E5","video":""},{"gid":"16782","date":"2023-08-27","home":"Orphans","away":"OS Offices","homeColor":"#000000","awayColor":"#2C8A5E","video":""},{"gid":"16781","date":"2023-08-20","home":"HollowBrook","away":"Ace","homeColor":"#4D2640","awayColor":"#CA0527","video":""},{"gid":"16780","date":"2023-08-20","home":"Platinum","away":"Nelson","homeColor":"#919294","awayColor":"#F3C323","video":""},{"gid":"16779","date":"2023-08-13","home":"HollowBrook","away":"Nelson","homeColor":"#4D2640","awayColor":"#F3C323","video":""},{"gid":"16778","date":"2023-08-13","home":"OS Offices","away":"Triple J","homeColor":"#2C8A5E","awayColor":"#4EB9E5","video":""},{"gid":"16777","date":"2023-08-13","home":"Orphans","away":"Platinum","homeColor":"#000000","awayColor":"#919294","video":""},{"gid":"16776","date":"2023-08-13","home":"Ace","away":"Amos","homeColor":"#CA0527","awayColor":"#641C28","video":""},{"gid":"15169","date":"2023-04-16","home":"Platinum","away":"HollowBrook","homeColor":"#919294","awayColor":"#4D2640","video":""},{"gid":"15168","date":"2023-04-09","home":"Amos","away":"Nelson","homeColor":"#641C28","awayColor":"#F3C323","video":""},{"gid":"15167","date":"2023-04-02","home":"Canada","away":"Triple J","homeColor":"#B21A18","awayColor":"#4EB9E5","video":""},{"gid":"15166","date":"2023-03-26","home":"Triple J","away":"Orphans","homeColor":"#4EB9E5","awayColor":"#000000","video":""},{"gid":"15165","date":"2023-03-26","home":"Platinum","away":"OS Offices","homeColor":"#919294","awayColor":"#2C8A5E","video":""},{"gid":"15164","date":"2023-03-26","home":"HollowBrook","away":"Nelson","homeColor":"#4D2640","awayColor":"#F3C323","video":""},{"gid":"15163","date":"2023-04-16","home":"Amos","away":"Canada","homeColor":"#641C28","awayColor":"#B21A18","video":""},{"gid":"15162","date":"2023-04-09","home":"Triple J","away":"Amos","homeColor":"#4EB9E5","awayColor":"#641C28","video":""},{"gid":"15161","date":"2023-04-02","home":"Canada","away":"Nelson","homeColor":"#B21A18","awayColor":"#F3C323","video":""},{"gid":"15160","date":"2023-03-26","home":"Orphans","away":"Platinum","homeColor":"#000000","awayColor":"#919294","video":""},{"gid":"15159","date":"2023-03-19","home":"HollowBrook","away":"OS Offices","homeColor":"#4D2640","awayColor":"#2C8A5E","video":""},{"gid":"15158","date":"2023-03-12","home":"HollowBrook","away":"Triple J","homeColor":"#4D2640","awayColor":"#4EB9E5","video":""},{"gid":"15157","date":"2023-03-19","home":"OS Offices","away":"Amos","homeColor":"#2C8A5E","awayColor":"#641C28","video":""},{"gid":"15156","date":"2023-03-12","home":"Canada","away":"Platinum","homeColor":"#B21A18","awayColor":"#919294","video":""},{"gid":"15155","date":"2023-03-12","home":"Orphans","away":"Nelson","homeColor":"#000000","awayColor":"#F3C323","video":""},{"gid":"15154","date":"2023-03-05","home":"Orphans","away":"Canada","homeColor":"#000000","awayColor":"#B21A18","video":""},{"gid":"15153","date":"2023-03-05","home":"OS Offices","away":"Triple J","homeColor":"#2C8A5E","awayColor":"#4EB9E5","video":""},{"gid":"15152","date":"2023-03-12","home":"HollowBrook","away":"Amos","homeColor":"#4D2640","awayColor":"#641C28","video":""},{"gid":"15151","date":"2023-03-05","home":"Nelson","away":"Platinum","homeColor":"#F3C323","awayColor":"#919294","video":""},{"gid":"15150","date":"2023-02-26","home":"Platinum","away":"Triple J","homeColor":"#919294","awayColor":"#4EB9E5","video":""},{"gid":"15149","date":"2023-03-12","home":"OS Offices","away":"Nelson","homeColor":"#2C8A5E","awayColor":"#F3C323","video":""},{"gid":"15148","date":"2023-03-05","home":"Canada","away":"HollowBrook","homeColor":"#B21A18","awayColor":"#4D2640","video":""},{"gid":"15147","date":"2023-02-26","home":"Orphans","away":"Amos","homeColor":"#000000","awayColor":"#641C28","video":""},{"gid":"15146","date":"2023-02-19","home":"Amos","away":"Platinum","homeColor":"#641C28","awayColor":"#919294","video":""},{"gid":"15145","date":"2023-02-19","home":"Triple J","away":"Nelson","homeColor":"#4EB9E5","awayColor":"#F3C323","video":""},{"gid":"15144","date":"2023-02-19","home":"OS Offices","away":"Canada","homeColor":"#2C8A5E","awayColor":"#B21A18","video":""},{"gid":"15143","date":"2023-02-19","home":"HollowBrook","away":"Orphans","homeColor":"#4D2640","awayColor":"#000000","video":""},{"gid":"15142","date":"2023-02-26","home":"Platinum","away":"HollowBrook","homeColor":"#919294","awayColor":"#4D2640","video":""},{"gid":"15141","date":"2023-02-19","home":"Nelson","away":"Amos","homeColor":"#F3C323","awayColor":"#641C28","video":""},{"gid":"15140","date":"2023-02-12","home":"Canada","away":"Triple J","homeColor":"#B21A18","awayColor":"#4EB9E5","video":""},{"gid":"15139","date":"2023-02-05","home":"OS Offices","away":"Orphans","homeColor":"#2C8A5E","awayColor":"#000000","video":""},{"gid":"15138","date":"2023-02-19","home":"Platinum","away":"OS Offices","homeColor":"#919294","awayColor":"#2C8A5E","video":""},{"gid":"15137","date":"2023-02-12","home":"HollowBrook","away":"Nelson","homeColor":"#4D2640","awayColor":"#F3C323","video":""},{"gid":"15136","date":"2023-02-05","home":"Canada","away":"Amos","homeColor":"#B21A18","awayColor":"#641C28","video":""},{"gid":"15135","date":"2023-01-29","home":"Triple J","away":"Orphans","homeColor":"#4EB9E5","awayColor":"#000000","video":""},{"gid":"15134","date":"2023-01-22","home":"Nelson","away":"Canada","homeColor":"#F3C323","awayColor":"#B21A18","video":""},{"gid":"15133","date":"2023-01-22","home":"Orphans","away":"Platinum","homeColor":"#000000","awayColor":"#919294","video":""},{"gid":"15132","date":"2023-01-22","home":"HollowBrook","away":"OS Offices","homeColor":"#4D2640","awayColor":"#2C8A5E","video":""},{"gid":"15131","date":"2023-01-22","home":"Amos","away":"Triple J","homeColor":"#641C28","awayColor":"#4EB9E5","video":""},{"gid":"15126","date":"2023-01-08","home":"OS Offices","away":"Triple J","homeColor":"#2C8A5E","awayColor":"#4EB9E5","video":""},{"gid":"15125","date":"2023-01-08","home":"Amos","away":"HollowBrook","homeColor":"#641C28","awayColor":"#4D2640","video":""},{"gid":"15124","date":"2023-01-08","home":"Nelson","away":"Platinum","homeColor":"#F3C323","awayColor":"#919294","video":""},{"gid":"15123","date":"2023-01-08","home":"Orphans","away":"Canada","homeColor":"#000000","awayColor":"#B21A18","video":""},{"gid":"15122","date":"2023-01-08","home":"Nelson","away":"OS Offices","homeColor":"#F3C323","awayColor":"#2C8A5E","video":""},{"gid":"15121","date":"2023-01-01","home":"Canada","away":"HollowBrook","homeColor":"#B21A18","awayColor":"#4D2640","video":""},{"gid":"15120","date":"2022-12-25","home":"Amos","away":"Orphans","homeColor":"#641C28","awayColor":"#000000","video":""},{"gid":"15119","date":"2022-12-18","home":"Platinum","away":"Triple J","homeColor":"#919294","awayColor":"#4EB9E5","video":""},{"gid":"15118","date":"2022-12-11","home":"Triple J","away":"Nelson","homeColor":"#4EB9E5","awayColor":"#F3C323","video":""},{"gid":"15117","date":"2022-12-25","home":"OS Offices","away":"Canada","homeColor":"#2C8A5E","awayColor":"#B21A18","video":""},{"gid":"15116","date":"2022-12-18","home":"HollowBrook","away":"Orphans","homeColor":"#4D2640","awayColor":"#000000","video":""},{"gid":"15115","date":"2022-12-11","home":"Amos","away":"Platinum","homeColor":"#641C28","awayColor":"#919294","video":""},{"gid":"15114","date":"2022-12-04","home":"Amos","away":"Nelson","homeColor":"#641C28","awayColor":"#F3C323","video":""},{"gid":"15113","date":"2022-12-04","home":"Triple J","away":"Canada","homeColor":"#4EB9E5","awayColor":"#B21A18","video":""},{"gid":"15112","date":"2022-12-04","home":"OS Offices","away":"Orphans","homeColor":"#2C8A5E","awayColor":"#000000","video":""},{"gid":"15111","date":"2022-12-04","home":"Platinum","away":"HollowBrook","homeColor":"#919294","awayColor":"#4D2640","video":""},{"gid":"15110","date":"2022-12-04","home":"HollowBrook","away":"Nelson","homeColor":"#4D2640","awayColor":"#F3C323","video":""},{"gid":"15109","date":"2022-11-27","home":"Amos","away":"Canada","homeColor":"#641C28","awayColor":"#B21A18","video":""},{"gid":"15108","date":"2022-11-20","home":"Triple J","away":"Orphans","homeColor":"#4EB9E5","awayColor":"#000000","video":""},{"gid":"15107","date":"2022-11-20","home":"Platinum","away":"OS Offices","homeColor":"#919294","awayColor":"#2C8A5E","video":""},{"gid":"15106","date":"2022-12-04","home":"Orphans","away":"Platinum","homeColor":"#000000","awayColor":"#919294","video":""},{"gid":"15105","date":"2022-11-27","home":"HollowBrook","away":"OS Offices","homeColor":"#4D2640","awayColor":"#2C8A5E","video":""},{"gid":"15104","date":"2022-11-20","home":"Triple J","away":"Amos","homeColor":"#4EB9E5","awayColor":"#641C28","video":""},{"gid":"15103","date":"2022-11-13","home":"Nelson","away":"Canada","homeColor":"#F3C323","awayColor":"#B21A18","video":""},{"gid":"15102","date":"2022-11-06","home":"Canada","away":"Platinum","homeColor":"#B21A18","awayColor":"#919294","video":""},{"gid":"15101","date":"2022-11-13","home":"Orphans","away":"Nelson","homeColor":"#000000","awayColor":"#F3C323","video":""},{"gid":"15100","date":"2022-11-06","home":"HollowBrook","away":"Triple J","homeColor":"#4D2640","awayColor":"#4EB9E5","video":""},{"gid":"15099","date":"2022-11-20","home":"OS Offices","away":"Amos","homeColor":"#2C8A5E","awayColor":"#641C28","video":""},{"gid":"15098","date":"2022-11-13","home":"HollowBrook","away":"Amos","homeColor":"#4D2640","awayColor":"#641C28","video":""},{"gid":"15097","date":"2022-11-06","home":"Nelson","away":"Platinum","homeColor":"#F3C323","awayColor":"#919294","video":""},{"gid":"15096","date":"2022-10-30","home":"Orphans","away":"Canada","homeColor":"#000000","awayColor":"#B21A18","video":""},{"gid":"15095","date":"2022-10-30","home":"OS Offices","away":"Triple J","homeColor":"#2C8A5E","awayColor":"#4EB9E5","video":""},{"gid":"15094","date":"2022-11-06","home":"Canada","away":"HollowBrook","homeColor":"#B21A18","awayColor":"#4D2640","video":""},{"gid":"15093","date":"2022-10-30","home":"Orphans","away":"Amos","homeColor":"#000000","awayColor":"#641C28","video":""},{"gid":"15092","date":"2022-10-23","home":"Platinum","away":"Triple J","homeColor":"#919294","awayColor":"#4EB9E5","video":""},{"gid":"15091","date":"2022-11-13","home":"Nelson","away":"OS Offices","homeColor":"#F3C323","awayColor":"#2C8A5E","video":""},{"gid":"15090","date":"2022-11-06","home":"Canada","away":"OS Offices","homeColor":"#B21A18","awayColor":"#2C8A5E","video":""},{"gid":"15089","date":"2022-10-30","home":"HollowBrook","away":"Orphans","homeColor":"#4D2640","awayColor":"#000000","video":""},{"gid":"15088","date":"2022-10-23","home":"Platinum","away":"Amos","homeColor":"#919294","awayColor":"#641C28","video":""},{"gid":"15087","date":"2022-10-16","home":"Triple J","away":"Nelson","homeColor":"#4EB9E5","awayColor":"#F3C323","video":""},{"gid":"15086","date":"2022-10-09","home":"Triple J","away":"Canada","homeColor":"#4EB9E5","awayColor":"#B21A18","video":""},{"gid":"15085","date":"2022-10-30","home":"OS Offices","away":"Orphans","homeColor":"#2C8A5E","awayColor":"#000000","video":""},{"gid":"15084","date":"2022-10-23","home":"Platinum","away":"HollowBrook","homeColor":"#919294","awayColor":"#4D2640","video":""},{"gid":"15083","date":"2022-10-16","home":"Nelson","away":"Amos","homeColor":"#F3C323","awayColor":"#641C28","video":""},{"gid":"15082","date":"2022-10-09","home":"Canada","away":"Amos","homeColor":"#B21A18","awayColor":"#641C28","video":""},{"gid":"15081","date":"2022-10-02","home":"Triple J","away":"Orphans","homeColor":"#4EB9E5","awayColor":"#000000","video":""},{"gid":"15080","date":"2022-10-02","home":"Platinum","away":"OS Offices","homeColor":"#919294","awayColor":"#2C8A5E","video":""},{"gid":"15079","date":"2022-10-23","home":"Nelson","away":"HollowBrook","homeColor":"#F3C323","awayColor":"#4D2640","video":""},{"gid":"15078","date":"2022-10-16","home":"HollowBrook","away":"OS Offices","homeColor":"#4D2640","awayColor":"#2C8A5E","video":""},{"gid":"15077","date":"2022-10-09","home":"Amos","away":"Triple J","homeColor":"#641C28","awayColor":"#4EB9E5","video":""},{"gid":"15076","date":"2022-10-02","home":"Nelson","away":"Canada","homeColor":"#F3C323","awayColor":"#B21A18","video":""},{"gid":"15075","date":"2022-09-25","home":"Orphans","away":"Platinum","homeColor":"#000000","awayColor":"#919294","video":""},{"gid":"15074","date":"2022-09-25","home":"Orphans","away":"Nelson","homeColor":"#000000","awayColor":"#F3C323","video":""},{"gid":"15073","date":"2022-09-18","home":"Triple J","away":"HollowBrook","homeColor":"#4EB9E5","awayColor":"#4D2640","video":""},{"gid":"15072","date":"2022-10-02","home":"Amos","away":"OS Offices","homeColor":"#641C28","awayColor":"#2C8A5E","video":""},{"gid":"15071","date":"2022-09-25","home":"Canada","away":"Platinum","homeColor":"#B21A18","awayColor":"#919294","video":""},{"gid":"15070","date":"2022-09-18","home":"Nelson","away":"Platinum","homeColor":"#F3C323","awayColor":"#919294","video":""},{"gid":"15069","date":"2022-09-11","home":"Orphans","away":"Canada","homeColor":"#000000","awayColor":"#B21A18","video":""},{"gid":"15068","date":"2022-09-11","home":"OS Offices","away":"Triple J","homeColor":"#2C8A5E","awayColor":"#4EB9E5","video":""},{"gid":"15067","date":"2022-09-18","home":"Amos","away":"HollowBrook","homeColor":"#641C28","awayColor":"#4D2640","video":""},{"gid":"15066","date":"2022-09-11","home":"Amos","away":"Orphans","homeColor":"#641C28","awayColor":"#000000","video":""},{"gid":"15065","date":"2022-09-04","home":"Platinum","away":"Triple J","homeColor":"#919294","awayColor":"#4EB9E5","video":""},{"gid":"15064","date":"2022-09-25","home":"Nelson","away":"OS Offices","homeColor":"#F3C323","awayColor":"#2C8A5E","video":""},{"gid":"15063","date":"2022-09-18","home":"Canada","away":"HollowBrook","homeColor":"#B21A18","awayColor":"#4D2640","video":""},{"gid":"15062","date":"2022-09-11","home":"Orphans","away":"HollowBrook","homeColor":"#000000","awayColor":"#4D2640","video":""},{"gid":"15061","date":"2022-09-04","home":"Amos","away":"Platinum","homeColor":"#641C28","awayColor":"#919294","video":""},{"gid":"15060","date":"2022-08-28","home":"Triple J","away":"Nelson","homeColor":"#4EB9E5","awayColor":"#F3C323","video":""},{"gid":"15059","date":"2022-08-28","home":"OS Offices","away":"Canada","homeColor":"#2C8A5E","awayColor":"#B21A18","video":""},{"gid":"14169","date":"2022-08-21","home":"Triple J","away":"Canada","homeColor":"#4EB9E5","awayColor":"#B21A18","video":""},{"gid":"14168","date":"2022-09-04","home":"OS Offices","away":"Orphans","homeColor":"#2C8A5E","awayColor":"#000000","video":""},{"gid":"14167","date":"2022-08-28","home":"Platinum","away":"HollowBrook","homeColor":"#919294","awayColor":"#4D2640","video":""},{"gid":"14166","date":"2022-08-21","home":"Nelson","away":"Amos","homeColor":"#F3C323","awayColor":"#641C28","video":""},{"gid":"14165","date":"2022-08-14","home":"Triple J","away":"Orphans","homeColor":"#4EB9E5","awayColor":"#000000","video":""},{"gid":"14164","date":"2022-08-14","home":"Platinum","away":"OS Offices","homeColor":"#919294","awayColor":"#2C8A5E","video":""},{"gid":"14163","date":"2022-08-14","home":"Nelson","away":"HollowBrook","homeColor":"#F3C323","awayColor":"#4D2640","video":""},{"gid":"14162","date":"2022-08-14","home":"Canada","away":"Amos","homeColor":"#B21A18","awayColor":"#641C28","video":""},{"gid":"13498","date":"2022-03-13","home":"OS Offices","away":"HollowBrook","homeColor":"#2C8A5E","awayColor":"#4D2640","video":""},{"gid":"13497","date":"2022-03-06","home":"Triple J","away":"Platinum","homeColor":"#4EB9E5","awayColor":"#919294","video":""},{"gid":"13496","date":"2022-03-06","home":"Canada","away":"Orphans","homeColor":"#B21A18","awayColor":"#000000","video":""},{"gid":"13495","date":"2022-03-20","home":"Nelson","away":"Amos","homeColor":"#F3C323","awayColor":"#641C28","video":""},{"gid":"13494","date":"2022-03-13","home":"Amos","away":"Platinum","homeColor":"#641C28","awayColor":"#919294","video":""},{"gid":"13493","date":"2022-03-06","home":"Nelson","away":"HollowBrook","homeColor":"#F3C323","awayColor":"#4D2640","video":""},{"gid":"13492","date":"2022-02-27","home":"Canada","away":"Triple J","homeColor":"#B21A18","awayColor":"#4EB9E5","video":""},{"gid":"13491","date":"2022-02-27","home":"Orphans","away":"OS Offices","homeColor":"#000000","awayColor":"#2C8A5E","video":""},{"gid":"13490","date":"2022-02-20","home":"Orphans","away":"OS Offices","homeColor":"#000000","awayColor":"#2C8A5E","video":""},{"gid":"13489","date":"2022-03-06","home":"Amos","away":"Canada","homeColor":"#641C28","awayColor":"#B21A18","video":""},{"gid":"13488","date":"2022-02-27","home":"Triple J","away":"HollowBrook","homeColor":"#4EB9E5","awayColor":"#4D2640","video":""},{"gid":"13487","date":"2022-02-20","home":"Platinum","away":"Nelson","homeColor":"#919294","awayColor":"#F3C323","video":""},{"gid":"13486","date":"2022-02-13","home":"Triple J","away":"Orphans","homeColor":"#4EB9E5","awayColor":"#000000","video":""},{"gid":"13485","date":"2022-03-06","home":"HollowBrook","away":"Platinum","homeColor":"#4D2640","awayColor":"#919294","video":""},{"gid":"13484","date":"2022-02-27","home":"OS Offices","away":"Amos","homeColor":"#2C8A5E","awayColor":"#641C28","video":""},{"gid":"13482","date":"2022-02-20","home":"Canada","away":"HollowBrook","homeColor":"#B21A18","awayColor":"#4D2640","video":""},{"gid":"13481","date":"2022-02-13","home":"Orphans","away":"Amos","homeColor":"#000000","awayColor":"#641C28","video":""},{"gid":"13480","date":"2022-02-06","home":"Platinum","away":"OS Offices","homeColor":"#919294","awayColor":"#2C8A5E","video":""},{"gid":"13479","date":"2022-02-06","home":"Nelson","away":"Triple J","homeColor":"#F3C323","awayColor":"#4EB9E5","video":""},{"gid":"13478","date":"2022-02-06","home":"OS Offices","away":"HollowBrook","homeColor":"#2C8A5E","awayColor":"#4D2640","video":""},{"gid":"13477","date":"2022-01-30","home":"Triple J","away":"Platinum","homeColor":"#4EB9E5","awayColor":"#919294","video":""},{"gid":"13476","date":"2022-01-30","home":"Orphans","away":"Canada","homeColor":"#000000","awayColor":"#B21A18","video":""},{"gid":"13475","date":"2022-01-30","home":"Amos","away":"Nelson","homeColor":"#641C28","awayColor":"#F3C323","video":""},{"gid":"13474","date":"2022-01-23","home":"Canada","away":"OS Offices","homeColor":"#B21A18","awayColor":"#2C8A5E","video":""},{"gid":"13473","date":"2022-01-23","home":"Triple J","away":"HollowBrook","homeColor":"#4EB9E5","awayColor":"#4D2640","video":""},{"gid":"13472","date":"2022-01-23","home":"Amos","away":"Platinum","homeColor":"#641C28","awayColor":"#919294","video":""},{"gid":"13471","date":"2022-01-23","home":"Orphans","away":"Nelson","homeColor":"#000000","awayColor":"#F3C323","video":""},{"gid":"13466","date":"2022-01-09","home":"Nelson","away":"Platinum","homeColor":"#F3C323","awayColor":"#919294","video":""},{"gid":"13465","date":"2022-01-09","home":"Amos","away":"OS Offices","homeColor":"#641C28","awayColor":"#2C8A5E","video":""},{"gid":"13464","date":"2022-01-09","home":"Orphans","away":"HollowBrook","homeColor":"#000000","awayColor":"#4D2640","video":""},{"gid":"13463","date":"2022-01-09","home":"Canada","away":"Triple J","homeColor":"#B21A18","awayColor":"#4EB9E5","video":""},{"gid":"13462","date":"2021-12-19","home":"Canada","away":"Platinum","homeColor":"#B21A18","awayColor":"#919294","video":""},{"gid":"13461","date":"2021-12-19","home":"OS Offices","away":"Orphans","homeColor":"#2C8A5E","awayColor":"#000000","video":""},{"gid":"13460","date":"2022-01-02","home":"HollowBrook","away":"Nelson","homeColor":"#4D2640","awayColor":"#F3C323","video":""},{"gid":"13459","date":"2021-12-26","home":"Triple J","away":"Amos","homeColor":"#4EB9E5","awayColor":"#641C28","video":""},{"gid":"13458","date":"2021-12-19","home":"Nelson","away":"OS Offices","homeColor":"#F3C323","awayColor":"#2C8A5E","video":""},{"gid":"13457","date":"2021-12-12","home":"Orphans","away":"Triple J","homeColor":"#000000","awayColor":"#4EB9E5","video":""},{"gid":"13456","date":"2021-12-12","home":"Amos","away":"Canada","homeColor":"#641C28","awayColor":"#B21A18","video":""},{"gid":"13455","date":"2021-12-19","home":"Platinum","away":"HollowBrook","homeColor":"#919294","awayColor":"#4D2640","video":""},{"gid":"13454","date":"2021-12-12","home":"Orphans","away":"Amos","homeColor":"#000000","awayColor":"#641C28","video":""},{"gid":"13453","date":"2021-12-05","home":"OS Offices","away":"Platinum","homeColor":"#2C8A5E","awayColor":"#919294","video":""},{"gid":"13452","date":"2021-12-05","home":"Nelson","away":"Triple J","homeColor":"#F3C323","awayColor":"#4EB9E5","video":""},{"gid":"13451","date":"2021-12-05","home":"Canada","away":"HollowBrook","homeColor":"#B21A18","awayColor":"#4D2640","video":""},{"gid":"13450","date":"2021-11-21","home":"Platinum","away":"Triple J","homeColor":"#919294","awayColor":"#4EB9E5","video":""},{"gid":"13449","date":"2021-11-21","home":"Orphans","away":"Canada","homeColor":"#000000","awayColor":"#B21A18","video":""},{"gid":"13448","date":"2021-11-28","home":"HollowBrook","away":"OS Offices","homeColor":"#4D2640","awayColor":"#2C8A5E","video":""},{"gid":"13447","date":"2021-11-21","home":"Amos","away":"Nelson","homeColor":"#641C28","awayColor":"#F3C323","video":""},{"gid":"13446","date":"2021-11-14","home":"HollowBrook","away":"Triple J","homeColor":"#4D2640","awayColor":"#4EB9E5","video":""},{"gid":"13445","date":"2021-12-05","home":"Platinum","away":"Amos","homeColor":"#919294","awayColor":"#641C28","video":""},{"gid":"13444","date":"2021-11-28","home":"Nelson","away":"Orphans","homeColor":"#F3C323","awayColor":"#000000","video":""},{"gid":"13443","date":"2021-11-21","home":"OS Offices","away":"Canada","homeColor":"#2C8A5E","awayColor":"#B21A18","video":""},{"gid":"13442","date":"2021-11-14","home":"Canada","away":"Nelson","homeColor":"#B21A18","awayColor":"#F3C323","video":""},{"gid":"13441","date":"2021-11-07","home":"Orphans","away":"Platinum","homeColor":"#000000","awayColor":"#919294","video":""},{"gid":"13440","date":"2021-11-07","home":"Triple J","away":"OS Offices","homeColor":"#4EB9E5","awayColor":"#2C8A5E","video":""},{"gid":"13439","date":"2021-11-07","home":"Amos","away":"HollowBrook","homeColor":"#641C28","awayColor":"#4D2640","video":""},{"gid":"13438","date":"2021-10-31","home":"Platinum","away":"Nelson","homeColor":"#919294","awayColor":"#F3C323","video":""},{"gid":"13437","date":"2021-10-31","home":"Triple J","away":"Canada","homeColor":"#4EB9E5","awayColor":"#B21A18","video":""},{"gid":"13436","date":"2021-11-21","home":"OS Offices","away":"Amos","homeColor":"#2C8A5E","awayColor":"#641C28","video":""},{"gid":"13435","date":"2021-11-14","home":"HollowBrook","away":"Orphans","homeColor":"#4D2640","awayColor":"#000000","video":""},{"gid":"13434","date":"2021-11-07","home":"Amos","away":"Triple J","homeColor":"#641C28","awayColor":"#4EB9E5","video":""},{"gid":"13433","date":"2021-10-31","home":"Nelson","away":"HollowBrook","homeColor":"#F3C323","awayColor":"#4D2640","video":""},{"gid":"13432","date":"2021-10-24","home":"Platinum","away":"Canada","homeColor":"#919294","awayColor":"#B21A18","video":""},{"gid":"13431","date":"2021-10-24","home":"Orphans","away":"OS Offices","homeColor":"#000000","awayColor":"#2C8A5E","video":""},{"gid":"13430","date":"2021-10-24","home":"OS Offices","away":"Nelson","homeColor":"#2C8A5E","awayColor":"#F3C323","video":""},{"gid":"13428","date":"2021-10-17","home":"Triple J","away":"Orphans","homeColor":"#4EB9E5","awayColor":"#000000","video":""},{"gid":"13427","date":"2021-10-24","home":"HollowBrook","away":"Platinum","homeColor":"#4D2640","awayColor":"#919294","video":""},{"gid":"13426","date":"2021-10-17","home":"Amos","away":"Orphans","homeColor":"#641C28","awayColor":"#000000","video":""},{"gid":"13425","date":"2021-10-10","home":"Nelson","away":"Triple J","homeColor":"#F3C323","awayColor":"#4EB9E5","video":""},{"gid":"13424","date":"2021-10-17","home":"HollowBrook","away":"Canada","homeColor":"#4D2640","awayColor":"#B21A18","video":""},{"gid":"13423","date":"2021-10-10","home":"Platinum","away":"OS Offices","homeColor":"#919294","awayColor":"#2C8A5E","video":""},{"gid":"13244","date":"2021-03-03","home":"Canada","away":"Orphans","homeColor":"#B21A18","awayColor":"#000000","video":""},{"gid":"13243","date":"2021-10-03","home":"OS Offices","away":"HollowBrook","homeColor":"#2C8A5E","awayColor":"#4D2640","video":""},{"gid":"13242","date":"2021-10-03","home":"Nelson","away":"Amos","homeColor":"#F3C323","awayColor":"#641C28","video":""},{"gid":"13241","date":"2021-10-02","home":"Triple J","away":"Platinum","homeColor":"#4EB9E5","awayColor":"#919294","video":""},{"gid":"10826","date":"2025-01-26","home":"Triple J","away":"OS Offices","homeColor":"#4EB9E5","awayColor":"#2C8A5E","video":""},{"gid":"10074","date":"2025-04-13","home":"Platinum","away":"HollowBrook","homeColor":"#919294","awayColor":"#4D2640","video":""},{"gid":"10073","date":"2025-04-13","home":"Nelson","away":"Triple J","homeColor":"#F3C323","awayColor":"#4EB9E5","video":""},{"gid":"10072","date":"2025-03-23","home":"Nelson","away":"Ace","homeColor":"#F3C323","awayColor":"#CA0527","video":""},{"gid":"10071","date":"2025-03-23","home":"OS Offices","away":"Outlaws","homeColor":"#2C8A5E","awayColor":"#02007B","video":""},{"gid":"10070","date":"2025-03-23","home":"Triple J","away":"Orphans","homeColor":"#4EB9E5","awayColor":"#000000","video":""},{"gid":"10069","date":"2025-03-30","home":"Platinum","away":"Ace","homeColor":"#919294","awayColor":"#CA0527","video":""},{"gid":"10068","date":"2025-03-30","home":"HollowBrook","away":"Outlaws","homeColor":"#4D2640","awayColor":"#02007B","video":""},{"gid":"10067","date":"2025-03-30","home":"Amos","away":"Orphans","homeColor":"#641C28","awayColor":"#000000","video":""},{"gid":"10066","date":"2025-04-06","home":"Platinum","away":"Nelson","homeColor":"#919294","awayColor":"#F3C323","video":""},{"gid":"10065","date":"2025-04-06","home":"HollowBrook","away":"OS Offices","homeColor":"#4D2640","awayColor":"#2C8A5E","video":""},{"gid":"10064","date":"2025-04-06","home":"Amos","away":"Triple J","homeColor":"#641C28","awayColor":"#4EB9E5","video":""},{"gid":"10063","date":"2025-04-27","home":"HollowBrook","away":"Triple J","homeColor":"#4D2640","awayColor":"#4EB9E5","video":""},{"gid":"10062","date":"2022-04-17","home":"Canada","away":"Orphans","homeColor":"#B21A18","awayColor":"#000000","video":""},{"gid":"10061","date":"2022-03-27","home":"Canada","away":"Orphans","homeColor":"#B21A18","awayColor":"#000000","video":""},{"gid":"10060","date":"2023-05-04","home":"Triple J","away":"Orphans","homeColor":"#4EB9E5","awayColor":"#000000","video":""},{"gid":"10059","date":"2023-05-02","home":"Triple J","away":"Platinum","homeColor":"#4EB9E5","awayColor":"#919294","video":""},{"gid":"10058","date":"2023-04-25","home":"Platinum","away":"Orphans","homeColor":"#919294","awayColor":"#000000","video":""},{"gid":"10057","date":"2023-04-16","home":"Canada","away":"Platinum","homeColor":"#B21A18","awayColor":"#919294","video":""},{"gid":"10056","date":"2022-05-01","home":"Triple J","away":"Platinum","homeColor":"#4EB9E5","awayColor":"#919294","video":""},{"gid":"10055","date":"2022-04-24","home":"Canada","away":"Platinum","homeColor":"#B21A18","awayColor":"#919294","video":""},{"gid":"10054","date":"2022-04-17","home":"Triple J","away":"Platinum","homeColor":"#4EB9E5","awayColor":"#919294","video":""},{"gid":"10053","date":"2022-03-20","home":"Platinum","away":"Canada","homeColor":"#919294","awayColor":"#B21A18","video":""},{"gid":"10052","date":"2024-05-02","home":"OS Offices","away":"Platinum","homeColor":"#2C8A5E","awayColor":"#919294","video":""},{"gid":"10051","date":"2024-04-28","home":"OS Offices","away":"Triple J","homeColor":"#2C8A5E","awayColor":"#4EB9E5","video":""},{"gid":"10050","date":"2023-04-23","home":"OS Offices","away":"Platinum","homeColor":"#2C8A5E","awayColor":"#919294","video":""},{"gid":"10049","date":"2022-04-10","home":"OS Offices","away":"Triple J","homeColor":"#2C8A5E","awayColor":"#4EB9E5","video":""},{"gid":"10048","date":"2022-04-03","home":"OS Offices","away":"Platinum","homeColor":"#2C8A5E","awayColor":"#919294","video":""},{"gid":"10047","date":"2022-03-27","home":"Triple J","away":"OS Offices","homeColor":"#4EB9E5","awayColor":"#2C8A5E","video":""},{"gid":"10046","date":"2024-05-05","home":"Nelson","away":"Triple J","homeColor":"#F3C323","awayColor":"#4EB9E5","video":""},{"gid":"10045","date":"2024-04-28","home":"Orphans","away":"Nelson","homeColor":"#000000","awayColor":"#F3C323","video":""},{"gid":"10044","date":"2023-04-30","home":"Triple J","away":"Nelson","homeColor":"#4EB9E5","awayColor":"#F3C323","video":""},{"gid":"10043","date":"2023-04-27","home":"Nelson","away":"OS Offices","homeColor":"#F3C323","awayColor":"#2C8A5E","video":""},{"gid":"10042","date":"2023-04-23","home":"Nelson","away":"Orphans","homeColor":"#F3C323","awayColor":"#000000","video":""},{"gid":"10041","date":"2023-04-16","home":"Orphans","away":"Nelson","homeColor":"#000000","awayColor":"#F3C323","video":""},{"gid":"10040","date":"2022-04-10","home":"Canada","away":"Nelson","homeColor":"#B21A18","awayColor":"#F3C323","video":""},{"gid":"10039","date":"2022-04-03","home":"Nelson","away":"Orphans","homeColor":"#F3C323","awayColor":"#000000","video":""},{"gid":"10038","date":"2022-03-27","home":"Nelson","away":"Platinum","homeColor":"#F3C323","awayColor":"#919294","video":""},{"gid":"10037","date":"2022-03-20","home":"OS Offices","away":"Nelson","homeColor":"#2C8A5E","awayColor":"#F3C323","video":""},{"gid":"10036","date":"2024-05-09","home":"HollowBrook","away":"OS Offices","homeColor":"#4D2640","awayColor":"#2C8A5E","video":""},{"gid":"10035","date":"2024-05-02","home":"Nelson","away":"HollowBrook","homeColor":"#F3C323","awayColor":"#4D2640","video":""},{"gid":"10034","date":"2024-01-07","home":"Orphans","away":"HollowBrook","homeColor":"#000000","awayColor":"#4D2640","video":""},{"gid":"10033","date":"2023-11-12","home":"Nelson","away":"HollowBrook","homeColor":"#F3C323","awayColor":"#4D2640","video":""},{"gid":"10032","date":"2023-11-05","home":"Triple J","away":"HollowBrook","homeColor":"#4EB9E5","awayColor":"#4D2640","video":""},{"gid":"10031","date":"2023-10-15","home":"Orphans","away":"HollowBrook","homeColor":"#000000","awayColor":"#4D2640","video":""},{"gid":"10030","date":"2023-09-10","home":"OS Offices","away":"HollowBrook","homeColor":"#2C8A5E","awayColor":"#4D2640","video":""},{"gid":"10029","date":"2023-05-07","home":"Triple J","away":"HollowBrook","homeColor":"#4EB9E5","awayColor":"#4D2640","video":""},{"gid":"10028","date":"2023-05-02","home":"HollowBrook","away":"Orphans","homeColor":"#4D2640","awayColor":"#000000","video":""},{"gid":"10027","date":"2023-04-25","home":"HollowBrook","away":"Triple J","homeColor":"#4D2640","awayColor":"#4EB9E5","video":""},{"gid":"10026","date":"2023-04-23","home":"Canada","away":"HollowBrook","homeColor":"#B21A18","awayColor":"#4D2640","video":""},{"gid":"10025","date":"2023-04-16","home":"HollowBrook","away":"Triple J","homeColor":"#4D2640","awayColor":"#4EB9E5","video":""},{"gid":"10024","date":"2022-04-24","home":"Triple J","away":"HollowBrook","homeColor":"#4EB9E5","awayColor":"#4D2640","video":""},{"gid":"10023","date":"2022-04-17","home":"Nelson","away":"HollowBrook","homeColor":"#F3C323","awayColor":"#4D2640","video":""},{"gid":"10022","date":"2022-04-10","home":"Orphans","away":"HollowBrook","homeColor":"#000000","awayColor":"#4D2640","video":""},{"gid":"10021","date":"2022-04-03","home":"Canada","away":"HollowBrook","homeColor":"#B21A18","awayColor":"#4D2640","video":""},{"gid":"10020","date":"2022-03-20","home":"HollowBrook","away":"Orphans","homeColor":"#4D2640","awayColor":"#000000","video":""},{"gid":"10019","date":"2024-05-12","home":"HollowBrook","away":"Amos","homeColor":"#4D2640","awayColor":"#641C28","video":""},{"gid":"10018","date":"2024-05-11","home":"OS Offices","away":"Amos","homeColor":"#2C8A5E","awayColor":"#641C28","video":""},{"gid":"10017","date":"2024-05-08","home":"Amos","away":"Nelson","homeColor":"#641C28","awayColor":"#F3C323","video":""},{"gid":"10016","date":"2024-05-05","home":"Platinum","away":"Amos","homeColor":"#919294","awayColor":"#641C28","video":""},{"gid":"10015","date":"2024-04-30","home":"Orphans","away":"Amos","homeColor":"#000000","awayColor":"#641C28","video":""},{"gid":"10014","date":"2024-04-28","home":"Amos","away":"HollowBrook","homeColor":"#641C28","awayColor":"#4D2640","video":""},{"gid":"10013","date":"2023-04-30","home":"Platinum","away":"Amos","homeColor":"#919294","awayColor":"#641C28","video":""},{"gid":"10012","date":"2023-04-27","home":"Canada","away":"Amos","homeColor":"#B21A18","awayColor":"#641C28","video":""},{"gid":"10011","date":"2023-04-23","home":"Triple J","away":"Amos","homeColor":"#4EB9E5","awayColor":"#641C28","video":""},{"gid":"10010","date":"2023-04-16","home":"Amos","away":"OS Offices","homeColor":"#641C28","awayColor":"#2C8A5E","video":""},{"gid":"10009","date":"2022-04-17","home":"OS Offices","away":"Amos","homeColor":"#2C8A5E","awayColor":"#641C28","video":""},{"gid":"10008","date":"2022-04-10","home":"Amos","away":"Platinum","homeColor":"#641C28","awayColor":"#919294","video":""},{"gid":"10007","date":"2022-04-03","home":"Triple J","away":"Amos","homeColor":"#4EB9E5","awayColor":"#641C28","video":""},{"gid":"10006","date":"2022-03-27","home":"Amos","away":"HollowBrook","homeColor":"#641C28","awayColor":"#4D2640","video":""},{"gid":"10005","date":"2022-03-20","home":"Amos","away":"Triple J","homeColor":"#641C28","awayColor":"#4EB9E5","video":""},{"gid":"10004","date":"2021-10-17","home":"Canada","away":"Amos","homeColor":"#B21A18","awayColor":"#641C28","video":""},{"gid":"10003","date":"2024-04-30","home":"Triple J","away":"Ace","homeColor":"#4EB9E5","awayColor":"#CA0527","video":""},{"gid":"10002","date":"2023-10-15","home":"Platinum","away":"Ace","homeColor":"#919294","awayColor":"#CA0527","video":""},{"gid":"10001","date":"2023-10-08","home":"Ace","away":"Nelson","homeColor":"#CA0527","awayColor":"#F3C323","video":""}];
+
+// ========== EVENT TYPE DEFINITIONS ==========
+const ED = {
+  Shot:{d1:['OnNet','Missed','Blocked','Goal'],d2:['Wrist','Slap','Snap','Backhand']},
+  Pass:{d1:['Complete','Incomplete','Intercepted'],d2:['Tape','Saucer','Bank']},
+  Goal:{d1:['Even','PP','SH'],d2:['Wrist','Slap','Tip','Rebound']},
+  Turnover:{d1:['Giveaway','Takeaway'],d2:['Pass','Poke','Lost']},
+  Faceoff:{d1:['Won','Lost'],d2:['Clean','Tie']},
+  Zone:{d1:['Entry','Exit','Clear'],d2:['Carry','Dump','Pass']},
+  Poss:{d1:['Retrieve','Recover','Loose'],d2:[]},
+  Save:{d1:['Blocker','Glove','Pad','Stick'],d2:['Rebound','Freeze','Cover']}
+};
+
+// ========== STATE ==========
+let S = {
+  gid: null,
+  team: 'home',
+  period: '1',
+  roster: {home: [], away: []},
+  slots: {home: {F1:'',F2:'',F3:'',D1:'',D2:'',G:''}, away: {F1:'',F2:'',F3:'',D1:'',D2:'',G:''}},
+  events: [],
+  shifts: [],
+  evtIdx: 0,
+  shiftIdx: 0,
+  currShift: null,
+  evtType: null,
+  selectedPlayers: [],
+  puckXY: null,
+  hGoals: 0,
+  aGoals: 0
+};
+
+// ========== HELPERS ==========
+function str(v) { return v == null ? '' : String(v).trim(); }
+
+// ========== INIT ==========
+function init() {
+  console.log('Tracker v19 loaded with', Object.keys(GAMES).length, 'games');
+  populateGameDropdown();
+  renderSlots();
+  
+  // Auto-select first game
+  const gameIds = Object.keys(GAMES).sort((a,b) => parseInt(b) - parseInt(a));
+  if (gameIds.length) {
+    document.getElementById('gameId').value = gameIds[0];
+    selectGame(gameIds[0]);
+  }
+  
+  setupKeyboard();
+  startAutoSave();
+}
+
+function populateGameDropdown() {
+  const sel = document.getElementById('gameId');
+  sel.innerHTML = '<option value="">-- Select Game --</option>';
+  
+  const sortedIds = Object.keys(GAMES).sort((a, b) => parseInt(b) - parseInt(a));
+  sortedIds.forEach(gid => {
+    const g = GAMES[gid];
+    const opt = document.createElement('option');
+    opt.value = gid;
+    opt.textContent = `${gid}: ${g.homeTeam || 'Home'} vs ${g.awayTeam || 'Away'} (${g.date || ''})`;
+    sel.appendChild(opt);
+  });
+}
+
+function selectGame(gid) {
+  if (!gid) return;
+  
+  const g = GAMES[gid];
+  if (!g) {
+    alert('Game not found: ' + gid);
+    return;
+  }
+  
+  S.gid = gid;
+  S.roster = {
+    home: g.homeRoster || [],
+    away: g.awayRoster || []
+  };
+  S.slots = {
+    home: {F1:'',F2:'',F3:'',D1:'',D2:'',G:''},
+    away: {F1:'',F2:'',F3:'',D1:'',D2:'',G:''}
+  };
+  S.events = [];
+  S.shifts = [];
+  S.evtIdx = 0;
+  S.shiftIdx = 0;
+  S.currShift = null;
+  S.hGoals = 0;
+  S.aGoals = 0;
+  
+  // Load from localStorage if exists
+  loadFromStorage();
+  
+  renderRoster();
+  renderSlots();
+  updateLists();
+  updateStatus();
+  
+  console.log('Selected game:', gid, g.homeTeam, 'vs', g.awayTeam);
+}
+
+function loadFromStorage() {
+  try {
+    const key = `tracker_${S.gid}`;
+    const saved = localStorage.getItem(key);
+    if (saved) {
+      const data = JSON.parse(saved);
+      if (data.events) S.events = data.events;
+      if (data.shifts) S.shifts = data.shifts;
+      if (data.evtIdx) S.evtIdx = data.evtIdx;
+      if (data.shiftIdx) S.shiftIdx = data.shiftIdx;
+      if (data.slots) S.slots = data.slots;
+      console.log('Loaded from storage:', S.events.length, 'events,', S.shifts.length, 'shifts');
+    }
+  } catch (e) {
+    console.warn('Could not load from storage:', e);
+  }
+}
+
+function saveToStorage() {
+  if (!S.gid) return;
+  try {
+    const key = `tracker_${S.gid}`;
+    const data = {
+      events: S.events,
+      shifts: S.shifts,
+      evtIdx: S.evtIdx,
+      shiftIdx: S.shiftIdx,
+      slots: S.slots
+    };
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (e) {
+    console.warn('Could not save to storage:', e);
+  }
+}
+
+function startAutoSave() {
+  setInterval(saveToStorage, 30000);
+}
+
+// ========== TEAM/PERIOD ==========
+function setTeam(team) {
+  S.team = team;
+  document.querySelectorAll('.roster-header button').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.roster-header .${team}`).classList.add('active');
+  renderRoster();
+  renderSlots();
+}
+
+function setPeriod(p) {
+  S.period = p;
+  document.querySelectorAll('[id^="p"][id$="Btn"]').forEach(b => b.classList.remove('active'));
+  document.getElementById(`p${p}Btn`).classList.add('active');
+}
+
+// ========== ROSTER ==========
+function renderRoster() {
+  const roster = S.roster[S.team] || [];
+  const container = document.getElementById('rosterList');
+  
+  container.innerHTML = roster.map(p => {
+    const selected = S.selectedPlayers.includes(str(p.n));
+    return `<span class="player-chip ${selected ? 'selected' : ''}" onclick="togglePlayer('${p.n}')">
+      <span class="num">${p.n}</span>
+      <span class="pos">${p.pos || ''}</span>
+    </span>`;
+  }).join('');
+}
+
+function togglePlayer(num) {
+  const idx = S.selectedPlayers.indexOf(str(num));
+  if (idx >= 0) {
+    S.selectedPlayers.splice(idx, 1);
+  } else {
+    S.selectedPlayers.push(str(num));
+  }
+  renderRoster();
+}
+
+// ========== SLOTS ==========
+function renderSlots() {
+  const slots = S.slots[S.team] || {F1:'',F2:'',F3:'',D1:'',D2:'',G:''};
+  const roster = S.roster[S.team] || [];
+  
+  const container = document.getElementById('slotGrid');
+  container.innerHTML = ['F1','F2','F3','D1','D2','G'].map(pos => {
+    const num = slots[pos] || '';
+    const player = roster.find(p => str(p.n) === str(num));
+    const name = player ? player.name?.split(' ').pop() || '' : '';
+    return `<div class="slot" onclick="assignSlot('${pos}')">
+      <div class="label">${pos}</div>
+      <div class="player">${num ? `#${num}` : '-'}</div>
+    </div>`;
+  }).join('');
+}
+
+function assignSlot(pos) {
+  if (S.selectedPlayers.length === 1) {
+    if (!S.slots[S.team]) S.slots[S.team] = {F1:'',F2:'',F3:'',D1:'',D2:'',G:''};
+    S.slots[S.team][pos] = S.selectedPlayers[0];
+    S.selectedPlayers = [];
+    renderRoster();
+    renderSlots();
+    saveToStorage();
+  } else {
+    alert('Select exactly one player first');
+  }
+}
+
+// ========== EVENTS ==========
+function setEvtType(type) {
+  S.evtType = type;
+  document.querySelectorAll('.evt-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`btn${type}`)?.classList.add('active');
+  
+  // Populate detail dropdowns
+  const d1 = ED[type]?.d1 || [];
+  const d2 = ED[type]?.d2 || [];
+  
+  document.getElementById('evtD1').innerHTML = '<option value="">--</option>' + d1.map(v => `<option>${v}</option>`).join('');
+  document.getElementById('evtD2').innerHTML = '<option value="">--</option>' + d2.map(v => `<option>${v}</option>`).join('');
+}
+
+function saveEvent() {
+  if (!S.gid) { alert('Select a game first'); return; }
+  if (!S.evtType) { alert('Select an event type'); return; }
+  
+  const evt = {
+    idx: ++S.evtIdx,
+    id: `E${S.gid}-${String(S.evtIdx).padStart(3,'0')}`,
+    type: S.evtType,
+    team: S.team,
+    period: S.period,
+    timeS: document.getElementById('clockS').value,
+    timeE: document.getElementById('clockE').value,
+    d1: document.getElementById('evtD1').value,
+    d2: document.getElementById('evtD2').value,
+    success: document.getElementById('evtSuccess').value,
+    players: [...S.selectedPlayers],
+    xy: S.puckXY
+  };
+  
+  S.events.push(evt);
+  S.selectedPlayers = [];
+  S.puckXY = null;
+  
+  clearRinkMarkers();
+  renderRoster();
+  updateLists();
+  saveToStorage();
+  updateStatus();
+  
+  console.log('Event saved:', evt.id, evt.type);
+}
+
+// ========== SHIFTS ==========
+function startNewShift() {
+  if (!S.gid) { alert('Select a game first'); return; }
+  
+  const shift = {
+    idx: ++S.shiftIdx,
+    id: `S${S.gid}-${String(S.shiftIdx).padStart(3,'0')}`,
+    period: S.period,
+    start: document.getElementById('clockS').value,
+    end: '',
+    homeSlots: {...(S.slots.home || {F1:'',F2:'',F3:'',D1:'',D2:'',G:''})},
+    awaySlots: {...(S.slots.away || {F1:'',F2:'',F3:'',D1:'',D2:'',G:''})}
+  };
+  
+  S.shifts.push(shift);
+  S.currShift = shift;
+  updateLists();
+  saveToStorage();
+  
+  console.log('Shift started:', shift.id);
+}
+
+// ========== LISTS ==========
+function updateLists() {
+  updateEvtList();
+  updateShiftList();
+}
+
+function updateEvtList() {
+  const container = document.getElementById('evtList');
+  const sorted = (S.events || []).slice().sort((a, b) => (a.idx || 0) - (b.idx || 0));
+  
+  container.innerHTML = sorted.map(e => `
+    <div class="list-item" onclick="showEvtDetail(${e.idx})">
+      <span class="idx">${e.id || ''}</span>
+      <span>${e.type || ''}</span>
+      <span>${e.d1 || ''}</span>
+      <span>P${e.period || ''}</span>
+    </div>
+  `).join('');
+}
+
+function updateShiftList() {
+  const container = document.getElementById('shiftList');
+  const sorted = (S.shifts || []).slice().sort((a, b) => (a.idx || 0) - (b.idx || 0));
+  
+  container.innerHTML = sorted.map(s => {
+    // Safe access to slots with defaults
+    const home = s.homeSlots || {};
+    const away = s.awaySlots || {};
+    const homeNums = Object.values(home).filter(Boolean).slice(0,3).join(',') || '-';
+    const awayNums = Object.values(away).filter(Boolean).slice(0,3).join(',') || '-';
+    
+    return `<div class="list-item ${S.currShift?.idx === s.idx ? 'active' : ''}" onclick="showShiftDetail(${s.idx})">
+      <span class="idx">${s.id || ''}</span>
+      <span>${s.start || ''}</span>
+      <span style="font-size:8px">${homeNums}|${awayNums}</span>
+      <span>P${s.period || ''}</span>
+    </div>`;
+  }).join('');
+}
+
+// ========== MODALS ==========
+function showEvtDetail(idx) {
+  const e = S.events.find(ev => ev.idx === idx);
+  if (!e) return;
+  
+  document.getElementById('modalContent').innerHTML = `
+    <h3>Event ${e.id}</h3>
+    <p><strong>Type:</strong> ${e.type}</p>
+    <p><strong>Detail:</strong> ${e.d1 || ''} / ${e.d2 || ''}</p>
+    <p><strong>Period:</strong> ${e.period}</p>
+    <p><strong>Time:</strong> ${e.timeS} - ${e.timeE}</p>
+    <p><strong>Team:</strong> ${e.team}</p>
+    <p><strong>Players:</strong> ${(e.players || []).join(', ') || 'None'}</p>
+    <div class="modal-actions">
+      <button onclick="deleteEvent(${idx})">Delete</button>
+      <button onclick="hideModal()">Close</button>
+    </div>
+  `;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function showShiftDetail(idx) {
+  const s = S.shifts.find(sh => sh.idx === idx);
+  if (!s) return;
+  
+  const home = s.homeSlots || {};
+  const away = s.awaySlots || {};
+  
+  document.getElementById('modalContent').innerHTML = `
+    <h3>Shift ${s.id}</h3>
+    <p><strong>Period:</strong> ${s.period}</p>
+    <p><strong>Time:</strong> ${s.start} - ${s.end || 'ongoing'}</p>
+    <p><strong>Home:</strong> ${Object.entries(home).map(([k,v]) => v ? `${k}:${v}` : '').filter(Boolean).join(', ') || 'None'}</p>
+    <p><strong>Away:</strong> ${Object.entries(away).map(([k,v]) => v ? `${k}:${v}` : '').filter(Boolean).join(', ') || 'None'}</p>
+    <div class="modal-actions">
+      <button onclick="endShift(${idx})">End Shift</button>
+      <button onclick="deleteShift(${idx})">Delete</button>
+      <button onclick="hideModal()">Close</button>
+    </div>
+  `;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function endShift(idx) {
+  const s = S.shifts.find(sh => sh.idx === idx);
+  if (s) {
+    s.end = document.getElementById('clockE').value;
+    updateLists();
+    saveToStorage();
+  }
+  hideModal();
+}
+
+function deleteEvent(idx) {
+  S.events = S.events.filter(e => e.idx !== idx);
+  updateLists();
+  saveToStorage();
+  hideModal();
+}
+
+function deleteShift(idx) {
+  S.shifts = S.shifts.filter(s => s.idx !== idx);
+  updateLists();
+  saveToStorage();
+  hideModal();
+}
+
+function hideModal() {
+  document.getElementById('modalOverlay').classList.remove('show');
+}
+
+function showNewGameModal() {
+  let scheduleOpts = ALL_SCHEDULE.map(g => {
+    const tracked = GAMES[g.gid] ? ' [TRACKED]' : '';
+    return `<option value="${g.gid}">${g.gid}: ${g.home} vs ${g.away} (${g.date})${tracked}</option>`;
+  }).join('');
+  
+  document.getElementById('modalContent').innerHTML = `
+    <h3>Create New Game</h3>
+    <div class="form-group" style="margin-bottom:8px">
+      <label>Pick from BLB Schedule (${ALL_SCHEDULE.length} games)</label>
+      <select id="scheduleSelect" onchange="onScheduleSelect()" style="width:100%">
+        <option value="">-- Select --</option>
+        ${scheduleOpts}
+      </select>
+    </div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:8px 0">
+    <div class="form-row">
+      <div class="form-group"><label>Game ID</label><input type="text" id="newGid"></div>
+      <div class="form-group"><label>Date</label><input type="date" id="newDate"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Home Team</label><input type="text" id="newHome"></div>
+      <div class="form-group"><label>Away Team</label><input type="text" id="newAway"></div>
+    </div>
+    <div class="modal-actions">
+      <button onclick="createGame()">Create</button>
+      <button onclick="hideModal()">Cancel</button>
+    </div>
+  `;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function onScheduleSelect() {
+  const gid = document.getElementById('scheduleSelect').value;
+  const g = ALL_SCHEDULE.find(x => x.gid === gid);
+  if (g) {
+    document.getElementById('newGid').value = g.gid;
+    document.getElementById('newDate').value = g.date;
+    document.getElementById('newHome').value = g.home;
+    document.getElementById('newAway').value = g.away;
+  }
+}
+
+function createGame() {
+  const gid = document.getElementById('newGid').value.trim();
+  if (!gid) { alert('Enter a game ID'); return; }
+  if (GAMES[gid]) { alert('Game already exists'); return; }
+  
+  GAMES[gid] = {
+    gid: gid,
+    date: document.getElementById('newDate').value,
+    homeTeam: document.getElementById('newHome').value || 'Home',
+    awayTeam: document.getElementById('newAway').value || 'Away',
+    homeRoster: [],
+    awayRoster: []
+  };
+  
+  populateGameDropdown();
+  document.getElementById('gameId').value = gid;
+  selectGame(gid);
+  hideModal();
+}
+
+// ========== RINK ==========
+function handleRinkClick(event) {
+  const svg = document.getElementById('rinkSvg');
+  const rect = svg.getBoundingClientRect();
+  const x = ((event.clientX - rect.left) / rect.width * 200).toFixed(1);
+  const y = ((event.clientY - rect.top) / rect.height * 85).toFixed(1);
+  
+  S.puckXY = {x: parseFloat(x), y: parseFloat(y)};
+  
+  const markers = document.getElementById('rinkMarkers');
+  markers.innerHTML = `<circle cx="${x}" cy="${y}" r="3" fill="var(--accent)"/>`;
+  
+  document.getElementById('xyStatus').textContent = `Location: (${x}, ${y})`;
+}
+
+function clearRinkMarkers() {
+  document.getElementById('rinkMarkers').innerHTML = '';
+  document.getElementById('xyStatus').textContent = 'Click rink to mark location';
+}
+
+// ========== KEYBOARD ==========
+function setupKeyboard() {
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+    
+    const keyMap = {s:'Shot',g:'Goal',p:'Pass',t:'Turnover',f:'Faceoff',z:'Zone',o:'Poss',v:'Save'};
+    if (keyMap[e.key.toLowerCase()]) {
+      setEvtType(keyMap[e.key.toLowerCase()]);
+    }
+    if (e.key === '1') setPeriod('1');
+    if (e.key === '2') setPeriod('2');
+    if (e.key === '3') setPeriod('3');
+    if (e.key === 'Enter') saveEvent();
+  });
+}
+
+// ========== TIME ==========
+function formatTimeInput(el) {
+  let v = el.value.replace(/[^0-9]/g, '');
+  if (v.length >= 3) {
+    const m = v.slice(0, -2);
+    const s = v.slice(-2);
+    el.value = `${m}:${s.padStart(2, '0')}`;
+  }
+}
+
+// ========== STATUS ==========
+function updateStatus() {
+  const txt = S.gid ? `Game ${S.gid} | ${S.events.length} events | ${S.shifts.length} shifts` : 'No game selected';
+  document.getElementById('statusText').textContent = txt;
+}
+
+// ========== EXPORT ==========
+function downloadBackup() {
+  if (!S.gid) { alert('No game selected'); return; }
+  const data = {
+    gid: S.gid,
+    game: GAMES[S.gid],
+    events: S.events,
+    shifts: S.shifts,
+    slots: S.slots
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${S.gid}_backup.json`;
+  a.click();
+}
+
+function exportExcel() {
+  if (!S.gid) { alert('No game selected'); return; }
+  
+  // Events sheet
+  const evtData = S.events.map(e => ({
+    event_id: e.id,
+    type: e.type,
+    detail_1: e.d1,
+    detail_2: e.d2,
+    period: e.period,
+    time_start: e.timeS,
+    time_end: e.timeE,
+    team: e.team,
+    players: (e.players || []).join(','),
+    x: e.xy?.x || '',
+    y: e.xy?.y || '',
+    success: e.success
+  }));
+  
+  // Shifts sheet
+  const shiftData = S.shifts.map(s => ({
+    shift_id: s.id,
+    period: s.period,
+    start: s.start,
+    end: s.end || '',
+    home_F1: s.homeSlots?.F1 || '',
+    home_F2: s.homeSlots?.F2 || '',
+    home_F3: s.homeSlots?.F3 || '',
+    home_D1: s.homeSlots?.D1 || '',
+    home_D2: s.homeSlots?.D2 || '',
+    home_G: s.homeSlots?.G || '',
+    away_F1: s.awaySlots?.F1 || '',
+    away_F2: s.awaySlots?.F2 || '',
+    away_F3: s.awaySlots?.F3 || '',
+    away_D1: s.awaySlots?.D1 || '',
+    away_D2: s.awaySlots?.D2 || '',
+    away_G: s.awaySlots?.G || ''
+  }));
+  
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(evtData), 'events');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(shiftData), 'shifts');
+  XLSX.writeFile(wb, `${S.gid}_tracking.xlsx`);
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById(tab + 'Panel').classList.add('active');
+}
+
+// ========== START ==========
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fact_cycle_events - BenchSight v0.02</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #333; line-height: 1.6; }
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #4a4e69 100%); color: white; padding: 20px 40px; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .nav { background: #4a4e69; padding: 0 20px; display: flex; flex-wrap: wrap; }
+        .nav a { color: white; text-decoration: none; padding: 10px 14px; font-size: 13px; }
+        .nav a:hover { background: rgba(255,255,255,0.1); }
+        .container { max-width: 1600px; margin: 0 auto; padding: 30px; }
+        
+        /* Table Overview Section */
+        .table-overview { background: white; border-radius: 8px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .table-overview h2 { margin-top: 0; color: #4a4e69; border-bottom: 2px solid #4a4e69; padding-bottom: 10px; }
+        .overview-desc { background: #e3f2fd; border-left: 4px solid #1976d2; padding: 15px; margin-bottom: 20px; font-size: 15px; }
+        .overview-grid { display: grid; grid-template-columns: 120px 1fr; gap: 10px 20px; }
+        .overview-label { font-weight: 600; color: #555; }
+        .overview-value { color: #333; }
+        .overview-value code { background: #f5f5f5; padding: 2px 8px; border-radius: 4px; font-family: 'SF Mono', Monaco, monospace; font-size: 12px; }
+        
+        /* Column Documentation Section */
+        .column-docs { background: white; border-radius: 8px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .column-docs h2 { margin-top: 0; color: #4a4e69; border-bottom: 2px solid #4a4e69; padding-bottom: 10px; }
+        
+        /* Legend */
+        .legend { margin-bottom: 20px; padding: 15px; background: #fafafa; border-radius: 6px; }
+        .legend-title { font-weight: 600; margin-right: 10px; }
+        .legend-item { display: inline-flex; align-items: center; margin-right: 20px; }
+        
+        /* Type badges */
+        .type-badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+        .badge-explicit { background: #e8f5e9; color: #2e7d32; }
+        .badge-calculated { background: #fff3e0; color: #e65100; }
+        .badge-derived { background: #e3f2fd; color: #1565c0; }
+        .badge-fk { background: #fce4ec; color: #c2185b; }
+        .badge-unknown { background: #f5f5f5; color: #757575; }
+        
+        /* Table styling */
+        table { border-collapse: collapse; width: 100%; margin: 15px 0; background: white; }
+        th { background: #4a4e69; color: white; padding: 12px 10px; text-align: left; font-size: 12px; font-weight: 600; position: sticky; top: 0; }
+        td { border: 1px solid #e0e0e0; padding: 10px; font-size: 13px; vertical-align: top; }
+        tr:nth-child(even) { background: #fafafa; }
+        tr:hover { background: #f0f7ff; }
+        code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-family: 'SF Mono', Monaco, monospace; font-size: 11px; }
+        
+        /* Column-specific styling */
+        .context-cell { max-width: 300px; font-size: 12px; color: #555; }
+        .calc-cell { max-width: 250px; font-size: 11px; }
+        .calc-cell code { background: #fff8e1; }
+        .stat-cell { text-align: right; font-size: 12px; }
+        .null-low { color: #2e7d32; }
+        .null-med { color: #f57c00; }
+        .null-high { color: #c62828; font-weight: 600; }
+        
+        /* Badge styles */
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+        .badge-blue { background: #1976d2; color: white; }
+        .badge-green { background: #388e3c; color: white; }
+        .badge-yellow { background: #f9a825; color: #333; }
+        
+        /* Sample data */
+        .data-table { font-size: 11px; overflow-x: auto; }
+        .data-table th { font-size: 11px; padding: 8px; }
+        .data-table td { padding: 6px 8px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        
+        footer { text-align: center; padding: 20px; color: #888; font-size: 11px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏒 BenchSight <span style="font-size: 14px; opacity: 0.8;">v0.02</span></h1>
+    </div>
+    
+    <nav class="nav">
+        <a href="../index.html">🏠 Home</a>
+        <a href="../tables.html">📊 Tables (59)</a>
+        <a href="../BS_DETECTOR.html">🔍 BS Detector</a>
+        <a href="../DOC_MAINTENANCE.html">📝 Doc Guide</a>
+    </nav>
+
+    <div class="container">
+        <h1>fact_cycle_events <span class="badge badge-green">Fact</span></h1>
+        
+        <!-- Table Overview Section -->
+        <div class="table-overview">
+            <h2>Table Overview</h2>
+            
+            <div class="overview-desc">
+                <strong>Description:</strong> No description available.
+            </div>
+            
+            <div class="overview-grid">
+                <div class="overview-label">Purpose:</div>
+                <div class="overview-value">Not documented.</div>
+                
+                <div class="overview-label">Source Module:</div>
+                <div class="overview-value"><code>Unknown</code></div>
+                
+                <div class="overview-label">Logic:</div>
+                <div class="overview-value">Not documented.</div>
+                
+                <div class="overview-label">Grain:</div>
+                <div class="overview-value">Not documented.</div>
+                
+                <div class="overview-label">Rows:</div>
+                <div class="overview-value">28</div>
+                
+                <div class="overview-label">Columns:</div>
+                <div class="overview-value">22</div>
+            </div>
+        </div>
+        
+        <!-- Column Documentation Section -->
+        <div class="column-docs">
+            <h2>Column Documentation</h2>
+            
+            <div class="legend">
+                <span class="legend-title">Legend:</span>
+                <span class="legend-item"><span class="type-badge badge-explicit">Explicit</span> = From raw data</span>
+                <span class="legend-item"><span class="type-badge badge-calculated">Calculated</span> = Formula-based</span>
+                <span class="legend-item"><span class="type-badge badge-derived">Derived</span> = Generated key/aggregate</span>
+                <span class="legend-item"><span class="type-badge badge-fk">FK</span> = Foreign key lookup</span>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Column</th>
+                        <th>Data Type</th>
+                        <th>Description</th>
+                        <th>Context / Mapping</th>
+                        <th>Calculation / Formula</th>
+                        <th>Type</th>
+                        <th>Non-Null</th>
+                        <th>Null %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+            <tr>
+                <td><code>cycle_key</code></td>
+                <td>object</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">28</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>game_id</code></td>
+                <td>int64</td>
+                <td>Unique game identifier from NORAD league</td>
+                <td class="context-cell">Numeric ID from league website URL. Example: 18969.</td>
+                <td class="calc-cell"><code>Extracted from tracking file directory name (data/raw/games/{game_id}/)</code></td>
+                <td><span class="type-badge badge-explicit">Explicit</span></td>
+                <td class="stat-cell">28</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>season_id</code></td>
+                <td>object</td>
+                <td>Foreign key reference</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">28</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>team_id</code></td>
+                <td>object</td>
+                <td>Unique team identifier</td>
+                <td class="context-cell">Format varies by source.</td>
+                <td class="calc-cell"><code>From league roster/schedule data</code></td>
+                <td><span class="type-badge badge-explicit">Explicit</span></td>
+                <td class="stat-cell">28</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>team_name</code></td>
+                <td>object</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">28</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>home_team_id</code></td>
+                <td>object</td>
+                <td>Unique team identifier</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">28</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>away_team_id</code></td>
+                <td>object</td>
+                <td>Unique team identifier</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">28</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>pass_count</code></td>
+                <td>int64</td>
+                <td>Count/total</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">28</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>event_count</code></td>
+                <td>int64</td>
+                <td>Count/total</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">28</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>player_count</code></td>
+                <td>int64</td>
+                <td>Count/total</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">28</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>start_event_id</code></td>
+                <td>object</td>
+                <td>Unique event identifier</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">28</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>end_event_id</code></td>
+                <td>object</td>
+                <td>Unique event identifier</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">28</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>start_time</code></td>
+                <td>float64</td>
+                <td>Shift start time</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">28</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>end_time</code></td>
+                <td>float64</td>
+                <td>Shift end time</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">28</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>duration_seconds</code></td>
+                <td>float64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">28</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>ended_with</code></td>
+                <td>object</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">28</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>ended_with_shot</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">28</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>ended_with_goal</code></td>
+                <td>int64</td>
+                <td>-</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">28</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>event_ids</code></td>
+                <td>object</td>
+                <td>Unique event identifier</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">28</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>player_ids</code></td>
+                <td>object</td>
+                <td>Unique player identifier</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">28</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>period</code></td>
+                <td>int64</td>
+                <td>Game period</td>
+                <td class="context-cell">Values: 1, 2, 3, OT, SO</td>
+                <td class="calc-cell"><code>From tracking spreadsheet</code></td>
+                <td><span class="type-badge badge-explicit">Explicit</span></td>
+                <td class="stat-cell">28</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+            <tr>
+                <td><code>period_id</code></td>
+                <td>object</td>
+                <td>Game period (1, 2, 3, OT)</td>
+                <td class="context-cell"></td>
+                <td class="calc-cell"><code></code></td>
+                <td><span class="type-badge badge-unknown">Unknown</span></td>
+                <td class="stat-cell">28</td>
+                <td class="stat-cell null-low">0.0%</td>
+            </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Sample Data Section -->
+        <div class="column-docs">
+            <h2>Sample Data (First 5 Rows)</h2>
+            <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>cycle_key</th>
+      <th>game_id</th>
+      <th>season_id</th>
+      <th>team_id</th>
+      <th>team_name</th>
+      <th>home_team_id</th>
+      <th>away_team_id</th>
+      <th>pass_count</th>
+      <th>event_count</th>
+      <th>player_count</th>
+      <th>start_event_id</th>
+      <th>end_event_id</th>
+      <th>start_time</th>
+      <th>end_time</th>
+      <th>duration_seconds</th>
+      <th>ended_with</th>
+      <th>ended_with_shot</th>
+      <th>ended_with_goal</th>
+      <th>event_ids</th>
+      <th>player_ids</th>
+      <th>period</th>
+      <th>period_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>CY189690001</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>N10008</td>
+      <td>Platinum</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>3</td>
+      <td>7</td>
+      <td>2</td>
+      <td>EV1896901046</td>
+      <td>EV1896901052</td>
+      <td>105.0</td>
+      <td>120.0</td>
+      <td>15.0</td>
+      <td>zone_change</td>
+      <td>0</td>
+      <td>0</td>
+      <td>EV1896901046,EV1896901047,EV1896901048,EV1896901049,EV1896901050,EV1896901051,EV1896901052</td>
+      <td>P100022,P100117</td>
+      <td>1</td>
+      <td>P01</td>
+    </tr>
+    <tr>
+      <td>CY189690002</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>N10008</td>
+      <td>Platinum</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>5</td>
+      <td>11</td>
+      <td>4</td>
+      <td>EV1896901179</td>
+      <td>EV1896901189</td>
+      <td>347.0</td>
+      <td>364.0</td>
+      <td>17.0</td>
+      <td>shot</td>
+      <td>1</td>
+      <td>0</td>
+      <td>EV1896901179,EV1896901180,EV1896901181,EV1896901182,EV1896901183,EV1896901184,EV1896901185,EV1896901186,EV1896901187,EV1896901188,EV1896901189</td>
+      <td>P100023,P100117,P100107,P100024</td>
+      <td>1</td>
+      <td>P01</td>
+    </tr>
+    <tr>
+      <td>CY189690003</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>N10008</td>
+      <td>Platinum</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>3</td>
+      <td>4</td>
+      <td>3</td>
+      <td>EV1896901449</td>
+      <td>EV1896901452</td>
+      <td>969.0</td>
+      <td>971.0</td>
+      <td>2.0</td>
+      <td>shot</td>
+      <td>1</td>
+      <td>0</td>
+      <td>EV1896901449,EV1896901450,EV1896901451,EV1896901452</td>
+      <td>P100030,P100222,P100117</td>
+      <td>1</td>
+      <td>P01</td>
+    </tr>
+    <tr>
+      <td>CY189690004</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>N10008</td>
+      <td>Platinum</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>3</td>
+      <td>7</td>
+      <td>3</td>
+      <td>EV1896901600</td>
+      <td>EV1896901606</td>
+      <td>1327.0</td>
+      <td>1336.0</td>
+      <td>9.0</td>
+      <td>shot</td>
+      <td>1</td>
+      <td>0</td>
+      <td>EV1896901600,EV1896901601,EV1896901602,EV1896901603,EV1896901604,EV1896901605,EV1896901606</td>
+      <td>P100210,P100022,P100117</td>
+      <td>2</td>
+      <td>P02</td>
+    </tr>
+    <tr>
+      <td>CY189690005</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>N10008</td>
+      <td>Platinum</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>3</td>
+      <td>7</td>
+      <td>4</td>
+      <td>EV1896901686</td>
+      <td>EV1896901692</td>
+      <td>1519.0</td>
+      <td>1533.0</td>
+      <td>14.0</td>
+      <td>zone_change</td>
+      <td>0</td>
+      <td>0</td>
+      <td>EV1896901686,EV1896901687,EV1896901688,EV1896901689,EV1896901690,EV1896901691,EV1896901692</td>
+      <td>P100030,P100192,P100024,P100025</td>
+      <td>2</td>
+      <td>P02</td>
+    </tr>
+  </tbody>
+</table>
+        </div>
+        
+        <footer>
+            BenchSight v0.02 | Generated: 2026-01-07 14:30 | <a href="../tables.html">Back to Tables</a>
+        </footer>
+    </div>
+</body>
+</html>

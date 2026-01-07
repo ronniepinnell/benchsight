@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fact_matchup_performance - BenchSight</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #4a4e69; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>fact_matchup_performance</h1>
+        
+        <div class="alert alert-danger">⚠️ 15 suspicious stat entries for games in this table</div>
+        
+        <div class="meta">
+            <strong>Rows:</strong> 265 | 
+            <strong>Columns:</strong> 22 |
+            <strong>Last Updated:</strong> 2026-01-07 05:03:20 |
+            <strong>Version:</strong> 12.03
+        </div>
+        
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>game_id</td><td>int64</td><td>265</td><td>0.0%</td></tr><tr><td>season_id</td><td>object</td><td>265</td><td>0.0%</td></tr><tr><td>player_id</td><td>object</td><td>265</td><td>0.0%</td></tr><tr><td>player_name</td><td>object</td><td>265</td><td>0.0%</td></tr><tr><td>team_id</td><td>object</td><td>265</td><td>0.0%</td></tr><tr><td>matchup_id</td><td>object</td><td>265</td><td>0.0%</td></tr><tr><td>toi_seconds</td><td>float64</td><td>265</td><td>0.0%</td></tr><tr><td>player_rating</td><td>int64</td><td>265</td><td>0.0%</td></tr><tr><td>rating_advantage</td><td>float64</td><td>265</td><td>0.0%</td></tr><tr><td>gf_all</td><td>int64</td><td>265</td><td>0.0%</td></tr><tr><td>ga_all</td><td>int64</td><td>265</td><td>0.0%</td></tr><tr><td>pm_all</td><td>int64</td><td>265</td><td>0.0%</td></tr><tr><td>gf_adj</td><td>float64</td><td>265</td><td>0.0%</td></tr><tr><td>ga_adj</td><td>float64</td><td>265</td><td>0.0%</td></tr><tr><td>pm_adj</td><td>float64</td><td>265</td><td>0.0%</td></tr><tr><td>cf</td><td>int64</td><td>265</td><td>0.0%</td></tr><tr><td>ca</td><td>int64</td><td>265</td><td>0.0%</td></tr><tr><td>shift_count</td><td>int64</td><td>265</td><td>0.0%</td></tr><tr><td>cf_pct</td><td>float64</td><td>265</td><td>0.0%</td></tr><tr><td>expected_cf_pct</td><td>int64</td><td>265</td><td>0.0%</td></tr><tr><td>cf_pct_vs_expected</td><td>float64</td><td>265</td><td>0.0%</td></tr><tr><td>matchup_perf_key</td><td>object</td><td>265</td><td>0.0%</td></tr>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>game_id</th>
+      <th>season_id</th>
+      <th>player_id</th>
+      <th>player_name</th>
+      <th>team_id</th>
+      <th>matchup_id</th>
+      <th>toi_seconds</th>
+      <th>player_rating</th>
+      <th>rating_advantage</th>
+      <th>gf_all</th>
+      <th>ga_all</th>
+      <th>pm_all</th>
+      <th>gf_adj</th>
+      <th>ga_adj</th>
+      <th>pm_adj</th>
+      <th>cf</th>
+      <th>ca</th>
+      <th>shift_count</th>
+      <th>cf_pct</th>
+      <th>expected_cf_pct</th>
+      <th>cf_pct_vs_expected</th>
+      <th>matchup_perf_key</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100001</td>
+      <td>Sam Downs</td>
+      <td>N10010</td>
+      <td>RM03</td>
+      <td>1533.0</td>
+      <td>6</td>
+      <td>1.959756</td>
+      <td>1</td>
+      <td>4</td>
+      <td>-3</td>
+      <td>1.00</td>
+      <td>4.015873</td>
+      <td>-3.015873</td>
+      <td>23</td>
+      <td>39</td>
+      <td>41</td>
+      <td>37.096774</td>
+      <td>50</td>
+      <td>-12.903226</td>
+      <td>MP18969100001RM03</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100001</td>
+      <td>Sam Downs</td>
+      <td>N10010</td>
+      <td>RM04</td>
+      <td>197.0</td>
+      <td>6</td>
+      <td>2.275000</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.00</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>2</td>
+      <td>2</td>
+      <td>8</td>
+      <td>50.000000</td>
+      <td>55</td>
+      <td>-5.000000</td>
+      <td>MP18969100001RM04</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100002</td>
+      <td>Kevin White</td>
+      <td>N10010</td>
+      <td>RM02</td>
+      <td>71.0</td>
+      <td>4</td>
+      <td>-0.266667</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.00</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>50.000000</td>
+      <td>45</td>
+      <td>5.000000</td>
+      <td>MP18969100002RM02</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100002</td>
+      <td>Kevin White</td>
+      <td>N10010</td>
+      <td>RM03</td>
+      <td>844.0</td>
+      <td>4</td>
+      <td>-0.101923</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.00</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>7</td>
+      <td>16</td>
+      <td>26</td>
+      <td>30.434783</td>
+      <td>50</td>
+      <td>-19.565217</td>
+      <td>MP18969100002RM03</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100002</td>
+      <td>Kevin White</td>
+      <td>N10010</td>
+      <td>RM04</td>
+      <td>24.0</td>
+      <td>4</td>
+      <td>0.000000</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.00</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0.000000</td>
+      <td>55</td>
+      <td>-55.000000</td>
+      <td>MP18969100002RM04</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100016</td>
+      <td>Wyatt Crandall</td>
+      <td>N10010</td>
+      <td>RM02</td>
+      <td>71.0</td>
+      <td>5</td>
+      <td>0.733333</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.00</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>50.000000</td>
+      <td>45</td>
+      <td>5.000000</td>
+      <td>MP18969100016RM02</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100016</td>
+      <td>Wyatt Crandall</td>
+      <td>N10010</td>
+      <td>RM03</td>
+      <td>2972.0</td>
+      <td>5</td>
+      <td>1.051786</td>
+      <td>3</td>
+      <td>5</td>
+      <td>-2</td>
+      <td>2.90</td>
+      <td>5.015873</td>
+      <td>-2.115873</td>
+      <td>47</td>
+      <td>65</td>
+      <td>84</td>
+      <td>41.964286</td>
+      <td>50</td>
+      <td>-8.035714</td>
+      <td>MP18969100016RM03</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100016</td>
+      <td>Wyatt Crandall</td>
+      <td>N10010</td>
+      <td>RM04</td>
+      <td>115.0</td>
+      <td>5</td>
+      <td>1.400000</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.00</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>2</td>
+      <td>0</td>
+      <td>6</td>
+      <td>100.000000</td>
+      <td>55</td>
+      <td>45.000000</td>
+      <td>MP18969100016RM04</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>Chris Dube</td>
+      <td>N10008</td>
+      <td>RM02</td>
+      <td>75.0</td>
+      <td>4</td>
+      <td>-0.466667</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.00</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0</td>
+      <td>1</td>
+      <td>3</td>
+      <td>0.000000</td>
+      <td>45</td>
+      <td>-45.000000</td>
+      <td>MP18969100022RM02</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100022</td>
+      <td>Chris Dube</td>
+      <td>N10008</td>
+      <td>RM03</td>
+      <td>920.0</td>
+      <td>4</td>
+      <td>0.037500</td>
+      <td>3</td>
+      <td>1</td>
+      <td>2</td>
+      <td>2.95</td>
+      <td>1.000000</td>
+      <td>1.950000</td>
+      <td>19</td>
+      <td>25</td>
+      <td>32</td>
+      <td>43.181818</td>
+      <td>50</td>
+      <td>-6.818182</td>
+      <td>MP18969100022RM03</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100023</td>
+      <td>Alex Considine</td>
+      <td>N10008</td>
+      <td>RM02</td>
+      <td>115.0</td>
+      <td>4</td>
+      <td>-0.200000</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.00</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>2</td>
+      <td>0</td>
+      <td>6</td>
+      <td>100.000000</td>
+      <td>45</td>
+      <td>55.000000</td>
+      <td>MP18969100023RM02</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100023</td>
+      <td>Alex Considine</td>
+      <td>N10008</td>
+      <td>RM03</td>
+      <td>1639.0</td>
+      <td>4</td>
+      <td>0.044898</td>
+      <td>5</td>
+      <td>2</td>
+      <td>3</td>
+      <td>4.90</td>
+      <td>2.000000</td>
+      <td>2.900000</td>
+      <td>30</td>
+      <td>35</td>
+      <td>49</td>
+      <td>46.153846</td>
+      <td>50</td>
+      <td>-3.846154</td>
+      <td>MP18969100023RM03</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100024</td>
+      <td>John Thien</td>
+      <td>N10008</td>
+      <td>RM02</td>
+      <td>122.0</td>
+      <td>3</td>
+      <td>-1.253333</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.00</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>2</td>
+      <td>1</td>
+      <td>5</td>
+      <td>66.666667</td>
+      <td>45</td>
+      <td>21.666667</td>
+      <td>MP18969100024RM02</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100024</td>
+      <td>John Thien</td>
+      <td>N10008</td>
+      <td>RM03</td>
+      <td>962.0</td>
+      <td>3</td>
+      <td>-0.914286</td>
+      <td>1</td>
+      <td>2</td>
+      <td>-1</td>
+      <td>1.00</td>
+      <td>2.052632</td>
+      <td>-1.052632</td>
+      <td>16</td>
+      <td>18</td>
+      <td>21</td>
+      <td>47.058824</td>
+      <td>50</td>
+      <td>-2.941176</td>
+      <td>MP18969100024RM03</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100025</td>
+      <td>Andrew Marshall</td>
+      <td>N10008</td>
+      <td>RM02</td>
+      <td>82.0</td>
+      <td>4</td>
+      <td>-0.733333</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.00</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0</td>
+      <td>2</td>
+      <td>2</td>
+      <td>0.000000</td>
+      <td>45</td>
+      <td>-45.000000</td>
+      <td>MP18969100025RM02</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100025</td>
+      <td>Andrew Marshall</td>
+      <td>N10008</td>
+      <td>RM03</td>
+      <td>1413.0</td>
+      <td>4</td>
+      <td>0.051429</td>
+      <td>0</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>0.00</td>
+      <td>1.052632</td>
+      <td>-1.052632</td>
+      <td>19</td>
+      <td>31</td>
+      <td>35</td>
+      <td>38.000000</td>
+      <td>50</td>
+      <td>-12.000000</td>
+      <td>MP18969100025RM03</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100025</td>
+      <td>Andrew Marshall</td>
+      <td>N10008</td>
+      <td>RM04</td>
+      <td>71.0</td>
+      <td>4</td>
+      <td>0.333333</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.00</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>50.000000</td>
+      <td>55</td>
+      <td>-5.000000</td>
+      <td>MP18969100025RM04</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100027</td>
+      <td>Karen Zietlow</td>
+      <td>N10008</td>
+      <td>RM02</td>
+      <td>170.0</td>
+      <td>2</td>
+      <td>-2.377778</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.00</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>2</td>
+      <td>2</td>
+      <td>6</td>
+      <td>50.000000</td>
+      <td>45</td>
+      <td>5.000000</td>
+      <td>MP18969100027RM02</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100027</td>
+      <td>Karen Zietlow</td>
+      <td>N10008</td>
+      <td>RM03</td>
+      <td>1055.0</td>
+      <td>2</td>
+      <td>-1.900000</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1.00</td>
+      <td>1.052632</td>
+      <td>-0.052632</td>
+      <td>19</td>
+      <td>20</td>
+      <td>24</td>
+      <td>48.717949</td>
+      <td>50</td>
+      <td>-1.282051</td>
+      <td>MP18969100027RM03</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>P100030</td>
+      <td>Jesse Chambless</td>
+      <td>N10008</td>
+      <td>RM02</td>
+      <td>82.0</td>
+      <td>5</td>
+      <td>0.266667</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.00</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0</td>
+      <td>2</td>
+      <td>2</td>
+      <td>0.000000</td>
+      <td>45</td>
+      <td>-45.000000</td>
+      <td>MP18969100030RM02</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+        </div>
+        
+        <footer>
+            BenchSight v13.18 | Generated 2026-01-07 05:03:20
+        </footer>
+    </div>
+</body>
+</html>

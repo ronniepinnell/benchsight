@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BenchSight Tracker - Developer Handoff Document - BenchSight</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --border: #30363d;
+  --text: #c9d1d9;
+  --muted: #8b949e;
+  --accent: #58a6ff;
+  --accent2: #3fb950;
+  --warn: #d29922;
+  --danger: #f85149;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  font-size: 14px;
+}
+.container { max-width: 900px; margin: 0 auto; padding: 20px 40px; }
+header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 15px 0;
+}
+header .container { display: flex; justify-content: space-between; align-items: center; }
+header h1 {
+  font-size: 18px;
+  color: var(--accent);
+}
+header nav a {
+  color: var(--muted);
+  text-decoration: none;
+  margin-left: 15px;
+  font-size: 13px;
+}
+header nav a:hover { color: var(--accent); }
+main { padding: 30px 0; }
+h1 { font-size: 28px; color: var(--accent); margin-bottom: 20px; }
+h2 { font-size: 22px; color: var(--text); margin: 30px 0 15px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+h3 { font-size: 18px; color: var(--accent2); margin: 25px 0 12px; }
+h4 { font-size: 15px; color: var(--text); margin: 20px 0 10px; }
+p { margin: 12px 0; color: var(--text); }
+ul, ol { margin: 12px 0 12px 25px; }
+li { margin: 6px 0; }
+code {
+  font-family: 'SF Mono', Consolas, monospace;
+  background: var(--surface);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+  border: 1px solid var(--border);
+}
+pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 15px;
+  overflow-x: auto;
+  margin: 15px 0;
+  font-size: 12px;
+}
+pre code { background: none; border: none; padding: 0; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 15px 0;
+  font-size: 13px;
+}
+th, td {
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  text-align: left;
+}
+th { background: var(--surface); color: var(--accent); }
+tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 10px 15px;
+  margin: 15px 0;
+  background: rgba(88,166,255,0.1);
+  border-radius: 0 6px 6px 0;
+}
+hr { border: none; border-top: 1px solid var(--border); margin: 30px 0; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+strong { color: var(--text); }
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.badge-done { background: var(--accent2); color: #000; }
+.badge-pending { background: var(--warn); color: #000; }
+footer {
+  border-top: 1px solid var(--border);
+  padding: 20px 0;
+  margin-top: 40px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="container">
+    <h1>⚡ BenchSight</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="tracker/index.html">Tracker</a>
+      <a href="tables.html">Tables</a>
+      <a href="diagrams/ERD_VIEWER.html">ERD</a>
+    </nav>
+  </div>
+</header>
+<main>
+<div class="container">
+<h1>BenchSight Tracker - Developer Handoff Document</h1>
+
+<strong>Version:</strong> 1.0  
+<strong>Date:</strong> 2026-01-07  
+<strong>Author:</strong> Claude (AI Assistant)  
+<strong>For:</strong> Future developer continuing tracker development
+<p>---</p>
+
+<h2>CRITICAL: Read This First</h2>
+<p>This document contains everything you need to continue developing the BenchSight Tracker application. If the conversation with the original developer was cut off, this document serves as the complete handoff.</p>
+
+<h3>Project Status</h3>
+
+<table>
+<thead><tr><th>Component</th><th>Status</th><th>Priority</th></tr></thead>
+<tbody><tr><td>MVP HTML Tracker</td><td>✅ Working</td><td>-</td></tr><tr><td>Supabase Integration</td><td>🔶 Needs Setup</td><td>HIGH</td></tr><tr><td>XY Visualization</td><td>🔶 Basic, needs enhancement</td><td>HIGH</td></tr><tr><td>Video Integration</td><td>❌ Not started</td><td>HIGH</td></tr><tr><td>Resizable Panels</td><td>❌ Not started</td><td>MEDIUM</td></tr><tr><td>NORAD Validation</td><td>❌ Not started</td><td>MEDIUM</td></tr><tr><td>Electron Wrapper</td><td>❌ Not started</td><td>LOW</td></tr></tbody></table>
+<hr>
+
+<h2>Table of Contents</h2>
+
+<ol>
+<li>1. <a href="#project-overview">Project Overview</a></li>
+<li>2. <a href="#architecture">Architecture</a></li>
+<li>3. <a href="#cascading-dropdown-logic">Cascading Dropdown Logic</a></li>
+<li>4. <a href="#xy-coordinate-system">XY Coordinate System</a></li>
+<li>5. <a href="#linked-event-logic">Linked Event Logic</a></li>
+<li>6. <a href="#video-integration-plan">Video Integration Plan</a></li>
+<li>7. <a href="#norad-validation">NORAD Validation</a></li>
+<li>8. <a href="#batch-edit-mode">Batch Edit Mode</a></li>
+<li>9. <a href="#electron-wrapper-plan">Electron Wrapper Plan</a></li>
+<li>10. <a href="#implementation-checklist">Implementation Checklist</a></li>
+<li>11. <a href="#known-issues--todos">Known Issues & TODOs</a></li>
+</ul>
+<p>---</p>
+
+<h2>Project Overview</h2>
+
+<h3>What is BenchSight Tracker?</h3>
+<p>A desktop application for tracking detailed hockey game events. The tracker:</p>
+<ol>
+<li>1. Pulls game/roster data from Supabase</li>
+<li>2. Allows manual event tracking with XY coordinates</li>
+<li>3. Exports data matching the existing ETL input format</li>
+<li>4. Validates against official NORAD league records</li>
+</ul>
+
+<h3>The User (Ronnie)</h3>
+
+<ul>
+<li>Tracks his own team (Velodrome) games</li>
+<li>Currently backlogged on tracking</li>
+<li>Needs SPEED over perfection</li>
+<li>Wants minimal clicks, maximum hotkey usage</li>
+<li>Has YouTube videos of games for reference</li>
+</ul>
+
+<h3>Output Requirements</h3>
+
+<strong>CRITICAL:</strong> Output must match existing ETL format exactly:
+<ul>
+<li>Events → <code>{gameid}_tracking.xlsx</code> Events tab</li>
+<li>Shifts → <code>{gameid}_tracking.xlsx</code> Shifts tab</li>
+</ul>
+<p>See <code>/docs/TRACKING_TEMPLATE_ANALYSIS.md</code> for full column specs.</p>
+
+<hr>
+
+<h2>Architecture</h2>
+
+<h3>Current (MVP)</h3>
+
+<pre><code class="language-">┌─────────────────────────────────────────┐
+│  Single HTML File                        │
+│  ├── Inline CSS                         │
+│  ├── Inline JavaScript                  │
+│  ├── Supabase JS SDK (CDN)              │
+│  └── SheetJS XLSX (CDN)                 │
+└─────────────────────────────────────────┘
+           │
+           ▼
+┌─────────────────────────────────────────┐
+│  localStorage (auto-save)               │
+│  - benchsight_{gameId}                  │
+│  - benchsight_settings                  │
+└─────────────────────────────────────────┘
+           │
+           ▼
+┌─────────────────────────────────────────┐
+│  Supabase (optional)                    │
+│  - dim_games                            │
+│  - dim_game_rosters                     │
+│  - dim_event_types                      │
+│  - dim_event_details                    │
+└─────────────────────────────────────────┘
+</code></pre>
+
+<h3>Target (Electron)</h3>
+
+<pre><code class="language-">┌─────────────────────────────────────────┐
+│  Electron App                            │
+│  ├── React Frontend                     │
+│  │   ├── Resizable Panels               │
+│  │   ├── Video Player (YouTube + Local) │
+│  │   ├── SVG Rink with XY               │
+│  │   └── Event/Shift Forms              │
+│  ├── Local SQLite (fast saves)          │
+│  └── File System (video files, backups) │
+└─────────────────────────────────────────┘
+           │
+           ▼
+┌─────────────────────────────────────────┐
+│  Supabase (cloud sync)                  │
+│  - All dim tables                       │
+│  - stage_tracker_events                 │
+│  - stage_tracker_shifts                 │
+└─────────────────────────────────────────┘
+</code></pre>
+<p>---</p>
+
+<h2>Cascading Dropdown Logic</h2>
+
+<h3>The Problem</h3>
+<p>When user selects an event type, the detail dropdowns should:</p>
+<ol>
+<li>1. Show only relevant options for that event type</li>
+<li>2. Detail 2 may depend on Detail 1 selection (cascading)</li>
+</ul>
+
+<h3>Data Source</h3>
+<p>Pull from Supabase <code>dim_event_details</code> table:</p>
+
+<pre><code class="language-javascript">// Load dropdown options from Supabase
+async function loadEventOptions() {
+  const { data: eventTypes } = await supabase
+    .from('dim_event_types')
+    .select('*')
+    .eq('active', true)
+    .order('sort_order');
+  
+  const { data: eventDetails } = await supabase
+    .from('dim_event_details')
+    .select('*')
+    .eq('active', true)
+    .order('sort_order');
+  
+  // Build lookup structure
+  const detailsByType = {};
+  eventDetails.forEach(d =&gt; {
+    if (!detailsByType[d.event_type]) {
+      detailsByType[d.event_type] = { d1: [], d2: {} };
+    }
+    if (d.detail_level === 1) {
+      detailsByType[d.event_type].d1.push(d);
+    } else {
+      // d2 can be filtered by parent_detail if set
+      if (!detailsByType[d.event_type].d2[d.parent_detail || '*']) {
+        detailsByType[d.event_type].d2[d.parent_detail || '*'] = [];
+      }
+      detailsByType[d.event_type].d2[d.parent_detail || '*'].push(d);
+    }
+  });
+  
+  return { eventTypes, detailsByType };
+}
+</code></pre>
+
+<h3>Implementation</h3>
+
+<pre><code class="language-javascript">function setEventType(type) {
+  STATE.eventType = type;
+  
+  // Get options for this type
+  const opts = STATE.detailsByType[type] || { d1: [], d2: {} };
+  
+  // Populate Detail 1
+  const d1Select = document.getElementById('evtDetail1');
+  d1Select.innerHTML = '&lt;option value=""&gt;--&lt;/option&gt;' + 
+    opts.d1.map(o =&gt; <code>&lt;option value="${o.detail_value}"&gt;${o.display_name || o.detail_value}&lt;/option&gt;</code>).join('');
+  
+  // Clear Detail 2 (will populate on d1 change)
+  document.getElementById('evtDetail2').innerHTML = '&lt;option value=""&gt;--&lt;/option&gt;';
+}
+<p>function onDetail1Change() {</p>
+  const type = STATE.eventType;
+  const d1Value = document.getElementById('evtDetail1').value;
+  
+  const opts = STATE.detailsByType[type] || { d1: [], d2: {} };
+  
+  // Get d2 options - check for parent-specific first, then wildcard
+  const d2Opts = opts.d2[d1Value] || opts.d2['*'] || [];
+  
+  const d2Select = document.getElementById('evtDetail2');
+  d2Select.innerHTML = '&lt;option value=""&gt;--&lt;/option&gt;' + 
+    d2Opts.map(o =&gt; <code>&lt;option value="${o.detail_value}"&gt;${o.display_name || o.detail_value}&lt;/option&gt;</code>).join('');
+}
+</code></pre>
+
+<h3>Example Cascade</h3>
+<p>For Penalty:</p>
+<ul>
+<li>Detail 1: Minor, Major, Misconduct</li>
+<li>Detail 2: Tripping, Hooking, etc. (same for all d1 values, parent_detail = null)</li>
+</ul>
+<p>For Shot (if we wanted cascade):</p>
+<ul>
+<li>Detail 1: OnNetSaved, Missed, Blocked, Goal</li>
+<li>Detail 2 for OnNetSaved: Rebound, Freeze</li>
+<li>Detail 2 for Missed: Wide, High, Post</li>
+<li>(Currently we don't cascade Shot d2, but the structure supports it)</li>
+</ul>
+<p>---</p>
+
+<h2>XY Coordinate System</h2>
+
+<h3>Current State (MVP)</h3>
+
+<ul>
+<li>Click on rink → stores puck position</li>
+<li>Single color dots</li>
+<li>Up to 5 positions per event</li>
+<li>No player positions</li>
+</ul>
+
+<h3>Required Enhancements</h3>
+
+<h4>1. Team Colors</h4>
+
+<pre><code class="language-javascript">// Get team colors from game data
+const colors = {
+  home: STATE.homeColor,  // e.g., '#3b82f6'
+  away: STATE.awayColor   // e.g., '#ef4444'
+};
+<p>function renderMarker(player, position, opacity) {</p>
+  const color = player.team === 'home' ? colors.home : colors.away;
+  
+  // Circle with team color
+  const circle = createSVGElement('circle', {
+    cx: position.x,
+    cy: position.y,
+    r: 3,
+    fill: color,
+    stroke: '#fff',
+    'stroke-width': 0.5,
+    opacity: opacity
+  });
+  
+  // Jersey number inside
+  const text = createSVGElement('text', {
+    x: position.x,
+    y: position.y + 1,
+    fill: '#fff',
+    'font-size': '3',
+    'text-anchor': 'middle',
+    opacity: opacity
+  });
+  text.textContent = player.num;
+  
+  return [circle, text];
+}
+</code></pre>
+
+<h4>2. Multiple Events Visible</h4>
+
+<pre><code class="language-javascript">const EVENT_HISTORY_COUNT = 5;
+const OPACITY_SCALE = [0.15, 0.3, 0.5, 0.7, 1.0];  // Oldest → newest
+<p>function renderEventHistory() {</p>
+  const layer = document.getElementById('markersLayer');
+  layer.innerHTML = '';
+  
+  const recentEvents = STATE.events.slice(-EVENT_HISTORY_COUNT);
+  
+  recentEvents.forEach((evt, eventIdx) =&gt; {
+    const opacity = OPACITY_SCALE[eventIdx];
+    const eventColor = evt.team === 'home' ? STATE.homeColor : STATE.awayColor;
+    
+    // Puck positions
+    renderPuckPath(evt.puckXY, opacity, layer);
+    
+    // Event player positions
+    evt.players?.forEach(player =&gt; {
+      const xy = evt.playerXY?.find(p =&gt; p.num === player.num);
+      if (xy) {
+        renderPlayerPath(player, xy.positions, eventColor, opacity, layer);
+      }
+    });
+    
+    // Opposing player positions
+    evt.oppPlayers?.forEach(player =&gt; {
+      const oppColor = evt.team === 'home' ? STATE.awayColor : STATE.homeColor;
+      const xy = evt.playerXY?.find(p =&gt; p.num === player.num);
+      if (xy) {
+        renderPlayerPath(player, xy.positions, oppColor, opacity, layer);
+      }
+    });
+  });
+}
+</code></pre>
+
+<h4>3. Lines Connecting Positions</h4>
+
+<pre><code class="language-javascript">function renderPlayerPath(player, positions, color, opacity, layer) {
+  if (!positions || positions.length === 0) return;
+  
+  // Sort by sequence
+  const sorted = [...positions].sort((a, b) =&gt; a.seq - b.seq);
+  
+  // Draw connecting lines first (behind dots)
+  for (let i = 0; i &lt; sorted.length - 1; i++) {
+    const line = createSVGElement('line', {
+      x1: sorted[i].x,
+      y1: sorted[i].y,
+      x2: sorted[i + 1].x,
+      y2: sorted[i + 1].y,
+      stroke: color,
+      'stroke-width': 1,
+      'stroke-dasharray': '2,1',
+      opacity: opacity * 0.7
+    });
+    layer.appendChild(line);
+  }
+  
+  // Draw dots on top
+  sorted.forEach((pos, idx) =&gt; {
+    const isLatest = idx === sorted.length - 1;
+    
+    const circle = createSVGElement('circle', {
+      cx: pos.x,
+      cy: pos.y,
+      r: isLatest ? 3.5 : 2.5,
+      fill: color,
+      stroke: '#fff',
+      'stroke-width': isLatest ? 0.8 : 0.4,
+      opacity: opacity
+    });
+    layer.appendChild(circle);
+    
+    // Player number (only on latest position)
+    if (isLatest) {
+      const text = createSVGElement('text', {
+        x: pos.x,
+        y: pos.y + 1,
+        fill: '#fff',
+        'font-size': '3',
+        'font-weight': 'bold',
+        'text-anchor': 'middle',
+        opacity: opacity
+      });
+      text.textContent = player.num;
+      layer.appendChild(text);
+    }
+  });
+}
+</code></pre>
+
+<h4>4. XY Data Structure</h4>
+
+<pre><code class="language-javascript">// Per-event XY storage
+{
+  puckXY: [
+    { seq: 1, x: 45.2, y: 32.1 },
+    { seq: 2, x: 62.8, y: 28.4 }
+  ],
+  playerXY: [
+    {
+      num: '42',      // Jersey number
+      name: 'Ashcroft',
+      role: 'event_player_1',  // or 'opp_player_1'
+      positions: [
+        { seq: 1, x: 38.1, y: 40.2 },
+        { seq: 2, x: 55.3, y: 35.1 }
+      ]
+    },
+    {
+      num: '9',
+      name: 'Pinnell',
+      role: 'event_player_2',
+      positions: [
+        { seq: 1, x: 42.0, y: 22.5 }
+      ]
+    }
+  ],
+  netXY: { x: 3, y: 2 }  // Grid position for shots
+}
+</code></pre>
+
+<h4>5. XY Mode Selection</h4>
+
+<pre><code class="language-javascript">// XY entry modes
+const XY_MODES = {
+  puck: { label: '🏒 Puck', maxSlots: 5 },
+  event: { label: '👤 Event Player', maxSlots: 10 },
+  opp: { label: '👥 Opp Player', maxSlots: 10 }
+};
+<p>let currentXYMode = 'puck';</p>
+let currentXYSlot = 1;
+let currentPlayerForXY = null;  // Which player we're placing
+<p>function handleRinkClick(e) {</p>
+  const pos = getClickPosition(e);
+  
+  if (currentXYMode === 'puck') {
+    STATE.currentEvent.puckXY.push({ seq: currentXYSlot, ...pos });
+    currentXYSlot++;
+  } else {
+    // Player XY - need to know which player
+    if (!currentPlayerForXY) {
+      toast('Select a player first', 'warn');
+      return;
+    }
+    
+    let playerEntry = STATE.currentEvent.playerXY.find(p =&gt; p.num === currentPlayerForXY.num);
+    if (!playerEntry) {
+      playerEntry = {
+        num: currentPlayerForXY.num,
+        name: currentPlayerForXY.name,
+        role: currentXYMode === 'event' ? 'event_player' : 'opp_player',
+        positions: []
+      };
+      STATE.currentEvent.playerXY.push(playerEntry);
+    }
+    
+    playerEntry.positions.push({ seq: playerEntry.positions.length + 1, ...pos });
+  }
+  
+  renderRinkMarkers();
+}
+</code></pre>
+<p>---</p>
+
+<h2>Linked Event Logic</h2>
+
+<h3>Auto-Link Rules</h3>
+
+<table>
+<thead><tr><th>Primary Event</th><th>Auto-Creates</th><th>Confidence</th></tr></thead>
+<tbody><tr><td>Shot (OnNetSaved)</td><td>Save</td><td>99%</td></tr><tr><td>Save (Freeze)</td><td>Stoppage → DeadIce</td><td>91%</td></tr><tr><td>Goal</td><td>Stoppage</td><td>100%</td></tr><tr><td>Stoppage</td><td>DeadIce</td><td>80%</td></tr></tbody></table>
+<h3>Implementation</h3>
+
+<pre><code class="language-javascript">const AUTO_LINK_RULES = {
+  'Shot_OnNetSaved': {
+    creates: 'Save',
+    autoCreate: true,  // Don't ask, just do it
+    transform: (shotEvt) =&gt; ({
+      type: 'Save',
+      detail1: 'Rebound',  // Default, user can change
+      team: flipTeam(shotEvt.team),
+      zone: flipZone(shotEvt.zone),
+      // Flip players
+      players: shotEvt.oppPlayers.filter(p =&gt; p.pos === 'G'),
+      oppPlayers: shotEvt.players,
+      // Copy XY
+      puckXY: shotEvt.puckXY,
+      playerXY: shotEvt.playerXY
+    })
+  },
+  
+  'Save_Freeze': {
+    creates: 'Stoppage',
+    autoCreate: true,
+    transform: (saveEvt) =&gt; ({
+      type: 'Stoppage',
+      detail1: 'Play',
+      team: saveEvt.team,
+      zone: saveEvt.zone,
+      puckXY: saveEvt.puckXY
+    }),
+    chain: 'DeadIce'  // Also creates DeadIce after Stoppage
+  },
+  
+  'Goal': {
+    creates: 'Stoppage',
+    autoCreate: false,  // Prompt first
+    transform: (goalEvt) =&gt; ({
+      type: 'Stoppage',
+      detail1: 'Goal',
+      team: goalEvt.team,
+      zone: goalEvt.zone,
+      puckXY: goalEvt.puckXY
+    })
+  }
+};
+<p>function checkAutoLinks(evt) {</p>
+  const key = <code>${evt.type}_${evt.detail1}</code> || evt.type;
+  const rule = AUTO_LINK_RULES[key];
+  
+  if (!rule) return;
+  
+  if (rule.autoCreate) {
+    createLinkedEvent(evt, rule);
+  } else {
+    // Prompt user
+    showLinkedEventPrompt(evt, rule);
+  }
+}
+<p>function createLinkedEvent(originalEvt, rule) {</p>
+  const linkedEvt = {
+    idx: ++STATE.evtIdx,
+    gameId: STATE.gameId,
+    period: originalEvt.period,
+    startTime: originalEvt.startTime,
+    endTime: originalEvt.endTime,
+    linkedTo: originalEvt.idx,
+    timestamp: new Date().toISOString(),
+    ...rule.transform(originalEvt)
+  };
+  
+  STATE.events.push(linkedEvt);
+  
+  // Chain if needed
+  if (rule.chain) {
+    const chainRule = AUTO_LINK_RULES[linkedEvt.type];
+    if (chainRule) {
+      createLinkedEvent(linkedEvt, chainRule);
+    }
+  }
+  
+  renderEventList();
+  toast(<code>Created linked ${linkedEvt.type}</code>, 'success');
+}
+</code></pre>
+
+<h3>Manual Linked Event</h3>
+<p>When user presses <code>L</code>:</p>
+<ol>
+<li>1. Copy all data from last event</li>
+<li>2. Clear event type (user must select new type)</li>
+<li>3. Keep players, XY, times</li>
+</ul>
+<p>---</p>
+
+<h2>Video Integration Plan</h2>
+
+<h3>Phase 1: YouTube Embed</h3>
+
+<pre><code class="language-javascript">// YouTube IFrame API
+function initYouTubePlayer(videoId, startOffset) {
+  return new YT.Player('videoPlayer', {
+    videoId: videoId,
+    playerVars: {
+      start: startOffset,  // Offset to game start
+      controls: 1,
+      modestbranding: 1
+    },
+    events: {
+      onStateChange: onPlayerStateChange,
+      onReady: onPlayerReady
+    }
+  });
+}
+<p>function syncVideoToGameTime(gameMinutes, gameSeconds, period) {</p>
+  // Calculate video time
+  // Period 1: 0 offset
+  // Period 2: +1152 sec (18 min period + ~72 sec intermission)
+  // Period 3: +2296 sec
+  
+  const periodOffsets = {
+    1: 0,
+    2: 18 * 60 + 72,   // ~1152
+    3: 36 * 60 + 136   // ~2296
+  };
+  
+  const periodOffset = periodOffsets[period] || 0;
+  const gameTime = (18 - gameMinutes) * 60 + (60 - gameSeconds);  // Convert countdown to elapsed
+  const videoTime = STATE.videoStartOffset + periodOffset + gameTime;
+  
+  player.seekTo(videoTime);
+}
+</code></pre>
+
+<h3>Phase 2: Local Video Files</h3>
+
+<pre><code class="language-javascript">// Electron only - local file access
+const videoElement = document.getElementById('localVideo');
+<p>function loadLocalVideo(filePath) {</p>
+  videoElement.src = <code>file://${filePath}</code>;
+  videoElement.load();
+}
+<p>// Multi-angle support</p>
+const videoAngles = [
+  { name: 'Main', element: document.getElementById('video1') },
+  { name: 'Alt', element: document.getElementById('video2') }
+];
+<p>function switchAngle(idx) {</p>
+  videoAngles.forEach((v, i) =&gt; {
+    v.element.style.display = i === idx ? 'block' : 'none';
+  });
+}
+</code></pre>
+
+<h3>Phase 3: Video ↔ Event Sync</h3>
+
+<pre><code class="language-javascript">// Store video time with each event
+function logEvent() {
+  const evt = {
+    ...eventData,
+    videoTimeSeconds: getCurrentVideoTime()
+  };
+  
+  STATE.events.push(evt);
+}
+<p>// Jump to event in video</p>
+function jumpToEvent(evt) {
+  if (evt.videoTimeSeconds) {
+    player.seekTo(evt.videoTimeSeconds);
+  }
+}
+<p>// Generate YouTube deep link</p>
+function getEventYouTubeLink(evt) {
+  const videoId = STATE.youtubeVideoId;
+  const time = evt.videoTimeSeconds;
+  return <code>https://youtube.com/watch?v=${videoId}&t=${time}s</code>;
+}
+</code></pre>
+<p>---</p>
+
+<h2>NORAD Validation</h2>
+
+<h3>What It Does</h3>
+<p>Compares tracked goals against official NORAD league records to catch:</p>
+<ul>
+<li>Missing goals</li>
+<li>Extra goals (tracking errors)</li>
+<li>Wrong scorer</li>
+<li>Wrong period/time</li>
+</ul>
+
+<h3>Implementation</h3>
+
+<pre><code class="language-javascript">async function loadNoradGoals(gameId) {
+  const { data, error } = await supabase
+    .from('fact_norad_goals')
+    .select('*')
+    .eq('game_id', gameId);
+  
+  return data || [];
+}
+<p>function validateGoals() {</p>
+  const noradGoals = STATE.noradGoals;
+  const trackedGoals = STATE.events.filter(e =&gt; e.type === 'Goal');
+  
+  const warnings = [];
+  
+  // Check count
+  if (trackedGoals.length !== noradGoals.length) {
+    warnings.push({
+      type: 'count_mismatch',
+      message: <code>Tracked ${trackedGoals.length} goals, NORAD has ${noradGoals.length}</code>,
+      severity: 'error'
+    });
+  }
+  
+  // Check each NORAD goal
+  noradGoals.forEach(ng =&gt; {
+    const matching = trackedGoals.find(tg =&gt; 
+      tg.period == ng.period &&
+      Math.abs(timeToSeconds(tg.startTime) - (ng.time_min * 60 + ng.time_sec)) &lt; 30 &&
+      tg.team === ng.scoring_team_venue
+    );
+    
+    if (!matching) {
+      warnings.push({
+        type: 'missing_goal',
+        message: <code>NORAD: ${ng.goal_scorer} (#${ng.goal_scorer_number}) at ${ng.time_min}:${ng.time_sec} P${ng.period}</code>,
+        severity: 'error',
+        noradGoal: ng
+      });
+    } else if (matching.players?.[0]?.num !== ng.goal_scorer_number) {
+      warnings.push({
+        type: 'scorer_mismatch',
+        message: <code>Tracked #${matching.players?.[0]?.num}, NORAD says #${ng.goal_scorer_number}</code>,
+        severity: 'warning',
+        trackedEvent: matching,
+        noradGoal: ng
+      });
+    }
+  });
+  
+  // Check for extra tracked goals
+  trackedGoals.forEach(tg =&gt; {
+    const matching = noradGoals.find(ng =&gt;
+      ng.period == tg.period &&
+      Math.abs((ng.time_min * 60 + ng.time_sec) - timeToSeconds(tg.startTime)) &lt; 30
+    );
+    
+    if (!matching) {
+      warnings.push({
+        type: 'extra_goal',
+        message: <code>Tracked goal not in NORAD: ${tg.players?.[0]?.num} at ${tg.startTime} P${tg.period}</code>,
+        severity: 'warning',
+        trackedEvent: tg
+      });
+    }
+  });
+  
+  return warnings;
+}
+<p>function showValidationWarnings(warnings) {</p>
+  if (warnings.length === 0) {
+    toast('✅ Goals match NORAD records', 'success');
+    return;
+  }
+  
+  // Show warning panel
+  const panel = document.getElementById('validationPanel');
+  panel.innerHTML = <code>
+    &lt;h4&gt;⚠️ Validation Warnings (${warnings.length})&lt;/h4&gt;
+    ${warnings.map(w =&gt; </code>
+      &lt;div class="warning-item ${w.severity}"&gt;
+        &lt;span class="type"&gt;${w.type}&lt;/span&gt;
+        &lt;span class="message"&gt;${w.message}&lt;/span&gt;
+      &lt;/div&gt;
+    <code>).join('')}
+  </code>;
+  panel.style.display = 'block';
+}
+</code></pre>
+<p>---</p>
+
+<h2>Batch Edit Mode</h2>
+
+<h3>What It Is</h3>
+<p>Batch edit allows selecting multiple events and changing a field on all of them at once.</p>
+
+<h3>Use Cases</h3>
+
+<ol>
+<li>1. <strong>Wrong team</strong> - Accidentally tracked 10 events as home instead of away</li>
+<li>2. <strong>Wrong period</strong> - Started tracking before changing period</li>
+<li>3. <strong>Add highlight</strong> - Flag multiple events as highlights</li>
+<li>4. <strong>Fix zone</strong> - Change zone on multiple events</li>
+</ul>
+
+<h3>Implementation</h3>
+
+<pre><code class="language-javascript">let batchSelectedEvents = [];
+<p>function toggleBatchSelect(eventIdx) {</p>
+  const idx = batchSelectedEvents.indexOf(eventIdx);
+  if (idx &gt;= 0) {
+    batchSelectedEvents.splice(idx, 1);
+  } else {
+    batchSelectedEvents.push(eventIdx);
+  }
+  renderEventList();
+}
+<p>function selectAllVisible() {</p>
+  // Select all events currently visible in list
+  const visible = STATE.events.slice(-20);
+  batchSelectedEvents = visible.map(e =&gt; STATE.events.indexOf(e));
+  renderEventList();
+}
+<p>function batchEdit(field, value) {</p>
+  batchSelectedEvents.forEach(idx =&gt; {
+    STATE.events[idx][field] = value;
+  });
+  
+  batchSelectedEvents = [];
+  renderEventList();
+  autoSave();
+  toast(<code>Updated ${batchSelectedEvents.length} events</code>, 'success');
+}
+<p>// UI</p>
+function showBatchEditModal() {
+  const modal = document.getElementById('batchEditModal');
+  modal.innerHTML = <code>
+    &lt;h3&gt;Batch Edit ${batchSelectedEvents.length} Events&lt;/h3&gt;
+    &lt;div class="form-group"&gt;
+      &lt;label&gt;Field to Change&lt;/label&gt;
+      &lt;select id="batchField"&gt;
+        &lt;option value="team"&gt;Team&lt;/option&gt;
+        &lt;option value="period"&gt;Period&lt;/option&gt;
+        &lt;option value="zone"&gt;Zone&lt;/option&gt;
+        &lt;option value="highlight"&gt;Highlight&lt;/option&gt;
+        &lt;option value="type"&gt;Event Type&lt;/option&gt;
+      &lt;/select&gt;
+    &lt;/div&gt;
+    &lt;div class="form-group"&gt;
+      &lt;label&gt;New Value&lt;/label&gt;
+      &lt;select id="batchValue"&gt;&lt;/select&gt;
+    &lt;/div&gt;
+    &lt;button onclick="applyBatchEdit()"&gt;Apply to All&lt;/button&gt;
+  </code>;
+  modal.style.display = 'block';
+}
+</code></pre>
+<p>---</p>
+
+<h2>Electron Wrapper Plan</h2>
+
+<h3>Project Structure</h3>
+
+<pre><code class="language-">benchsight-tracker/
+├── package.json
+├── main.js           # Electron main process
+├── preload.js        # Context bridge
+├── src/
+│   ├── index.html    # Main window
+│   ├── renderer.js   # React app entry
+│   ├── components/
+│   │   ├── App.jsx
+│   │   ├── Header.jsx
+│   │   ├── ShiftPanel.jsx
+│   │   ├── RinkCanvas.jsx
+│   │   ├── VideoPlayer.jsx
+│   │   ├── EventEntry.jsx
+│   │   └── EventList.jsx
+│   ├── hooks/
+│   │   ├── useSupabase.js
+│   │   ├── useLocalStorage.js
+│   │   └── useHotkeys.js
+│   ├── store/
+│   │   └── gameStore.js  # Zustand
+│   └── utils/
+│       ├── timeUtils.js
+│       ├── xyUtils.js
+│       └── exportUtils.js
+├── assets/
+│   └── icons/
+└── dist/             # Build output
+</code></pre>
+
+<h3>package.json</h3>
+
+<pre><code class="language-json">{
+  "name": "benchsight-tracker",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.x",
+    "better-sqlite3": "^9.x",
+    "react": "^18.x",
+    "react-dom": "^18.x",
+    "zustand": "^4.x",
+    "xlsx": "^0.18.x"
+  },
+  "devDependencies": {
+    "electron": "^28.x",
+    "electron-builder": "^24.x",
+    "vite": "^5.x"
+  },
+  "build": {
+    "appId": "com.benchsight.tracker",
+    "productName": "BenchSight Tracker",
+    "mac": {
+      "category": "public.app-category.sports"
+    },
+    "win": {
+      "target": "nsis"
+    }
+  }
+}
+</code></pre>
+
+<h3>main.js (Electron Main Process)</h3>
+
+<pre><code class="language-javascript">const { app, BrowserWindow, ipcMain } = require('electron');
+const path = require('path');
+const Database = require('better-sqlite3');
+<p>let mainWindow;</p>
+let db;
+<p>function createWindow() {</p>
+  mainWindow = new BrowserWindow({
+    width: 1400,
+    height: 900,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true
+    }
+  });
+<p>  mainWindow.loadFile('src/index.html');</p>
+}
+<p>app.whenReady().then(() =&gt; {</p>
+  // Initialize local SQLite
+  db = new Database(path.join(app.getPath('userData'), 'benchsight.db'));
+  initDatabase();
+  
+  createWindow();
+});
+<p>function initDatabase() {</p>
+  db.exec(<code>
+    CREATE TABLE IF NOT EXISTS events (
+      id INTEGER PRIMARY KEY,
+      game_id INTEGER,
+      data TEXT,
+      created_at TEXT
+    );
+    CREATE TABLE IF NOT EXISTS shifts (
+      id INTEGER PRIMARY KEY,
+      game_id INTEGER,
+      data TEXT,
+      created_at TEXT
+    );
+  </code>);
+}
+<p>// IPC handlers for renderer</p>
+ipcMain.handle('db:save-event', (event, gameId, eventData) =&gt; {
+  const stmt = db.prepare('INSERT INTO events (game_id, data, created_at) VALUES (?, ?, ?)');
+  return stmt.run(gameId, JSON.stringify(eventData), new Date().toISOString());
+});
+<p>ipcMain.handle('db:get-events', (event, gameId) =&gt; {</p>
+  const stmt = db.prepare('SELECT * FROM events WHERE game_id = ?');
+  return stmt.all(gameId).map(row =&gt; ({ ...row, data: JSON.parse(row.data) }));
+});
+</code></pre>
+<p>---</p>
+
+<h2>Implementation Checklist</h2>
+
+<h3>Immediate (This Session)</h3>
+<ul>
+<li>[x] MVP HTML tracker</li>
+<li>[x] Basic event entry</li>
+<li>[x] Basic shift tracking</li>
+<li>[x] localStorage auto-save</li>
+<li>[x] Excel export</li>
+<li>[x] Supabase setup guide</li>
+</ul>
+
+<h3>Next Session</h3>
+<ul>
+<li>[ ] Supabase integration (games, rosters)</li>
+<li>[ ] Cascading dropdowns from dim tables</li>
+<li>[ ] Enhanced XY visualization</li>
+<li>[ ] Video player (YouTube)</li>
+<li>[ ] Resizable panels</li>
+<li>[ ] NORAD validation</li>
+</ul>
+
+<h3>Future</h3>
+<ul>
+<li>[ ] Electron wrapper</li>
+<li>[ ] Local SQLite</li>
+<li>[ ] Batch edit mode</li>
+<li>[ ] Local video files</li>
+<li>[ ] Hotkey editor</li>
+<li>[ ] ML suggestions improvement</li>
+</ul>
+<p>---</p>
+
+<h2>Known Issues & TODOs</h2>
+
+<h3>Bugs</h3>
+<ol>
+<li>1. XY dots don't show player numbers correctly</li>
+<li>2. Net popup doesn't save to last event</li>
+<li>3. Period change doesn't update shift times</li>
+</ul>
+
+<h3>Missing Features</h3>
+<ol>
+<li>1. Multi-select for batch edit</li>
+<li>2. Copy/paste events</li>
+<li>3. Event search/filter</li>
+<li>4. Undo history (only 1 level currently)</li>
+<li>5. Export to JSON backup</li>
+</ul>
+
+<h3>Performance</h3>
+<ol>
+<li>1. Large event lists (500+) slow down rendering</li>
+</ol>
+   - Solution: Virtual scrolling
+<ol>
+<li>2. SVG markers accumulate</li>
+</ol>
+   - Solution: Clear and re-render, not append
+<p>---</p>
+
+<h2>Contact</h2>
+<p>If continuing this work, the user (Ronnie) can provide:</p>
+<ul>
+<li>Supabase credentials</li>
+<li>Sample tracking data</li>
+<li>YouTube video links</li>
+<li>NORAD game IDs for validation</li>
+</ul>
+<p>Check <code>/mnt/transcripts/</code> for conversation history if needed.</p>
+
+</div>
+</main>
+<footer>
+  <div class="container">
+    BenchSight Documentation • v14.01 • January 7, 2026
+  </div>
+</footer>
+</body>
+</html>

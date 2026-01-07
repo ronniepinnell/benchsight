@@ -1,9 +1,0 @@
-player_game_key,game_id,player_id,venue,toi_seconds,toi_minutes,goals_against,goalie_game_key,player_name,saves,playing_toi_seconds,playing_toi_minutes,stoppage_seconds,shots_faced,save_pct,gaa,gaa_playing,team_name,shots_against,empty_net_ga,saves_rebound,saves_freeze,saves_glove,saves_blocker,saves_left_pad,saves_right_pad,rebound_control_pct,total_save_events
-GG1896900643,18969,P100016,away,3158.0,52.6,4,GGK18969_P100016,,,,,,,,,,,,,,,,,,,,
-GG1896956305,18969,P100202,home,3240.0,54.0,3,GGK18969_P100202,,,,,,,,,,,,,,,,,,,,
-GG1897700643,18977,P100016,home,3240.0,54.0,2,GGK18977_P100016,,,,,,,,,,,,,,,,,,,,
-GG1897792592,18977,P100096,away,3185.0,53.1,4,GGK18977_P100096,,,,,,,,,,,,,,,,,,,,
-GG1898100643,18981,P100016,away,3151.0,52.5,2,GGK18981_P100016,,,,,,,,,,,,,,,,,,,,
-GG1898170985,18981,P100138,home,3236.0,53.9,1,GGK18981_P100138,,,,,,,,,,,,,,,,,,,,
-GG1898737685,18987,P100009,away,3191.0,53.2,1,GGK18987_P100009,,,,,,,,,,,,,,,,,,,,
-GG1898700643,18987,P100016,home,3240.0,54.0,0,GGK18987_P100016,,,,,,,,,,,,,,,,,,,,

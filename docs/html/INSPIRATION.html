@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BenchSight - Inspiration & References</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #1e40af;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --dark: #1f2937;
+            --light: #f3f4f6;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--light);
+            padding: 1rem;
+            line-height: 1.6;
+            color: var(--dark);
+        }
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .header h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        .nav {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .nav a {
+            color: var(--primary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .nav a:hover { background: var(--light); border-color: var(--primary); }
+        .section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .section h2 {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .section h3 { color: var(--secondary); margin: 1.5rem 0 0.75rem; }
+        .card {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .card h4 { color: var(--dark); margin-bottom: 0.5rem; }
+        .card a { color: var(--primary); }
+        .card p { font-size: 0.9rem; color: #6b7280; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+        .tag {
+            display: inline-block;
+            padding: 0.125rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-right: 0.25rem;
+            background: #e5e7eb;
+        }
+        .quote {
+            background: #eff6ff;
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            margin: 1rem 0;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+<div style="background:#f0f0f0;padding:10px;margin-bottom:20px;border-bottom:1px solid #ccc;">
+<strong>Last Updated:</strong> January 7, 2026| <strong>Version:</strong> 12.03
+</div>
+
+<!-- ================================================================== -->
+<!-- CHANGELOG - MUST BE UPDATED WITH EVERY MODIFICATION -->
+<!-- ================================================================== -->
+<!--
+CHANGELOG:
+---------------------------------------------------------------------------
+2026-01-06 v8.0.5:
+  - CRITICAL FIX: Restored 4 missing src/advanced/ modules:
+    * create_additional_tables.py
+    * enhance_all_stats.py
+    * final_stats_enhancement.py
+    * extended_tables.py
+  - Created fact_events_player.csv (7,476 rows)
+  - Extended tables now run: +15 tables created
+  - Table count: 131 (54 dim, 73 fact, 3 QA, 1 other)
+  - Added comprehensive code audit documentation
+  - Fixed column name mismatches (Type -> event_type)
+
+2026-01-06 v8.0.4:
+  - CRITICAL: Recovered 72 missing tables from v7 backup
+  - Table count restored from 53 to 130
+  - Created 4 new outcome dimension tables
+  - Regenerated ERD with all tables
+  - Added table integrity tests
+
+2026-01-05 v8.0.0:
+  - Major schema expansion: 96 -> 111 tables planned
+  - Added 317 player metrics
+  - Created comprehensive foreign key relationships
+  - Added QA validation tables
+
+RULES FOR UPDATING THIS CHANGELOG:
+1. ALWAYS add entry BEFORE making changes
+2. Include: date, version, what changed, table counts
+3. Never delete old entries
+4. Be specific about what was added/changed/removed
+---------------------------------------------------------------------------
+-->
+
+    <div class="header">
+        <h1>💡 Inspiration & References</h1>
+        <p>Sources, methodologies, and analytics systems that inspired BenchSight</p>
+    </div>
+
+    <div class="nav">
+        <a href="index.html">← Documentation Hub</a>
+        <a href="STAT_DICTIONARY.html">Stats Dictionary</a>
+        <a href="STAT_CALCS.html">Calculations</a>
+    </div>
+
+    <div class="section">
+        <h2>🏒 NHL Analytics Systems</h2>
+        <div class="grid">
+            <div class="card">
+                <h4>Natural Stat Trick</h4>
+                <a href="https://naturalstattrick.com" target="_blank">naturalstattrick.com</a>
+                <p>Comprehensive NHL analytics including Corsi, Fenwick, xG, zone entries/exits, and on-ice metrics. Major inspiration for our possession metrics.</p>
+                <span class="tag">Corsi</span><span class="tag">Fenwick</span><span class="tag">xG</span>
+            </div>
+            <div class="card">
+                <h4>Evolving Hockey</h4>
+                <a href="https://evolving-hockey.com" target="_blank">evolving-hockey.com</a>
+                <p>Advanced models including Goals Above Replacement (GAR), Expected Goals, and RAPM. Influenced our player value calculations.</p>
+                <span class="tag">GAR</span><span class="tag">RAPM</span><span class="tag">xG Models</span>
+            </div>
+            <div class="card">
+                <h4>Hockey-Reference</h4>
+                <a href="https://hockey-reference.com" target="_blank">hockey-reference.com</a>
+                <p>Traditional stats database with historical data. Template for our data dictionary structure.</p>
+                <span class="tag">Historical Data</span><span class="tag">Box Scores</span>
+            </div>
+            <div class="card">
+                <h4>MoneyPuck</h4>
+                <a href="https://moneypuck.com" target="_blank">moneypuck.com</a>
+                <p>Expected goals models and win probability. Inspired our xG approach for recreational hockey.</p>
+                <span class="tag">xG</span><span class="tag">Win Probability</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>📊 Data Warehouse Design</h2>
+        <div class="grid">
+            <div class="card">
+                <h4>Kimball Dimensional Modeling</h4>
+                <p>Ralph Kimball's star schema methodology. Our dim_* and fact_* table structure follows these principles.</p>
+                <span class="tag">Star Schema</span><span class="tag">Dimensions</span><span class="tag">Facts</span>
+            </div>
+            <div class="card">
+                <h4>Sports Data Warehousing</h4>
+                <p>Adapted traditional DW concepts for sports analytics: events as facts, players/teams as dimensions, games as time dimension.</p>
+                <span class="tag">Event Tracking</span><span class="tag">Player Stats</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🎯 Key Methodologies</h2>
+        
+        <h3>Corsi & Fenwick</h3>
+        <div class="quote">
+            Originally developed by blogger Vic Ferrari, named after Buffalo Sabres goalie Jim Corsi. Measures shot attempt differential as a proxy for puck possession.
+        </div>
+        
+        <h3>Expected Goals (xG)</h3>
+        <div class="quote">
+            Probability-based model assigning goal likelihood to each shot based on location, shot type, game state, and other factors. First widely used in soccer analytics.
+        </div>
+        
+        <h3>Zone Entry/Exit Tracking</h3>
+        <div class="quote">
+            Pioneered by Corey Sznajder's "All Three Zones" project. Manual tracking of how teams gain and maintain offensive zone possession.
+        </div>
+        
+        <h3>Cycle Play Detection</h3>
+        <div class="quote">
+            BenchSight's original algorithm for identifying sustained offensive zone possession through consecutive passes. Inspired by video coaching analysis.
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🛠️ Technical Inspiration</h2>
+        <div class="grid">
+            <div class="card">
+                <h4>dbt (data build tool)</h4>
+                <p>Modern data transformation workflow. Inspired our modular ETL approach with clear dependencies.</p>
+            </div>
+            <div class="card">
+                <h4>Great Expectations</h4>
+                <p>Data quality framework. Influenced our validation and QA table design.</p>
+            </div>
+            <div class="card">
+                <h4>Supabase</h4>
+                <p>PostgreSQL platform for our deployment target. Influenced FK design and deployment scripts.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>📚 Recommended Reading</h2>
+        <div class="grid">
+            <div class="card">
+                <h4>"Stat Shot" by Rob Vollman</h4>
+                <p>Comprehensive guide to hockey analytics for fans and analysts.</p>
+            </div>
+            <div class="card">
+                <h4>"Hockey Abstract" Series</h4>
+                <p>Annual publications exploring advanced hockey metrics and analysis.</p>
+            </div>
+            <div class="card">
+                <h4>The Athletic Hockey Analytics</h4>
+                <p>Ongoing coverage of NHL analytics developments and methodologies.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🙏 Acknowledgments</h2>
+        <p>BenchSight was built for the NORAD recreational hockey league. Special thanks to:</p>
+        <ul style="margin-top: 1rem; padding-left: 1.5rem;">
+            <li>All the players and teams who provided tracking data</li>
+            <li>The open-source hockey analytics community</li>
+            <li>Contributors to public NHL data APIs and datasets</li>
+            <li>The recreational hockey community for embracing analytics</li>
+        </ul>
+    </div>
+
+    <footer style="text-align: center; padding: 2rem; color: #6b7280; font-size: 0.875rem;">
+        BenchSight v13.18.4 | Inspiration & References
+    </footer>
+</body>
+</html>

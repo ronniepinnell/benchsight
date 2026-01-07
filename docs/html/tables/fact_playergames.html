@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fact_playergames - BenchSight</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #4a4e69; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>fact_playergames</h1>
+        
+        
+        
+        <div class="meta">
+            <strong>Rows:</strong> 3,010 | 
+            <strong>Columns:</strong> 20 |
+            <strong>Last Updated:</strong> 2026-01-07 05:03:20 |
+            <strong>Version:</strong> 12.03
+        </div>
+        
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>ID</td><td>object</td><td>3,010</td><td>0.0%</td></tr><tr><td>Date</td><td>object</td><td>3,010</td><td>0.0%</td></tr><tr><td>Type</td><td>object</td><td>3,010</td><td>0.0%</td></tr><tr><td>Team</td><td>object</td><td>3,010</td><td>0.0%</td></tr><tr><td>Opp</td><td>object</td><td>3,010</td><td>0.0%</td></tr><tr><td>#</td><td>object</td><td>3,009</td><td>0.0%</td></tr><tr><td>Player</td><td>object</td><td>3,010</td><td>0.0%</td></tr><tr><td>Position</td><td>object</td><td>2,994</td><td>0.5%</td></tr><tr><td>GP</td><td>int64</td><td>3,010</td><td>0.0%</td></tr><tr><td>G</td><td>int64</td><td>3,010</td><td>0.0%</td></tr><tr><td>A</td><td>int64</td><td>3,010</td><td>0.0%</td></tr><tr><td>GA</td><td>int64</td><td>3,010</td><td>0.0%</td></tr><tr><td>PIM</td><td>int64</td><td>3,010</td><td>0.0%</td></tr><tr><td>SO</td><td>int64</td><td>3,010</td><td>0.0%</td></tr><tr><td>Rank</td><td>float64</td><td>2,994</td><td>0.5%</td></tr><tr><td>ID2</td><td>object</td><td>3,010</td><td>0.0%</td></tr><tr><td>ID3</td><td>object</td><td>3,010</td><td>0.0%</td></tr><tr><td>Season</td><td>object</td><td>3,010</td><td>0.0%</td></tr><tr><td>SeasonPlayerID</td><td>object</td><td>3,010</td><td>0.0%</td></tr><tr><td>player_game_id</td><td>object</td><td>3,010</td><td>0.0%</td></tr>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>ID</th>
+      <th>Date</th>
+      <th>Type</th>
+      <th>Team</th>
+      <th>Opp</th>
+      <th>#</th>
+      <th>Player</th>
+      <th>Position</th>
+      <th>GP</th>
+      <th>G</th>
+      <th>A</th>
+      <th>GA</th>
+      <th>PIM</th>
+      <th>SO</th>
+      <th>Rank</th>
+      <th>ID2</th>
+      <th>ID3</th>
+      <th>Season</th>
+      <th>SeasonPlayerID</th>
+      <th>player_game_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>20242025C</td>
+      <td>2025-04-27 00:00:00</td>
+      <td>Championship</td>
+      <td>HollowBrook</td>
+      <td>Triple J</td>
+      <td>2</td>
+      <td>Hunter Winegarner – 5</td>
+      <td>Forward</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>5.0</td>
+      <td>20242025CHollowBrook</td>
+      <td>20242025CTriple J</td>
+      <td>2024-2025</td>
+      <td>2024-2025Hunter Winegarner – 5</td>
+      <td>PG_20242025C_Hunter_Winegarner_–_</td>
+    </tr>
+    <tr>
+      <td>20242025C</td>
+      <td>2025-04-27 00:00:00</td>
+      <td>Championship</td>
+      <td>HollowBrook</td>
+      <td>Triple J</td>
+      <td>4</td>
+      <td>Cesar Shinall – 4</td>
+      <td>Forward</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>4.0</td>
+      <td>20242025CHollowBrook</td>
+      <td>20242025CTriple J</td>
+      <td>2024-2025</td>
+      <td>2024-2025Cesar Shinall – 4</td>
+      <td>PG_20242025C_Cesar_Shinall_–_4</td>
+    </tr>
+    <tr>
+      <td>20242025C</td>
+      <td>2025-04-27 00:00:00</td>
+      <td>Championship</td>
+      <td>HollowBrook</td>
+      <td>Triple J</td>
+      <td>5</td>
+      <td>Bert Loper – 2</td>
+      <td>Forward</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2.0</td>
+      <td>20242025CHollowBrook</td>
+      <td>20242025CTriple J</td>
+      <td>2024-2025</td>
+      <td>2024-2025Bert Loper – 2</td>
+      <td>PG_20242025C_Bert_Loper_–_2</td>
+    </tr>
+    <tr>
+      <td>20242025C</td>
+      <td>2025-04-27 00:00:00</td>
+      <td>Championship</td>
+      <td>HollowBrook</td>
+      <td>Triple J</td>
+      <td>9</td>
+      <td>Billy Gaechter – 3</td>
+      <td>Forward</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3.0</td>
+      <td>20242025CHollowBrook</td>
+      <td>20242025CTriple J</td>
+      <td>2024-2025</td>
+      <td>2024-2025Billy Gaechter – 3</td>
+      <td>PG_20242025C_Billy_Gaechter_–_3</td>
+    </tr>
+    <tr>
+      <td>20242025C</td>
+      <td>2025-04-27 00:00:00</td>
+      <td>Championship</td>
+      <td>HollowBrook</td>
+      <td>Triple J</td>
+      <td>10</td>
+      <td>Ronnie Pinnell – 4</td>
+      <td>Defense</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>4.0</td>
+      <td>20242025CHollowBrook</td>
+      <td>20242025CTriple J</td>
+      <td>2024-2025</td>
+      <td>2024-2025Ronnie Pinnell – 4</td>
+      <td>PG_20242025C_Ronnie_Pinnell_–_4</td>
+    </tr>
+    <tr>
+      <td>20242025C</td>
+      <td>2025-04-27 00:00:00</td>
+      <td>Championship</td>
+      <td>HollowBrook</td>
+      <td>Triple J</td>
+      <td>11</td>
+      <td>Ty Smith (C) – 5.5</td>
+      <td>Forward</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>6.0</td>
+      <td>20242025CHollowBrook</td>
+      <td>20242025CTriple J</td>
+      <td>2024-2025</td>
+      <td>2024-2025Ty Smith (C) – 5.5</td>
+      <td>PG_20242025C_Ty_Smith_(C)_–_5.5</td>
+    </tr>
+    <tr>
+      <td>20242025C</td>
+      <td>2025-04-27 00:00:00</td>
+      <td>Championship</td>
+      <td>HollowBrook</td>
+      <td>Triple J</td>
+      <td>13</td>
+      <td>Nathan Watts – 5</td>
+      <td>Forward</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+      <td>5.0</td>
+      <td>20242025CHollowBrook</td>
+      <td>20242025CTriple J</td>
+      <td>2024-2025</td>
+      <td>2024-2025Nathan Watts – 5</td>
+      <td>PG_20242025C_Nathan_Watts_–_5</td>
+    </tr>
+    <tr>
+      <td>20242025C</td>
+      <td>2025-04-27 00:00:00</td>
+      <td>Championship</td>
+      <td>HollowBrook</td>
+      <td>Triple J</td>
+      <td>18</td>
+      <td>Todd Heffner – 4</td>
+      <td>Forward</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>4.0</td>
+      <td>20242025CHollowBrook</td>
+      <td>20242025CTriple J</td>
+      <td>2024-2025</td>
+      <td>2024-2025Todd Heffner – 4</td>
+      <td>PG_20242025C_Todd_Heffner_–_4</td>
+    </tr>
+    <tr>
+      <td>20242025C</td>
+      <td>2025-04-27 00:00:00</td>
+      <td>Championship</td>
+      <td>HollowBrook</td>
+      <td>Triple J</td>
+      <td>19</td>
+      <td>Hayden Smith – 5.5</td>
+      <td>Forward</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>5.0</td>
+      <td>20242025CHollowBrook</td>
+      <td>20242025CTriple J</td>
+      <td>2024-2025</td>
+      <td>2024-2025Hayden Smith – 5.5</td>
+      <td>PG_20242025C_Hayden_Smith_–_5.5</td>
+    </tr>
+    <tr>
+      <td>20242025C</td>
+      <td>2025-04-27 00:00:00</td>
+      <td>Championship</td>
+      <td>HollowBrook</td>
+      <td>Triple J</td>
+      <td>21</td>
+      <td>Robert Mayfield – 3</td>
+      <td>Defense</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3.0</td>
+      <td>20242025CHollowBrook</td>
+      <td>20242025CTriple J</td>
+      <td>2024-2025</td>
+      <td>2024-2025Robert Mayfield – 3</td>
+      <td>PG_20242025C_Robert_Mayfield_–_3</td>
+    </tr>
+    <tr>
+      <td>20242025C</td>
+      <td>2025-04-27 00:00:00</td>
+      <td>Championship</td>
+      <td>HollowBrook</td>
+      <td>Triple J</td>
+      <td>26</td>
+      <td>Nate Flint (A) – 4</td>
+      <td>Forward</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+      <td>4.0</td>
+      <td>20242025CHollowBrook</td>
+      <td>20242025CTriple J</td>
+      <td>2024-2025</td>
+      <td>2024-2025Nate Flint (A) – 4</td>
+      <td>PG_20242025C_Nate_Flint_(A)_–_4</td>
+    </tr>
+    <tr>
+      <td>20242025C</td>
+      <td>2025-04-27 00:00:00</td>
+      <td>Championship</td>
+      <td>HollowBrook</td>
+      <td>Triple J</td>
+      <td>27</td>
+      <td>Beau Kelly – 4</td>
+      <td>Defense</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>4.0</td>
+      <td>20242025CHollowBrook</td>
+      <td>20242025CTriple J</td>
+      <td>2024-2025</td>
+      <td>2024-2025Beau Kelly – 4</td>
+      <td>PG_20242025C_Beau_Kelly_–_4</td>
+    </tr>
+    <tr>
+      <td>20242025C</td>
+      <td>2025-04-27 00:00:00</td>
+      <td>Championship</td>
+      <td>HollowBrook</td>
+      <td>Triple J</td>
+      <td>31</td>
+      <td>Jared Wolf (G) – 5</td>
+      <td>Goalie</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0</td>
+      <td>0</td>
+      <td>5.0</td>
+      <td>20242025CHollowBrook</td>
+      <td>20242025CTriple J</td>
+      <td>2024-2025</td>
+      <td>2024-2025Jared Wolf (G) – 5</td>
+      <td>PG_20242025C_Jared_Wolf_(G)_–_5</td>
+    </tr>
+    <tr>
+      <td>20242025C</td>
+      <td>2025-04-27 00:00:00</td>
+      <td>Championship</td>
+      <td>HollowBrook</td>
+      <td>Triple J</td>
+      <td>33</td>
+      <td>Lee Smith (S) – 3</td>
+      <td>Defense</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3.0</td>
+      <td>20242025CHollowBrook</td>
+      <td>20242025CTriple J</td>
+      <td>2024-2025</td>
+      <td>2024-2025Lee Smith (S) – 3</td>
+      <td>PG_20242025C_Lee_Smith_(S)_–_3</td>
+    </tr>
+    <tr>
+      <td>20242025C</td>
+      <td>2025-04-27 00:00:00</td>
+      <td>Championship</td>
+      <td>Triple J</td>
+      <td>HollowBrook</td>
+      <td>5</td>
+      <td>Jason Judge – 4</td>
+      <td>Defense</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>4.0</td>
+      <td>20242025CTriple J</td>
+      <td>20242025CHollowBrook</td>
+      <td>2024-2025</td>
+      <td>2024-2025Jason Judge – 4</td>
+      <td>PG_20242025C_Jason_Judge_–_4</td>
+    </tr>
+    <tr>
+      <td>20242025C</td>
+      <td>2025-04-27 00:00:00</td>
+      <td>Championship</td>
+      <td>Triple J</td>
+      <td>HollowBrook</td>
+      <td>10</td>
+      <td>Hal Jordan (S) – 3</td>
+      <td>Defense</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3.0</td>
+      <td>20242025CTriple J</td>
+      <td>20242025CHollowBrook</td>
+      <td>2024-2025</td>
+      <td>2024-2025Hal Jordan (S) – 3</td>
+      <td>PG_20242025C_Hal_Jordan_(S)_–_3</td>
+    </tr>
+    <tr>
+      <td>20242025C</td>
+      <td>2025-04-27 00:00:00</td>
+      <td>Championship</td>
+      <td>Triple J</td>
+      <td>HollowBrook</td>
+      <td>12</td>
+      <td>John-Michael Sebben – 2</td>
+      <td>Forward</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2.0</td>
+      <td>20242025CTriple J</td>
+      <td>20242025CHollowBrook</td>
+      <td>2024-2025</td>
+      <td>2024-2025John-Michael Sebben – 2</td>
+      <td>PG_20242025C_John-Michael_Sebben_</td>
+    </tr>
+    <tr>
+      <td>20242025C</td>
+      <td>2025-04-27 00:00:00</td>
+      <td>Championship</td>
+      <td>Triple J</td>
+      <td>HollowBrook</td>
+      <td>21</td>
+      <td>Matt Lee – 5</td>
+      <td>Forward</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>5.0</td>
+      <td>20242025CTriple J</td>
+      <td>20242025CHollowBrook</td>
+      <td>2024-2025</td>
+      <td>2024-2025Matt Lee – 5</td>
+      <td>PG_20242025C_Matt_Lee_–_5</td>
+    </tr>
+    <tr>
+      <td>20242025C</td>
+      <td>2025-04-27 00:00:00</td>
+      <td>Championship</td>
+      <td>Triple J</td>
+      <td>HollowBrook</td>
+      <td>27</td>
+      <td>Nicole Downs – 2</td>
+      <td>Forward</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2.0</td>
+      <td>20242025CTriple J</td>
+      <td>20242025CHollowBrook</td>
+      <td>2024-2025</td>
+      <td>2024-2025Nicole Downs – 2</td>
+      <td>PG_20242025C_Nicole_Downs_–_2</td>
+    </tr>
+    <tr>
+      <td>20242025C</td>
+      <td>2025-04-27 00:00:00</td>
+      <td>Championship</td>
+      <td>Triple J</td>
+      <td>HollowBrook</td>
+      <td>37</td>
+      <td>Bob Colby (A) – 4</td>
+      <td>Forward</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>4.0</td>
+      <td>20242025CTriple J</td>
+      <td>20242025CHollowBrook</td>
+      <td>2024-2025</td>
+      <td>2024-2025Bob Colby (A) – 4</td>
+      <td>PG_20242025C_Bob_Colby_(A)_–_4</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+        </div>
+        
+        <footer>
+            BenchSight v13.18 | Generated 2026-01-07 05:03:20
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>dim_shift_duration - BenchSight v13.18</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1800px; margin: 0 auto; }
+        h1 { color: #1a1a2e; margin-bottom: 5px; }
+        h2 { color: #4a4e69; margin-top: 30px; border-bottom: 2px solid #4a4e69; padding-bottom: 5px; }
+        h3 { color: #22223b; margin-top: 20px; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .description { background: #f0f7ff; border-left: 4px solid #0066cc; padding: 15px; margin: 15px 0; }
+        .critical { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 15px 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 13px; vertical-align: top; }
+        th { background: #4a4e69; color: white; position: sticky; top: 0; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        tr:hover { background: #f0f0f0; }
+        .type-explicit { background: #d4edda; color: #155724; padding: 2px 6px; border-radius: 3px; font-size: 11px; }
+        .type-calculated { background: #cce5ff; color: #004085; padding: 2px 6px; border-radius: 3px; font-size: 11px; }
+        .type-derived { background: #e2d5f1; color: #4a235a; padding: 2px 6px; border-radius: 3px; font-size: 11px; }
+        .type-fk { background: #ffeeba; color: #856404; padding: 2px 6px; border-radius: 3px; font-size: 11px; }
+        .type-unknown { background: #e9ecef; color: #495057; padding: 2px 6px; border-radius: 3px; font-size: 11px; }
+        code { background: #e9ecef; padding: 2px 6px; border-radius: 3px; font-family: monospace; font-size: 12px; }
+        .null-high { color: #dc3545; font-weight: bold; }
+        .null-medium { color: #fd7e14; }
+        .null-low { color: #28a745; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
+        .scrollable { overflow-x: auto; max-height: 600px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>dim_shift_duration</h1>
+        
+        <div class="meta">
+            <strong>Rows:</strong> 5 | 
+            <strong>Columns:</strong> 7 |
+            <strong>Last Updated:</strong> 2026-01-07 17:16 |
+            <strong>Version:</strong> 12.03
+        </div>
+        
+        <div class="card">
+            <h2>Table Overview</h2>
+            <div class="description">
+                <strong>Description:</strong> Shift duration buckets.
+            </div>
+            <p><strong>Purpose:</strong> Categorize shift lengths.</p>
+            <p><strong>Source Module:</strong> <code>src/core/base_etl.py:create_reference_tables()</code></p>
+            <p><strong>Logic:</strong> Duration buckets (Short, Normal, Long).</p>
+
+        </div>
+        
+        <div class="card">
+            <h2>Column Documentation</h2>
+            <p><strong>Legend:</strong> 
+                <span class="type-explicit">Explicit</span> = From raw data |
+                <span class="type-calculated">Calculated</span> = Formula-based |
+                <span class="type-derived">Derived</span> = Generated key/aggregate |
+                <span class="type-fk">FK</span> = Foreign key lookup
+            </p>
+            <div class="scrollable">
+                <table>
+                    <tr>
+                        <th style="min-width:150px">Column</th>
+                        <th style="min-width:80px">Data Type</th>
+                        <th style="min-width:250px">Description</th>
+                        <th style="min-width:200px">Context / Mapping</th>
+                        <th style="min-width:200px">Calculation / Formula</th>
+                        <th style="min-width:70px">Type</th>
+                        <th style="min-width:60px">Non-Null</th>
+                        <th style="min-width:50px">Null %</th>
+                    </tr>
+                    <tr>
+                        <td><code>shift_duration_id</code></td>
+                        <td>object</td>
+                        <td>FK to dim_shift_duration</td>
+                        <td></td>
+                        <td>Lookup</td>
+                        <td><span class="type-fk">FK</span></td>
+                        <td>5</td>
+                        <td class="null-low">0.0%</td>
+                    </tr>
+                    <tr>
+                        <td><code>duration_bucket</code></td>
+                        <td>object</td>
+                        <td>Duration Bucket</td>
+                        <td></td>
+                        <td></td>
+                        <td><span class="type-unknown">Unknown</span></td>
+                        <td>5</td>
+                        <td class="null-low">0.0%</td>
+                    </tr>
+                    <tr>
+                        <td><code>min_seconds</code></td>
+                        <td>int64</td>
+                        <td>Min Seconds</td>
+                        <td></td>
+                        <td></td>
+                        <td><span class="type-unknown">Unknown</span></td>
+                        <td>5</td>
+                        <td class="null-low">0.0%</td>
+                    </tr>
+                    <tr>
+                        <td><code>max_seconds</code></td>
+                        <td>int64</td>
+                        <td>Max Seconds</td>
+                        <td></td>
+                        <td></td>
+                        <td><span class="type-unknown">Unknown</span></td>
+                        <td>5</td>
+                        <td class="null-low">0.0%</td>
+                    </tr>
+                    <tr>
+                        <td><code>description</code></td>
+                        <td>object</td>
+                        <td>Description</td>
+                        <td></td>
+                        <td></td>
+                        <td><span class="type-unknown">Unknown</span></td>
+                        <td>5</td>
+                        <td class="null-low">0.0%</td>
+                    </tr>
+                    <tr>
+                        <td><code>fatigue_level</code></td>
+                        <td>object</td>
+                        <td>Fatigue Level</td>
+                        <td></td>
+                        <td></td>
+                        <td><span class="type-unknown">Unknown</span></td>
+                        <td>5</td>
+                        <td class="null-low">0.0%</td>
+                    </tr>
+                    <tr>
+                        <td><code>typical_scenario</code></td>
+                        <td>object</td>
+                        <td>Typical Scenario</td>
+                        <td></td>
+                        <td></td>
+                        <td><span class="type-unknown">Unknown</span></td>
+                        <td>5</td>
+                        <td class="null-low">0.0%</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Sample Data (First 10 Rows)</h2>
+            <div class="scrollable">
+<table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>shift_duration_id</th>
+      <th>duration_bucket</th>
+      <th>min_seconds</th>
+      <th>max_seconds</th>
+      <th>description</th>
+      <th>fatigue_level</th>
+      <th>typical_scenario</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>SD01</td>
+      <td>Very Short</td>
+      <td>0</td>
+      <td>30</td>
+      <td>Quick line change or partial shift</td>
+      <td>Fresh</td>
+      <td>Line change during play</td>
+    </tr>
+    <tr>
+      <td>SD02</td>
+      <td>Short</td>
+      <td>30</td>
+      <td>45</td>
+      <td>Quick but complete shift</td>
+      <td>Fresh</td>
+      <td>Fast pace, quick changes</td>
+    </tr>
+    <tr>
+      <td>SD03</td>
+      <td>Normal</td>
+      <td>45</td>
+      <td>60</td>
+      <td>Standard shift duration</td>
+      <td>Moderate</td>
+      <td>Typical game flow</td>
+    </tr>
+    <tr>
+      <td>SD04</td>
+      <td>Long</td>
+      <td>60</td>
+      <td>90</td>
+      <td>Extended shift</td>
+      <td>Tired</td>
+      <td>Extended zone time, PP/PK</td>
+    </tr>
+    <tr>
+      <td>SD05</td>
+      <td>Very Long</td>
+      <td>90</td>
+      <td>9999</td>
+      <td>Double shift or exhausted</td>
+      <td>Exhausted</td>
+      <td>Caught on ice, PP/PK</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+        </div>
+        
+        <footer>
+            BenchSight v13.18 | Generated 2026-01-07 17:16
+        </footer>
+    </div>
+</body>
+</html>

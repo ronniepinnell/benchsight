@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doc Maintenance Guide - BenchSight</title>
+    <style>
+        :root {
+            --bg-dark: #1a1a2e;
+            --bg-card: #16213e;
+            --accent: #e94560;
+            --accent-green: #00ff88;
+            --accent-yellow: #ffd700;
+            --accent-blue: #4da6ff;
+            --text: #eee;
+            --text-dim: #888;
+            --border: #333;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        h1 {
+            color: var(--accent-blue);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: var(--text-dim);
+            margin-bottom: 30px;
+        }
+        
+        h2 {
+            color: var(--accent-green);
+            margin: 30px 0 15px 0;
+            padding-bottom: 5px;
+            border-bottom: 2px solid var(--accent-green);
+        }
+        
+        h3 {
+            color: var(--accent-yellow);
+            margin: 20px 0 10px 0;
+        }
+        
+        .card {
+            background: var(--bg-card);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid var(--accent-blue);
+        }
+        
+        .card.green { border-left-color: var(--accent-green); }
+        .card.yellow { border-left-color: var(--accent-yellow); }
+        .card.red { border-left-color: var(--accent); }
+        
+        pre, code {
+            font-family: 'Consolas', 'Monaco', monospace;
+            background: #0f0f1a;
+            border-radius: 5px;
+        }
+        
+        pre {
+            padding: 15px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        
+        code { padding: 2px 6px; }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        th {
+            background: var(--bg-card);
+            color: var(--accent-green);
+        }
+        
+        tr:hover { background: rgba(255,255,255,0.05); }
+        
+        .highlight { color: var(--accent-green); font-weight: bold; }
+        .warning { color: var(--accent-yellow); }
+        .danger { color: var(--accent); }
+        
+        .big-command {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 2px solid var(--accent-blue);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .big-command code {
+            font-size: 1.3rem;
+            color: var(--accent-blue);
+            background: transparent;
+        }
+        
+        .nav {
+            background: var(--bg-card);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .nav a {
+            color: var(--accent-green);
+            text-decoration: none;
+            margin-right: 20px;
+        }
+        
+        .nav a:hover { text-decoration: underline; }
+        
+        .toc {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .toc ul { list-style: none; }
+        .toc li { padding: 5px 0; }
+        .toc a { color: var(--text); text-decoration: none; }
+        .toc a:hover { color: var(--accent-green); }
+        
+        .workflow-step {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 15px;
+            background: var(--bg-card);
+            border-radius: 8px;
+        }
+        
+        .workflow-step .number {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .file-tree {
+            font-family: monospace;
+            background: #0f0f1a;
+            padding: 15px;
+            border-radius: 5px;
+            line-height: 1.8;
+        }
+        
+        .file-tree .folder { color: var(--accent-yellow); }
+        .file-tree .file { color: var(--text); }
+        .file-tree .highlight { color: var(--accent-green); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav">
+            <a href="index.html">← Back to Index</a>
+            <a href="BS_DETECTOR.html">BS Detector Guide</a>
+            <a href="tables.html">Tables</a>
+        </div>
+        
+        <h1>📚 Documentation Maintenance Guide</h1>
+        <p class="subtitle">How to keep docs consistent and up-to-date</p>
+        
+        <div class="toc">
+            <h3>Contents</h3>
+            <ul>
+                <li><a href="#quick-start">Quick Start</a></li>
+                <li><a href="#version-system">Version System</a></li>
+                <li><a href="#doc-consistency">Doc Consistency System</a></li>
+                <li><a href="#workflows">Common Workflows</a></li>
+                <li><a href="#file-structure">File Structure</a></li>
+                <li><a href="#banned-tables">Banned Table Names</a></li>
+                <li><a href="#commands">Command Reference</a></li>
+            </ul>
+        </div>
+        
+        <!-- QUICK START -->
+        <h2 id="quick-start">🚀 Quick Start</h2>
+        
+        <p>The pre-delivery pipeline handles everything automatically:</p>
+        
+        <div class="big-command">
+            <code>python scripts/pre_delivery.py</code>
+        </div>
+        
+        <p>This command:</p>
+        <ul>
+            <li>Runs fresh ETL</li>
+            <li>Bumps version number automatically</li>
+            <li>Updates all documentation to new version</li>
+            <li>Fixes any banned table names</li>
+            <li>Creates verified package</li>
+        </ul>
+        
+        <!-- VERSION SYSTEM -->
+        <h2 id="version-system">📌 Version System</h2>
+        
+        <div class="card">
+            <h3>Version Format: <code>v{CHAT}.{OUTPUT}</code></h3>
+            <ul>
+                <li><strong>CHAT</strong> = Increments each NEW Claude chat session</li>
+                <li><strong>OUTPUT</strong> = Increments each package within same chat</li>
+            </ul>
+            <p>Examples: v13.18, v13.18, v14.01</p>
+        </div>
+        
+        <h3>Version is Stored in: <code>config/VERSION.json</code></h3>
+        
+        <pre>{
+    "version": "13.05",
+    "chat": 13,
+    "output": 5,
+    "date": "2026-01-07"
+}</pre>
+        
+        <p>This is the <span class="highlight">SINGLE SOURCE OF TRUTH</span> for version numbers.</p>
+        
+        <!-- DOC CONSISTENCY -->
+        <h2 id="doc-consistency">🔄 Doc Consistency System</h2>
+        
+        <p>The doc consistency system ensures ALL documentation files have:</p>
+        <ul>
+            <li>Correct version numbers</li>
+            <li>No banned/old table names</li>
+            <li>Consistent formatting</li>
+        </ul>
+        
+        <h3>Files Scanned (198+ files)</h3>
+        <table>
+            <tr><th>Location</th><th>File Types</th></tr>
+            <tr><td>Project root</td><td>*.md</td></tr>
+            <tr><td>docs/</td><td>*.md, *.html, *.mermaid</td></tr>
+            <tr><td>docs/html/</td><td>*.html</td></tr>
+            <tr><td>docs/html/tables/</td><td>*.html (130+ files)</td></tr>
+            <tr><td>docs/diagrams/</td><td>*.mermaid</td></tr>
+        </table>
+        
+        <h3>What It Fixes</h3>
+        <ul>
+            <li>Old version numbers → Current version</li>
+            <li>Banned table names → Canonical names</li>
+            <li>Stale "Chat X" references → Current chat</li>
+        </ul>
+        
+        <!-- WORKFLOWS -->
+        <h2 id="workflows">📋 Common Workflows</h2>
+        
+        <h3>Every Output (Standard Delivery)</h3>
+        
+        <div class="workflow-step">
+            <div class="number">1</div>
+            <div>Run the pre-delivery pipeline:
+                <pre>python scripts/pre_delivery.py</pre>
+            </div>
+        </div>
+        
+        <div class="workflow-step">
+            <div class="number">2</div>
+            <div>If it passes, deliver the package. Done!</div>
+        </div>
+        
+        <h3>New Chat Session</h3>
+        
+        <div class="workflow-step">
+            <div class="number">1</div>
+            <div>Start new chat version:
+                <pre>python scripts/utilities/doc_consistency.py --new-chat</pre>
+            </div>
+        </div>
+        
+        <div class="workflow-step">
+            <div class="number">2</div>
+            <div>Fix all docs:
+                <pre>python scripts/utilities/doc_consistency.py --fix</pre>
+            </div>
+        </div>
+        
+        <div class="workflow-step">
+            <div class="number">3</div>
+            <div>Run pre-delivery:
+                <pre>python scripts/pre_delivery.py</pre>
+            </div>
+        </div>
+        
+        <h3>Doc-Only Changes (Quick Mode)</h3>
+        
+        <div class="workflow-step">
+            <div class="number">1</div>
+            <div>Run quick mode with reason:
+                <pre>python scripts/pre_delivery.py --quick --reason "fixed typo in readme"</pre>
+            </div>
+        </div>
+        
+        <p class="warning">⚠️ Quick mode skips ETL. Only use for documentation-only changes.</p>
+        
+        <h3>Renamed a Table</h3>
+        
+        <div class="workflow-step">
+            <div class="number">1</div>
+            <div>Add banned name mapping:
+                <pre>python scripts/utilities/doc_consistency.py --add-banned old_table_name new_table_name</pre>
+            </div>
+        </div>
+        
+        <div class="workflow-step">
+            <div class="number">2</div>
+            <div>Fix all docs:
+                <pre>python scripts/utilities/doc_consistency.py --fix</pre>
+            </div>
+        </div>
+        
+        <div class="workflow-step">
+            <div class="number">3</div>
+            <div>Run pre-delivery:
+                <pre>python scripts/pre_delivery.py</pre>
+            </div>
+        </div>
+        
+        <!-- FILE STRUCTURE -->
+        <h2 id="file-structure">📁 File Structure</h2>
+        
+        <div class="file-tree">
+<span class="folder">config/</span>
+├── <span class="highlight">VERSION.json</span>          ← Version info (auto-updated)
+├── <span class="highlight">IMMUTABLE_FACTS.json</span>  ← Human-verified goals (NEVER auto-update)
+├── <span class="highlight">GROUND_TRUTH.json</span>     ← Auto-computed from ETL
+└── <span class="highlight">FILE_SIZES.json</span>       ← Truncation detection
+
+<span class="folder">scripts/</span>
+├── <span class="highlight">pre_delivery.py</span>       ← THE MASTER PIPELINE
+├── bs_detector.py        ← Quick verification
+└── <span class="folder">utilities/</span>
+    ├── <span class="highlight">doc_consistency.py</span> ← Version/name fixing
+    ├── verify_delivery.py
+    └── scrape_noradhockey.py
+
+<span class="folder">docs/html/</span>
+├── index.html            ← Main doc hub
+├── <span class="highlight">BS_DETECTOR.html</span>      ← This guide's companion
+├── <span class="highlight">DOC_MAINTENANCE.html</span>  ← You are here
+└── <span class="folder">tables/</span>               ← 130+ table docs
+        </div>
+        
+        <!-- BANNED TABLES -->
+        <h2 id="banned-tables">🚫 Banned Table Names</h2>
+        
+        <p>These old table names are automatically replaced:</p>
+        
+        <table>
+            <tr><th>Banned Name</th><th>→</th><th>Correct Name</th></tr>
+            <tr><td><code>fact_event_players</code></td><td>→</td><td><code>fact_event_players</code></td></tr>
+            <tr><td><code>fact_shifts</code></td><td>→</td><td><code>fact_shifts</code></td></tr>
+            <tr><td><code>fact_shift_players</code></td><td>→</td><td><code>fact_shift_players</code></td></tr>
+            <tr><td><code>fact_shift_players</code></td><td>→</td><td><code>fact_shift_players</code></td></tr>
+        </table>
+        
+        <p>Stored in: <code>config/VERSION.json</code> under <code>tables.banned</code></p>
+        
+        <h3>Add New Banned Name</h3>
+        <pre>python scripts/utilities/doc_consistency.py --add-banned old_name new_name</pre>
+        
+        <!-- COMMANDS -->
+        <h2 id="commands">⌨️ Command Reference</h2>
+        
+        <h3>Pre-Delivery Pipeline</h3>
+        <table>
+            <tr><th>Command</th><th>Purpose</th></tr>
+            <tr><td><code>python scripts/pre_delivery.py</code></td><td>Full pipeline (ETL + docs + package)</td></tr>
+            <tr><td><code>python scripts/pre_delivery.py --quick --reason "X"</code></td><td>Doc-only changes</td></tr>
+            <tr><td><code>python scripts/pre_delivery.py --dry-run</code></td><td>Preview without changes</td></tr>
+        </table>
+        
+        <h3>Doc Consistency</h3>
+        <table>
+            <tr><th>Command</th><th>Purpose</th></tr>
+            <tr><td><code>python scripts/utilities/doc_consistency.py</code></td><td>Check for issues</td></tr>
+            <tr><td><code>python scripts/utilities/doc_consistency.py --fix</code></td><td>Auto-fix all docs</td></tr>
+            <tr><td><code>python scripts/utilities/doc_consistency.py --status</code></td><td>Show current version</td></tr>
+            <tr><td><code>python scripts/utilities/doc_consistency.py --bump</code></td><td>Increment output (13.04 → 13.05)</td></tr>
+            <tr><td><code>python scripts/utilities/doc_consistency.py --new-chat</code></td><td>New chat (13.xx → 14.01)</td></tr>
+            <tr><td><code>python scripts/utilities/doc_consistency.py --add-banned OLD NEW</code></td><td>Add banned table name</td></tr>
+        </table>
+        
+        <h3>Verification</h3>
+        <table>
+            <tr><th>Command</th><th>Purpose</th></tr>
+            <tr><td><code>python scripts/bs_detector.py</code></td><td>Full ETL verification</td></tr>
+            <tr><td><code>python scripts/utilities/verify_delivery.py</code></td><td>Check package contents</td></tr>
+        </table>
+        
+        <div class="card green">
+            <h3>💡 Pro Tip</h3>
+            <p>You almost never need to run individual commands. Just use:</p>
+            <pre>python scripts/pre_delivery.py</pre>
+            <p>It handles everything automatically!</p>
+        </div>
+        
+        <hr style="margin: 40px 0; border-color: var(--border);">
+        <p style="text-align: center; color: var(--text-dim);">
+            BenchSight v13.18 | Last Updated: January 7, 2026
+        </p>
+    </div>
+</body>
+</html>

@@ -54,11 +54,11 @@ from dataclasses import dataclass
 # These are predefined lookup values that don't change
 
 PERIODS = [
-    {'period_id': 1, 'period_name': '1st Period', 'period_type': 'regulation', 'period_minutes': 20, 'sort_order': 1},
-    {'period_id': 2, 'period_name': '2nd Period', 'period_type': 'regulation', 'period_minutes': 20, 'sort_order': 2},
-    {'period_id': 3, 'period_name': '3rd Period', 'period_type': 'regulation', 'period_minutes': 20, 'sort_order': 3},
-    {'period_id': 4, 'period_name': 'Overtime', 'period_type': 'overtime', 'period_minutes': 5, 'sort_order': 4},
-    {'period_id': 5, 'period_name': 'Shootout', 'period_type': 'shootout', 'period_minutes': 0, 'sort_order': 5},
+    {'period_id': 'P01', 'period_number': 1, 'period_name': '1st Period', 'period_type': 'regulation', 'period_minutes': 18, 'sort_order': 1},
+    {'period_id': 'P02', 'period_number': 2, 'period_name': '2nd Period', 'period_type': 'regulation', 'period_minutes': 18, 'sort_order': 2},
+    {'period_id': 'P03', 'period_number': 3, 'period_name': '3rd Period', 'period_type': 'regulation', 'period_minutes': 18, 'sort_order': 3},
+    {'period_id': 'P04', 'period_number': 4, 'period_name': 'Overtime', 'period_type': 'overtime', 'period_minutes': 5, 'sort_order': 4},
+    {'period_id': 'P05', 'period_number': 5, 'period_name': 'Shootout', 'period_type': 'shootout', 'period_minutes': 0, 'sort_order': 5},
 ]
 
 EVENT_TYPES = [
@@ -151,6 +151,16 @@ PLAY_DETAILS = [
     {'play_detail_id': 50, 'play_detail': 'PuckRecovery', 'play_category': 'recovery', 'play_type': 'neutral', 'description': 'Recovered loose puck', 'points_value': 0},
     {'play_detail_id': 51, 'play_detail': 'BoardBattleWin', 'play_category': 'recovery', 'play_type': 'neutral', 'description': 'Won board battle', 'points_value': 0},
     {'play_detail_id': 52, 'play_detail': 'BoardBattleLoss', 'play_category': 'recovery', 'play_type': 'neutral', 'description': 'Lost board battle', 'points_value': 0},
+    # Additional offensive plays
+    {'play_detail_id': 60, 'play_detail': 'CrashNet', 'play_category': 'offense', 'play_type': 'offensive', 'description': 'Crash the net', 'points_value': 0},
+    {'play_detail_id': 61, 'play_detail': 'Cycle', 'play_category': 'offense', 'play_type': 'offensive', 'description': 'Cycle play in offensive zone', 'points_value': 0},
+    {'play_detail_id': 62, 'play_detail': 'Forecheck', 'play_category': 'offense', 'play_type': 'offensive', 'description': 'Forecheck pressure', 'points_value': 0},
+    {'play_detail_id': 63, 'play_detail': 'QuickUp', 'play_category': 'offense', 'play_type': 'offensive', 'description': 'Quick up pass', 'points_value': 0},
+    {'play_detail_id': 64, 'play_detail': 'Reverse', 'play_category': 'offense', 'play_type': 'offensive', 'description': 'Reverse play direction', 'points_value': 0},
+    # Additional defensive plays
+    {'play_detail_id': 70, 'play_detail': 'Pressure', 'play_category': 'defense', 'play_type': 'defensive', 'description': 'Defensive pressure on puck carrier', 'points_value': 0},
+    {'play_detail_id': 71, 'play_detail': 'Contain', 'play_category': 'defense', 'play_type': 'defensive', 'description': 'Contain opponent positioning', 'points_value': 0},
+    {'play_detail_id': 72, 'play_detail': 'Surf', 'play_category': 'defense', 'play_type': 'defensive', 'description': 'Surf/shadow defensive positioning', 'points_value': 0},
 ]
 
 SHOT_TYPES = [

@@ -1,3 +1,0 @@
-"""BenchSight Configuration - v5.0.0"""
-SUPABASE_URL = "https://uuaowslhpgyiudmbvqze.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1YW93c2xocGd5aXVkbWJ2cXplIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2Njg1NDk4NywiZXhwIjoyMDgyNDMwOTg3fQ.BV5d03x9Hv83XZsveGdU7k7D7gAZ7Yi1tqNB7DeDkrM"

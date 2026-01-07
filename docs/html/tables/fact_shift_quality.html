@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fact_shift_quality - BenchSight</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #4a4e69; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>fact_shift_quality</h1>
+        
+        <div class="alert alert-danger">⚠️ 15 suspicious stat entries for games in this table</div>
+        
+        <div class="meta">
+            <strong>Rows:</strong> 4,559 | 
+            <strong>Columns:</strong> 10 |
+            <strong>Last Updated:</strong> 2026-01-07 05:03:20 |
+            <strong>Version:</strong> 12.03
+        </div>
+        
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>shift_quality_key</td><td>object</td><td>4,559</td><td>0.0%</td></tr><tr><td>game_id</td><td>int64</td><td>4,559</td><td>0.0%</td></tr><tr><td>player_id</td><td>object</td><td>4,559</td><td>0.0%</td></tr><tr><td>shift_index</td><td>int64</td><td>4,559</td><td>0.0%</td></tr><tr><td>shift_duration</td><td>float64</td><td>4,559</td><td>0.0%</td></tr><tr><td>shift_quality</td><td>object</td><td>4,559</td><td>0.0%</td></tr><tr><td>quality_score</td><td>int64</td><td>4,559</td><td>0.0%</td></tr><tr><td>period</td><td>float64</td><td>4,559</td><td>0.0%</td></tr><tr><td>strength</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>situation</td><td>float64</td><td>0</td><td>100.0%</td></tr>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>shift_quality_key</th>
+      <th>game_id</th>
+      <th>player_id</th>
+      <th>shift_index</th>
+      <th>shift_duration</th>
+      <th>shift_quality</th>
+      <th>quality_score</th>
+      <th>period</th>
+      <th>strength</th>
+      <th>situation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>SH1896900001</td>
+      <td>18969</td>
+      <td>P100001</td>
+      <td>1</td>
+      <td>82.0</td>
+      <td>long</td>
+      <td>70</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>SH1896900007</td>
+      <td>18969</td>
+      <td>P100001</td>
+      <td>7</td>
+      <td>102.0</td>
+      <td>exhausted</td>
+      <td>40</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>SH1896900008</td>
+      <td>18969</td>
+      <td>P100001</td>
+      <td>8</td>
+      <td>7.0</td>
+      <td>short</td>
+      <td>70</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>SH1896900009</td>
+      <td>18969</td>
+      <td>P100001</td>
+      <td>9</td>
+      <td>16.0</td>
+      <td>short</td>
+      <td>70</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>SH1896900010</td>
+      <td>18969</td>
+      <td>P100001</td>
+      <td>10</td>
+      <td>9.0</td>
+      <td>short</td>
+      <td>70</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>SH1896900011</td>
+      <td>18969</td>
+      <td>P100001</td>
+      <td>11</td>
+      <td>25.0</td>
+      <td>short</td>
+      <td>70</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>SH1896900017</td>
+      <td>18969</td>
+      <td>P100001</td>
+      <td>17</td>
+      <td>6.0</td>
+      <td>short</td>
+      <td>70</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>SH1896900018</td>
+      <td>18969</td>
+      <td>P100001</td>
+      <td>18</td>
+      <td>7.0</td>
+      <td>short</td>
+      <td>70</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>SH1896900019</td>
+      <td>18969</td>
+      <td>P100001</td>
+      <td>19</td>
+      <td>14.0</td>
+      <td>short</td>
+      <td>70</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>SH1896900020</td>
+      <td>18969</td>
+      <td>P100001</td>
+      <td>20</td>
+      <td>18.0</td>
+      <td>short</td>
+      <td>70</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>SH1896900021</td>
+      <td>18969</td>
+      <td>P100001</td>
+      <td>21</td>
+      <td>56.0</td>
+      <td>good</td>
+      <td>90</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>SH1896900022</td>
+      <td>18969</td>
+      <td>P100001</td>
+      <td>22</td>
+      <td>57.0</td>
+      <td>good</td>
+      <td>90</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>SH1896900027</td>
+      <td>18969</td>
+      <td>P100001</td>
+      <td>27</td>
+      <td>65.0</td>
+      <td>long</td>
+      <td>70</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>SH1896900028</td>
+      <td>18969</td>
+      <td>P100001</td>
+      <td>28</td>
+      <td>78.0</td>
+      <td>long</td>
+      <td>70</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>SH1896900029</td>
+      <td>18969</td>
+      <td>P100001</td>
+      <td>29</td>
+      <td>59.0</td>
+      <td>good</td>
+      <td>90</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>SH1896900034</td>
+      <td>18969</td>
+      <td>P100001</td>
+      <td>34</td>
+      <td>67.0</td>
+      <td>long</td>
+      <td>70</td>
+      <td>2.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>SH1896900035</td>
+      <td>18969</td>
+      <td>P100001</td>
+      <td>35</td>
+      <td>19.0</td>
+      <td>short</td>
+      <td>70</td>
+      <td>2.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>SH1896900036</td>
+      <td>18969</td>
+      <td>P100001</td>
+      <td>36</td>
+      <td>33.0</td>
+      <td>optimal</td>
+      <td>100</td>
+      <td>2.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>SH1896900040</td>
+      <td>18969</td>
+      <td>P100001</td>
+      <td>40</td>
+      <td>20.0</td>
+      <td>short</td>
+      <td>70</td>
+      <td>2.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>SH1896900041</td>
+      <td>18969</td>
+      <td>P100001</td>
+      <td>41</td>
+      <td>4.0</td>
+      <td>short</td>
+      <td>70</td>
+      <td>2.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+        </div>
+        
+        <footer>
+            BenchSight v13.18 | Generated 2026-01-07 05:03:20
+        </footer>
+    </div>
+</body>
+</html>

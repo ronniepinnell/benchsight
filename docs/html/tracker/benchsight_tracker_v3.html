@@ -1,0 +1,1477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BenchSight Tracker v3</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --bg: #0a0e14; --panel: #131920; --card: #1a222c; --input: #0d1117;
+  --border: #2a3441; --accent: #00d4aa; --accent2: #00b4d8;
+  --success: #10b981; --warn: #f59e0b; --danger: #ef4444;
+  --text: #e2e8f0; --muted: #64748b; --home: #3b82f6; --away: #ef4444;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'SF Mono', monospace; background: var(--bg); color: var(--text); font-size: 11px; overflow: hidden; height: 100vh; }
+.app { display: grid; grid-template-rows: 36px 1fr; height: 100vh; }
+.header { background: var(--panel); border-bottom: 1px solid var(--border); padding: 0 8px; display: flex; align-items: center; gap: 8px; }
+.header h1 { font-size: 12px; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.main { display: grid; grid-template-columns: 220px 1fr 320px; height: 100%; }
+.panel { background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+.panel:last-child { border-right: none; border-left: 1px solid var(--border); }
+.panel-header { background: var(--card); padding: 4px 8px; font-size: 9px; font-weight: 600; text-transform: uppercase; color: var(--accent); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
+.panel-body { flex: 1; overflow-y: auto; padding: 6px; }
+select, input, button { font-family: inherit; font-size: 10px; background: var(--input); border: 1px solid var(--border); color: var(--text); padding: 4px 6px; border-radius: 3px; }
+select:focus, input:focus { border-color: var(--accent); outline: none; }
+button { cursor: pointer; } button:hover { background: var(--card); border-color: var(--accent); }
+.btn-sm { padding: 2px 5px; font-size: 9px; }
+.btn-primary { background: var(--accent); color: #000; border-color: var(--accent); }
+.btn-success { background: var(--success); color: #fff; }
+.btn-danger { background: var(--danger); color: #fff; }
+kbd { background: var(--bg); border: 1px solid var(--border); padding: 0 3px; border-radius: 2px; font-size: 8px; color: var(--muted); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 4px; }
+.form-row.tri { grid-template-columns: 1fr 1fr 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 1px; }
+.form-group label { font-size: 7px; color: var(--muted); text-transform: uppercase; }
+.form-group select, .form-group input { width: 100%; }
+
+/* Header */
+.game-select { width: 200px; }
+.clock { font-size: 16px; font-weight: 700; color: var(--accent); background: var(--bg); padding: 2px 8px; border-radius: 3px; border: 1px solid var(--border); }
+.score { font-size: 14px; font-weight: 700; }
+.score-h { color: var(--home); } .score-a { color: var(--away); }
+.period-btns { display: flex; gap: 2px; }
+.period-btn { padding: 2px 6px; } .period-btn.active { background: var(--accent); color: #000; }
+.header-right { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+.status { font-size: 8px; color: var(--muted); }
+.conn { font-size: 7px; padding: 1px 4px; border-radius: 8px; }
+.conn.on { background: var(--success); color: #fff; } .conn.off { background: var(--muted); color: #fff; }
+
+/* Shift Panel */
+.team-sec { margin-bottom: 8px; }
+.team-hdr { display: flex; justify-content: space-between; align-items: center; padding: 3px 6px; background: var(--card); border-radius: 3px; margin-bottom: 3px; }
+.team-hdr h4 { font-size: 9px; display: flex; align-items: center; gap: 4px; }
+.team-dot { width: 8px; height: 8px; border-radius: 50%; }
+.slots { display: grid; grid-template-columns: 20px 1fr; gap: 2px; margin-bottom: 2px; }
+.slot-lbl { font-size: 7px; color: var(--muted); display: flex; align-items: center; }
+.slot-row { display: flex; gap: 2px; }
+.slot { flex: 1; min-height: 24px; border-radius: 3px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border: 2px solid var(--border); background: var(--input); font-size: 10px; }
+.slot .num { font-weight: 700; } .slot .name { font-size: 6px; color: var(--muted); max-width: 40px; overflow: hidden; text-overflow: ellipsis; }
+.slot.filled { border-color: var(--success); background: var(--card); }
+.slot.selected { box-shadow: 0 0 0 2px var(--accent); }
+.roster { background: var(--card); border-radius: 3px; padding: 3px; max-height: 80px; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 2px; }
+.roster-btn { padding: 2px 4px; font-size: 8px; border-radius: 2px; cursor: pointer; border: 1px solid var(--border); background: var(--input); display: flex; flex-direction: column; align-items: center; min-width: 32px; }
+.roster-btn .num { font-weight: 700; } .roster-btn .name { font-size: 6px; color: var(--muted); }
+.roster-btn:hover { background: var(--accent); color: #000; }
+.roster-btn.on-ice { opacity: 0.3; }
+.shift-times { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin-top: 4px; padding: 4px; background: var(--card); border-radius: 3px; }
+.shift-times label { font-size: 6px; color: var(--muted); }
+.shift-actions { display: flex; gap: 3px; margin-top: 4px; }
+.shift-actions button { flex: 1; padding: 6px; font-size: 9px; }
+
+/* Shift/Event Logs */
+.log-container { border-top: 1px solid var(--border); max-height: 150px; overflow-y: auto; }
+.log-header { display: grid; grid-template-columns: 30px 40px 1fr 30px; gap: 2px; padding: 2px 4px; background: var(--card); font-size: 7px; color: var(--muted); position: sticky; top: 0; }
+.log-item { display: grid; grid-template-columns: 30px 40px 1fr 30px; gap: 2px; padding: 2px 4px; border-bottom: 1px solid var(--border); font-size: 8px; cursor: pointer; }
+.log-item:hover { background: var(--panel); }
+.log-item.active { background: rgba(0,212,170,0.1); border-left: 2px solid var(--accent); }
+
+/* Center - Rink */
+.center { display: flex; flex-direction: column; background: var(--panel); }
+.rink-wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 8px; position: relative; }
+#rinkSvg { max-width: 100%; max-height: 100%; cursor: crosshair; }
+.mode-ind { position: absolute; top: 6px; left: 50%; transform: translateX(-50%); padding: 3px 10px; border-radius: 12px; font-size: 9px; font-weight: 600; border: 2px solid; }
+.mode-ind.puck { background: #000; color: #fff; border-color: #fff; }
+.mode-ind.player { background: var(--accent); color: #000; border-color: var(--accent); }
+.xy-controls { display: flex; gap: 4px; padding: 4px 8px; background: var(--card); border-top: 1px solid var(--border); align-items: center; flex-wrap: wrap; justify-content: center; }
+.xy-btn { padding: 2px 6px; font-size: 9px; } .xy-btn.active { background: var(--accent); color: #000; }
+.xy-slots { display: flex; gap: 1px; }
+.xy-slot { width: 18px; height: 18px; border-radius: 2px; display: flex; align-items: center; justify-content: center; font-size: 8px; cursor: pointer; border: 1px solid var(--border); background: var(--input); }
+.xy-slot.has { background: var(--success); color: #fff; } .xy-slot.active { box-shadow: 0 0 0 2px var(--accent); }
+.xy-player-sel { min-width: 80px; font-size: 9px; }
+
+/* Event List */
+.evt-list { border-top: 1px solid var(--border); flex: 0 0 180px; overflow-y: auto; }
+.evt-header { display: grid; grid-template-columns: 35px 45px 100px 1fr 20px; gap: 2px; padding: 2px 6px; background: var(--card); font-size: 7px; color: var(--muted); position: sticky; top: 0; }
+.evt-item { display: grid; grid-template-columns: 35px 45px 100px 1fr 20px; gap: 2px; padding: 2px 6px; border-bottom: 1px solid var(--border); font-size: 8px; cursor: pointer; align-items: center; }
+.evt-item:hover { background: var(--panel); }
+.evt-item.active { background: rgba(0,212,170,0.1); }
+.evt-item .idx { color: var(--accent); font-family: monospace; }
+.evt-item .time { color: var(--muted); }
+.evt-item .type { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.evt-item .players { font-size: 7px; color: var(--muted); }
+.evt-item .xy-dot { color: var(--accent); }
+
+/* Right Panel - Event Entry */
+.team-toggle { display: flex; gap: 2px; margin-bottom: 4px; }
+.team-toggle button { flex: 1; padding: 5px; font-size: 9px; }
+.team-toggle .home.active { background: var(--home); color: #fff; }
+.team-toggle .away.active { background: var(--away); color: #fff; }
+.evt-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; margin-bottom: 6px; }
+.evt-btn { padding: 4px 2px; display: flex; flex-direction: column; align-items: center; font-size: 8px; border-radius: 3px; }
+.evt-btn kbd { font-size: 7px; } .evt-btn.active { background: var(--accent); color: #000; }
+.section { margin-bottom: 6px; }
+.section-title { font-size: 8px; color: var(--muted); margin-bottom: 2px; display: flex; justify-content: space-between; }
+.player-list { background: var(--card); border-radius: 3px; padding: 3px; min-height: 28px; }
+.player-chip { display: inline-flex; align-items: center; gap: 2px; padding: 2px 5px; margin: 1px; border-radius: 3px; font-size: 9px; cursor: pointer; border: 1px solid var(--border); background: var(--input); }
+.player-chip.evt { border-color: var(--accent); background: rgba(0,212,170,0.1); }
+.player-chip.opp { border-color: var(--danger); background: rgba(239,68,68,0.1); }
+.player-chip.selected { box-shadow: 0 0 0 2px var(--warn); }
+.player-chip .num { font-weight: 700; }
+.player-chip .su { font-size: 7px; padding: 0 2px; border-radius: 2px; margin-left: 2px; }
+.player-chip .su.s { background: var(--success); color: #fff; }
+.player-chip .su.u { background: var(--danger); color: #fff; }
+.player-chip .remove { color: var(--muted); margin-left: 2px; } .player-chip .remove:hover { color: var(--danger); }
+.quick-add { display: flex; flex-wrap: wrap; gap: 2px; padding: 3px; background: var(--card); border-radius: 3px; }
+.quick-add button { padding: 2px 4px; font-size: 8px; min-width: 24px; }
+.quick-add button.in-evt { background: var(--accent); color: #000; }
+.player-details { background: var(--card); border-radius: 3px; padding: 4px; margin-top: 4px; font-size: 8px; }
+.player-details h5 { color: var(--accent); margin-bottom: 3px; font-size: 9px; }
+.log-actions { display: flex; gap: 3px; margin-top: 6px; }
+.log-actions button { flex: 1; padding: 8px; font-size: 10px; }
+
+/* Modals */
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 100; }
+.overlay.show { display: flex; }
+.modal { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 12px; min-width: 300px; max-width: 500px; max-height: 80vh; overflow-y: auto; }
+.modal h3 { font-size: 12px; color: var(--accent); margin-bottom: 8px; }
+.modal-actions { display: flex; gap: 4px; margin-top: 10px; }
+.modal-actions button { flex: 1; }
+
+/* Toast */
+.toast { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); background: var(--card); border: 1px solid var(--border); padding: 6px 14px; border-radius: 4px; font-size: 10px; z-index: 200; opacity: 0; transition: opacity 0.2s; }
+.toast.show { opacity: 1; }
+.toast.success { border-color: var(--success); color: var(--success); }
+.toast.error { border-color: var(--danger); color: var(--danger); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <h1>⚡ BenchSight v3</h1>
+    <span class="conn off" id="connStatus">OFFLINE</span>
+    <select id="gameSelect" class="game-select" onchange="selectGame(this.value)"><option value="">-- Select Game --</option></select>
+    <button onclick="loadGames()" class="btn-sm">🔄</button>
+    <div class="period-btns">
+      <button class="period-btn active" onclick="setPeriod(1)">P1</button>
+      <button class="period-btn" onclick="setPeriod(2)">P2</button>
+      <button class="period-btn" onclick="setPeriod(3)">P3</button>
+      <button class="period-btn" onclick="setPeriod('OT')">OT</button>
+    </div>
+    <span class="clock" id="clock">18:00</span>
+    <span class="score"><span class="score-h" id="scoreH">0</span> - <span class="score-a" id="scoreA">0</span></span>
+    <div class="header-right">
+      <span class="status" id="status">Ready</span>
+      <button onclick="validateVsNorad()" class="btn-sm btn-warn" title="Validate">✓</button>
+      <button onclick="exportToExcel()" class="btn-sm btn-success">📥 Export</button>
+      <button onclick="showSettings()" class="btn-sm">⚙️</button>
+    </div>
+  </header>
+
+  <div class="main">
+    <!-- LEFT: Shifts -->
+    <div class="panel">
+      <div class="panel-header"><span>Shifts</span><span id="shiftCnt">0</span></div>
+      <div class="panel-body">
+        <!-- Home -->
+        <div class="team-sec">
+          <div class="team-hdr"><h4><span class="team-dot" id="homeDot" style="background:var(--home)"></span><span id="homeLbl">HOME</span></h4><button class="btn-sm" onclick="clearSlots('home')">Clear</button></div>
+          <div class="slots">
+            <span class="slot-lbl">F</span><div class="slot-row" id="homeF"></div>
+            <span class="slot-lbl">D</span><div class="slot-row" id="homeD"></div>
+            <span class="slot-lbl">G</span><div class="slot-row" id="homeG"></div>
+          </div>
+          <div class="roster" id="homeRoster"></div>
+        </div>
+        <!-- Away -->
+        <div class="team-sec">
+          <div class="team-hdr"><h4><span class="team-dot" id="awayDot" style="background:var(--away)"></span><span id="awayLbl">AWAY</span></h4><button class="btn-sm" onclick="clearSlots('away')">Clear</button></div>
+          <div class="slots">
+            <span class="slot-lbl">F</span><div class="slot-row" id="awayF"></div>
+            <span class="slot-lbl">D</span><div class="slot-row" id="awayD"></div>
+            <span class="slot-lbl">G</span><div class="slot-row" id="awayG"></div>
+          </div>
+          <div class="roster" id="awayRoster"></div>
+        </div>
+        <!-- Shift Times -->
+        <div class="shift-times">
+          <div><label>Start</label><input type="text" id="shiftStart" value="18:00"></div>
+          <div><label>End</label><input type="text" id="shiftEnd" value="18:00"></div>
+          <div><label>Start Type</label><select id="shiftStartType"></select></div>
+          <div><label>Stop Type</label><select id="shiftStopType"></select></div>
+        </div>
+        <div class="form-row" style="margin-top:4px;">
+          <div class="form-group"><label>Intermission?</label><select id="isIntermission" onchange="toggleIntermission()"><option value="0">No</option><option value="1">Yes</option></select></div>
+          <div class="form-group"><label>Duration (sec)</label><input type="number" id="intermissionSec" value="0" style="width:60px;" disabled></div>
+        </div>
+        <div class="shift-actions">
+          <button class="btn-primary" onclick="logShift()">LOG SHIFT <kbd>⇧S</kbd></button>
+          <button onclick="copyLastShift()">📋</button>
+        </div>
+      </div>
+      <!-- Shift Log -->
+      <div class="log-container" id="shiftLog">
+        <div class="log-header"><span>#</span><span>Time</span><span>Type</span><span>✎</span></div>
+      </div>
+    </div>
+
+    <!-- CENTER: Rink -->
+    <div class="center">
+      <div class="rink-wrap">
+        <div class="mode-ind puck" id="modeInd">🏒 PUCK</div>
+        <svg id="rinkSvg" viewBox="-105 -47 210 94" onclick="handleRinkClick(event)">
+          <!-- Rink outline with rounded corners -->
+          <rect x="-100" y="-42.5" width="200" height="85" rx="28" fill="#fff" stroke="#000" stroke-width="0.5"/>
+          <!-- Center ice -->
+          <line x1="0" y1="-42.5" x2="0" y2="42.5" stroke="#c00" stroke-width="1"/>
+          <circle cx="0" cy="0" r="15" fill="none" stroke="#00f" stroke-width="0.5"/>
+          <circle cx="0" cy="0" r="1" fill="#00f"/>
+          <!-- Blue lines -->
+          <line x1="-25" y1="-42.5" x2="-25" y2="42.5" stroke="#00f" stroke-width="1"/>
+          <line x1="25" y1="-42.5" x2="25" y2="42.5" stroke="#00f" stroke-width="1"/>
+          <!-- Goal lines (at x=±89) -->
+          <line x1="-89" y1="-42.5" x2="-89" y2="42.5" stroke="#c00" stroke-width="0.5"/>
+          <line x1="89" y1="-42.5" x2="89" y2="42.5" stroke="#c00" stroke-width="0.5"/>
+          <!-- Goal creases (semicircles) -->
+          <path d="M -89 -4 A 6 6 0 0 0 -89 4" fill="rgba(135,206,250,0.4)" stroke="#c00" stroke-width="0.3"/>
+          <path d="M 89 -4 A 6 6 0 0 1 89 4" fill="rgba(135,206,250,0.4)" stroke="#c00" stroke-width="0.3"/>
+          <!-- Goals (nets behind goal line) -->
+          <rect x="-100" y="-3" width="11" height="6" fill="none" stroke="#c00" stroke-width="0.3"/>
+          <rect x="89" y="-3" width="11" height="6" fill="none" stroke="#c00" stroke-width="0.3"/>
+          <!-- Faceoff circles -->
+          <circle cx="-69" cy="-22" r="15" fill="none" stroke="#c00" stroke-width="0.3"/>
+          <circle cx="-69" cy="22" r="15" fill="none" stroke="#c00" stroke-width="0.3"/>
+          <circle cx="69" cy="-22" r="15" fill="none" stroke="#c00" stroke-width="0.3"/>
+          <circle cx="69" cy="22" r="15" fill="none" stroke="#c00" stroke-width="0.3"/>
+          <!-- Faceoff dots -->
+          <circle cx="-69" cy="-22" r="1" fill="#c00"/><circle cx="-69" cy="22" r="1" fill="#c00"/>
+          <circle cx="69" cy="-22" r="1" fill="#c00"/><circle cx="69" cy="22" r="1" fill="#c00"/>
+          <circle cx="-22" cy="-22" r="0.7" fill="#c00"/><circle cx="-22" cy="22" r="0.7" fill="#c00"/>
+          <circle cx="22" cy="-22" r="0.7" fill="#c00"/><circle cx="22" cy="22" r="0.7" fill="#c00"/>
+          <!-- Markers layer -->
+          <g id="markers"></g>
+        </svg>
+      </div>
+      <div class="xy-controls">
+        <button class="xy-btn active" onclick="setXYMode('puck')">🏒 Puck</button>
+        <button class="xy-btn" onclick="setXYMode('player')">👤 Player</button>
+        <select class="xy-player-sel" id="xyPlayerSel" onchange="selectXYPlayer(this.value)" style="display:none;"></select>
+        <span style="color:var(--muted)">|</span>
+        <div class="xy-slots" id="xySlots"></div>
+        <button class="btn-sm" onclick="clearCurrentXY()">🗑️</button>
+        <span style="color:var(--muted);font-size:8px;" id="xyCoords"></span>
+      </div>
+      <!-- Event List -->
+      <div class="evt-list">
+        <div class="evt-header"><span>#</span><span>Time</span><span>Event</span><span>Players</span><span>XY</span></div>
+        <div id="evtList"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Event Entry -->
+    <div class="panel" style="border-left:1px solid var(--border);border-right:none;">
+      <div class="panel-header"><span>Event Entry</span><button class="btn-sm" onclick="clearEvtForm()">Clear <kbd>Esc</kbd></button></div>
+      <div class="panel-body">
+        <div class="team-toggle">
+          <button class="home active" onclick="setEvtTeam('home')"><span id="evtHomeLbl">HOME</span> <kbd>H</kbd></button>
+          <button class="away" onclick="setEvtTeam('away')"><span id="evtAwayLbl">AWAY</span> <kbd>A</kbd></button>
+        </div>
+        <div class="evt-grid" id="evtTypeGrid"></div>
+        <!-- Event Details -->
+        <div class="section">
+          <div class="form-row">
+            <div class="form-group"><label>Detail 1</label><select id="evtD1" onchange="onD1Change()"></select></div>
+            <div class="form-group"><label>Detail 2</label><select id="evtD2"></select></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Start Time</label><input type="text" id="evtStart" value="18:00"></div>
+            <div class="form-group"><label>End Time</label><input type="text" id="evtEnd" value="18:00"></div>
+          </div>
+          <div class="form-row tri">
+            <div class="form-group"><label>Success</label><select id="evtSuccess"><option value="">--</option><option value="s">s</option><option value="u">u</option></select></div>
+            <div class="form-group"><label>Zone</label><select id="evtZone"><option value="">--</option><option value="o">OFF</option><option value="n">NEU</option><option value="d">DEF</option></select></div>
+            <div class="form-group"><label>Highlight</label><select id="evtHL"><option value="0">No</option><option value="1">⭐</option></select></div>
+          </div>
+        </div>
+        <!-- Event Players -->
+        <div class="section">
+          <div class="section-title"><span>Event Team Players</span></div>
+          <div class="player-list" id="evtPlayers"></div>
+          <div class="quick-add" id="evtQuickAdd"></div>
+        </div>
+        <!-- Opp Players -->
+        <div class="section">
+          <div class="section-title"><span>Opposing Players</span></div>
+          <div class="player-list" id="oppPlayers"></div>
+          <div class="quick-add" id="oppQuickAdd"></div>
+        </div>
+        <!-- Player Details (for selected player) -->
+        <div class="player-details" id="playerDetails" style="display:none;">
+          <h5>Player Details: <span id="pdPlayerNum"></span></h5>
+          <div class="form-row">
+            <div class="form-group"><label>Play Detail 1</label><select id="pdPlayD1"></select></div>
+            <div class="form-group"><label>Play Detail 2</label><select id="pdPlayD2"></select></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Play Success</label><select id="pdPlaySuccess"><option value="">--</option><option value="s">s</option><option value="u">u</option></select></div>
+            <div class="form-group"><label>Pressured/Pressurer</label><select id="pdPressure"><option value="">--</option><option value="pressured">Pressured</option><option value="pressurer">Pressurer</option></select></div>
+          </div>
+        </div>
+        <div class="log-actions">
+          <button class="btn-primary" onclick="logEvent()">LOG <kbd>↵</kbd></button>
+          <button onclick="createLinked()">🔗</button>
+          <button onclick="undoLast()">↩️</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="overlay" id="settingsOverlay">
+  <div class="modal">
+    <h3>⚙️ Settings</h3>
+    <div class="form-group" style="margin-bottom:6px;"><label>Supabase URL</label><input type="text" id="sbUrl" style="width:100%;"></div>
+    <div class="form-group" style="margin-bottom:6px;"><label>Supabase Anon Key</label><input type="password" id="sbKey" style="width:100%;"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Auto-save (sec)</label><input type="number" id="autoSaveInt" value="30"></div>
+      <div class="form-group"><label>XY History</label><input type="number" id="xyHistCnt" value="5"></div>
+    </div>
+    <div class="modal-actions">
+      <button onclick="closeSettings()">Cancel</button>
+      <button class="btn-primary" onclick="saveSettings()">Save</button>
+      <button class="btn-success" onclick="testConn()">Test</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Event Modal -->
+<div class="overlay" id="editEvtOverlay">
+  <div class="modal" style="max-width:550px;">
+    <h3>✏️ Edit Event #<span id="editEvtIdx"></span></h3>
+    <div id="editEvtBody"></div>
+    <div class="modal-actions">
+      <button class="btn-danger" onclick="deleteEditingEvt()">Delete</button>
+      <button onclick="closeEditEvt()">Cancel</button>
+      <button class="btn-primary" onclick="saveEvtEdit()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Shift Modal -->
+<div class="overlay" id="editShiftOverlay">
+  <div class="modal">
+    <h3>✏️ Edit Shift #<span id="editShiftIdx"></span></h3>
+    <div id="editShiftBody"></div>
+    <div class="modal-actions">
+      <button class="btn-danger" onclick="deleteEditingShift()">Delete</button>
+      <button onclick="closeEditShift()">Cancel</button>
+      <button class="btn-primary" onclick="saveShiftEdit()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Net Location Modal -->
+<div class="overlay" id="netOverlay">
+  <div class="modal">
+    <h3>🥅 Shot Location</h3>
+    <div id="netGrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:3px;background:#333;padding:6px;border-radius:3px;"></div>
+    <div class="modal-actions"><button onclick="closeNet()">Skip</button><button class="btn-primary" onclick="confirmNet()">OK</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+const S = {
+  sb: null, connected: false,
+  gameId: null, games: [], rosters: { home: [], away: [] },
+  homeTeam: 'HOME', awayTeam: 'AWAY', homeColor: '#3b82f6', awayColor: '#ef4444',
+  period: 1, evtTeam: 'home',
+  events: [], shifts: [], evtIdx: 0, shiftIdx: 0,
+  homeGoals: 0, awayGoals: 0,
+  slots: { home: { F1:null,F2:null,F3:null,D1:null,D2:null,G:null,X:null }, away: { F1:null,F2:null,F3:null,D1:null,D2:null,G:null,X:null } },
+  selectedSlot: null,
+  curr: { type: null, players: [], puckXY: [], netXY: null },
+  selectedPlayer: null, // For XY and play details
+  xyMode: 'puck', xySlot: 1,
+  editingEvtIdx: null, editingShiftIdx: null,
+  lastEndTime: '18:00',
+  lists: {} // Dropdown options
+};
+
+// ============================================================
+// DROPDOWN OPTIONS (from Lists tab)
+// ============================================================
+const LISTS = {
+  eventTypes: ['Faceoff','Shot','Pass','Goal','Turnover','Zone_Entry_Exit','Penalty','PenaltyShot_Shootout','Stoppage','Hit','Possession','LoosePuck','Save','TeamPossessionChange','Rebound','DeadIce','Play','Timeout','Intermission','Clockstop'],
+  hotkeys: { Faceoff:'F', Shot:'S', Pass:'P', Goal:'G', Turnover:'T', Zone_Entry_Exit:'Z', Penalty:'N', Stoppage:'X', Possession:'O', Save:'V', Rebound:'R', DeadIce:'D', Play:'Y' },
+  details: {
+    Shot: { d1: ['Shot_OnNetSaved','Shot_Missed','Shot_Blocked','Shot_BlockedSameTeam','Shot_Deflected','Shot_DeflectedOnNetSaved','Shot_Tipped','Shot_TippedOnNetSaved','Shot_OnNetGoal','Shot_Goal','Shot_MissedPost'], d2: ['Shot-Wrist','Shot-Slap','Shot-Backhand','Shot-Snap','Shot-WrapAround','Shot-Bat','Shot-Cradle','Shot-Poke','Shot-BetweenLegs','Shot-Dumpin','Shot-OneTime','Shot-Tip','Shot-Deflection','Shot-Other'] },
+    Pass: { d1: ['Pass_Completed','Pass_Missed','Pass_Deflected','Pass_Intercepted'], d2: ['Pass-Stretch','Pass-Rim/Wrap','Pass-Backhand','Pass-Forehand','Pass-Bank','Pass-Dump','Pass-Tipped','Pass-Lob','Pass-Drop','Pass-Deflected/TippedShot','Pass-ReceiverMissed','Pass-OneTouch','Pass-SecondTouch','Pass-QuickUp','Pass-GiveAndGo','Pass-Reverse','Pass-Other'] },
+    Goal: { d1: ['Goal_Scored','Goal_Shootout','Goal_PenaltyShot'], d2: ['Goal-Wrist','Goal-Slap','Goal-Backhand','Goal-Tip','Goal-Snap','Goal-WrapAround','Goal-Bat','Goal-Cradle','Goal-Poke','Goal-BetweenLegs','Goal-Dumpin','Goal-Deflection','Goal-OneTime','Goal-Other'] },
+    Faceoff: { d1: ['Faceoff_AfterPenalty','Faceoff_AfterGoal','Faceoff_PeriodStart','Faceoff_AfterStoppage','Faceoff_GameStart'], d2: [] },
+    Turnover: { d1: ['Turnover_Giveaway','Turnover_Takeaway'], d2_Giveaway: ['Giveaway-Misplayed','Giveaway-BattleLost','Giveaway-PassIntercepted','Giveaway-PassMissed','Giveaway-PassBlocked','Giveaway-Other'], d2_Takeaway: ['Takeaway-BattleWon','Takeaway-PokeCheck','Takeaway-PassIntercepted','Takeaway-PassBlocked','Takeaway-Other'] },
+    Zone_Entry_Exit: { d1: ['Zone_Entry','Zone_Exit','Zone_Keepin','Zone_Entryfailed','Zone_ExitFailed','Zone_KeepinFailed'], d2_Entry: ['ZoneEntry-Rush','ZoneEntry-Pass','ZoneEntry-DumpIn','ZoneEntry-Chip','ZoneEntry-FromExitClear','ZoneEntry-Other'], d2_Exit: ['ZoneExit-Rush','ZoneExit-Pass','ZoneExit-Clear','ZoneExit-Chip','ZoneExit-Other'], d2_Keepin: ['Zone-KeepIn','Zone-Pinch','Zone-Other'] },
+    Save: { d1: ['Save_Rebound','Save_Freeze','Save_Played'], d2: ['Save-Glove','Save-Blocker','Save-LeftPad','Save-RightPad','Save-Stick','Save-Scramble','Save-Butterfly','Save-Chest','Save-Other'] },
+    Stoppage: { d1: ['Stoppage_Period','Stoppage_Play','Stoppage_Other','Stoppage_GameEnd'], d2_Play: ['Stoppage-Icing','Stoppage-Offsides','Stoppage-GoalieStoppage','Stoppage-PuckOutofPlay','Stoppage-Penalty','Stoppage-Goal','Stoppage-Other'], d2_Period: ['Stoppage-PeriodStart','Stoppage-PeriodEnd'], d2_Other: ['Stoppage-HomeTimeout','Stoppage-VisitorTimeout','Stoppage-Other'] },
+    Penalty: { d1: ['Penalty_Minor','Penalty_Major','Penalty_Offsetting'], d2: ['Penalty-Tripping','Penalty-Hooking','Penalty-Slashing','Penalty-Interference','Penalty-Holding','Penalty-Roughing','Penalty-HighSticking','Penalty-CrossChecking','Penalty-Boarding','Penalty-Other'] },
+    Possession: { d1: ['Breakaway','PuckRetrieval','PuckRecovery','Regroup'], d2: [] },
+    Rebound: { d1: ['Rebound_TeamRecovered','Rebound_OppTeamRecovered','Rebound_ShotGenerated','Rebound_FlurryGenerated'], d2: [] },
+    LoosePuck: { d1: ['LoosePuck_Forecheck','LoosePuck_Battle'], d2: [] },
+    DeadIce: { d1: ['DeadIce_Icing','DeadIce_Offside','DeadIce_PuckOut','DeadIce_NetOff','DeadIce_Other'], d2: [] },
+    Play: { d1: ['Play_Offensive','Play_Defensive'], d2_Offensive: ['Play-DriveMiddle','Play-DriveWide','Play-DriveCorner','Play-DriveNetMiddle','Play-DriveNetWide','Play-CrashNet','Play-Delay','Play-Deke','Play-Chip','Play-DumpChase','Play-Forecheck','Play-Speed','Play-Other'], d2_Defensive: ['Play-PokeCheck','Play-SeperateFromPuck','Play-Backcheck','Play-Contain','Play-BoxOut','Play-Other'] }
+  },
+  shiftStart: ['GameStart','PeriodStart','FaceoffAfterGoal','FaceoffAfterPenalty','OtherFaceoff','DeadIce/Stoppage','Intermission','DelayedPenalty'],
+  shiftStop: ['PeriodEnd','GoalScored','Penalty','Stoppage','OtherFaceoff','OnTheFly'],
+  playOffensive: ['Play-DriveMiddle','Play-DriveWide','Play-DriveCorner','Play-DriveNetMiddle','Play-DriveNetWide','Play-CrashNet','Play-Delay','Play-Deke','Play-Chip','Play-DumpChase','Play-Forecheck','Play-Speed','Play-Dump/RimInZone','Play-Other'],
+  playDefensive: ['Play-PokeCheck','Play-PokeCheckFailed','Play-SeperateFromPuck','Play-Backcheck','Play-FroceWide','Play-Contain','Play-BeatMiddle','Play-BeatWide','Play-BeatDeke','Play-BeatSpeed','Play-BoxOut','Play-AttemptedClear','Play-Other']
+};
+
+// Default rosters for demo
+const DEMO = {
+  games: [
+    { game_id: 18969, game_date: '2025-09-07', home_team_name: 'Platinum', away_team_name: 'Velodrome', home_team_color: '#919294', away_team_color: '#9C47E4' },
+    { game_id: 18977, game_date: '2025-09-14', home_team_name: 'Velodrome', away_team_name: 'HollowBrook', home_team_color: '#9C47E4', away_team_color: '#4D2640' },
+    { game_id: 18981, game_date: '2025-09-28', home_team_name: 'Nelson', away_team_name: 'Velodrome', home_team_color: '#F3C323', away_team_color: '#9C47E4' },
+    { game_id: 18987, game_date: '2025-10-05', home_team_name: 'Outlaws', away_team_name: 'Velodrome', home_team_color: '#02007B', away_team_color: '#9C47E4' }
+  ],
+  rosters: {
+    18977: {
+      home: [{id:'P100071',num:'9',name:'Pinnell',pos:'D'},{id:'P100072',num:'14',name:'Ciampoli',pos:'F'},{id:'P100073',num:'22',name:'Mayfield',pos:'D'},{id:'P100074',num:'39',name:'Crandall',pos:'G'},{id:'P100075',num:'42',name:'Ashcroft',pos:'F'},{id:'P100076',num:'49',name:'Chaffee',pos:'F'},{id:'P100077',num:'70',name:'S.Downs',pos:'F'},{id:'P100078',num:'75',name:'N.Downs',pos:'F'},{id:'P100079',num:'84',name:'Donaty',pos:'D'},{id:'P100080',num:'87',name:'Cronk',pos:'D'},{id:'P100081',num:'91',name:'White',pos:'F'}],
+      away: [{id:'P100091',num:'11',name:'Player11',pos:'F'},{id:'P100092',num:'19',name:'Player19',pos:'F'},{id:'P100093',num:'22',name:'Player22',pos:'D'},{id:'P100094',num:'27',name:'Player27',pos:'D'},{id:'P100095',num:'33',name:'Player33',pos:'D'},{id:'P100096',num:'47',name:'Player47',pos:'F'},{id:'P100097',num:'68',name:'Player68',pos:'F'},{id:'P100098',num:'77',name:'Player77',pos:'F'},{id:'P100099',num:'99',name:'Goalie99',pos:'G'}]
+    }
+  }
+};
+
+// ============================================================
+// INIT
+// ============================================================
+async function init() {
+  console.log('BenchSight v3 initializing...');
+  loadSettings();
+  await tryConnect();
+  buildUI();
+  loadFromStorage();
+  setupKeys();
+  setInterval(autoSave, 30000);
+  await loadGames();
+  if (S.gameId) await selectGame(S.gameId);
+  console.log('Ready:', S.events.length, 'events,', S.shifts.length, 'shifts');
+}
+
+function loadSettings() {
+  try {
+    const s = JSON.parse(localStorage.getItem('bs_settings') || '{}');
+    if (s.sbUrl) document.getElementById('sbUrl').value = s.sbUrl;
+    if (s.sbKey) document.getElementById('sbKey').value = s.sbKey;
+    if (s.autoSaveInt) document.getElementById('autoSaveInt').value = s.autoSaveInt;
+    if (s.xyHistCnt) document.getElementById('xyHistCnt').value = s.xyHistCnt;
+  } catch(e) {}
+}
+
+function saveSettings() {
+  const s = { sbUrl: document.getElementById('sbUrl').value, sbKey: document.getElementById('sbKey').value, autoSaveInt: document.getElementById('autoSaveInt').value, xyHistCnt: document.getElementById('xyHistCnt').value };
+  localStorage.setItem('bs_settings', JSON.stringify(s));
+  closeSettings();
+  toast('Settings saved', 'success');
+  tryConnect();
+}
+
+async function tryConnect() {
+  const url = document.getElementById('sbUrl').value;
+  const key = document.getElementById('sbKey').value;
+  if (!url || !key) { updateConn(false); return; }
+  try {
+    S.sb = supabase.createClient(url, key);
+    const { error } = await S.sb.from('dim_games').select('game_id').limit(1);
+    if (error) throw error;
+    S.connected = true;
+    updateConn(true);
+  } catch(e) { S.sb = null; S.connected = false; updateConn(false); }
+}
+
+async function testConn() {
+  await tryConnect();
+  toast(S.connected ? '✅ Connected!' : '❌ Failed', S.connected ? 'success' : 'error');
+}
+
+function updateConn(on) {
+  const el = document.getElementById('connStatus');
+  el.textContent = on ? 'ONLINE' : 'OFFLINE';
+  el.className = 'conn ' + (on ? 'on' : 'off');
+}
+
+// ============================================================
+// BUILD UI
+// ============================================================
+function buildUI() {
+  // Event type grid
+  const grid = document.getElementById('evtTypeGrid');
+  const mainTypes = ['Faceoff','Shot','Pass','Goal','Turnover','Zone_Entry_Exit','Stoppage','Penalty','Possession','Save','Rebound','DeadIce'];
+  grid.innerHTML = mainTypes.map(t => `<button class="evt-btn" data-type="${t}" onclick="setEvtType('${t}')">${t.replace('_Entry_Exit','')}<kbd>${LISTS.hotkeys[t]||''}</kbd></button>`).join('');
+  
+  // Shift type dropdowns
+  document.getElementById('shiftStartType').innerHTML = LISTS.shiftStart.map(t => `<option value="${t}">${t}</option>`).join('');
+  document.getElementById('shiftStopType').innerHTML = LISTS.shiftStop.map(t => `<option value="${t}">${t}</option>`).join('');
+  
+  // Slot buttons
+  ['home','away'].forEach(team => {
+    document.getElementById(`${team}F`).innerHTML = ['F1','F2','F3'].map(p => `<div class="slot" data-team="${team}" data-pos="${p}" onclick="selectSlot(this)"><span class="num">${p}</span></div>`).join('');
+    document.getElementById(`${team}D`).innerHTML = ['D1','D2'].map(p => `<div class="slot" data-team="${team}" data-pos="${p}" onclick="selectSlot(this)"><span class="num">${p}</span></div>`).join('');
+    document.getElementById(`${team}G`).innerHTML = ['G','X'].map(p => `<div class="slot" data-team="${team}" data-pos="${p}" onclick="selectSlot(this)"><span class="num">${p}</span></div>`).join('');
+  });
+  
+  // XY slots
+  renderXYSlots();
+}
+
+// ============================================================
+// GAMES & ROSTERS
+// ============================================================
+async function loadGames() {
+  if (S.connected) {
+    try {
+      const { data } = await S.sb.from('dim_games').select('game_id,game_date,home_team_name,away_team_name,home_team_color,away_team_color').order('game_date',{ascending:false}).limit(50);
+      S.games = data || DEMO.games;
+    } catch(e) { S.games = DEMO.games; }
+  } else { S.games = DEMO.games; }
+  const sel = document.getElementById('gameSelect');
+  sel.innerHTML = '<option value="">-- Select Game --</option>' + S.games.map(g => `<option value="${g.game_id}">${g.game_id}: ${g.home_team_name} vs ${g.away_team_name} (${g.game_date})</option>`).join('');
+  if (S.gameId) sel.value = S.gameId;
+}
+
+async function selectGame(gid) {
+  if (!gid) return;
+  S.gameId = parseInt(gid);
+  const g = S.games.find(x => x.game_id == gid);
+  if (!g) { toast('Game not found', 'error'); return; }
+  
+  S.homeTeam = g.home_team_name; S.awayTeam = g.away_team_name;
+  S.homeColor = g.home_team_color || '#3b82f6'; S.awayColor = g.away_team_color || '#ef4444';
+  
+  document.getElementById('homeLbl').textContent = S.homeTeam;
+  document.getElementById('awayLbl').textContent = S.awayTeam;
+  document.getElementById('evtHomeLbl').textContent = S.homeTeam;
+  document.getElementById('evtAwayLbl').textContent = S.awayTeam;
+  document.getElementById('homeDot').style.background = S.homeColor;
+  document.getElementById('awayDot').style.background = S.awayColor;
+  document.documentElement.style.setProperty('--home', S.homeColor);
+  document.documentElement.style.setProperty('--away', S.awayColor);
+  
+  await loadRosters(gid);
+  loadGameData(gid);
+  renderAll();
+  toast(`Loaded: ${S.homeTeam} vs ${S.awayTeam}`, 'success');
+}
+
+async function loadRosters(gid) {
+  if (S.connected) {
+    try {
+      const { data } = await S.sb.from('dim_game_rosters').select('player_id,jersey_number,player_name,position,team_venue').eq('game_id', gid);
+      S.rosters = { home: [], away: [] };
+      (data || []).forEach(p => {
+        const r = p.team_venue === 'home' ? S.rosters.home : S.rosters.away;
+        r.push({ id: p.player_id, num: p.jersey_number, name: p.player_name, pos: p.position });
+      });
+      S.rosters.home.sort((a,b) => parseInt(a.num) - parseInt(b.num));
+      S.rosters.away.sort((a,b) => parseInt(a.num) - parseInt(b.num));
+    } catch(e) { loadDemoRosters(gid); }
+  } else { loadDemoRosters(gid); }
+}
+
+function loadDemoRosters(gid) {
+  const d = DEMO.rosters[gid];
+  if (d) { S.rosters = { home: [...d.home], away: [...d.away] }; }
+  else { S.rosters = { home: Array.from({length:10},(_,i)=>({id:'P'+(i+1),num:String(i+1),name:'Home'+i,pos:i<6?'F':i<8?'D':'G'})), away: Array.from({length:10},(_,i)=>({id:'P'+(i+100),num:String(i+11),name:'Away'+i,pos:i<6?'F':i<8?'D':'G'})) }; }
+}
+
+function loadGameData(gid) {
+  try {
+    const saved = localStorage.getItem(`bs_${gid}`);
+    if (saved) {
+      const d = JSON.parse(saved);
+      S.events = d.events || []; S.shifts = d.shifts || [];
+      S.evtIdx = d.evtIdx || S.events.length; S.shiftIdx = d.shiftIdx || S.shifts.length;
+      S.slots = d.slots || S.slots; S.homeGoals = d.homeGoals || 0; S.awayGoals = d.awayGoals || 0;
+      S.lastEndTime = d.lastEndTime || '18:00';
+    } else {
+      S.events = []; S.shifts = []; S.evtIdx = 0; S.shiftIdx = 0;
+      S.homeGoals = 0; S.awayGoals = 0; S.lastEndTime = '18:00';
+      S.slots = { home: {F1:null,F2:null,F3:null,D1:null,D2:null,G:null,X:null}, away: {F1:null,F2:null,F3:null,D1:null,D2:null,G:null,X:null} };
+    }
+    updateScores();
+  } catch(e) { console.error(e); }
+}
+
+function loadFromStorage() {
+  const last = localStorage.getItem('bs_lastGame');
+  if (last) { S.gameId = parseInt(last); document.getElementById('gameSelect').value = last; }
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function renderAll() {
+  renderSlots(); renderRosters(); renderEvtList(); renderShiftLog(); renderQuickAdd(); renderMarkers();
+  document.getElementById('shiftCnt').textContent = S.shifts.length;
+  // Auto-fill times
+  document.getElementById('evtStart').value = S.lastEndTime;
+  document.getElementById('evtEnd').value = S.lastEndTime;
+  document.getElementById('shiftStart').value = S.lastEndTime;
+}
+
+function renderSlots() {
+  ['home','away'].forEach(team => {
+    Object.keys(S.slots[team]).forEach(pos => {
+      const btn = document.querySelector(`.slot[data-team="${team}"][data-pos="${pos}"]`);
+      if (!btn) return;
+      const p = S.slots[team][pos];
+      if (p) { btn.classList.add('filled'); btn.innerHTML = `<span class="num">${p.num}</span><span class="name">${p.name}</span>`; }
+      else { btn.classList.remove('filled'); btn.innerHTML = `<span class="num">${pos}</span>`; }
+    });
+  });
+}
+
+function renderRosters() {
+  ['home','away'].forEach(team => {
+    const el = document.getElementById(`${team}Roster`);
+    const onIce = Object.values(S.slots[team]).filter(p=>p).map(p=>p.num);
+    el.innerHTML = S.rosters[team].map(p => `<button class="roster-btn ${onIce.includes(p.num)?'on-ice':''}" onclick="assignPlayer('${team}','${p.num}')"><span class="num">${p.num}</span><span class="name">${p.name}</span></button>`).join('');
+  });
+}
+
+function renderEvtList() {
+  const el = document.getElementById('evtList');
+  const recent = S.events.slice(-30).reverse();
+  el.innerHTML = recent.map((e, i) => {
+    const idx = S.events.length - 1 - i;
+    const hasXY = (e.puckXY?.length > 0 || e.players?.some(p => p.xy?.length > 0)) ? '●' : '';
+    const playerNums = e.players?.slice(0,3).map(p => '#'+p.num).join(' ') || '';
+    return `<div class="evt-item ${S.editingEvtIdx===idx?'active':''}" onclick="editEvt(${idx})"><span class="idx">${e.idx}</span><span class="time">${e.period}P ${e.startTime}</span><span class="type">${e.type}${e.d1?'_'+e.d1.split('_').pop():''}</span><span class="players">${playerNums}</span><span class="xy-dot">${hasXY}</span></div>`;
+  }).join('');
+}
+
+function renderShiftLog() {
+  const el = document.getElementById('shiftLog');
+  const hdr = '<div class="log-header"><span>#</span><span>Time</span><span>Type</span><span>✎</span></div>';
+  const items = S.shifts.slice(-20).reverse().map((s, i) => {
+    const idx = S.shifts.length - 1 - i;
+    return `<div class="log-item" onclick="editShift(${idx})"><span>${s.idx}</span><span>${s.period}P ${s.startTime}</span><span>${s.startType?.substring(0,12)}</span><span>✎</span></div>`;
+  }).join('');
+  el.innerHTML = hdr + items;
+}
+
+function renderQuickAdd() {
+  const evtTeam = S.evtTeam, oppTeam = S.evtTeam === 'home' ? 'away' : 'home';
+  const onIceEvt = Object.values(S.slots[evtTeam]).filter(p => p);
+  const onIceOpp = Object.values(S.slots[oppTeam]).filter(p => p);
+  
+  const inEvt = S.curr.players.filter(p => p.role.startsWith('event')).map(p => p.num);
+  const inOpp = S.curr.players.filter(p => p.role.startsWith('opp')).map(p => p.num);
+  
+  document.getElementById('evtQuickAdd').innerHTML = onIceEvt.map(p => `<button class="${inEvt.includes(p.num)?'in-evt':''}" onclick="togglePlayer('${p.num}','evt')">${p.num}</button>`).join('');
+  document.getElementById('oppQuickAdd').innerHTML = onIceOpp.map(p => `<button class="${inOpp.includes(p.num)?'in-evt':''}" onclick="togglePlayer('${p.num}','opp')">${p.num}</button>`).join('');
+  
+  renderPlayerChips();
+}
+
+function renderPlayerChips() {
+  const evtEl = document.getElementById('evtPlayers');
+  const oppEl = document.getElementById('oppPlayers');
+  
+  const evtPlayers = S.curr.players.filter(p => p.role.startsWith('event'));
+  const oppPlayers = S.curr.players.filter(p => p.role.startsWith('opp'));
+  
+  evtEl.innerHTML = evtPlayers.map((p, i) => {
+    const sel = S.selectedPlayer?.num === p.num;
+    const xyCount = p.xy?.length || 0;
+    const suClass = p.playSuccess ? (p.playSuccess === 's' ? 's' : 'u') : '';
+    return `<span class="player-chip evt ${sel?'selected':''}" onclick="selectPlayer('${p.num}')"><span class="num">${p.num}</span>${p.name}${xyCount?`<span style="color:var(--accent);font-size:7px;">●${xyCount}</span>`:''}${p.playSuccess?`<span class="su ${suClass}">${p.playSuccess}</span>`:''}<span class="remove" onclick="event.stopPropagation();removePlayer('${p.num}')">✕</span></span>`;
+  }).join('') || '<span style="color:var(--muted);font-size:8px;">Click players below</span>';
+  
+  oppEl.innerHTML = oppPlayers.map((p, i) => {
+    const sel = S.selectedPlayer?.num === p.num;
+    const xyCount = p.xy?.length || 0;
+    const suClass = p.playSuccess ? (p.playSuccess === 's' ? 's' : 'u') : '';
+    return `<span class="player-chip opp ${sel?'selected':''}" onclick="selectPlayer('${p.num}')"><span class="num">${p.num}</span>${p.name}${xyCount?`<span style="color:var(--accent);font-size:7px;">●${xyCount}</span>`:''}${p.playSuccess?`<span class="su ${suClass}">${p.playSuccess}</span>`:''}<span class="remove" onclick="event.stopPropagation();removePlayer('${p.num}')">✕</span></span>`;
+  }).join('') || '<span style="color:var(--muted);font-size:8px;">Click players below</span>';
+  
+  // Update XY player select
+  const sel = document.getElementById('xyPlayerSel');
+  if (S.xyMode === 'player') {
+    sel.style.display = 'inline-block';
+    sel.innerHTML = '<option value="">Select</option>' + S.curr.players.map(p => `<option value="${p.num}" ${S.selectedPlayer?.num===p.num?'selected':''}>#${p.num} ${p.name}</option>`).join('');
+  } else { sel.style.display = 'none'; }
+  
+  // Player details panel
+  const pdEl = document.getElementById('playerDetails');
+  if (S.selectedPlayer) {
+    pdEl.style.display = 'block';
+    document.getElementById('pdPlayerNum').textContent = '#' + S.selectedPlayer.num + ' ' + S.selectedPlayer.name;
+    // Populate play detail dropdowns based on zone
+    const zone = document.getElementById('evtZone').value;
+    const playOpts = zone === 'd' ? LISTS.playDefensive : LISTS.playOffensive;
+    document.getElementById('pdPlayD1').innerHTML = '<option value="">--</option>' + playOpts.map(o => `<option value="${o}" ${S.selectedPlayer.playD1===o?'selected':''}>${o}</option>`).join('');
+    document.getElementById('pdPlayD2').innerHTML = '<option value="">--</option>';
+    document.getElementById('pdPlaySuccess').value = S.selectedPlayer.playSuccess || '';
+    document.getElementById('pdPressure').value = S.selectedPlayer.pressure || '';
+  } else { pdEl.style.display = 'none'; }
+}
+
+function renderXYSlots() {
+  const el = document.getElementById('xySlots');
+  const max = 10;
+  let data = S.xyMode === 'puck' ? S.curr.puckXY : (S.selectedPlayer?.xy || []);
+  el.innerHTML = Array.from({length: Math.min(max, 6)}, (_, i) => {
+    const has = data[i];
+    const active = S.xySlot === i + 1;
+    return `<button class="xy-slot ${has?'has':''} ${active?'active':''}" onclick="setXYSlot(${i+1})">${i+1}</button>`;
+  }).join('');
+}
+
+function renderMarkers() {
+  const layer = document.getElementById('markers');
+  layer.innerHTML = '';
+  const histCnt = parseInt(document.getElementById('xyHistCnt').value) || 5;
+  
+  // Historical events
+  const recent = S.events.slice(-histCnt);
+  recent.forEach((evt, ei) => {
+    const opacity = 0.2 + (ei / histCnt) * 0.6;
+    const evtColor = evt.team === 'home' ? S.homeColor : S.awayColor;
+    const oppColor = evt.team === 'home' ? S.awayColor : S.homeColor;
+    
+    // Puck
+    if (evt.puckXY?.length) drawPath(evt.puckXY, '#000', '#fff', opacity, layer, null, false);
+    
+    // Players
+    evt.players?.forEach(p => {
+      if (p.xy?.length) {
+        const color = p.role.startsWith('event') ? evtColor : oppColor;
+        drawPath(p.xy, color, '#fff', opacity, layer, p.num, false);
+      }
+    });
+  });
+  
+  // Current event
+  if (S.curr.puckXY?.length) drawPath(S.curr.puckXY, '#00d4aa', '#fff', 1, layer, '🏒', true);
+  S.curr.players?.forEach(p => {
+    if (p.xy?.length) {
+      const color = p.role.startsWith('event') ? S.homeColor : S.awayColor;
+      const sel = S.selectedPlayer?.num === p.num;
+      drawPath(p.xy, color, sel ? '#fff' : '#000', 1, layer, p.num, true);
+    }
+  });
+}
+
+function drawPath(points, fill, stroke, opacity, layer, label, current) {
+  if (!points?.length) return;
+  const sorted = [...points].sort((a,b) => a.seq - b.seq);
+  
+  // Lines
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', sorted[i].x); line.setAttribute('y1', sorted[i].y);
+    line.setAttribute('x2', sorted[i+1].x); line.setAttribute('y2', sorted[i+1].y);
+    line.setAttribute('stroke', fill); line.setAttribute('stroke-width', current ? 1 : 0.5);
+    line.setAttribute('stroke-dasharray', current ? 'none' : '2,1'); line.setAttribute('opacity', opacity * 0.7);
+    layer.appendChild(line);
+  }
+  
+  // Dots
+  sorted.forEach((pt, i) => {
+    const last = i === sorted.length - 1;
+    const r = current ? (last ? 4 : 2.5) : (last ? 3 : 2);
+    const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    c.setAttribute('cx', pt.x); c.setAttribute('cy', pt.y); c.setAttribute('r', r);
+    c.setAttribute('fill', fill); c.setAttribute('stroke', stroke);
+    c.setAttribute('stroke-width', last ? 0.8 : 0.4); c.setAttribute('opacity', opacity);
+    layer.appendChild(c);
+    
+    if (last && label) {
+      const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      t.setAttribute('x', pt.x); t.setAttribute('y', pt.y + 1);
+      t.setAttribute('fill', stroke); t.setAttribute('font-size', current ? '3.5' : '3');
+      t.setAttribute('font-weight', 'bold'); t.setAttribute('text-anchor', 'middle');
+      t.setAttribute('dominant-baseline', 'middle'); t.setAttribute('opacity', opacity);
+      t.textContent = label;
+      layer.appendChild(t);
+    }
+  });
+}
+
+// ============================================================
+// SLOTS & ROSTERS
+// ============================================================
+function selectSlot(el) {
+  document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+  S.selectedSlot = { team: el.dataset.team, pos: el.dataset.pos };
+}
+
+function assignPlayer(team, num) {
+  if (!S.selectedSlot || S.selectedSlot.team !== team) {
+    const positions = ['F1','F2','F3','D1','D2','G','X'];
+    for (const pos of positions) { if (!S.slots[team][pos]) { S.selectedSlot = { team, pos }; break; } }
+  }
+  if (!S.selectedSlot) return;
+  const p = S.rosters[team].find(x => x.num === num);
+  if (!p) return;
+  S.slots[team][S.selectedSlot.pos] = p;
+  S.selectedSlot = null;
+  renderSlots(); renderRosters(); renderQuickAdd();
+}
+
+function clearSlots(team) {
+  Object.keys(S.slots[team]).forEach(pos => S.slots[team][pos] = null);
+  renderSlots(); renderRosters(); renderQuickAdd();
+}
+
+// ============================================================
+// EVENT ENTRY
+// ============================================================
+function setEvtTeam(team) {
+  S.evtTeam = team;
+  document.querySelectorAll('.team-toggle button').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.team-toggle .${team}`).classList.add('active');
+  renderQuickAdd();
+}
+
+function setEvtType(type) {
+  S.curr.type = type;
+  document.querySelectorAll('.evt-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.evt-btn[data-type="${type}"]`)?.classList.add('active');
+  
+  // Populate detail 1
+  const opts = LISTS.details[type] || { d1: [], d2: [] };
+  document.getElementById('evtD1').innerHTML = '<option value="">--</option>' + (opts.d1 || []).map(o => `<option value="${o}">${o}</option>`).join('');
+  document.getElementById('evtD2').innerHTML = '<option value="">--</option>';
+}
+
+function onD1Change() {
+  const type = S.curr.type;
+  const d1 = document.getElementById('evtD1').value;
+  const opts = LISTS.details[type] || {};
+  
+  // Cascading logic - check for specific d2 based on d1
+  let d2Opts = opts.d2 || [];
+  if (d1.includes('Giveaway') && opts.d2_Giveaway) d2Opts = opts.d2_Giveaway;
+  else if (d1.includes('Takeaway') && opts.d2_Takeaway) d2Opts = opts.d2_Takeaway;
+  else if (d1.includes('Entry') && opts.d2_Entry) d2Opts = opts.d2_Entry;
+  else if (d1.includes('Exit') && opts.d2_Exit) d2Opts = opts.d2_Exit;
+  else if (d1.includes('Keepin') && opts.d2_Keepin) d2Opts = opts.d2_Keepin;
+  else if (d1.includes('Play') && opts.d2_Play) d2Opts = opts.d2_Play;
+  else if (d1.includes('Period') && opts.d2_Period) d2Opts = opts.d2_Period;
+  else if (d1.includes('Other') && opts.d2_Other) d2Opts = opts.d2_Other;
+  else if (d1.includes('Offensive') && opts.d2_Offensive) d2Opts = opts.d2_Offensive;
+  else if (d1.includes('Defensive') && opts.d2_Defensive) d2Opts = opts.d2_Defensive;
+  
+  document.getElementById('evtD2').innerHTML = '<option value="">--</option>' + d2Opts.map(o => `<option value="${o}">${o}</option>`).join('');
+}
+
+function togglePlayer(num, role) {
+  const team = role === 'evt' ? S.evtTeam : (S.evtTeam === 'home' ? 'away' : 'home');
+  const p = S.rosters[team].find(x => x.num === num);
+  if (!p) return;
+  
+  const existingIdx = S.curr.players.findIndex(x => x.num === num);
+  if (existingIdx >= 0) {
+    S.curr.players.splice(existingIdx, 1);
+    if (S.selectedPlayer?.num === num) S.selectedPlayer = null;
+  } else {
+    const roleNum = S.curr.players.filter(x => x.role.startsWith(role === 'evt' ? 'event' : 'opp')).length + 1;
+    S.curr.players.push({
+      ...p, role: `${role === 'evt' ? 'event' : 'opp'}_team_player_${roleNum}`,
+      roleNum, xy: [], playD1: '', playD2: '', playSuccess: '', pressure: ''
+    });
+  }
+  renderQuickAdd(); renderMarkers();
+}
+
+function removePlayer(num) {
+  S.curr.players = S.curr.players.filter(p => p.num !== num);
+  if (S.selectedPlayer?.num === num) S.selectedPlayer = null;
+  // Renumber roles
+  let evtNum = 1, oppNum = 1;
+  S.curr.players.forEach(p => {
+    if (p.role.startsWith('event')) { p.role = `event_team_player_${evtNum}`; p.roleNum = evtNum++; }
+    else { p.role = `opp_team_player_${oppNum}`; p.roleNum = oppNum++; }
+  });
+  renderQuickAdd(); renderMarkers();
+}
+
+function selectPlayer(num) {
+  const p = S.curr.players.find(x => x.num === num);
+  S.selectedPlayer = p;
+  if (S.xyMode === 'player') renderXYSlots();
+  renderPlayerChips();
+}
+
+function selectXYPlayer(num) {
+  if (!num) { S.selectedPlayer = null; }
+  else { S.selectedPlayer = S.curr.players.find(p => p.num === num); }
+  renderXYSlots(); renderPlayerChips();
+}
+
+// Player details updates
+document.getElementById('pdPlayD1').addEventListener('change', e => { if (S.selectedPlayer) S.selectedPlayer.playD1 = e.target.value; });
+document.getElementById('pdPlayD2').addEventListener('change', e => { if (S.selectedPlayer) S.selectedPlayer.playD2 = e.target.value; });
+document.getElementById('pdPlaySuccess').addEventListener('change', e => { if (S.selectedPlayer) { S.selectedPlayer.playSuccess = e.target.value; renderPlayerChips(); } });
+document.getElementById('pdPressure').addEventListener('change', e => { if (S.selectedPlayer) S.selectedPlayer.pressure = e.target.value; });
+
+function logEvent() {
+  if (!S.curr.type) { toast('Select event type', 'error'); return; }
+  
+  const startTime = document.getElementById('evtStart').value;
+  const endTime = document.getElementById('evtEnd').value;
+  
+  // Auto-calculate zone from event_player_1 XY
+  let zone = document.getElementById('evtZone').value;
+  if (!zone && S.curr.players.length > 0) {
+    const p1 = S.curr.players.find(p => p.roleNum === 1 && p.role.startsWith('event'));
+    if (p1?.xy?.length > 0) {
+      const x = p1.xy[0].x;
+      if (S.evtTeam === 'home') { zone = x > 25 ? 'o' : x < -25 ? 'd' : 'n'; }
+      else { zone = x < -25 ? 'o' : x > 25 ? 'd' : 'n'; }
+      document.getElementById('evtZone').value = zone;
+    }
+  }
+  // Also from puck
+  if (!zone && S.curr.puckXY?.length > 0) {
+    const x = S.curr.puckXY[0].x;
+    if (S.evtTeam === 'home') { zone = x > 25 ? 'o' : x < -25 ? 'd' : 'n'; }
+    else { zone = x < -25 ? 'o' : x > 25 ? 'd' : 'n'; }
+    document.getElementById('evtZone').value = zone;
+  }
+  
+  const evt = {
+    idx: ++S.evtIdx,
+    gameId: S.gameId,
+    period: S.period,
+    team: S.evtTeam,
+    type: S.curr.type,
+    d1: document.getElementById('evtD1').value,
+    d2: document.getElementById('evtD2').value,
+    startTime, endTime,
+    success: document.getElementById('evtSuccess').value,
+    zone: document.getElementById('evtZone').value,
+    highlight: document.getElementById('evtHL').value === '1',
+    players: JSON.parse(JSON.stringify(S.curr.players)),
+    puckXY: [...S.curr.puckXY],
+    netXY: S.curr.netXY,
+    timestamp: new Date().toISOString()
+  };
+  
+  S.events.push(evt);
+  S.lastEndTime = endTime;
+  
+  // Update scores
+  if (evt.type === 'Goal') {
+    if (evt.team === 'home') S.homeGoals++; else S.awayGoals++;
+    updateScores();
+  }
+  
+  // Net popup for shots
+  if ((evt.type === 'Shot' || evt.type === 'Goal') && !evt.netXY) showNet();
+  
+  clearEvtForm();
+  renderAll();
+  autoSave();
+  toast(`Event #${evt.idx} logged`, 'success');
+}
+
+function clearEvtForm() {
+  S.curr = { type: null, players: [], puckXY: [], netXY: null };
+  S.selectedPlayer = null;
+  document.querySelectorAll('.evt-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('evtD1').innerHTML = '<option value="">--</option>';
+  document.getElementById('evtD2').innerHTML = '<option value="">--</option>';
+  document.getElementById('evtSuccess').value = '';
+  document.getElementById('evtHL').value = '0';
+  renderQuickAdd(); renderXYSlots(); renderMarkers();
+}
+
+function undoLast() {
+  if (!S.events.length) return;
+  const evt = S.events.pop();
+  if (evt.type === 'Goal') { if (evt.team === 'home') S.homeGoals--; else S.awayGoals--; updateScores(); }
+  renderAll(); autoSave(); toast('Undone', 'success');
+}
+
+function createLinked() {
+  if (!S.events.length) { toast('No event to link', 'error'); return; }
+  const last = S.events[S.events.length - 1];
+  S.curr = {
+    type: null,
+    players: JSON.parse(JSON.stringify(last.players)),
+    puckXY: [...last.puckXY],
+    netXY: last.netXY
+  };
+  document.getElementById('evtStart').value = last.startTime;
+  document.getElementById('evtEnd').value = last.endTime;
+  document.getElementById('evtZone').value = last.zone;
+  renderQuickAdd(); renderXYSlots(); renderMarkers();
+  toast('Copied from last - select type', 'success');
+}
+
+function updateScores() {
+  document.getElementById('scoreH').textContent = S.homeGoals;
+  document.getElementById('scoreA').textContent = S.awayGoals;
+}
+
+// ============================================================
+// XY
+// ============================================================
+function setXYMode(mode) {
+  S.xyMode = mode;
+  S.xySlot = 1;
+  document.querySelectorAll('.xy-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.xy-btn:nth-child(${mode === 'puck' ? 1 : 2})`).classList.add('active');
+  
+  const ind = document.getElementById('modeInd');
+  if (mode === 'puck') { ind.className = 'mode-ind puck'; ind.textContent = '🏒 PUCK'; }
+  else { ind.className = 'mode-ind player'; ind.textContent = '👤 PLAYER'; }
+  
+  renderXYSlots(); renderPlayerChips();
+}
+
+function setXYSlot(n) { S.xySlot = n; renderXYSlots(); }
+
+function handleRinkClick(e) {
+  const svg = document.getElementById('rinkSvg');
+  const rect = svg.getBoundingClientRect();
+  const vb = svg.viewBox.baseVal;
+  const x = Math.round(((e.clientX - rect.left) / rect.width * vb.width + vb.x) * 10) / 10;
+  const y = Math.round(((e.clientY - rect.top) / rect.height * vb.height + vb.y) * 10) / 10;
+  
+  document.getElementById('xyCoords').textContent = `(${x}, ${y})`;
+  
+  if (S.xyMode === 'puck') {
+    if (S.curr.puckXY.length < 10) {
+      S.curr.puckXY.push({ seq: S.curr.puckXY.length + 1, x, y });
+      S.xySlot = S.curr.puckXY.length + 1;
+      
+      // Auto zone from first puck position
+      if (S.curr.puckXY.length === 1) {
+        let zone;
+        if (S.evtTeam === 'home') { zone = x > 25 ? 'o' : x < -25 ? 'd' : 'n'; }
+        else { zone = x < -25 ? 'o' : x > 25 ? 'd' : 'n'; }
+        document.getElementById('evtZone').value = zone;
+      }
+    }
+  } else {
+    if (!S.selectedPlayer) { toast('Select a player first', 'error'); return; }
+    if (!S.selectedPlayer.xy) S.selectedPlayer.xy = [];
+    if (S.selectedPlayer.xy.length < 10) {
+      S.selectedPlayer.xy.push({ seq: S.selectedPlayer.xy.length + 1, x, y });
+    }
+  }
+  
+  renderXYSlots(); renderMarkers(); renderPlayerChips();
+}
+
+function clearCurrentXY() {
+  if (S.xyMode === 'puck') { S.curr.puckXY = []; }
+  else if (S.selectedPlayer) { S.selectedPlayer.xy = []; }
+  S.xySlot = 1;
+  renderXYSlots(); renderMarkers(); renderPlayerChips();
+}
+
+// ============================================================
+// SHIFTS
+// ============================================================
+function toggleIntermission() {
+  const isInt = document.getElementById('isIntermission').value === '1';
+  document.getElementById('intermissionSec').disabled = !isInt;
+}
+
+function logShift() {
+  const isInt = document.getElementById('isIntermission').value === '1';
+  
+  const shift = {
+    idx: ++S.shiftIdx,
+    gameId: S.gameId,
+    period: S.period,
+    startTime: document.getElementById('shiftStart').value,
+    endTime: document.getElementById('shiftEnd').value,
+    startType: document.getElementById('shiftStartType').value,
+    stopType: document.getElementById('shiftStopType').value,
+    isIntermission: isInt,
+    intermissionSec: isInt ? parseInt(document.getElementById('intermissionSec').value) || 0 : 0,
+    home: JSON.parse(JSON.stringify(S.slots.home)),
+    away: JSON.parse(JSON.stringify(S.slots.away)),
+    timestamp: new Date().toISOString()
+  };
+  
+  S.shifts.push(shift);
+  S.lastEndTime = shift.endTime;
+  
+  // Auto-fill next start time
+  document.getElementById('shiftStart').value = shift.endTime;
+  
+  renderShiftLog();
+  document.getElementById('shiftCnt').textContent = S.shifts.length;
+  autoSave();
+  toast('Shift logged', 'success');
+}
+
+function copyLastShift() {
+  if (!S.shifts.length) return;
+  const last = S.shifts[S.shifts.length - 1];
+  S.slots = { home: JSON.parse(JSON.stringify(last.home)), away: JSON.parse(JSON.stringify(last.away)) };
+  document.getElementById('shiftStart').value = last.endTime;
+  renderSlots(); renderRosters(); toast('Copied', 'success');
+}
+
+// ============================================================
+// PERIOD
+// ============================================================
+function setPeriod(p) {
+  S.period = p;
+  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('clock').textContent = '18:00';
+  S.lastEndTime = '18:00';
+  document.getElementById('evtStart').value = '18:00';
+  document.getElementById('evtEnd').value = '18:00';
+  document.getElementById('shiftStart').value = '18:00';
+  document.getElementById('shiftEnd').value = '18:00';
+}
+
+// ============================================================
+// NET POPUP
+// ============================================================
+function showNet() {
+  const grid = document.getElementById('netGrid');
+  const labels = [['TL','TLC','TC','TRC','TR'],['ML','MLC','MC','MRC','MR'],['BL','BLC','5H','BRC','BR']];
+  grid.innerHTML = '';
+  for (let r = 0; r < 3; r++) {
+    for (let c = 0; c < 5; c++) {
+      const cell = document.createElement('div');
+      cell.style = 'aspect-ratio:1;background:var(--card);border:1px solid var(--border);border-radius:2px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:7px;color:var(--muted);';
+      cell.textContent = labels[r][c];
+      cell.dataset.x = c; cell.dataset.y = r;
+      cell.onclick = function() {
+        grid.querySelectorAll('div').forEach(d => d.style.background = 'var(--card)');
+        this.style.background = 'var(--danger)';
+        S.curr.netXY = { x: parseInt(this.dataset.x), y: parseInt(this.dataset.y) };
+      };
+      grid.appendChild(cell);
+    }
+  }
+  document.getElementById('netOverlay').classList.add('show');
+}
+
+function confirmNet() {
+  if (S.events.length && S.curr.netXY) { S.events[S.events.length - 1].netXY = S.curr.netXY; autoSave(); }
+  closeNet();
+}
+
+function closeNet() { document.getElementById('netOverlay').classList.remove('show'); S.curr.netXY = null; }
+
+// ============================================================
+// EDIT EVENT
+// ============================================================
+function editEvt(idx) {
+  const evt = S.events[idx];
+  if (!evt) return;
+  S.editingEvtIdx = idx;
+  document.getElementById('editEvtIdx').textContent = evt.idx;
+  
+  document.getElementById('editEvtBody').innerHTML = `
+    <div class="form-row"><div class="form-group"><label>Type</label><select id="editType">${LISTS.eventTypes.map(t=>`<option value="${t}" ${t===evt.type?'selected':''}>${t}</option>`).join('')}</select></div>
+    <div class="form-group"><label>Team</label><select id="editTeam"><option value="home" ${evt.team==='home'?'selected':''}>${S.homeTeam}</option><option value="away" ${evt.team==='away'?'selected':''}>${S.awayTeam}</option></select></div></div>
+    <div class="form-row"><div class="form-group"><label>Detail 1</label><input type="text" id="editD1" value="${evt.d1||''}"></div>
+    <div class="form-group"><label>Detail 2</label><input type="text" id="editD2" value="${evt.d2||''}"></div></div>
+    <div class="form-row"><div class="form-group"><label>Start</label><input type="text" id="editStart" value="${evt.startTime}"></div>
+    <div class="form-group"><label>End</label><input type="text" id="editEnd" value="${evt.endTime}"></div></div>
+    <div class="form-row tri"><div class="form-group"><label>Success</label><select id="editSuccess"><option value="">--</option><option value="s" ${evt.success==='s'?'selected':''}>s</option><option value="u" ${evt.success==='u'?'selected':''}>u</option></select></div>
+    <div class="form-group"><label>Zone</label><select id="editZone"><option value="">--</option><option value="o" ${evt.zone==='o'?'selected':''}>OFF</option><option value="n" ${evt.zone==='n'?'selected':''}>NEU</option><option value="d" ${evt.zone==='d'?'selected':''}>DEF</option></select></div>
+    <div class="form-group"><label>Period</label><input type="text" id="editPeriod" value="${evt.period}"></div></div>
+    <div style="font-size:8px;color:var(--muted);margin-top:6px;">Players: ${evt.players?.map(p=>'#'+p.num+' ('+p.role+')').join(', ')||'None'}<br>Puck XY: ${evt.puckXY?.length||0} pts</div>
+  `;
+  
+  document.getElementById('editEvtOverlay').classList.add('show');
+}
+
+function saveEvtEdit() {
+  if (S.editingEvtIdx === null) return;
+  const evt = S.events[S.editingEvtIdx];
+  const wasGoal = evt.type === 'Goal', wasTeam = evt.team;
+  
+  evt.type = document.getElementById('editType').value;
+  evt.team = document.getElementById('editTeam').value;
+  evt.d1 = document.getElementById('editD1').value;
+  evt.d2 = document.getElementById('editD2').value;
+  evt.startTime = document.getElementById('editStart').value;
+  evt.endTime = document.getElementById('editEnd').value;
+  evt.success = document.getElementById('editSuccess').value;
+  evt.zone = document.getElementById('editZone').value;
+  evt.period = document.getElementById('editPeriod').value;
+  
+  // Score adjustments
+  if (wasGoal && evt.type !== 'Goal') { if (wasTeam === 'home') S.homeGoals--; else S.awayGoals--; }
+  else if (!wasGoal && evt.type === 'Goal') { if (evt.team === 'home') S.homeGoals++; else S.awayGoals++; }
+  else if (wasGoal && evt.type === 'Goal' && wasTeam !== evt.team) {
+    if (wasTeam === 'home') { S.homeGoals--; S.awayGoals++; } else { S.awayGoals--; S.homeGoals++; }
+  }
+  updateScores();
+  
+  closeEditEvt(); renderEvtList(); autoSave(); toast('Updated', 'success');
+}
+
+function deleteEditingEvt() {
+  if (S.editingEvtIdx === null) return;
+  if (!confirm('Delete?')) return;
+  const evt = S.events[S.editingEvtIdx];
+  if (evt.type === 'Goal') { if (evt.team === 'home') S.homeGoals--; else S.awayGoals--; updateScores(); }
+  S.events.splice(S.editingEvtIdx, 1);
+  closeEditEvt(); renderEvtList(); autoSave(); toast('Deleted', 'success');
+}
+
+function closeEditEvt() { document.getElementById('editEvtOverlay').classList.remove('show'); S.editingEvtIdx = null; }
+
+// ============================================================
+// EDIT SHIFT
+// ============================================================
+function editShift(idx) {
+  const shift = S.shifts[idx];
+  if (!shift) return;
+  S.editingShiftIdx = idx;
+  document.getElementById('editShiftIdx').textContent = shift.idx;
+  
+  document.getElementById('editShiftBody').innerHTML = `
+    <div class="form-row"><div class="form-group"><label>Period</label><input type="text" id="editShiftPeriod" value="${shift.period}"></div>
+    <div class="form-group"><label>Intermission?</label><select id="editShiftInt"><option value="0" ${!shift.isIntermission?'selected':''}>No</option><option value="1" ${shift.isIntermission?'selected':''}>Yes</option></select></div></div>
+    <div class="form-row"><div class="form-group"><label>Start</label><input type="text" id="editShiftStart" value="${shift.startTime}"></div>
+    <div class="form-group"><label>End</label><input type="text" id="editShiftEnd" value="${shift.endTime}"></div></div>
+    <div class="form-row"><div class="form-group"><label>Start Type</label><select id="editShiftStartType">${LISTS.shiftStart.map(t=>`<option value="${t}" ${t===shift.startType?'selected':''}>${t}</option>`).join('')}</select></div>
+    <div class="form-group"><label>Stop Type</label><select id="editShiftStopType">${LISTS.shiftStop.map(t=>`<option value="${t}" ${t===shift.stopType?'selected':''}>${t}</option>`).join('')}</select></div></div>
+    <div style="font-size:8px;color:var(--muted);margin-top:6px;">Home: ${Object.values(shift.home).filter(p=>p).map(p=>'#'+p.num).join(',')}<br>Away: ${Object.values(shift.away).filter(p=>p).map(p=>'#'+p.num).join(',')}</div>
+  `;
+  
+  document.getElementById('editShiftOverlay').classList.add('show');
+}
+
+function saveShiftEdit() {
+  if (S.editingShiftIdx === null) return;
+  const shift = S.shifts[S.editingShiftIdx];
+  
+  shift.period = document.getElementById('editShiftPeriod').value;
+  shift.isIntermission = document.getElementById('editShiftInt').value === '1';
+  shift.startTime = document.getElementById('editShiftStart').value;
+  shift.endTime = document.getElementById('editShiftEnd').value;
+  shift.startType = document.getElementById('editShiftStartType').value;
+  shift.stopType = document.getElementById('editShiftStopType').value;
+  
+  closeEditShift(); renderShiftLog(); autoSave(); toast('Updated', 'success');
+}
+
+function deleteEditingShift() {
+  if (S.editingShiftIdx === null) return;
+  if (!confirm('Delete?')) return;
+  S.shifts.splice(S.editingShiftIdx, 1);
+  closeEditShift(); renderShiftLog(); autoSave(); toast('Deleted', 'success');
+}
+
+function closeEditShift() { document.getElementById('editShiftOverlay').classList.remove('show'); S.editingShiftIdx = null; }
+
+// ============================================================
+// EXPORT - LONG FORMAT
+// ============================================================
+function exportToExcel() {
+  if (!S.gameId) { toast('No game', 'error'); return; }
+  
+  const wb = XLSX.utils.book_new();
+  
+  // EVENTS - LONG FORMAT (one row per player per event)
+  const eventsLong = [];
+  S.events.forEach(evt => {
+    if (!evt.players?.length) {
+      // Event with no players - still create one row
+      eventsLong.push(createEventRow(evt, null, 1));
+    } else {
+      evt.players.forEach((p, i) => {
+        eventsLong.push(createEventRow(evt, p, i === 0 ? 1 : 0));
+      });
+    }
+  });
+  
+  const eventsSheet = XLSX.utils.json_to_sheet(eventsLong);
+  XLSX.utils.book_append_sheet(wb, eventsSheet, 'events');
+  
+  // SHIFTS - WIDE FORMAT
+  const shiftsData = S.shifts.map(s => ({
+    shift_index: s.idx,
+    Period: s.period,
+    shift_start_min: s.startTime?.split(':')[0] || '',
+    shift_start_sec: s.startTime?.split(':')[1] || '',
+    shift_end_min: s.endTime?.split(':')[0] || '',
+    shift_end_sec: s.endTime?.split(':')[1] || '',
+    shift_start_type: s.startType,
+    shift_stop_type: s.stopType,
+    home_forward_1: s.home?.F1?.num || '',
+    home_forward_2: s.home?.F2?.num || '',
+    home_forward_3: s.home?.F3?.num || '',
+    home_defense_1: s.home?.D1?.num || '',
+    home_defense_2: s.home?.D2?.num || '',
+    home_xtra: s.home?.X?.num || '',
+    home_goalie: s.home?.G?.num || '',
+    away_forward_1: s.away?.F1?.num || '',
+    away_forward_2: s.away?.F2?.num || '',
+    away_forward_3: s.away?.F3?.num || '',
+    away_defense_1: s.away?.D1?.num || '',
+    away_defense_2: s.away?.D2?.num || '',
+    away_xtra: s.away?.X?.num || '',
+    away_goalie: s.away?.G?.num || '',
+    stoppage_time: '',
+    game_id: S.gameId,
+    home_team: S.homeTeam,
+    away_team: S.awayTeam,
+    intermission_duration: s.isIntermission ? s.intermissionSec : ''
+  }));
+  
+  const shiftsSheet = XLSX.utils.json_to_sheet(shiftsData);
+  XLSX.utils.book_append_sheet(wb, shiftsSheet, 'shifts');
+  
+  // XY DATA - separate sheet
+  const xyData = [];
+  S.events.forEach(evt => {
+    // Puck XY
+    if (evt.puckXY?.length) {
+      const row = { game_id: S.gameId, link_event_index: evt.idx, Player: 'puck' };
+      evt.puckXY.forEach((pt, i) => { row[`X${i+1>1?i+1:''}`] = pt.x; row[`Y${i+1>1?i+1:''}`] = pt.y; });
+      xyData.push(row);
+    }
+    // Player XY
+    evt.players?.forEach(p => {
+      if (p.xy?.length) {
+        const row = { game_id: S.gameId, link_event_index: evt.idx, Player: p.num };
+        p.xy.forEach((pt, i) => { row[`X${i+1>1?i+1:''}`] = pt.x; row[`Y${i+1>1?i+1:''}`] = pt.y; });
+        xyData.push(row);
+      }
+    });
+  });
+  
+  if (xyData.length) {
+    const xySheet = XLSX.utils.json_to_sheet(xyData);
+    XLSX.utils.book_append_sheet(wb, xySheet, 'xy_data');
+  }
+  
+  XLSX.writeFile(wb, `${S.gameId}_tracking.xlsx`);
+  toast('Exported!', 'success');
+}
+
+function createEventRow(evt, player, eventIndexFlag) {
+  const isEvtPlayer = player?.role?.startsWith('event');
+  const team = isEvtPlayer ? evt.team : (evt.team === 'home' ? 'away' : 'home');
+  
+  return {
+    event_index_flag_: eventIndexFlag,
+    event_index_: evt.idx,
+    event_index: S.gameId * 10000 + evt.idx,
+    tracking_event_index: evt.idx,
+    period: evt.period,
+    event_start_min: evt.startTime?.split(':')[0] || '',
+    event_start_sec: evt.startTime?.split(':')[1] || '',
+    event_end_min: evt.endTime?.split(':')[0] || '',
+    event_end_sec: evt.endTime?.split(':')[1] || '',
+    player_game_number_: player?.num || '',
+    player_game_number: player?.num || '',
+    event_team_zone_: evt.zone,
+    event_team_zone: evt.zone,
+    event_type_: evt.type,
+    Type: evt.type,
+    event_detail_: evt.d1,
+    event_detail: evt.d1,
+    event_detail_2_: evt.d2,
+    event_detail_2: evt.d2,
+    event_successful_: evt.success,
+    event_successful: evt.success,
+    play_detail1_: player?.playD1 || '',
+    play_detail1: player?.playD1 || '',
+    play_detail_2: player?.playD2 || '',
+    play_detail_successful_: player?.playSuccess || '',
+    play_detail_successful: player?.playSuccess || '',
+    pressured_pressurer_: player?.pressure || '',
+    pressured_pressurer: player?.pressure || '',
+    role_abrev_: isEvtPlayer ? 'e' : 'o',
+    role_abrev: isEvtPlayer ? 'e' : 'o',
+    team_venue_: team === 'home' ? 'Home' : 'Away',
+    team_venue: team === 'home' ? 'Home' : 'Away',
+    team_venue_abv_: team === 'home' ? 'h' : 'a',
+    team_venue_abv: team === 'home' ? 'h' : 'a',
+    side_of_puck: evt.zone === 'o' ? 'Offensive' : evt.zone === 'd' ? 'Defensive' : 'Neutral',
+    game_id: S.gameId,
+    home_team: S.homeTeam,
+    away_team: S.awayTeam,
+    player_role: player?.role || '',
+    role_number: player?.roleNum || '',
+    player_id: player?.id || '',
+    player_team: team === 'home' ? S.homeTeam : S.awayTeam,
+    linked_event_index: evt.linkedTo || '',
+    is_highlight: evt.highlight ? 1 : 0
+  };
+}
+
+// ============================================================
+// VALIDATION
+// ============================================================
+async function validateVsNorad() {
+  toast('NORAD validation requires Supabase connection', 'warn');
+}
+
+// ============================================================
+// KEYBOARD
+// ============================================================
+function setupKeys() {
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+    
+    const k = e.key.toLowerCase();
+    const map = { f:'Faceoff', s:'Shot', p:'Pass', g:'Goal', t:'Turnover', z:'Zone_Entry_Exit', n:'Penalty', x:'Stoppage', o:'Possession', v:'Save', r:'Rebound', d:'DeadIce' };
+    if (map[k]) { setEvtType(map[k]); e.preventDefault(); }
+    if (k === 'h') { setEvtTeam('home'); e.preventDefault(); }
+    if (k === 'a') { setEvtTeam('away'); e.preventDefault(); }
+    if (k === 'enter') { logEvent(); e.preventDefault(); }
+    if (k === 'escape') { clearEvtForm(); e.preventDefault(); }
+    if (k === 'l') { createLinked(); e.preventDefault(); }
+    if (k === '`') { setXYMode('puck'); e.preventDefault(); }
+    if (k === 'e') { setXYMode('player'); e.preventDefault(); }
+    if (e.ctrlKey && k === 'z') { undoLast(); e.preventDefault(); }
+    if (e.shiftKey && k === 's') { logShift(); e.preventDefault(); }
+    if (k >= '1' && k <= '3' && !e.shiftKey) { setPeriod(parseInt(k)); e.preventDefault(); }
+  });
+}
+
+// ============================================================
+// SAVE
+// ============================================================
+function autoSave() {
+  if (!S.gameId) return;
+  const data = { events: S.events, shifts: S.shifts, evtIdx: S.evtIdx, shiftIdx: S.shiftIdx, slots: S.slots, homeGoals: S.homeGoals, awayGoals: S.awayGoals, lastEndTime: S.lastEndTime, savedAt: new Date().toISOString() };
+  localStorage.setItem(`bs_${S.gameId}`, JSON.stringify(data));
+  localStorage.setItem('bs_lastGame', S.gameId);
+  document.getElementById('status').textContent = `Saved ${new Date().toLocaleTimeString()}`;
+}
+
+// ============================================================
+// MODALS & UTILS
+// ============================================================
+function showSettings() { document.getElementById('settingsOverlay').classList.add('show'); }
+function closeSettings() { document.getElementById('settingsOverlay').classList.remove('show'); }
+function toast(msg, type='') { const el = document.getElementById('toast'); el.textContent = msg; el.className = 'toast show ' + type; setTimeout(() => el.classList.remove('show'), 2500); }
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

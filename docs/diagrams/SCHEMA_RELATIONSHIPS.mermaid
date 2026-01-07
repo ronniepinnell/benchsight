@@ -1,0 +1,67 @@
+flowchart TB
+    %% ============================================
+    %% BENCHSIGHT TABLE RELATIONSHIPS
+    %% Version: 13.18 | January 7, 2026
+    %% ============================================
+
+    subgraph Dimensions["Dimension Tables (34)"]
+        DP[dim_player<br/>337 players]
+        DT[dim_team]
+        DS[dim_schedule<br/>Game calendar]
+        DSE[dim_season]
+        DPE[dim_period]
+        DET[dim_event_type<br/>20 types]
+        DED[dim_event_detail<br/>59 details]
+        DZ[dim_zone]
+        DSD[dim_shift_duration]
+        DO[25+ Other dims]
+    end
+
+    subgraph CoreFacts["Core Fact Tables"]
+        FET[fact_event_players<br/>11,181 rows]
+        FE[fact_events<br/>5,831 rows]
+        FSH[fact_shifts<br/>398 rows]
+        FSP[fact_shift_players<br/>4,613 rows]
+        FGR[fact_gameroster<br/>88 rows]
+    end
+
+    subgraph DerivedFacts["Derived Fact Tables"]
+        FF[fact_faceoffs]
+        FR[fact_rushes]
+        FZE[fact_zone_entries]
+        FZX[fact_zone_exits]
+        FSV[fact_saves]
+        FPN[fact_penalties]
+        FSQ[fact_sequences]
+        FPL[fact_plays]
+    end
+
+    subgraph QATables["QA Tables (2)"]
+        QG[qa_goal_accuracy]
+        QD[qa_data_completeness]
+    end
+
+    %% Relationships
+    DP --> FET
+    DP --> FGR
+    DP --> FSP
+    DT --> DS
+    DS --> FE
+    DS --> FSH
+    DS --> FGR
+    DET --> FE
+    DED --> FE
+    DPE --> FE
+    DPE --> FSH
+    DSD --> FSH
+    
+    FET --> FE
+    FE --> FF
+    FE --> FR
+    FE --> FZE
+    FE --> FZX
+    FE --> FSV
+    FE --> FPN
+    FE --> FSQ
+    FE --> FPL
+    FSH --> FSP

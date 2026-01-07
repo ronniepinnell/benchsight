@@ -100,9 +100,9 @@ class DataTransformer:
         
         return {
             'dim_game_players_tracking': dim_game_players,
-            'fact_events_tracking': fact_events,
+            'fact_event_players': fact_events,
             'fact_event_players_tracking': fact_event_players,
-            'fact_shifts_tracking': fact_shifts,
+            'fact_shifts': fact_shifts,
             'fact_shift_players_tracking': fact_shift_players,
             'fact_box_score_tracking': fact_box_score,
             'fact_linked_events_tracking': fact_linked_events,
@@ -372,10 +372,11 @@ class DataTransformer:
         goals = primary[primary['event_detail'] == 'Goal_Scored'].groupby('player_game_number').size()
         box['goals'] = box['player_game_number'].map(goals).fillna(0).astype(int)
         
-        assists_p = fact_event_players[fact_event_players['play_detail1'] == 'AssistPrimary'].groupby('player_game_number').size()
+        # Assists - use str.contains to catch variations like 'AssistPrimary' or 'OffensivePlay_Pass-AssistPrimary'
+        assists_p = fact_event_players[fact_event_players['play_detail1'].astype(str).str.contains('AssistPrimary', na=False)].groupby('player_game_number').size()
         box['assists_primary'] = box['player_game_number'].map(assists_p).fillna(0).astype(int)
         
-        assists_s = fact_event_players[fact_event_players['play_detail1'] == 'AssistSecondary'].groupby('player_game_number').size()
+        assists_s = fact_event_players[fact_event_players['play_detail1'].astype(str).str.contains('AssistSecondary', na=False)].groupby('player_game_number').size()
         box['assists_secondary'] = box['player_game_number'].map(assists_s).fillna(0).astype(int)
         
         box['assists'] = box['assists_primary'] + box['assists_secondary']

@@ -150,9 +150,9 @@ class TestGoalScorerAttribution:
     
     def test_each_goal_has_scorer(self):
         """Verify each goal event has at least one player (the scorer)."""
-        events_player_path = OUTPUT_DIR / "fact_events_player.csv"
+        events_player_path = OUTPUT_DIR / "fact_event_players.csv"
         if not events_player_path.exists():
-            pytest.skip("fact_events_player.csv not found")
+            pytest.skip("fact_event_players.csv not found")
         
         events_player = pd.read_csv(events_player_path)
         
@@ -161,7 +161,7 @@ class TestGoalScorerAttribution:
         goals = events_player[events_player[type_col] == 'Goal']
         
         if len(goals) == 0:
-            pytest.skip("No goals found in fact_events_player")
+            pytest.skip("No goals found in fact_event_players")
         
         # Each goal should have at least one player row
         goals_grouped = goals.groupby(['game_id', 'event_index']).size()
