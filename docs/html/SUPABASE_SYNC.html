@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Sync Script Documentation</title>
+    <style>
+        :root {
+            --bg: #1a1a2e;
+            --surface: #16213e;
+            --primary: #0f3460;
+            --accent: #e94560;
+            --text: #eee;
+            --muted: #888;
+            --code-bg: #0d1b2a;
+            --success: #4ade80;
+            --warn: #fbbf24;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 {
+            color: var(--accent);
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        h2 {
+            color: var(--success);
+            margin: 2rem 0 1rem;
+        }
+        h3 {
+            color: #60a5fa;
+            margin: 1.5rem 0 0.5rem;
+        }
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+            margin: 0.5rem 0 1rem;
+        }
+        code {
+            font-family: 'Monaco', 'Menlo', monospace;
+            color: #a5d6ff;
+        }
+        .section {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        th, td {
+            border: 1px solid var(--primary);
+            padding: 0.75rem;
+            text-align: left;
+        }
+        th { background: var(--primary); }
+        tr:nth-child(even) { background: rgba(15, 52, 96, 0.3); }
+        .flag { color: var(--accent); font-weight: bold; }
+        .desc { color: var(--muted); }
+        .example {
+            background: var(--primary);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+        }
+        .example-title {
+            color: var(--warn);
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .note {
+            background: #1e3a5f;
+            border-left: 4px solid var(--accent);
+            padding: 0.75rem 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .back-link {
+            display: inline-block;
+            color: var(--accent);
+            text-decoration: none;
+            margin-bottom: 1rem;
+        }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Documentation</a>
+        <h1>🔄 Supabase Sync Script Documentation</h1>
+        
+        <div class="section">
+            <h2>Overview</h2>
+            <p>The sync script uploads BenchSight CSV data to Supabase PostgreSQL with flexible filtering options for dimensions, facts, specific games, or individual tables.</p>
+            
+            <h3>Location</h3>
+            <pre><code>supabase/sync_to_supabase.py</code></pre>
+            
+            <h3>Requirements</h3>
+            <pre><code>pip install pandas requests numpy</code></pre>
+        </div>
+        
+        <div class="section">
+            <h2>Command Line Options</h2>
+            
+            <table>
+                <tr>
+                    <th>Flag</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td><span class="flag">--wipe</span></td>
+                    <td>Delete existing data before inserting (required for clean loads)</td>
+                </tr>
+                <tr>
+                    <td><span class="flag">--dims</span></td>
+                    <td>Sync only dimension tables (dim_*)</td>
+                </tr>
+                <tr>
+                    <td><span class="flag">--facts</span></td>
+                    <td>Sync only fact tables (fact_*)</td>
+                </tr>
+                <tr>
+                    <td><span class="flag">--qa</span></td>
+                    <td>Sync only QA tables (qa_*)</td>
+                </tr>
+                <tr>
+                    <td><span class="flag">--games ID [ID ...]</span></td>
+                    <td>Filter to specific game IDs (for facts with game_id column)</td>
+                </tr>
+                <tr>
+                    <td><span class="flag">--table NAME</span></td>
+                    <td>Sync a single table by name</td>
+                </tr>
+                <tr>
+                    <td><span class="flag">--tables NAME [NAME ...]</span></td>
+                    <td>Sync multiple specific tables</td>
+                </tr>
+                <tr>
+                    <td><span class="flag">--dry-run</span></td>
+                    <td>Preview operations without making changes</td>
+                </tr>
+                <tr>
+                    <td><span class="flag">--quiet</span></td>
+                    <td>Reduce output verbosity</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2>Usage Examples</h2>
+            
+            <div class="example">
+                <div class="example-title">Full Sync (All Tables)</div>
+                <pre><code>python supabase/sync_to_supabase.py --wipe</code></pre>
+                <p class="desc">Wipes all tables and reloads from CSVs. Use after fresh ETL run.</p>
+            </div>
+            
+            <div class="example">
+                <div class="example-title">Dimensions Only</div>
+                <pre><code>python supabase/sync_to_supabase.py --dims --wipe</code></pre>
+                <p class="desc">Only syncs dim_* tables. Good for updating reference data.</p>
+            </div>
+            
+            <div class="example">
+                <div class="example-title">Facts Only</div>
+                <pre><code>python supabase/sync_to_supabase.py --facts --wipe</code></pre>
+                <p class="desc">Only syncs fact_* tables. Dimensions must already exist.</p>
+            </div>
+            
+            <div class="example">
+                <div class="example-title">Specific Games</div>
+                <pre><code>python supabase/sync_to_supabase.py --games 18977 18981 --wipe</code></pre>
+                <p class="desc">Only syncs data for games 18977 and 18981. Deletes only those games' data when wiping.</p>
+            </div>
+            
+            <div class="example">
+                <div class="example-title">Single Table</div>
+                <pre><code>python supabase/sync_to_supabase.py --table fact_events --wipe</code></pre>
+                <p class="desc">Syncs only the fact_events table.</p>
+            </div>
+            
+            <div class="example">
+                <div class="example-title">Multiple Tables</div>
+                <pre><code>python supabase/sync_to_supabase.py --tables fact_events fact_shifts fact_plays --wipe</code></pre>
+                <p class="desc">Syncs only the specified tables.</p>
+            </div>
+            
+            <div class="example">
+                <div class="example-title">Combined Filters</div>
+                <pre><code>python supabase/sync_to_supabase.py --games 18977 --tables fact_events fact_shifts --wipe</code></pre>
+                <p class="desc">Syncs only fact_events and fact_shifts, filtered to game 18977.</p>
+            </div>
+            
+            <div class="example">
+                <div class="example-title">Dry Run (Preview)</div>
+                <pre><code>python supabase/sync_to_supabase.py --wipe --dry-run</code></pre>
+                <p class="desc">Shows what would be synced without making changes.</p>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Configuration</h2>
+            
+            <p>The script reads credentials from <code>config/config_local.ini</code>:</p>
+            
+            <pre><code>[supabase]
+url = https://your-project.supabase.co
+service_key = your-service-role-key
+
+[loader]
+batch_size = 500
+verbose = true</code></pre>
+            
+            <div class="note">
+                <strong>Security:</strong> Use the <strong>service_role</strong> key (not anon key) for full write access. 
+                Keep this file out of version control.
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Common Workflows</h2>
+            
+            <h3>After Fresh ETL Run</h3>
+            <pre><code># Run ETL first
+rm -rf data/output/*
+python -m src.etl_orchestrator full
+
+# Then sync everything
+python supabase/sync_to_supabase.py --wipe</code></pre>
+            
+            <h3>Adding a New Game</h3>
+            <pre><code># After adding game data and running ETL
+python supabase/sync_to_supabase.py --games 19001 --wipe</code></pre>
+            
+            <h3>Updating Reference Data Only</h3>
+            <pre><code># Just update dimension tables
+python supabase/sync_to_supabase.py --dims --wipe</code></pre>
+            
+            <h3>Fixing a Single Table</h3>
+            <pre><code># Re-sync just one table
+python supabase/sync_to_supabase.py --table fact_shifts --wipe</code></pre>
+        </div>
+        
+        <div class="section">
+            <h2>Troubleshooting</h2>
+            
+            <h3>Type Errors (22P02)</h3>
+            <p>Error like <code>invalid input syntax for type integer: "1986.0"</code></p>
+            <p>The script auto-converts float columns to integers where appropriate. If this fails, check for non-integer floats in the source CSV.</p>
+            
+            <h3>Column Not Found (PGRST204)</h3>
+            <p>Schema mismatch between CSV and database. Regenerate schema:</p>
+            <pre><code>python supabase/generate_schema.py
+# Then re-run schema in Supabase SQL Editor</code></pre>
+            
+            <h3>Connection Errors</h3>
+            <p>Check <code>config/config_local.ini</code> has correct URL and service_key.</p>
+        </div>
+        
+        <p style="margin-top: 2rem; color: var(--muted); text-align: center;">
+            BenchSight v16.08 | Sync Script v6 | Last Updated: January 7, 2026
+        </p>
+    </div>
+</body>
+</html>

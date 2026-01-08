@@ -1,89 +1,183 @@
-# Honest Technical Assessment
+# BenchSight Tracker - Honest Assessment
 
-**Last Updated:** January 7, 2026  
-**Version:** 13.01
-
-## Executive Summary
-
-**Overall Health: 🟢 GOOD** - Core ETL working, 4 games verified, goal accuracy 100%
-
-| Metric | Value |
-|--------|-------|
-| Working Tables | 61 (59 (33 dim, 24 fact, 2 qa)) |
-| Games Tracked | 4 (18969, 18977, 18981, 18987) |
-| Goal Accuracy | 100% verified |
-| Tests Passing | 17 (6 skipped) |
-
-## What's Working ✅
-
-- **ETL Orchestrator** - Full, incremental, and single-game modes functional
-- **Core Tables** - fact_events, fact_event_players, fact_shifts generating correctly
-- **Goal Verification** - All 4 games verified against noradhockey.com
-- **Derived Tables** - Faceoffs, rushes, zone entries, saves, penalties working
-- **Player Linkage** - Jersey number to player_id mapping working
-- **Key Generation** - All composite keys generating correctly
-- **Documentation** - Comprehensive HTML docs with column metadata
-
-## Known Issues ⚠️
-
-### 1. Missing Statistical Tables
-**Status:** PARTIAL
-
-Some tables exist in backup but not regenerated:
-- `fact_player_game_stats`
-- `fact_goalie_game_stats`
-- `fact_team_game_stats`
-
-**Impact:** Advanced analytics limited. Core data unaffected.
-
-### 2. XY Coordinate Integration
-**Status:** NOT STARTED
-
-- Files exist in `data/raw/games/*/xy/`
-- `src/xy/xy_tables.py` exists but not called
-
-**Impact:** No heat maps or xG calculations.
-
-### 3. SQL Injection
-**Status:** LOW RISK / MITIGATED
-
-- Using f-strings but `src/core/safe_sql.py` provides validation
-- Game IDs validated as integers
-- Table names from controlled list
-
-## Table Status
-
-| Category | Count | Status |
-|----------|-------|--------|
-| Dimensions (dim_*) | 34 | ✅ Working |
-| Facts (fact_*) | 25 | ✅ Working |
-| QA (qa_*) | 2 | ✅ Working |
-| **Total** | **61** | |
-
-## Code Quality
-
-| Metric | Status |
-|--------|--------|
-| Bare except clauses | ✅ Fixed |
-| Hard-coded values | ✅ Clean |
-| Test coverage | ⚠️ Partial (23 tests) |
-| Documentation | ✅ Good |
-| Error handling | ✅ Good |
-
-## Recommendations
-
-### Priority 1 (Next Session)
-- Regenerate player/team game stats tables
-- Process additional Fall 2024 games
-
-### Priority 2 (Soon)
-- Integrate XY coordinate data
-- Build shot charts and heat maps
-
-### Priority 3 (Future)
-- Complete Streamlit dashboard
-- Deploy to Supabase
+**Version:** 16.08  
+**Date:** January 8, 2026  
+**Author:** Claude (AI Assistant)
 
 ---
 
-See also: [HTML Version](html/HONEST_ASSESSMENT.html)
+## Executive Summary
+
+BenchSight Tracker is a **functional but rough** hockey event tracking application. It successfully captures events, shifts, and XY coordinates for the BenchSight ETL pipeline. However, it has accumulated significant technical debt, UX friction, and unresolved bugs that limit its efficiency.
+
+**Current State: 70-75% of potential value captured**
+
+---
+
+## What Works Well ✅
+
+### Core Functionality
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Event tracking | ✅ Working | All 12+ event types supported |
+| Shift management | ✅ Working | Start/end times, players on ice |
+| XY coordinates | ✅ Working | Center-relative (0,0 = center ice) |
+| Excel export | ✅ Working | Compatible with ETL pipeline |
+| Supabase integration | ✅ Working | Loads games, rosters, dimensions |
+| Linked events | ✅ Working | Shot → rebound → goal chains |
+| Team colors/logos | ✅ Working | Loaded from dim_team |
+| Event details 1 | ✅ Working | From dim_event_detail |
+| Event details 2 | ✅ Working | From dim_event_detail_2 (v16.08 fix) |
+
+### Data Quality
+- Event details load from `dim_event_detail` filtered by event_type_name
+- Event details 2 load from `dim_event_detail_2` filtered by code prefix
+- Play details load from `dim_play_detail` and `dim_play_detail_2`
+- Player roles load from `dim_player_role`
+- Validation against NORAD official records possible
+
+---
+
+## What Doesn't Work ❌
+
+### Critical Issues
+| Issue | Impact | Status |
+|-------|--------|--------|
+| **Ctrl+1-6 browser conflict** | Can't quickly select opponent players | Partial - browser intercepts Ctrl+number |
+| **No video sync** | Manual time entry is slow and error-prone | Not started |
+| **Shift edit dropdowns mismatch** | Confusing UX when editing shifts | Not fixed |
+| **Player slot click doesn't always select** | Frustrating workflow | Intermittent |
+
+### Medium Issues
+| Issue | Impact | Status |
+|-------|--------|--------|
+| Event log visibility toggle broken | Minor UX annoyance | Not fixed |
+| Save file location unclear | User confusion | No file picker |
+| Score verification not loading | Debug feature broken | Not fixed |
+| No undo for events | Can only delete, not undo | Not implemented |
+
+### Low Priority
+| Issue | Impact | Status |
+|-------|--------|--------|
+| No mobile/tablet layout | Desktop only | Not started |
+| No dark/light toggle | Dark only | Not started |
+| No resizable panels | Fixed layout | Not started |
+
+---
+
+## Technical Debt Assessment
+
+### Architecture Problems
+1. **Single 7000+ line HTML file** - Impossible to maintain, test, or refactor
+2. **Two conflicting keyboard handlers** - Lines 1974 and 6530 both handle keydown
+3. **Global state object `S`** - No encapsulation, hard to reason about
+4. **No error boundaries** - Supabase failures can break UI silently
+5. **Mixed concerns** - UI, data, export all interleaved
+
+### Code Quality
+```
+Lines of code: ~7,000
+Functions: ~150
+Global variables: 50+
+Comments: Sparse
+Tests: None
+```
+
+### What I Would Do Differently
+If starting over:
+1. **Use React/Vue** - Component-based architecture
+2. **TypeScript** - Type safety for complex data structures
+3. **Split into modules** - Separate files for events, shifts, XY, export
+4. **IndexedDB** - Better than localStorage for large datasets
+5. **Video sync first** - Most valuable feature for accuracy
+
+---
+
+## Feature Roadmap
+
+### Phase 1: Stabilization (Current)
+- [x] Fix 1-6 keyboard conflict
+- [x] Add auto-calc for pressure/success
+- [x] Smaller XY markers with click-through
+- [ ] Fix Ctrl+1-6 (may need Electron)
+- [ ] Fix shift edit dropdown display
+- [ ] Add comprehensive error handling
+
+### Phase 2: Video Integration (High Value)
+- [ ] YouTube IFrame API integration
+- [ ] Video file playback support
+- [ ] Time sync between video and clock
+- [ ] Frame-by-frame stepping
+- [ ] Slow motion / speed controls
+- [ ] Game markers (period starts, goals)
+
+### Phase 3: Workflow Optimization
+- [ ] Batch event templates (common sequences)
+- [ ] Quick replay review mode
+- [ ] Keyboard-only workflow
+- [ ] Auto-save with conflict resolution
+- [ ] Multi-game session support
+
+### Phase 4: Analytics Preview
+- [ ] Real-time shot chart
+- [ ] Possession timeline
+- [ ] Player heat maps
+- [ ] Expected goals preview
+
+---
+
+## Known Workarounds
+
+### Ctrl+1-6 Not Working
+**Workaround:** Click the opponent player number buttons directly, or use the roster panel to add opposing players.
+
+### Can't Click Through Markers
+**Status:** Fixed in v16.07 - markers now have `pointer-events: none`
+
+### Getting Back to Puck Mode
+**Workaround:** Press ` (backtick) or Tab to toggle modes
+
+### Team Selection
+**Workaround:** Press H for Home, A for Away (1/2 no longer work)
+
+---
+
+## Time Estimates
+
+| Task | Hours | Priority |
+|------|-------|----------|
+| Fix remaining keyboard issues | 2-4 | High |
+| Add proper error handling | 4-8 | High |
+| Video integration (basic) | 20-30 | High |
+| Video integration (full) | 40-60 | Medium |
+| Refactor to React | 80-120 | Low |
+| Mobile layout | 20-40 | Low |
+
+---
+
+## Recommendations
+
+### Do Now
+1. **Use the tracker as-is** for catching up on games
+2. **Export after each session** - don't trust auto-save alone
+3. **Verify goals against noradhockey.com** after each game
+
+### Do Next
+1. **Video integration** is the single highest-ROI feature
+2. Consider **Electron wrapper** for better keyboard control
+3. Build **validation dashboard** for data quality checks
+
+### Don't Bother
+1. Mobile optimization (low ROI for single user)
+2. Multi-user collaboration (not needed)
+3. Full React rewrite (diminishing returns)
+
+---
+
+## Conclusion
+
+BenchSight Tracker is **good enough for its purpose** - tracking hockey games to feed the ETL pipeline. The core functionality works. The rough edges are frustrating but workable.
+
+**Investment recommendation:** Focus on video integration (20-30 hours) rather than polish. Video sync would dramatically improve tracking speed and accuracy, delivering more value than fixing minor UX issues.
+
+The tracker has reached the point of diminishing returns for incremental improvements. Either use it as-is, or invest in the video feature that would be transformational.

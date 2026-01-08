@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Dashboard - BenchSight</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root { --bg: #0f172a; --panel: #1e293b; --card: #334155; --border: #475569; --accent: #06b6d4; --text: #f1f5f9; --muted: #94a3b8; --success: #10b981; --warn: #f59e0b; --danger: #ef4444; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+.header { background: var(--panel); padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.header h1 { font-size: 20px; color: var(--accent); }
+.nav { display: flex; gap: 16px; } .nav a { color: var(--muted); text-decoration: none; font-size: 14px; } .nav a:hover, .nav a.active { color: var(--accent); }
+.container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+.team-header { display: flex; gap: 24px; align-items: center; margin-bottom: 24px; padding: 20px; background: var(--panel); border-radius: 12px; }
+.team-logo { width: 80px; height: 80px; background: var(--card); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 36px; }
+.team-info h2 { font-size: 24px; } .team-record { color: var(--muted); font-size: 14px; margin-top: 4px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+.card-title { font-size: 14px; color: var(--accent); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { padding: 10px; text-align: left; border-bottom: 1px solid var(--border); }
+th { color: var(--muted); font-size: 11px; text-transform: uppercase; }
+tr:hover { background: rgba(6, 182, 212, 0.05); }
+.stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.stat-row:last-child { border-bottom: none; }
+.stat-label { color: var(--muted); } .stat-value { font-weight: 600; }
+select { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 6px; }
+.loading { text-align: center; padding: 40px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>🏒 BenchSight</h1>
+  <div class="nav">
+    <a href="index.html">Dashboard</a>
+    <a href="player.html">Players</a>
+    <a href="team.html" class="active">Teams</a>
+    <a href="game.html">Games</a>
+  </div>
+</div>
+
+<div class="container">
+  <div style="margin-bottom:24px;">
+    <select id="teamSelect" onchange="loadTeam(this.value)" style="min-width:200px;">
+      <option value="">Choose a team...</option>
+    </select>
+  </div>
+
+  <div id="teamContent" style="display:none;">
+    <div class="team-header">
+      <div class="team-logo" id="teamLogo">🏒</div>
+      <div class="team-info">
+        <h2 id="teamName">Team Name</h2>
+        <div class="team-record" id="teamRecord">0-0-0 | 0 pts</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">Team Stats</div>
+        <div class="stat-row"><span class="stat-label">Goals For</span><span class="stat-value" id="goalsFor">0</span></div>
+        <div class="stat-row"><span class="stat-label">Goals Against</span><span class="stat-value" id="goalsAgainst">0</span></div>
+        <div class="stat-row"><span class="stat-label">Goal Diff</span><span class="stat-value" id="goalDiff">0</span></div>
+        <div class="stat-row"><span class="stat-label">PP%</span><span class="stat-value" id="ppPct">0%</span></div>
+        <div class="stat-row"><span class="stat-label">PK%</span><span class="stat-value" id="pkPct">0%</span></div>
+        <div class="stat-row"><span class="stat-label">Shots/Game</span><span class="stat-value" id="shotsPerGame">0</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Recent Games</div>
+        <table>
+          <thead><tr><th>Date</th><th>Opp</th><th>Result</th></tr></thead>
+          <tbody id="recentGames"></tbody>
+        </table>
+      </div>
+
+      <div class="card" style="grid-column: span 2;">
+        <div class="card-title">Roster</div>
+        <table>
+          <thead><tr><th>#</th><th>Name</th><th>Pos</th><th>GP</th><th>G</th><th>A</th><th>PTS</th></tr></thead>
+          <tbody id="roster"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="loadingMsg" class="loading">Select a team to view their dashboard</div>
+</div>
+
+<script>
+let sb = null;
+
+async function init() {
+  const settings = JSON.parse(localStorage.getItem('bs_settings') || '{}');
+  if (settings.sbUrl && settings.sbKey) {
+    sb = supabase.createClient(settings.sbUrl, settings.sbKey);
+    await loadTeams();
+  } else {
+    document.getElementById('loadingMsg').innerHTML = 'Configure Supabase in <a href="../portal/" style="color:var(--accent)">Portal</a> first';
+  }
+}
+
+async function loadTeams() {
+  const { data } = await sb.from('dim_team')
+    .select('team_id,team_name')
+    .order('team_name');
+  
+  const sel = document.getElementById('teamSelect');
+  sel.innerHTML = '<option value="">Choose a team...</option>' +
+    (data || []).map(t => `<option value="${t.team_id}">${t.team_name}</option>`).join('');
+}
+
+async function loadTeam(teamId) {
+  if (!teamId) {
+    document.getElementById('teamContent').style.display = 'none';
+    document.getElementById('loadingMsg').style.display = 'block';
+    return;
+  }
+  
+  document.getElementById('loadingMsg').innerHTML = 'Loading...';
+  
+  const { data: team } = await sb.from('dim_team')
+    .select('*')
+    .eq('team_id', teamId)
+    .single();
+  
+  if (!team) return;
+  
+  document.getElementById('teamName').textContent = team.team_name || 'Unknown';
+  document.getElementById('teamLogo').textContent = team.team_abbrev || '🏒';
+  document.getElementById('teamRecord').textContent = `${team.team_color1 || 'Blue'} team`;
+  
+  // Load recent games
+  const { data: games } = await sb.from('dim_schedule')
+    .select('*')
+    .or(`home_team_id.eq.${teamId},away_team_id.eq.${teamId}`)
+    .order('date', { ascending: false })
+    .limit(5);
+  
+  document.getElementById('recentGames').innerHTML = (games || []).map(g => {
+    const isHome = g.home_team_id === parseInt(teamId);
+    const opp = isHome ? g.away_team_name : g.home_team_name;
+    const teamGoals = isHome ? g.home_total_goals : g.away_total_goals;
+    const oppGoals = isHome ? g.away_total_goals : g.home_total_goals;
+    const result = teamGoals > oppGoals ? 'W' : teamGoals < oppGoals ? 'L' : 'T';
+    return `<tr><td>${g.date?.split('T')[0] || '--'}</td><td>${opp || '--'}</td><td>${result} ${teamGoals}-${oppGoals}</td></tr>`;
+  }).join('') || '<tr><td colspan="3">No games</td></tr>';
+  
+  // Load roster
+  const { data: roster } = await sb.from('dim_player')
+    .select('*')
+    .eq('current_team_id', teamId)
+    .order('current_roster_number');
+  
+  document.getElementById('roster').innerHTML = (roster || []).map(p => 
+    `<tr><td>${p.current_roster_number || '--'}</td><td>${p.player_full_name}</td><td>${p.player_position || '--'}</td><td>--</td><td>--</td><td>--</td><td>--</td></tr>`
+  ).join('') || '<tr><td colspan="7">No roster</td></tr>';
+  
+  document.getElementById('loadingMsg').style.display = 'none';
+  document.getElementById('teamContent').style.display = 'block';
+}
+
+init();
+</script>
+</body>
+</html>

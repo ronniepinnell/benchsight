@@ -1,7 +1,14 @@
 {
-    "version": "0.01",
-    "created": "2026-01-07T21:13:53.164403",
-    "created_by": "pre_delivery.py v2.0",
+    "version": "17.00",
+    "created": "2026-01-08T19:20:00.000000",
+    "created_by": "Claude - Tracker Bug Fixes",
+    "changes": [
+        "FIXED: Alt+1-6 for opponent player selection (Ctrl+1-6 browser conflict)",
+        "FIXED: Shift edit dropdown now shows correct selected values",
+        "FIXED: Added OnTheFly to shiftStart options list",
+        "ADDED: Event log visibility toggle button",
+        "UPDATED: Documentation for v17.00"
+    ],
     "verification": {
         "etl_fresh_run": "PASS",
         "goal_count": {

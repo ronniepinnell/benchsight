@@ -1,4 +1,8 @@
-# BenchSight Data Dictionary v0.01
+# BenchSight Data Dictionary v16.08
+
+**Version:** 16.08  
+**Updated:** January 8, 2026
+
 
 **Auto-generated:** 2026-01-07 21:13  
 **Metadata source:** `config/TABLE_METADATA.json`

@@ -1,7 +1,7 @@
 # Role: Tracker Developer
 
-**Version:** 3.0  
-**Updated:** January 7, 2026
+**Version:** 16.08  
+**Updated:** January 8, 2026
 
 ---
 
@@ -14,12 +14,12 @@ The BenchSight Tracker replaces Excel-based game tracking with a purpose-built w
 ## Essential Documents (Read in Order)
 
 1. **LLM_REQUIREMENTS.md** - Critical data rules, goal counting
-2. **docs/TRACKER_ETL_SPECIFICATION.md** - EXACT export format ETL expects
-3. **docs/TRACKER_V3_SPECIFICATION.md** - Complete feature spec
-4. **docs/TRACKER_REQUIREMENTS.md** - Detailed requirements v2
-5. **docs/TRACKER_DEVELOPER_HANDOFF.md** - Implementation details
+2. **docs/STRATEGIC_PLAN.md** - Full rebuild plan and roadmap
+3. **docs/HONEST_ASSESSMENT.md** - Current state and limitations
+4. **docs/TODO.md** - Known issues and priorities
+5. **docs/TRACKER_ETL_SPECIFICATION.md** - EXACT export format ETL expects
 6. **docs/SUPABASE_SETUP_GUIDE.md** - Database setup
-7. **docs/TRACKING_TEMPLATE_ANALYSIS.md** - ML analysis of existing data
+7. **CHANGELOG.md** - Version history
 
 ---
 
@@ -27,7 +27,7 @@ The BenchSight Tracker replaces Excel-based game tracking with a purpose-built w
 
 | Component | Status | Location |
 |-----------|--------|----------|
-| **Tracker MVP** | ✅ Complete | docs/html/tracker/benchsight_tracker_v3.html |
+| **Tracker MVP** | ✅ v16.08 | ui/tracker/index.html |
 | **Supabase Setup** | 📋 Needs User | docs/SUPABASE_SETUP_GUIDE.md |
 | **ETL Alignment** | ✅ Specified | docs/TRACKER_ETL_SPECIFICATION.md |
 | **Cascading Dropdowns** | ✅ Implemented | From Lists tab in Excel |

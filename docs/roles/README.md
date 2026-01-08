@@ -1,5 +1,9 @@
 # BenchSight Role Guides
 
+**Version:** 16.08  
+**Updated:** January 8, 2026
+
+
 Copy-paste the appropriate guide at the start of each chat session to specialize the LLM for that task.
 
 ## Available Roles

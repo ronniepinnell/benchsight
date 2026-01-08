@@ -1,0 +1,3751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BenchSight Tracker v4</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --bg: #0a0e14; --panel: #131920; --card: #1a222c; --input: #0d1117;
+  --border: #2a3441; --accent: #00d4aa; --accent2: #00b4d8;
+  --success: #10b981; --warn: #f59e0b; --danger: #ef4444;
+  --text: #e2e8f0; --muted: #64748b; --home: #3b82f6; --away: #ef4444;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'SF Mono', monospace; background: var(--bg); color: var(--text); font-size: 11px; overflow: hidden; height: 100vh; }
+.app { display: grid; grid-template-rows: 36px 1fr; height: 100vh; }
+.header { background: var(--panel); border-bottom: 1px solid var(--border); padding: 0 8px; display: flex; align-items: center; gap: 8px; }
+.header h1 { font-size: 12px; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.main { display: grid; grid-template-columns: 220px 1fr 320px; height: 100%; }
+.panel { background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; position: relative; }
+.panel:last-child { border-right: none; border-left: 1px solid var(--border); }
+.panel-header { background: var(--card); padding: 4px 8px; font-size: 9px; font-weight: 600; text-transform: uppercase; color: var(--accent); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
+.panel-body { flex: 1; overflow-y: auto; padding: 6px; }
+select, input, button { font-family: inherit; font-size: 10px; background: var(--input); border: 1px solid var(--border); color: var(--text); padding: 4px 6px; border-radius: 3px; }
+select:focus, input:focus { border-color: var(--accent); outline: none; }
+button { cursor: pointer; } button:hover { background: var(--card); border-color: var(--accent); }
+.btn-sm { padding: 2px 5px; font-size: 9px; }
+.btn-primary { background: var(--accent); color: #000; border-color: var(--accent); }
+.btn-success { background: var(--success); color: #fff; }
+.btn-danger { background: var(--danger); color: #fff; }
+kbd { background: var(--bg); border: 1px solid var(--border); padding: 0 3px; border-radius: 2px; font-size: 8px; color: var(--muted); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 4px; }
+.form-row.tri { grid-template-columns: 1fr 1fr 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 1px; }
+.form-group label { font-size: 7px; color: var(--muted); text-transform: uppercase; }
+.form-group select, .form-group input { width: 100%; }
+
+/* Resize handles */
+.resize-handle { position: absolute; background: transparent; z-index: 10; }
+.resize-handle:hover { background: var(--accent); opacity: 0.5; }
+.resize-handle.right { right: 0; top: 0; width: 4px; height: 100%; cursor: ew-resize; }
+
+/* Header */
+.game-select { width: 200px; }
+.game-search { background: var(--input); border: 1px solid var(--border); color: var(--text); padding: 4px 8px; border-radius: 3px; width: 150px; font-size: 10px; }
+.clock { font-size: 16px; font-weight: 700; color: var(--accent); background: var(--bg); padding: 2px 8px; border-radius: 3px; border: 1px solid var(--border); }
+.score { font-size: 14px; font-weight: 700; }
+.score-h { color: var(--home); } .score-a { color: var(--away); }
+.period-btns { display: flex; gap: 2px; }
+.period-btn { padding: 2px 6px; } .period-btn.active { background: var(--accent); color: #000; }
+.header-right { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+.status { font-size: 8px; color: var(--muted); }
+.save-ind { font-size: 7px; padding: 1px 4px; border-radius: 4px; background: var(--card); }
+.save-ind.saving { background: var(--warn); color: #000; }
+.save-ind.saved { background: var(--success); color: #fff; }
+.conn { font-size: 7px; padding: 1px 4px; border-radius: 8px; }
+.conn.on { background: var(--success); color: #fff; } .conn.off { background: var(--muted); color: #fff; }
+
+/* Shift Panel */
+.team-sec { margin-bottom: 8px; }
+.team-hdr { display: flex; justify-content: space-between; align-items: center; padding: 3px 6px; background: var(--card); border-radius: 3px; margin-bottom: 3px; }
+.team-hdr h4 { font-size: 9px; display: flex; align-items: center; gap: 4px; }
+.team-dot { width: 8px; height: 8px; border-radius: 50%; }
+.slots { display: grid; grid-template-columns: 20px 1fr; gap: 2px; margin-bottom: 2px; }
+.slot-lbl { font-size: 7px; color: var(--muted); display: flex; align-items: center; }
+.slot-row { display: flex; gap: 2px; }
+.slot { flex: 1; min-height: 24px; border-radius: 3px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border: 2px solid var(--border); background: var(--input); font-size: 10px; }
+.slot .num { font-weight: 700; } .slot .name { font-size: 6px; color: var(--muted); max-width: 40px; overflow: hidden; text-overflow: ellipsis; }
+.slot.filled { border-color: var(--success); background: var(--card); }
+.slot.selected { box-shadow: 0 0 0 2px var(--accent); }
+.roster { background: var(--card); border-radius: 3px; padding: 3px; max-height: 100px; overflow-y: auto; }
+.roster-group { margin-bottom: 4px; }
+.roster-group-label { font-size: 7px; color: var(--accent); text-transform: uppercase; display: block; margin-bottom: 2px; }
+.roster-btn { padding: 2px 4px; font-size: 8px; border-radius: 2px; cursor: pointer; border: 1px solid var(--border); background: var(--input); display: inline-flex; flex-direction: column; align-items: center; min-width: 36px; margin: 1px; }
+.roster-btn .num { font-weight: 700; } .roster-btn .name { font-size: 6px; color: var(--muted); }
+.roster-btn .rating { font-size: 6px; color: var(--accent); background: var(--bg); padding: 0 2px; border-radius: 2px; margin-top: 1px; }
+.roster-btn:hover { background: var(--accent); color: #000; }
+.roster-btn.on-ice { opacity: 0.3; }
+.shift-times { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin-top: 4px; padding: 4px; background: var(--card); border-radius: 3px; }
+.shift-times label { font-size: 6px; color: var(--muted); }
+.shift-actions { display: flex; gap: 3px; margin-top: 4px; }
+.shift-actions button { flex: 1; padding: 6px; font-size: 9px; }
+
+/* Center - Rink */
+.center { display: flex; flex-direction: column; background: var(--panel); }
+.rink-wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 8px; position: relative; }
+#rinkSvg { max-width: 100%; max-height: 100%; cursor: crosshair; }
+.mode-ind { position: absolute; top: 6px; left: 50%; transform: translateX(-50%); padding: 3px 10px; border-radius: 12px; font-size: 9px; font-weight: 600; border: 2px solid; }
+.mode-ind.puck { background: #000; color: #fff; border-color: #fff; }
+.mode-ind.player { background: var(--accent); color: #000; border-color: var(--accent); }
+.xy-controls { display: flex; gap: 4px; padding: 4px 8px; background: var(--card); border-top: 1px solid var(--border); align-items: center; flex-wrap: wrap; justify-content: center; }
+.xy-btn { padding: 2px 6px; font-size: 9px; } .xy-btn.active { background: var(--accent); color: #000; }
+.xy-slots { display: flex; gap: 1px; }
+.xy-slot { width: 18px; height: 18px; border-radius: 2px; display: flex; align-items: center; justify-content: center; font-size: 8px; cursor: pointer; border: 1px solid var(--border); background: var(--input); }
+.xy-slot.has { background: var(--success); color: #fff; } .xy-slot.active { box-shadow: 0 0 0 2px var(--accent); }
+.xy-player-sel { min-width: 80px; font-size: 9px; }
+
+/* Event List */
+.evt-list { border-top: 1px solid var(--border); flex: 0 0 180px; overflow-y: auto; }
+.evt-header { display: grid; grid-template-columns: 35px 45px 100px 1fr 20px; gap: 2px; padding: 2px 6px; background: var(--card); font-size: 7px; color: var(--muted); position: sticky; top: 0; }
+.evt-item { display: grid; grid-template-columns: 35px 45px 100px 1fr 20px; gap: 2px; padding: 2px 6px; border-bottom: 1px solid var(--border); font-size: 8px; cursor: pointer; align-items: center; }
+.evt-item:hover { background: var(--panel); }
+.evt-item.active { background: rgba(0,212,170,0.1); }
+.evt-item .idx { color: var(--accent); font-family: monospace; }
+.evt-item .time { color: var(--muted); }
+.evt-item .type { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.evt-item .players { font-size: 7px; color: var(--muted); }
+.evt-item .xy-dot { color: var(--accent); }
+
+/* Right Panel - Event Entry */
+.team-toggle { display: flex; gap: 2px; margin-bottom: 4px; }
+.team-toggle button { flex: 1; padding: 5px; font-size: 9px; }
+.team-toggle .home.active { background: var(--home); color: #fff; }
+.team-toggle .away.active { background: var(--away); color: #fff; }
+.evt-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; margin-bottom: 6px; }
+.evt-btn { padding: 4px 2px; display: flex; flex-direction: column; align-items: center; font-size: 8px; border-radius: 3px; }
+.evt-btn kbd { font-size: 7px; } .evt-btn.active { background: var(--accent); color: #000; }
+.section { margin-bottom: 6px; }
+.section-title { font-size: 8px; color: var(--muted); margin-bottom: 2px; display: flex; justify-content: space-between; }
+.player-list { background: var(--card); border-radius: 3px; padding: 3px; min-height: 28px; }
+.player-chip { display: inline-flex; align-items: center; gap: 2px; padding: 2px 5px; margin: 1px; border-radius: 3px; font-size: 9px; cursor: pointer; border: 1px solid var(--border); background: var(--input); }
+.player-chip.evt { border-color: var(--accent); background: rgba(0,212,170,0.1); }
+.player-chip.opp { border-color: var(--danger); background: rgba(239,68,68,0.1); }
+.player-chip.selected { box-shadow: 0 0 0 2px var(--warn); }
+.player-chip .num { font-weight: 700; }
+.player-chip .su { font-size: 7px; padding: 0 2px; border-radius: 2px; margin-left: 2px; }
+.player-chip .su.s { background: var(--success); color: #fff; }
+.player-chip .su.u { background: var(--danger); color: #fff; }
+.player-chip .remove { color: var(--muted); margin-left: 2px; } .player-chip .remove:hover { color: var(--danger); }
+.quick-add { display: flex; flex-wrap: wrap; gap: 2px; padding: 3px; background: var(--card); border-radius: 3px; }
+.quick-add button { padding: 2px 4px; font-size: 8px; min-width: 24px; }
+.quick-add button.in-evt { background: var(--accent); color: #000; }
+.player-details { background: var(--card); border-radius: 3px; padding: 4px; margin-top: 4px; font-size: 8px; }
+.player-details h5 { color: var(--accent); margin-bottom: 3px; font-size: 9px; }
+.log-actions { display: flex; gap: 3px; margin-top: 6px; }
+.log-actions button { flex: 1; padding: 8px; font-size: 10px; }
+
+/* Zone indicator */
+.zone-ind { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 8px; font-weight: bold; margin-left: 4px; }
+.zone-ind.o { background: var(--success); color: #fff; }
+.zone-ind.d { background: var(--danger); color: #fff; }
+.zone-ind.n { background: var(--warn); color: #000; }
+
+/* Modals */
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 100; }
+.overlay.show { display: flex; }
+.modal { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 12px; min-width: 400px; max-width: 600px; max-height: 80vh; overflow-y: auto; }
+.modal h3 { font-size: 12px; color: var(--accent); margin-bottom: 8px; }
+.modal-actions { display: flex; gap: 4px; margin-top: 10px; }
+.modal-actions button { flex: 1; }
+
+/* Edit Modal Specific */
+.edit-player-row { display: flex; gap: 4px; align-items: center; padding: 4px; background: var(--input); border-radius: 3px; margin-bottom: 4px; }
+.edit-player-row .pnum { font-weight: bold; min-width: 50px; }
+.edit-player-row select, .edit-player-row input { flex: 1; }
+.edit-xy-grid { display: flex; gap: 2px; flex-wrap: wrap; margin-top: 4px; }
+.edit-xy-btn { width: 24px; height: 24px; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 8px; cursor: pointer; }
+.edit-xy-btn.has { background: var(--success); color: #fff; }
+
+/* Toast */
+.toast { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); background: var(--card); border: 1px solid var(--border); padding: 6px 14px; border-radius: 4px; font-size: 10px; z-index: 200; opacity: 0; transition: opacity 0.2s; }
+.toast.show { opacity: 1; }
+.toast.success { border-color: var(--success); color: var(--success); }
+.toast.error { border-color: var(--danger); color: var(--danger); }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Header -->
+  <header class="header">
+    <h1>🏒 BenchSight v4</h1>
+    <div style="display:flex;gap:4px;align-items:center;">
+      <input type="text" id="gameSearch" class="game-search" placeholder="🔍 Search games..." oninput="filterGames(this.value)">
+      <select id="gameSelect" class="game-select" onchange="selectGame(this.value)"></select>
+    </div>
+    <div class="period-btns">
+      <button class="period-btn active" data-p="1" onclick="setPeriod(1)">P1</button>
+      <button class="period-btn" data-p="2" onclick="setPeriod(2)">P2</button>
+      <button class="period-btn" data-p="3" onclick="setPeriod(3)">P3</button>
+      <button class="period-btn" data-p="OT" onclick="setPeriod('OT')">OT</button>
+    </div>
+    <span class="score"><span class="score-h" id="scoreH">0</span> - <span class="score-a" id="scoreA">0</span></span>
+    <input type="text" class="clock" id="clock" value="20:00" style="width:60px;text-align:center;" onchange="updateClock()">
+    <div class="header-right">
+      <span class="save-ind" id="saveInd">--</span>
+      <button class="btn-sm" onclick="manualSave()" title="Save Now">💾</button>
+      <button class="btn-sm" onclick="openLoadGameModal()" title="Load Existing Game">📂</button>
+      <button class="btn-sm" onclick="openVerifyModal()" title="Verify Goals">✅</button>
+      <span class="conn off" id="connStatus">OFFLINE</span>
+      <button class="btn-sm" onclick="openSettings()">⚙️</button>
+      <button class="btn-sm btn-success" onclick="exportData()">📥 Export</button>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <div class="main">
+    <!-- Left: Shifts -->
+    <div class="panel" id="leftPanel">
+      <div class="resize-handle right" onmousedown="startResize(event, 'left')"></div>
+      <div class="panel-header"><span>Shift Tracking</span></div>
+      <div class="panel-body">
+        <!-- Home Team -->
+        <div class="team-sec">
+          <div class="team-hdr">
+            <h4><span class="team-dot" id="homeDot" style="background:var(--home)"></span><span id="homeLbl">Home</span></h4>
+            <button class="btn-sm" onclick="clearSlots('home')">Clear</button>
+          </div>
+          <div class="slots"><span class="slot-lbl">F</span><div class="slot-row" id="homeF"></div></div>
+          <div class="slots"><span class="slot-lbl">D</span><div class="slot-row" id="homeD"></div></div>
+          <div class="slots"><span class="slot-lbl">G</span><div class="slot-row" id="homeG"></div></div>
+          <div class="roster" id="homeRoster"></div>
+        </div>
+        <!-- Away Team -->
+        <div class="team-sec">
+          <div class="team-hdr">
+            <h4><span class="team-dot" id="awayDot" style="background:var(--away)"></span><span id="awayLbl">Away</span></h4>
+            <button class="btn-sm" onclick="clearSlots('away')">Clear</button>
+          </div>
+          <div class="slots"><span class="slot-lbl">F</span><div class="slot-row" id="awayF"></div></div>
+          <div class="slots"><span class="slot-lbl">D</span><div class="slot-row" id="awayD"></div></div>
+          <div class="slots"><span class="slot-lbl">G</span><div class="slot-row" id="awayG"></div></div>
+          <div class="roster" id="awayRoster"></div>
+        </div>
+        <!-- Shift Times -->
+        <div class="shift-times">
+          <div class="form-group"><label>Start Type</label><select id="shiftStartType"></select></div>
+          <div class="form-group"><label>Stop Type</label><select id="shiftStopType"></select></div>
+          <div class="form-group"><label>Start</label><input type="text" id="shiftStart" value="20:00"></div>
+          <div class="form-group"><label>End</label><input type="text" id="shiftEnd" value=""></div>
+        </div>
+        <div class="shift-actions">
+          <button class="btn-success" onclick="logShift()">Log Shift <kbd>L</kbd></button>
+        </div>
+        <!-- Shift Log -->
+        <div class="log-container" style="margin-top:8px;">
+          <div class="panel-header" style="font-size:8px;display:flex;justify-content:space-between;">
+            <span>Shift Log</span>
+            <button class="btn-sm" onclick="showAllShifts()">View All</button>
+          </div>
+          <div class="log-header" style="grid-template-columns: 25px 25px 40px 40px 60px;">
+            <span>#</span><span>P</span><span>Start</span><span>End</span><span>Type</span>
+          </div>
+          <div id="shiftLogBody" style="max-height:100px;overflow-y:auto;"></div>
+        </div>
+        <!-- Player Box Score -->
+        <div class="box-score" style="margin-top:8px;background:var(--card);border-radius:4px;padding:6px;">
+          <div style="font-size:8px;color:var(--muted);margin-bottom:4px;display:flex;justify-content:space-between;">
+            <span>PLAYER STATS</span>
+            <button class="btn-sm" onclick="showFullBoxScore()">📊</button>
+          </div>
+          <div id="playerBoxScore" style="max-height:120px;overflow-y:auto;">
+            <table style="width:100%;font-size:8px;border-collapse:collapse;">
+              <thead>
+                <tr style="color:var(--muted);">
+                  <td>#</td><td>Name</td><td>G</td><td>A</td><td>SOG</td><td>TOI</td>
+                </tr>
+              </thead>
+              <tbody id="playerBoxBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Team Summary -->
+        <div class="team-summary" style="margin-top:4px;background:var(--card);border-radius:4px;padding:4px;font-size:8px;">
+          <div style="display:flex;justify-content:space-between;">
+            <span><span id="teamSumHome">HOME</span>: <strong id="teamSumHomeScore">0</strong></span>
+            <span><span id="teamSumAway">AWAY</span>: <strong id="teamSumAwayScore">0</strong></span>
+          </div>
+          <div style="display:flex;justify-content:space-between;color:var(--muted);margin-top:2px;">
+            <span>SOG: <span id="teamSumHomeSOG">0</span></span>
+            <span>SOG: <span id="teamSumAwaySOG">0</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center: Rink -->
+    <div class="center">
+      <div class="rink-wrap">
+        <div class="mode-ind puck" id="modeInd">🏒 PUCK</div>
+        <svg id="rinkSvg" viewBox="0 0 200 85" onclick="handleRinkClick(event)">
+          <defs>
+            <linearGradient id="iceGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:#f0f9ff;stop-opacity:1"/>
+              <stop offset="50%" style="stop-color:#e0f2fe;stop-opacity:1"/>
+              <stop offset="100%" style="stop-color:#f0f9ff;stop-opacity:1"/>
+            </linearGradient>
+            <pattern id="iceTexture" patternUnits="userSpaceOnUse" width="4" height="4">
+              <rect width="4" height="4" fill="#e0f2fe" opacity="0.3"/>
+              <circle cx="1" cy="1" r="0.3" fill="#fff" opacity="0.4"/>
+            </pattern>
+          </defs>
+          
+          <!-- Ice surface -->
+          <rect x="0" y="0" width="200" height="85" fill="url(#iceGrad)" rx="14" ry="14"/>
+          <rect x="0" y="0" width="200" height="85" fill="url(#iceTexture)" rx="14" ry="14"/>
+          <!-- Boards -->
+          <rect x="0" y="0" width="200" height="85" fill="none" rx="14" ry="14" stroke="#1f2937" stroke-width="2"/>
+          
+          <!-- Blue lines -->
+          <rect x="74" y="0" width="2" height="85" fill="#1e40af"/>
+          <rect x="124" y="0" width="2" height="85" fill="#1e40af"/>
+          
+          <!-- Red center line (dashed) -->
+          <line x1="100" y1="0" x2="100" y2="85" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="4,2"/>
+          
+          <!-- Goal lines -->
+          <line x1="11" y1="0" x2="11" y2="85" stroke="#dc2626" stroke-width="1"/>
+          <line x1="189" y1="0" x2="189" y2="85" stroke="#dc2626" stroke-width="1"/>
+          
+          <!-- Center ice logo -->
+          <circle cx="100" cy="42.5" r="10" fill="rgba(30,58,138,0.08)" stroke="none"/>
+          <text x="100" y="40.5" font-size="4.5" font-weight="bold" fill="#1e3a8a" text-anchor="middle" font-family="Arial Black, sans-serif">NORAD</text>
+          <text x="100" y="45.5" font-size="2.8" fill="#475569" text-anchor="middle" font-family="Arial, sans-serif">HOCKEY</text>
+          
+          <!-- Center circle -->
+          <circle cx="100" cy="42.5" r="15" fill="none" stroke="#1e40af" stroke-width="1"/>
+          <circle cx="100" cy="42.5" r="1" fill="#1e40af"/>
+          
+          <!-- Left zone circles -->
+          <circle cx="31" cy="22" r="15" fill="none" stroke="#dc2626" stroke-width="0.8"/>
+          <circle cx="31" cy="22" r="1" fill="#dc2626"/>
+          <circle cx="31" cy="63" r="15" fill="none" stroke="#dc2626" stroke-width="0.8"/>
+          <circle cx="31" cy="63" r="1" fill="#dc2626"/>
+          
+          <!-- Right zone circles -->
+          <circle cx="169" cy="22" r="15" fill="none" stroke="#dc2626" stroke-width="0.8"/>
+          <circle cx="169" cy="22" r="1" fill="#dc2626"/>
+          <circle cx="169" cy="63" r="15" fill="none" stroke="#dc2626" stroke-width="0.8"/>
+          <circle cx="169" cy="63" r="1" fill="#dc2626"/>
+          
+          <!-- Neutral zone dots -->
+          <circle cx="80" cy="22" r="1" fill="#dc2626"/>
+          <circle cx="80" cy="63" r="1" fill="#dc2626"/>
+          <circle cx="120" cy="22" r="1" fill="#dc2626"/>
+          <circle cx="120" cy="63" r="1" fill="#dc2626"/>
+          
+          <!-- Creases -->
+          <path d="M 11 36.5 A 6 6 0 0 0 17 42.5 A 6 6 0 0 0 11 48.5 L 11 36.5" fill="rgba(59,130,246,0.2)" stroke="#3b82f6" stroke-width="0.8"/>
+          <path d="M 189 36.5 A 6 6 0 0 1 183 42.5 A 6 6 0 0 1 189 48.5 L 189 36.5" fill="rgba(59,130,246,0.2)" stroke="#3b82f6" stroke-width="0.8"/>
+          
+          <!-- Left goal -->
+          <rect x="7" y="39" width="4" height="7" fill="#111827" stroke="#f8fafc" stroke-width="0.5"/>
+          <line x1="7" y1="40" x2="10" y2="42.5" stroke="#374151" stroke-width="0.3"/>
+          <line x1="7" y1="45" x2="10" y2="42.5" stroke="#374151" stroke-width="0.3"/>
+          
+          <!-- Right goal -->
+          <rect x="189" y="39" width="4" height="7" fill="#111827" stroke="#f8fafc" stroke-width="0.5"/>
+          <line x1="193" y1="40" x2="190" y2="42.5" stroke="#374151" stroke-width="0.3"/>
+          <line x1="193" y1="45" x2="190" y2="42.5" stroke="#374151" stroke-width="0.3"/>
+          
+          <!-- Trapezoids -->
+          <path d="M 0 28 L 11 34 L 11 51 L 0 57" fill="none" stroke="#dc2626" stroke-width="0.5"/>
+          <path d="M 200 28 L 189 34 L 189 51 L 200 57" fill="none" stroke="#dc2626" stroke-width="0.5"/>
+          
+          <!-- Zone labels -->
+          <text x="43" y="81" font-size="3.5" fill="#64748b" text-anchor="middle" id="leftZoneLbl">AWAY OFF</text>
+          <text x="100" y="81" font-size="3.5" fill="#64748b" text-anchor="middle">NEUTRAL</text>
+          <text x="157" y="81" font-size="3.5" fill="#64748b" text-anchor="middle" id="rightZoneLbl">HOME OFF</text>
+          
+          <!-- Markers -->
+          <g id="markers"></g>
+        </svg>
+      </div>
+      <div class="xy-controls">
+        <button class="xy-btn active" id="puckModeBtn" onclick="setXYMode('puck')">🏒 Puck</button>
+        <button class="xy-btn" id="playerModeBtn" onclick="setXYMode('player')">👤 Player</button>
+        <select class="xy-player-sel" id="xyPlayerSel" onchange="selectXYPlayer(this.value)" style="display:none;"></select>
+        <span style="color:var(--muted);font-size:8px;">Slot:</span>
+        <div class="xy-slots" id="xySlots"></div>
+        <button class="btn-sm" onclick="undoLastXY()">↩ Undo</button>
+        <button class="btn-sm btn-danger" onclick="clearCurrentXY()">Clear</button>
+        <button class="btn-sm" onclick="clearRink()">Clear Rink</button>
+        <span style="margin-left:8px;font-size:8px;color:var(--muted);">History:</span>
+        <input type="number" id="xyHistCnt" value="5" min="0" max="20" style="width:35px;" onchange="renderMarkers()">
+      </div>
+      <!-- Event List -->
+      <div class="evt-list">
+        <div class="evt-header" style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="display:grid;grid-template-columns:35px 45px 100px 1fr 20px;gap:2px;flex:1;">
+            <span>#</span><span>Time</span><span>Type</span><span>Players</span><span>XY</span>
+          </span>
+          <button class="btn-sm" onclick="showAllEvents()" style="margin-left:4px;">All</button>
+        </div>
+        <div id="evtListBody"></div>
+      </div>
+      <!-- Next Play Suggestions -->
+      <div class="next-play-bar" style="background:var(--card);padding:4px 8px;border-top:1px solid var(--border);">
+        <span style="font-size:8px;color:var(--muted);">NEXT:</span>
+        <span id="nextPlaySuggestions" style="font-size:9px;"></span>
+      </div>
+    </div>
+
+    <!-- Right: Event Entry -->
+    <div class="panel" id="rightPanel">
+      <div class="resize-handle right" style="left:0;right:auto;" onmousedown="startResize(event, 'right')"></div>
+      <div class="panel-header"><span>Event Entry</span><span id="zoneDisplay"></span></div>
+      <div class="panel-body">
+        <!-- Team Toggle -->
+        <div class="team-toggle">
+          <button class="home active" id="evtHomeLbl" onclick="setEvtTeam('home')">Home</button>
+          <button class="away" id="evtAwayLbl" onclick="setEvtTeam('away')">Away</button>
+        </div>
+        <!-- Event Types -->
+        <div class="evt-grid" id="evtTypeGrid"></div>
+        <!-- Event Details -->
+        <div class="form-row">
+          <div class="form-group"><label>Detail 1</label><select id="evtD1" onchange="onD1Change()"></select></div>
+          <div class="form-group"><label>Detail 2</label><select id="evtD2"></select></div>
+        </div>
+        <div class="form-row tri">
+          <div class="form-group">
+            <label>Zone <button class="btn-sm" onclick="autoZone()" title="Auto-detect from XY">⚡</button></label>
+            <select id="evtZone"><option value="">--</option><option value="o">Offensive</option><option value="d">Defensive</option><option value="n">Neutral</option></select>
+          </div>
+          <div class="form-group">
+            <label>Success <button class="btn-sm" onclick="autoSuccess()" title="Auto-detect from detail">⚡</button></label>
+            <select id="evtSuccess"><option value="">--</option><option value="s">Success</option><option value="u">Unsuccess</option></select>
+          </div>
+          <div class="form-group">
+            <label>Strength <button class="btn-sm" onclick="autoStrength()" title="Auto-detect from slots">⚡</button></label>
+            <select id="evtStrength"><option value="5v5">5v5</option><option value="5v4">5v4 PP</option><option value="4v5">4v5 PK</option><option value="4v4">4v4</option><option value="3v3">3v3</option><option value="ENG">ENG</option><option value="ENA">ENA</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Start Time</label><input type="text" id="evtStartTime" placeholder="MM:SS"></div>
+          <div class="form-group"><label>End Time</label><input type="text" id="evtEndTime" placeholder="MM:SS (auto)"></div>
+        </div>
+        <!-- Event Players -->
+        <div class="section">
+          <div class="section-title"><span>Event Players (on puck)</span></div>
+          <div class="player-list" id="evtPlayers"></div>
+          <div class="quick-add" id="evtQuickAdd"></div>
+        </div>
+        <div class="section">
+          <div class="section-title"><span>Opposing Players</span></div>
+          <div class="player-list" id="oppPlayers"></div>
+          <div class="quick-add" id="oppQuickAdd"></div>
+        </div>
+        <!-- Player Details -->
+        <div class="player-details" id="playerDetails" style="display:none;">
+          <h5 id="pdPlayerNum">#0 Player</h5>
+          <div class="form-row">
+            <div class="form-group"><label>Play Detail 1</label><select id="pdPlayD1" onchange="updatePlayerDetail('playD1', this.value); updatePlayD2()"></select></div>
+            <div class="form-group"><label>Play Detail 2</label><select id="pdPlayD2" onchange="updatePlayerDetail('playD2', this.value)"></select></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Success</label><select id="pdPlaySuccess" onchange="updatePlayerDetail('playSuccess', this.value)"><option value="">--</option><option value="s">S</option><option value="u">U</option></select></div>
+            <div class="form-group"><label>Pressured By</label><select id="pdPressure" onchange="updatePlayerDetail('pressure', this.value)"><option value="">--</option></select></div>
+          </div>
+        </div>
+        <!-- Linked Event & Highlight -->
+        <div class="linked-event-bar" style="background:var(--card);padding:4px 8px;border-radius:4px;margin-top:6px;font-size:9px;display:flex;align-items:center;gap:8px;">
+          <span style="color:var(--muted);">Link:</span>
+          <select id="linkedEvtSelect" style="flex:1;" onchange="onLinkedEvtChange()">
+            <option value="">-- None --</option>
+          </select>
+          <span id="linkedEvtInfo" style="color:var(--accent);font-size:8px;"></span>
+          <label style="display:flex;align-items:center;gap:4px;cursor:pointer;margin-left:auto;">
+            <input type="checkbox" id="isHighlight"> ⭐ Highlight
+          </label>
+        </div>
+        <!-- Actions -->
+        <div class="log-actions">
+          <button class="btn-success" onclick="logEvent()">Log Event <kbd>Enter</kbd></button>
+          <button onclick="clearEvent()">Clear <kbd>Esc</kbd></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="overlay" id="settingsModal">
+  <div class="modal">
+    <h3>⚙️ Settings</h3>
+    <div class="form-group" style="margin-bottom:8px;">
+      <label>Supabase URL</label>
+      <input type="text" id="sbUrl" placeholder="https://xxx.supabase.co" style="width:100%;">
+    </div>
+    <div class="form-group" style="margin-bottom:8px;">
+      <label>Supabase Anon Key</label>
+      <input type="password" id="sbKey" placeholder="eyJ..." style="width:100%;">
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Auto-save (sec)</label><input type="number" id="autoSaveInt" value="30"></div>
+      <div class="form-group"><label>Pressure Distance (ft)</label><input type="number" id="pressureDist" value="10"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Period Length (min)</label><input type="number" id="periodLength" value="20" min="5" max="20"></div>
+      <div class="form-group"><label>OT Length (min)</label><input type="number" id="otLength" value="5" min="3" max="20"></div>
+    </div>
+    <div class="form-group" style="margin-bottom:8px;">
+      <label>Backup Storage Path</label>
+      <div style="display:flex;gap:4px;">
+        <select id="backupPathPreset" onchange="setBackupPath(this.value)" style="flex:1;">
+          <option value="">Custom path...</option>
+          <option value="C:\BenchSight\backups\">C:\BenchSight\backups\</option>
+          <option value="C:\Users\Public\BenchSight\">C:\Users\Public\BenchSight\</option>
+          <option value="D:\BenchSight\">D:\BenchSight\</option>
+          <option value="~/BenchSight/backups/">~/BenchSight/backups/ (Mac/Linux)</option>
+          <option value="./exports/">./exports/ (relative)</option>
+        </select>
+      </div>
+      <input type="text" id="backupPath" placeholder="Or type custom path..." style="width:100%;margin-top:4px;">
+      <p style="font-size:8px;color:var(--muted);margin-top:2px;">Path where exported files will be saved</p>
+    </div>
+    <div style="margin-top:12px;padding-top:8px;border-top:1px solid var(--border);">
+      <button class="btn-danger" onclick="clearAllData()" style="width:100%;">🗑️ Clear All Game Data</button>
+      <p style="font-size:8px;color:var(--muted);margin-top:4px;">Removes all events, shifts, and saved data for current game</p>
+    </div>
+    <div class="modal-actions">
+      <button onclick="testConn()">Test Connection</button>
+      <button class="btn-primary" onclick="saveSettings()">Save</button>
+      <button onclick="closeSettings()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Player Picker Modal -->
+<div class="overlay" id="playerPickerModal">
+  <div class="modal" style="min-width:400px;">
+    <h3>👤 Select Player</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Team</label>
+        <select id="pickerTeam" onchange="renderPlayerPicker()">
+          <option value="home">Home</option>
+          <option value="away">Away</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Role</label>
+        <select id="pickerRole">
+          <option value="event_team_player">Event Team</option>
+          <option value="opp_team_player">Opposing Team</option>
+        </select>
+      </div>
+    </div>
+    <div id="playerPickerList" style="max-height:250px;overflow-y:auto;margin:8px 0;"></div>
+    <div class="modal-actions">
+      <button onclick="closePlayerPicker()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Verification Panel Modal -->
+<div class="overlay" id="verifyModal">
+  <div class="modal" style="min-width:500px;">
+    <h3>✅ Verification Panel</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+      <div style="background:var(--card);padding:12px;border-radius:4px;text-align:center;">
+        <div style="font-size:24px;font-weight:bold;color:var(--home);" id="verifyHomeGoals">0</div>
+        <div style="font-size:10px;color:var(--muted);">Tracked Home Goals</div>
+      </div>
+      <div style="background:var(--card);padding:12px;border-radius:4px;text-align:center;">
+        <div style="font-size:24px;font-weight:bold;color:var(--away);" id="verifyAwayGoals">0</div>
+        <div style="font-size:10px;color:var(--muted);">Tracked Away Goals</div>
+      </div>
+    </div>
+    <div style="background:var(--card);padding:8px;border-radius:4px;margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <span style="font-size:9px;color:var(--muted);">OFFICIAL SCORE</span>
+        <a id="noradGameLink" href="#" target="_blank" style="font-size:9px;color:var(--accent);">View on noradhockey.com ↗</a>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Home Goals</label><input type="number" id="officialHomeGoals" value="0" min="0" onchange="runVerification()"></div>
+        <div class="form-group"><label>Away Goals</label><input type="number" id="officialAwayGoals" value="0" min="0" onchange="runVerification()"></div>
+      </div>
+      <p style="font-size:8px;color:var(--muted);margin-top:4px;">Enter official score from noradhockey.com to verify</p>
+    </div>
+    <div id="verifyResult" style="padding:12px;border-radius:4px;text-align:center;font-weight:bold;font-size:14px;"></div>
+    <div style="margin-top:12px;">
+      <div style="font-size:9px;color:var(--muted);margin-bottom:4px;">GOAL BREAKDOWN</div>
+      <table style="width:100%;font-size:10px;border-collapse:collapse;">
+        <thead><tr><th style="text-align:left;">Period</th><th style="text-align:left;">Time</th><th style="text-align:left;">Team</th><th style="text-align:left;">Scorer</th><th style="text-align:left;">Assist</th></tr></thead>
+        <tbody id="verifyGoalsList"></tbody>
+      </table>
+    </div>
+    <div class="modal-actions">
+      <button onclick="runVerification()">🔄 Verify</button>
+      <button onclick="closeVerifyModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Load Existing Game Modal -->
+<div class="overlay" id="loadGameModal">
+  <div class="modal" style="min-width:500px;">
+    <h3>📂 Load Existing Game</h3>
+    <p style="font-size:10px;color:var(--muted);margin-bottom:12px;">Load tracked events from Supabase for editing</p>
+    <div class="form-group" style="margin-bottom:8px;">
+      <label>Select Game</label>
+      <select id="loadGameSelect" style="width:100%;" onchange="previewLoadGame()"></select>
+    </div>
+    <div id="loadGamePreview" style="background:var(--card);padding:8px;border-radius:4px;font-size:10px;margin-bottom:8px;">
+      <div>Events: <span id="loadPreviewEvents">--</span></div>
+      <div>Shifts: <span id="loadPreviewShifts">--</span></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="confirmLoadGame()">Load Game</button>
+      <button onclick="closeLoadGameModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+<div class="overlay" id="editModal">
+  <div class="modal" style="min-width:600px;max-height:90vh;overflow-y:auto;">
+    <h3>✏️ Edit Event #<span id="editEvtIdx"></span> <span id="editHighlightBadge" style="color:gold;"></span></h3>
+    <div class="form-row">
+      <div class="form-group"><label>Event Type</label><select id="editType" onchange="onEditTypeChange()"></select></div>
+      <div class="form-group"><label>Team</label><select id="editTeam"><option value="home">Home</option><option value="away">Away</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Detail 1</label><select id="editD1" onchange="onEditD1Change()"></select></div>
+      <div class="form-group"><label>Detail 2</label><select id="editD2"></select></div>
+    </div>
+    <div class="form-row tri">
+      <div class="form-group"><label>Zone</label><select id="editZone"><option value="">--</option><option value="o">O</option><option value="d">D</option><option value="n">N</option></select></div>
+      <div class="form-group"><label>Success</label><select id="editSuccess"><option value="">--</option><option value="s">S</option><option value="u">U</option></select></div>
+      <div class="form-group"><label>Strength</label><select id="editStrength"><option value="5v5">5v5</option><option value="5v4">5v4</option><option value="4v5">4v5</option><option value="4v4">4v4</option><option value="3v3">3v3</option><option value="ENG">ENG</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Start Time</label><input type="text" id="editStartTime"></div>
+      <div class="form-group"><label>End Time</label><input type="text" id="editEndTime"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label style="display:flex;align-items:center;gap:4px;">
+          <input type="checkbox" id="editHighlight"> ⭐ Highlight (for video)
+        </label>
+      </div>
+      <div class="form-group">
+        <label>Linked Event Chain</label>
+        <span id="editLinkedChain" style="font-size:9px;color:var(--muted);">--</span>
+      </div>
+    </div>
+    <div class="section-title" style="margin-top:8px;"><span>Players</span><button class="btn-sm" onclick="addPlayerToEdit()">+ Add</button></div>
+    <div id="editPlayersContainer" style="max-height:150px;overflow-y:auto;"></div>
+    <div class="section-title" style="margin-top:8px;"><span>Puck XY</span></div>
+    <div id="editPuckXY" style="display:flex;flex-wrap:wrap;gap:4px;"></div>
+    <div class="section-title" style="margin-top:8px;"><span>Edit XY on Rink</span></div>
+    <svg id="editRinkSvg" viewBox="0 0 200 85" width="100%" style="cursor:crosshair;background:var(--card);border-radius:4px;max-height:150px;" onclick="handleEditRinkClick(event)">
+      <rect x="0" y="0" width="200" height="85" fill="#f8fafc" rx="14" ry="14" stroke="#1e293b" stroke-width="0.5"/>
+      <line x1="75" y1="0" x2="75" y2="85" stroke="#1d4ed8" stroke-width="1"/>
+      <line x1="125" y1="0" x2="125" y2="85" stroke="#1d4ed8" stroke-width="1"/>
+      <line x1="100" y1="0" x2="100" y2="85" stroke="#dc2626" stroke-width="0.5" stroke-dasharray="2,2"/>
+      <line x1="11" y1="0" x2="11" y2="85" stroke="#dc2626" stroke-width="0.5"/>
+      <line x1="189" y1="0" x2="189" y2="85" stroke="#dc2626" stroke-width="0.5"/>
+      <g id="editRinkMarkers"></g>
+    </svg>
+    <div id="editXYControls" style="font-size:9px;color:var(--muted);margin-top:4px;">
+      Editing: <select id="editXYTarget" onchange="renderEditRinkMarkers()" style="font-size:9px;"></select>
+      <button class="btn-sm" onclick="addEditXYPoint()">+ Add Point</button>
+    </div>
+    <!-- Net Location for Shots/Goals -->
+    <div id="editNetSection" style="display:none;margin-top:8px;">
+      <div class="section-title"><span>Net Location (Shot/Goal)</span></div>
+      <div style="display:flex;gap:16px;align-items:center;">
+        <svg id="editNetSvg" viewBox="0 0 72 48" width="160" style="cursor:crosshair;background:#1f2937;border-radius:4px;" onclick="handleEditNetClick(event)">
+          <rect x="1" y="1" width="70" height="46" fill="#111" stroke="#fff" stroke-width="1"/>
+          <line x1="1" y1="1" x2="71" y2="47" stroke="#444" stroke-width="0.5"/>
+          <line x1="71" y1="1" x2="1" y2="47" stroke="#444" stroke-width="0.5"/>
+          <line x1="36" y1="1" x2="36" y2="47" stroke="#444" stroke-width="0.5"/>
+          <line x1="1" y1="24" x2="71" y2="24" stroke="#444" stroke-width="0.5"/>
+          <text x="12" y="12" font-size="5" fill="#666">Top L</text>
+          <text x="50" y="12" font-size="5" fill="#666">Top R</text>
+          <text x="12" y="42" font-size="5" fill="#666">Low L</text>
+          <text x="50" y="42" font-size="5" fill="#666">Low R</text>
+          <text x="26" y="26" font-size="5" fill="#666">5-Hole</text>
+          <g id="editNetMarker"></g>
+        </svg>
+        <div style="font-size:10px;">
+          <div style="color:var(--muted);margin-bottom:4px;">Click to set location</div>
+          <div>Current: <span id="editNetLocation" style="color:var(--accent);">--</span></div>
+          <button class="btn-sm" onclick="clearEditNetXY()" style="margin-top:4px;">Clear</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-danger" onclick="deleteEvent()">Delete</button>
+      <button class="btn-primary" onclick="saveEditEvent()">Save</button>
+      <button onclick="closeEditModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Net Location Modal -->
+<div class="overlay" id="netModal">
+  <div class="modal" style="min-width:200px;">
+    <h3>🥅 Net Location</h3>
+    <p style="font-size:9px;color:var(--muted);margin-bottom:8px;">Click where puck entered net</p>
+    <svg id="netSvg" viewBox="0 0 72 48" width="200" style="cursor:crosshair;background:#222;border-radius:4px;" onclick="handleNetClick(event)">
+      <!-- Net frame -->
+      <rect x="1" y="1" width="70" height="46" fill="none" stroke="#fff" stroke-width="1"/>
+      <!-- Net mesh -->
+      <line x1="1" y1="1" x2="71" y2="47" stroke="#666" stroke-width="0.3"/>
+      <line x1="71" y1="1" x2="1" y2="47" stroke="#666" stroke-width="0.3"/>
+      <line x1="36" y1="1" x2="36" y2="47" stroke="#666" stroke-width="0.3"/>
+      <line x1="1" y1="24" x2="71" y2="24" stroke="#666" stroke-width="0.3"/>
+      <!-- Zones -->
+      <text x="18" y="14" font-size="6" fill="#888">Top L</text>
+      <text x="46" y="14" font-size="6" fill="#888">Top R</text>
+      <text x="18" y="38" font-size="6" fill="#888">Low L</text>
+      <text x="46" y="38" font-size="6" fill="#888">Low R</text>
+      <text x="28" y="26" font-size="6" fill="#888">5-Hole</text>
+      <!-- Marker layer -->
+      <g id="netMarker"></g>
+    </svg>
+    <div class="modal-actions">
+      <button onclick="clearNetXY()">Clear</button>
+      <button class="btn-primary" onclick="closeNetModal()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Shift Modal -->
+<div class="overlay" id="editShiftModal">
+  <div class="modal" style="min-width:450px;">
+    <h3>✏️ Edit Shift #<span id="editShiftIdx"></span></h3>
+    <div class="form-row">
+      <div class="form-group"><label>Period</label><select id="editShiftPeriod"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="OT">OT</option></select></div>
+      <div class="form-group"><label>Strength</label><input type="text" id="editShiftStrength" readonly></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Start Time</label><input type="text" id="editShiftStartTime"></div>
+      <div class="form-group"><label>End Time</label><input type="text" id="editShiftEndTime"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Start Type</label><select id="editShiftStartType"></select></div>
+      <div class="form-group"><label>Stop Type</label><select id="editShiftStopType"></select></div>
+    </div>
+    <div class="section-title" style="margin-top:8px;"><span>Players on Ice</span></div>
+    <div id="editShiftPlayersContainer" style="background:var(--card);padding:8px;border-radius:4px;"></div>
+    <div class="modal-actions">
+      <button class="btn-danger" onclick="deleteShift()">Delete</button>
+      <button class="btn-primary" onclick="saveEditShift()">Save</button>
+      <button onclick="closeEditShiftModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- XY Edit Modal -->
+<div class="overlay" id="xyEditModal">
+  <div class="modal" style="min-width:400px;">
+    <h3>📍 Edit XY Position</h3>
+    <p style="font-size:9px;color:var(--muted);margin-bottom:8px;">Click on rink to set position</p>
+    <svg id="xyEditSvg" viewBox="0 0 200 85" width="350" style="cursor:crosshair;background:var(--card);border-radius:4px;" onclick="handleXYEditClick(event)">
+      <rect x="0" y="0" width="200" height="85" fill="#f8fafc" rx="14" ry="14" stroke="#1e293b" stroke-width="1"/>
+      <line x1="75" y1="0" x2="75" y2="85" stroke="#1d4ed8" stroke-width="1.5"/>
+      <line x1="125" y1="0" x2="125" y2="85" stroke="#1d4ed8" stroke-width="1.5"/>
+      <line x1="100" y1="0" x2="100" y2="85" stroke="#dc2626" stroke-width="1" stroke-dasharray="3,2"/>
+      <line x1="11" y1="0" x2="11" y2="85" stroke="#dc2626" stroke-width="0.8"/>
+      <line x1="189" y1="0" x2="189" y2="85" stroke="#dc2626" stroke-width="0.8"/>
+      <circle cx="100" cy="42.5" r="15" fill="none" stroke="#1d4ed8" stroke-width="0.8"/>
+      <circle cx="31" cy="22" r="15" fill="none" stroke="#dc2626" stroke-width="0.5"/>
+      <circle cx="31" cy="63" r="15" fill="none" stroke="#dc2626" stroke-width="0.5"/>
+      <circle cx="169" cy="22" r="15" fill="none" stroke="#dc2626" stroke-width="0.5"/>
+      <circle cx="169" cy="63" r="15" fill="none" stroke="#dc2626" stroke-width="0.5"/>
+      <g id="xyEditMarker"></g>
+    </svg>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="closeXYEditModal()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- All Shifts Modal -->
+<div class="overlay" id="allShiftsModal">
+  <div class="modal" style="min-width:600px;max-width:800px;">
+    <h3>📋 All Shifts (<span id="allShiftsCount">0</span>)</h3>
+    <div class="table-wrap" style="max-height:400px;overflow-y:auto;">
+      <table style="width:100%;font-size:10px;border-collapse:collapse;">
+        <thead style="position:sticky;top:0;background:var(--card);">
+          <tr><th>#</th><th>Period</th><th>Start</th><th>End</th><th>Start Type</th><th>Stop Type</th><th>Strength</th></tr>
+        </thead>
+        <tbody id="allShiftsBody"></tbody>
+      </table>
+    </div>
+    <div class="modal-actions">
+      <button onclick="document.getElementById('allShiftsModal').classList.remove('show')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- All Events Modal -->
+<div class="overlay" id="allEventsModal">
+  <div class="modal" style="min-width:700px;max-width:900px;">
+    <h3>📋 All Events (<span id="allEventsCount">0</span>)</h3>
+    <div class="table-wrap" style="max-height:400px;overflow-y:auto;">
+      <table style="width:100%;font-size:10px;border-collapse:collapse;">
+        <thead style="position:sticky;top:0;background:var(--card);">
+          <tr><th>#</th><th>Period</th><th>Time</th><th>Team</th><th>Type</th><th>Detail</th><th>Players</th></tr>
+        </thead>
+        <tbody id="allEventsBody"></tbody>
+      </table>
+    </div>
+    <div class="modal-actions">
+      <button onclick="document.getElementById('allEventsModal').classList.remove('show')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Full Box Score Modal -->
+<div class="overlay" id="boxScoreModal">
+  <div class="modal" style="min-width:700px;max-width:900px;">
+    <h3>📊 Full Box Score</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+      <div style="background:var(--card);padding:12px;border-radius:6px;text-align:center;">
+        <div style="font-size:12px;color:var(--muted);" id="boxModalHome">HOME</div>
+        <div style="font-size:32px;font-weight:bold;" id="boxModalHomeScore">0</div>
+        <div style="font-size:10px;color:var(--muted);">SOG: <span id="boxModalHomeSOG">0</span> | FO: <span id="boxModalHomeFO">0</span></div>
+      </div>
+      <div style="background:var(--card);padding:12px;border-radius:6px;text-align:center;">
+        <div style="font-size:12px;color:var(--muted);" id="boxModalAway">AWAY</div>
+        <div style="font-size:32px;font-weight:bold;" id="boxModalAwayScore">0</div>
+        <div style="font-size:10px;color:var(--muted);">SOG: <span id="boxModalAwaySOG">0</span> | FO: <span id="boxModalAwayFO">0</span></div>
+      </div>
+    </div>
+    <div class="table-wrap" style="max-height:300px;overflow-y:auto;">
+      <table style="width:100%;font-size:11px;border-collapse:collapse;">
+        <thead style="position:sticky;top:0;background:var(--card);">
+          <tr><th>#</th><th>Player</th><th>Team</th><th>G</th><th>A</th><th>PTS</th><th>SOG</th><th>FO%</th><th>TOI</th></tr>
+        </thead>
+        <tbody id="boxModalBody"></tbody>
+      </table>
+    </div>
+    <div class="modal-actions">
+      <button onclick="document.getElementById('boxScoreModal').classList.remove('show')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Player Detail Modal -->
+<div class="overlay" id="playerDetailModal">
+  <div class="modal" style="min-width:400px;">
+    <h3>👤 <span id="playerDetailName">Player</span></h3>
+    <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:8px;margin-bottom:16px;">
+      <div style="background:var(--card);padding:8px;border-radius:4px;text-align:center;">
+        <div style="font-size:20px;font-weight:bold;" id="pdGoals">0</div>
+        <div style="font-size:9px;color:var(--muted);">Goals</div>
+      </div>
+      <div style="background:var(--card);padding:8px;border-radius:4px;text-align:center;">
+        <div style="font-size:20px;font-weight:bold;" id="pdAssists">0</div>
+        <div style="font-size:9px;color:var(--muted);">Assists</div>
+      </div>
+      <div style="background:var(--card);padding:8px;border-radius:4px;text-align:center;">
+        <div style="font-size:20px;font-weight:bold;" id="pdShots">0</div>
+        <div style="font-size:9px;color:var(--muted);">SOG</div>
+      </div>
+      <div style="background:var(--card);padding:8px;border-radius:4px;text-align:center;">
+        <div style="font-size:20px;font-weight:bold;" id="pdFO">0%</div>
+        <div style="font-size:9px;color:var(--muted);">FO%</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;margin-bottom:16px;">
+      <div style="background:var(--card);padding:8px;border-radius:4px;text-align:center;">
+        <div style="font-size:16px;font-weight:bold;" id="pdTOI">--:--</div>
+        <div style="font-size:9px;color:var(--muted);">TOI</div>
+      </div>
+      <div style="background:var(--card);padding:8px;border-radius:4px;text-align:center;">
+        <div style="font-size:16px;font-weight:bold;" id="pdHits">0</div>
+        <div style="font-size:9px;color:var(--muted);">Hits</div>
+      </div>
+      <div style="background:var(--card);padding:8px;border-radius:4px;text-align:center;">
+        <div style="font-size:16px;font-weight:bold;" id="pdBlocks">0</div>
+        <div style="font-size:9px;color:var(--muted);">Blocks</div>
+      </div>
+    </div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:8px;">Recent Events:</div>
+    <div id="pdRecentEvents" style="max-height:150px;overflow-y:auto;background:var(--card);border-radius:4px;padding:8px;font-size:9px;"></div>
+    <div class="modal-actions">
+      <button onclick="document.getElementById('playerDetailModal').classList.remove('show')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+const S = {
+  sb: null, connected: false,
+  gameId: null, games: [], rosters: { home: [], away: [] },
+  homeTeam: 'Home', awayTeam: 'Away', homeColor: '#3b82f6', awayColor: '#ef4444',
+  homeLogo: null, awayLogo: null,
+  period: 1, evtTeam: 'home', periodLength: 20, // Variable period length
+  slots: { home: {F1:null,F2:null,F3:null,D1:null,D2:null,G:null,X:null}, away: {F1:null,F2:null,F3:null,D1:null,D2:null,G:null,X:null} },
+  selectedSlot: null, events: [], shifts: [], evtIdx: 0, shiftIdx: 0,
+  curr: { type: null, players: [], puckXY: [], netXY: null },
+  selectedPlayer: null, xyMode: 'puck', xySlot: 1,
+  editingEvtIdx: null, editingShiftIdx: null, lastEndTime: '20:00',
+  editingXYType: null, editingXYIdx: null, // For XY editing in modal
+  xyHistory: [], // For undo
+  lastSave: null, saveTimer: null,
+  linkedEventIdx: null // For linked plays
+};
+
+// ============================================================
+// DROPDOWN OPTIONS
+// ============================================================
+const LISTS = {
+  eventTypes: ['Faceoff','Shot','Pass','Goal','Turnover','Zone_Entry_Exit','Penalty','Stoppage','Possession','Save','Rebound','DeadIce','Play','Intermission','Clockstop','Timeout'],
+  hotkeys: { Faceoff:'F', Shot:'S', Pass:'P', Goal:'G', Turnover:'T', Zone_Entry_Exit:'Z', Penalty:'N', Stoppage:'X', Possession:'O', Save:'V', Rebound:'R', DeadIce:'D', Play:'Y', Intermission:'I', Clockstop:'C' },
+  details: {
+    Shot: { d1: ['Shot_OnNetSaved','Shot_Missed','Shot_Blocked','Shot_BlockedSameTeam','Shot_Deflected','Shot_OnNetGoal'], d2: ['Shot-Wrist','Shot-Slap','Shot-Backhand','Shot-Snap','Shot-WrapAround','Shot-Bat','Shot-Poke','Shot-OneTime','Shot-Tip','Shot-Deflection','Shot-Other'] },
+    Pass: { d1: ['Pass_Completed','Pass_Missed','Pass_Deflected','Pass_Intercepted'], d2: ['Pass-Stretch','Pass-Rim/Wrap','Pass-Backhand','Pass-Forehand','Pass-Bank','Pass-Dump','Pass-Drop','Pass-OneTouch','Pass-Other'] },
+    Goal: { d1: ['Goal_Scored','Goal_Shootout','Goal_PenaltyShot'], d2: ['Goal-Wrist','Goal-Slap','Goal-Backhand','Goal-Tip','Goal-Snap','Goal-WrapAround','Goal-Deflection','Goal-OneTime','Goal-Other'] },
+    Faceoff: { d1: ['Faceoff_PeriodStart','Faceoff_GameStart','Faceoff_AfterGoal','Faceoff_AfterPenalty','Faceoff_AfterStoppage'], d2: [] },
+    Turnover: { d1: ['Turnover_Giveaway','Turnover_Takeaway'], d2_Giveaway: ['Giveaway-Misplayed','Giveaway-BattleLost','Giveaway-PassIntercepted','Giveaway-Other'], d2_Takeaway: ['Takeaway-BattleWon','Takeaway-PokeCheck','Takeaway-PassIntercepted','Takeaway-Other'] },
+    Zone_Entry_Exit: { d1: ['Zone_Entry','Zone_Exit','Zone_Keepin','Zone_EntryFailed','Zone_ExitFailed'], d2_Entry: ['ZoneEntry-Rush','ZoneEntry-Pass','ZoneEntry-DumpIn','ZoneEntry-Chip'], d2_Exit: ['ZoneExit-Rush','ZoneExit-Pass','ZoneExit-Clear','ZoneExit-Chip'] },
+    Save: { d1: ['Save_Rebound','Save_Freeze','Save_Played'], d2: ['Save-Glove','Save-Blocker','Save-Pad','Save-Stick','Save-Butterfly','Save-Other'] },
+    Stoppage: { d1: ['Stoppage_PeriodEnd','Stoppage_Play','Stoppage_Other','Stoppage_GameEnd'], d2_Play: ['Stoppage-Icing','Stoppage-Offsides','Stoppage-GoalieStoppage','Stoppage-PuckOut','Stoppage-Penalty','Stoppage-Goal'] },
+    Penalty: { d1: ['Penalty_Minor','Penalty_Major','Penalty_Misconduct'], d2: ['Penalty-Tripping','Penalty-Hooking','Penalty-Slashing','Penalty-Interference','Penalty-Holding','Penalty-Roughing','Penalty-HighSticking','Penalty-CrossChecking','Penalty-Boarding','Penalty-Other'] },
+    Possession: { d1: ['Breakaway','PuckRetrieval','PuckRecovery','Regroup','LoosePuck'], d2: [] },
+    Rebound: { d1: ['Rebound_TeamRecovered','Rebound_OppRecovered','Rebound_ShotGenerated'], d2: [] },
+    DeadIce: { d1: ['DeadIce_Icing','DeadIce_Offside','DeadIce_PuckOut','DeadIce_NetOff','DeadIce_Other'], d2: [] },
+    Play: { d1: ['Play_Offensive','Play_Defensive'], d2_Offensive: ['Play-DriveMiddle','Play-DriveWide','Play-CrashNet','Play-Deke','Play-DumpChase','Play-Forecheck'], d2_Defensive: ['Play-PokeCheck','Play-Backcheck','Play-Contain','Play-BoxOut'] },
+    Intermission: { d1: ['Intermission_Period1','Intermission_Period2','Intermission_Period3','Intermission_OT'], d2: [] },
+    Clockstop: { d1: ['Clockstop_Injury','Clockstop_Equipment','Clockstop_IceRepair','Clockstop_Other'], d2: [] },
+    Timeout: { d1: ['Timeout_Home','Timeout_Away'], d2: [] }
+  },
+  shiftStart: ['GameStart','PeriodStart','FaceoffAfterGoal','FaceoffAfterPenalty','OtherFaceoff','Stoppage','Intermission'],
+  shiftStop: ['PeriodEnd','GoalScored','Penalty','Stoppage','OtherFaceoff','OnTheFly','Intermission'],
+  playOffensive: ['Play-DriveMiddle','Play-DriveWide','Play-CrashNet','Play-Delay','Play-Deke','Play-DumpChase','Play-Forecheck','Play-Other'],
+  playDefensive: ['Play-PokeCheck','Play-Backcheck','Play-Contain','Play-BoxOut','Play-Other'],
+  // Events where puck XY = event_player_1 XY
+  possessionEvents: ['Possession','Zone_Entry_Exit'],
+  possessionDetails: ['ZoneEntry-Rush','ZoneExit-Rush','Breakaway','PuckRetrieval','PuckRecovery','Regroup'],
+  // Suggested next events based on current event
+  nextEventSuggestions: {
+    'Faceoff': ['Pass', 'Possession', 'Turnover'],
+    'Pass': ['Shot', 'Pass', 'Turnover', 'Zone_Entry_Exit'],
+    'Shot': ['Save', 'Goal', 'Rebound'],
+    'Save': ['Rebound', 'Pass', 'Stoppage'],
+    'Goal': ['Faceoff', 'Stoppage'],
+    'Rebound': ['Shot', 'Possession', 'Turnover'],
+    'Zone_Entry_Exit': ['Pass', 'Shot', 'Possession'],
+    'Turnover': ['Pass', 'Shot', 'Zone_Entry_Exit'],
+    'Possession': ['Pass', 'Shot', 'Zone_Entry_Exit'],
+    'Penalty': ['Faceoff', 'Stoppage'],
+    'Stoppage': ['Faceoff', 'Intermission']
+  },
+  // Events that can be linked (sequence)
+  linkedEvents: {
+    'Shot': ['Pass', 'Rebound'], // Shot can link to preceding Pass or following Rebound
+    'Goal': ['Shot', 'Pass'], // Goal links to Shot (the goal shot) or Pass (assist)
+    'Save': ['Shot'], // Save links to Shot
+    'Rebound': ['Shot', 'Save'] // Rebound links to Shot or Save
+  }
+};
+
+// ============================================================
+// INIT
+// ============================================================
+async function init() {
+  console.log('BenchSight v4 initializing...');
+  loadSettings();
+  await tryConnect();
+  buildUI();
+  loadFromStorage();
+  setupKeys();
+  startAutoSave();
+  await loadGames();
+  if (S.gameId) await selectGame(S.gameId);
+  updateSaveIndicator();
+  updateNextPlaySuggestions();
+  updateZoneLabels();
+  console.log('Ready:', S.events.length, 'events,', S.shifts.length, 'shifts');
+}
+
+function loadSettings() {
+  try {
+    const s = JSON.parse(localStorage.getItem('bs_settings') || '{}');
+    if (s.sbUrl) document.getElementById('sbUrl').value = s.sbUrl;
+    if (s.sbKey) document.getElementById('sbKey').value = s.sbKey;
+    if (s.autoSaveInt) document.getElementById('autoSaveInt').value = s.autoSaveInt;
+    if (s.pressureDist) document.getElementById('pressureDist').value = s.pressureDist;
+    if (s.xyHistCnt) document.getElementById('xyHistCnt').value = s.xyHistCnt;
+    if (s.periodLength) {
+      document.getElementById('periodLength').value = s.periodLength;
+      S.periodLength = parseInt(s.periodLength);
+    }
+    if (s.otLength) document.getElementById('otLength').value = s.otLength;
+    if (s.backupPath) document.getElementById('backupPath').value = s.backupPath;
+  } catch(e) {}
+}
+
+function saveSettings() {
+  const s = {
+    sbUrl: document.getElementById('sbUrl').value,
+    sbKey: document.getElementById('sbKey').value,
+    autoSaveInt: document.getElementById('autoSaveInt').value,
+    pressureDist: document.getElementById('pressureDist').value,
+    xyHistCnt: document.getElementById('xyHistCnt').value,
+    periodLength: document.getElementById('periodLength').value,
+    otLength: document.getElementById('otLength').value,
+    backupPath: document.getElementById('backupPath').value
+  };
+  localStorage.setItem('bs_settings', JSON.stringify(s));
+  S.periodLength = parseInt(s.periodLength) || 20;
+  closeSettings();
+  toast('Settings saved', 'success');
+  tryConnect();
+  startAutoSave();
+}
+
+async function tryConnect() {
+  const url = document.getElementById('sbUrl').value;
+  const key = document.getElementById('sbKey').value;
+  if (!url || !key) { updateConn(false); return; }
+  try {
+    S.sb = supabase.createClient(url, key);
+    // Try to query a table that exists
+    const { error } = await S.sb.from('dim_schedule').select('game_id').limit(1);
+    if (error) throw error;
+    S.connected = true;
+    updateConn(true);
+  } catch(e) { 
+    console.log('Connection failed:', e);
+    S.sb = null; S.connected = false; updateConn(false); 
+  }
+}
+
+async function testConn() {
+  await tryConnect();
+  toast(S.connected ? '✅ Connected to Supabase!' : '❌ Connection failed', S.connected ? 'success' : 'error');
+}
+
+function updateConn(on) {
+  const el = document.getElementById('connStatus');
+  el.textContent = on ? 'ONLINE' : 'OFFLINE';
+  el.className = 'conn ' + (on ? 'on' : 'off');
+}
+
+function openSettings() { document.getElementById('settingsModal').classList.add('show'); }
+function closeSettings() { document.getElementById('settingsModal').classList.remove('show'); }
+
+// ============================================================
+// AUTO-SAVE
+// ============================================================
+function startAutoSave() {
+  if (S.saveTimer) clearInterval(S.saveTimer);
+  const interval = (parseInt(document.getElementById('autoSaveInt').value) || 30) * 1000;
+  S.saveTimer = setInterval(autoSave, interval);
+}
+
+function autoSave() {
+  if (!S.gameId) return;
+  const key = `bs_${S.gameId}`;
+  const data = { events: S.events, shifts: S.shifts, evtIdx: S.evtIdx, shiftIdx: S.shiftIdx, savedAt: new Date().toISOString() };
+  localStorage.setItem(key, JSON.stringify(data));
+  S.lastSave = new Date();
+  updateSaveIndicator('saved');
+  setTimeout(() => updateSaveIndicator(), 2000);
+}
+
+function updateSaveIndicator(status) {
+  const el = document.getElementById('saveInd');
+  if (status === 'saving') { el.textContent = 'Saving...'; el.className = 'save-ind saving'; }
+  else if (status === 'saved') { el.textContent = 'Saved ✓'; el.className = 'save-ind saved'; }
+  else if (S.lastSave) {
+    const ago = Math.round((new Date() - S.lastSave) / 1000);
+    el.textContent = ago < 60 ? `${ago}s ago` : `${Math.round(ago/60)}m ago`;
+    el.className = 'save-ind';
+  } else { el.textContent = '--'; el.className = 'save-ind'; }
+}
+
+function loadFromStorage() {
+  try {
+    const last = localStorage.getItem('bs_lastGame');
+    if (last) S.gameId = parseInt(last);
+    
+    // Check for saved game data
+    if (S.gameId) {
+      const key = `bs_${S.gameId}`;
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const data = JSON.parse(saved);
+        if (data.events?.length || data.shifts?.length) {
+          // Show resume prompt
+          showResumePrompt(data);
+        }
+      }
+    }
+  } catch(e) { console.log('Error loading from storage:', e); }
+}
+
+function showResumePrompt(data) {
+  const evtCount = data.events?.length || 0;
+  const shiftCount = data.shifts?.length || 0;
+  const savedAt = data.savedAt ? new Date(data.savedAt).toLocaleString() : 'unknown';
+  
+  // Create resume modal dynamically
+  const modal = document.createElement('div');
+  modal.className = 'overlay show';
+  modal.id = 'resumeModal';
+  modal.innerHTML = `
+    <div class="modal" style="min-width:350px;">
+      <h3>📂 Resume Session?</h3>
+      <p style="font-size:12px;color:var(--muted);margin:12px 0;">Found saved data for this game:</p>
+      <div style="background:var(--card);padding:12px;border-radius:4px;margin:12px 0;">
+        <div style="display:flex;justify-content:space-between;margin:4px 0;"><span>Events:</span><strong>${evtCount}</strong></div>
+        <div style="display:flex;justify-content:space-between;margin:4px 0;"><span>Shifts:</span><strong>${shiftCount}</strong></div>
+        <div style="display:flex;justify-content:space-between;margin:4px 0;"><span>Saved:</span><strong>${savedAt}</strong></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-success" onclick="resumeSession()">Resume</button>
+        <button class="btn-danger" onclick="startNewSession()">Start New</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+function resumeSession() {
+  const key = `bs_${S.gameId}`;
+  const saved = localStorage.getItem(key);
+  if (saved) {
+    const data = JSON.parse(saved);
+    S.events = data.events || [];
+    S.shifts = data.shifts || [];
+    S.evtIdx = data.evtIdx || S.events.length;
+    S.shiftIdx = data.shiftIdx || S.shifts.length;
+    S.lastSave = data.savedAt ? new Date(data.savedAt) : null;
+    
+    toast(`Restored ${S.events.length} events, ${S.shifts.length} shifts`, 'success');
+    renderAll();
+    updateSaveIndicator();
+    updateNextPlaySuggestions();
+  }
+  closeResumeModal();
+}
+
+function startNewSession() {
+  S.events = [];
+  S.shifts = [];
+  S.evtIdx = 0;
+  S.shiftIdx = 0;
+  S.lastSave = null;
+  
+  // Clear saved data
+  const key = `bs_${S.gameId}`;
+  localStorage.removeItem(key);
+  
+  toast('Starting new session', 'success');
+  renderAll();
+  closeResumeModal();
+}
+
+function closeResumeModal() {
+  const modal = document.getElementById('resumeModal');
+  if (modal) modal.remove();
+}
+
+function manualSave() {
+  if (!S.gameId) { toast('No game loaded', 'error'); return; }
+  updateSaveIndicator('saving');
+  autoSave();
+  toast('Game saved!', 'success');
+}
+
+function clearSavedData() {
+  if (!S.gameId) return;
+  if (!confirm('Clear all saved data for this game? This cannot be undone.')) return;
+  
+  const key = `bs_${S.gameId}`;
+  localStorage.removeItem(key);
+  S.events = [];
+  S.shifts = [];
+  S.evtIdx = 0;
+  S.shiftIdx = 0;
+  
+  toast('Saved data cleared', 'success');
+  renderAll();
+}
+
+// ============================================================
+// BUILD UI
+// ============================================================
+function buildUI() {
+  const grid = document.getElementById('evtTypeGrid');
+  const mainTypes = ['Faceoff','Shot','Pass','Goal','Turnover','Zone_Entry_Exit','Stoppage','Penalty','Possession','Save','Rebound','Play'];
+  grid.innerHTML = mainTypes.map(t => `<button class="evt-btn" data-type="${t}" onclick="setEvtType('${t}')">${t.replace('_Entry_Exit','')}<kbd>${LISTS.hotkeys[t]||''}</kbd></button>`).join('');
+  
+  document.getElementById('shiftStartType').innerHTML = LISTS.shiftStart.map(t => `<option value="${t}">${t}</option>`).join('');
+  document.getElementById('shiftStopType').innerHTML = LISTS.shiftStop.map(t => `<option value="${t}">${t}</option>`).join('');
+  
+  ['home','away'].forEach(team => {
+    document.getElementById(`${team}F`).innerHTML = ['F1','F2','F3'].map(p => `<div class="slot" data-team="${team}" data-pos="${p}" onclick="selectSlot(this)"><span class="num">${p}</span></div>`).join('');
+    document.getElementById(`${team}D`).innerHTML = ['D1','D2'].map(p => `<div class="slot" data-team="${team}" data-pos="${p}" onclick="selectSlot(this)"><span class="num">${p}</span></div>`).join('');
+    document.getElementById(`${team}G`).innerHTML = ['G','X'].map(p => `<div class="slot" data-team="${team}" data-pos="${p}" onclick="selectSlot(this)"><span class="num">${p}</span></div>`).join('');
+  });
+  
+  // Edit type dropdown
+  document.getElementById('editType').innerHTML = LISTS.eventTypes.map(t => `<option value="${t}">${t}</option>`).join('');
+  
+  renderXYSlots();
+}
+
+// ============================================================
+// GAMES & ROSTERS - SUPABASE CONNECTED
+// ============================================================
+async function loadGames() {
+  if (S.connected) {
+    try {
+      // ONLY load TRACKED games - games that have tracking data in fact_events
+      // First get distinct game_ids from fact_events
+      const { data: trackedData, error: trackedErr } = await S.sb.from('fact_events')
+        .select('game_id')
+        .order('game_id', {ascending: false});
+      
+      if (trackedErr) throw trackedErr;
+      
+      // Get unique game_ids
+      const trackedGameIds = [...new Set((trackedData || []).map(r => r.game_id))];
+      console.log('Tracked game IDs:', trackedGameIds);
+      
+      if (trackedGameIds.length === 0) {
+        S.games = [];
+        renderGameSelect(S.games);
+        toast('No tracked games found', 'info');
+        return;
+      }
+      
+      // Now get game details from dim_schedule for only tracked games
+      const { data: scheduleData, error: scheduleErr } = await S.sb.from('dim_schedule')
+        .select('game_id,date,home_team_name,away_team_name')
+        .in('game_id', trackedGameIds)
+        .order('date', {ascending: false});
+      
+      if (scheduleErr) throw scheduleErr;
+      
+      // Dedupe by game_id (in case of any duplicates)
+      const gameMap = new Map();
+      (scheduleData || []).forEach(g => {
+        if (!gameMap.has(g.game_id)) {
+          gameMap.set(g.game_id, {
+            game_id: g.game_id,
+            game_date: g.date?.split('T')[0] || g.date,
+            home_team_name: g.home_team_name,
+            away_team_name: g.away_team_name,
+            home_team_color: '#3b82f6',
+            away_team_color: '#ef4444'
+          });
+        }
+      });
+      
+      S.games = Array.from(gameMap.values()).sort((a, b) => {
+        // Sort by date descending, then by game_id descending
+        if (a.game_date !== b.game_date) return b.game_date.localeCompare(a.game_date);
+        return b.game_id - a.game_id;
+      });
+      
+      console.log('Loaded', S.games.length, 'tracked games from Supabase');
+      toast(`${S.games.length} tracked games loaded`, 'success');
+    } catch(e) { 
+      console.error('Failed to load games from Supabase:', e);
+      toast('Failed to load games: ' + e.message, 'error');
+      S.games = []; 
+    }
+  } else { 
+    S.games = []; 
+    toast('Connect to Supabase to load games', 'info');
+  }
+  
+  renderGameSelect(S.games);
+  if (S.gameId) document.getElementById('gameSelect').value = S.gameId;
+}
+
+function renderGameSelect(games) {
+  const sel = document.getElementById('gameSelect');
+  sel.innerHTML = '<option value="">-- Select Game (' + games.length + ') --</option>' + games.slice(0, 100).map(g => 
+    `<option value="${g.game_id}">${g.game_id}: ${g.home_team_name} vs ${g.away_team_name} (${g.game_date})</option>`
+  ).join('');
+}
+
+function filterGames(query) {
+  if (!query) {
+    renderGameSelect(S.games);
+    return;
+  }
+  const q = query.toLowerCase();
+  const filtered = S.games.filter(g => 
+    g.game_id.toString().includes(q) ||
+    g.home_team_name?.toLowerCase().includes(q) ||
+    g.away_team_name?.toLowerCase().includes(q) ||
+    g.game_date?.includes(q)
+  );
+  renderGameSelect(filtered);
+}
+
+async function selectGame(gid) {
+  if (!gid) return;
+  S.gameId = parseInt(gid);
+  localStorage.setItem('bs_lastGame', gid);
+  
+  const g = S.games.find(x => x.game_id == gid);
+  if (!g) { toast('Game not found', 'error'); return; }
+  
+  S.homeTeam = g.home_team_name; S.awayTeam = g.away_team_name;
+  
+  // Load team colors from dim_team
+  if (S.connected) {
+    try {
+      const { data: teamData } = await S.sb.from('dim_team')
+        .select('team_name,team_color1,team_logo')
+        .in('team_name', [g.home_team_name, g.away_team_name]);
+      
+      if (teamData?.length) {
+        const homeTeam = teamData.find(t => t.team_name === g.home_team_name);
+        const awayTeam = teamData.find(t => t.team_name === g.away_team_name);
+        S.homeColor = homeTeam?.team_color1 || '#3b82f6';
+        S.awayColor = awayTeam?.team_color1 || '#ef4444';
+        S.homeLogo = homeTeam?.team_logo || null;
+        S.awayLogo = awayTeam?.team_logo || null;
+        console.log('Team colors loaded:', S.homeColor, S.awayColor);
+      }
+    } catch(e) { console.log('Failed to load team colors:', e); }
+  }
+  
+  // Update UI with team names (not just Home/Away)
+  document.getElementById('homeLbl').textContent = S.homeTeam;
+  document.getElementById('awayLbl').textContent = S.awayTeam;
+  document.getElementById('evtHomeLbl').textContent = S.homeTeam;
+  document.getElementById('evtAwayLbl').textContent = S.awayTeam;
+  document.getElementById('homeDot').style.background = S.homeColor;
+  document.getElementById('awayDot').style.background = S.awayColor;
+  document.documentElement.style.setProperty('--home', S.homeColor);
+  document.documentElement.style.setProperty('--away', S.awayColor);
+  
+  // Update zone labels on rink (based on current period)
+  updateZoneLabels();
+  
+  await loadRosters(gid);
+  loadGameData(gid);
+  renderAll();
+  toast(`Loaded: ${S.homeTeam} vs ${S.awayTeam}`, 'success');
+}
+
+async function loadRosters(gid) {
+  if (!S.connected) { 
+    generateDemoRosters(); 
+    toast('Demo rosters loaded (not connected)', 'info');
+    return;
+  }
+  
+  try {
+    // Query fact_gameroster for this game
+    const { data, error } = await S.sb.from('fact_gameroster')
+      .select('player_id,player_game_number,player_full_name,player_position,team_venue,player_rating')
+      .eq('game_id', gid)
+      .order('player_game_number');
+    
+    if (error) {
+      console.error('Roster query error:', error);
+      throw error;
+    }
+    
+    console.log('Raw roster data for game', gid, ':', data?.length, 'players');
+    
+    if (!data || data.length === 0) {
+      // Try alternate column names
+      console.log('No data with standard columns, trying alternate...');
+      const { data: altData, error: altErr } = await S.sb.from('fact_gameroster')
+        .select('*')
+        .eq('game_id', gid)
+        .limit(50);
+      
+      if (altErr) throw altErr;
+      
+      if (altData?.length > 0) {
+        console.log('Alt data columns:', Object.keys(altData[0]));
+        
+        // Try to map alternate column names
+        const homeMap = new Map();
+        const awayMap = new Map();
+        
+        altData.forEach(p => {
+          const venue = p.team_venue || p.venue || p.team || '';
+          const isHome = venue.toLowerCase().includes('home');
+          const map = isHome ? homeMap : awayMap;
+          const playerId = p.player_id || p.id || '';
+          
+          if (!map.has(playerId)) {
+            map.set(playerId, {
+              id: playerId,
+              num: String(p.player_game_number || p.jersey_number || p.number || '?'),
+              name: p.player_full_name || p.full_name || p.name || 'Unknown',
+              pos: p.player_position || p.position || 'F',
+              rating: p.player_rating || p.rating || null
+            });
+          }
+        });
+        
+        S.rosters = {
+          home: Array.from(homeMap.values()).sort((a,b) => parseInt(a.num) - parseInt(b.num)),
+          away: Array.from(awayMap.values()).sort((a,b) => parseInt(a.num) - parseInt(b.num))
+        };
+      } else {
+        console.log('No roster data found for game', gid);
+        generateDemoRosters();
+        toast('No roster data - using demo', 'warning');
+        return;
+      }
+    } else {
+      // Standard processing
+      const homeMap = new Map();
+      const awayMap = new Map();
+      
+      data.forEach(p => {
+        const map = p.team_venue === 'home' ? homeMap : awayMap;
+        if (!map.has(p.player_id)) {
+          map.set(p.player_id, { 
+            id: p.player_id, 
+            num: String(p.player_game_number), 
+            name: p.player_full_name, 
+            pos: p.player_position,
+            rating: p.player_rating || null
+          });
+        }
+      });
+      
+      S.rosters = { 
+        home: Array.from(homeMap.values()).sort((a,b) => parseInt(a.num) - parseInt(b.num)),
+        away: Array.from(awayMap.values()).sort((a,b) => parseInt(a.num) - parseInt(b.num))
+      };
+    }
+    
+    console.log('Final rosters:', S.rosters.home.length, 'home,', S.rosters.away.length, 'away');
+    
+    if (S.rosters.home.length === 0 && S.rosters.away.length === 0) {
+      toast('No players found for this game', 'warning');
+      generateDemoRosters();
+    } else {
+      toast(`Loaded ${S.rosters.home.length + S.rosters.away.length} players`, 'success');
+    }
+  } catch(e) { 
+    console.error('Failed to load rosters:', e);
+    toast('Roster load failed: ' + e.message, 'error');
+    generateDemoRosters(); 
+  }
+}
+
+function generateDemoRosters() {
+  S.rosters = {
+    home: Array.from({length:12}, (_,i) => ({id:'H'+(i+1), num:String(i+1), name:'Home'+i, pos:i<6?'F':i<10?'D':'G'})),
+    away: Array.from({length:12}, (_,i) => ({id:'A'+(i+1), num:String(i+11), name:'Away'+i, pos:i<6?'F':i<10?'D':'G'}))
+  };
+}
+
+function loadGameData(gid) {
+  try {
+    const saved = localStorage.getItem(`bs_${gid}`);
+    if (saved) {
+      const d = JSON.parse(saved);
+      S.events = d.events || []; S.shifts = d.shifts || [];
+      S.evtIdx = d.evtIdx || S.events.length; S.shiftIdx = d.shiftIdx || S.shifts.length;
+    } else {
+      S.events = []; S.shifts = []; S.evtIdx = 0; S.shiftIdx = 0;
+    }
+  } catch(e) { S.events = []; S.shifts = []; S.evtIdx = 0; S.shiftIdx = 0; }
+}
+
+// ============================================================
+// ZONE AUTO-CALCULATION (switches by period)
+// ============================================================
+function calculateZone() {
+  // Get event_player_1's last XY position
+  const evtP1 = S.curr.players.find(p => p.role === 'event_team_player_1');
+  if (!evtP1?.xy?.length) return '';
+  
+  const lastXY = evtP1.xy[evtP1.xy.length - 1];
+  if (!lastXY) return '';
+  
+  // NHL Rink: 200 wide
+  // Blue lines at x=75 and x=125 (correct NHL dimensions)
+  // 0-75 = left zone, 75-125 = neutral, 125-200 = right zone
+  // Odd periods (1, 3, OT): Home attacks RIGHT, Away attacks LEFT
+  // Even periods (2): Home attacks LEFT, Away attacks RIGHT
+  const x = lastXY.x;
+  const isOddPeriod = S.period === 1 || S.period === 3 || S.period === 'OT';
+  
+  // Determine which end is offensive for each team
+  const homeOffensiveRight = isOddPeriod;
+  
+  if (S.evtTeam === 'home') {
+    if (homeOffensiveRight) {
+      if (x > 125) return 'o';      // Home offensive (right in odd periods)
+      else if (x < 75) return 'd';  // Home defensive (left in odd periods)
+      else return 'n';
+    } else {
+      if (x < 75) return 'o';       // Home offensive (left in even periods)
+      else if (x > 125) return 'd'; // Home defensive (right in even periods)
+      else return 'n';
+    }
+  } else {
+    // Away team is opposite
+    if (homeOffensiveRight) {
+      if (x < 75) return 'o';       // Away offensive (left in odd periods)
+      else if (x > 125) return 'd'; // Away defensive (right in odd periods)
+      else return 'n';
+    } else {
+      if (x > 125) return 'o';      // Away offensive (right in even periods)
+      else if (x < 75) return 'd';  // Away defensive (left in even periods)
+      else return 'n';
+    }
+  }
+}
+
+function updateZoneLabels() {
+  // Update zone labels on rink based on period
+  const isOddPeriod = S.period === 1 || S.period === 3 || S.period === 'OT';
+  const homeShort = (S.homeTeam || 'HOME').toUpperCase().slice(0,6);
+  const awayShort = (S.awayTeam || 'AWAY').toUpperCase().slice(0,6);
+  
+  if (isOddPeriod) {
+    // Odd periods: Home attacks right
+    document.getElementById('leftZoneLbl').textContent = awayShort + ' OFF';
+    document.getElementById('rightZoneLbl').textContent = homeShort + ' OFF';
+  } else {
+    // Even periods: Home attacks left
+    document.getElementById('leftZoneLbl').textContent = homeShort + ' OFF';
+    document.getElementById('rightZoneLbl').textContent = awayShort + ' OFF';
+  }
+}
+
+function updateZoneDisplay() {
+  const zone = document.getElementById('evtZone').value || calculateZone();
+  const el = document.getElementById('zoneDisplay');
+  if (zone) {
+    const labels = { o: 'OFFENSIVE', d: 'DEFENSIVE', n: 'NEUTRAL' };
+    el.innerHTML = `<span class="zone-ind ${zone}">${labels[zone]}</span>`;
+  } else { el.innerHTML = ''; }
+}
+
+// ============================================================
+// SUCCESS AUTO-DERIVATION
+// ============================================================
+function deriveSuccess() {
+  const type = S.curr.type;
+  const d1 = document.getElementById('evtD1').value;
+  
+  // Auto-derive based on event type and detail
+  if (type === 'Shot') {
+    if (d1.includes('OnNet') || d1.includes('Goal')) return 's';
+    if (d1.includes('Missed') || d1.includes('Blocked')) return 'u';
+  }
+  if (type === 'Pass') {
+    if (d1.includes('Completed')) return 's';
+    if (d1.includes('Missed') || d1.includes('Intercepted')) return 'u';
+  }
+  if (type === 'Zone_Entry_Exit') {
+    if (d1.includes('Failed')) return 'u';
+    if (d1.includes('Entry') || d1.includes('Exit') || d1.includes('Keepin')) return 's';
+  }
+  if (type === 'Turnover') {
+    if (d1.includes('Takeaway')) return 's';
+    if (d1.includes('Giveaway')) return 'u';
+  }
+  if (type === 'Goal') return 's';
+  if (type === 'Save') return 's';
+  
+  return '';
+}
+
+// ============================================================
+// PRESSURE AUTO-DETECTION
+// ============================================================
+function detectPressure() {
+  const pressureDist = parseInt(document.getElementById('pressureDist').value) || 10;
+  const pixelsPerFoot = 1; // Adjust based on rink scale (200px = 200ft)
+  const threshold = pressureDist * pixelsPerFoot;
+  
+  // For each event player, check distance to opposing players
+  const evtPlayers = S.curr.players.filter(p => p.role.startsWith('event'));
+  const oppPlayers = S.curr.players.filter(p => p.role.startsWith('opp'));
+  
+  evtPlayers.forEach(ep => {
+    if (!ep.xy?.length) return;
+    const epPos = ep.xy[ep.xy.length - 1];
+    
+    oppPlayers.forEach(op => {
+      if (!op.xy?.length) return;
+      const opPos = op.xy[op.xy.length - 1];
+      
+      const dist = Math.sqrt(Math.pow(epPos.x - opPos.x, 2) + Math.pow(epPos.y - opPos.y, 2));
+      if (dist <= threshold) {
+        // Mark as pressured
+        ep.pressure = op.num;
+      }
+    });
+  });
+}
+
+// ============================================================
+// RENDER FUNCTIONS
+// ============================================================
+function renderAll() {
+  renderSlots(); renderRosters(); renderQuickAdd(); renderEvents(); renderMarkers(); updateScores(); updateZoneDisplay(); renderShiftLog(); updateBoxScore();
+}
+
+function renderShiftLog() {
+  const body = document.getElementById('shiftLogBody');
+  if (!body) return;
+  body.innerHTML = S.shifts.slice(-10).reverse().map((s, i) => {
+    const idx = S.shifts.length - i - 1; // Actual index in array
+    return `<div class="log-item" style="grid-template-columns: 25px 25px 40px 40px 60px;font-size:8px;cursor:pointer;" onclick="editShift(${idx})">
+      <span>${idx + 1}</span>
+      <span>P${s.period}</span>
+      <span>${s.start_time}</span>
+      <span>${s.end_time}</span>
+      <span style="overflow:hidden;text-overflow:ellipsis;">${s.stop_type}</span>
+    </div>`;
+  }).join('') || '<div style="color:var(--muted);font-size:8px;padding:4px;">No shifts</div>';
+}
+
+function editShift(idx) {
+  S.editingShiftIdx = idx;
+  const shift = S.shifts[idx];
+  if (!shift) return;
+  
+  // Populate dropdowns first
+  document.getElementById('editShiftStartType').innerHTML = LISTS.shiftStart.map(t => 
+    `<option value="${t}" ${shift.start_type === t ? 'selected' : ''}>${t}</option>`
+  ).join('');
+  document.getElementById('editShiftStopType').innerHTML = LISTS.shiftStop.map(t => 
+    `<option value="${t}" ${shift.stop_type === t ? 'selected' : ''}>${t}</option>`
+  ).join('');
+  
+  // Populate edit shift modal
+  document.getElementById('editShiftIdx').textContent = idx + 1;
+  document.getElementById('editShiftPeriod').value = shift.period;
+  document.getElementById('editShiftStartTime').value = shift.start_time;
+  document.getElementById('editShiftEndTime').value = shift.end_time;
+  document.getElementById('editShiftStrength').value = shift.strength || '5v5';
+  
+  // Render players
+  renderEditShiftPlayers(shift);
+  
+  document.getElementById('editShiftModal').classList.add('show');
+}
+
+function deriveShiftStartType(idx) {
+  // Auto-derive start type from previous event/shift
+  if (idx === 0) return 'GameStart';
+  
+  const prevShift = S.shifts[idx - 1];
+  if (prevShift?.stop_type === 'GoalScored') return 'FaceoffAfterGoal';
+  if (prevShift?.stop_type === 'Penalty') return 'FaceoffAfterPenalty';
+  if (prevShift?.stop_type === 'PeriodEnd') return 'PeriodStart';
+  if (prevShift?.stop_type === 'Intermission') return 'PeriodStart';
+  
+  // Check last event
+  const lastEvt = S.events.filter(e => e.period === S.period).slice(-1)[0];
+  if (lastEvt?.type === 'Goal') return 'FaceoffAfterGoal';
+  if (lastEvt?.type === 'Penalty') return 'FaceoffAfterPenalty';
+  if (lastEvt?.type === 'Stoppage') return 'Stoppage';
+  
+  return 'OnTheFly';
+}
+
+function deriveShiftStopType() {
+  // Auto-derive stop type from last event in shift
+  const lastEvt = S.events.filter(e => e.period === S.period).slice(-1)[0];
+  if (!lastEvt) return 'OnTheFly';
+  
+  if (lastEvt.type === 'Goal' && lastEvt.detail1 === 'Goal_Scored') return 'GoalScored';
+  if (lastEvt.type === 'Penalty') return 'Penalty';
+  if (lastEvt.type === 'Stoppage') return 'Stoppage';
+  if (lastEvt.type === 'Intermission') return 'Intermission';
+  
+  return 'OnTheFly';
+}
+
+function saveEditShift() {
+  if (S.editingShiftIdx === null) return;
+  const shift = S.shifts[S.editingShiftIdx];
+  
+  shift.period = parseInt(document.getElementById('editShiftPeriod').value);
+  shift.start_time = document.getElementById('editShiftStartTime').value;
+  shift.end_time = document.getElementById('editShiftEndTime').value;
+  shift.start_type = document.getElementById('editShiftStartType').value;
+  shift.stop_type = document.getElementById('editShiftStopType').value;
+  
+  closeEditShiftModal();
+  renderShiftLog();
+  autoSave();
+  toast('Shift updated', 'success');
+}
+
+function deleteShift() {
+  if (S.editingShiftIdx === null) return;
+  if (!confirm('Delete this shift?')) return;
+  
+  S.shifts.splice(S.editingShiftIdx, 1);
+  closeEditShiftModal();
+  renderShiftLog();
+  autoSave();
+  toast('Shift deleted', 'success');
+}
+
+function closeEditShiftModal() {
+  document.getElementById('editShiftModal').classList.remove('show');
+  S.editingShiftIdx = null;
+}
+
+function showAllShifts() {
+  // Show all shifts modal
+  const body = document.getElementById('allShiftsBody');
+  body.innerHTML = S.shifts.map((s, i) => `
+    <tr onclick="editShift(${i})" style="cursor:pointer;">
+      <td>${i + 1}</td>
+      <td>P${s.period}</td>
+      <td>${s.start_time}</td>
+      <td>${s.end_time}</td>
+      <td>${s.start_type}</td>
+      <td>${s.stop_type}</td>
+      <td>${s.strength || '-'}</td>
+    </tr>
+  `).join('') || '<tr><td colspan="7">No shifts</td></tr>';
+  
+  document.getElementById('allShiftsModal').classList.add('show');
+}
+
+function showAllEvents() {
+  // Show all events modal
+  const body = document.getElementById('allEventsBody');
+  body.innerHTML = S.events.map((e, i) => `
+    <tr onclick="editEvent(${i})" style="cursor:pointer;">
+      <td>${i + 1}</td>
+      <td>P${e.period}</td>
+      <td>${e.start_time || e.time}</td>
+      <td>${e.team === 'home' ? S.homeTeam : S.awayTeam}</td>
+      <td>${e.type}</td>
+      <td>${e.detail1 || ''}</td>
+      <td>${e.players?.map(p => p.num).join(',') || ''}</td>
+    </tr>
+  `).join('') || '<tr><td colspan="7">No events</td></tr>';
+  
+  document.getElementById('allEventsModal').classList.add('show');
+}
+
+function updateBoxScore() {
+  // Update team names
+  document.getElementById('teamSumHome').textContent = S.homeTeam?.slice(0,8) || 'HOME';
+  document.getElementById('teamSumAway').textContent = S.awayTeam?.slice(0,8) || 'AWAY';
+  
+  // Calculate player stats from events
+  const playerStats = {};
+  
+  S.events.forEach(evt => {
+    evt.players?.forEach(p => {
+      if (!playerStats[p.num]) {
+        playerStats[p.num] = { 
+          num: p.num, 
+          name: p.name?.split(' ').pop() || p.name, // Last name
+          team: evt.team,
+          goals: 0, assists: 0, shots: 0, faceoffs: 0, foWins: 0
+        };
+      }
+      const ps = playerStats[p.num];
+      
+      // Goals - event_team_player_1 on Goal events
+      if (evt.type === 'Goal' && p.role === 'event_team_player_1') ps.goals++;
+      // Assists - event_team_player_2/3 on Goal events
+      if (evt.type === 'Goal' && (p.role === 'event_team_player_2' || p.role === 'event_team_player_3')) ps.assists++;
+      // Shots - event_team_player_1 on Shot or Goal events
+      if ((evt.type === 'Shot' || evt.type === 'Goal') && p.role === 'event_team_player_1') ps.shots++;
+      // Faceoffs
+      if (evt.type === 'Faceoff' && p.role === 'event_team_player_1') {
+        ps.faceoffs++;
+        if (evt.success === 's') ps.foWins++;
+      }
+    });
+  });
+  
+  // Sort by points (G+A), then goals
+  const sorted = Object.values(playerStats)
+    .filter(p => p.goals > 0 || p.assists > 0 || p.shots > 0)
+    .sort((a, b) => (b.goals + b.assists) - (a.goals + a.assists) || b.goals - a.goals);
+  
+  // Render player box score
+  const tbody = document.getElementById('playerBoxBody');
+  tbody.innerHTML = sorted.slice(0, 8).map(p => {
+    const teamColor = p.team === 'home' ? S.homeColor : S.awayColor;
+    return `<tr onclick="showPlayerDetail('${p.num}')" style="cursor:pointer;border-left:2px solid ${teamColor};">
+      <td>${p.num}</td>
+      <td style="max-width:50px;overflow:hidden;text-overflow:ellipsis;">${p.name}</td>
+      <td style="font-weight:${p.goals>0?'bold':'normal'};">${p.goals}</td>
+      <td>${p.assists}</td>
+      <td>${p.shots}</td>
+      <td>--</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="6" style="color:var(--muted);">No stats yet</td></tr>';
+  
+  // Team totals
+  const homeGoals = S.events.filter(e => e.type === 'Goal' && e.team === 'home').length;
+  const awayGoals = S.events.filter(e => e.type === 'Goal' && e.team === 'away').length;
+  const homeShots = S.events.filter(e => (e.type === 'Shot' || e.type === 'Goal') && e.team === 'home').length;
+  const awayShots = S.events.filter(e => (e.type === 'Shot' || e.type === 'Goal') && e.team === 'away').length;
+  
+  document.getElementById('teamSumHomeScore').textContent = homeGoals;
+  document.getElementById('teamSumAwayScore').textContent = awayGoals;
+  document.getElementById('teamSumHomeSOG').textContent = homeShots;
+  document.getElementById('teamSumAwaySOG').textContent = awayShots;
+  
+  // Also update header score
+  document.getElementById('scoreH').textContent = homeGoals;
+  document.getElementById('scoreA').textContent = awayGoals;
+}
+
+function showPlayerDetail(num) {
+  // Calculate player stats
+  const playerStats = calculatePlayerStats();
+  const ps = playerStats[num];
+  if (!ps) { toast('Player not found', 'error'); return; }
+  
+  document.getElementById('playerDetailName').textContent = `#${ps.num} ${ps.name}`;
+  document.getElementById('pdGoals').textContent = ps.goals;
+  document.getElementById('pdAssists').textContent = ps.assists;
+  document.getElementById('pdShots').textContent = ps.shots;
+  document.getElementById('pdFO').textContent = ps.faceoffs ? Math.round(ps.foWins / ps.faceoffs * 100) + '%' : '-';
+  document.getElementById('pdTOI').textContent = formatTOI(ps.toi || 0);
+  document.getElementById('pdHits').textContent = ps.hits || 0;
+  document.getElementById('pdBlocks').textContent = ps.blocks || 0;
+  
+  // Recent events for this player
+  const recentEvts = S.events.filter(e => e.players?.some(p => p.num === num)).slice(-10);
+  document.getElementById('pdRecentEvents').innerHTML = recentEvts.map(e => {
+    const role = e.players.find(p => p.num === num)?.role || '';
+    return `<div style="padding:2px 0;border-bottom:1px solid var(--border);">P${e.period} ${e.start_time || e.time} - ${e.type} (${role.replace('_team_player_','')})</div>`;
+  }).join('') || '<div style="color:var(--muted);">No events</div>';
+  
+  document.getElementById('playerDetailModal').classList.add('show');
+}
+
+function showFullBoxScore() {
+  const playerStats = calculatePlayerStats();
+  
+  // Team totals
+  const homeGoals = S.events.filter(e => e.type === 'Goal' && e.team === 'home').length;
+  const awayGoals = S.events.filter(e => e.type === 'Goal' && e.team === 'away').length;
+  const homeShots = S.events.filter(e => (e.type === 'Shot' || e.type === 'Goal') && e.team === 'home').length;
+  const awayShots = S.events.filter(e => (e.type === 'Shot' || e.type === 'Goal') && e.team === 'away').length;
+  const homeFO = S.events.filter(e => e.type === 'Faceoff' && e.team === 'home' && e.success === 's').length;
+  const awayFO = S.events.filter(e => e.type === 'Faceoff' && e.team === 'away' && e.success === 's').length;
+  
+  document.getElementById('boxModalHome').textContent = S.homeTeam;
+  document.getElementById('boxModalAway').textContent = S.awayTeam;
+  document.getElementById('boxModalHomeScore').textContent = homeGoals;
+  document.getElementById('boxModalAwayScore').textContent = awayGoals;
+  document.getElementById('boxModalHomeSOG').textContent = homeShots;
+  document.getElementById('boxModalAwaySOG').textContent = awayShots;
+  document.getElementById('boxModalHomeFO').textContent = homeFO;
+  document.getElementById('boxModalAwayFO').textContent = awayFO;
+  
+  // Player table sorted by points
+  const sorted = Object.values(playerStats).sort((a, b) => 
+    (b.goals + b.assists) - (a.goals + a.assists) || b.goals - a.goals
+  );
+  
+  document.getElementById('boxModalBody').innerHTML = sorted.map(p => {
+    const teamColor = p.team === 'home' ? S.homeColor : S.awayColor;
+    const foPct = p.faceoffs ? Math.round(p.foWins / p.faceoffs * 100) : '-';
+    return `<tr onclick="showPlayerDetail('${p.num}')" style="cursor:pointer;border-left:3px solid ${teamColor};">
+      <td>${p.num}</td>
+      <td>${p.name}</td>
+      <td>${p.team === 'home' ? S.homeTeam?.slice(0,6) : S.awayTeam?.slice(0,6)}</td>
+      <td style="font-weight:${p.goals>0?'bold':'normal'};">${p.goals}</td>
+      <td>${p.assists}</td>
+      <td style="font-weight:bold;">${p.goals + p.assists}</td>
+      <td>${p.shots}</td>
+      <td>${foPct}${foPct !== '-' ? '%' : ''}</td>
+      <td>${formatTOI(p.toi || 0)}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="9">No stats</td></tr>';
+  
+  document.getElementById('boxScoreModal').classList.add('show');
+}
+
+function calculatePlayerStats() {
+  const stats = {};
+  
+  // Initialize from rosters
+  [...S.rosters.home, ...S.rosters.away].forEach(p => {
+    stats[p.num] = {
+      num: p.num,
+      name: p.name,
+      team: S.rosters.home.includes(p) ? 'home' : 'away',
+      goals: 0, assists: 0, shots: 0, faceoffs: 0, foWins: 0, hits: 0, blocks: 0, toi: 0
+    };
+  });
+  
+  // Calculate from events
+  S.events.forEach(evt => {
+    evt.players?.forEach(p => {
+      if (!stats[p.num]) {
+        stats[p.num] = { num: p.num, name: p.name, team: evt.team, goals: 0, assists: 0, shots: 0, faceoffs: 0, foWins: 0, hits: 0, blocks: 0, toi: 0 };
+      }
+      const ps = stats[p.num];
+      
+      if (evt.type === 'Goal' && p.role === 'event_team_player_1') ps.goals++;
+      if (evt.type === 'Goal' && (p.role === 'event_team_player_2' || p.role === 'event_team_player_3')) ps.assists++;
+      if ((evt.type === 'Shot' || evt.type === 'Goal') && p.role === 'event_team_player_1') ps.shots++;
+      if (evt.type === 'Faceoff' && p.role === 'event_team_player_1') {
+        ps.faceoffs++;
+        if (evt.success === 's') ps.foWins++;
+      }
+      if (evt.type === 'Hit' && p.role === 'event_team_player_1') ps.hits++;
+      if (evt.detail1?.includes('Blocked') && p.role.startsWith('opp')) ps.blocks++;
+    });
+  });
+  
+  // Calculate TOI from shifts
+  S.shifts.forEach(shift => {
+    const duration = parseTime(shift.start_time) - parseTime(shift.end_time);
+    if (duration <= 0) return;
+    
+    ['home', 'away'].forEach(team => {
+      ['F1','F2','F3','D1','D2','G','X'].forEach(pos => {
+        const p = shift[team]?.[pos];
+        if (p?.num && stats[p.num]) {
+          stats[p.num].toi += duration;
+        }
+      });
+    });
+  });
+  
+  return stats;
+}
+
+function parseTime(timeStr) {
+  if (!timeStr) return 0;
+  const [min, sec] = timeStr.split(':').map(Number);
+  return (min || 0) * 60 + (sec || 0);
+}
+
+function formatTOI(seconds) {
+  if (!seconds) return '--:--';
+  const min = Math.floor(seconds / 60);
+  const sec = Math.floor(seconds % 60);
+  return `${min}:${sec.toString().padStart(2, '0')}`;
+}
+
+function updateNextPlaySuggestions() {
+  const lastEvt = S.events[S.events.length - 1];
+  const suggestions = lastEvt ? (LISTS.nextEventSuggestions[lastEvt.type] || []) : ['Faceoff'];
+  
+  document.getElementById('nextPlaySuggestions').innerHTML = suggestions.map(t => 
+    `<button class="btn-sm" onclick="selectNextEvent('${t}')" style="margin:0 2px;">${t}</button>`
+  ).join('');
+  
+  // Update linked event dropdown
+  updateLinkedEventsDropdown();
+}
+
+function selectNextEvent(type) {
+  // Get the last event to carry over data
+  const lastEvt = S.events[S.events.length - 1];
+  
+  // Set the event type
+  setEvtType(type);
+  
+  // Carry over all player data if appropriate
+  if (lastEvt) {
+    // Carry over all players on ice (keep XY positions)
+    if (LISTS.linkedEvents[type]?.includes(lastEvt.type)) {
+      // Auto-link
+      S.linkedEventIdx = lastEvt.idx;
+      document.getElementById('linkedEvtSelect').value = lastEvt.idx;
+      
+      // Copy players with XY
+      S.curr.players = lastEvt.players.map(p => ({
+        ...p,
+        xy: [...(p.xy || [])] // Clone XY array
+      }));
+      
+      // Copy puck XY
+      if (lastEvt.puckXY?.length) {
+        S.curr.puckXY = [...lastEvt.puckXY];
+      }
+      
+      // Copy zone and time
+      document.getElementById('evtZone').value = lastEvt.zone || '';
+      document.getElementById('evtStartTime').value = lastEvt.start_time || lastEvt.end_time || '';
+    }
+    
+    // Special cases for role swaps (Shot→Save: shooter becomes opp)
+    if (type === 'Save' && lastEvt.type === 'Shot') {
+      S.curr.players = lastEvt.players.map(p => ({
+        ...p,
+        role: p.role.startsWith('event') ? p.role.replace('event', 'opp') : p.role.replace('opp', 'event'),
+        xy: [...(p.xy || [])]
+      }));
+      // Swap event team
+      S.evtTeam = S.evtTeam === 'home' ? 'away' : 'home';
+      updateEvtTeamUI();
+    }
+  }
+  
+  renderQuickAdd();
+  renderMarkers();
+  toast(`${type} - data carried over`, 'success');
+}
+
+function updateEvtTeamUI() {
+  document.querySelectorAll('.team-toggle button').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.team-toggle .${S.evtTeam}`).classList.add('active');
+}
+
+function updateLinkedEventsDropdown() {
+  const sel = document.getElementById('linkedEvtSelect');
+  if (!sel) return;
+  
+  // Show last 10 events for linking
+  const recentEvents = S.events.slice(-10).reverse();
+  sel.innerHTML = '<option value="">-- None --</option>' + recentEvents.map(e => {
+    const time = e.start_time || e.time || '';
+    const players = e.players?.map(p => p.num).join(',') || '';
+    return `<option value="${e.idx}">#${e.idx + 1} ${e.type} ${time} [${players}]</option>`;
+  }).join('');
+  
+  // Auto-suggest link based on current event type
+  if (S.curr.type && recentEvents.length) {
+    const lastEvt = recentEvents[0];
+    const canLink = LISTS.linkedEvents[S.curr.type];
+    if (canLink && canLink.includes(lastEvt.type)) {
+      sel.value = lastEvt.idx;
+      S.linkedEventIdx = lastEvt.idx;
+      document.getElementById('linkedEvtInfo').textContent = `← Auto-linked to ${lastEvt.type}`;
+      // Apply linked data
+      applyLinkedEventData();
+    } else {
+      document.getElementById('linkedEvtInfo').textContent = '';
+    }
+  }
+}
+
+function onLinkedEvtChange() {
+  const val = document.getElementById('linkedEvtSelect').value;
+  S.linkedEventIdx = val ? parseInt(val) : null;
+  if (S.linkedEventIdx) {
+    applyLinkedEventData();
+  }
+}
+
+// ============================================================
+// AUTO BUTTONS
+// ============================================================
+function autoZone() {
+  const zone = calculateZone();
+  if (zone) {
+    document.getElementById('evtZone').value = zone;
+    toast(`Zone: ${zone === 'o' ? 'Offensive' : zone === 'd' ? 'Defensive' : 'Neutral'}`, 'success');
+  } else {
+    toast('Add player XY to auto-detect zone', 'error');
+  }
+}
+
+function autoSuccess() {
+  const success = deriveSuccess();
+  if (success) {
+    document.getElementById('evtSuccess').value = success;
+    toast(`Success: ${success === 's' ? 'Successful' : 'Unsuccessful'}`, 'success');
+  } else {
+    toast('Select event type and detail first', 'error');
+  }
+}
+
+function autoStrength() {
+  const strength = deriveStrength();
+  if (strength) {
+    document.getElementById('evtStrength').value = strength;
+    toast(`Strength: ${strength}`, 'success');
+  } else {
+    toast('Fill player slots first', 'error');
+  }
+}
+
+function updatePlayD2() {
+  // Update Play Detail 2 dropdown based on Play Detail 1
+  if (!S.selectedPlayer) return;
+  
+  const d1 = document.getElementById('pdPlayD1').value;
+  let d2Opts = [];
+  
+  // Map play detail 1 to play detail 2 options
+  if (d1.includes('Drive') || d1.includes('Crash') || d1.includes('Deke') || d1.includes('Dump') || d1.includes('Forecheck')) {
+    d2Opts = ['Completed', 'Incomplete', 'Blocked', 'Intercepted'];
+  } else if (d1.includes('Poke') || d1.includes('Backcheck') || d1.includes('Contain') || d1.includes('Box')) {
+    d2Opts = ['Successful', 'Unsuccessful'];
+  }
+  
+  document.getElementById('pdPlayD2').innerHTML = '<option value="">--</option>' + d2Opts.map(o => `<option value="${o}">${o}</option>`).join('');
+}
+
+function deriveStrength() {
+  // Count players on ice (excluding empty slots)
+  const homeOnIce = Object.values(S.slots.home).filter(Boolean).length;
+  const awayOnIce = Object.values(S.slots.away).filter(Boolean).length;
+  
+  // Check for goalie
+  const homeHasGoalie = !!S.slots.home.G;
+  const awayHasGoalie = !!S.slots.away.G;
+  
+  // Calculate skaters
+  const homeSkaters = homeOnIce - (homeHasGoalie ? 1 : 0);
+  const awaySkaters = awayOnIce - (awayHasGoalie ? 1 : 0);
+  
+  // Empty net situations
+  if (!homeHasGoalie && homeOnIce >= 5) return 'ENA'; // Empty net away (extra attacker for home)
+  if (!awayHasGoalie && awayOnIce >= 5) return 'ENH'; // Empty net home
+  
+  // Standard situations
+  if (homeSkaters === 5 && awaySkaters === 5) return '5v5';
+  if (homeSkaters === 5 && awaySkaters === 4) return '5v4';
+  if (homeSkaters === 4 && awaySkaters === 5) return '4v5';
+  if (homeSkaters === 4 && awaySkaters === 4) return '4v4';
+  if (homeSkaters === 5 && awaySkaters === 3) return '5v3';
+  if (homeSkaters === 3 && awaySkaters === 5) return '3v5';
+  if (homeSkaters === 3 && awaySkaters === 3) return '3v3';
+  
+  return `${homeSkaters}v${awaySkaters}`;
+}
+
+function renderSlots() {
+  ['home','away'].forEach(team => {
+    ['F1','F2','F3','D1','D2','G','X'].forEach(pos => {
+      const el = document.querySelector(`.slot[data-team="${team}"][data-pos="${pos}"]`);
+      if (!el) return;
+      const p = S.slots[team][pos];
+      if (p) { el.innerHTML = `<span class="num">${p.num}</span><span class="name">${p.name}</span>`; el.classList.add('filled'); }
+      else { el.innerHTML = `<span class="num">${pos}</span>`; el.classList.remove('filled'); }
+    });
+  });
+}
+
+function renderRosters() {
+  ['home','away'].forEach(team => {
+    const onIce = Object.values(S.slots[team]).filter(Boolean).map(p => p.num);
+    const roster = S.rosters[team];
+    
+    // Group by position
+    const groups = { F: [], D: [], G: [] };
+    roster.forEach(p => {
+      const pos = (p.pos || 'F').toUpperCase();
+      if (pos === 'G') groups.G.push(p);
+      else if (pos === 'D' || pos === 'LD' || pos === 'RD') groups.D.push(p);
+      else groups.F.push(p);
+    });
+    
+    // Render grouped roster
+    let html = '';
+    ['F', 'D', 'G'].forEach(grp => {
+      if (groups[grp].length === 0) return;
+      html += `<div class="roster-group"><span class="roster-group-label">${grp === 'F' ? 'Forwards' : grp === 'D' ? 'Defense' : 'Goalie'}</span>`;
+      html += groups[grp].map(p => {
+        const used = onIce.includes(p.num);
+        const lastName = getLastName(p.name);
+        const rating = p.rating ? `<span class="rating">${p.rating}</span>` : '';
+        return `<button class="roster-btn ${used?'on-ice':''}" onclick="assignPlayer('${team}','${p.num}')"><span class="num">${p.num}</span><span class="name">${lastName}</span>${rating}</button>`;
+      }).join('');
+      html += '</div>';
+    });
+    
+    document.getElementById(`${team}Roster`).innerHTML = html;
+  });
+}
+
+function getLastName(fullName) {
+  if (!fullName) return '?';
+  const parts = fullName.trim().split(' ');
+  return parts[parts.length - 1];
+}
+
+function renderQuickAdd() {
+  const evtTeam = S.evtTeam;
+  const oppTeam = evtTeam === 'home' ? 'away' : 'home';
+  const onIce = num => Object.values(S.slots[evtTeam]).some(p => p?.num === num);
+  const oppOnIce = num => Object.values(S.slots[oppTeam]).some(p => p?.num === num);
+  const inEvt = num => S.curr.players.some(p => p.num === num);
+  
+  // Event quick add - players on ice for event team
+  document.getElementById('evtQuickAdd').innerHTML = S.rosters[evtTeam]
+    .filter(p => onIce(p.num))
+    .map(p => `<button class="${inEvt(p.num)?'in-evt':''}" onclick="togglePlayer('${p.num}','evt')">${p.num}</button>`).join('');
+  
+  // Opp quick add
+  document.getElementById('oppQuickAdd').innerHTML = S.rosters[oppTeam]
+    .filter(p => oppOnIce(p.num))
+    .map(p => `<button class="${inEvt(p.num)?'in-evt':''}" onclick="togglePlayer('${p.num}','opp')">${p.num}</button>`).join('');
+  
+  // Event players display
+  const evtPs = S.curr.players.filter(p => p.role.startsWith('event'));
+  document.getElementById('evtPlayers').innerHTML = evtPs.map(p => {
+    const sel = S.selectedPlayer?.num === p.num;
+    const xyCount = p.xy?.length || 0;
+    const suClass = p.playSuccess ? (p.playSuccess === 's' ? 's' : 'u') : '';
+    return `<span class="player-chip evt ${sel?'selected':''}" onclick="selectPlayer('${p.num}')"><span class="num">${p.num}</span>${p.name}${xyCount?`<span style="color:var(--accent);font-size:7px;">●${xyCount}</span>`:''}${p.playSuccess?`<span class="su ${suClass}">${p.playSuccess}</span>`:''}<span class="remove" onclick="event.stopPropagation();removePlayer('${p.num}')">✕</span></span>`;
+  }).join('') || '<span style="color:var(--muted);font-size:8px;">Click players below</span>';
+  
+  // Opp players display
+  const oppPs = S.curr.players.filter(p => p.role.startsWith('opp'));
+  document.getElementById('oppPlayers').innerHTML = oppPs.map(p => {
+    const sel = S.selectedPlayer?.num === p.num;
+    const xyCount = p.xy?.length || 0;
+    const suClass = p.playSuccess ? (p.playSuccess === 's' ? 's' : 'u') : '';
+    return `<span class="player-chip opp ${sel?'selected':''}" onclick="selectPlayer('${p.num}')"><span class="num">${p.num}</span>${p.name}${xyCount?`<span style="color:var(--accent);font-size:7px;">●${xyCount}</span>`:''}${p.playSuccess?`<span class="su ${suClass}">${p.playSuccess}</span>`:''}<span class="remove" onclick="event.stopPropagation();removePlayer('${p.num}')">✕</span></span>`;
+  }).join('') || '<span style="color:var(--muted);font-size:8px;">Click players below</span>';
+  
+  // Player selector for XY
+  const sel = document.getElementById('xyPlayerSel');
+  if (S.xyMode === 'player') {
+    sel.style.display = 'inline-block';
+    sel.innerHTML = '<option value="">Select</option>' + S.curr.players.map(p => `<option value="${p.num}" ${S.selectedPlayer?.num===p.num?'selected':''}>#${p.num} ${p.name}</option>`).join('');
+  } else { sel.style.display = 'none'; }
+  
+  // Player details panel
+  const pdEl = document.getElementById('playerDetails');
+  if (S.selectedPlayer) {
+    pdEl.style.display = 'block';
+    document.getElementById('pdPlayerNum').textContent = '#' + S.selectedPlayer.num + ' ' + S.selectedPlayer.name;
+    const zone = document.getElementById('evtZone').value || calculateZone();
+    const playOpts = zone === 'd' ? LISTS.playDefensive : LISTS.playOffensive;
+    document.getElementById('pdPlayD1').innerHTML = '<option value="">--</option>' + playOpts.map(o => `<option value="${o}" ${S.selectedPlayer.playD1===o?'selected':''}>${o}</option>`).join('');
+    document.getElementById('pdPlayD2').innerHTML = '<option value="">--</option>';
+    document.getElementById('pdPlaySuccess').value = S.selectedPlayer.playSuccess || '';
+    
+    // Pressure dropdown - opposing players
+    const oppTeam = S.evtTeam === 'home' ? 'away' : 'home';
+    const oppInEvt = S.curr.players.filter(p => p.role.startsWith('opp'));
+    document.getElementById('pdPressure').innerHTML = '<option value="">--</option>' + oppInEvt.map(p => `<option value="${p.num}" ${S.selectedPlayer.pressure===p.num?'selected':''}>#${p.num}</option>`).join('');
+  } else { pdEl.style.display = 'none'; }
+}
+
+function renderXYSlots() {
+  const el = document.getElementById('xySlots');
+  const max = 6;
+  let data = S.xyMode === 'puck' ? S.curr.puckXY : (S.selectedPlayer?.xy || []);
+  el.innerHTML = Array.from({length: max}, (_, i) => {
+    const has = data[i];
+    const active = S.xySlot === i + 1;
+    return `<button class="xy-slot ${has?'has':''} ${active?'active':''}" onclick="setXYSlot(${i+1})">${i+1}</button>`;
+  }).join('');
+}
+
+function renderEvents() {
+  const body = document.getElementById('evtListBody');
+  body.innerHTML = S.events.map((e, i) => {
+    const players = e.players?.map(p => p.num).join(',') || '';
+    const hasXY = e.puckXY?.length || e.players?.some(p => p.xy?.length);
+    const timeDisplay = e.start_time || e.time || '';
+    const highlight = e.isHighlight ? '⭐' : '';
+    const linked = e.linkedEventIdx !== null ? '🔗' : '';
+    return `<div class="evt-item" onclick="editEvent(${i})"><span class="idx">${i+1}</span><span class="time">P${e.period} ${timeDisplay}</span><span class="type">${highlight}${e.type}${linked}</span><span class="players">${players}</span><span class="xy-dot">${hasXY?'●':''}</span></div>`;
+  }).join('');
+}
+
+function renderMarkers() {
+  const layer = document.getElementById('markers');
+  layer.innerHTML = '';
+  const histCnt = parseInt(document.getElementById('xyHistCnt').value) || 5;
+  
+  // Historical events
+  const recent = S.events.slice(-histCnt);
+  recent.forEach((evt, ei) => {
+    const opacity = 0.2 + (ei / histCnt) * 0.6;
+    const evtColor = evt.team === 'home' ? S.homeColor : S.awayColor;
+    const oppColor = evt.team === 'home' ? S.awayColor : S.homeColor;
+    if (evt.puckXY?.length) drawPath(evt.puckXY, '#000', '#fff', opacity, layer, null, false);
+    evt.players?.forEach(p => {
+      if (p.xy?.length) {
+        const color = p.role.startsWith('event') ? evtColor : oppColor;
+        drawPath(p.xy, color, '#fff', opacity, layer, p.num, false);
+      }
+    });
+  });
+  
+  // Current event
+  if (S.curr.puckXY?.length) drawPath(S.curr.puckXY, '#00d4aa', '#fff', 1, layer, '🏒', true);
+  S.curr.players?.forEach(p => {
+    if (p.xy?.length) {
+      const color = p.role.startsWith('event') ? S.homeColor : S.awayColor;
+      const sel = S.selectedPlayer?.num === p.num;
+      drawPath(p.xy, color, sel ? '#fff' : '#000', 1, layer, p.num, true);
+    }
+  });
+}
+
+function drawPath(points, fill, stroke, opacity, layer, label, current) {
+  if (!points?.length) return;
+  const sorted = [...points].sort((a,b) => a.seq - b.seq);
+  
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', sorted[i].x); line.setAttribute('y1', sorted[i].y);
+    line.setAttribute('x2', sorted[i+1].x); line.setAttribute('y2', sorted[i+1].y);
+    line.setAttribute('stroke', fill); line.setAttribute('stroke-width', current ? 1 : 0.5);
+    line.setAttribute('stroke-dasharray', current ? 'none' : '2,1'); line.setAttribute('opacity', opacity * 0.7);
+    layer.appendChild(line);
+  }
+  
+  sorted.forEach((pt, i) => {
+    const last = i === sorted.length - 1;
+    const r = current ? (last ? 4 : 2.5) : (last ? 3 : 2);
+    const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    c.setAttribute('cx', pt.x); c.setAttribute('cy', pt.y); c.setAttribute('r', r);
+    c.setAttribute('fill', fill); c.setAttribute('stroke', stroke);
+    c.setAttribute('stroke-width', last ? 0.8 : 0.4); c.setAttribute('opacity', opacity);
+    layer.appendChild(c);
+    
+    if (last && label) {
+      const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      t.setAttribute('x', pt.x); t.setAttribute('y', pt.y + 1);
+      t.setAttribute('fill', stroke); t.setAttribute('font-size', current ? '3.5' : '3');
+      t.setAttribute('font-weight', 'bold'); t.setAttribute('text-anchor', 'middle');
+      t.setAttribute('dominant-baseline', 'middle'); t.setAttribute('opacity', opacity);
+      t.textContent = label;
+      layer.appendChild(t);
+    }
+  });
+}
+
+function updateScores() {
+  const goals = S.events.filter(e => e.type === 'Goal' && e.detail1?.includes('Scored'));
+  document.getElementById('scoreH').textContent = goals.filter(e => e.team === 'home').length;
+  document.getElementById('scoreA').textContent = goals.filter(e => e.team === 'away').length;
+}
+
+// ============================================================
+// SLOTS & ROSTERS
+// ============================================================
+function selectSlot(el) {
+  document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+  S.selectedSlot = { team: el.dataset.team, pos: el.dataset.pos };
+}
+
+function assignPlayer(team, num) {
+  if (!S.selectedSlot || S.selectedSlot.team !== team) {
+    const positions = ['F1','F2','F3','D1','D2','G','X'];
+    for (const pos of positions) { if (!S.slots[team][pos]) { S.selectedSlot = { team, pos }; break; } }
+  }
+  if (!S.selectedSlot) return;
+  const p = S.rosters[team].find(x => x.num === num);
+  if (!p) return;
+  S.slots[team][S.selectedSlot.pos] = p;
+  S.selectedSlot = null;
+  renderSlots(); renderRosters(); renderQuickAdd();
+  onSlotsChanged(); // Update strength
+}
+
+function clearSlots(team) {
+  Object.keys(S.slots[team]).forEach(pos => S.slots[team][pos] = null);
+  renderSlots(); renderRosters(); renderQuickAdd();
+  onSlotsChanged(); // Update strength
+}
+
+// ============================================================
+// EVENT ENTRY
+// ============================================================
+function setEvtTeam(team) {
+  S.evtTeam = team;
+  document.querySelectorAll('.team-toggle button').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.team-toggle .${team}`).classList.add('active');
+  renderQuickAdd();
+  updateZoneDisplay();
+}
+
+function setEvtType(type) {
+  S.curr.type = type;
+  document.querySelectorAll('.evt-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.evt-btn[data-type="${type}"]`)?.classList.add('active');
+  
+  const opts = LISTS.details[type] || { d1: [], d2: [] };
+  document.getElementById('evtD1').innerHTML = '<option value="">--</option>' + (opts.d1 || []).map(o => `<option value="${o}">${o}</option>`).join('');
+  document.getElementById('evtD2').innerHTML = '<option value="">--</option>';
+  
+  // Update linked events dropdown based on current type
+  updateLinkedEventsDropdown();
+  
+  // Apply linked event data if linked
+  applyLinkedEventData();
+  
+  // Auto-derive zone from position if we have XY
+  const zone = calculateZone();
+  if (zone) document.getElementById('evtZone').value = zone;
+  
+  // Auto-derive strength from slots
+  const strength = deriveStrength();
+  if (strength) document.getElementById('evtStrength').value = strength;
+}
+
+function onD1Change() {
+  const type = S.curr.type;
+  const d1 = document.getElementById('evtD1').value;
+  const opts = LISTS.details[type] || {};
+  
+  let d2Opts = opts.d2 || [];
+  if (d1.includes('Giveaway') && opts.d2_Giveaway) d2Opts = opts.d2_Giveaway;
+  else if (d1.includes('Takeaway') && opts.d2_Takeaway) d2Opts = opts.d2_Takeaway;
+  else if (d1.includes('Entry') && opts.d2_Entry) d2Opts = opts.d2_Entry;
+  else if (d1.includes('Exit') && opts.d2_Exit) d2Opts = opts.d2_Exit;
+  else if (d1.includes('Play') && opts.d2_Play) d2Opts = opts.d2_Play;
+  else if (d1.includes('Offensive') && opts.d2_Offensive) d2Opts = opts.d2_Offensive;
+  else if (d1.includes('Defensive') && opts.d2_Defensive) d2Opts = opts.d2_Defensive;
+  
+  document.getElementById('evtD2').innerHTML = '<option value="">--</option>' + d2Opts.map(o => `<option value="${o}">${o}</option>`).join('');
+  
+  // Auto-derive success
+  const success = deriveSuccess();
+  if (success) document.getElementById('evtSuccess').value = success;
+  
+  // Check if this is a shot on goal - prompt for net location
+  if ((type === 'Shot' && d1.includes('OnNet')) || type === 'Goal') {
+    setTimeout(() => document.getElementById('netModal').classList.add('show'), 100);
+  }
+}
+
+function togglePlayer(num, role) {
+  const team = role === 'evt' ? S.evtTeam : (S.evtTeam === 'home' ? 'away' : 'home');
+  const p = S.rosters[team].find(x => x.num === num);
+  if (!p) return;
+  
+  const existingIdx = S.curr.players.findIndex(x => x.num === num);
+  if (existingIdx >= 0) {
+    S.curr.players.splice(existingIdx, 1);
+    if (S.selectedPlayer?.num === num) S.selectedPlayer = null;
+  } else {
+    const roleNum = S.curr.players.filter(x => x.role.startsWith(role === 'evt' ? 'event' : 'opp')).length + 1;
+    S.curr.players.push({
+      ...p, role: `${role === 'evt' ? 'event' : 'opp'}_team_player_${roleNum}`,
+      roleNum, xy: [], playD1: '', playD2: '', playSuccess: '', pressure: ''
+    });
+  }
+  renumberPlayers();
+  renderQuickAdd(); renderMarkers();
+}
+
+function removePlayer(num) {
+  S.curr.players = S.curr.players.filter(p => p.num !== num);
+  if (S.selectedPlayer?.num === num) S.selectedPlayer = null;
+  renumberPlayers();
+  renderQuickAdd(); renderMarkers();
+}
+
+function renumberPlayers() {
+  let evtN = 1, oppN = 1;
+  S.curr.players.forEach(p => {
+    if (p.role.startsWith('event')) { p.role = `event_team_player_${evtN}`; p.roleNum = evtN++; }
+    else { p.role = `opp_team_player_${oppN}`; p.roleNum = oppN++; }
+  });
+}
+
+function selectPlayer(num) {
+  S.selectedPlayer = S.curr.players.find(p => p.num === num) || null;
+  if (S.selectedPlayer && S.xyMode !== 'player') setXYMode('player');
+  renderQuickAdd(); renderXYSlots();
+}
+
+function updatePlayerDetail(field, val) {
+  if (!S.selectedPlayer) return;
+  S.selectedPlayer[field] = val;
+  renderQuickAdd();
+}
+
+// ============================================================
+// XY HANDLING
+// ============================================================
+function setXYMode(mode) {
+  S.xyMode = mode;
+  document.getElementById('puckModeBtn').classList.toggle('active', mode === 'puck');
+  document.getElementById('playerModeBtn').classList.toggle('active', mode === 'player');
+  document.getElementById('modeInd').textContent = mode === 'puck' ? '🏒 PUCK' : '👤 PLAYER';
+  document.getElementById('modeInd').className = 'mode-ind ' + mode;
+  S.xySlot = 1;
+  renderXYSlots(); renderQuickAdd();
+}
+
+function setXYSlot(n) {
+  S.xySlot = n;
+  renderXYSlots();
+}
+
+function selectXYPlayer(num) {
+  S.selectedPlayer = S.curr.players.find(p => p.num === num) || null;
+  S.xySlot = 1;
+  renderXYSlots(); renderQuickAdd();
+}
+
+function handleRinkClick(event) {
+  const svg = document.getElementById('rinkSvg');
+  const rect = svg.getBoundingClientRect();
+  const pt = svg.createSVGPoint();
+  pt.x = event.clientX; pt.y = event.clientY;
+  const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+  
+  const xy = { x: Math.round(svgPt.x * 100) / 100, y: Math.round(svgPt.y * 100) / 100, seq: S.xySlot };
+  
+  // Store for undo
+  S.xyHistory.push({ mode: S.xyMode, player: S.selectedPlayer?.num, slot: S.xySlot, prev: null });
+  
+  if (S.xyMode === 'puck') {
+    // For possession events, also set event_player_1 XY
+    const d2 = document.getElementById('evtD2').value;
+    const isPossession = LISTS.possessionEvents.includes(S.curr.type) || LISTS.possessionDetails.includes(d2);
+    
+    S.curr.puckXY[S.xySlot - 1] = xy;
+    
+    if (isPossession) {
+      const p1 = S.curr.players.find(p => p.role === 'event_team_player_1');
+      if (p1) {
+        p1.xy[S.xySlot - 1] = {...xy};
+      }
+    }
+    
+    S.xySlot = Math.min(S.xySlot + 1, 10);
+  } else if (S.selectedPlayer) {
+    S.selectedPlayer.xy[S.xySlot - 1] = xy;
+    S.xySlot = Math.min(S.xySlot + 1, 10);
+  }
+  
+  renderXYSlots(); renderMarkers(); updateZoneDisplay(); detectPressure(); renderQuickAdd();
+}
+
+function undoLastXY() {
+  if (!S.xyHistory.length) return;
+  const last = S.xyHistory.pop();
+  
+  if (last.mode === 'puck') {
+    S.curr.puckXY.pop();
+    S.xySlot = Math.max(1, S.curr.puckXY.length + 1);
+  } else if (last.player) {
+    const p = S.curr.players.find(p => p.num === last.player);
+    if (p) {
+      p.xy.pop();
+      S.xySlot = Math.max(1, p.xy.length + 1);
+    }
+  }
+  
+  renderXYSlots(); renderMarkers();
+  toast('Undo XY', 'success');
+}
+
+function clearCurrentXY() {
+  if (S.xyMode === 'puck') S.curr.puckXY = [];
+  else if (S.selectedPlayer) S.selectedPlayer.xy = [];
+  S.xySlot = 1;
+  renderXYSlots(); renderMarkers();
+}
+
+function clearRink() {
+  S.xyHistory = [];
+  renderMarkers();
+  toast('Rink cleared', 'success');
+}
+
+// ============================================================
+// NET LOCATION
+// ============================================================
+function handleNetClick(event) {
+  const svg = document.getElementById('netSvg');
+  const rect = svg.getBoundingClientRect();
+  const x = ((event.clientX - rect.left) / rect.width) * 72;
+  const y = ((event.clientY - rect.top) / rect.height) * 48;
+  
+  S.curr.netXY = { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 };
+  
+  const marker = document.getElementById('netMarker');
+  marker.innerHTML = `<circle cx="${S.curr.netXY.x}" cy="${S.curr.netXY.y}" r="4" fill="#00d4aa" stroke="#fff" stroke-width="1"/>`;
+}
+
+function clearNetXY() {
+  S.curr.netXY = null;
+  document.getElementById('netMarker').innerHTML = '';
+}
+
+function closeNetModal() {
+  document.getElementById('netModal').classList.remove('show');
+}
+
+// ============================================================
+// LOG EVENT
+// ============================================================
+function logEvent() {
+  if (!S.curr.type) { toast('Select event type', 'error'); return; }
+  
+  // Get start time - default from clock
+  let startTime = document.getElementById('evtStartTime').value || document.getElementById('clock').value;
+  // Get end time - default to start time
+  let endTime = document.getElementById('evtEndTime').value || startTime;
+  
+  // Auto-derive zone if not set
+  let zone = document.getElementById('evtZone').value || calculateZone();
+  
+  // Auto-derive success if not set
+  let success = document.getElementById('evtSuccess').value || deriveSuccess();
+  
+  // Auto-derive strength from players on ice
+  let strength = document.getElementById('evtStrength').value || deriveStrength();
+  
+  // Check highlight flag
+  let isHighlight = document.getElementById('isHighlight').checked;
+  
+  // Detect pressure for all event players
+  detectPressure();
+  
+  // Build linked event chain
+  let linkedEventChain = [];
+  if (S.linkedEventIdx !== null) {
+    linkedEventChain.push(S.linkedEventIdx);
+    // Check if linked event has its own chain
+    const linkedEvt = S.events.find(e => e.idx === S.linkedEventIdx);
+    if (linkedEvt?.linkedEventChain?.length) {
+      linkedEventChain = [...linkedEvt.linkedEventChain, S.linkedEventIdx];
+    }
+  }
+  
+  const evt = {
+    idx: S.evtIdx++,
+    game_id: S.gameId,
+    period: S.period,
+    start_time: startTime,
+    end_time: endTime,
+    team: S.evtTeam,
+    type: S.curr.type,
+    detail1: document.getElementById('evtD1').value,
+    detail2: document.getElementById('evtD2').value,
+    zone,
+    success,
+    strength,
+    linkedEventIdx: S.linkedEventIdx, // Direct link to previous event
+    linkedEventChain, // Full chain: [shot_idx, save_idx] for rebound
+    isHighlight, // Mark as highlight for video
+    puckXY: [...S.curr.puckXY],
+    netXY: S.curr.netXY,
+    players: S.curr.players.map(p => ({...p, xy: [...(p.xy || [])]}))
+  };
+  
+  S.events.push(evt);
+  S.lastEndTime = endTime; // Store for next event's start time
+  S.linkedEventIdx = null; // Clear linked event
+  
+  const highlightIcon = isHighlight ? ' ⭐' : '';
+  toast(`Event #${evt.idx + 1}: ${evt.type}${highlightIcon}`, 'success');
+  
+  clearEvent();
+  // Pre-fill next event's start time with this event's end time
+  document.getElementById('evtStartTime').value = endTime;
+  
+  renderEvents(); renderMarkers(); updateScores(); updateBoxScore();
+  updateNextPlaySuggestions();
+  autoSave();
+}
+
+function clearEvent() {
+  const preserveStartTime = document.getElementById('evtStartTime').value;
+  S.curr = { type: null, players: [], puckXY: [], netXY: null };
+  S.selectedPlayer = null;
+  S.xySlot = 1;
+  S.xyHistory = [];
+  document.querySelectorAll('.evt-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('evtD1').innerHTML = '<option value="">--</option>';
+  document.getElementById('evtD2').innerHTML = '<option value="">--</option>';
+  document.getElementById('evtZone').value = '';
+  document.getElementById('evtSuccess').value = '';
+  document.getElementById('evtStartTime').value = preserveStartTime; // Keep for chaining
+  document.getElementById('evtEndTime').value = '';
+  document.getElementById('isHighlight').checked = false;
+  document.getElementById('zoneDisplay').innerHTML = '';
+  renderQuickAdd(); renderXYSlots(); renderMarkers();
+}
+
+// ============================================================
+// EDIT EVENT MODAL
+// ============================================================
+function editEvent(idx) {
+  S.editingEvtIdx = idx;
+  const evt = S.events[idx];
+  
+  // Ensure players array exists
+  if (!evt.players) evt.players = [];
+  if (!evt.puckXY) evt.puckXY = [];
+  
+  document.getElementById('editEvtIdx').textContent = idx + 1;
+  document.getElementById('editHighlightBadge').textContent = evt.isHighlight ? '⭐' : '';
+  document.getElementById('editType').value = evt.type;
+  document.getElementById('editTeam').value = evt.team;
+  document.getElementById('editStartTime').value = evt.start_time || evt.time || '';
+  document.getElementById('editEndTime').value = evt.end_time || evt.start_time || evt.time || '';
+  document.getElementById('editZone').value = evt.zone || '';
+  document.getElementById('editSuccess').value = evt.success || '';
+  document.getElementById('editStrength').value = evt.strength || '5v5';
+  document.getElementById('editHighlight').checked = evt.isHighlight || false;
+  
+  // Show linked chain
+  const chainText = evt.linkedEventChain?.length 
+    ? `Chain: ${evt.linkedEventChain.map(i => `#${i+1}`).join(' → ')} → #${idx+1}`
+    : (evt.linkedEventIdx !== null ? `Linked to #${evt.linkedEventIdx + 1}` : '--');
+  document.getElementById('editLinkedChain').textContent = chainText;
+  
+  onEditTypeChange();
+  document.getElementById('editD1').value = evt.detail1 || '';
+  onEditD1Change();
+  document.getElementById('editD2').value = evt.detail2 || '';
+  
+  renderEditPlayers(evt.players);
+  renderEditPuckXY(evt.puckXY);
+  
+  // Populate XY target dropdown (puck + each player)
+  const xyTargetSel = document.getElementById('editXYTarget');
+  xyTargetSel.innerHTML = '<option value="puck">Puck</option>' + 
+    (evt.players || []).map((p, i) => `<option value="player_${i}">#${p.num} ${p.name}</option>`).join('');
+  
+  renderEditRinkMarkers();
+  
+  // Show/hide net section for shots/goals
+  const showNet = ['Shot', 'Goal'].includes(evt.type);
+  document.getElementById('editNetSection').style.display = showNet ? 'block' : 'none';
+  if (showNet) {
+    renderEditNetMarker(evt.netXY);
+    document.getElementById('editNetLocation').textContent = getNetLocationName(evt.netXY) || '--';
+  }
+  
+  document.getElementById('editModal').classList.add('show');
+}
+
+function renderEditNetMarker(netXY) {
+  const g = document.getElementById('editNetMarker');
+  if (!g) return;
+  
+  if (netXY?.x != null && netXY?.y != null) {
+    g.innerHTML = `<circle cx="${netXY.x}" cy="${netXY.y}" r="4" fill="#10b981" stroke="#fff" stroke-width="1"/>`;
+  } else {
+    g.innerHTML = '';
+  }
+}
+
+function getNetLocationName(netXY) {
+  if (!netXY?.x || !netXY?.y) return null;
+  const x = netXY.x;
+  const y = netXY.y;
+  
+  // Divide net into zones (72x48 viewbox)
+  if (y < 16) {
+    return x < 36 ? 'Top Left' : 'Top Right';
+  } else if (y > 32) {
+    return x < 36 ? 'Low Left' : 'Low Right';
+  } else {
+    return 'Five Hole';
+  }
+}
+
+function handleEditNetClick(event) {
+  if (S.editingEvtIdx === null) return;
+  
+  const svg = document.getElementById('editNetSvg');
+  const pt = svg.createSVGPoint();
+  pt.x = event.clientX; pt.y = event.clientY;
+  const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+  
+  const netXY = { x: Math.round(svgPt.x), y: Math.round(svgPt.y) };
+  S.events[S.editingEvtIdx].netXY = netXY;
+  
+  renderEditNetMarker(netXY);
+  document.getElementById('editNetLocation').textContent = getNetLocationName(netXY);
+  toast('Net location set: ' + getNetLocationName(netXY), 'success');
+}
+
+function clearEditNetXY() {
+  if (S.editingEvtIdx === null) return;
+  S.events[S.editingEvtIdx].netXY = null;
+  renderEditNetMarker(null);
+  document.getElementById('editNetLocation').textContent = '--';
+  toast('Net location cleared', 'info');
+}
+
+function renderEditRinkMarkers() {
+  if (S.editingEvtIdx === null) return;
+  const evt = S.events[S.editingEvtIdx];
+  const g = document.getElementById('editRinkMarkers');
+  if (!g) return;
+  
+  let markers = '';
+  const target = document.getElementById('editXYTarget')?.value || 'puck';
+  
+  // Render puck XY
+  (evt.puckXY || []).forEach((xy, i) => {
+    const isActive = target === 'puck';
+    markers += `<circle cx="${xy.x}" cy="${xy.y}" r="3" fill="${isActive ? '#ef4444' : '#666'}" stroke="#fff" stroke-width="0.5" style="cursor:pointer;" onclick="selectEditXY('puck', ${i})"/>`;
+    markers += `<text x="${xy.x + 4}" y="${xy.y - 2}" font-size="4" fill="#fff">P${i+1}</text>`;
+  });
+  
+  // Render player XYs
+  (evt.players || []).forEach((p, pi) => {
+    const isActive = target === `player_${pi}`;
+    (p.xy || []).forEach((xy, i) => {
+      const color = p.role.startsWith('event') ? '#3b82f6' : '#ef4444';
+      markers += `<circle cx="${xy.x}" cy="${xy.y}" r="2.5" fill="${isActive ? color : '#666'}" stroke="#fff" stroke-width="0.3" style="cursor:pointer;" onclick="selectEditXY('player_${pi}', ${i})"/>`;
+      markers += `<text x="${xy.x + 3}" y="${xy.y - 1}" font-size="3" fill="#fff">${p.num}.${i+1}</text>`;
+    });
+  });
+  
+  g.innerHTML = markers;
+}
+
+function handleEditRinkClick(event) {
+  if (S.editingEvtIdx === null) return;
+  
+  const svg = document.getElementById('editRinkSvg');
+  const pt = svg.createSVGPoint();
+  pt.x = event.clientX; pt.y = event.clientY;
+  const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+  
+  const xy = { x: Math.round(svgPt.x * 10) / 10, y: Math.round(svgPt.y * 10) / 10, seq: 1 };
+  
+  const evt = S.events[S.editingEvtIdx];
+  const target = document.getElementById('editXYTarget').value;
+  
+  if (target === 'puck') {
+    if (S.editingXYIdx !== null && evt.puckXY?.[S.editingXYIdx]) {
+      evt.puckXY[S.editingXYIdx] = xy;
+    } else {
+      evt.puckXY = evt.puckXY || [];
+      evt.puckXY.push(xy);
+    }
+    renderEditPuckXY(evt.puckXY);
+  } else if (target.startsWith('player_')) {
+    const pi = parseInt(target.split('_')[1]);
+    if (evt.players?.[pi]) {
+      if (S.editingXYIdx !== null && evt.players[pi].xy?.[S.editingXYIdx]) {
+        evt.players[pi].xy[S.editingXYIdx] = xy;
+      } else {
+        evt.players[pi].xy = evt.players[pi].xy || [];
+        evt.players[pi].xy.push(xy);
+      }
+    }
+  }
+  
+  S.editingXYIdx = null;
+  renderEditRinkMarkers();
+  renderEditPlayers(evt.players);
+}
+
+function selectEditXY(target, idx) {
+  document.getElementById('editXYTarget').value = target;
+  S.editingXYIdx = idx;
+  renderEditRinkMarkers();
+  toast(`Selected ${target} point ${idx + 1} - click rink to move`, 'info');
+}
+
+function addEditXYPoint() {
+  // Just click on rink to add
+  toast('Click on rink to add XY point', 'info');
+}
+
+function onEditTypeChange() {
+  const type = document.getElementById('editType').value;
+  const opts = LISTS.details[type] || { d1: [], d2: [] };
+  document.getElementById('editD1').innerHTML = '<option value="">--</option>' + (opts.d1 || []).map(o => `<option value="${o}">${o}</option>`).join('');
+  document.getElementById('editD2').innerHTML = '<option value="">--</option>';
+}
+
+function onEditD1Change() {
+  const type = document.getElementById('editType').value;
+  const d1 = document.getElementById('editD1').value;
+  const opts = LISTS.details[type] || {};
+  
+  let d2Opts = opts.d2 || [];
+  if (d1.includes('Giveaway') && opts.d2_Giveaway) d2Opts = opts.d2_Giveaway;
+  else if (d1.includes('Takeaway') && opts.d2_Takeaway) d2Opts = opts.d2_Takeaway;
+  else if (d1.includes('Entry') && opts.d2_Entry) d2Opts = opts.d2_Entry;
+  else if (d1.includes('Exit') && opts.d2_Exit) d2Opts = opts.d2_Exit;
+  
+  document.getElementById('editD2').innerHTML = '<option value="">--</option>' + d2Opts.map(o => `<option value="${o}">${o}</option>`).join('');
+}
+
+function renderEditPlayers(players) {
+  const container = document.getElementById('editPlayersContainer');
+  const zone = document.getElementById('editZone').value || 'o';
+  const playOpts = zone === 'd' ? LISTS.playDefensive : LISTS.playOffensive;
+  
+  container.innerHTML = (players || []).map((p, i) => `
+    <div class="edit-player-row" data-idx="${i}">
+      <span class="pnum">#${p.num} ${p.name}</span>
+      <select onchange="updateEditPlayer(${i}, 'playD1', this.value)">
+        <option value="">Play D1</option>
+        ${playOpts.map(o => `<option value="${o}" ${p.playD1===o?'selected':''}>${o}</option>`).join('')}
+      </select>
+      <select onchange="updateEditPlayer(${i}, 'playSuccess', this.value)">
+        <option value="">Succ</option>
+        <option value="s" ${p.playSuccess==='s'?'selected':''}>S</option>
+        <option value="u" ${p.playSuccess==='u'?'selected':''}>U</option>
+      </select>
+      <button class="btn-sm btn-danger" onclick="removeEditPlayer(${i})">✕</button>
+    </div>
+  `).join('') || '<p style="color:var(--muted);font-size:9px;">No players</p>';
+}
+
+function renderEditPuckXY(puckXY) {
+  const container = document.getElementById('editPuckXY');
+  container.innerHTML = (puckXY || []).map((xy, i) => 
+    `<button class="edit-xy-btn has" onclick="editXYPoint('puck', ${i})" title="(${xy.x}, ${xy.y})">${i+1}: (${Math.round(xy.x)}, ${Math.round(xy.y)})</button>
+     <button class="btn-sm btn-danger" onclick="deleteXYPoint('puck', ${i})" style="padding:2px 4px;">✕</button>`
+  ).join('') + '<button class="edit-xy-btn" onclick="addXYPoint(\'puck\')">+ Add XY</button>';
+}
+
+function renderEditPlayerXY(players) {
+  // Add player XY display to edit modal
+  const playerContainer = document.getElementById('editPlayersContainer');
+  if (!playerContainer || !players?.length) return;
+  
+  // Append XY info to each player row (already in renderEditPlayers)
+}
+
+function editXYPoint(type, idx) {
+  if (S.editingEvtIdx === null) return;
+  S.editingXYType = type;
+  S.editingXYIdx = idx;
+  
+  // Show mini rink modal for XY editing
+  document.getElementById('xyEditModal').classList.add('show');
+  renderXYEditRink();
+}
+
+function addXYPoint(type) {
+  if (S.editingEvtIdx === null) return;
+  const evt = S.events[S.editingEvtIdx];
+  
+  if (type === 'puck') {
+    evt.puckXY = evt.puckXY || [];
+    evt.puckXY.push({ x: 100, y: 42.5, seq: evt.puckXY.length + 1 });
+    renderEditPuckXY(evt.puckXY);
+  }
+}
+
+function deleteXYPoint(type, idx) {
+  if (S.editingEvtIdx === null) return;
+  const evt = S.events[S.editingEvtIdx];
+  
+  if (type === 'puck' && evt.puckXY) {
+    evt.puckXY.splice(idx, 1);
+    renderEditPuckXY(evt.puckXY);
+  }
+}
+
+function renderXYEditRink() {
+  // Highlight current point on mini rink
+  const marker = document.getElementById('xyEditMarker');
+  if (!marker) return;
+  
+  if (S.editingEvtIdx === null) return;
+  const evt = S.events[S.editingEvtIdx];
+  
+  let xy = null;
+  if (S.editingXYType === 'puck' && evt.puckXY?.[S.editingXYIdx]) {
+    xy = evt.puckXY[S.editingXYIdx];
+  }
+  
+  if (xy) {
+    marker.innerHTML = `<circle cx="${xy.x}" cy="${xy.y}" r="3" fill="#ef4444" stroke="#fff" stroke-width="0.5"/>`;
+  } else {
+    marker.innerHTML = '';
+  }
+}
+
+function handleXYEditClick(event) {
+  if (S.editingEvtIdx === null) return;
+  
+  const svg = document.getElementById('xyEditSvg');
+  const rect = svg.getBoundingClientRect();
+  const pt = svg.createSVGPoint();
+  pt.x = event.clientX; pt.y = event.clientY;
+  const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+  
+  const xy = { x: Math.round(svgPt.x * 100) / 100, y: Math.round(svgPt.y * 100) / 100 };
+  
+  const evt = S.events[S.editingEvtIdx];
+  
+  if (S.editingXYType === 'puck' && evt.puckXY?.[S.editingXYIdx]) {
+    evt.puckXY[S.editingXYIdx].x = xy.x;
+    evt.puckXY[S.editingXYIdx].y = xy.y;
+    renderEditPuckXY(evt.puckXY);
+  }
+  
+  renderXYEditRink();
+}
+
+function closeXYEditModal() {
+  document.getElementById('xyEditModal').classList.remove('show');
+  S.editingXYType = null;
+  S.editingXYIdx = null;
+}
+
+function updateEditPlayer(idx, field, val) {
+  if (S.editingEvtIdx === null) return;
+  const evt = S.events[S.editingEvtIdx];
+  if (evt.players[idx]) evt.players[idx][field] = val;
+}
+
+function removeEditPlayer(idx) {
+  if (S.editingEvtIdx === null) return;
+  const evt = S.events[S.editingEvtIdx];
+  evt.players.splice(idx, 1);
+  renderEditPlayers(evt.players);
+}
+
+function addPlayerToEdit() {
+  if (S.editingEvtIdx === null) {
+    toast('No event being edited', 'error');
+    return;
+  }
+  
+  const evt = S.events[S.editingEvtIdx];
+  
+  // Set team based on event being edited
+  document.getElementById('pickerTeam').value = evt.team || S.evtTeam;
+  
+  // Check if rosters are loaded
+  if (!S.rosters.home?.length && !S.rosters.away?.length) {
+    toast('No rosters loaded - select a game first', 'error');
+    return;
+  }
+  
+  renderPlayerPicker();
+  document.getElementById('playerPickerModal').classList.add('show');
+}
+
+function setBackupPath(val) {
+  if (val) document.getElementById('backupPath').value = val;
+}
+
+function renderPlayerPicker() {
+  const team = document.getElementById('pickerTeam').value;
+  const roster = S.rosters[team] || [];
+  
+  document.getElementById('playerPickerList').innerHTML = roster.map(p => `
+    <div class="picker-player" onclick="selectPlayerFromPicker('${p.num}', '${p.name}')" 
+         style="padding:6px;margin:2px 0;background:var(--card);border-radius:3px;cursor:pointer;display:flex;justify-content:space-between;">
+      <span><strong>#${p.num}</strong> ${p.name}</span>
+      <span style="color:var(--muted);">${p.pos || 'F'}</span>
+    </div>
+  `).join('') || '<div style="color:var(--muted);">No players</div>';
+}
+
+function selectPlayerFromPicker(num, name) {
+  if (S.editingEvtIdx === null) {
+    toast('No event being edited', 'error');
+    return;
+  }
+  const evt = S.events[S.editingEvtIdx];
+  
+  // Ensure players array exists
+  if (!evt.players) evt.players = [];
+  
+  const role = document.getElementById('pickerRole').value;
+  const team = document.getElementById('pickerTeam').value;
+  
+  // Check if player already in event
+  if (evt.players.some(p => p.num === num)) {
+    toast(`#${num} already in event`, 'error');
+    return;
+  }
+  
+  // Determine next role number
+  const existingRoles = evt.players.filter(p => p.role.startsWith(role)).length;
+  const roleNum = existingRoles + 1;
+  
+  evt.players.push({
+    num, name, 
+    role: `${role}_${roleNum}`,
+    roleNum,
+    team,
+    xy: [],
+    playD1: '', playD2: '', playSuccess: '', pressure: ''
+  });
+  
+  renderEditPlayers(evt.players);
+  
+  // Update XY target dropdown
+  const xyTargetSel = document.getElementById('editXYTarget');
+  xyTargetSel.innerHTML = '<option value="puck">Puck</option>' + 
+    evt.players.map((p, i) => `<option value="player_${i}">#${p.num} ${p.name}</option>`).join('');
+  
+  closePlayerPicker();
+  toast(`Added #${num} ${name}`, 'success');
+}
+
+function closePlayerPicker() {
+  document.getElementById('playerPickerModal').classList.remove('show');
+}
+
+// ============================================================
+// VERIFICATION PANEL
+// ============================================================
+function openVerifyModal() {
+  // Set noradhockey link
+  const link = document.getElementById('noradGameLink');
+  if (S.gameId) {
+    link.href = `https://noradhockey.com/game/${S.gameId}`;
+    link.style.display = 'inline';
+  } else {
+    link.style.display = 'none';
+  }
+  
+  runVerification();
+  document.getElementById('verifyModal').classList.add('show');
+}
+
+function closeVerifyModal() {
+  document.getElementById('verifyModal').classList.remove('show');
+}
+
+function runVerification() {
+  // Count tracked goals
+  const homeGoals = S.events.filter(e => e.type === 'Goal' && e.detail1 === 'Goal_Scored' && e.team === 'home').length;
+  const awayGoals = S.events.filter(e => e.type === 'Goal' && e.detail1 === 'Goal_Scored' && e.team === 'away').length;
+  
+  document.getElementById('verifyHomeGoals').textContent = homeGoals;
+  document.getElementById('verifyAwayGoals').textContent = awayGoals;
+  
+  // Compare to official
+  const officialHome = parseInt(document.getElementById('officialHomeGoals').value) || 0;
+  const officialAway = parseInt(document.getElementById('officialAwayGoals').value) || 0;
+  
+  const resultEl = document.getElementById('verifyResult');
+  if (homeGoals === officialHome && awayGoals === officialAway) {
+    resultEl.innerHTML = '✅ VERIFIED - Goals match official score!';
+    resultEl.style.background = 'rgba(16, 185, 129, 0.2)';
+    resultEl.style.color = 'var(--success)';
+  } else {
+    const diff = `Home: ${homeGoals} vs ${officialHome}, Away: ${awayGoals} vs ${officialAway}`;
+    resultEl.innerHTML = `❌ MISMATCH - ${diff}`;
+    resultEl.style.background = 'rgba(239, 68, 68, 0.2)';
+    resultEl.style.color = 'var(--danger)';
+  }
+  
+  // Build goal list
+  const goals = S.events.filter(e => e.type === 'Goal' && e.detail1 === 'Goal_Scored')
+    .sort((a, b) => {
+      if (a.period !== b.period) return a.period - b.period;
+      return (b.start_time || '20:00').localeCompare(a.start_time || '20:00');
+    });
+  
+  document.getElementById('verifyGoalsList').innerHTML = goals.map(g => {
+    const scorer = g.players?.find(p => p.role === 'event_team_player_1');
+    const assist = g.players?.find(p => p.role === 'event_team_player_2');
+    return `<tr>
+      <td>P${g.period}</td>
+      <td>${g.start_time || '--'}</td>
+      <td style="color:${g.team === 'home' ? 'var(--home)' : 'var(--away)'};">${g.team === 'home' ? S.homeTeam : S.awayTeam}</td>
+      <td>${scorer ? `#${scorer.num} ${scorer.name}` : '--'}</td>
+      <td>${assist ? `#${assist.num}` : '--'}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--muted);">No goals recorded</td></tr>';
+}
+
+// ============================================================
+// LOAD EXISTING GAME
+// ============================================================
+function openLoadGameModal() {
+  if (!S.connected) {
+    toast('Connect to Supabase first', 'error');
+    return;
+  }
+  populateLoadGameSelect();
+  document.getElementById('loadGameModal').classList.add('show');
+}
+
+function closeLoadGameModal() {
+  document.getElementById('loadGameModal').classList.remove('show');
+}
+
+async function populateLoadGameSelect() {
+  const select = document.getElementById('loadGameSelect');
+  select.innerHTML = '<option value="">Loading tracked games...</option>';
+  
+  try {
+    // ONLY get games that have tracked events in fact_events
+    const { data: trackedData } = await S.sb.from('fact_events')
+      .select('game_id')
+      .order('game_id', {ascending: false});
+    
+    const trackedGameIds = [...new Set((trackedData || []).map(r => r.game_id))];
+    
+    if (trackedGameIds.length === 0) {
+      select.innerHTML = '<option value="">No tracked games found</option>';
+      return;
+    }
+    
+    // Get game details for tracked games
+    const { data: games } = await S.sb.from('dim_schedule')
+      .select('game_id,date,home_team_name,away_team_name')
+      .in('game_id', trackedGameIds)
+      .order('date', { ascending: false });
+    
+    // Dedupe
+    const seen = new Set();
+    const uniqueGames = (games || []).filter(g => {
+      if (seen.has(g.game_id)) return false;
+      seen.add(g.game_id);
+      return true;
+    });
+    
+    select.innerHTML = '<option value="">Select tracked game (' + uniqueGames.length + ')</option>' + 
+      uniqueGames.map(g => `<option value="${g.game_id}">${g.game_id} - ${g.date?.split('T')[0]} ${g.home_team_name} vs ${g.away_team_name}</option>`).join('');
+      
+    console.log('Load game modal:', uniqueGames.length, 'tracked games');
+  } catch(e) {
+    toast('Failed to load games', 'error');
+    console.error(e);
+  }
+}
+
+async function previewLoadGame() {
+  const gameId = document.getElementById('loadGameSelect').value;
+  if (!gameId) {
+    document.getElementById('loadPreviewEvents').textContent = '--';
+    document.getElementById('loadPreviewShifts').textContent = '--';
+    return;
+  }
+  
+  try {
+    const { count: evtCount } = await S.sb.from('fact_events').select('*', { count: 'exact', head: true }).eq('game_id', gameId);
+    const { count: shiftCount } = await S.sb.from('fact_shifts').select('*', { count: 'exact', head: true }).eq('game_id', gameId);
+    
+    document.getElementById('loadPreviewEvents').textContent = evtCount || 0;
+    document.getElementById('loadPreviewShifts').textContent = shiftCount || 0;
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+async function confirmLoadGame() {
+  const gameId = document.getElementById('loadGameSelect').value;
+  if (!gameId) { toast('Select a game', 'error'); return; }
+  
+  try {
+    toast('Loading game...', 'info');
+    
+    // Load events
+    const { data: events } = await S.sb.from('fact_events')
+      .select('*')
+      .eq('game_id', gameId)
+      .order('event_index');
+    
+    // Load shifts
+    const { data: shifts } = await S.sb.from('fact_shifts')
+      .select('*')
+      .eq('game_id', gameId)
+      .order('shift_index');
+    
+    // Convert to tracker format
+    S.events = (events || []).map(e => ({
+      idx: e.event_index,
+      game_id: e.game_id,
+      period: e.period,
+      start_time: `${e.event_start_min || 0}:${String(e.event_start_sec || 0).padStart(2, '0')}`,
+      end_time: `${e.event_end_min || 0}:${String(e.event_end_sec || 0).padStart(2, '0')}`,
+      team: e.team_venue === 'home' ? 'home' : 'away',
+      type: e.event_type,
+      detail1: e.event_detail,
+      detail2: e.event_detail_2,
+      zone: e.event_team_zone?.charAt(0).toLowerCase() || '',
+      success: e.event_successful,
+      strength: e.strength || '5v5',
+      players: [],
+      puckXY: []
+    }));
+    
+    S.shifts = (shifts || []).map(sh => ({
+      idx: sh.shift_index,
+      period: sh.period,
+      start_time: `${sh.shift_start_min || 0}:${String(sh.shift_start_sec || 0).padStart(2, '0')}`,
+      end_time: `${sh.shift_end_min || 0}:${String(sh.shift_end_sec || 0).padStart(2, '0')}`,
+      start_type: sh.shift_start_type,
+      stop_type: sh.shift_stop_type,
+      strength: sh.strength || '5v5',
+      home: {}, away: {}
+    }));
+    
+    S.evtIdx = S.events.length;
+    S.shiftIdx = S.shifts.length;
+    
+    // Select the game
+    await selectGame(gameId);
+    closeLoadGameModal();
+    
+    toast(`Loaded ${S.events.length} events, ${S.shifts.length} shifts`, 'success');
+    renderAll();
+  } catch(e) {
+    toast('Failed to load game', 'error');
+    console.error(e);
+  }
+}
+
+// ============================================================
+// CLEAR ALL DATA
+// ============================================================
+function clearAllData() {
+  if (!confirm('⚠️ Clear ALL events and shifts for this game?\n\nThis cannot be undone!')) return;
+  if (!confirm('Are you REALLY sure? All tracking data will be lost.')) return;
+  
+  S.events = [];
+  S.shifts = [];
+  S.evtIdx = 0;
+  S.shiftIdx = 0;
+  S.lastSave = null;
+  
+  // Clear localStorage
+  if (S.gameId) {
+    localStorage.removeItem(`bs_${S.gameId}`);
+  }
+  
+  renderAll();
+  updateScores();
+  updateBoxScore();
+  
+  toast('All data cleared', 'success');
+  closeSettings();
+}
+
+// ============================================================
+// LINKED EVENT LOGIC
+// ============================================================
+function applyLinkedEventData() {
+  // When setting event type, check if we should auto-link and carry over data
+  if (!S.linkedEventIdx) return;
+  
+  const linkedEvt = S.events.find(e => e.idx === S.linkedEventIdx);
+  if (!linkedEvt) return;
+  
+  const currType = S.curr.type;
+  
+  // Shot > Save: Copy shooter info to save event as opp
+  if (currType === 'Save' && linkedEvt.type === 'Shot') {
+    const shooter = linkedEvt.players?.find(p => p.role === 'event_team_player_1');
+    if (shooter) {
+      // Add shooter as opp player
+      S.curr.players.push({
+        ...shooter,
+        role: 'opp_team_player_1',
+        roleNum: 1
+      });
+    }
+    // Copy puck XY
+    if (linkedEvt.puckXY?.length) {
+      S.curr.puckXY = [...linkedEvt.puckXY];
+    }
+  }
+  
+  // Shot > Rebound: Copy location
+  if (currType === 'Rebound' && (linkedEvt.type === 'Shot' || linkedEvt.type === 'Save')) {
+    if (linkedEvt.puckXY?.length) {
+      S.curr.puckXY = [...linkedEvt.puckXY];
+    }
+  }
+  
+  // Shot > Goal: Copy location and shooter
+  if (currType === 'Goal' && linkedEvt.type === 'Shot') {
+    const shooter = linkedEvt.players?.find(p => p.role === 'event_team_player_1');
+    if (shooter) {
+      S.curr.players.push({
+        ...shooter,
+        role: 'event_team_player_1',
+        roleNum: 1
+      });
+    }
+    if (linkedEvt.puckXY?.length) {
+      S.curr.puckXY = [...linkedEvt.puckXY];
+    }
+  }
+  
+  // Copy zone
+  if (linkedEvt.zone) {
+    document.getElementById('evtZone').value = linkedEvt.zone;
+  }
+  
+  renderQuickAdd();
+  renderMarkers();
+}
+
+// ============================================================
+// EDIT SHIFT PLAYERS
+// ============================================================
+function editShiftPlayers(shiftIdx) {
+  S.editingShiftIdx = shiftIdx;
+  const shift = S.shifts[shiftIdx];
+  if (!shift) return;
+  
+  // Open edit shift modal with player editing capability
+  document.getElementById('editShiftIdx').textContent = shiftIdx + 1;
+  document.getElementById('editShiftPeriod').value = shift.period;
+  document.getElementById('editShiftStartTime').value = shift.start_time || '';
+  document.getElementById('editShiftEndTime').value = shift.end_time || '';
+  document.getElementById('editShiftStartType').value = shift.start_type || '';
+  document.getElementById('editShiftStopType').value = shift.stop_type || '';
+  document.getElementById('editShiftStrength').value = shift.strength || '5v5';
+  
+  // Render player slots in edit modal
+  renderEditShiftPlayers(shift);
+  
+  document.getElementById('editShiftModal').classList.add('show');
+}
+
+function renderEditShiftPlayers(shift) {
+  // This would render editable player slots for the shift
+  // For now, display current players
+  const container = document.getElementById('editShiftPlayersContainer');
+  if (!container) return;
+  
+  let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">';
+  
+  // Home players
+  html += '<div><div style="font-size:9px;color:var(--home);margin-bottom:4px;">HOME</div>';
+  ['F1','F2','F3','D1','D2','G','X'].forEach(pos => {
+    const p = shift.home?.[pos];
+    html += `<div style="font-size:9px;margin:2px 0;">${pos}: ${p ? `#${p.num}` : '--'}</div>`;
+  });
+  html += '</div>';
+  
+  // Away players  
+  html += '<div><div style="font-size:9px;color:var(--away);margin-bottom:4px;">AWAY</div>';
+  ['F1','F2','F3','D1','D2','G','X'].forEach(pos => {
+    const p = shift.away?.[pos];
+    html += `<div style="font-size:9px;margin:2px 0;">${pos}: ${p ? `#${p.num}` : '--'}</div>`;
+  });
+  html += '</div></div>';
+  
+  container.innerHTML = html;
+}
+
+// ============================================================
+// RENDER ALL (utility)
+// ============================================================
+function renderAll() {
+  renderEvents();
+  renderShifts();
+  renderMarkers();
+  updateScores();
+  updateBoxScore();
+  updateNextPlaySuggestions();
+  updateZoneLabels();
+}
+
+function saveEditEvent() {
+  if (S.editingEvtIdx === null) return;
+  const evt = S.events[S.editingEvtIdx];
+  
+  evt.type = document.getElementById('editType').value;
+  evt.team = document.getElementById('editTeam').value;
+  evt.start_time = document.getElementById('editStartTime').value;
+  evt.end_time = document.getElementById('editEndTime').value;
+  evt.zone = document.getElementById('editZone').value;
+  evt.success = document.getElementById('editSuccess').value;
+  evt.strength = document.getElementById('editStrength').value;
+  evt.detail1 = document.getElementById('editD1').value;
+  evt.detail2 = document.getElementById('editD2').value;
+  evt.isHighlight = document.getElementById('editHighlight').checked;
+  
+  closeEditModal();
+  renderEvents(); updateScores(); updateBoxScore();
+  autoSave();
+  toast('Event updated', 'success');
+}
+
+function deleteEvent() {
+  if (S.editingEvtIdx === null) return;
+  if (!confirm('Delete this event?')) return;
+  
+  S.events.splice(S.editingEvtIdx, 1);
+  closeEditModal();
+  renderEvents(); updateScores(); updateBoxScore();
+  autoSave();
+  toast('Event deleted', 'success');
+}
+
+function closeEditModal() {
+  document.getElementById('editModal').classList.remove('show');
+  S.editingEvtIdx = null;
+}
+
+// ============================================================
+// SHIFTS
+// ============================================================
+function logShift() {
+  const start = document.getElementById('shiftStart').value;
+  const end = document.getElementById('shiftEnd').value || document.getElementById('clock').value;
+  
+  const shift = {
+    idx: S.shiftIdx++,
+    game_id: S.gameId,
+    period: S.period,
+    start_time: start,
+    end_time: end,
+    start_type: document.getElementById('shiftStartType').value,
+    stop_type: document.getElementById('shiftStopType').value,
+    strength: deriveStrength(),
+    home: {...S.slots.home},
+    away: {...S.slots.away}
+  };
+  
+  S.shifts.push(shift);
+  document.getElementById('shiftStart').value = end;
+  document.getElementById('shiftEnd').value = '';
+  S.lastEndTime = end;
+  
+  renderShiftLog();
+  toast(`Shift #${shift.idx + 1} logged`, 'success');
+  autoSave();
+}
+
+// Auto-update strength when slots change
+function onSlotsChanged() {
+  const strength = deriveStrength();
+  document.getElementById('evtStrength').value = strength;
+}
+
+// ============================================================
+// PERIOD & CLOCK
+// ============================================================
+function setPeriod(p) {
+  S.period = p;
+  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.period-btn[data-p="${p}"]`)?.classList.add('active');
+  
+  // Set clock based on period
+  if (p === 'OT') {
+    document.getElementById('clock').value = '5:00';
+  } else {
+    document.getElementById('clock').value = S.periodLength + ':00';
+  }
+  
+  // Update zone labels (they switch each period)
+  updateZoneLabels();
+}
+
+function updateClock() {
+  // Just store the value, could trigger other updates
+}
+
+// ============================================================
+// EXPORT
+// ============================================================
+function exportData() {
+  if (!S.gameId) { toast('No game loaded', 'error'); return; }
+  
+  // Build LONG format export (one row per player per event)
+  // Format matches ETL expected input with underscore suffix for input columns
+  const rows = [];
+  
+  S.events.forEach((evt, i) => {
+    const startTime = evt.start_time || evt.time || '';
+    const endTime = evt.end_time || evt.start_time || evt.time || '';
+    const [startMin, startSec] = (startTime || '').split(':');
+    const [endMin, endSec] = (endTime || '').split(':');
+    
+    // Map zone to abbreviation (o/d/n)
+    const zoneAbbr = evt.zone || 'n';
+    
+    const base = {
+      // Input columns (underscore suffix for ETL)
+      'event_index_flag_': i + 1,
+      'sequence_index_flag_': evt.sequenceIdx || '',
+      'play_index_flag_': evt.playIdx || '',
+      'linked_event_index_flag_': evt.linkedEventIdx || '',
+      'event_start_min_': startMin || '',
+      'event_start_sec_': startSec || '',
+      'event_end_min_': endMin || '',
+      'event_end_sec_': endSec || '',
+      'event_team_zone_': zoneAbbr,
+      'event_type_': evt.type,
+      'event_detail_': evt.detail1 || '',
+      'event_detail_2_': evt.detail2 || '',
+      'event_successful_': evt.success || '',
+      'team_': evt.team === 'home' ? 'h' : 'a',
+      // Additional derived columns
+      'period': evt.period,
+      'event_index': i + 1,
+      'game_id': S.gameId,
+      'home_team': S.homeTeam,
+      'away_team': S.awayTeam,
+      'strength': evt.strength || '5v5',
+      'event_team_zone': zoneAbbr === 'o' ? 'Offensive' : zoneAbbr === 'd' ? 'Defensive' : 'Neutral'
+    };
+    
+    // Add puck XY
+    (evt.puckXY || []).forEach((xy, j) => {
+      base[`puck_x_${j+1}`] = xy.x;
+      base[`puck_y_${j+1}`] = xy.y;
+    });
+    
+    // Net XY
+    if (evt.netXY) {
+      base.net_x = evt.netXY.x;
+      base.net_y = evt.netXY.y;
+    }
+    
+    // One row per player
+    if (evt.players?.length) {
+      evt.players.forEach(p => {
+        const row = {...base};
+        row['player_game_number_'] = p.num;
+        row['player_game_number'] = p.num;
+        row['role_abrev'] = p.role.replace('_team_player_', '').charAt(0) + p.roleNum;
+        row.player_role = p.role;
+        row.player_name = p.name;
+        row['play_detail1_'] = p.playD1 || '';
+        row['play_detail2_'] = p.playD2 || '';
+        row['play_detail_successful_'] = p.playSuccess || '';
+        row['pressured_pressurer_'] = p.pressure || '';
+        row.play_detail1 = p.playD1 || '';
+        row.play_detail_2 = p.playD2 || '';
+        row.play_detail_successful = p.playSuccess || '';
+        row.pressured_pressurer = p.pressure || '';
+        
+        // Player XY
+        (p.xy || []).forEach((xy, j) => {
+          row[`player_x_${j+1}`] = xy.x;
+          row[`player_y_${j+1}`] = xy.y;
+        });
+        
+        rows.push(row);
+      });
+    } else {
+      // Event with no players still needs a row
+      base['player_game_number_'] = '';
+      base['role_abrev'] = '';
+      rows.push(base);
+    }
+  });
+  
+  // Create workbook
+  const wb = XLSX.utils.book_new();
+  
+  // Events sheet
+  if (rows.length) {
+    const ws = XLSX.utils.json_to_sheet(rows);
+    XLSX.utils.book_append_sheet(wb, ws, 'events');
+  }
+  
+  // Shifts sheet
+  if (S.shifts.length) {
+    const shiftRows = S.shifts.map((s, i) => ({
+      shift_index: i + 1,
+      Period: s.period,
+      shift_start_min: s.start_time?.split(':')[0],
+      shift_start_sec: s.start_time?.split(':')[1],
+      shift_end_min: s.end_time?.split(':')[0],
+      shift_end_sec: s.end_time?.split(':')[1],
+      shift_start_type: s.start_type,
+      shift_stop_type: s.stop_type,
+      home_forward_1: s.home?.F1?.num || '',
+      home_forward_2: s.home?.F2?.num || '',
+      home_forward_3: s.home?.F3?.num || '',
+      home_defense_1: s.home?.D1?.num || '',
+      home_defense_2: s.home?.D2?.num || '',
+      home_goalie: s.home?.G?.num || '',
+      home_xtra: s.home?.X?.num || '',
+      away_forward_1: s.away?.F1?.num || '',
+      away_forward_2: s.away?.F2?.num || '',
+      away_forward_3: s.away?.F3?.num || '',
+      away_defense_1: s.away?.D1?.num || '',
+      away_defense_2: s.away?.D2?.num || '',
+      away_goalie: s.away?.G?.num || '',
+      away_xtra: s.away?.X?.num || '',
+      game_id: S.gameId,
+      home_team: S.homeTeam,
+      away_team: S.awayTeam,
+      strength: s.strength || '5v5'
+    }));
+    const ws2 = XLSX.utils.json_to_sheet(shiftRows);
+    XLSX.utils.book_append_sheet(wb, ws2, 'shifts');
+  }
+  
+  XLSX.writeFile(wb, `${S.gameId}_tracking.xlsx`);
+  toast('Exported!', 'success');
+}
+
+// ============================================================
+// KEYBOARD
+// ============================================================
+function setupKeys() {
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+    
+    const key = e.key.toUpperCase();
+    
+    // Event type hotkeys
+    const typeMap = { F:'Faceoff', S:'Shot', P:'Pass', G:'Goal', T:'Turnover', Z:'Zone_Entry_Exit', N:'Penalty', X:'Stoppage', O:'Possession', V:'Save', R:'Rebound', D:'DeadIce', Y:'Play' };
+    if (typeMap[key]) { setEvtType(typeMap[key]); return; }
+    
+    // Enter = log event
+    if (e.key === 'Enter') { logEvent(); return; }
+    
+    // Escape = clear
+    if (e.key === 'Escape') { clearEvent(); return; }
+    
+    // L = log shift
+    if (key === 'L') { logShift(); return; }
+    
+    // Tab = switch XY mode
+    if (e.key === 'Tab') { e.preventDefault(); setXYMode(S.xyMode === 'puck' ? 'player' : 'puck'); return; }
+    
+    // H/A = set team
+    if (key === 'H') { setEvtTeam('home'); return; }
+    if (key === 'A') { setEvtTeam('away'); return; }
+    
+    // 1-3 = period
+    if (['1','2','3'].includes(key)) { setPeriod(parseInt(key)); return; }
+  });
+}
+
+// ============================================================
+// RESIZE PANELS
+// ============================================================
+let resizing = null;
+function startResize(e, panel) {
+  resizing = { panel, startX: e.clientX, startWidth: document.getElementById(panel + 'Panel').offsetWidth };
+  document.addEventListener('mousemove', doResize);
+  document.addEventListener('mouseup', stopResize);
+}
+function doResize(e) {
+  if (!resizing) return;
+  const diff = e.clientX - resizing.startX;
+  const newWidth = resizing.panel === 'left' ? resizing.startWidth + diff : resizing.startWidth - diff;
+  document.getElementById(resizing.panel + 'Panel').style.width = Math.max(150, Math.min(400, newWidth)) + 'px';
+}
+function stopResize() { resizing = null; document.removeEventListener('mousemove', doResize); document.removeEventListener('mouseup', stopResize); }
+
+// ============================================================
+// TOAST
+// ============================================================
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+  setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+// ============================================================
+// START
+// ============================================================
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

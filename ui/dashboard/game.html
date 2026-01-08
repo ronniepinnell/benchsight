@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Recap - BenchSight</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root { --bg: #0f172a; --panel: #1e293b; --card: #334155; --border: #475569; --accent: #06b6d4; --accent2: #8b5cf6; --text: #f1f5f9; --muted: #94a3b8; --success: #10b981; --warn: #f59e0b; --danger: #ef4444; --home: #3b82f6; --away: #ef4444; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+.header { background: var(--panel); padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.header h1 { font-size: 20px; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.nav { display: flex; gap: 16px; } .nav a { color: var(--muted); text-decoration: none; font-size: 14px; } .nav a:hover, .nav a.active { color: var(--accent); }
+.container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+.game-header { background: var(--panel); border-radius: 12px; padding: 24px; margin-bottom: 24px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 24px; }
+.team-info { text-align: center; }
+.team-name { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+.team-record { font-size: 12px; color: var(--muted); }
+.score-display { text-align: center; }
+.final-score { font-size: 48px; font-weight: 700; }
+.final-score .home { color: var(--home); } .final-score .away { color: var(--away); }
+.game-status { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.tab { padding: 8px 16px; background: var(--panel); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; color: var(--muted); }
+.tab.active { background: var(--accent); color: #000; border-color: var(--accent); }
+.section { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+.section-title { font-size: 14px; color: var(--accent); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { padding: 10px; text-align: left; border-bottom: 1px solid var(--border); }
+th { color: var(--muted); font-size: 11px; text-transform: uppercase; }
+tr:hover { background: rgba(6, 182, 212, 0.05); }
+.event-row { padding: 8px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; cursor: pointer; }
+.event-row:hover { background: var(--card); }
+.event-time { color: var(--muted); font-size: 11px; min-width: 50px; }
+.event-type { font-weight: 600; min-width: 80px; }
+.event-type.goal { color: var(--success); }
+.event-type.shot { color: var(--accent); }
+.event-type.save { color: var(--warn); }
+.event-players { flex: 1; font-size: 12px; color: var(--muted); }
+.event-highlight { color: gold; }
+.period-header { background: var(--card); padding: 8px 12px; font-weight: 600; font-size: 12px; color: var(--accent); }
+.shift-row { padding: 6px 12px; border-bottom: 1px solid var(--border); display: grid; grid-template-columns: 60px 60px 80px 1fr 1fr; gap: 8px; font-size: 11px; }
+.shift-row.header { background: var(--card); color: var(--muted); font-weight: 600; }
+.highlight-card { background: var(--card); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+.highlight-card .time { font-size: 12px; color: var(--muted); }
+.highlight-card .type { font-size: 16px; font-weight: 600; color: var(--success); margin: 4px 0; }
+.highlight-card .players { font-size: 13px; }
+.rink-preview { background: var(--card); border-radius: 8px; padding: 16px; text-align: center; }
+.rink-preview svg { max-width: 100%; }
+.loading { text-align: center; padding: 40px; color: var(--muted); }
+select { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 6px; }
+.norad-link { color: var(--accent); font-size: 12px; text-decoration: none; }
+.norad-link:hover { text-decoration: underline; }
+.btn { padding: 8px 16px; background: var(--accent); color: #000; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; }
+.btn:hover { opacity: 0.9; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>🏒 BenchSight</h1>
+  <div class="nav">
+    <a href="index.html">Dashboard</a>
+    <a href="player.html">Players</a>
+    <a href="team.html">Teams</a>
+    <a href="game.html" class="active">Games</a>
+  </div>
+</div>
+
+<div class="container">
+  <div style="margin-bottom:24px;display:flex;gap:12px;align-items:center;">
+    <select id="gameSelect" onchange="loadGame(this.value)" style="min-width:300px;">
+      <option value="">Choose a game...</option>
+    </select>
+    <a id="noradLink" class="norad-link" href="#" target="_blank" style="display:none;">View on noradhockey.com →</a>
+  </div>
+
+  <div id="gameContent" style="display:none;">
+    <div class="game-header">
+      <div class="team-info">
+        <div class="team-name" id="homeTeam" style="color:var(--home);">Home Team</div>
+        <div class="team-record" id="homeRecord">--</div>
+      </div>
+      <div class="score-display">
+        <div class="final-score"><span class="home" id="homeScore">0</span> - <span class="away" id="awayScore">0</span></div>
+        <div class="game-status" id="gameDate">--</div>
+      </div>
+      <div class="team-info">
+        <div class="team-name" id="awayTeam" style="color:var(--away);">Away Team</div>
+        <div class="team-record" id="awayRecord">--</div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="showTab('plays')">Play-by-Play</div>
+      <div class="tab" onclick="showTab('shifts')">Shifts</div>
+      <div class="tab" onclick="showTab('highlights')">Highlights</div>
+      <div class="tab" onclick="showTab('boxscore')">Box Score</div>
+      <div class="tab" onclick="showTab('shotchart')">Shot Chart</div>
+    </div>
+
+    <div id="playsTab" class="section">
+      <div class="section-title">Play-by-Play</div>
+      <div id="playsList"></div>
+    </div>
+
+    <div id="shiftsTab" class="section" style="display:none;">
+      <div class="section-title">Shift Log</div>
+      <div class="shift-row header">
+        <div>Period</div>
+        <div>Time</div>
+        <div>Strength</div>
+        <div>Home</div>
+        <div>Away</div>
+      </div>
+      <div id="shiftsList"></div>
+    </div>
+
+    <div id="highlightsTab" class="section" style="display:none;">
+      <div class="section-title">Highlights ⭐</div>
+      <div id="highlightsList"></div>
+    </div>
+
+    <div id="boxscoreTab" class="section" style="display:none;">
+      <div class="section-title">Box Score</div>
+      <table>
+        <thead><tr><th>#</th><th>Player</th><th>Team</th><th>G</th><th>A</th><th>PTS</th><th>SOG</th><th>TOI</th></tr></thead>
+        <tbody id="boxscoreBody"></tbody>
+      </table>
+    </div>
+
+    <div id="shotchartTab" class="section" style="display:none;">
+      <div class="section-title">Shot Chart</div>
+      <div class="rink-preview">
+        <svg viewBox="0 0 200 85" width="600" id="shotChartSvg">
+          <rect x="0" y="0" width="200" height="85" fill="#1e293b" rx="14" ry="14"/>
+          <line x1="75" y1="0" x2="75" y2="85" stroke="#3b82f6" stroke-width="1"/>
+          <line x1="125" y1="0" x2="125" y2="85" stroke="#3b82f6" stroke-width="1"/>
+          <line x1="100" y1="0" x2="100" y2="85" stroke="#ef4444" stroke-width="0.5" stroke-dasharray="2,2"/>
+          <circle cx="100" cy="42.5" r="15" fill="none" stroke="#3b82f6" stroke-width="0.5"/>
+          <!-- Goals -->
+          <rect x="7" y="38" width="4" height="9" fill="none" stroke="#fff" stroke-width="0.5"/>
+          <rect x="189" y="38" width="4" height="9" fill="none" stroke="#fff" stroke-width="0.5"/>
+          <g id="shotMarkers"></g>
+        </svg>
+        <div style="margin-top:12px;font-size:12px;color:var(--muted);">
+          <span style="color:var(--home);">● Home shots</span> &nbsp;
+          <span style="color:var(--away);">● Away shots</span> &nbsp;
+          <span style="color:var(--success);">★ Goals</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="loadingMsg" class="loading">Select a game to view the recap</div>
+</div>
+
+<script>
+let sb = null;
+let currentGame = null;
+
+async function init() {
+  const settings = JSON.parse(localStorage.getItem('bs_settings') || '{}');
+  if (settings.sbUrl && settings.sbKey) {
+    sb = supabase.createClient(settings.sbUrl, settings.sbKey);
+    await loadGames();
+  } else {
+    document.getElementById('loadingMsg').innerHTML = 'Configure Supabase in <a href="../portal/" style="color:var(--accent)">Portal</a> first';
+  }
+}
+
+async function loadGames() {
+  // ONLY load TRACKED games - paginate through fact_events
+  console.log('Game page: Loading from fact_events...');
+  
+  const allGameIds = new Set();
+  let offset = 0;
+  const pageSize = 1000;
+  let hasMore = true;
+  
+  while (hasMore && offset < 50000) {
+    const { data, error } = await sb.from('fact_events')
+      .select('game_id')
+      .range(offset, offset + pageSize - 1);
+    
+    if (error) break;
+    if (!data || data.length === 0) {
+      hasMore = false;
+    } else {
+      data.forEach(r => allGameIds.add(r.game_id));
+      offset += pageSize;
+      if (data.length < pageSize) hasMore = false;
+    }
+  }
+  
+  const trackedGameIds = Array.from(allGameIds);
+  console.log('Game page: Tracked game IDs:', trackedGameIds);
+  
+  if (trackedGameIds.length === 0) {
+    document.getElementById('gameSelect').innerHTML = '<option value="">No tracked games</option>';
+    return;
+  }
+  
+  const { data } = await sb.from('dim_schedule')
+    .select('game_id,date,home_team_name,away_team_name,home_total_goals,away_total_goals')
+    .in('game_id', trackedGameIds)
+    .order('date', { ascending: false });
+  
+  console.log('Game page: Schedule returned', data?.length, 'rows');
+  
+  // Dedupe
+  const seen = new Set();
+  const uniqueGames = (data || []).filter(g => {
+    if (seen.has(g.game_id)) return false;
+    seen.add(g.game_id);
+    return true;
+  });
+  
+  const sel = document.getElementById('gameSelect');
+  sel.innerHTML = '<option value="">Choose a tracked game (' + uniqueGames.length + ')...</option>' +
+    uniqueGames.map(g => {
+      const date = g.date?.split('T')[0] || '';
+      return `<option value="${g.game_id}">${date} - ${g.home_team_name} vs ${g.away_team_name} (${g.home_total_goals || 0}-${g.away_total_goals || 0})</option>`;
+    }).join('');
+  
+  console.log('Game page: Loaded', uniqueGames.length, 'tracked games');
+}
+
+async function loadGame(gameId) {
+  if (!gameId) {
+    document.getElementById('gameContent').style.display = 'none';
+    document.getElementById('loadingMsg').style.display = 'block';
+    return;
+  }
+  
+  document.getElementById('loadingMsg').innerHTML = 'Loading game...';
+  
+  // Get game info
+  const { data: game } = await sb.from('dim_schedule')
+    .select('*')
+    .eq('game_id', gameId)
+    .single();
+  
+  if (!game) { toast('Game not found'); return; }
+  currentGame = game;
+  
+  // Update header
+  document.getElementById('homeTeam').textContent = game.home_team_name || 'Home';
+  document.getElementById('awayTeam').textContent = game.away_team_name || 'Away';
+  document.getElementById('homeScore').textContent = game.home_total_goals || 0;
+  document.getElementById('awayScore').textContent = game.away_total_goals || 0;
+  document.getElementById('gameDate').textContent = game.date?.split('T')[0] || '--';
+  
+  // Set noradhockey.com link
+  const noradLink = document.getElementById('noradLink');
+  if (game.game_id) {
+    noradLink.href = `https://noradhockey.com/game/${game.game_id}`;
+    noradLink.style.display = 'inline';
+  }
+  
+  // Load events
+  await loadEvents(gameId);
+  await loadShifts(gameId);
+  await loadBoxScore(gameId);
+  
+  document.getElementById('loadingMsg').style.display = 'none';
+  document.getElementById('gameContent').style.display = 'block';
+}
+
+async function loadEvents(gameId) {
+  const { data: events } = await sb.from('fact_events')
+    .select('*')
+    .eq('game_id', gameId)
+    .order('event_index');
+  
+  // Group by period
+  const periods = {};
+  (events || []).forEach(e => {
+    const p = e.period || 1;
+    if (!periods[p]) periods[p] = [];
+    periods[p].push(e);
+  });
+  
+  // Render plays
+  let html = '';
+  Object.keys(periods).sort().forEach(p => {
+    html += `<div class="period-header">Period ${p}</div>`;
+    periods[p].forEach(e => {
+      const time = formatTime(e.event_start_min, e.event_start_sec);
+      const typeClass = e.event_type === 'Goal' ? 'goal' : e.event_type === 'Shot' ? 'shot' : e.event_type === 'Save' ? 'save' : '';
+      const highlight = e.is_highlight ? '<span class="event-highlight">⭐</span>' : '';
+      const team = e.team_venue === 'home' ? currentGame.home_team_name : currentGame.away_team_name;
+      html += `<div class="event-row">
+        <span class="event-time">${time}</span>
+        <span class="event-type ${typeClass}">${e.event_type}${highlight}</span>
+        <span class="event-detail">${e.event_detail || ''}</span>
+        <span class="event-players">${team}</span>
+      </div>`;
+    });
+  });
+  document.getElementById('playsList').innerHTML = html || '<p style="color:var(--muted);">No events recorded</p>';
+  
+  // Render highlights
+  const highlights = (events || []).filter(e => e.is_highlight || e.event_type === 'Goal');
+  document.getElementById('highlightsList').innerHTML = highlights.map(h => {
+    const time = formatTime(h.event_start_min, h.event_start_sec);
+    const team = h.team_venue === 'home' ? currentGame.home_team_name : currentGame.away_team_name;
+    return `<div class="highlight-card">
+      <div class="time">P${h.period} ${time}</div>
+      <div class="type">${h.event_type} ${h.is_highlight ? '⭐' : ''}</div>
+      <div class="players">${team} - ${h.event_detail || ''}</div>
+    </div>`;
+  }).join('') || '<p style="color:var(--muted);">No highlights</p>';
+  
+  // Render shot chart
+  const shots = (events || []).filter(e => e.event_type === 'Shot' || e.event_type === 'Goal');
+  renderShotChart(shots);
+}
+
+async function loadShifts(gameId) {
+  const { data: shifts } = await sb.from('fact_shifts')
+    .select('*')
+    .eq('game_id', gameId)
+    .order('shift_index');
+  
+  document.getElementById('shiftsList').innerHTML = (shifts || []).map(s => {
+    const time = formatTime(s.shift_start_min, s.shift_start_sec);
+    return `<div class="shift-row">
+      <div>P${s.period}</div>
+      <div>${time}</div>
+      <div>${s.strength || '5v5'}</div>
+      <div>${s.home_players || '--'}</div>
+      <div>${s.away_players || '--'}</div>
+    </div>`;
+  }).join('') || '<p style="color:var(--muted);padding:12px;">No shifts recorded</p>';
+}
+
+async function loadBoxScore(gameId) {
+  // This would aggregate stats from events - simplified version
+  const { data: roster } = await sb.from('fact_gameroster')
+    .select('*')
+    .eq('game_id', gameId)
+    .order('player_game_number');
+  
+  document.getElementById('boxscoreBody').innerHTML = (roster || []).map(p => `
+    <tr>
+      <td>${p.player_game_number}</td>
+      <td>${p.player_full_name}</td>
+      <td>${p.team_venue}</td>
+      <td>--</td>
+      <td>--</td>
+      <td>--</td>
+      <td>--</td>
+      <td>--</td>
+    </tr>
+  `).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--muted);">No roster data</td></tr>';
+}
+
+function renderShotChart(shots) {
+  const markers = document.getElementById('shotMarkers');
+  markers.innerHTML = shots.map(s => {
+    // Use XY data if available, otherwise random position
+    const x = s.puck_x_1 || (s.team_venue === 'home' ? 150 + Math.random() * 40 : 10 + Math.random() * 40);
+    const y = s.puck_y_1 || (20 + Math.random() * 45);
+    const isGoal = s.event_type === 'Goal';
+    const color = s.team_venue === 'home' ? 'var(--home)' : 'var(--away)';
+    
+    if (isGoal) {
+      return `<polygon points="${x-3},${y-3} ${x+3},${y-3} ${x},${y+3}" fill="var(--success)" stroke="#fff" stroke-width="0.5"/>`;
+    } else {
+      return `<circle cx="${x}" cy="${y}" r="2" fill="${color}" opacity="0.7"/>`;
+    }
+  }).join('');
+}
+
+function formatTime(min, sec) {
+  const m = min || 0;
+  const s = sec || 0;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+function showTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.tab[onclick="showTab('${tab}')"]`).classList.add('active');
+  
+  ['plays', 'shifts', 'highlights', 'boxscore', 'shotchart'].forEach(t => {
+    document.getElementById(t + 'Tab').style.display = t === tab ? 'block' : 'none';
+  });
+}
+
+init();
+</script>
+</body>
+</html>

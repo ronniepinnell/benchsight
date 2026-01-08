@@ -1,5 +1,9 @@
 # Role: Project Manager
 
+**Version:** 16.08  
+**Updated:** January 8, 2026
+
+
 ## Scope
 Coordinate work, track status, plan features, manage documentation.
 
@@ -9,7 +13,7 @@ Coordinate work, track status, plan features, manage documentation.
 3. Check `docs/html/index.html` in browser for overview
 4. Review `config/VERSION.json` for version info
 
-## Current State (v13.13)
+## Current State (v16.08)
 
 | Metric | Value |
 |--------|-------|

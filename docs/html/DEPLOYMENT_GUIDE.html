@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Deployment Guide - BenchSight</title>
+<style>
+:root { --bg: #0f172a; --panel: #1e293b; --card: #334155; --border: #475569; --accent: #06b6d4; --text: #f1f5f9; --muted: #94a3b8; --success: #10b981; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 40px 20px; line-height: 1.7; }
+.container { max-width: 900px; margin: 0 auto; }
+h1 { color: var(--accent); margin-bottom: 8px; font-size: 28px; }
+h2 { color: var(--accent); margin: 32px 0 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+h3 { color: var(--text); margin: 24px 0 12px; }
+p { margin-bottom: 16px; color: var(--muted); }
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin: 16px 0; }
+code { background: var(--card); padding: 2px 6px; border-radius: 4px; font-family: monospace; color: var(--accent); }
+pre { background: var(--card); padding: 16px; border-radius: 8px; overflow-x: auto; margin: 16px 0; font-size: 13px; }
+ul, ol { margin-left: 24px; margin-bottom: 16px; color: var(--muted); }
+li { margin: 8px 0; }
+a { color: var(--accent); }
+table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+th { color: var(--accent); font-size: 12px; text-transform: uppercase; }
+.steps { counter-reset: step; }
+.step { position: relative; padding-left: 40px; margin-bottom: 24px; }
+.step::before { counter-increment: step; content: counter(step); position: absolute; left: 0; width: 28px; height: 28px; background: var(--accent); color: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+.highlight { background: rgba(6, 182, 212, 0.1); border-left: 3px solid var(--accent); padding: 12px 16px; margin: 16px 0; }
+.warning { background: rgba(245, 158, 11, 0.1); border-left: 3px solid #f59e0b; padding: 12px 16px; margin: 16px 0; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>🚀 Dashboard Deployment Guide</h1>
+<p style="font-size:14px;">Complete guide to deploying BenchSight Dashboard and Portal to production</p>
+
+<h2>Quick Start</h2>
+<div class="card">
+<p><strong>The dashboard is a single HTML file</strong> that can be deployed to any static hosting service. No backend required - it connects directly to Supabase.</p>
+<pre>
+Dashboard Files:
+├── ui/dashboard/index.html    # Main dashboard
+├── ui/dashboard/player.html   # Player profiles
+├── ui/dashboard/team.html     # Team pages
+├── ui/dashboard/game.html     # Game recaps
+└── ui/portal/index.html       # Admin portal
+</pre>
+</div>
+
+<h2>Option 1: Render (Recommended)</h2>
+<div class="steps">
+<div class="step">
+<strong>Create Render Account</strong>
+<p>Go to <a href="https://render.com">render.com</a> and sign up (free tier available)</p>
+</div>
+<div class="step">
+<strong>Create New Static Site</strong>
+<p>Click "New +" → "Static Site"</p>
+</div>
+<div class="step">
+<strong>Connect Repository</strong>
+<p>Connect your GitHub repo or use "Public Git repository" with your repo URL</p>
+</div>
+<div class="step">
+<strong>Configure Build</strong>
+<pre>
+Name: benchsight-dashboard
+Branch: main
+Root Directory: ui/dashboard  (or leave blank)
+Build Command: (leave blank - no build needed)
+Publish Directory: ui/dashboard
+</pre>
+</div>
+<div class="step">
+<strong>Deploy</strong>
+<p>Click "Create Static Site" - deployment takes ~1 minute</p>
+<p>Your dashboard will be at: <code>https://benchsight-dashboard.onrender.com</code></p>
+</div>
+</div>
+
+<h2>Option 2: Netlify</h2>
+<div class="steps">
+<div class="step">
+<strong>Drag & Drop Deploy</strong>
+<p>Go to <a href="https://app.netlify.com/drop">app.netlify.com/drop</a></p>
+<p>Drag the <code>ui/dashboard</code> folder onto the page</p>
+</div>
+<div class="step">
+<strong>Done!</strong>
+<p>Netlify generates a random URL like <code>https://random-name-123.netlify.app</code></p>
+<p>Optionally claim it and customize the domain</p>
+</div>
+</div>
+
+<h2>Option 3: Vercel</h2>
+<div class="steps">
+<div class="step">
+<strong>Install Vercel CLI</strong>
+<pre>npm install -g vercel</pre>
+</div>
+<div class="step">
+<strong>Deploy from Terminal</strong>
+<pre>cd ui/dashboard
+vercel</pre>
+<p>Follow prompts - deployed in seconds!</p>
+</div>
+</div>
+
+<h2>Option 4: GitHub Pages (Free)</h2>
+<div class="steps">
+<div class="step">
+<strong>Push to GitHub</strong>
+<pre>git add .
+git commit -m "Deploy dashboard"
+git push origin main</pre>
+</div>
+<div class="step">
+<strong>Enable Pages</strong>
+<p>Go to repo Settings → Pages → Select "main" branch → Save</p>
+</div>
+<div class="step">
+<strong>Access Dashboard</strong>
+<p>URL: <code>https://yourusername.github.io/repo-name/ui/dashboard/</code></p>
+</div>
+</div>
+
+<h2>Option 5: Embed in Wix</h2>
+<div class="steps">
+<div class="step">
+<strong>Deploy to Render/Netlify first</strong>
+<p>Get a public URL for your dashboard</p>
+</div>
+<div class="step">
+<strong>Add Embed Element in Wix</strong>
+<p>In Wix Editor: Add → Embed → Embed a Site</p>
+</div>
+<div class="step">
+<strong>Paste URL</strong>
+<pre>https://your-dashboard-url.onrender.com</pre>
+<p>Resize the embed to fit your page</p>
+</div>
+</div>
+
+<div class="highlight">
+<strong>💡 Pro Tip:</strong> Deploy the Portal separately from the Dashboard. The Portal has admin controls that should be protected or on a separate URL.
+</div>
+
+<h2>Environment Configuration</h2>
+
+<h3>Pre-configure Supabase Credentials</h3>
+<p>To avoid users needing to enter credentials, hardcode them in the HTML:</p>
+<pre>
+// Find this in the init() function:
+const settings = JSON.parse(localStorage.getItem('bs_settings') || '{}');
+
+// Replace with:
+const SUPABASE_URL = 'https://your-project.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+</pre>
+
+<div class="warning">
+<strong>⚠️ Security Note:</strong> The anon key is safe for public dashboards (read-only). Never expose the service_role key in client code.
+</div>
+
+<h2>Custom Domain Setup</h2>
+
+<table>
+<tr><th>Provider</th><th>Steps</th></tr>
+<tr><td>Render</td><td>Settings → Custom Domain → Add domain → Update DNS</td></tr>
+<tr><td>Netlify</td><td>Domain Settings → Add custom domain → Follow DNS instructions</td></tr>
+<tr><td>Vercel</td><td>Settings → Domains → Add → Configure DNS</td></tr>
+</table>
+
+<p>DNS Configuration (typically):</p>
+<pre>
+Type: CNAME
+Name: dashboard (or @ for root)
+Value: your-app.onrender.com (or netlify/vercel equivalent)
+TTL: Auto
+</pre>
+
+<h2>Updating the Dashboard</h2>
+
+<h3>With Git (Render/Vercel/GitHub Pages)</h3>
+<pre>
+# Make changes locally
+git add .
+git commit -m "Update dashboard"
+git push origin main
+
+# Auto-deploys in ~1 minute
+</pre>
+
+<h3>With Netlify Drag & Drop</h3>
+<p>Just drag the updated folder to Netlify again</p>
+
+<h2>Troubleshooting</h2>
+
+<div class="card">
+<h3>Dashboard shows "Configure Supabase"</h3>
+<ul>
+<li>User needs to enter credentials in Settings/Portal first</li>
+<li>Or hardcode credentials as shown above</li>
+</ul>
+</div>
+
+<div class="card">
+<h3>CORS Errors</h3>
+<ul>
+<li>Supabase handles CORS automatically - check URL/key</li>
+<li>If using custom proxy, add dashboard domain to allowed origins</li>
+</ul>
+</div>
+
+<div class="card">
+<h3>Data Not Loading</h3>
+<ul>
+<li>Verify tables exist in Supabase</li>
+<li>Check table names match exactly (case-sensitive)</li>
+<li>Run ETL first to populate tables</li>
+<li>Check browser console for specific errors</li>
+</ul>
+</div>
+
+<div class="card">
+<h3>Slow Loading</h3>
+<ul>
+<li>Supabase free tier has cold starts (~2 sec)</li>
+<li>Consider pagination for large tables</li>
+<li>Use CDN for static assets</li>
+</ul>
+</div>
+
+<h2>Required Supabase Tables</h2>
+
+<table>
+<tr><th>Table</th><th>Used By</th><th>Key Columns</th></tr>
+<tr><td>dim_schedule</td><td>Game list, recaps</td><td>game_id, date, home_team_name, away_team_name</td></tr>
+<tr><td>dim_team</td><td>Team pages</td><td>team_id, team_name, team_color1</td></tr>
+<tr><td>dim_player</td><td>Player profiles</td><td>player_id, player_full_name, current_team_id</td></tr>
+<tr><td>fact_events</td><td>Play-by-play, stats</td><td>event_id, game_id, event_type, event_detail</td></tr>
+<tr><td>fact_gameroster</td><td>Rosters</td><td>game_id, player_id, team_venue, player_position</td></tr>
+<tr><td>fact_shifts</td><td>Shift tracking</td><td>shift_id, game_id, period, shift_start_min</td></tr>
+</table>
+
+<h2>Checklist</h2>
+
+<div class="card" style="background:rgba(16,185,129,0.1);border-color:var(--success);">
+<ul style="list-style:none;margin:0;padding:0;">
+<li>✅ Supabase project created and credentials obtained</li>
+<li>✅ ETL run to populate tables</li>
+<li>✅ Tables synced to Supabase</li>
+<li>✅ Dashboard tested locally (open HTML in browser)</li>
+<li>✅ Credentials configured (localStorage or hardcoded)</li>
+<li>✅ Deployed to hosting service</li>
+<li>✅ Custom domain configured (optional)</li>
+<li>✅ Shared URL with users</li>
+</ul>
+</div>
+
+<p style="margin-top:40px;text-align:center;color:var(--muted);font-size:12px;">
+BenchSight Dashboard Deployment Guide | v16.08 | January 2026
+</p>
+</div>
+</body>
+</html>

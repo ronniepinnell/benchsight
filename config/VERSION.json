@@ -1,9 +1,17 @@
 {
-  "major": 14,
-  "minor": 2,
-  "version_string": "v14.02",
-  "last_updated": "2026-01-07T22:08:00Z",
-  "chat_number": 14,
-  "output_number": 2,
-  "notes": "Fixed 18981 home_xtra jersey numbers, Supabase sync working"
+  "major": 17,
+  "minor": 0,
+  "version_string": "v17.00",
+  "last_updated": "2026-01-08T19:00:00Z",
+  "chat_number": 17,
+  "output_number": 0,
+  "notes": "Tracker v17 - Keyboard fixes, shift modal fixes, event log toggle",
+  "features": [
+    "FIXED: Alt+1-6 added for opponent player selection (Ctrl+1-6 browser conflict)",
+    "FIXED: Shift edit dropdown now shows correct selected values",
+    "FIXED: Added OnTheFly to shiftStart options list",
+    "FIXED: Default shift types from 'On The Fly' to 'OnTheFly'",
+    "ADDED: Event log visibility toggle button",
+    "UPDATED: Help section with Alt+1-6 as primary method"
+  ]
 }

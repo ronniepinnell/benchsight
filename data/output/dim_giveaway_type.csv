@@ -7,10 +7,11 @@ GA0005,Giveaway_Other,Giveaway Other
 GA0006,Giveaway_PassBlocked,Giveaway PassBlocked
 GA0007,Giveaway_PassIntercepted,Giveaway PassIntercepted
 GA0008,Giveaway_PassMissed,Giveaway PassMissed
-GA0009,Giveaway_ShotBlocked,Giveaway ShotBlocked
-GA0010,Giveaway_ShotMissed,Giveaway ShotMissed
-GA0011,Giveaway_ZoneClear_Dump,Giveaway ZoneClear Dump
-GA0012,Giveaway_ZoneEntry_ExitMisplay,Giveaway ZoneEntry ExitMisplay
-GA0013,Takeaway_BattleWon,Takeaway BattleWon
-GA0014,Takeaway_PassIntercepted,Takeaway PassIntercepted
-GA0015,Takeaway_PokeCheck,Takeaway PokeCheck
+GA0009,Giveaway_PassReceiverMissed,Giveaway PassReceiverMissed
+GA0010,Giveaway_ShotBlocked,Giveaway ShotBlocked
+GA0011,Giveaway_ShotMissed,Giveaway ShotMissed
+GA0012,Giveaway_ZoneClear_Dump,Giveaway ZoneClear Dump
+GA0013,Giveaway_ZoneEntry_ExitMisplay,Giveaway ZoneEntry ExitMisplay
+GA0014,Takeaway_BattleWon,Takeaway BattleWon
+GA0015,Takeaway_PassIntercepted,Takeaway PassIntercepted
+GA0016,Takeaway_PokeCheck,Takeaway PokeCheck

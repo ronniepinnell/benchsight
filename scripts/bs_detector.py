@@ -71,14 +71,14 @@ from pathlib import Path
 # =============================================================================
 
 GROUND_TRUTH = {
-    # Table counts (from fresh ETL run - VERIFIED 2026-01-07)
+    # Table counts (from fresh ETL run - VERIFIED 2026-01-08)
     # Run: ls data/output/*.csv | wc -l
     'tables': 59,       # Actual count from fresh ETL
     'dims': 33,         # ls data/output/dim_*.csv | wc -l
     'facts': 24,        # ls data/output/fact_*.csv | wc -l
     'qa': 2,            # ls data/output/qa_*.csv | wc -l
     
-    # Games tracked (add new game IDs here)
+    # Games tracked (production games only - 99999 is test data)
     'games': [18969, 18977, 18981, 18987],
     
     # Goals per game (from raw tracking.xlsx, NOT ETL output)
@@ -89,7 +89,7 @@ GROUND_TRUTH = {
         18981: 3,   # Verified from 18981_tracking.xlsx events sheet
         18987: 1,   # Verified from 18987_tracking.xlsx events sheet
     },
-    'total_goals': 17,  # Sum of above
+    'total_goals': 17,  # Sum of above (excludes test game 99999)
     
     # Minimum passing tests (may have some skipped/xfail)
     'tests_min': 15,

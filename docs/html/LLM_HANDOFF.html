@@ -1,130 +1,181 @@
 <!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>LLM Handoff - BenchSight</title>
-<style>
-:root{--bg:#0d1117;--surface:#161b22;--border:#30363d;--text:#c9d1d9;--accent:#58a6ff;}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;font-size:14px;padding:40px;}
-.container{max-width:800px;margin:0 auto;}
-h1{color:var(--accent);margin-bottom:20px;}
-h2{color:var(--text);margin:25px 0 15px;padding-bottom:8px;border-bottom:1px solid var(--border);}
-h3{color:#3fb950;margin:20px 0 10px;}
-p{margin:10px 0;}
-code{font-family:monospace;background:var(--surface);padding:2px 6px;border-radius:3px;font-size:13px;}
-pre{background:var(--surface);padding:15px;border-radius:6px;overflow-x:auto;margin:15px 0;}
-pre code{background:none;padding:0;}
-table{width:100%;border-collapse:collapse;margin:15px 0;}
-th,td{border:1px solid var(--border);padding:10px;text-align:left;}
-th{background:var(--surface);color:var(--accent);}
-hr{border:none;border-top:1px solid var(--border);margin:25px 0;}
-</style></head><body><div class="container">
-<h1>LLM Handoff Guide</h1>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BenchSight LLM Handoff</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+            --accent: #00d4aa;
+            --accent2: #3b82f6;
+            --warn: #f59e0b;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg); color: var(--text);
+            line-height: 1.6; padding: 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: var(--accent); margin-bottom: 8px; }
+        h2 { color: var(--accent2); margin: 24px 0 12px; border-bottom: 1px solid var(--card); padding-bottom: 8px; }
+        h3 { color: var(--warn); margin: 16px 0 8px; }
+        .version-badge { 
+            display: inline-block; background: var(--accent); color: var(--bg);
+            padding: 4px 12px; border-radius: 4px; font-weight: bold; margin-bottom: 16px;
+        }
+        .date { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+        .section { background: var(--card); padding: 16px; border-radius: 8px; margin-bottom: 16px; }
+        .critical { background: #7f1d1d; border: 2px solid var(--danger); }
+        ul { margin-left: 20px; }
+        li { margin: 4px 0; }
+        code { background: var(--bg); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+        pre { background: var(--bg); padding: 12px; border-radius: 4px; overflow-x: auto; margin: 8px 0; }
+        a { color: var(--accent); }
+        .nav { margin-bottom: 20px; }
+        .nav a { margin-right: 16px; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid var(--card); }
+        th { color: var(--accent); }
+        .highlight { color: var(--warn); font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav">
+            <a href="index.html">← Back to Docs</a>
+        </div>
+        
+        <h1>🤖 BenchSight LLM Handoff</h1>
+        <div class="version-badge">v16.08</div>
+        <div class="date">Last Updated: January 8, 2026</div>
 
-<strong>Version:</strong> 14.01  
-<strong>Updated:</strong> January 7, 2026
+        <div class="section critical">
+            <h2>🚨 CRITICAL: Read First</h2>
+            <ol>
+                <li><strong>Goals counted ONE way:</strong> <code>event_type='Goal' AND event_detail='Goal_Scored'</code></li>
+                <li><strong>17 total goals</strong> across 4 games - this is IMMUTABLE</li>
+                <li><strong>59 tables</strong> in output - verify this number</li>
+                <li><strong>ALWAYS read</strong> <code>LLM_REQUIREMENTS.md</code> before making changes</li>
+            </ol>
+        </div>
 
-<hr>
+        <div class="section">
+            <h2>📊 Current State</h2>
+            
+            <h3>Tables</h3>
+            <table>
+                <tr><th>Category</th><th>Count</th></tr>
+                <tr><td>Dimensions (dim_*)</td><td>33</td></tr>
+                <tr><td>Facts (fact_*)</td><td>24</td></tr>
+                <tr><td>QA (qa_*)</td><td>2</td></tr>
+                <tr><td><strong>Total</strong></td><td><strong>59</strong></td></tr>
+            </table>
 
-<h2>Quick Start for New Chat</h2>
+            <h3>Games Tracked</h3>
+            <table>
+                <tr><th>Game ID</th><th>Goals</th><th>Home</th><th>Away</th></tr>
+                <tr><td>18969</td><td>7</td><td>Velodrome</td><td>AMOS</td></tr>
+                <tr><td>18977</td><td>6</td><td>Velodrome</td><td>Ace</td></tr>
+                <tr><td>18981</td><td>3</td><td>Velodrome</td><td>Rusty</td></tr>
+                <tr><td>18987</td><td>1</td><td>Velodrome</td><td>Rusty</td></tr>
+                <tr><td><strong>Total</strong></td><td><strong>17</strong></td><td colspan="2"></td></tr>
+            </table>
+        </div>
 
-1. Read <code>LLM_REQUIREMENTS.md</code> first (CRITICAL)
-2. Check <code>config/VERSION.json</code> for current version
-3. Run <code>python scripts/utilities/doc_consistency.py --new-chat</code> to bump version
-4. Read <code>CHANGELOG.md</code> for recent history
+        <div class="section">
+            <h2>🔧 Recent Work (v14.x)</h2>
+            
+            <h3>v16.08 (Current)</h3>
+            <ul>
+                <li>Play details load from Supabase dim tables</li>
+                <li>Edit modal navigation (← →)</li>
+                <li>Player role selection in edit modal</li>
+                <li>Shift player editing with dropdowns</li>
+                <li>Event log improvements</li>
+                <li>Clear all events/shifts functions</li>
+            </ul>
 
-<hr>
+            <h3>v16.08</h3>
+            <ul>
+                <li>Tracker v3 complete</li>
+                <li>ETL-aligned export format</li>
+                <li>Full keyboard shortcuts</li>
+            </ul>
+        </div>
 
-<h2>Current State</h2>
+        <div class="section">
+            <h2>📁 Key Files</h2>
+            
+            <h3>Must Read</h3>
+            <pre>
+LLM_REQUIREMENTS.md     # CRITICAL rules
+CHANGELOG.md            # Version history
+config/VERSION.json     # Current version
+config/IMMUTABLE_FACTS.json  # Verified goals</pre>
 
-| Component | Status |
-|-----------|--------|
-| <strong>ETL Pipeline</strong> | ✅ 59 tables, 17 goals verified |
-| <strong>Tracker App</strong> | ✅ v3 complete at <code>docs/html/tracker/</code> |
-| <strong>Supabase Setup</strong> | ⏳ Needs user to configure |
-| <strong>Documentation</strong> | ✅ All HTML generated |
-| <strong>Tests</strong> | ✅ 32 Tier 1, 17 Tier 2 passing |
+            <h3>Tracker</h3>
+            <pre>
+ui/tracker/index.html   # Main tracker app
+docs/TRACKER_ETL_SPECIFICATION.md
+docs/TRACKER_V3_SPECIFICATION.md</pre>
 
-<hr>
+            <h3>ETL</h3>
+            <pre>
+src/etl_orchestrator.py  # Main ETL entry
+scripts/pre_delivery.py  # Delivery pipeline</pre>
+        </div>
 
-<h2>Key Files</h2>
+        <div class="section">
+            <h2>⚠️ What NOT to Change</h2>
+            <ul>
+                <li><span class="highlight">Goal counting logic</span> - NEVER modify</li>
+                <li><span class="highlight">IMMUTABLE_FACTS.json</span> - Human-verified, don't touch</li>
+                <li>Table naming conventions - dim_*, fact_*, qa_*</li>
+                <li>ID formats - Already standardized</li>
+            </ul>
+        </div>
 
-<h3>Must Read</h3>
-- <code>LLM_REQUIREMENTS.md</code> - Critical rules
-- <code>config/IMMUTABLE_FACTS.json</code> - Verified goal counts (DO NOT MODIFY)
-- <code>config/VERSION.json</code> - Version control
+        <div class="section">
+            <h2>🎯 Current Priorities</h2>
+            <ol>
+                <li><strong>Tracker Efficiency:</strong> Reduce tracking time from 8hrs → 1hr</li>
+                <li><strong>Data Loading:</strong> Fix play details population on load</li>
+                <li><strong>Workflow:</strong> More automation, fewer clicks</li>
+                <li><strong>Documentation:</strong> Keep in sync with changes</li>
+            </ol>
+        </div>
 
-<h3>Tracker Docs</h3>
-- <code>docs/TRACKER_ETL_SPECIFICATION.md</code> - Export format
-- <code>docs/TRACKER_REQUIREMENTS.md</code> - Requirements
-- <code>docs/SUPABASE_SETUP_GUIDE.md</code> - Database setup
+        <div class="section">
+            <h2>💻 Commands</h2>
+            
+            <h3>Run ETL</h3>
+            <pre>python -m src.etl_orchestrator full</pre>
 
-<h3>Scripts</h3>
-- <code>scripts/pre_delivery.py</code> - Master pipeline (RUN THIS)
-- <code>scripts/bs_detector.py</code> - Verification
-- <code>scripts/utilities/doc_consistency.py</code> - Version management
+            <h3>Run Tests</h3>
+            <pre>pytest tests/test_tier1_blocking.py -v</pre>
 
-<hr>
+            <h3>Pre-Delivery</h3>
+            <pre>python scripts/pre_delivery.py</pre>
+        </div>
 
-<h2>Goal Counting Rule (MEMORIZE)</h2>
-
-<pre><code># CORRECT
-event_type = 'Goal' AND event_detail = 'Goal_Scored'
-
-<h1>WRONG - Shot_Goal is the shot, not the goal</h1>
-event_detail = 'Shot_Goal'  # THIS IS WRONG
-</code></pre>
-
-<hr>
-
-<h2>Version Naming</h2>
-
-<strong>Format:</strong> <code>v{CHAT}.{OUTPUT}</code>
-
-- New chat: Run <code>doc_consistency.py --new-chat</code>
-- New output: Run <code>doc_consistency.py --bump</code>
-
-<hr>
-
-<h2>Pre-Delivery Checklist</h2>
-
-<pre><code># Run this BEFORE creating any package
-python scripts/pre_delivery.py
-</code></pre>
-
-This automatically:
-1. Wipes output
-2. Runs ETL
-3. Verifies goals
-4. Runs tests
-5. Bumps version
-6. Fixes docs
-7. Creates package
-
-<hr>
-
-<h2>Recent Work (Chat 13-14)</h2>
-
-1. ✅ Tracker MVP implemented
-2. ✅ Tracker v3 with all features
-3. ✅ ETL export format specified
-4. ✅ Cascading dropdowns from Lists tab
-5. ✅ XY tracking (10 pts/player/event)
-6. ✅ Play details per player with s/u
-7. ✅ Shift tracking with intermissions
-8. ⏳ Supabase needs user setup
-9. ⏳ NORAD validation needs Supabase
-
-<hr>
-
-<h2>Next Steps</h2>
-
-1. User sets up Supabase using guide
-2. Upload dim tables to Supabase
-3. Test tracker with real data
-4. Track new games
-5. Run ETL on tracked data
-
-<hr>
-
-<strong>END OF HANDOFF</strong>
-
-</div></body></html>
+        <div class="section">
+            <h2>📝 Session Checklist</h2>
+            <p>Before ending session:</p>
+            <ul>
+                <li>☐ Update CHANGELOG.md with changes</li>
+                <li>☐ Update VERSION.json</li>
+                <li>☐ Run tests (at least tier 1)</li>
+                <li>☐ Create delivery package</li>
+                <li>☐ Verify goal count = 17</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

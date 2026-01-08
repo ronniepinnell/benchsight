@@ -1,98 +1,113 @@
 event_detail_2_id,event_detail_2_code,event_detail_2_name,category
-ED201,Deke,Deke,other
-ED202,DriveMiddle,DriveMiddle,other
-ED203,DumpChase,DumpChase,other
-ED204,Giveaway_AttemptedZoneClear_Dump,Giveaway AttemptedZoneClear Dump,other
-ED205,Giveaway_BattleLost,Giveaway BattleLost,other
-ED206,Giveaway_DumpInZone,Giveaway DumpInZone,other
-ED207,Giveaway_Misplayed,Giveaway Misplayed,other
-ED208,Giveaway_Other,Giveaway Other,other
-ED209,Giveaway_PassBlocked,Giveaway PassBlocked,other
-ED210,Giveaway_PassIntercepted,Giveaway PassIntercepted,other
-ED211,Giveaway_PassMissed,Giveaway PassMissed,other
-ED212,Giveaway_ShotBlocked,Giveaway ShotBlocked,other
-ED213,Giveaway_ShotMissed,Giveaway ShotMissed,other
-ED214,Giveaway_ZoneClear_Dump,Giveaway ZoneClear Dump,other
-ED215,Giveaway_ZoneEntry_ExitMisplay,Giveaway ZoneEntry ExitMisplay,other
-ED216,Goal_Backhand,Goal Backhand,other
-ED217,Goal_Poke,Goal Poke,other
-ED218,Goal_Snap,Goal Snap,other
-ED219,Goal_Tip,Goal Tip,other
-ED220,Goal_Wrist,Goal Wrist,other
-ED221,Pass_Backhand,Pass Backhand,other
-ED222,Pass_Bank,Pass Bank,other
-ED223,Pass_Deflected_TippedShot,Pass Deflected TippedShot,other
-ED224,Pass_Drop,Pass Drop,other
-ED225,Pass_Dump,Pass Dump,other
-ED226,Pass_Forehand,Pass Forehand,other
-ED227,Pass_Lob,Pass Lob,other
-ED228,Pass_OneTouch,Pass OneTouch,other
-ED229,Pass_Other,Pass Other,other
-ED230,Pass_ReceiverMissed,Pass ReceiverMissed,other
-ED231,Pass_Rim_Wrap,Pass Rim Wrap,other
-ED232,Pass_Stretch,Pass Stretch,other
-ED233,Pass_Tipped,Pass Tipped,other
-ED234,Penalty_Hooking,Penalty Hooking,other
-ED235,Penalty_Roughing,Penalty Roughing,other
-ED236,Penalty_Tripping,Penalty Tripping,other
-ED237,Play_AttemptedClear,Play AttemptedClear,other
-ED238,Play_Deke,Play Deke,other
-ED239,Play_DumpChase,Play DumpChase,other
-ED240,Play_Dump_RimInZone,Play Dump RimInZone,other
-ED241,Play_PokeCheck,Play PokeCheck,other
-ED242,Play_SeparateFromPuck,Play SeparateFromPuck,other
-ED243,PokeCheck,PokeCheck,other
-ED244,Save_Blocker,Save Blocker,other
-ED245,Save_Butterfly,Save Butterfly,other
-ED246,Save_Chest,Save Chest,other
-ED247,Save_Glove,Save Glove,other
-ED248,Save_LeftPad,Save LeftPad,other
-ED249,Save_Other,Save Other,other
-ED250,Save_RightPad,Save RightPad,other
-ED251,Save_Shoulder,Save Shoulder,other
-ED252,Save_Skate,Save Skate,other
-ED253,Save_Stick,Save Stick,other
-ED254,Shot_Backhand,Shot Backhand,other
-ED255,Shot_Bat,Shot Bat,other
-ED256,Shot_OneTime,Shot OneTime,other
-ED257,Shot_Poke,Shot Poke,other
-ED258,Shot_Slap,Shot Slap,other
-ED259,Shot_Snap,Shot Snap,other
-ED260,Shot_Tip,Shot Tip,other
-ED261,Shot_Tipped,Shot Tipped,other
-ED262,Shot_WrapAround,Shot WrapAround,other
-ED263,Shot_Wrist,Shot Wrist,other
-ED264,Stoppage_Goal,Stoppage Goal,other
-ED265,Stoppage_GoalieStoppage,Stoppage GoalieStoppage,other
-ED266,Stoppage_HandPass,Stoppage HandPass,other
-ED267,Stoppage_Icing,Stoppage Icing,other
-ED268,Stoppage_Offsides,Stoppage Offsides,other
-ED269,Stoppage_Penalty,Stoppage Penalty,other
-ED270,Stoppage_PeriodEnd,Stoppage PeriodEnd,other
-ED271,Stoppage_PuckOutofPlay,Stoppage PuckOutofPlay,other
-ED272,Takeaway_BattleWon,Takeaway BattleWon,other
-ED273,Takeaway_PassIntercepted,Takeaway PassIntercepted,other
-ED274,Takeaway_PokeCheck,Takeaway PokeCheck,other
-ED275,ZoneEntry_CausedTurnover,ZoneEntry CausedTurnover,other
-ED276,ZoneEntry_Chip,ZoneEntry Chip,other
-ED277,ZoneEntry_DumpIn,ZoneEntry DumpIn,other
-ED278,ZoneEntry_FromExitClear,ZoneEntry FromExitClear,other
-ED279,ZoneEntry_OppTeam,ZoneEntry OppTeam,other
-ED280,ZoneEntry_Other,ZoneEntry Other,other
-ED281,ZoneEntry_Pass,ZoneEntry Pass,other
-ED282,ZoneEntry_PassMiss_Misplay,ZoneEntry PassMiss Misplay,other
-ED283,ZoneEntry_PenaltyKillClear,ZoneEntry PenaltyKillClear,other
-ED284,ZoneEntry_Rush,ZoneEntry Rush,other
-ED285,ZoneEntry_RushBreakaway,ZoneEntry RushBreakaway,other
-ED286,ZoneExit_CausedTurnover,ZoneExit CausedTurnover,other
-ED287,ZoneExit_Chip,ZoneExit Chip,other
-ED288,ZoneExit_Clear,ZoneExit Clear,other
-ED289,ZoneExit_Lob,ZoneExit Lob,other
-ED290,ZoneExit_OppTeam,ZoneExit OppTeam,other
-ED291,ZoneExit_Other,ZoneExit Other,other
-ED292,ZoneExit_Pass,ZoneExit Pass,other
-ED293,ZoneExit_PassMiss_Misplay,ZoneExit PassMiss Misplay,other
-ED294,ZoneExit_PenaltyKillClear,ZoneExit PenaltyKillClear,other
-ED295,ZoneExit_Rush,ZoneExit Rush,other
-ED296,Zone_KeepIn,Zone KeepIn,other
-ED297,Zone_Pinch,Zone Pinch,other
+ED201,Body_Check,Body Check,other
+ED202,Controlled,Controlled,other
+ED203,Deflection,Deflection,other
+ED204,Deke,Deke,other
+ED205,Direct,Direct,other
+ED206,DriveMiddle,DriveMiddle,other
+ED207,DumpChase,DumpChase,other
+ED208,Giveaway_AttemptedZoneClear_Dump,Giveaway AttemptedZoneClear Dump,other
+ED209,Giveaway_BattleLost,Giveaway BattleLost,other
+ED210,Giveaway_DumpInZone,Giveaway DumpInZone,other
+ED211,Giveaway_Misplayed,Giveaway Misplayed,other
+ED212,Giveaway_Other,Giveaway Other,other
+ED213,Giveaway_PassBlocked,Giveaway PassBlocked,other
+ED214,Giveaway_PassIntercepted,Giveaway PassIntercepted,other
+ED215,Giveaway_PassMissed,Giveaway PassMissed,other
+ED216,Giveaway_PassReceiverMissed,Giveaway PassReceiverMissed,other
+ED217,Giveaway_ShotBlocked,Giveaway ShotBlocked,other
+ED218,Giveaway_ShotMissed,Giveaway ShotMissed,other
+ED219,Giveaway_ZoneClear_Dump,Giveaway ZoneClear Dump,other
+ED220,Giveaway_ZoneEntry_ExitMisplay,Giveaway ZoneEntry ExitMisplay,other
+ED221,Glove,Glove,other
+ED222,Goal_Backhand,Goal Backhand,other
+ED223,Goal_Poke,Goal Poke,other
+ED224,Goal_Snap,Goal Snap,other
+ED225,Goal_Tip,Goal Tip,other
+ED226,Goal_Wrist,Goal Wrist,other
+ED227,OneTimer,OneTimer,other
+ED228,Pass_Backhand,Pass Backhand,other
+ED229,Pass_Bank,Pass Bank,other
+ED230,Pass_Deflected_TippedShot,Pass Deflected TippedShot,other
+ED231,Pass_Drop,Pass Drop,other
+ED232,Pass_Dump,Pass Dump,other
+ED233,Pass_Forehand,Pass Forehand,other
+ED234,Pass_Lob,Pass Lob,other
+ED235,Pass_OneTouch,Pass OneTouch,other
+ED236,Pass_Other,Pass Other,other
+ED237,Pass_ReceiverMissed,Pass ReceiverMissed,other
+ED238,Pass_Reverse,Pass Reverse,other
+ED239,Pass_Rim_Wrap,Pass Rim Wrap,other
+ED240,Pass_Stretch,Pass Stretch,other
+ED241,Pass_Tipped,Pass Tipped,other
+ED242,Penalty_Hooking,Penalty Hooking,other
+ED243,Penalty_Roughing,Penalty Roughing,other
+ED244,Penalty_Tripping,Penalty Tripping,other
+ED245,Play_AttemptedClear,Play AttemptedClear,other
+ED246,Play_Deke,Play Deke,other
+ED247,Play_DumpChase,Play DumpChase,other
+ED248,Play_Dump_RimInZone,Play Dump RimInZone,other
+ED249,Play_PokeCheck,Play PokeCheck,other
+ED250,Play_SeparateFromPuck,Play SeparateFromPuck,other
+ED251,PokeCheck,PokeCheck,other
+ED252,Save_Blocker,Save Blocker,other
+ED253,Save_Butterfly,Save Butterfly,other
+ED254,Save_Chest,Save Chest,other
+ED255,Save_Glove,Save Glove,other
+ED256,Save_LeftPad,Save LeftPad,other
+ED257,Save_Other,Save Other,other
+ED258,Save_RightPad,Save RightPad,other
+ED259,Save_Scramble,Save Scramble,other
+ED260,Save_Shoulder,Save Shoulder,other
+ED261,Save_Skate,Save Skate,other
+ED262,Save_Stick,Save Stick,other
+ED263,Shot_Backhand,Shot Backhand,other
+ED264,Shot_Bat,Shot Bat,other
+ED265,Shot_Dumpin,Shot Dumpin,other
+ED266,Shot_OneTime,Shot OneTime,other
+ED267,Shot_Poke,Shot Poke,other
+ED268,Shot_Slap,Shot Slap,other
+ED269,Shot_Snap,Shot Snap,other
+ED270,Shot_Tip,Shot Tip,other
+ED271,Shot_Tipped,Shot Tipped,other
+ED272,Shot_WrapAround,Shot WrapAround,other
+ED273,Shot_Wrist,Shot Wrist,other
+ED274,Slap,Slap,other
+ED275,Stoppage_Goal,Stoppage Goal,other
+ED276,Stoppage_GoalieStoppage,Stoppage GoalieStoppage,other
+ED277,Stoppage_HandPass,Stoppage HandPass,other
+ED278,Stoppage_Icing,Stoppage Icing,other
+ED279,Stoppage_Offsides,Stoppage Offsides,other
+ED280,Stoppage_Penalty,Stoppage Penalty,other
+ED281,Stoppage_PeriodEnd,Stoppage PeriodEnd,other
+ED282,Stoppage_PuckOutofPlay,Stoppage PuckOutofPlay,other
+ED283,Takeaway_BattleWon,Takeaway BattleWon,other
+ED284,Takeaway_PassIntercepted,Takeaway PassIntercepted,other
+ED285,Takeaway_PokeCheck,Takeaway PokeCheck,other
+ED286,Tape_to_Tape,Tape to Tape,other
+ED287,Tripping,Tripping,other
+ED288,Wrist,Wrist,other
+ED289,ZoneEntry_CausedTurnover,ZoneEntry CausedTurnover,other
+ED290,ZoneEntry_Chip,ZoneEntry Chip,other
+ED291,ZoneEntry_DumpIn,ZoneEntry DumpIn,other
+ED292,ZoneEntry_FromExitClear,ZoneEntry FromExitClear,other
+ED293,ZoneEntry_OppTeam,ZoneEntry OppTeam,other
+ED294,ZoneEntry_Other,ZoneEntry Other,other
+ED295,ZoneEntry_Pass,ZoneEntry Pass,other
+ED296,ZoneEntry_PassMiss_Misplay,ZoneEntry PassMiss Misplay,other
+ED297,ZoneEntry_PenaltyKillClear,ZoneEntry PenaltyKillClear,other
+ED298,ZoneEntry_Rush,ZoneEntry Rush,other
+ED299,ZoneEntry_RushBreakaway,ZoneEntry RushBreakaway,other
+ED2100,ZoneEntry_Shot,ZoneEntry Shot,other
+ED2101,ZoneExit_CausedTurnover,ZoneExit CausedTurnover,other
+ED2102,ZoneExit_Chip,ZoneExit Chip,other
+ED2103,ZoneExit_Clear,ZoneExit Clear,other
+ED2104,ZoneExit_Lob,ZoneExit Lob,other
+ED2105,ZoneExit_OppTeam,ZoneExit OppTeam,other
+ED2106,ZoneExit_Other,ZoneExit Other,other
+ED2107,ZoneExit_Pass,ZoneExit Pass,other
+ED2108,ZoneExit_PassMiss_Misplay,ZoneExit PassMiss Misplay,other
+ED2109,ZoneExit_PenaltyKillClear,ZoneExit PenaltyKillClear,other
+ED2110,ZoneExit_Rush,ZoneExit Rush,other
+ED2111,Zone_KeepIn,Zone KeepIn,other
+ED2112,Zone_Pinch,Zone Pinch,other

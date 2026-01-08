@@ -1,11 +1,11 @@
 # Future Roadmap
 
-**Last Updated:** January 7, 2026  
-**Version:** 12.03
+**Last Updated:** January 8, 2026  
+**Version:** 16.08
 
 ## Current Status
 
-✅ **v13.18 Complete:** 62 working tables, 4 games, 100% goal verification
+✅ **v16.08 Complete:** 62 working tables, 4 games, 100% goal verification
 
 ## Priority 1: Data Expansion
 

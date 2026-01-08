@@ -2,26 +2,27 @@
 
 **CRITICAL: READ THIS ENTIRE FILE BEFORE MAKING ANY CHANGES**
 
-## Version: 14.01 (January 7, 2026)
+## Version: 17.00 (January 8, 2026)
 
 ---
 
 ## 🎮 TRACKER APPLICATION
 
 ### Current Status
-The BenchSight Tracker v3 is complete and located at:
-- **App:** `docs/html/tracker/benchsight_tracker_v3.html`
-- **Docs:** `docs/html/tracker/index.html`
+The BenchSight Tracker v17.00 is the primary tracking interface:
+- **App:** `ui/tracker/index.html`
+- **Standalone:** Can be used as single HTML file
+- **Assessment:** See `docs/HONEST_ASSESSMENT.md` for current status
+- **TODO:** See `docs/TODO.md` for known issues and roadmap
 
 ### Key Tracker Documents
 | Document | Purpose |
 |----------|---------|
 | `docs/TRACKER_ETL_SPECIFICATION.md` | EXACT export format ETL expects |
-| `docs/TRACKER_V3_SPECIFICATION.md` | Complete feature spec |
-| `docs/TRACKER_REQUIREMENTS.md` | Detailed requirements |
-| `docs/TRACKER_DEVELOPER_HANDOFF.md` | Dev continuation guide |
+| `docs/HONEST_ASSESSMENT.md` | Current status and limitations |
+| `docs/TODO.md` | Known issues and feature roadmap |
 | `docs/SUPABASE_SETUP_GUIDE.md` | Database setup |
-| `docs/TRACKING_TEMPLATE_ANALYSIS.md` | ML analysis of data |
+| `CHANGELOG.md` | Version history |
 
 ### Tracker Export Format (CRITICAL)
 - **Events:** LONG format - one row per player per event
@@ -79,8 +80,8 @@ python scripts/pre_delivery.py
 
 | Item | Value |
 |------|-------|
-| Current Version | v13.07 |
-| Next Chat Version | v14.xx |
+| Current Version | v14.20 |
+| Next Chat Version | v14.21+ |
 | Working Tables | 59 (59 (33 dim, 24 fact, 2 qa)) |
 | Games Tracked | 4 (18969, 18977, 18981, 18987) |
 | Total Goals | 17 (verified against noradhockey.com) |
@@ -458,7 +459,9 @@ python -m src.etl_orchestrator status
 
 | Version | Date | Key Changes |
 |---------|------|-------------|
-| v13.07 | Jan 7, 2026 | Complete safeguard system: tiered tests, schema snapshots, input validation |
+| v17.00 | Jan 8, 2026 | Tracker fixes: Alt+1-6, shift dropdown, event log toggle |
+| v16.08 | Jan 8, 2026 | Event detail 2 fix, strategic plan documentation |
+| v14.20 | Jan 7, 2026 | Complete safeguard system: tiered tests, schema snapshots, input validation |
 | v13.05 | Jan 7, 2026 | Complete BS-proof delivery system, pre_delivery.py master pipeline, IMMUTABLE_FACTS.json |
 | v13.04 | Jan 7, 2026 | BS Detector, corrected ground truth (59 tables, 17 goals), LLM accountability |
 | v13.03 | Jan 7, 2026 | Automated version management via config/VERSION.json |

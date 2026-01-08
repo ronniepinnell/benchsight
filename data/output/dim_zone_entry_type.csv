@@ -10,3 +10,4 @@ ZE0008,ZoneEntry_PassMiss_Misplay,PassMiss Misplay
 ZE0009,ZoneEntry_PenaltyKillClear,PenaltyKillClear
 ZE0010,ZoneEntry_Rush,Rush
 ZE0011,ZoneEntry_RushBreakaway,RushBreakaway
+ZE0012,ZoneEntry_Shot,Shot

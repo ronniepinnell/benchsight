@@ -1,5 +1,9 @@
 # Role: Frontend Developer
 
+**Version:** 16.08  
+**Updated:** January 8, 2026
+
+
 ## Scope
 Build React components, UI interfaces, and user-facing features.
 

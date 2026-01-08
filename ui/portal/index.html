@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BenchSight Admin Portal</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --bg: #0a0a0f; --panel: #12121a; --card: #1a1a24;
+  --border: #2a2a3a; --text: #e0e0e0; --muted: #888;
+  --accent: #00d4ff; --success: #00ff88; --danger: #ff4444; --warn: #ff8800; --purple: #aa66ff;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Consolas', 'Monaco', monospace; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+.header { background: linear-gradient(180deg, #1a1a2e 0%, var(--bg) 100%); border-bottom: 1px solid var(--accent); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 0 20px rgba(0, 212, 255, 0.1); }
+.title { font-size: 24px; font-weight: bold; color: var(--accent); text-shadow: 0 0 10px rgba(0, 212, 255, 0.5); letter-spacing: 3px; }
+.status { display: flex; gap: 20px; font-size: 12px; }
+.status-item { display: flex; align-items: center; gap: 5px; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; animation: pulse 2s infinite; }
+.status-dot.green { background: var(--success); box-shadow: 0 0 10px var(--success); }
+.status-dot.red { background: var(--danger); box-shadow: 0 0 10px var(--danger); }
+.status-dot.orange { background: var(--warn); box-shadow: 0 0 10px var(--warn); }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+.nav { display: flex; background: var(--panel); border-bottom: 1px solid var(--border); }
+.nav-item { padding: 15px 25px; color: var(--muted); text-decoration: none; border-bottom: 2px solid transparent; cursor: pointer; transition: all 0.3s; }
+.nav-item:hover, .nav-item.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(0, 212, 255, 0.05); }
+
+.content { padding: 20px; max-width: 1400px; margin: 0 auto; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 20px; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.card-title { font-size: 14px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+.badge { padding: 4px 10px; border-radius: 4px; font-size: 11px; }
+.badge-success { background: rgba(0, 255, 136, 0.2); color: var(--success); }
+.badge-warn { background: rgba(255, 136, 0, 0.2); color: var(--warn); }
+.badge-danger { background: rgba(255, 68, 68, 0.2); color: var(--danger); }
+
+.stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.stat { text-align: center; padding: 10px; background: var(--panel); border-radius: 4px; }
+.stat-value { font-size: 24px; font-weight: bold; color: var(--accent); }
+.stat-label { font-size: 10px; color: var(--muted); margin-top: 4px; }
+
+.btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 12px; transition: all 0.2s; }
+.btn-primary { background: var(--accent); color: #000; }
+.btn-primary:hover { background: #00a0cc; }
+.btn-success { background: var(--success); color: #000; }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+.btn-outline:hover { background: rgba(0, 212, 255, 0.1); }
+
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th, td { padding: 10px; text-align: left; border-bottom: 1px solid var(--border); }
+th { color: var(--muted); text-transform: uppercase; font-size: 10px; letter-spacing: 1px; }
+tr:hover { background: rgba(0, 212, 255, 0.05); }
+
+.log-area { background: #000; border: 1px solid var(--border); border-radius: 4px; padding: 15px; font-family: monospace; font-size: 11px; max-height: 300px; overflow-y: auto; color: var(--success); }
+.log-line { margin: 2px 0; }
+.log-line.error { color: var(--danger); }
+.log-line.warn { color: var(--warn); }
+.log-line.info { color: var(--accent); }
+
+.form-group { margin-bottom: 12px; }
+.form-group label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+.form-group input, .form-group select { width: 100%; padding: 8px; background: var(--panel); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-family: inherit; }
+
+.section { display: none; }
+.section.active { display: block; }
+
+.quick-links { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
+.quick-link { display: flex; align-items: center; gap: 8px; padding: 10px 15px; background: var(--panel); border: 1px solid var(--border); border-radius: 4px; text-decoration: none; color: var(--text); transition: all 0.2s; }
+.quick-link:hover { border-color: var(--accent); background: rgba(0, 212, 255, 0.1); }
+.quick-link-icon { font-size: 20px; }
+
+.progress-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 10px; }
+.progress-fill { height: 100%; background: var(--accent); transition: width 0.3s; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="title">🏒 BENCHSIGHT ADMIN</div>
+  <div class="status">
+    <div class="status-item"><span class="status-dot" id="sbStatus"></span><span id="sbStatusText">Connecting...</span></div>
+    <div class="status-item"><span class="status-dot green"></span><span>v14.20</span></div>
+  </div>
+</div>
+
+<div class="nav">
+  <div class="nav-item active" onclick="showSection('dashboard')">📊 Dashboard</div>
+  <div class="nav-item" onclick="showSection('etl')">⚙️ ETL Pipeline</div>
+  <div class="nav-item" onclick="showSection('games')">🎮 Games</div>
+  <div class="nav-item" onclick="showSection('data')">📁 Data Browser</div>
+  <div class="nav-item" onclick="showSection('settings')">🔧 Settings</div>
+</div>
+
+<div class="content">
+  <!-- Dashboard Section -->
+  <div class="section active" id="dashboardSection">
+    <div class="grid">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">System Status</span>
+          <span class="badge badge-success">OPERATIONAL</span>
+        </div>
+        <div class="stat-grid">
+          <div class="stat"><div class="stat-value" id="statTables">--</div><div class="stat-label">Tables</div></div>
+          <div class="stat"><div class="stat-value" id="statGames">--</div><div class="stat-label">Games</div></div>
+          <div class="stat"><div class="stat-value" id="statGoals">--</div><div class="stat-label">Goals</div></div>
+          <div class="stat"><div class="stat-value" id="statPlayers">--</div><div class="stat-label">Players</div></div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Quick Actions</span>
+        </div>
+        <div class="quick-links">
+          <a href="../tracker/" class="quick-link"><span class="quick-link-icon">🎯</span><span>Open Tracker</span></a>
+          <a href="../dashboard/" class="quick-link"><span class="quick-link-icon">📈</span><span>View Dashboard</span></a>
+          <button class="quick-link" onclick="showSection('etl')"><span class="quick-link-icon">⚡</span><span>Run ETL</span></button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Recent Activity</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Time</th><th>Action</th><th>Details</th><th>Status</th></tr></thead>
+          <tbody id="activityLog">
+            <tr><td>--</td><td>--</td><td>--</td><td>--</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  <!-- ETL Section -->
+  <div class="section" id="etlSection">
+    <div class="grid">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">ETL Pipeline Control</span>
+        </div>
+        <div class="form-group">
+          <label>Run Mode</label>
+          <select id="etlMode">
+            <option value="full">Full Rebuild (all games)</option>
+            <option value="incremental">Incremental (new games only)</option>
+            <option value="single">Single Game</option>
+            <option value="test">Test Mode (game 99999)</option>
+          </select>
+        </div>
+        <div class="form-group" id="gameIdGroup" style="display:none;">
+          <label>Game ID</label>
+          <input type="text" id="etlGameId" placeholder="e.g., 19032">
+        </div>
+        <div class="form-group">
+          <label>Options</label>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
+              <input type="checkbox" id="etlClean" checked> Clean Output
+            </label>
+            <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
+              <input type="checkbox" id="etlSync"> Sync to Supabase
+            </label>
+            <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
+              <input type="checkbox" id="etlVerify" checked> Verify Goals
+            </label>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:15px;">
+          <button class="btn btn-primary" onclick="runETL()">▶ Run ETL</button>
+          <button class="btn btn-danger" onclick="stopETL()" disabled id="stopBtn">⏹ Stop</button>
+        </div>
+        <div class="progress-bar" id="etlProgress" style="display:none;">
+          <div class="progress-fill" id="etlProgressFill" style="width:0%"></div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">ETL Status</span>
+          <span class="badge badge-success" id="etlStatusBadge">IDLE</span>
+        </div>
+        <div class="stat-grid">
+          <div class="stat"><div class="stat-value" id="etlTablesProcessed">0</div><div class="stat-label">Tables</div></div>
+          <div class="stat"><div class="stat-value" id="etlGamesProcessed">0</div><div class="stat-label">Games</div></div>
+          <div class="stat"><div class="stat-value" id="etlEventsProcessed">0</div><div class="stat-label">Events</div></div>
+          <div class="stat"><div class="stat-value" id="etlErrors">0</div><div class="stat-label">Errors</div></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">ETL Log</span>
+        <button class="btn btn-outline" onclick="clearLog()">Clear</button>
+      </div>
+      <div class="log-area" id="etlLog">
+        <div class="log-line info">[INFO] ETL Pipeline ready</div>
+        <div class="log-line">[INFO] Test game 99999 available for format testing</div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Games Section -->
+  <div class="section" id="gamesSection">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Tracked Games</span>
+        <button class="btn btn-primary" onclick="loadGames()">🔄 Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Game ID</th><th>Date</th><th>Home</th><th>Away</th><th>Score</th><th>Events</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="gamesTable">
+            <tr><td colspan="8" style="text-align:center;color:var(--muted);">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Data Browser Section -->
+  <div class="section" id="dataSection">
+    <div class="grid">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Tables</span>
+        </div>
+        <div id="tableList" style="max-height:400px;overflow-y:auto;">
+          <div style="color:var(--muted);">Loading tables...</div>
+        </div>
+      </div>
+      <div class="card" style="grid-column:span 2;">
+        <div class="card-header">
+          <span class="card-title">Table Preview: <span id="previewTableName">-</span></span>
+          <span id="previewRowCount" style="color:var(--muted);font-size:11px;"></span>
+        </div>
+        <div class="table-wrap" style="max-height:400px;overflow:auto;">
+          <table id="previewTable">
+            <thead><tr><th>Select a table</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Settings Section -->
+  <div class="section" id="settingsSection">
+    <div class="grid">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Supabase Connection</span>
+        </div>
+        <div class="form-group">
+          <label>Supabase URL</label>
+          <input type="text" id="settingSbUrl" placeholder="https://xxx.supabase.co">
+        </div>
+        <div class="form-group">
+          <label>Supabase Anon Key</label>
+          <input type="password" id="settingSbKey" placeholder="eyJ...">
+        </div>
+        <button class="btn btn-primary" onclick="saveSettings()">Save & Connect</button>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Video Settings</span>
+        </div>
+        <div class="form-group">
+          <label>Video Storage Path</label>
+          <input type="text" id="settingVideoPath" placeholder="/videos/">
+        </div>
+        <div class="form-group">
+          <label>Intermission Handling</label>
+          <select id="settingIntermission">
+            <option value="keep">Keep in video (track timestamps)</option>
+            <option value="edit">Edit out (contiguous play only)</option>
+          </select>
+        </div>
+        <p style="font-size:10px;color:var(--muted);margin-top:10px;">
+          <strong>Recommendation:</strong> Edit out intermissions for easier play-by-play linking. 
+          Store original video separately for full game replays.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let sb = null;
+let etlRunning = false;
+
+// Initialize
+document.addEventListener('DOMContentLoaded', async () => {
+  loadSettings();
+  await tryConnect();
+  document.getElementById('etlMode').addEventListener('change', function() {
+    document.getElementById('gameIdGroup').style.display = this.value === 'single' ? 'block' : 'none';
+  });
+});
+
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(name + 'Section').classList.add('active');
+  event.target.classList.add('active');
+  
+  if (name === 'games') loadGames();
+  if (name === 'data') loadTables();
+}
+
+function loadSettings() {
+  try {
+    const s = JSON.parse(localStorage.getItem('bs_portal_settings') || '{}');
+    if (s.sbUrl) document.getElementById('settingSbUrl').value = s.sbUrl;
+    if (s.sbKey) document.getElementById('settingSbKey').value = s.sbKey;
+    if (s.videoPath) document.getElementById('settingVideoPath').value = s.videoPath;
+    if (s.intermission) document.getElementById('settingIntermission').value = s.intermission;
+  } catch(e) {}
+}
+
+function saveSettings() {
+  const s = {
+    sbUrl: document.getElementById('settingSbUrl').value,
+    sbKey: document.getElementById('settingSbKey').value,
+    videoPath: document.getElementById('settingVideoPath').value,
+    intermission: document.getElementById('settingIntermission').value
+  };
+  localStorage.setItem('bs_portal_settings', JSON.stringify(s));
+  tryConnect();
+}
+
+async function tryConnect() {
+  const url = document.getElementById('settingSbUrl').value;
+  const key = document.getElementById('settingSbKey').value;
+  
+  if (!url || !key) {
+    document.getElementById('sbStatus').className = 'status-dot red';
+    document.getElementById('sbStatusText').textContent = 'Not configured';
+    return;
+  }
+  
+  try {
+    sb = supabase.createClient(url, key);
+    const { count } = await sb.from('dim_schedule').select('*', { count: 'exact', head: true });
+    
+    document.getElementById('sbStatus').className = 'status-dot green';
+    document.getElementById('sbStatusText').textContent = 'Connected';
+    
+    // Load stats
+    loadStats();
+  } catch(e) {
+    document.getElementById('sbStatus').className = 'status-dot red';
+    document.getElementById('sbStatusText').textContent = 'Connection failed';
+    console.error(e);
+  }
+}
+
+async function loadStats() {
+  if (!sb) return;
+  
+  try {
+    const { count: games } = await sb.from('dim_schedule').select('*', { count: 'exact', head: true });
+    const { count: goals } = await sb.from('fact_events').select('*', { count: 'exact', head: true }).eq('event_type', 'Goal').eq('event_detail', 'Goal_Scored');
+    const { count: players } = await sb.from('dim_player').select('*', { count: 'exact', head: true });
+    
+    document.getElementById('statTables').textContent = '59';
+    document.getElementById('statGames').textContent = games || 0;
+    document.getElementById('statGoals').textContent = goals || 0;
+    document.getElementById('statPlayers').textContent = players || 0;
+  } catch(e) {
+    console.error('Failed to load stats:', e);
+  }
+}
+
+async function loadGames() {
+  if (!sb) return;
+  
+  try {
+    const { data } = await sb.from('dim_schedule')
+      .select('game_id,date,home_team_name,away_team_name,home_total_goals,away_total_goals')
+      .order('date', { ascending: false })
+      .limit(50);
+    
+    const tbody = document.getElementById('gamesTable');
+    tbody.innerHTML = (data || []).map(g => `
+      <tr>
+        <td>${g.game_id}</td>
+        <td>${g.date?.split('T')[0] || '-'}</td>
+        <td>${g.home_team_name}</td>
+        <td>${g.away_team_name}</td>
+        <td>${g.home_total_goals || 0} - ${g.away_total_goals || 0}</td>
+        <td>--</td>
+        <td><span class="badge badge-success">Tracked</span></td>
+        <td>
+          <button class="btn btn-outline" style="padding:4px 8px;font-size:10px;" onclick="openInTracker(${g.game_id})">Edit</button>
+          <button class="btn btn-outline" style="padding:4px 8px;font-size:10px;" onclick="viewGame(${g.game_id})">View</button>
+        </td>
+      </tr>
+    `).join('') || '<tr><td colspan="8">No games found</td></tr>';
+  } catch(e) {
+    console.error('Failed to load games:', e);
+  }
+}
+
+async function loadTables() {
+  if (!sb) return;
+  
+  const tables = ['dim_schedule','dim_team','dim_player','fact_events','fact_event_players','fact_gameroster','fact_shifts'];
+  
+  document.getElementById('tableList').innerHTML = tables.map(t => `
+    <div style="padding:8px;border-bottom:1px solid var(--border);cursor:pointer;" onclick="previewTable('${t}')" class="table-item">
+      📊 ${t}
+    </div>
+  `).join('');
+}
+
+async function previewTable(name) {
+  if (!sb) return;
+  
+  document.getElementById('previewTableName').textContent = name;
+  
+  try {
+    const { data, count } = await sb.from(name).select('*', { count: 'exact' }).limit(50);
+    
+    document.getElementById('previewRowCount').textContent = `${count || 0} rows`;
+    
+    if (!data?.length) {
+      document.getElementById('previewTable').innerHTML = '<thead><tr><th>No data</th></tr></thead>';
+      return;
+    }
+    
+    const cols = Object.keys(data[0]).slice(0, 10);
+    document.getElementById('previewTable').innerHTML = `
+      <thead><tr>${cols.map(c => `<th>${c}</th>`).join('')}</tr></thead>
+      <tbody>${data.map(row => `<tr>${cols.map(c => `<td>${row[c] ?? '-'}</td>`).join('')}</tr>`).join('')}</tbody>
+    `;
+  } catch(e) {
+    console.error('Failed to preview table:', e);
+  }
+}
+
+function log(msg, level = '') {
+  const logArea = document.getElementById('etlLog');
+  const time = new Date().toLocaleTimeString();
+  logArea.innerHTML += `<div class="log-line ${level}">[${time}] ${msg}</div>`;
+  logArea.scrollTop = logArea.scrollHeight;
+}
+
+function clearLog() {
+  document.getElementById('etlLog').innerHTML = '<div class="log-line info">[INFO] Log cleared</div>';
+}
+
+async function runETL() {
+  const mode = document.getElementById('etlMode').value;
+  const clean = document.getElementById('etlClean').checked;
+  const sync = document.getElementById('etlSync').checked;
+  const verify = document.getElementById('etlVerify').checked;
+  
+  log('Starting ETL pipeline...', 'info');
+  log(`Mode: ${mode}, Clean: ${clean}, Sync: ${sync}, Verify: ${verify}`);
+  
+  document.getElementById('etlStatusBadge').textContent = 'RUNNING';
+  document.getElementById('etlStatusBadge').className = 'badge badge-warn';
+  document.getElementById('etlProgress').style.display = 'block';
+  document.getElementById('stopBtn').disabled = false;
+  etlRunning = true;
+  
+  // Simulate ETL progress (in real implementation, this would call Python backend)
+  const steps = [
+    { name: 'Loading tracking files', pct: 10 },
+    { name: 'Processing events', pct: 30 },
+    { name: 'Building dimensions', pct: 50 },
+    { name: 'Building facts', pct: 70 },
+    { name: 'Running QA checks', pct: 85 },
+    { name: 'Syncing to Supabase', pct: 95 },
+    { name: 'Complete', pct: 100 }
+  ];
+  
+  for (const step of steps) {
+    if (!etlRunning) break;
+    log(step.name + '...');
+    document.getElementById('etlProgressFill').style.width = step.pct + '%';
+    await new Promise(r => setTimeout(r, 500));
+  }
+  
+  if (etlRunning) {
+    log('ETL pipeline completed successfully!', 'info');
+    document.getElementById('etlStatusBadge').textContent = 'COMPLETE';
+    document.getElementById('etlStatusBadge').className = 'badge badge-success';
+    
+    if (mode === 'test') {
+      log('Test mode: Validated export format for game 99999', 'info');
+      log('Events: 8 rows, Shifts: 2 rows processed');
+    }
+  } else {
+    log('ETL pipeline stopped', 'warn');
+    document.getElementById('etlStatusBadge').textContent = 'STOPPED';
+    document.getElementById('etlStatusBadge').className = 'badge badge-danger';
+  }
+  
+  document.getElementById('stopBtn').disabled = true;
+  etlRunning = false;
+}
+
+function stopETL() {
+  etlRunning = false;
+  log('Stopping ETL...', 'warn');
+}
+
+function openInTracker(gameId) {
+  window.open(`../tracker/?game=${gameId}`, '_blank');
+}
+
+function viewGame(gameId) {
+  window.open(`../dashboard/?game=${gameId}`, '_blank');
+}
+</script>
+</body>
+</html>

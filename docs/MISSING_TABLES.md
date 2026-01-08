@@ -1,5 +1,9 @@
 === MISSING TABLES WITH COLUMNS ===
 
+**Version:** 16.08  
+**Updated:** January 8, 2026
+
+
 # Missing Tables (70 tables - no ETL source code)
 
 These tables exist in backup but are NOT created by the current ETL.

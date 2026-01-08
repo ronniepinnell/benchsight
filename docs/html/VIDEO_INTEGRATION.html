@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video Integration - BenchSight</title>
+<style>
+:root { --bg: #0f172a; --panel: #1e293b; --card: #334155; --border: #475569; --accent: #06b6d4; --text: #f1f5f9; --muted: #94a3b8; --success: #10b981; --warn: #f59e0b; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 40px 20px; line-height: 1.6; }
+.container { max-width: 900px; margin: 0 auto; }
+h1 { color: var(--accent); margin-bottom: 8px; }
+h2 { color: var(--accent); margin: 32px 0 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+h3 { color: var(--text); margin: 24px 0 12px; }
+p { margin-bottom: 16px; color: var(--muted); }
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin: 16px 0; }
+.badge { display: inline-block; padding: 4px 12px; border-radius: 4px; font-size: 12px; margin-right: 8px; }
+.badge-rec { background: var(--success); color: #000; }
+.badge-opt { background: var(--warn); color: #000; }
+code { background: var(--card); padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+pre { background: var(--card); padding: 16px; border-radius: 8px; overflow-x: auto; margin: 16px 0; }
+table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+th { color: var(--accent); font-size: 12px; text-transform: uppercase; }
+.diagram { background: var(--card); padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0; font-family: monospace; }
+a { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>🎬 Video Integration</h1>
+<p style="font-size:14px;margin-bottom:24px;">Play-by-play video linking and highlight generation for BenchSight</p>
+
+<h2>Overview</h2>
+<p>Video integration enables linking tracked events to specific timestamps in game footage. This allows:</p>
+<ul style="margin-left:24px;color:var(--muted);">
+<li>Play-by-play review on the dashboard</li>
+<li>Auto-generated highlight reels</li>
+<li>Coaching review sessions</li>
+<li>Player performance analysis with video evidence</li>
+</ul>
+
+<h2>Video Structure Recommendations</h2>
+
+<div class="card">
+<h3><span class="badge badge-rec">RECOMMENDED</span> Contiguous Game Video</h3>
+<p>Edit out intermissions and long stoppages to create a single contiguous video.</p>
+<pre>
+Original Video (2:30:00):
+├── P1 Action (0:00 - 20:00)
+├── Intermission (20:00 - 40:00)  ← REMOVE
+├── P2 Action (40:00 - 60:00)
+├── Intermission (60:00 - 80:00)  ← REMOVE
+└── P3 Action (80:00 - 100:00)
+
+Edited Video (1:00:00):
+├── P1 Action (0:00 - 20:00)
+├── P2 Action (20:00 - 40:00)
+└── P3 Action (40:00 - 60:00)
+</pre>
+<p><strong>Benefits:</strong></p>
+<ul style="margin-left:24px;color:var(--muted);">
+<li>Direct timestamp mapping: event time = video time</li>
+<li>Smaller file size</li>
+<li>Easier clip extraction</li>
+<li>Instant play lookup</li>
+</ul>
+</div>
+
+<div class="card">
+<h3><span class="badge badge-opt">ALTERNATIVE</span> Full Game Video with Offset Table</h3>
+<p>Keep original video, calculate offsets for each period.</p>
+<pre>
+-- Period offset table
+dim_video_offsets:
+game_id | period | video_start_sec | period_clock_start
+19032   | 1      | 0               | 1200 (20:00)
+19032   | 2      | 2400            | 1200 (20:00)
+19032   | 3      | 4800            | 1200 (20:00)
+
+-- To find video timestamp:
+video_sec = period_offset + (period_length - event_time_sec)
+</pre>
+<p><strong>Use when:</strong></p>
+<ul style="margin-left:24px;color:var(--muted);">
+<li>Preserving original footage is important</li>
+<li>Multiple camera angles need sync</li>
+<li>Intermission content is valuable</li>
+</ul>
+</div>
+
+<h2>Database Schema for Video</h2>
+
+<pre>
+-- Video metadata
+CREATE TABLE dim_video (
+  video_id SERIAL PRIMARY KEY,
+  game_id INT REFERENCES dim_schedule(game_id),
+  video_url TEXT,                    -- URL or path to video
+  video_type TEXT,                   -- 'full', 'edited', 'highlights'
+  duration_seconds INT,
+  upload_date TIMESTAMP,
+  source TEXT                        -- 'gopro', 'arena', 'broadcast'
+);
+
+-- Period offsets (for full game videos)
+CREATE TABLE dim_video_period_offset (
+  game_id INT,
+  video_id INT,
+  period INT,
+  video_start_seconds INT,           -- Where this period starts in video
+  period_clock_start INT,            -- Usually 1200 for 20-min periods
+  PRIMARY KEY (game_id, video_id, period)
+);
+
+-- Event-to-video linkage
+CREATE TABLE fact_event_video (
+  event_id INT,
+  video_id INT,
+  video_start_seconds NUMERIC(10,2), -- Exact timestamp in video
+  video_end_seconds NUMERIC(10,2),
+  clip_url TEXT,                     -- Pre-extracted clip URL if available
+  PRIMARY KEY (event_id, video_id)
+);
+</pre>
+
+<h2>Video Timestamp Calculation</h2>
+
+<h3>For Edited (Contiguous) Video</h3>
+<pre>
+// Direct calculation - no intermissions
+function getVideoTimestamp(period, clockMin, clockSec, periodLength = 20) {
+  const periodOffset = (period - 1) * periodLength * 60;
+  const elapsedInPeriod = (periodLength * 60) - (clockMin * 60 + clockSec);
+  return periodOffset + elapsedInPeriod;
+}
+
+// Example: P2 15:30 with 20-min periods
+// periodOffset = 1 * 20 * 60 = 1200 seconds
+// elapsedInPeriod = 1200 - 930 = 270 seconds  
+// videoTime = 1200 + 270 = 1470 seconds = 24:30
+</pre>
+
+<h3>For Full Game Video with Offsets</h3>
+<pre>
+// Query offset table first
+async function getVideoTimestamp(gameId, videoId, period, clockMin, clockSec) {
+  const { data } = await supabase
+    .from('dim_video_period_offset')
+    .select('video_start_seconds, period_clock_start')
+    .eq('game_id', gameId)
+    .eq('video_id', videoId)
+    .eq('period', period)
+    .single();
+  
+  const elapsedInPeriod = data.period_clock_start - (clockMin * 60 + clockSec);
+  return data.video_start_seconds + elapsedInPeriod;
+}
+</pre>
+
+<h2>Dashboard Integration</h2>
+
+<div class="diagram">
+┌─────────────────────────────────────────────────────────────────┐
+│                         PLAY VIEWER                              │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                    VIDEO PLAYER                          │    │
+│  │     [◄◄] [▶/⏸] [►►]     ▬▬▬▬●▬▬▬▬▬▬▬   24:30 / 60:00   │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                  │
+│  Event: GOAL by #9 Pinnell (assist: #22 Mayfield)               │
+│  Time: P2 15:30 | Zone: Offensive | Strength: 5v5               │
+│                                                                  │
+│  [◄ Prev Play]  [Watch Sequence]  [Next Play ►]                 │
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                    RINK DIAGRAM                          │    │
+│  │         Shows XY positions at moment of play             │    │
+│  └─────────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────────┘
+</div>
+
+<h2>Highlight Generation</h2>
+
+<h3>Auto-Generated Highlight Types</h3>
+<table>
+<tr><th>Type</th><th>Filter</th><th>Duration</th></tr>
+<tr><td>Goals</td><td>event_type = 'Goal'</td><td>10s before + 5s after</td></tr>
+<tr><td>Saves</td><td>event_type = 'Save' AND event_detail LIKE '%Rebound%'</td><td>5s before + 3s after</td></tr>
+<tr><td>Big Hits</td><td>event_type = 'Hit' (if tracked)</td><td>3s before + 2s after</td></tr>
+<tr><td>Breakaways</td><td>event_detail = 'Breakaway'</td><td>8s before + 5s after</td></tr>
+<tr><td>Penalties</td><td>event_type = 'Penalty'</td><td>5s before + 3s after</td></tr>
+</table>
+
+<h3>Highlight Compilation Script</h3>
+<pre>
+# Using ffmpeg to extract and concatenate clips
+for clip in clips:
+    ffmpeg -i game_video.mp4 \
+           -ss {clip.start} \
+           -to {clip.end} \
+           -c copy clip_{clip.id}.mp4
+
+# Concatenate all clips
+ffmpeg -f concat -i clips.txt -c copy highlights.mp4
+</pre>
+
+<h2>Implementation Roadmap</h2>
+
+<table>
+<tr><th>Phase</th><th>Feature</th><th>Priority</th></tr>
+<tr><td>1</td><td>Add video_start_time, video_end_time to tracker export</td><td>High</td></tr>
+<tr><td>1</td><td>Create dim_video and fact_event_video tables</td><td>High</td></tr>
+<tr><td>2</td><td>Dashboard video player component</td><td>High</td></tr>
+<tr><td>2</td><td>Click event → jump to video timestamp</td><td>High</td></tr>
+<tr><td>3</td><td>Auto-highlight generation</td><td>Medium</td></tr>
+<tr><td>3</td><td>Video upload to cloud storage</td><td>Medium</td></tr>
+<tr><td>4</td><td>Multi-angle sync</td><td>Low</td></tr>
+</table>
+
+<h2>Storage Options</h2>
+
+<table>
+<tr><th>Provider</th><th>Pros</th><th>Cons</th><th>Cost</th></tr>
+<tr><td>Supabase Storage</td><td>Integrated, simple</td><td>Limited free tier</td><td>$0.021/GB</td></tr>
+<tr><td>Cloudflare R2</td><td>No egress fees</td><td>Separate setup</td><td>$0.015/GB</td></tr>
+<tr><td>YouTube (unlisted)</td><td>Free, good player</td><td>No API control</td><td>Free</td></tr>
+<tr><td>Vimeo</td><td>Pro features</td><td>Monthly fee</td><td>$20/mo+</td></tr>
+</table>
+
+<h2>Recommendation Summary</h2>
+
+<div class="card" style="background:rgba(16,185,129,0.1);border-color:var(--success);">
+<h3 style="color:var(--success);">✅ Recommended Approach</h3>
+<ol style="margin-left:24px;color:var(--muted);">
+<li><strong>Edit out intermissions</strong> from game videos to create contiguous footage</li>
+<li><strong>Store edited video</strong> with direct timestamp mapping</li>
+<li><strong>Keep original</strong> separately for full-game replays or archival</li>
+<li><strong>Generate clips</strong> server-side for frequently accessed plays</li>
+<li><strong>Use Cloudflare R2 or Supabase Storage</strong> for hosting</li>
+</ol>
+</div>
+
+<p style="margin-top:32px;text-align:center;color:var(--muted);font-size:12px;">
+BenchSight Video Integration Guide | v16.08 | January 2026
+</p>
+</div>
+</body>
+</html>

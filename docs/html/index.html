@@ -1,234 +1,535 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Documentation Home - BenchSight v13.18</title>
-    <style>
-        * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #333; line-height: 1.6; }
-        .header { background: linear-gradient(135deg, #1a1a2e 0%, #4a4e69 100%); color: white; padding: 20px 40px; }
-        .header h1 { margin: 0; font-size: 24px; display: flex; align-items: center; gap: 10px; }
-        .header .version { background: rgba(255,255,255,0.2); padding: 3px 10px; border-radius: 12px; font-size: 12px; }
-        .nav { background: #4a4e69; padding: 0 20px; display: flex; flex-wrap: wrap; gap: 0; }
-        .nav a { color: white; text-decoration: none; padding: 10px 14px; font-size: 13px; font-weight: 500; white-space: nowrap; }
-        .nav a:hover { background: rgba(255,255,255,0.1); }
-        .nav a.active { background: rgba(255,255,255,0.2); }
-        .container { max-width: 1400px; margin: 0 auto; padding: 30px; }
-        h1, h2, h3 { color: #1a1a2e; }
-        h2 { border-bottom: 2px solid #4a4e69; padding-bottom: 8px; margin-top: 35px; }
-        h3 { color: #4a4e69; margin-top: 25px; }
-        table { border-collapse: collapse; width: 100%; margin: 15px 0; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background: #4a4e69; color: white; }
-        tr:nth-child(even) { background: #f9f9f9; }
-        code { background: #e9ecef; padding: 2px 6px; border-radius: 3px; font-family: 'Consolas', monospace; font-size: 0.9em; }
-        pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 8px; overflow-x: auto; font-size: 13px; }
-        pre code { background: transparent; color: inherit; }
-        a { color: #4a4e69; }
-        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); margin: 15px 0; }
-        .card h3 { margin-top: 0; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
-        .alert { padding: 12px 18px; border-radius: 6px; margin: 15px 0; }
-        .alert-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
-        .alert-warning { background: #fff3cd; color: #856404; border: 1px solid #ffc107; }
-        .alert-success { background: #d4edda; color: #155724; border: 1px solid #28a745; }
-        .alert-danger { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-        .badge-green { background: #28a745; color: white; }
-        .badge-blue { background: #007bff; color: white; }
-        .badge-yellow { background: #ffc107; color: #333; }
-        .badge-red { background: #dc3545; color: white; }
-        .badge-gray { background: #6c757d; color: white; }
-        .mermaid { background: white; padding: 20px; border-radius: 8px; overflow-x: auto; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; margin: 20px 0; }
-        .stat-card { background: white; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
-        .stat-card .number { font-size: 36px; font-weight: bold; color: #4a4e69; }
-        .stat-card .label { color: #888; font-size: 13px; margin-top: 5px; }
-        footer { text-align: center; padding: 25px; color: #888; font-size: 11px; border-top: 1px solid #ddd; margin-top: 40px; }
-        ul { padding-left: 20px; }
-        li { margin: 5px 0; }
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-    <script>mermaid.initialize({startOnLoad:true, theme:'default'});</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BenchSight Documentation Portal v16.08</title>
+<style>
+:root {
+  --bg: #0f172a; --panel: #1e293b; --card: #334155;
+  --border: #475569; --accent: #00d4aa; --accent2: #3b82f6;
+  --success: #10b981; --warn: #f59e0b; --danger: #ef4444;
+  --text: #f1f5f9; --muted: #94a3b8;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+.header { background: linear-gradient(135deg, var(--panel), var(--card)); padding: 40px 20px; border-bottom: 2px solid var(--accent); }
+.header-content { max-width: 1200px; margin: 0 auto; }
+h1 { font-size: 42px; margin-bottom: 8px; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.subtitle { color: var(--muted); font-size: 18px; margin-bottom: 16px; }
+.version { background: var(--accent); color: #000; padding: 6px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; display: inline-block; }
+.container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+.stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin: -60px 0 40px; position: relative; z-index: 10; }
+.stat { background: var(--panel); padding: 24px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
+.stat-value { font-size: 36px; font-weight: bold; color: var(--accent); }
+.stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+h2 { color: var(--accent); margin: 40px 0 20px; font-size: 24px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+h3 { color: var(--accent2); margin: 24px 0 12px; font-size: 16px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-decoration: none; color: var(--text); transition: all 0.2s; display: block; }
+.card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0, 212, 170, 0.15); }
+.card-icon { font-size: 28px; margin-bottom: 8px; }
+.card-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.card-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 8px; font-size: 9px; font-weight: 600; margin-left: 8px; vertical-align: middle; }
+.badge-primary { background: var(--accent); color: #000; }
+.badge-new { background: var(--success); color: #000; }
+.badge-beta { background: var(--warn); color: #000; }
+.badge-planned { background: var(--danger); color: #fff; }
+.hero-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px; }
+.hero-card { background: linear-gradient(135deg, var(--panel), var(--card)); border: 2px solid var(--accent); border-radius: 16px; padding: 32px; text-decoration: none; color: var(--text); text-align: center; transition: all 0.3s; }
+.hero-card:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(0, 212, 170, 0.25); }
+.hero-icon { font-size: 56px; margin-bottom: 16px; }
+.hero-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+.hero-desc { font-size: 13px; color: var(--muted); }
+.table-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+.table-link { background: var(--card); padding: 8px 12px; border-radius: 6px; text-decoration: none; color: var(--text); font-size: 12px; transition: all 0.2s; border: 1px solid transparent; }
+.table-link:hover { border-color: var(--accent); background: var(--panel); }
+.table-link.dim { border-left: 3px solid var(--accent2); }
+.table-link.fact { border-left: 3px solid var(--accent); }
+.table-link.qa { border-left: 3px solid var(--warn); }
+footer { margin-top: 60px; padding: 30px 20px; border-top: 1px solid var(--border); text-align: center; color: var(--muted); font-size: 12px; }
+@media (max-width: 768px) { .hero-grid { grid-template-columns: 1fr; } .stats { grid-template-columns: repeat(2, 1fr); } }
+.section-divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); margin: 40px 0; }
+</style>
 </head>
 <body>
-    <div class="header">
-        <h1>🏒 BenchSight <span class="version">v14.01</span></h1>
-    </div>
-    
-    <nav class="nav">
-        <a href="index.html" class='active'>🏠 Home</a>
-        <a href="tracker/index.html" style="background:#00d4aa;color:#000;">🎮 Tracker</a>
-        <a href="tables.html" >📊 Tables (59)</a>
-        <a href="diagrams/ERD_VIEWER.html" >🗂️ ERD</a>
-        <a href="pipeline_visualization.html" >⚡ Pipeline</a>
-        <a href="SCRIPTS_REFERENCE.html" >📜 Scripts</a>
-        <a href="MODULE_REFERENCE.html" >📦 Modules</a>
-        <a href="KEY_FORMATS.html" >🔑 Keys</a>
-        <a href="DATA_DICTIONARY.html" >📖 Dictionary</a>
-        <a href="VERIFICATION_STATUS.html" >✅ QA</a>
-        <a href="LLM_HANDOFF.html" >🤖 LLM Guide</a>
-        <a href="BS_DETECTOR.html" style="background:#e94560;">🔍 BS Detector</a>
-        <a href="CHANGELOG.html" >📋 Changelog</a>
-    </nav>
 
-    <div class="container">
+<div class="header">
+<div class="header-content">
+<h1>🏒 BenchSight</h1>
+<p class="subtitle">Hockey Analytics Platform for NORAD League</p>
+<span class="version">v16.08 | January 8, 2026</span>
+</div>
+</div>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="number">33</div>
-                <div class="label">Dimensions</div>
-            </div>
-            <div class="stat-card">
-                <div class="number">24</div>
-                <div class="label">Facts</div>
-            </div>
-            <div class="stat-card">
-                <div class="number">2</div>
-                <div class="label">QA Tables</div>
-            </div>
-            <div class="stat-card">
-                <div class="number">4</div>
-                <div class="label">Games</div>
-            </div>
-            <div class="stat-card">
-                <div class="number">17</div>
-                <div class="label">Total Goals</div>
-            </div>
-        </div>
-        
-        <div class="alert alert-success">✅ All 4 games verified against noradhockey.com - 17 total goals</div>
-        
-        <h2>🔍 Verification & Quality</h2>
-        <div class="grid">
-            <div class="card" style="border-left: 4px solid #e94560;">
-                <h3><a href="BS_DETECTOR.html" style="color: #e94560;">🔍 BS Detector</a></h3>
-                <p>Verify LLM work before accepting. One-command verification, red flags checklist, and questions to ask.</p>
-                <code>python scripts/pre_delivery.py</code>
-            </div>
-            <div class="card" style="border-left: 4px solid #4da6ff;">
-                <h3><a href="DOC_MAINTENANCE.html">📝 Doc Maintenance</a></h3>
-                <p>How to keep docs consistent. Version management, doc consistency system, and common workflows.</p>
-                <code>python scripts/utilities/doc_consistency.py --fix</code>
-            </div>
-        </div>
-        
-        <h2>📚 Core Documentation</h2>
-        <div class="grid">
-            <div class="card">
-                <h3><a href="tables.html">📊 Table Browser</a></h3>
-                <p>Browse all 59 tables with schemas, sample data, and column metadata.</p>
-            </div>
-            <div class="card">
-                <h3><a href="diagrams/ERD_VIEWER.html">🗂️ Schema / ERD</a></h3>
-                <p>Entity-relationship diagram showing table connections.</p>
-            </div>
-            <div class="card">
-                <h3><a href="DATA_DICTIONARY.html">📖 Data Dictionary</a></h3>
-                <p>Complete column definitions and relationships.</p>
-            </div>
-            <div class="card">
-                <h3><a href="MODULE_REFERENCE.html">📦 Module Reference</a></h3>
-                <p>Source code documentation with flowcharts.</p>
-            </div>
-        </div>
-        
-        <h2>⚙️ Technical Docs</h2>
-        <div class="grid">
-            <div class="card">
-                <h3><a href="pipeline_visualization.html">⚡ ETL Pipeline</a></h3>
-                <p>Visual flowchart of data processing.</p>
-            </div>
-            <div class="card">
-                <h3><a href="KEY_FORMATS.html">🔑 Key Formats</a></h3>
-                <p>Primary key conventions and generation rules.</p>
-            </div>
-            <div class="card">
-                <h3><a href="VERIFICATION_STATUS.html">✅ Verification</a></h3>
-                <p>QA results and data quality metrics.</p>
-            </div>
-            <div class="card">
-                <h3><a href="STAT_CALCS.html">📈 Stat Calculations</a></h3>
-                <p>Formulas for calculated statistics.</p>
-            </div>
-        </div>
-        
-        <h2>📋 Table Logic</h2>
-        <div class="grid">
-            <div class="card">
-                <h3><a href="TABLE_LOGIC_EVENTS.html">🎯 Events Logic</a></h3>
-                <p>How fact_events is generated.</p>
-            </div>
-            <div class="card">
-                <h3><a href="TABLE_LOGIC_SHIFTS.html">🔄 Shifts Logic</a></h3>
-                <p>Shift tracking and duration.</p>
-            </div>
-            <div class="card">
-                <h3><a href="TABLE_LOGIC_CYCLES.html">🔁 Cycles Logic</a></h3>
-                <p>Offensive zone cycles.</p>
-            </div>
-            <div class="card">
-                <h3><a href="TABLE_LOGIC_RATINGS.html">⭐ Ratings Logic</a></h3>
-                <p>Player ratings and tiers.</p>
-            </div>
-        </div>
-        
-        <h2>🤖 LLM / Developer</h2>
-        <div class="grid">
-            <div class="card">
-                <h3><a href="LLM_HANDOFF.html">🤖 LLM Handoff</a></h3>
-                <p>Complete context for AI assistants.</p>
-            </div>
-            <div class="card">
-                <h3><a href="HONEST_ASSESSMENT.html">💯 Honest Assessment</a></h3>
-                <p>Current status and known issues.</p>
-            </div>
-            <div class="card">
-                <h3><a href="FUTURE_ROADMAP.html">🚀 Roadmap</a></h3>
-                <p>Planned features and priorities.</p>
-            </div>
-            <div class="card">
-                <h3><a href="CHANGELOG.html">📝 Changelog</a></h3>
-                <p>Version history.</p>
-            </div>
-        </div>
-        
-        <h2>📁 Additional</h2>
-        <div class="grid">
-            <div class="card">
-                <h3><a href="MISSING_TABLES.html">📋 Missing Tables</a></h3>
-                <p>Tables planned but not yet built.</p>
-            </div>
-            <div class="card">
-                <h3><a href="OUTCOME_DIMENSIONS.html">🎯 Outcomes</a></h3>
-                <p>Shot, pass, save classifications.</p>
-            </div>
-            <div class="card">
-                <h3><a href="STAT_DICTIONARY.html">📊 Stat Dictionary</a></h3>
-                <p>All statistics defined.</p>
-            </div>
-            <div class="card">
-                <h3><a href="SUPABASE_DEPLOYMENT.html">☁️ Supabase</a></h3>
-                <p>Cloud database setup.</p>
-            </div>
-        </div>
-        
-        <h2>🚀 Quick Start</h2>
-        <div class="card">
-            <pre>python -m src.etl_orchestrator full      # Run full ETL
-python -m src.etl_orchestrator status    # Check status
-python3 -m pytest tests/test_etl.py -v   # Run tests</pre>
-        </div>
-        
-        <div class="alert alert-info">
-            📋 <strong>First time?</strong> Start with <a href="LLM_HANDOFF.html">LLM Handoff Guide</a>, then explore <a href="tables.html">Tables</a>.
-        </div>
+<div class="container">
 
-    </div>
-    <footer>
-        BenchSight v13.18 | NORAD Hockey Analytics | Generated: January 7, 2026<br>
-        <a href="index.html">Home</a> · <a href="tables.html">Tables</a> · <a href="LLM_HANDOFF.html">LLM Guide</a>
-    </footer>
+<div class="stats">
+<div class="stat"><div class="stat-value">111+</div><div class="stat-label">Database Tables</div></div>
+<div class="stat"><div class="stat-value">17</div><div class="stat-label">Goals Verified</div></div>
+<div class="stat"><div class="stat-value">4</div><div class="stat-label">Games Tracked</div></div>
+<div class="stat"><div class="stat-value">326+</div><div class="stat-label">Tests Passing</div></div>
+<div class="stat"><div class="stat-value">16.08</div><div class="stat-label">Current Version</div></div>
+</div>
+
+<h2>🚀 Applications</h2>
+<div class="hero-grid">
+<a href="../../ui/tracker/index.html" class="hero-card">
+<div class="hero-icon">🎯</div>
+<div class="hero-title">Tracker <span class="badge badge-beta">BETA</span></div>
+<div class="hero-desc">Track games with events, shifts, and XY coordinates</div>
+</a>
+<a href="dashboard/index.html" class="hero-card">
+<div class="hero-icon">📊</div>
+<div class="hero-title">Dashboard <span class="badge badge-planned">PLANNED</span></div>
+<div class="hero-desc">Analytics dashboards and visualizations</div>
+</a>
+<a href="prototypes/admin_portal_preview.html" class="hero-card">
+<div class="hero-icon">⚙️</div>
+<div class="hero-title">Portal <span class="badge badge-planned">PLANNED</span></div>
+<div class="hero-desc">Admin portal for ETL and game management</div>
+</a>
+</div>
+
+<h2>📚 Essential Documentation</h2>
+<div class="grid">
+<a href="../../LLM_REQUIREMENTS.md" class="card">
+<div class="card-icon">🚨</div>
+<div class="card-title">LLM Requirements <span class="badge badge-primary">START HERE</span></div>
+<div class="card-desc">Critical rules for AI/LLM developers. Read first!</div>
+</a>
+<a href="../../docs/STRATEGIC_PLAN.md" class="card">
+<div class="card-icon">🗺️</div>
+<div class="card-title">Strategic Plan <span class="badge badge-new">NEW</span></div>
+<div class="card-desc">Full rebuild roadmap, architecture, hosting, API design</div>
+</a>
+<a href="../../docs/HONEST_ASSESSMENT.md" class="card">
+<div class="card-icon">📋</div>
+<div class="card-title">Honest Assessment <span class="badge badge-new">NEW</span></div>
+<div class="card-desc">Current state, limitations, and recommendations</div>
+</a>
+<a href="../../docs/TODO.md" class="card">
+<div class="card-icon">✅</div>
+<div class="card-title">TODO List <span class="badge badge-new">NEW</span></div>
+<div class="card-desc">Known issues, priorities, and feature backlog</div>
+</a>
+<a href="../../CHANGELOG.md" class="card">
+<div class="card-icon">📝</div>
+<div class="card-title">Changelog</div>
+<div class="card-desc">Version history and release notes</div>
+</a>
+<a href="../../docs/LLM_HANDOFF.md" class="card">
+<div class="card-icon">🤝</div>
+<div class="card-title">LLM Handoff</div>
+<div class="card-desc">Quick reference for AI session handoffs</div>
+</a>
+</div>
+
+<h2>🎮 Tracker Documentation</h2>
+<div class="grid">
+<a href="tracker/index.html" class="card">
+<div class="card-icon">📖</div>
+<div class="card-title">Tracker Docs Hub</div>
+<div class="card-desc">All tracker documentation in one place</div>
+</a>
+<a href="tracker/TRACKER_ETL_SPECIFICATION.html" class="card">
+<div class="card-icon">📤</div>
+<div class="card-title">ETL Specification</div>
+<div class="card-desc">Exact export format expected by ETL pipeline</div>
+</a>
+<a href="tracker/SUPABASE_SETUP_GUIDE.html" class="card">
+<div class="card-icon">🔌</div>
+<div class="card-title">Supabase Setup</div>
+<div class="card-desc">Database connection and configuration</div>
+</a>
+<a href="tracker/TRACKER_REQUIREMENTS.html" class="card">
+<div class="card-icon">📋</div>
+<div class="card-title">Requirements v2</div>
+<div class="card-desc">Detailed feature requirements</div>
+</a>
+<a href="tracker/TRACKER_V3_SPECIFICATION.html" class="card">
+<div class="card-icon">🔧</div>
+<div class="card-title">V3 Technical Spec</div>
+<div class="card-desc">Technical implementation details</div>
+</a>
+<a href="tracker/TRACKER_DEVELOPER_HANDOFF.html" class="card">
+<div class="card-icon">👨‍💻</div>
+<div class="card-title">Developer Handoff</div>
+<div class="card-desc">Guide for continuing development</div>
+</a>
+</div>
+
+<h2>📊 Dashboard & Prototypes</h2>
+<div class="grid">
+<a href="dashboard/index.html" class="card">
+<div class="card-icon">📊</div>
+<div class="card-title">Dashboard Hub</div>
+<div class="card-desc">Dashboard prototypes and components</div>
+</a>
+<a href="dashboard/benchsight_dashboard.html" class="card">
+<div class="card-icon">🏠</div>
+<div class="card-title">Main Dashboard</div>
+<div class="card-desc">Primary analytics dashboard</div>
+</a>
+<a href="dashboard/dashboard_player.html" class="card">
+<div class="card-icon">👤</div>
+<div class="card-title">Player Dashboard</div>
+<div class="card-desc">Individual player statistics</div>
+</a>
+<a href="dashboard/dashboard_team.html" class="card">
+<div class="card-icon">👥</div>
+<div class="card-title">Team Dashboard</div>
+<div class="card-desc">Team analytics and comparisons</div>
+</a>
+<a href="dashboard/dashboard_game.html" class="card">
+<div class="card-icon">🎮</div>
+<div class="card-title">Game Dashboard</div>
+<div class="card-desc">Single game analysis</div>
+</a>
+<a href="prototypes/game_summary.html" class="card">
+<div class="card-icon">📄</div>
+<div class="card-title">Game Summary</div>
+<div class="card-desc">Post-game summary prototype</div>
+</a>
+<a href="prototypes/player_card.html" class="card">
+<div class="card-icon">🃏</div>
+<div class="card-title">Player Card</div>
+<div class="card-desc">Player profile card prototype</div>
+</a>
+<a href="prototypes/standings.html" class="card">
+<div class="card-icon">🏆</div>
+<div class="card-title">Standings</div>
+<div class="card-desc">League standings prototype</div>
+</a>
+<a href="prototypes/validation_report.html" class="card">
+<div class="card-icon">✅</div>
+<div class="card-title">Validation Report</div>
+<div class="card-desc">Data quality validation</div>
+</a>
+</div>
+
+<h2>🔧 Technical Documentation</h2>
+<div class="grid">
+<a href="MASTER_GUIDE.html" class="card">
+<div class="card-icon">📘</div>
+<div class="card-title">Master Guide</div>
+<div class="card-desc">Complete technical reference</div>
+</a>
+<a href="DATA_DICTIONARY.html" class="card">
+<div class="card-icon">📖</div>
+<div class="card-title">Data Dictionary</div>
+<div class="card-desc">All tables and columns documented</div>
+</a>
+<a href="MODULE_REFERENCE.html" class="card">
+<div class="card-icon">📦</div>
+<div class="card-title">Module Reference</div>
+<div class="card-desc">ETL module documentation</div>
+</a>
+<a href="SCRIPTS_REFERENCE.html" class="card">
+<div class="card-icon">📜</div>
+<div class="card-title">Scripts Reference</div>
+<div class="card-desc">Available utility scripts</div>
+</a>
+<a href="KEY_FORMATS.html" class="card">
+<div class="card-icon">🔑</div>
+<div class="card-title">Key Formats</div>
+<div class="card-desc">Primary key conventions</div>
+</a>
+<a href="STAT_DICTIONARY.html" class="card">
+<div class="card-icon">📊</div>
+<div class="card-title">Stat Dictionary</div>
+<div class="card-desc">All statistics explained</div>
+</a>
+<a href="STAT_CALCS.html" class="card">
+<div class="card-icon">🧮</div>
+<div class="card-title">Stat Calculations</div>
+<div class="card-desc">How stats are calculated</div>
+</a>
+</div>
+
+<h2>🔄 ETL Pipeline</h2>
+<div class="grid">
+<a href="ETL_DYNAMIC_DESIGN.html" class="card">
+<div class="card-icon">⚡</div>
+<div class="card-title">Dynamic Design</div>
+<div class="card-desc">ETL architecture and patterns</div>
+</a>
+<a href="TABLE_LOGIC_EVENTS.html" class="card">
+<div class="card-icon">📋</div>
+<div class="card-title">Event Logic</div>
+<div class="card-desc">How events are processed</div>
+</a>
+<a href="TABLE_LOGIC_SHIFTS.html" class="card">
+<div class="card-icon">🔄</div>
+<div class="card-title">Shift Logic</div>
+<div class="card-desc">How shifts are processed</div>
+</a>
+<a href="TABLE_LOGIC_RATINGS.html" class="card">
+<div class="card-icon">⭐</div>
+<div class="card-title">Rating Logic</div>
+<div class="card-desc">Player rating calculations</div>
+</a>
+<a href="TABLE_LOGIC_CYCLES.html" class="card">
+<div class="card-icon">🔁</div>
+<div class="card-title">Cycle Logic</div>
+<div class="card-desc">Possession cycle tracking</div>
+</a>
+<a href="pipeline_visualization.html" class="card">
+<div class="card-icon">🗺️</div>
+<div class="card-title">Pipeline Visualization</div>
+<div class="card-desc">Visual ETL flow diagram</div>
+</a>
+</div>
+
+<h2>🚀 Deployment & Operations</h2>
+<div class="grid">
+<a href="SUPABASE_DEPLOYMENT.html" class="card">
+<div class="card-icon">🚀</div>
+<div class="card-title">Supabase Deployment</div>
+<div class="card-desc">Production deployment guide</div>
+</a>
+<a href="SUPABASE_SYNC.html" class="card">
+<div class="card-icon">🔄</div>
+<div class="card-title">Supabase Sync</div>
+<div class="card-desc">Data synchronization</div>
+</a>
+<a href="DEPLOYMENT_GUIDE.html" class="card">
+<div class="card-icon">📦</div>
+<div class="card-title">Deployment Guide</div>
+<div class="card-desc">General deployment instructions</div>
+</a>
+<a href="LOCAL_COMMANDS.html" class="card">
+<div class="card-icon">💻</div>
+<div class="card-title">Local Commands</div>
+<div class="card-desc">CLI commands reference</div>
+</a>
+<a href="DOC_MAINTENANCE.html" class="card">
+<div class="card-icon">📝</div>
+<div class="card-title">Doc Maintenance</div>
+<div class="card-desc">How to update documentation</div>
+</a>
+</div>
+
+<h2>📈 Quality & Verification</h2>
+<div class="grid">
+<a href="VERIFICATION_STATUS.html" class="card">
+<div class="card-icon">✅</div>
+<div class="card-title">Verification Status</div>
+<div class="card-desc">Data quality verification results</div>
+</a>
+<a href="HONEST_ASSESSMENT.html" class="card">
+<div class="card-icon">📋</div>
+<div class="card-title">Honest Assessment</div>
+<div class="card-desc">Current limitations and issues</div>
+</a>
+<a href="suspicious_stats.html" class="card">
+<div class="card-icon">🔍</div>
+<div class="card-title">Suspicious Stats</div>
+<div class="card-desc">Anomaly detection results</div>
+</a>
+<a href="BS_DETECTOR.html" class="card">
+<div class="card-icon">🎯</div>
+<div class="card-title">BS Detector</div>
+<div class="card-desc">Data quality checker</div>
+</a>
+</div>
+
+<h2>📅 Roadmaps</h2>
+<div class="grid">
+<a href="ROADMAP.html" class="card">
+<div class="card-icon">🗺️</div>
+<div class="card-title">Current Roadmap</div>
+<div class="card-desc">Short-term priorities</div>
+</a>
+<a href="FUTURE_ROADMAP.html" class="card">
+<div class="card-icon">🔮</div>
+<div class="card-title">Future Roadmap</div>
+<div class="card-desc">Long-term vision</div>
+</a>
+<a href="VIDEO_INTEGRATION.html" class="card">
+<div class="card-icon">🎬</div>
+<div class="card-title">Video Integration</div>
+<div class="card-desc">Video sync roadmap</div>
+</a>
+</div>
+
+<h2>📐 Diagrams</h2>
+<div class="grid">
+<a href="diagrams/ALL_DIAGRAMS.html" class="card">
+<div class="card-icon">📊</div>
+<div class="card-title">All Diagrams</div>
+<div class="card-desc">Complete diagram collection</div>
+</a>
+<a href="diagrams/ERD_VIEWER.html" class="card">
+<div class="card-icon">🗃️</div>
+<div class="card-title">ERD Viewer</div>
+<div class="card-desc">Entity relationship diagrams</div>
+</a>
+<a href="schema_diagram.html" class="card">
+<div class="card-icon">📐</div>
+<div class="card-title">Schema Diagram</div>
+<div class="card-desc">Database schema visualization</div>
+</a>
+</div>
+
+<div class="section-divider"></div>
+
+<h2>🗄️ Database Tables (111+)</h2>
+<p style="color: var(--muted); margin-bottom: 20px; font-size: 13px;">Click any table to view its documentation, columns, and relationships.</p>
+
+<h3>📦 Dimension Tables (dim_*)</h3>
+<div class="table-grid">
+<a href="tables/dim_assist_type.html" class="table-link dim">dim_assist_type</a>
+<a href="tables/dim_comparison_type.html" class="table-link dim">dim_comparison_type</a>
+<a href="tables/dim_competition_tier.html" class="table-link dim">dim_competition_tier</a>
+<a href="tables/dim_composite_rating.html" class="table-link dim">dim_composite_rating</a>
+<a href="tables/dim_danger_level.html" class="table-link dim">dim_danger_level</a>
+<a href="tables/dim_danger_zone.html" class="table-link dim">dim_danger_zone</a>
+<a href="tables/dim_event_detail.html" class="table-link dim">dim_event_detail</a>
+<a href="tables/dim_event_detail_2.html" class="table-link dim">dim_event_detail_2</a>
+<a href="tables/dim_event_type.html" class="table-link dim">dim_event_type</a>
+<a href="tables/dim_game_state.html" class="table-link dim">dim_game_state</a>
+<a href="tables/dim_giveaway_type.html" class="table-link dim">dim_giveaway_type</a>
+<a href="tables/dim_league.html" class="table-link dim">dim_league</a>
+<a href="tables/dim_micro_stat.html" class="table-link dim">dim_micro_stat</a>
+<a href="tables/dim_net_location.html" class="table-link dim">dim_net_location</a>
+<a href="tables/dim_pass_outcome.html" class="table-link dim">dim_pass_outcome</a>
+<a href="tables/dim_pass_type.html" class="table-link dim">dim_pass_type</a>
+<a href="tables/dim_period.html" class="table-link dim">dim_period</a>
+<a href="tables/dim_play_detail.html" class="table-link dim">dim_play_detail</a>
+<a href="tables/dim_play_detail_2.html" class="table-link dim">dim_play_detail_2</a>
+<a href="tables/dim_player.html" class="table-link dim">dim_player</a>
+<a href="tables/dim_player_role.html" class="table-link dim">dim_player_role</a>
+<a href="tables/dim_playerurlref.html" class="table-link dim">dim_playerurlref</a>
+<a href="tables/dim_position.html" class="table-link dim">dim_position</a>
+<a href="tables/dim_randomnames.html" class="table-link dim">dim_randomnames</a>
+<a href="tables/dim_rating.html" class="table-link dim">dim_rating</a>
+<a href="tables/dim_rating_matchup.html" class="table-link dim">dim_rating_matchup</a>
+<a href="tables/dim_rink_zone.html" class="table-link dim">dim_rink_zone</a>
+<a href="tables/dim_save_outcome.html" class="table-link dim">dim_save_outcome</a>
+<a href="tables/dim_schedule.html" class="table-link dim">dim_schedule</a>
+<a href="tables/dim_season.html" class="table-link dim">dim_season</a>
+<a href="tables/dim_shift_duration.html" class="table-link dim">dim_shift_duration</a>
+<a href="tables/dim_shift_quality_tier.html" class="table-link dim">dim_shift_quality_tier</a>
+<a href="tables/dim_shift_slot.html" class="table-link dim">dim_shift_slot</a>
+<a href="tables/dim_shift_start_type.html" class="table-link dim">dim_shift_start_type</a>
+<a href="tables/dim_shift_stop_type.html" class="table-link dim">dim_shift_stop_type</a>
+<a href="tables/dim_shot_outcome.html" class="table-link dim">dim_shot_outcome</a>
+<a href="tables/dim_shot_type.html" class="table-link dim">dim_shot_type</a>
+<a href="tables/dim_situation.html" class="table-link dim">dim_situation</a>
+<a href="tables/dim_stat.html" class="table-link dim">dim_stat</a>
+<a href="tables/dim_stat_category.html" class="table-link dim">dim_stat_category</a>
+<a href="tables/dim_stat_type.html" class="table-link dim">dim_stat_type</a>
+<a href="tables/dim_stoppage_type.html" class="table-link dim">dim_stoppage_type</a>
+<a href="tables/dim_strength.html" class="table-link dim">dim_strength</a>
+<a href="tables/dim_success.html" class="table-link dim">dim_success</a>
+<a href="tables/dim_takeaway_type.html" class="table-link dim">dim_takeaway_type</a>
+<a href="tables/dim_team.html" class="table-link dim">dim_team</a>
+<a href="tables/dim_terminology_mapping.html" class="table-link dim">dim_terminology_mapping</a>
+<a href="tables/dim_time_bucket.html" class="table-link dim">dim_time_bucket</a>
+<a href="tables/dim_turnover_quality.html" class="table-link dim">dim_turnover_quality</a>
+<a href="tables/dim_turnover_type.html" class="table-link dim">dim_turnover_type</a>
+<a href="tables/dim_venue.html" class="table-link dim">dim_venue</a>
+<a href="tables/dim_zone.html" class="table-link dim">dim_zone</a>
+<a href="tables/dim_zone_entry_type.html" class="table-link dim">dim_zone_entry_type</a>
+<a href="tables/dim_zone_exit_type.html" class="table-link dim">dim_zone_exit_type</a>
+<a href="tables/dim_zone_outcome.html" class="table-link dim">dim_zone_outcome</a>
+</div>
+
+<h3>📊 Fact Tables (fact_*)</h3>
+<div class="table-grid">
+<a href="tables/fact_breakouts.html" class="table-link fact">fact_breakouts</a>
+<a href="tables/fact_cycle_events.html" class="table-link fact">fact_cycle_events</a>
+<a href="tables/fact_draft.html" class="table-link fact">fact_draft</a>
+<a href="tables/fact_event_chains.html" class="table-link fact">fact_event_chains</a>
+<a href="tables/fact_event_players.html" class="table-link fact">fact_event_players</a>
+<a href="tables/fact_events.html" class="table-link fact">fact_events</a>
+<a href="tables/fact_faceoffs.html" class="table-link fact">fact_faceoffs</a>
+<a href="tables/fact_game_status.html" class="table-link fact">fact_game_status</a>
+<a href="tables/fact_gameroster.html" class="table-link fact">fact_gameroster</a>
+<a href="tables/fact_goalie_game_stats.html" class="table-link fact">fact_goalie_game_stats</a>
+<a href="tables/fact_h2h.html" class="table-link fact">fact_h2h</a>
+<a href="tables/fact_head_to_head.html" class="table-link fact">fact_head_to_head</a>
+<a href="tables/fact_high_danger_chances.html" class="table-link fact">fact_high_danger_chances</a>
+<a href="tables/fact_leadership.html" class="table-link fact">fact_leadership</a>
+<a href="tables/fact_league_leaders_snapshot.html" class="table-link fact">fact_league_leaders_snapshot</a>
+<a href="tables/fact_line_combos.html" class="table-link fact">fact_line_combos</a>
+<a href="tables/fact_linked_events.html" class="table-link fact">fact_linked_events</a>
+<a href="tables/fact_matchup_performance.html" class="table-link fact">fact_matchup_performance</a>
+<a href="tables/fact_matchup_summary.html" class="table-link fact">fact_matchup_summary</a>
+<a href="tables/fact_penalties.html" class="table-link fact">fact_penalties</a>
+<a href="tables/fact_period_momentum.html" class="table-link fact">fact_period_momentum</a>
+<a href="tables/fact_player_boxscore_all.html" class="table-link fact">fact_player_boxscore_all</a>
+<a href="tables/fact_player_career_stats.html" class="table-link fact">fact_player_career_stats</a>
+<a href="tables/fact_player_event_chains.html" class="table-link fact">fact_player_event_chains</a>
+<a href="tables/fact_player_game_position.html" class="table-link fact">fact_player_game_position</a>
+<a href="tables/fact_player_game_stats.html" class="table-link fact">fact_player_game_stats</a>
+<a href="tables/fact_player_micro_stats.html" class="table-link fact">fact_player_micro_stats</a>
+<a href="tables/fact_player_pair_stats.html" class="table-link fact">fact_player_pair_stats</a>
+<a href="tables/fact_player_period_stats.html" class="table-link fact">fact_player_period_stats</a>
+<a href="tables/fact_player_position_splits.html" class="table-link fact">fact_player_position_splits</a>
+<a href="tables/fact_player_qoc_summary.html" class="table-link fact">fact_player_qoc_summary</a>
+<a href="tables/fact_player_season_stats.html" class="table-link fact">fact_player_season_stats</a>
+<a href="tables/fact_player_stats_by_competition_tier.html" class="table-link fact">fact_player_stats_by_tier</a>
+<a href="tables/fact_player_stats_long.html" class="table-link fact">fact_player_stats_long</a>
+<a href="tables/fact_player_trends.html" class="table-link fact">fact_player_trends</a>
+<a href="tables/fact_player_xy_long.html" class="table-link fact">fact_player_xy_long</a>
+<a href="tables/fact_player_xy_wide.html" class="table-link fact">fact_player_xy_wide</a>
+<a href="tables/fact_playergames.html" class="table-link fact">fact_playergames</a>
+<a href="tables/fact_plays.html" class="table-link fact">fact_plays</a>
+<a href="tables/fact_possession_time.html" class="table-link fact">fact_possession_time</a>
+<a href="tables/fact_puck_xy_long.html" class="table-link fact">fact_puck_xy_long</a>
+<a href="tables/fact_puck_xy_wide.html" class="table-link fact">fact_puck_xy_wide</a>
+<a href="tables/fact_registration.html" class="table-link fact">fact_registration</a>
+<a href="tables/fact_rush_events.html" class="table-link fact">fact_rush_events</a>
+<a href="tables/fact_rushes.html" class="table-link fact">fact_rushes</a>
+<a href="tables/fact_saves.html" class="table-link fact">fact_saves</a>
+<a href="tables/fact_scoring_chances.html" class="table-link fact">fact_scoring_chances</a>
+<a href="tables/fact_scoring_chances_detailed.html" class="table-link fact">fact_scoring_chances_detailed</a>
+<a href="tables/fact_season_summary.html" class="table-link fact">fact_season_summary</a>
+<a href="tables/fact_sequences.html" class="table-link fact">fact_sequences</a>
+<a href="tables/fact_shift_players.html" class="table-link fact">fact_shift_players</a>
+<a href="tables/fact_shift_quality.html" class="table-link fact">fact_shift_quality</a>
+<a href="tables/fact_shift_quality_logical.html" class="table-link fact">fact_shift_quality_logical</a>
+<a href="tables/fact_shifts.html" class="table-link fact">fact_shifts</a>
+<a href="tables/fact_shot_danger.html" class="table-link fact">fact_shot_danger</a>
+<a href="tables/fact_shot_xy.html" class="table-link fact">fact_shot_xy</a>
+<a href="tables/fact_special_teams_summary.html" class="table-link fact">fact_special_teams_summary</a>
+<a href="tables/fact_suspicious_stats.html" class="table-link fact">fact_suspicious_stats</a>
+<a href="tables/fact_team_game_stats.html" class="table-link fact">fact_team_game_stats</a>
+<a href="tables/fact_team_season_stats.html" class="table-link fact">fact_team_season_stats</a>
+<a href="tables/fact_team_standings_snapshot.html" class="table-link fact">fact_team_standings_snapshot</a>
+<a href="tables/fact_team_zone_time.html" class="table-link fact">fact_team_zone_time</a>
+<a href="tables/fact_tracking.html" class="table-link fact">fact_tracking</a>
+<a href="tables/fact_turnovers_detailed.html" class="table-link fact">fact_turnovers_detailed</a>
+<a href="tables/fact_video.html" class="table-link fact">fact_video</a>
+<a href="tables/fact_wowy.html" class="table-link fact">fact_wowy</a>
+<a href="tables/fact_zone_entries.html" class="table-link fact">fact_zone_entries</a>
+<a href="tables/fact_zone_entry_summary.html" class="table-link fact">fact_zone_entry_summary</a>
+<a href="tables/fact_zone_exit_summary.html" class="table-link fact">fact_zone_exit_summary</a>
+<a href="tables/fact_zone_exits.html" class="table-link fact">fact_zone_exits</a>
+</div>
+
+<h3>🔍 QA Tables (qa_*)</h3>
+<div class="table-grid">
+<a href="tables/qa_data_completeness.html" class="table-link qa">qa_data_completeness</a>
+<a href="tables/qa_goal_accuracy.html" class="table-link qa">qa_goal_accuracy</a>
+<a href="tables/qa_scorer_comparison.html" class="table-link qa">qa_scorer_comparison</a>
+<a href="tables/qa_suspicious_stats.html" class="table-link qa">qa_suspicious_stats</a>
+</div>
+
+<h3>🔗 Lookup Tables</h3>
+<div class="table-grid">
+<a href="tables/lookup_player_game_rating.html" class="table-link dim">lookup_player_game_rating</a>
+</div>
+
+</div>
+
+<footer>
+<p>BenchSight v16.08 | Hockey Analytics Platform | January 8, 2026</p>
+<p style="margin-top: 8px;">📖 <a href="../../README.md" style="color: var(--accent);">README</a> | 🚨 <a href="../../LLM_REQUIREMENTS.md" style="color: var(--accent);">LLM Requirements</a> | 📝 <a href="../../CHANGELOG.md" style="color: var(--accent);">Changelog</a></p>
+</footer>
+
 </body>
 </html>

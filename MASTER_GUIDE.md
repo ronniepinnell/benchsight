@@ -1,18 +1,30 @@
-# BenchSight Complete Technical Guide v13.18
+# BenchSight Complete Technical Guide v16.08
 
-**Last Updated:** January 7, 2026
+**Last Updated:** January 8, 2026
 
 ---
 
-## ✅ CURRENT STATE (v13.18)
+## ✅ CURRENT STATE (v16.08)
+
+| Component | Status | Version |
+|-----------|--------|---------|
+| ETL Pipeline | ✅ Production | 14.21 |
+| Tracker UI | 🟡 Beta | 16.08 |
+| Dashboard | 🔴 Planned | - |
+| Portal | 🔴 Planned | - |
 
 | Metric | Count |
 |--------|-------|
-| Tables created by ETL | 59 (59 (33 dim, 24 fact, 2 qa)) |
+| Database tables | 111+ |
 | Games tracked | 4 (18969, 18977, 18981, 18987) |
 | Total goals (verified) | 17 |
-| Tier 1 tests | 32 (blocking) |
-| Tier 2 tests | 17 (warning) |
+| Tests passing | 326+ |
+
+**Key Documents:**
+- `docs/STRATEGIC_PLAN.md` - Full rebuild roadmap
+- `docs/HONEST_ASSESSMENT.md` - Current limitations
+- `docs/TODO.md` - Known issues
+- `docs/NEW_CHAT_GUIDE.md` - How to start new chats
 
 **One Command Verification:**
 ```bash
@@ -81,23 +93,25 @@ This runs 12 phases:
 ### Copy-Paste This At Start of Every Chat
 
 ```
-MANDATORY RULES - VIOLATIONS WILL WASTE TIME AND MONEY:
+MANDATORY RULES FOR BENCHSIGHT DEVELOPMENT:
 
-1. READ LLM_REQUIREMENTS.md, README.md AND MASTER_GUIDE.md FIRST
-2. NO NEW FILES unless I explicitly ask for one. Fix existing code.
-3. NO PLACEHOLDER DATA. Ever. If data is missing, fix why it's missing.
-4. NO POST-PROCESSING SCRIPTS. Fix the source.
-5. Before ANY code change, show me:
-   - WHICH FILE you will modify
-   - WHAT LINE(S) you will change
-   - WHY this is the root cause, not a symptom
-6. After ANY code change, run tests and show results.
-7. If you cannot find the root cause, SAY SO. Don't fake a fix.
-8. This is Chat 14, so outputs should be v14.01, v14.02, etc.
-9. Goals: event_type='Goal' AND event_detail='Goal_Scored' (NOT Shot_Goal)
-10. event_player_1 is the primary player (scorer for goals)
-11. HTML docs in docs/html/ - start with index.html
-12. Run ETL: python -m src.etl_orchestrator full
+1. READ FIRST: LLM_REQUIREMENTS.md, docs/STRATEGIC_PLAN.md, docs/NEW_CHAT_GUIDE.md
+2. GOAL COUNTING: event_type='Goal' AND event_detail='Goal_Scored' (IMMUTABLE)
+3. 17 TOTAL GOALS: Verified against noradhockey.com (DO NOT CHANGE)
+4. event_player_1 is the primary player (scorer for goals)
+5. Tracker: ui/tracker/index.html (v16.08)
+6. HTML docs: docs/html/index.html
+7. Export format is FIXED - see docs/TRACKER_ETL_SPECIFICATION.md
+8. All version numbers should be v16.XX
+9. Always update ALL docs when making changes
+```
+
+### Essential Documents (Read in Order)
+1. `LLM_REQUIREMENTS.md` - Critical rules
+2. `docs/STRATEGIC_PLAN.md` - Full rebuild roadmap
+3. `docs/HONEST_ASSESSMENT.md` - Current limitations
+4. `docs/TODO.md` - Known issues
+5. `docs/NEW_CHAT_GUIDE.md` - How to start new chats
 13. Run tests: python3 -m pytest tests/test_etl.py -v
 14. EVERY output must update ALL doc timestamps and CHANGELOG and to reflect current state
 

@@ -1,5 +1,9 @@
 # Role: ETL Engineer
 
+**Version:** 16.08  
+**Updated:** January 8, 2026
+
+
 ## Scope
 Build new tables, add columns, fix data transformations, extend ETL pipeline.
 

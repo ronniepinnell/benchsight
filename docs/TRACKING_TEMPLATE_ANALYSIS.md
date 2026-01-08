@@ -1,5 +1,9 @@
 # BenchSight Tracking Template Documentation
 
+**Version:** 16.08  
+**Updated:** January 8, 2026
+
+
 **File:** `_tracking.xlsx`  
 **Purpose:** Manual game event and shift tracking from video  
 **Generated:** 2026-01-07

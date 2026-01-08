@@ -1,6 +1,6 @@
 # Key Format Reference
 
-**Last Updated:** January 7, 2026  
+**Last Updated:** January 8, 2026  
 **Version:** 12.03
 
 ## Key Format Standard

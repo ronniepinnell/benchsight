@@ -2,8 +2,8 @@
 
 **For Future LLM Sessions: How to Update All BenchSight Documentation**
 
-**Version:** 12.03  
-**Last Updated:** January 7, 2026
+**Version:** 16.08  
+**Last Updated:** January 8, 2026
 
 ---
 
