@@ -160,6 +160,12 @@ src/
 │   ├── ratings.py      # Player rating calculations
 │   └── time.py         # Time on ice calculations
 │
+├── formulas/           # Formula management system (v29.1)
+│   ├── registry.py     # Formula registry
+│   ├── player_stats_formulas.py  # Formula definitions
+│   ├── formula_applier.py        # Apply formulas to DataFrames
+│   └── config_loader.py          # Load from JSON config
+│
 ├── tables/             # Table builders
 │   ├── dimension_tables.py
 │   ├── core_facts.py

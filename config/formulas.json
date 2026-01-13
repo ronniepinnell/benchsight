@@ -1,0 +1,135 @@
+{
+  "formulas": {
+    "shooting_pct": {
+      "type": "percentage",
+      "expression": "goals / sog * 100",
+      "description": "Shooting percentage (goals / shots on goal)",
+      "dependencies": ["goals", "sog"],
+      "default_value": 0.0,
+      "condition": "sog > 0"
+    },
+    "pass_pct": {
+      "type": "percentage",
+      "expression": "pass_completed / pass_attempts * 100",
+      "description": "Pass completion percentage",
+      "dependencies": ["pass_completed", "pass_attempts"],
+      "default_value": 0.0,
+      "condition": "pass_attempts > 0"
+    },
+    "fo_pct": {
+      "type": "percentage",
+      "expression": "fo_wins / (fo_wins + fo_losses) * 100",
+      "description": "Faceoff win percentage",
+      "dependencies": ["fo_wins", "fo_losses"],
+      "default_value": 0.0,
+      "condition": "(fo_wins + fo_losses) > 0"
+    },
+    "cf_pct": {
+      "type": "percentage",
+      "expression": "cf / (cf + ca) * 100",
+      "description": "Corsi For percentage",
+      "dependencies": ["cf", "ca"],
+      "default_value": 50.0,
+      "condition": "(cf + ca) > 0"
+    },
+    "ff_pct": {
+      "type": "percentage",
+      "expression": "ff / (ff + fa) * 100",
+      "description": "Fenwick For percentage",
+      "dependencies": ["ff", "fa"],
+      "default_value": 50.0,
+      "condition": "(ff + fa) > 0"
+    },
+    "goals_per_60": {
+      "type": "rate",
+      "expression": "goals / toi_minutes * 60",
+      "description": "Goals per 60 minutes",
+      "dependencies": ["goals", "toi_minutes"],
+      "default_value": null,
+      "condition": "toi_minutes > 0"
+    },
+    "assists_per_60": {
+      "type": "rate",
+      "expression": "assists / toi_minutes * 60",
+      "description": "Assists per 60 minutes",
+      "dependencies": ["assists", "toi_minutes"],
+      "default_value": null,
+      "condition": "toi_minutes > 0"
+    },
+    "points_per_60": {
+      "type": "rate",
+      "expression": "points / toi_minutes * 60",
+      "description": "Points per 60 minutes",
+      "dependencies": ["points", "toi_minutes"],
+      "default_value": null,
+      "condition": "toi_minutes > 0"
+    },
+    "sog_per_60": {
+      "type": "rate",
+      "expression": "sog / toi_minutes * 60",
+      "description": "Shots on goal per 60 minutes",
+      "dependencies": ["sog", "toi_minutes"],
+      "default_value": null,
+      "condition": "toi_minutes > 0"
+    },
+    "points": {
+      "type": "sum",
+      "expression": "goals + assists",
+      "description": "Total points (goals + assists)",
+      "dependencies": ["goals", "assists"]
+    },
+    "assists": {
+      "type": "sum",
+      "expression": "primary_assists + secondary_assists",
+      "description": "Total assists (primary + secondary)",
+      "dependencies": ["primary_assists", "secondary_assists"]
+    },
+    "plus_minus": {
+      "type": "difference",
+      "expression": "plus_total - minus_total",
+      "description": "Plus/minus (goals for - goals against)",
+      "dependencies": ["plus_total", "minus_total"]
+    },
+    "avg_shift_length": {
+      "type": "ratio",
+      "expression": "toi_seconds / shifts / 60",
+      "description": "Average shift length in minutes",
+      "dependencies": ["toi_seconds", "shifts"],
+      "default_value": 0.0,
+      "condition": "shifts > 0"
+    },
+    "toi_minutes": {
+      "type": "ratio",
+      "expression": "toi_seconds / 60",
+      "description": "Time on ice in minutes",
+      "dependencies": ["toi_seconds"]
+    }
+  },
+  "formula_groups": {
+    "all_percentages": [
+      "shooting_pct",
+      "pass_pct",
+      "fo_pct",
+      "cf_pct",
+      "ff_pct"
+    ],
+    "all_per_60": [
+      "goals_per_60",
+      "assists_per_60",
+      "points_per_60",
+      "sog_per_60"
+    ],
+    "core_formulas": [
+      "shooting_pct",
+      "cf_pct",
+      "ff_pct",
+      "goals_per_60",
+      "points_per_60",
+      "points",
+      "assists",
+      "plus_minus"
+    ]
+  },
+  "version": "1.0",
+  "last_updated": "2026-01-13"
+}

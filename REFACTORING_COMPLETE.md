@@ -62,6 +62,7 @@ Successfully completed comprehensive refactoring of BenchSight codebase, improvi
 ### New Modules
 - `src/calculations/` (4 files, 25+ functions)
 - `src/builders/` (2 files, 3 functions)
+- `src/formulas/` (5 files, formula management system)
 - `tests/test_calculations.py` (24 tests)
 
 ### New Documentation
@@ -69,8 +70,10 @@ Successfully completed comprehensive refactoring of BenchSight codebase, improvi
 - `docs/CODEBASE_ASSESSMENT.md`
 - `docs/PERFORMANCE_OPTIMIZATION.md`
 - `docs/REFACTORING_PROGRESS.md`
+- `docs/FORMULA_MANAGEMENT.md`
 - `REFACTORING_SUMMARY.md`
 - `REFACTORING_COMPLETE.md` (this file)
+- `FORMULA_SYSTEM_SUMMARY.md`
 
 ---
 

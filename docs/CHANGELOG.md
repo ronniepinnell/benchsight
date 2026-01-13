@@ -1,6 +1,6 @@
 # BenchSight Changelog
 
-## v29.1 (Current) - Calculations Module & Builders Refactoring
+## v29.1 (Current) - Calculations Module, Builders & Formula Management
 
 ### Summary
 - **Created `src/calculations/` module** - Extracted calculation functions for testability
@@ -73,7 +73,40 @@ Extracted table building logic from `base_etl.py`:
 - Identified 29 `.iterrows()` instances for future optimization
 - Documented high-priority optimization targets
 
+### Formula Management System (NEW)
+
+**Created:** `src/formulas/` module for centralized formula management
+
+**Features:**
+- ✅ JSON-based formula configuration (`config/formulas.json`)
+- ✅ Update formulas without code changes
+- ✅ Formula groups for easy application
+- ✅ Automatic dependency checking
+- ✅ Formula validation
+
+**Usage:**
+```python
+from src.formulas.formula_applier import apply_player_stats_formulas
+
+# Apply all formulas
+df = apply_player_stats_formulas(df)
+
+# Apply specific formulas
+df = apply_player_stats_formulas(df, formula_names=['shooting_pct', 'cf_pct'])
+
+# Apply formula groups
+df = apply_player_stats_formulas(df, formula_groups=['all_percentages'])
+```
+
+**To Update a Formula:**
+1. Edit `config/formulas.json`
+2. Modify the `expression` field
+3. Run ETL - formulas applied automatically
+
+**Documentation:** See `docs/FORMULA_MANAGEMENT.md` for complete guide
+
 ### Next Steps (v29.2+)
+- Integrate formula system into `create_fact_player_game_stats()`
 - Optimize team ratings calculation (50-100x speedup potential)
 - Optimize venue stat mapping (20-50x speedup potential)
 - Replace high-impact `.iterrows()` loops
