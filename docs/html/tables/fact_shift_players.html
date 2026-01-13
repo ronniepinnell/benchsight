@@ -3,243 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>fact_shift_players - BenchSight v0.01</title>
+    <title>fact_shift_players - BenchSight</title>
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #333; line-height: 1.6; }
-        .header { background: linear-gradient(135deg, #1a1a2e 0%, #4a4e69 100%); color: white; padding: 20px 40px; }
-        .header h1 { margin: 0; font-size: 24px; }
-        .nav { background: #4a4e69; padding: 0 20px; display: flex; flex-wrap: wrap; }
-        .nav a { color: white; text-decoration: none; padding: 10px 14px; font-size: 13px; }
-        .nav a:hover { background: rgba(255,255,255,0.1); }
-        .container { max-width: 1600px; margin: 0 auto; padding: 30px; }
-        
-        /* Table Overview Section */
-        .table-overview { background: white; border-radius: 8px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .table-overview h2 { margin-top: 0; color: #4a4e69; border-bottom: 2px solid #4a4e69; padding-bottom: 10px; }
-        .overview-desc { background: #e3f2fd; border-left: 4px solid #1976d2; padding: 15px; margin-bottom: 20px; font-size: 15px; }
-        .overview-grid { display: grid; grid-template-columns: 120px 1fr; gap: 10px 20px; }
-        .overview-label { font-weight: 600; color: #555; }
-        .overview-value { color: #333; }
-        .overview-value code { background: #f5f5f5; padding: 2px 8px; border-radius: 4px; font-family: 'SF Mono', Monaco, monospace; font-size: 12px; }
-        
-        /* Column Documentation Section */
-        .column-docs { background: white; border-radius: 8px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .column-docs h2 { margin-top: 0; color: #4a4e69; border-bottom: 2px solid #4a4e69; padding-bottom: 10px; }
-        
-        /* Legend */
-        .legend { margin-bottom: 20px; padding: 15px; background: #fafafa; border-radius: 6px; }
-        .legend-title { font-weight: 600; margin-right: 10px; }
-        .legend-item { display: inline-flex; align-items: center; margin-right: 20px; }
-        
-        /* Type badges */
-        .type-badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-        .badge-explicit { background: #e8f5e9; color: #2e7d32; }
-        .badge-calculated { background: #fff3e0; color: #e65100; }
-        .badge-derived { background: #e3f2fd; color: #1565c0; }
-        .badge-fk { background: #fce4ec; color: #c2185b; }
-        .badge-unknown { background: #f5f5f5; color: #757575; }
-        
-        /* Table styling */
-        table { border-collapse: collapse; width: 100%; margin: 15px 0; background: white; }
-        th { background: #4a4e69; color: white; padding: 12px 10px; text-align: left; font-size: 12px; font-weight: 600; position: sticky; top: 0; }
-        td { border: 1px solid #e0e0e0; padding: 10px; font-size: 13px; vertical-align: top; }
-        tr:nth-child(even) { background: #fafafa; }
-        tr:hover { background: #f0f7ff; }
-        code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-family: 'SF Mono', Monaco, monospace; font-size: 11px; }
-        
-        /* Column-specific styling */
-        .context-cell { max-width: 300px; font-size: 12px; color: #555; }
-        .calc-cell { max-width: 250px; font-size: 11px; }
-        .calc-cell code { background: #fff8e1; }
-        .stat-cell { text-align: right; font-size: 12px; }
-        .null-low { color: #2e7d32; }
-        .null-med { color: #f57c00; }
-        .null-high { color: #c62828; font-weight: 600; }
-        
-        /* Badge styles */
-        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-        .badge-blue { background: #1976d2; color: white; }
-        .badge-green { background: #388e3c; color: white; }
-        .badge-yellow { background: #f9a825; color: #333; }
-        
-        /* Sample data */
-        .data-table { font-size: 11px; overflow-x: auto; }
-        .data-table th { font-size: 11px; padding: 8px; }
-        .data-table td { padding: 6px 8px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        
-        footer { text-align: center; padding: 20px; color: #888; font-size: 11px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #4a4e69; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🏒 BenchSight <span style="font-size: 14px; opacity: 0.8;">v0.01</span></h1>
-    </div>
-    
-    <nav class="nav">
-        <a href="../index.html">🏠 Home</a>
-        <a href="../tables.html">📊 Tables (59)</a>
-        <a href="../BS_DETECTOR.html">🔍 BS Detector</a>
-        <a href="../DOC_MAINTENANCE.html">📝 Doc Guide</a>
-    </nav>
-
     <div class="container">
-        <h1>fact_shift_players <span class="badge badge-green">Fact</span></h1>
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>fact_shift_players</h1>
         
-        <!-- Table Overview Section -->
-        <div class="table-overview">
-            <h2>Table Overview</h2>
-            
-            <div class="overview-desc">
-                <strong>Description:</strong> Bridge table linking shifts to players
-            </div>
-            
-            <div class="overview-grid">
-                <div class="overview-label">Purpose:</div>
-                <div class="overview-value">Enable player-level TOI calculations. Track who was on ice for each shift.</div>
-                
-                <div class="overview-label">Source Module:</div>
-                <div class="overview-value"><code>src/core/base_etl.py:create_shift_players()</code></div>
-                
-                <div class="overview-label">Logic:</div>
-                <div class="overview-value">Unpivots player columns from fact_shifts into rows.</div>
-                
-                <div class="overview-label">Grain:</div>
-                <div class="overview-value">One row per player per shift</div>
-                
-                <div class="overview-label">Rows:</div>
-                <div class="overview-value">100</div>
-                
-                <div class="overview-label">Columns:</div>
-                <div class="overview-value">9</div>
-            </div>
+        
+        
+        <div class="meta">
+            <strong>Rows:</strong> 4,613 | 
+            <strong>Columns:</strong> 91 |
+            <strong>Last Updated:</strong> 2026-01-12 23:37:10 |
+            <strong>Version:</strong> 11.04
         </div>
         
-        <!-- Column Documentation Section -->
-        <div class="column-docs">
-            <h2>Column Documentation</h2>
-            
-            <div class="legend">
-                <span class="legend-title">Legend:</span>
-                <span class="legend-item"><span class="type-badge badge-explicit">Explicit</span> = From raw data</span>
-                <span class="legend-item"><span class="type-badge badge-calculated">Calculated</span> = Formula-based</span>
-                <span class="legend-item"><span class="type-badge badge-derived">Derived</span> = Generated key/aggregate</span>
-                <span class="legend-item"><span class="type-badge badge-fk">FK</span> = Foreign key lookup</span>
-            </div>
-            
-            <table>
-                <thead>
-                    <tr>
-                        <th>Column</th>
-                        <th>Data Type</th>
-                        <th>Description</th>
-                        <th>Context / Mapping</th>
-                        <th>Calculation / Formula</th>
-                        <th>Type</th>
-                        <th>Non-Null</th>
-                        <th>Null %</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    
-            <tr>
-                <td><code>shift_player_id</code></td>
-                <td>object</td>
-                <td>Unique player identifier</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>shift_id</code></td>
-                <td>object</td>
-                <td>Foreign key reference</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>game_id</code></td>
-                <td>int64</td>
-                <td>Game identifier</td>
-                <td class="context-cell">FK to fact_shifts.game_id</td>
-                <td class="calc-cell"><code>Copied from fact_shifts</code></td>
-                <td><span class="type-badge badge-fk">FK</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>shift_index</code></td>
-                <td>int64</td>
-                <td>Shift identifier within game</td>
-                <td class="context-cell">FK to fact_shifts.shift_index</td>
-                <td class="calc-cell"><code>Copied from fact_shifts</code></td>
-                <td><span class="type-badge badge-fk">FK</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>player_game_number</code></td>
-                <td>int64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>player_id</code></td>
-                <td>object</td>
-                <td>Player identifier</td>
-                <td class="context-cell">FK to dim_player.player_id</td>
-                <td class="calc-cell"><code>Lookup from player name</code></td>
-                <td><span class="type-badge badge-fk">FK</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>venue</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>position</code></td>
-                <td>object</td>
-                <td>Player position (C, LW, RW, D, G)</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>period</code></td>
-                <td>int64</td>
-                <td>Game period</td>
-                <td class="context-cell">Values: 1, 2, 3, OT, SO</td>
-                <td class="calc-cell"><code>From tracking spreadsheet</code></td>
-                <td><span class="type-badge badge-explicit">Explicit</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-                </tbody>
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>shift_player_id</td><td>object</td><td>4,613</td><td>0.0%</td></tr><tr><td>shift_id</td><td>object</td><td>4,613</td><td>0.0%</td></tr><tr><td>game_id</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>shift_index</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>player_game_number</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>player_id</td><td>object</td><td>4,609</td><td>0.1%</td></tr><tr><td>venue</td><td>object</td><td>4,613</td><td>0.0%</td></tr><tr><td>position</td><td>object</td><td>4,613</td><td>0.0%</td></tr><tr><td>period</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>shift_duration</td><td>float64</td><td>4,613</td><td>0.0%</td></tr><tr><td>shift_start_total_seconds</td><td>float64</td><td>4,613</td><td>0.0%</td></tr><tr><td>shift_end_total_seconds</td><td>float64</td><td>4,613</td><td>0.0%</td></tr><tr><td>stoppage_time</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>playing_time</td><td>float64</td><td>4,613</td><td>0.0%</td></tr><tr><td>running_toi_game</td><td>float64</td><td>4,609</td><td>0.1%</td></tr><tr><td>logical_shift_number</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>shift_segment</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>is_first_segment</td><td>bool</td><td>4,613</td><td>0.0%</td></tr><tr><td>is_last_segment</td><td>bool</td><td>4,613</td><td>0.0%</td></tr><tr><td>logical_shift_duration</td><td>float64</td><td>4,613</td><td>0.0%</td></tr><tr><td>gf</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>ga</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>pm</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>gf_ev</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>ga_ev</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>gf_pp</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>ga_pp</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>gf_pk</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>ga_pk</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>pm_ev</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>cf</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>ca</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>cf_pct</td><td>float64</td><td>4,613</td><td>0.0%</td></tr><tr><td>ff</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>fa</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>ff_pct</td><td>float64</td><td>4,613</td><td>0.0%</td></tr><tr><td>sf</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>sa</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>shot_diff</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>zone_entries</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>zone_exits</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>giveaways</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>takeaways</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>fo_won</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>fo_lost</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>situation</td><td>object</td><td>4,613</td><td>0.0%</td></tr><tr><td>situation_id</td><td>object</td><td>4,613</td><td>0.0%</td></tr><tr><td>strength</td><td>object</td><td>4,613</td><td>0.0%</td></tr><tr><td>strength_id</td><td>object</td><td>4,611</td><td>0.0%</td></tr><tr><td>start_zone</td><td>object</td><td>4,552</td><td>1.3%</td></tr><tr><td>end_zone</td><td>object</td><td>4,552</td><td>1.3%</td></tr><tr><td>player_rating</td><td>float64</td><td>4,609</td><td>0.1%</td></tr><tr><td>team_avg_rating</td><td>float64</td><td>4,611</td><td>0.0%</td></tr><tr><td>opp_avg_rating</td><td>float64</td><td>4,611</td><td>0.0%</td></tr><tr><td>rating_differential</td><td>float64</td><td>4,611</td><td>0.0%</td></tr><tr><td>qoc_rating</td><td>float64</td><td>4,611</td><td>0.0%</td></tr><tr><td>qot_rating</td><td>float64</td><td>4,611</td><td>0.0%</td></tr><tr><td>competition_tier_id</td><td>object</td><td>4,611</td><td>0.0%</td></tr><tr><td>opp_multiplier</td><td>float64</td><td>4,613</td><td>0.0%</td></tr><tr><td>player_rating_diff</td><td>float64</td><td>4,607</td><td>0.1%</td></tr><tr><td>expected_cf_pct</td><td>float64</td><td>4,613</td><td>0.0%</td></tr><tr><td>cf_pct_vs_expected</td><td>float64</td><td>4,613</td><td>0.0%</td></tr><tr><td>performance</td><td>object</td><td>4,613</td><td>0.0%</td></tr><tr><td>cf_adj</td><td>float64</td><td>4,613</td><td>0.0%</td></tr><tr><td>ca_adj</td><td>float64</td><td>4,613</td><td>0.0%</td></tr><tr><td>cf_pct_adj</td><td>float64</td><td>4,613</td><td>0.0%</td></tr><tr><td>team_id</td><td>object</td><td>4,613</td><td>0.0%</td></tr><tr><td>opp_team_id</td><td>object</td><td>4,613</td><td>0.0%</td></tr><tr><td>season_id</td><td>object</td><td>4,613</td><td>0.0%</td></tr><tr><td>period_id</td><td>object</td><td>4,613</td><td>0.0%</td></tr><tr><td>scf</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>sca</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>hdf</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>hda</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>event_count</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>home_avg_rating</td><td>float64</td><td>4,611</td><td>0.0%</td></tr><tr><td>away_avg_rating</td><td>float64</td><td>4,611</td><td>0.0%</td></tr><tr><td>home_min_rating</td><td>float64</td><td>4,611</td><td>0.0%</td></tr><tr><td>away_min_rating</td><td>float64</td><td>4,611</td><td>0.0%</td></tr><tr><td>home_max_rating</td><td>float64</td><td>4,611</td><td>0.0%</td></tr><tr><td>away_max_rating</td><td>float64</td><td>4,611</td><td>0.0%</td></tr><tr><td>home_rating_advantage</td><td>bool</td><td>4,613</td><td>0.0%</td></tr><tr><td>home_team_id</td><td>object</td><td>4,613</td><td>0.0%</td></tr><tr><td>away_team_id</td><td>object</td><td>4,613</td><td>0.0%</td></tr><tr><td>game_state</td><td>object</td><td>4,613</td><td>0.0%</td></tr><tr><td>score_differential</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>is_close_game</td><td>bool</td><td>4,613</td><td>0.0%</td></tr><tr><td>bad_giveaways</td><td>int64</td><td>4,613</td><td>0.0%</td></tr><tr><td>fo_pct</td><td>float64</td><td>4,613</td><td>0.0%</td></tr><tr><td>venue_id</td><td>object</td><td>4,613</td><td>0.0%</td></tr><tr><td>shift_duration_id</td><td>object</td><td>4,613</td><td>0.0%</td></tr>
             </table>
         </div>
         
-        <!-- Sample Data Section -->
-        <div class="column-docs">
-            <h2>Sample Data (First 5 Rows)</h2>
-            <table border="1" class="dataframe data-table">
+        <div class="card">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
   <thead>
     <tr style="text-align: right;">
       <th>shift_player_id</th>
@@ -251,70 +63,1958 @@
       <th>venue</th>
       <th>position</th>
       <th>period</th>
+      <th>shift_duration</th>
+      <th>shift_start_total_seconds</th>
+      <th>shift_end_total_seconds</th>
+      <th>stoppage_time</th>
+      <th>playing_time</th>
+      <th>running_toi_game</th>
+      <th>logical_shift_number</th>
+      <th>shift_segment</th>
+      <th>is_first_segment</th>
+      <th>is_last_segment</th>
+      <th>logical_shift_duration</th>
+      <th>gf</th>
+      <th>ga</th>
+      <th>pm</th>
+      <th>gf_ev</th>
+      <th>ga_ev</th>
+      <th>gf_pp</th>
+      <th>ga_pp</th>
+      <th>gf_pk</th>
+      <th>ga_pk</th>
+      <th>pm_ev</th>
+      <th>cf</th>
+      <th>ca</th>
+      <th>cf_pct</th>
+      <th>ff</th>
+      <th>fa</th>
+      <th>ff_pct</th>
+      <th>sf</th>
+      <th>sa</th>
+      <th>shot_diff</th>
+      <th>zone_entries</th>
+      <th>zone_exits</th>
+      <th>giveaways</th>
+      <th>takeaways</th>
+      <th>fo_won</th>
+      <th>fo_lost</th>
+      <th>situation</th>
+      <th>situation_id</th>
+      <th>strength</th>
+      <th>strength_id</th>
+      <th>start_zone</th>
+      <th>end_zone</th>
+      <th>player_rating</th>
+      <th>team_avg_rating</th>
+      <th>opp_avg_rating</th>
+      <th>rating_differential</th>
+      <th>qoc_rating</th>
+      <th>qot_rating</th>
+      <th>competition_tier_id</th>
+      <th>opp_multiplier</th>
+      <th>player_rating_diff</th>
+      <th>expected_cf_pct</th>
+      <th>cf_pct_vs_expected</th>
+      <th>performance</th>
+      <th>cf_adj</th>
+      <th>ca_adj</th>
+      <th>cf_pct_adj</th>
+      <th>team_id</th>
+      <th>opp_team_id</th>
+      <th>season_id</th>
+      <th>period_id</th>
+      <th>scf</th>
+      <th>sca</th>
+      <th>hdf</th>
+      <th>hda</th>
+      <th>event_count</th>
+      <th>home_avg_rating</th>
+      <th>away_avg_rating</th>
+      <th>home_min_rating</th>
+      <th>away_min_rating</th>
+      <th>home_max_rating</th>
+      <th>away_max_rating</th>
+      <th>home_rating_advantage</th>
+      <th>home_team_id</th>
+      <th>away_team_id</th>
+      <th>game_state</th>
+      <th>score_differential</th>
+      <th>is_close_game</th>
+      <th>bad_giveaways</th>
+      <th>fo_pct</th>
+      <th>venue_id</th>
+      <th>shift_duration_id</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td>SH1896900001_home_F1</td>
+      <td>SP1896900001P100001</td>
       <td>SH1896900001</td>
       <td>18969</td>
       <td>1</td>
-      <td>53</td>
-      <td>P100192</td>
-      <td>home</td>
+      <td>70</td>
+      <td>P100001</td>
+      <td>away</td>
       <td>F1</td>
       <td>1</td>
+      <td>82.00</td>
+      <td>1080.0</td>
+      <td>998.00</td>
+      <td>0</td>
+      <td>82.00</td>
+      <td>82.00</td>
+      <td>1</td>
+      <td>1</td>
+      <td>True</td>
+      <td>True</td>
+      <td>82.00</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>3</td>
+      <td>25.000000</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0.000000</td>
+      <td>0</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>2</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>Full Strength</td>
+      <td>SIT0001</td>
+      <td>5v5</td>
+      <td>STR01</td>
+      <td>Neutral</td>
+      <td>Neutral</td>
+      <td>6.0</td>
+      <td>4.0</td>
+      <td>3.8</td>
+      <td>-0.2</td>
+      <td>3.8</td>
+      <td>4.0</td>
+      <td>TI03</td>
+      <td>0.95</td>
+      <td>2.2</td>
+      <td>49.0</td>
+      <td>-24.000000</td>
+      <td>Under</td>
+      <td>0.95</td>
+      <td>3.157895</td>
+      <td>23.126201</td>
+      <td>N10010</td>
+      <td>N10008</td>
+      <td>N20252026F</td>
+      <td>P01</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>39</td>
+      <td>3.8</td>
+      <td>4.0</td>
+      <td>2.0</td>
+      <td>2.0</td>
+      <td>5.0</td>
+      <td>6.0</td>
+      <td>False</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>home_leading</td>
+      <td>1</td>
+      <td>True</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>VN02</td>
+      <td>SD04</td>
     </tr>
     <tr>
-      <td>SH1896900001_home_F2</td>
-      <td>SH1896900001</td>
+      <td>SP1896900007P100001</td>
+      <td>SH1896900007</td>
       <td>18969</td>
+      <td>7</td>
+      <td>70</td>
+      <td>P100001</td>
+      <td>away</td>
+      <td>F1</td>
       <td>1</td>
-      <td>20</td>
-      <td>P100024</td>
-      <td>home</td>
-      <td>F2</td>
+      <td>102.00</td>
+      <td>869.0</td>
+      <td>767.00</td>
+      <td>0</td>
+      <td>102.00</td>
+      <td>184.00</td>
+      <td>2</td>
       <td>1</td>
+      <td>True</td>
+      <td>False</td>
+      <td>159.00</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0.000000</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0.000000</td>
+      <td>0</td>
+      <td>2</td>
+      <td>-2</td>
+      <td>1</td>
+      <td>2</td>
+      <td>3</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>Full Strength</td>
+      <td>SIT0001</td>
+      <td>5v5</td>
+      <td>STR01</td>
+      <td>Offensive</td>
+      <td>Defensive</td>
+      <td>6.0</td>
+      <td>4.2</td>
+      <td>4.2</td>
+      <td>0.0</td>
+      <td>4.2</td>
+      <td>4.2</td>
+      <td>TI02</td>
+      <td>1.05</td>
+      <td>1.8</td>
+      <td>50.0</td>
+      <td>-50.000000</td>
+      <td>Under</td>
+      <td>0.00</td>
+      <td>2.857143</td>
+      <td>0.000000</td>
+      <td>N10010</td>
+      <td>N10008</td>
+      <td>N20252026F</td>
+      <td>P01</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0</td>
+      <td>1</td>
+      <td>52</td>
+      <td>4.2</td>
+      <td>4.2</td>
+      <td>3.0</td>
+      <td>3.0</td>
+      <td>5.0</td>
+      <td>6.0</td>
+      <td>False</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>home_leading</td>
+      <td>2</td>
+      <td>False</td>
+      <td>2</td>
+      <td>100.0</td>
+      <td>VN02</td>
+      <td>SD05</td>
     </tr>
     <tr>
-      <td>SH1896900001_home_F3</td>
-      <td>SH1896900001</td>
+      <td>SP1896900008P100001</td>
+      <td>SH1896900008</td>
       <td>18969</td>
-      <td>1</td>
-      <td>12</td>
-      <td>P100027</td>
-      <td>home</td>
-      <td>F3</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <td>SH1896900001_home_D1</td>
-      <td>SH1896900001</td>
-      <td>18969</td>
-      <td>1</td>
       <td>8</td>
-      <td>P100030</td>
-      <td>home</td>
-      <td>D1</td>
+      <td>70</td>
+      <td>P100001</td>
+      <td>away</td>
+      <td>F1</td>
       <td>1</td>
+      <td>7.00</td>
+      <td>767.0</td>
+      <td>760.00</td>
+      <td>0</td>
+      <td>7.00</td>
+      <td>191.00</td>
+      <td>2</td>
+      <td>2</td>
+      <td>False</td>
+      <td>False</td>
+      <td>159.00</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>100.000000</td>
+      <td>1</td>
+      <td>0</td>
+      <td>100.000000</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>Full Strength</td>
+      <td>SIT0001</td>
+      <td>5v5</td>
+      <td>STR01</td>
+      <td>Neutral</td>
+      <td>Offensive</td>
+      <td>6.0</td>
+      <td>4.0</td>
+      <td>4.2</td>
+      <td>0.2</td>
+      <td>4.2</td>
+      <td>4.0</td>
+      <td>TI02</td>
+      <td>1.05</td>
+      <td>1.8</td>
+      <td>51.0</td>
+      <td>49.000000</td>
+      <td>Over</td>
+      <td>1.05</td>
+      <td>0.000000</td>
+      <td>100.000000</td>
+      <td>N10010</td>
+      <td>N10008</td>
+      <td>N20252026F</td>
+      <td>P01</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>6</td>
+      <td>4.2</td>
+      <td>4.0</td>
+      <td>3.0</td>
+      <td>3.0</td>
+      <td>5.0</td>
+      <td>6.0</td>
+      <td>True</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>home_leading</td>
+      <td>2</td>
+      <td>False</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>VN02</td>
+      <td>SD01</td>
     </tr>
     <tr>
-      <td>SH1896900001_home_D2</td>
-      <td>SH1896900001</td>
+      <td>SP1896900009P100001</td>
+      <td>SH1896900009</td>
       <td>18969</td>
+      <td>9</td>
+      <td>70</td>
+      <td>P100001</td>
+      <td>away</td>
+      <td>F1</td>
       <td>1</td>
+      <td>16.00</td>
+      <td>760.0</td>
+      <td>744.00</td>
+      <td>0</td>
+      <td>16.00</td>
+      <td>207.00</td>
+      <td>2</td>
+      <td>3</td>
+      <td>False</td>
+      <td>False</td>
+      <td>159.00</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>50.000000</td>
+      <td>0</td>
+      <td>0</td>
+      <td>50.000000</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>Full Strength</td>
+      <td>SIT0001</td>
+      <td>5v5</td>
+      <td>STR01</td>
+      <td>Offensive</td>
+      <td>Neutral</td>
+      <td>6.0</td>
+      <td>4.0</td>
+      <td>3.8</td>
+      <td>-0.2</td>
+      <td>3.8</td>
+      <td>4.0</td>
+      <td>TI03</td>
+      <td>0.95</td>
+      <td>2.2</td>
+      <td>49.0</td>
+      <td>1.000000</td>
+      <td>Expected</td>
+      <td>0.00</td>
+      <td>0.000000</td>
+      <td>50.000000</td>
+      <td>N10010</td>
+      <td>N10008</td>
+      <td>N20252026F</td>
+      <td>P01</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>9</td>
+      <td>3.8</td>
+      <td>4.0</td>
+      <td>3.0</td>
+      <td>3.0</td>
+      <td>5.0</td>
+      <td>6.0</td>
+      <td>False</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>home_leading</td>
+      <td>2</td>
+      <td>False</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>VN02</td>
+      <td>SD01</td>
+    </tr>
+    <tr>
+      <td>SP1896900010P100001</td>
+      <td>SH1896900010</td>
+      <td>18969</td>
+      <td>10</td>
+      <td>70</td>
+      <td>P100001</td>
+      <td>away</td>
+      <td>F1</td>
+      <td>1</td>
+      <td>9.00</td>
+      <td>744.0</td>
+      <td>735.00</td>
+      <td>0</td>
+      <td>9.00</td>
+      <td>216.00</td>
+      <td>2</td>
+      <td>4</td>
+      <td>False</td>
+      <td>False</td>
+      <td>159.00</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>50.000000</td>
+      <td>0</td>
+      <td>0</td>
+      <td>50.000000</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>Full Strength</td>
+      <td>SIT0001</td>
+      <td>5v5</td>
+      <td>STR01</td>
+      <td>Offensive</td>
+      <td>Offensive</td>
+      <td>6.0</td>
+      <td>4.0</td>
+      <td>4.0</td>
+      <td>0.0</td>
+      <td>4.0</td>
+      <td>4.0</td>
+      <td>TI02</td>
+      <td>1.00</td>
+      <td>2.0</td>
+      <td>50.0</td>
+      <td>0.000000</td>
+      <td>Expected</td>
+      <td>0.00</td>
+      <td>0.000000</td>
+      <td>50.000000</td>
+      <td>N10010</td>
+      <td>N10008</td>
+      <td>N20252026F</td>
+      <td>P01</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>4</td>
+      <td>4.0</td>
+      <td>4.0</td>
+      <td>3.0</td>
+      <td>3.0</td>
+      <td>6.0</td>
+      <td>6.0</td>
+      <td>False</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>home_leading</td>
+      <td>2</td>
+      <td>False</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>VN02</td>
+      <td>SD01</td>
+    </tr>
+    <tr>
+      <td>SP1896900011P100001</td>
+      <td>SH1896900011</td>
+      <td>18969</td>
+      <td>11</td>
+      <td>70</td>
+      <td>P100001</td>
+      <td>away</td>
+      <td>F1</td>
+      <td>1</td>
+      <td>25.00</td>
+      <td>735.0</td>
+      <td>710.00</td>
+      <td>0</td>
+      <td>25.00</td>
+      <td>241.00</td>
+      <td>2</td>
+      <td>5</td>
+      <td>False</td>
+      <td>True</td>
+      <td>159.00</td>
+      <td>0</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>-1</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0.000000</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0.000000</td>
+      <td>0</td>
+      <td>2</td>
+      <td>-2</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>Full Strength</td>
+      <td>SIT0001</td>
+      <td>5v5</td>
+      <td>STR01</td>
+      <td>Offensive</td>
+      <td>Offensive</td>
+      <td>6.0</td>
+      <td>4.0</td>
+      <td>3.6</td>
+      <td>-0.4</td>
+      <td>3.6</td>
+      <td>4.0</td>
+      <td>TI03</td>
+      <td>0.90</td>
+      <td>2.4</td>
+      <td>48.0</td>
+      <td>-48.000000</td>
+      <td>Under</td>
+      <td>0.00</td>
+      <td>2.222222</td>
+      <td>0.000000</td>
+      <td>N10010</td>
+      <td>N10008</td>
+      <td>N20252026F</td>
+      <td>P01</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+      <td>1</td>
+      <td>19</td>
+      <td>3.6</td>
+      <td>4.0</td>
+      <td>2.0</td>
+      <td>3.0</td>
+      <td>6.0</td>
+      <td>6.0</td>
+      <td>False</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>home_leading</td>
+      <td>2</td>
+      <td>False</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>VN02</td>
+      <td>SD01</td>
+    </tr>
+    <tr>
+      <td>SP1896900017P100001</td>
+      <td>SH1896900017</td>
+      <td>18969</td>
+      <td>17</td>
+      <td>70</td>
+      <td>P100001</td>
+      <td>away</td>
+      <td>F1</td>
+      <td>1</td>
+      <td>6.00</td>
+      <td>542.0</td>
+      <td>536.00</td>
+      <td>0</td>
+      <td>6.00</td>
+      <td>247.00</td>
+      <td>3</td>
+      <td>1</td>
+      <td>True</td>
+      <td>False</td>
+      <td>158.00</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>50.000000</td>
+      <td>0</td>
+      <td>0</td>
+      <td>50.000000</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>Full Strength</td>
+      <td>SIT0001</td>
+      <td>5v5</td>
+      <td>STR01</td>
+      <td>Defensive</td>
+      <td>Defensive</td>
+      <td>6.0</td>
+      <td>4.2</td>
+      <td>4.0</td>
+      <td>-0.2</td>
+      <td>4.0</td>
+      <td>4.2</td>
+      <td>TI02</td>
+      <td>1.00</td>
+      <td>2.0</td>
+      <td>49.0</td>
+      <td>1.000000</td>
+      <td>Expected</td>
+      <td>0.00</td>
+      <td>0.000000</td>
+      <td>50.000000</td>
+      <td>N10010</td>
+      <td>N10008</td>
+      <td>N20252026F</td>
+      <td>P01</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>7</td>
+      <td>4.0</td>
+      <td>4.2</td>
+      <td>2.0</td>
+      <td>3.0</td>
+      <td>5.0</td>
+      <td>6.0</td>
+      <td>False</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>tied</td>
+      <td>0</td>
+      <td>True</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>VN02</td>
+      <td>SD01</td>
+    </tr>
+    <tr>
+      <td>SP1896900018P100001</td>
+      <td>SH1896900018</td>
+      <td>18969</td>
+      <td>18</td>
+      <td>70</td>
+      <td>P100001</td>
+      <td>away</td>
+      <td>F1</td>
+      <td>1</td>
+      <td>7.00</td>
+      <td>536.0</td>
+      <td>529.00</td>
+      <td>0</td>
+      <td>7.00</td>
+      <td>254.00</td>
+      <td>3</td>
+      <td>2</td>
+      <td>False</td>
+      <td>False</td>
+      <td>158.00</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>50.000000</td>
+      <td>0</td>
+      <td>0</td>
+      <td>50.000000</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>Full Strength</td>
+      <td>SIT0001</td>
+      <td>5v5</td>
+      <td>STR01</td>
+      <td>Offensive</td>
+      <td>Defensive</td>
+      <td>6.0</td>
+      <td>4.0</td>
+      <td>4.0</td>
+      <td>0.0</td>
+      <td>4.0</td>
+      <td>4.0</td>
+      <td>TI02</td>
+      <td>1.00</td>
+      <td>2.0</td>
+      <td>50.0</td>
+      <td>0.000000</td>
+      <td>Expected</td>
+      <td>0.00</td>
+      <td>0.000000</td>
+      <td>50.000000</td>
+      <td>N10010</td>
+      <td>N10008</td>
+      <td>N20252026F</td>
+      <td>P01</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>5</td>
+      <td>4.0</td>
+      <td>4.0</td>
+      <td>2.0</td>
+      <td>3.0</td>
+      <td>5.0</td>
+      <td>6.0</td>
+      <td>False</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>tied</td>
+      <td>0</td>
+      <td>True</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>VN02</td>
+      <td>SD01</td>
+    </tr>
+    <tr>
+      <td>SP1896900019P100001</td>
+      <td>SH1896900019</td>
+      <td>18969</td>
+      <td>19</td>
+      <td>70</td>
+      <td>P100001</td>
+      <td>away</td>
+      <td>F1</td>
+      <td>1</td>
+      <td>14.00</td>
+      <td>529.0</td>
+      <td>515.00</td>
+      <td>0</td>
+      <td>14.00</td>
+      <td>268.00</td>
+      <td>3</td>
+      <td>3</td>
+      <td>False</td>
+      <td>False</td>
+      <td>158.00</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>50.000000</td>
+      <td>0</td>
+      <td>0</td>
+      <td>50.000000</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>Full Strength</td>
+      <td>SIT0001</td>
+      <td>5v5</td>
+      <td>STR01</td>
+      <td>Neutral</td>
+      <td>Defensive</td>
+      <td>6.0</td>
+      <td>4.0</td>
+      <td>4.0</td>
+      <td>0.0</td>
+      <td>4.0</td>
+      <td>4.0</td>
+      <td>TI02</td>
+      <td>1.00</td>
+      <td>2.0</td>
+      <td>50.0</td>
+      <td>0.000000</td>
+      <td>Expected</td>
+      <td>0.00</td>
+      <td>0.000000</td>
+      <td>50.000000</td>
+      <td>N10010</td>
+      <td>N10008</td>
+      <td>N20252026F</td>
+      <td>P01</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>12</td>
+      <td>4.0</td>
+      <td>4.0</td>
+      <td>2.0</td>
+      <td>3.0</td>
+      <td>5.0</td>
+      <td>6.0</td>
+      <td>False</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>tied</td>
+      <td>0</td>
+      <td>True</td>
+      <td>2</td>
+      <td>0.0</td>
+      <td>VN02</td>
+      <td>SD01</td>
+    </tr>
+    <tr>
+      <td>SP1896900020P100001</td>
+      <td>SH1896900020</td>
+      <td>18969</td>
+      <td>20</td>
+      <td>70</td>
+      <td>P100001</td>
+      <td>away</td>
+      <td>F1</td>
+      <td>1</td>
+      <td>18.00</td>
+      <td>515.0</td>
+      <td>497.00</td>
+      <td>0</td>
+      <td>18.00</td>
+      <td>286.00</td>
+      <td>3</td>
+      <td>4</td>
+      <td>False</td>
+      <td>False</td>
+      <td>158.00</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0.000000</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0.000000</td>
+      <td>0</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>Full Strength</td>
+      <td>SIT0001</td>
+      <td>5v5</td>
+      <td>STR01</td>
+      <td>Defensive</td>
+      <td>Offensive</td>
+      <td>6.0</td>
+      <td>4.0</td>
+      <td>4.4</td>
+      <td>0.4</td>
+      <td>4.4</td>
+      <td>4.0</td>
+      <td>TI02</td>
+      <td>1.10</td>
+      <td>1.6</td>
+      <td>52.0</td>
+      <td>-52.000000</td>
+      <td>Under</td>
+      <td>0.00</td>
+      <td>1.818182</td>
+      <td>0.000000</td>
+      <td>N10010</td>
+      <td>N10008</td>
+      <td>N20252026F</td>
+      <td>P01</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>9</td>
+      <td>4.4</td>
+      <td>4.0</td>
+      <td>4.0</td>
+      <td>3.0</td>
+      <td>5.0</td>
+      <td>6.0</td>
+      <td>True</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>tied</td>
+      <td>0</td>
+      <td>True</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>VN02</td>
+      <td>SD01</td>
+    </tr>
+    <tr>
+      <td>SP1896900021P100001</td>
+      <td>SH1896900021</td>
+      <td>18969</td>
       <td>21</td>
-      <td>P100025</td>
-      <td>home</td>
-      <td>D2</td>
+      <td>70</td>
+      <td>P100001</td>
+      <td>away</td>
+      <td>F1</td>
       <td>1</td>
+      <td>56.00</td>
+      <td>497.0</td>
+      <td>441.00</td>
+      <td>0</td>
+      <td>56.00</td>
+      <td>342.00</td>
+      <td>3</td>
+      <td>5</td>
+      <td>False</td>
+      <td>False</td>
+      <td>158.00</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0.000000</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0.000000</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>Full Strength</td>
+      <td>SIT0001</td>
+      <td>5v5</td>
+      <td>STR01</td>
+      <td>Offensive</td>
+      <td>Defensive</td>
+      <td>6.0</td>
+      <td>4.2</td>
+      <td>4.2</td>
+      <td>0.0</td>
+      <td>4.2</td>
+      <td>4.2</td>
+      <td>TI02</td>
+      <td>1.05</td>
+      <td>1.8</td>
+      <td>50.0</td>
+      <td>-50.000000</td>
+      <td>Under</td>
+      <td>0.00</td>
+      <td>2.857143</td>
+      <td>0.000000</td>
+      <td>N10010</td>
+      <td>N10008</td>
+      <td>N20252026F</td>
+      <td>P01</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>17</td>
+      <td>4.2</td>
+      <td>4.2</td>
+      <td>3.0</td>
+      <td>3.0</td>
+      <td>5.0</td>
+      <td>6.0</td>
+      <td>False</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>tied</td>
+      <td>0</td>
+      <td>True</td>
+      <td>0</td>
+      <td>100.0</td>
+      <td>VN02</td>
+      <td>SD03</td>
+    </tr>
+    <tr>
+      <td>SP1896900022P100001</td>
+      <td>SH1896900022</td>
+      <td>18969</td>
+      <td>22</td>
+      <td>70</td>
+      <td>P100001</td>
+      <td>away</td>
+      <td>F1</td>
+      <td>1</td>
+      <td>57.00</td>
+      <td>441.0</td>
+      <td>384.00</td>
+      <td>0</td>
+      <td>57.00</td>
+      <td>399.00</td>
+      <td>3</td>
+      <td>6</td>
+      <td>False</td>
+      <td>True</td>
+      <td>158.00</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>50.000000</td>
+      <td>0</td>
+      <td>0</td>
+      <td>50.000000</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>Full Strength</td>
+      <td>SIT0001</td>
+      <td>5v5</td>
+      <td>STR01</td>
+      <td>Defensive</td>
+      <td>Defensive</td>
+      <td>6.0</td>
+      <td>4.2</td>
+      <td>4.0</td>
+      <td>-0.2</td>
+      <td>4.0</td>
+      <td>4.2</td>
+      <td>TI02</td>
+      <td>1.00</td>
+      <td>2.0</td>
+      <td>49.0</td>
+      <td>1.000000</td>
+      <td>Expected</td>
+      <td>0.00</td>
+      <td>0.000000</td>
+      <td>50.000000</td>
+      <td>N10010</td>
+      <td>N10008</td>
+      <td>N20252026F</td>
+      <td>P01</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>20</td>
+      <td>4.0</td>
+      <td>4.2</td>
+      <td>2.0</td>
+      <td>3.0</td>
+      <td>6.0</td>
+      <td>6.0</td>
+      <td>False</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>tied</td>
+      <td>0</td>
+      <td>True</td>
+      <td>2</td>
+      <td>100.0</td>
+      <td>VN02</td>
+      <td>SD03</td>
+    </tr>
+    <tr>
+      <td>SP1896900027P100001</td>
+      <td>SH1896900027</td>
+      <td>18969</td>
+      <td>27</td>
+      <td>70</td>
+      <td>P100001</td>
+      <td>away</td>
+      <td>F1</td>
+      <td>1</td>
+      <td>65.00</td>
+      <td>202.0</td>
+      <td>137.00</td>
+      <td>20</td>
+      <td>45.00</td>
+      <td>464.00</td>
+      <td>4</td>
+      <td>1</td>
+      <td>True</td>
+      <td>False</td>
+      <td>201.99</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>100.000000</td>
+      <td>1</td>
+      <td>0</td>
+      <td>100.000000</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>Full Strength</td>
+      <td>SIT0001</td>
+      <td>5v5</td>
+      <td>STR01</td>
+      <td>Defensive</td>
+      <td>Neutral</td>
+      <td>6.0</td>
+      <td>4.2</td>
+      <td>4.4</td>
+      <td>0.2</td>
+      <td>4.4</td>
+      <td>4.2</td>
+      <td>TI02</td>
+      <td>1.10</td>
+      <td>1.6</td>
+      <td>51.0</td>
+      <td>49.000000</td>
+      <td>Over</td>
+      <td>1.10</td>
+      <td>0.000000</td>
+      <td>100.000000</td>
+      <td>N10010</td>
+      <td>N10008</td>
+      <td>N20252026F</td>
+      <td>P01</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>12</td>
+      <td>4.4</td>
+      <td>4.2</td>
+      <td>3.0</td>
+      <td>2.0</td>
+      <td>6.0</td>
+      <td>6.0</td>
+      <td>True</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>home_leading</td>
+      <td>2</td>
+      <td>False</td>
+      <td>0</td>
+      <td>50.0</td>
+      <td>VN02</td>
+      <td>SD04</td>
+    </tr>
+    <tr>
+      <td>SP1896900028P100001</td>
+      <td>SH1896900028</td>
+      <td>18969</td>
+      <td>28</td>
+      <td>70</td>
+      <td>P100001</td>
+      <td>away</td>
+      <td>F1</td>
+      <td>1</td>
+      <td>78.00</td>
+      <td>137.0</td>
+      <td>59.00</td>
+      <td>20</td>
+      <td>58.00</td>
+      <td>542.00</td>
+      <td>4</td>
+      <td>2</td>
+      <td>False</td>
+      <td>False</td>
+      <td>201.99</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>33.333333</td>
+      <td>1</td>
+      <td>2</td>
+      <td>33.333333</td>
+      <td>0</td>
+      <td>2</td>
+      <td>-2</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>Full Strength</td>
+      <td>SIT0001</td>
+      <td>5v5</td>
+      <td>STR01</td>
+      <td>Offensive</td>
+      <td>Neutral</td>
+      <td>6.0</td>
+      <td>4.2</td>
+      <td>4.4</td>
+      <td>0.2</td>
+      <td>4.4</td>
+      <td>4.2</td>
+      <td>TI02</td>
+      <td>1.10</td>
+      <td>1.6</td>
+      <td>51.0</td>
+      <td>-17.666667</td>
+      <td>Under</td>
+      <td>1.10</td>
+      <td>1.818182</td>
+      <td>37.694704</td>
+      <td>N10010</td>
+      <td>N10008</td>
+      <td>N20252026F</td>
+      <td>P01</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0</td>
+      <td>1</td>
+      <td>29</td>
+      <td>4.4</td>
+      <td>4.2</td>
+      <td>3.0</td>
+      <td>3.0</td>
+      <td>6.0</td>
+      <td>6.0</td>
+      <td>True</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>tied</td>
+      <td>0</td>
+      <td>True</td>
+      <td>0</td>
+      <td>50.0</td>
+      <td>VN02</td>
+      <td>SD04</td>
+    </tr>
+    <tr>
+      <td>SP1896900029P100001</td>
+      <td>SH1896900029</td>
+      <td>18969</td>
+      <td>29</td>
+      <td>70</td>
+      <td>P100001</td>
+      <td>away</td>
+      <td>F1</td>
+      <td>1</td>
+      <td>58.99</td>
+      <td>59.0</td>
+      <td>0.01</td>
+      <td>0</td>
+      <td>58.99</td>
+      <td>600.99</td>
+      <td>4</td>
+      <td>3</td>
+      <td>False</td>
+      <td>True</td>
+      <td>201.99</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>50.000000</td>
+      <td>0</td>
+      <td>0</td>
+      <td>50.000000</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>1</td>
+      <td>2</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>Full Strength</td>
+      <td>SIT0001</td>
+      <td>5v5</td>
+      <td>STR01</td>
+      <td>Neutral</td>
+      <td>Offensive</td>
+      <td>6.0</td>
+      <td>4.0</td>
+      <td>4.0</td>
+      <td>0.0</td>
+      <td>4.0</td>
+      <td>4.0</td>
+      <td>TI02</td>
+      <td>1.00</td>
+      <td>2.0</td>
+      <td>50.0</td>
+      <td>0.000000</td>
+      <td>Expected</td>
+      <td>0.00</td>
+      <td>0.000000</td>
+      <td>50.000000</td>
+      <td>N10010</td>
+      <td>N10008</td>
+      <td>N20252026F</td>
+      <td>P01</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>28</td>
+      <td>4.0</td>
+      <td>4.0</td>
+      <td>2.0</td>
+      <td>3.0</td>
+      <td>6.0</td>
+      <td>6.0</td>
+      <td>False</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>tied</td>
+      <td>0</td>
+      <td>True</td>
+      <td>2</td>
+      <td>100.0</td>
+      <td>VN02</td>
+      <td>SD03</td>
+    </tr>
+    <tr>
+      <td>SP1896900034P100001</td>
+      <td>SH1896900034</td>
+      <td>18969</td>
+      <td>34</td>
+      <td>70</td>
+      <td>P100001</td>
+      <td>away</td>
+      <td>F1</td>
+      <td>2</td>
+      <td>67.00</td>
+      <td>995.0</td>
+      <td>928.00</td>
+      <td>20</td>
+      <td>47.00</td>
+      <td>667.99</td>
+      <td>5</td>
+      <td>1</td>
+      <td>True</td>
+      <td>False</td>
+      <td>119.00</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>1</td>
+      <td>66.666667</td>
+      <td>1</td>
+      <td>1</td>
+      <td>50.000000</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>Full Strength</td>
+      <td>SIT0001</td>
+      <td>5v5</td>
+      <td>STR01</td>
+      <td>Defensive</td>
+      <td>Defensive</td>
+      <td>6.0</td>
+      <td>4.0</td>
+      <td>3.8</td>
+      <td>-0.2</td>
+      <td>3.8</td>
+      <td>4.0</td>
+      <td>TI03</td>
+      <td>0.95</td>
+      <td>2.2</td>
+      <td>49.0</td>
+      <td>17.666667</td>
+      <td>Over</td>
+      <td>1.90</td>
+      <td>1.052632</td>
+      <td>64.349376</td>
+      <td>N10010</td>
+      <td>N10008</td>
+      <td>N20252026F</td>
+      <td>P02</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>36</td>
+      <td>3.8</td>
+      <td>4.0</td>
+      <td>2.0</td>
+      <td>2.0</td>
+      <td>6.0</td>
+      <td>6.0</td>
+      <td>False</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>home_leading</td>
+      <td>2</td>
+      <td>False</td>
+      <td>1</td>
+      <td>100.0</td>
+      <td>VN02</td>
+      <td>SD04</td>
+    </tr>
+    <tr>
+      <td>SP1896900035P100001</td>
+      <td>SH1896900035</td>
+      <td>18969</td>
+      <td>35</td>
+      <td>70</td>
+      <td>P100001</td>
+      <td>away</td>
+      <td>F1</td>
+      <td>2</td>
+      <td>19.00</td>
+      <td>928.0</td>
+      <td>909.00</td>
+      <td>0</td>
+      <td>19.00</td>
+      <td>686.99</td>
+      <td>5</td>
+      <td>2</td>
+      <td>False</td>
+      <td>False</td>
+      <td>119.00</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>50.000000</td>
+      <td>1</td>
+      <td>1</td>
+      <td>50.000000</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>Full Strength</td>
+      <td>SIT0001</td>
+      <td>5v5</td>
+      <td>STR01</td>
+      <td>Defensive</td>
+      <td>Offensive</td>
+      <td>6.0</td>
+      <td>4.0</td>
+      <td>4.2</td>
+      <td>0.2</td>
+      <td>4.2</td>
+      <td>4.0</td>
+      <td>TI02</td>
+      <td>1.05</td>
+      <td>1.8</td>
+      <td>51.0</td>
+      <td>-1.000000</td>
+      <td>Expected</td>
+      <td>1.05</td>
+      <td>0.952381</td>
+      <td>52.437574</td>
+      <td>N10010</td>
+      <td>N10008</td>
+      <td>N20252026F</td>
+      <td>P02</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>12</td>
+      <td>4.2</td>
+      <td>4.0</td>
+      <td>2.0</td>
+      <td>2.0</td>
+      <td>6.0</td>
+      <td>6.0</td>
+      <td>True</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>home_leading</td>
+      <td>2</td>
+      <td>False</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>VN02</td>
+      <td>SD01</td>
+    </tr>
+    <tr>
+      <td>SP1896900036P100001</td>
+      <td>SH1896900036</td>
+      <td>18969</td>
+      <td>36</td>
+      <td>70</td>
+      <td>P100001</td>
+      <td>away</td>
+      <td>F1</td>
+      <td>2</td>
+      <td>33.00</td>
+      <td>909.0</td>
+      <td>876.00</td>
+      <td>0</td>
+      <td>33.00</td>
+      <td>719.99</td>
+      <td>5</td>
+      <td>3</td>
+      <td>False</td>
+      <td>True</td>
+      <td>119.00</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0.000000</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0.000000</td>
+      <td>0</td>
+      <td>1</td>
+      <td>-1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>Full Strength</td>
+      <td>SIT0001</td>
+      <td>5v5</td>
+      <td>STR01</td>
+      <td>Offensive</td>
+      <td>Defensive</td>
+      <td>6.0</td>
+      <td>4.2</td>
+      <td>4.6</td>
+      <td>0.4</td>
+      <td>4.6</td>
+      <td>4.2</td>
+      <td>TI02</td>
+      <td>1.15</td>
+      <td>1.4</td>
+      <td>52.0</td>
+      <td>-52.000000</td>
+      <td>Under</td>
+      <td>0.00</td>
+      <td>0.869565</td>
+      <td>0.000000</td>
+      <td>N10010</td>
+      <td>N10008</td>
+      <td>N20252026F</td>
+      <td>P02</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>25</td>
+      <td>4.6</td>
+      <td>4.2</td>
+      <td>4.0</td>
+      <td>2.0</td>
+      <td>6.0</td>
+      <td>6.0</td>
+      <td>True</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>home_leading</td>
+      <td>2</td>
+      <td>False</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>VN02</td>
+      <td>SD02</td>
+    </tr>
+    <tr>
+      <td>SP1896900040P100001</td>
+      <td>SH1896900040</td>
+      <td>18969</td>
+      <td>40</td>
+      <td>70</td>
+      <td>P100001</td>
+      <td>away</td>
+      <td>F1</td>
+      <td>2</td>
+      <td>20.00</td>
+      <td>671.0</td>
+      <td>651.00</td>
+      <td>0</td>
+      <td>20.00</td>
+      <td>739.99</td>
+      <td>6</td>
+      <td>1</td>
+      <td>True</td>
+      <td>False</td>
+      <td>118.00</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>50.000000</td>
+      <td>0</td>
+      <td>0</td>
+      <td>50.000000</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>Full Strength</td>
+      <td>SIT0001</td>
+      <td>5v5</td>
+      <td>STR01</td>
+      <td>Neutral</td>
+      <td>Defensive</td>
+      <td>6.0</td>
+      <td>4.2</td>
+      <td>3.6</td>
+      <td>-0.6</td>
+      <td>3.6</td>
+      <td>4.2</td>
+      <td>TI03</td>
+      <td>0.90</td>
+      <td>2.4</td>
+      <td>47.0</td>
+      <td>3.000000</td>
+      <td>Expected</td>
+      <td>0.00</td>
+      <td>0.000000</td>
+      <td>50.000000</td>
+      <td>N10010</td>
+      <td>N10008</td>
+      <td>N20252026F</td>
+      <td>P02</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>13</td>
+      <td>3.6</td>
+      <td>4.2</td>
+      <td>2.0</td>
+      <td>3.0</td>
+      <td>6.0</td>
+      <td>6.0</td>
+      <td>False</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>tied</td>
+      <td>0</td>
+      <td>True</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>VN02</td>
+      <td>SD01</td>
+    </tr>
+    <tr>
+      <td>SP1896900041P100001</td>
+      <td>SH1896900041</td>
+      <td>18969</td>
+      <td>41</td>
+      <td>70</td>
+      <td>P100001</td>
+      <td>away</td>
+      <td>F1</td>
+      <td>2</td>
+      <td>4.00</td>
+      <td>651.0</td>
+      <td>647.00</td>
+      <td>0</td>
+      <td>4.00</td>
+      <td>743.99</td>
+      <td>6</td>
+      <td>2</td>
+      <td>False</td>
+      <td>False</td>
+      <td>118.00</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>50.000000</td>
+      <td>0</td>
+      <td>0</td>
+      <td>50.000000</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>Full Strength</td>
+      <td>SIT0001</td>
+      <td>5v5</td>
+      <td>STR01</td>
+      <td>Offensive</td>
+      <td>Offensive</td>
+      <td>6.0</td>
+      <td>4.4</td>
+      <td>3.8</td>
+      <td>-0.6</td>
+      <td>3.8</td>
+      <td>4.4</td>
+      <td>TI03</td>
+      <td>0.95</td>
+      <td>2.2</td>
+      <td>47.0</td>
+      <td>3.000000</td>
+      <td>Expected</td>
+      <td>0.00</td>
+      <td>0.000000</td>
+      <td>50.000000</td>
+      <td>N10010</td>
+      <td>N10008</td>
+      <td>N20252026F</td>
+      <td>P02</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>3.8</td>
+      <td>4.4</td>
+      <td>2.0</td>
+      <td>3.0</td>
+      <td>6.0</td>
+      <td>6.0</td>
+      <td>False</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>tied</td>
+      <td>0</td>
+      <td>True</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>VN02</td>
+      <td>SD01</td>
     </tr>
   </tbody>
 </table>
+            </div>
         </div>
         
         <footer>
-            BenchSight v0.01 | Generated: 2026-01-07 21:13 | <a href="../tables.html">Back to Tables</a>
+            BenchSight v11.04 | Generated 2026-01-12 23:37:10
         </footer>
     </div>
 </body>

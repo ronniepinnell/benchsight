@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fact_player_puck_proximity - BenchSight</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #4a4e69; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>fact_player_puck_proximity</h1>
+        
+        
+        
+        <div class="meta">
+            <strong>Rows:</strong> 5 | 
+            <strong>Columns:</strong> 15 |
+            <strong>Last Updated:</strong> 2026-01-12 23:16:43 |
+            <strong>Version:</strong> 11.04
+        </div>
+        
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>proximity_key</td><td>object</td><td>5</td><td>0.0%</td></tr><tr><td>event_id</td><td>object</td><td>5</td><td>0.0%</td></tr><tr><td>game_id</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>player_id</td><td>object</td><td>5</td><td>0.0%</td></tr><tr><td>player_name</td><td>object</td><td>5</td><td>0.0%</td></tr><tr><td>player_role</td><td>object</td><td>5</td><td>0.0%</td></tr><tr><td>is_event_team</td><td>bool</td><td>5</td><td>0.0%</td></tr><tr><td>player_x</td><td>float64</td><td>5</td><td>0.0%</td></tr><tr><td>player_y</td><td>float64</td><td>5</td><td>0.0%</td></tr><tr><td>puck_x</td><td>float64</td><td>5</td><td>0.0%</td></tr><tr><td>puck_y</td><td>float64</td><td>5</td><td>0.0%</td></tr><tr><td>distance_to_puck</td><td>float64</td><td>5</td><td>0.0%</td></tr><tr><td>is_puck_carrier</td><td>bool</td><td>5</td><td>0.0%</td></tr><tr><td>is_pressuring</td><td>bool</td><td>5</td><td>0.0%</td></tr><tr><td>_export_timestamp</td><td>object</td><td>5</td><td>0.0%</td></tr>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>proximity_key</th>
+      <th>event_id</th>
+      <th>game_id</th>
+      <th>player_id</th>
+      <th>player_name</th>
+      <th>player_role</th>
+      <th>is_event_team</th>
+      <th>player_x</th>
+      <th>player_y</th>
+      <th>puck_x</th>
+      <th>puck_y</th>
+      <th>distance_to_puck</th>
+      <th>is_puck_carrier</th>
+      <th>is_pressuring</th>
+      <th>_export_timestamp</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>PPX18969010010192</td>
+      <td>EV1896901001</td>
+      <td>18969</td>
+      <td>P100192</td>
+      <td>Chris Premo</td>
+      <td>event_player_1</td>
+      <td>True</td>
+      <td>98.6</td>
+      <td>44.2</td>
+      <td>75.9</td>
+      <td>47.6</td>
+      <td>22.953213</td>
+      <td>False</td>
+      <td>False</td>
+      <td>2026-01-12T23:06:00.999292</td>
+    </tr>
+    <tr>
+      <td>PPX18969010010025</td>
+      <td>EV1896901001</td>
+      <td>18969</td>
+      <td>P100025</td>
+      <td>Andrew Marshall</td>
+      <td>event_player_2</td>
+      <td>True</td>
+      <td>75.9</td>
+      <td>54.4</td>
+      <td>75.9</td>
+      <td>47.6</td>
+      <td>6.800000</td>
+      <td>False</td>
+      <td>True</td>
+      <td>2026-01-12T23:06:00.999435</td>
+    </tr>
+    <tr>
+      <td>PPX18969010010001</td>
+      <td>EV1896901001</td>
+      <td>18969</td>
+      <td>P100001</td>
+      <td>Sam Downs</td>
+      <td>opp_player_1</td>
+      <td>False</td>
+      <td>100.8</td>
+      <td>41.9</td>
+      <td>75.9</td>
+      <td>47.6</td>
+      <td>25.544080</td>
+      <td>False</td>
+      <td>False</td>
+      <td>2026-01-12T23:06:00.999559</td>
+    </tr>
+    <tr>
+      <td>PPX18969010020025</td>
+      <td>EV1896901002</td>
+      <td>18969</td>
+      <td>P100025</td>
+      <td>Andrew Marshall</td>
+      <td>event_player_1</td>
+      <td>True</td>
+      <td>110.5</td>
+      <td>24.4</td>
+      <td>158.6</td>
+      <td>74.2</td>
+      <td>69.236190</td>
+      <td>False</td>
+      <td>False</td>
+      <td>2026-01-12T23:06:00.999630</td>
+    </tr>
+    <tr>
+      <td>PPX18969010020030</td>
+      <td>EV1896901002</td>
+      <td>18969</td>
+      <td>P100030</td>
+      <td>Jesse Chambless</td>
+      <td>event_player_2</td>
+      <td>True</td>
+      <td>67.4</td>
+      <td>61.8</td>
+      <td>158.6</td>
+      <td>74.2</td>
+      <td>92.039122</td>
+      <td>False</td>
+      <td>False</td>
+      <td>2026-01-12T23:06:00.999709</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+        </div>
+        
+        <footer>
+            BenchSight v11.04 | Generated 2026-01-12 23:16:43
+        </footer>
+    </div>
+</body>
+</html>

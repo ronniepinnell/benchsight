@@ -3,423 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>dim_player - BenchSight v0.01</title>
+    <title>dim_player - BenchSight</title>
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #333; line-height: 1.6; }
-        .header { background: linear-gradient(135deg, #1a1a2e 0%, #4a4e69 100%); color: white; padding: 20px 40px; }
-        .header h1 { margin: 0; font-size: 24px; }
-        .nav { background: #4a4e69; padding: 0 20px; display: flex; flex-wrap: wrap; }
-        .nav a { color: white; text-decoration: none; padding: 10px 14px; font-size: 13px; }
-        .nav a:hover { background: rgba(255,255,255,0.1); }
-        .container { max-width: 1600px; margin: 0 auto; padding: 30px; }
-        
-        /* Table Overview Section */
-        .table-overview { background: white; border-radius: 8px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .table-overview h2 { margin-top: 0; color: #4a4e69; border-bottom: 2px solid #4a4e69; padding-bottom: 10px; }
-        .overview-desc { background: #e3f2fd; border-left: 4px solid #1976d2; padding: 15px; margin-bottom: 20px; font-size: 15px; }
-        .overview-grid { display: grid; grid-template-columns: 120px 1fr; gap: 10px 20px; }
-        .overview-label { font-weight: 600; color: #555; }
-        .overview-value { color: #333; }
-        .overview-value code { background: #f5f5f5; padding: 2px 8px; border-radius: 4px; font-family: 'SF Mono', Monaco, monospace; font-size: 12px; }
-        
-        /* Column Documentation Section */
-        .column-docs { background: white; border-radius: 8px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .column-docs h2 { margin-top: 0; color: #4a4e69; border-bottom: 2px solid #4a4e69; padding-bottom: 10px; }
-        
-        /* Legend */
-        .legend { margin-bottom: 20px; padding: 15px; background: #fafafa; border-radius: 6px; }
-        .legend-title { font-weight: 600; margin-right: 10px; }
-        .legend-item { display: inline-flex; align-items: center; margin-right: 20px; }
-        
-        /* Type badges */
-        .type-badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-        .badge-explicit { background: #e8f5e9; color: #2e7d32; }
-        .badge-calculated { background: #fff3e0; color: #e65100; }
-        .badge-derived { background: #e3f2fd; color: #1565c0; }
-        .badge-fk { background: #fce4ec; color: #c2185b; }
-        .badge-unknown { background: #f5f5f5; color: #757575; }
-        
-        /* Table styling */
-        table { border-collapse: collapse; width: 100%; margin: 15px 0; background: white; }
-        th { background: #4a4e69; color: white; padding: 12px 10px; text-align: left; font-size: 12px; font-weight: 600; position: sticky; top: 0; }
-        td { border: 1px solid #e0e0e0; padding: 10px; font-size: 13px; vertical-align: top; }
-        tr:nth-child(even) { background: #fafafa; }
-        tr:hover { background: #f0f7ff; }
-        code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-family: 'SF Mono', Monaco, monospace; font-size: 11px; }
-        
-        /* Column-specific styling */
-        .context-cell { max-width: 300px; font-size: 12px; color: #555; }
-        .calc-cell { max-width: 250px; font-size: 11px; }
-        .calc-cell code { background: #fff8e1; }
-        .stat-cell { text-align: right; font-size: 12px; }
-        .null-low { color: #2e7d32; }
-        .null-med { color: #f57c00; }
-        .null-high { color: #c62828; font-weight: 600; }
-        
-        /* Badge styles */
-        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-        .badge-blue { background: #1976d2; color: white; }
-        .badge-green { background: #388e3c; color: white; }
-        .badge-yellow { background: #f9a825; color: #333; }
-        
-        /* Sample data */
-        .data-table { font-size: 11px; overflow-x: auto; }
-        .data-table th { font-size: 11px; padding: 8px; }
-        .data-table td { padding: 6px 8px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        
-        footer { text-align: center; padding: 20px; color: #888; font-size: 11px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #4a4e69; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🏒 BenchSight <span style="font-size: 14px; opacity: 0.8;">v0.01</span></h1>
-    </div>
-    
-    <nav class="nav">
-        <a href="../index.html">🏠 Home</a>
-        <a href="../tables.html">📊 Tables (59)</a>
-        <a href="../BS_DETECTOR.html">🔍 BS Detector</a>
-        <a href="../DOC_MAINTENANCE.html">📝 Doc Guide</a>
-    </nav>
-
     <div class="container">
-        <h1>dim_player <span class="badge badge-blue">Dimension</span></h1>
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>dim_player</h1>
         
-        <!-- Table Overview Section -->
-        <div class="table-overview">
-            <h2>Table Overview</h2>
-            
-            <div class="overview-desc">
-                <strong>Description:</strong> Player master data - names, positions, profile info
-            </div>
-            
-            <div class="overview-grid">
-                <div class="overview-label">Purpose:</div>
-                <div class="overview-value">Central player reference for all joins. Contains player attributes.</div>
-                
-                <div class="overview-label">Source Module:</div>
-                <div class="overview-value"><code>src/core/base_etl.py:create_dim_player()</code></div>
-                
-                <div class="overview-label">Logic:</div>
-                <div class="overview-value">Combined from roster data and league profile scraping.</div>
-                
-                <div class="overview-label">Grain:</div>
-                <div class="overview-value">One row per player (all-time)</div>
-                
-                <div class="overview-label">Rows:</div>
-                <div class="overview-value">100</div>
-                
-                <div class="overview-label">Columns:</div>
-                <div class="overview-value">27</div>
-            </div>
+        
+        
+        <div class="meta">
+            <strong>Rows:</strong> 337 | 
+            <strong>Columns:</strong> 20 |
+            <strong>Last Updated:</strong> 2026-01-12 23:37:10 |
+            <strong>Version:</strong> 11.04
         </div>
         
-        <!-- Column Documentation Section -->
-        <div class="column-docs">
-            <h2>Column Documentation</h2>
-            
-            <div class="legend">
-                <span class="legend-title">Legend:</span>
-                <span class="legend-item"><span class="type-badge badge-explicit">Explicit</span> = From raw data</span>
-                <span class="legend-item"><span class="type-badge badge-calculated">Calculated</span> = Formula-based</span>
-                <span class="legend-item"><span class="type-badge badge-derived">Derived</span> = Generated key/aggregate</span>
-                <span class="legend-item"><span class="type-badge badge-fk">FK</span> = Foreign key lookup</span>
-            </div>
-            
-            <table>
-                <thead>
-                    <tr>
-                        <th>Column</th>
-                        <th>Data Type</th>
-                        <th>Description</th>
-                        <th>Context / Mapping</th>
-                        <th>Calculation / Formula</th>
-                        <th>Type</th>
-                        <th>Non-Null</th>
-                        <th>Null %</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    
-            <tr>
-                <td><code>player_first_name</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>player_last_name</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>player_full_name</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>player_id</code></td>
-                <td>object</td>
-                <td>Unique player identifier (PK)</td>
-                <td class="context-cell">Format: P######. Example: P100117. Derived from league profile URL.</td>
-                <td class="calc-cell"><code>Extracted from noradhockey.com player profile URL</code></td>
-                <td><span class="type-badge badge-derived">Derived</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>player_primary_position</code></td>
-                <td>object</td>
-                <td>Player position (C, LW, RW, D, G)</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>current_skill_rating</code></td>
-                <td>int64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>player_hand</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>birth_year</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">90</td>
-                <td class="stat-cell null-high">10.0%</td>
-            </tr>
-            <tr>
-                <td><code>player_gender</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>highest_beer_league</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">79</td>
-                <td class="stat-cell null-high">21.0%</td>
-            </tr>
-            <tr>
-                <td><code>player_rating_ly</code></td>
-                <td>int64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>player_notes</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>player_leadership</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">21</td>
-                <td class="stat-cell null-high">79.0%</td>
-            </tr>
-            <tr>
-                <td><code>player_norad</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>player_csaha</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>player_norad_primary_number</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>player_csah_primary_number</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>player_norad_current_team</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>player_csah_current_team</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>player_norad_current_team_id</code></td>
-                <td>object</td>
-                <td>Unique team identifier</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>player_csah_current_team_id</code></td>
-                <td>float64</td>
-                <td>Unique team identifier</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>other_url</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>player_url</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>player_image</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>random_player_first_name</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>random_player_last_name</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>random_player_full_name</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-                </tbody>
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>player_first_name</td><td>object</td><td>337</td><td>0.0%</td></tr><tr><td>player_last_name</td><td>object</td><td>337</td><td>0.0%</td></tr><tr><td>player_full_name</td><td>object</td><td>337</td><td>0.0%</td></tr><tr><td>player_id</td><td>object</td><td>337</td><td>0.0%</td></tr><tr><td>player_primary_position</td><td>object</td><td>337</td><td>0.0%</td></tr><tr><td>current_skill_rating</td><td>int64</td><td>337</td><td>0.0%</td></tr><tr><td>birth_year</td><td>float64</td><td>190</td><td>43.6%</td></tr><tr><td>player_gender</td><td>object</td><td>337</td><td>0.0%</td></tr><tr><td>highest_beer_league</td><td>object</td><td>172</td><td>49.0%</td></tr><tr><td>player_rating_ly</td><td>int64</td><td>337</td><td>0.0%</td></tr><tr><td>player_leadership</td><td>object</td><td>28</td><td>91.7%</td></tr><tr><td>player_norad</td><td>object</td><td>337</td><td>0.0%</td></tr><tr><td>player_norad_current_team</td><td>object</td><td>337</td><td>0.0%</td></tr><tr><td>player_norad_current_team_id</td><td>object</td><td>337</td><td>0.0%</td></tr><tr><td>other_url</td><td>object</td><td>13</td><td>96.1%</td></tr><tr><td>player_url</td><td>object</td><td>320</td><td>5.0%</td></tr><tr><td>player_image</td><td>object</td><td>337</td><td>0.0%</td></tr><tr><td>random_player_first_name</td><td>object</td><td>337</td><td>0.0%</td></tr><tr><td>random_player_last_name</td><td>object</td><td>337</td><td>0.0%</td></tr><tr><td>random_player_full_name</td><td>object</td><td>337</td><td>0.0%</td></tr>
             </table>
         </div>
         
-        <!-- Sample Data Section -->
-        <div class="column-docs">
-            <h2>Sample Data (First 5 Rows)</h2>
-            <table border="1" class="dataframe data-table">
+        <div class="card">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
   <thead>
     <tr style="text-align: right;">
       <th>player_first_name</th>
@@ -428,21 +60,14 @@
       <th>player_id</th>
       <th>player_primary_position</th>
       <th>current_skill_rating</th>
-      <th>player_hand</th>
       <th>birth_year</th>
       <th>player_gender</th>
       <th>highest_beer_league</th>
       <th>player_rating_ly</th>
-      <th>player_notes</th>
       <th>player_leadership</th>
       <th>player_norad</th>
-      <th>player_csaha</th>
-      <th>player_norad_primary_number</th>
-      <th>player_csah_primary_number</th>
       <th>player_norad_current_team</th>
-      <th>player_csah_current_team</th>
       <th>player_norad_current_team_id</th>
-      <th>player_csah_current_team_id</th>
       <th>other_url</th>
       <th>player_url</th>
       <th>player_image</th>
@@ -459,21 +84,14 @@
       <td>P100001</td>
       <td>Forward</td>
       <td>6</td>
-      <td>NaN</td>
       <td>1986.0</td>
       <td>M</td>
       <td>B - Platinum Group</td>
       <td>6</td>
-      <td>NaN</td>
       <td>A</td>
       <td>Y</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
       <td>Velodrome</td>
-      <td>NaN</td>
       <td>N10010</td>
-      <td>NaN</td>
       <td>NaN</td>
       <td>https://www.noradhockey.com/player/sam-downs/</td>
       <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2017/09/Sam-Downs-2024.jpg?w=350&amp;ssl=1</td>
@@ -488,21 +106,14 @@
       <td>P100002</td>
       <td>Forward</td>
       <td>4</td>
-      <td>NaN</td>
       <td>1985.0</td>
       <td>M</td>
       <td>JJJ</td>
       <td>4</td>
       <td>NaN</td>
-      <td>NaN</td>
       <td>Y</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
       <td>Velodrome</td>
-      <td>NaN</td>
       <td>N10010</td>
-      <td>NaN</td>
       <td>NaN</td>
       <td>https://www.noradhockey.com/player/kevin-white/</td>
       <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2024/08/Kevin-White-2024.jpg?resize=300%2C300&amp;ssl=1</td>
@@ -517,21 +128,14 @@
       <td>P100003</td>
       <td>Goalie</td>
       <td>5</td>
-      <td>NaN</td>
       <td>1974.0</td>
       <td>M</td>
       <td>Campbell League</td>
       <td>5</td>
       <td>NaN</td>
-      <td>NaN</td>
       <td>Y</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
       <td>HollowBrook</td>
-      <td>NaN</td>
       <td>N10003</td>
-      <td>NaN</td>
       <td>NaN</td>
       <td>https://www.noradhockey.com/player/scott-purdy-5/</td>
       <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2023/08/Scott-Purdy-2024.jpg?resize=300%2C300&amp;ssl=1</td>
@@ -546,21 +150,14 @@
       <td>P100004</td>
       <td>Forward</td>
       <td>4</td>
-      <td>NaN</td>
       <td>1999.0</td>
       <td>M</td>
       <td>C</td>
       <td>3</td>
       <td>NaN</td>
-      <td>NaN</td>
       <td>Y</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
       <td>Outlaws</td>
-      <td>NaN</td>
       <td>N10007</td>
-      <td>NaN</td>
       <td>NaN</td>
       <td>https://www.noradhockey.com/player/cesar-shinall/</td>
       <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2024/08/Cesar-Shinall-2024.jpg?w=200&amp;ssl=1</td>
@@ -575,21 +172,14 @@
       <td>P100005</td>
       <td>Forward</td>
       <td>2</td>
-      <td>NaN</td>
       <td>1986.0</td>
       <td>M</td>
       <td>Novice</td>
       <td>2</td>
       <td>NaN</td>
-      <td>NaN</td>
       <td>Y</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
       <td>Triple J</td>
-      <td>NaN</td>
       <td>N10009</td>
-      <td>NaN</td>
       <td>NaN</td>
       <td>https://www.noradhockey.com/player/john-michael-sebben-2/</td>
       <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2023/08/John-Michael-Sebben-2024.jpg?resize=300%2C300&amp;ssl=1</td>
@@ -597,12 +187,343 @@
       <td>Luke</td>
       <td>Shaw</td>
     </tr>
+    <tr>
+      <td>Bob</td>
+      <td>Colby</td>
+      <td>Bob Colby</td>
+      <td>P100006</td>
+      <td>Forward</td>
+      <td>4</td>
+      <td>1973.0</td>
+      <td>M</td>
+      <td>yup</td>
+      <td>4</td>
+      <td>C</td>
+      <td>Y</td>
+      <td>Triple J</td>
+      <td>N10009</td>
+      <td>NaN</td>
+      <td>https://www.noradhockey.com/player/bob-colby/</td>
+      <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2017/09/Bob-Colby-2024.jpg?resize=300%2C300&amp;ssl=1</td>
+      <td>Lewis Harrell</td>
+      <td>Lewis</td>
+      <td>Harrell</td>
+    </tr>
+    <tr>
+      <td>Jason</td>
+      <td>Mantaro</td>
+      <td>Jason Mantaro</td>
+      <td>P100007</td>
+      <td>Defense</td>
+      <td>5</td>
+      <td>1970.0</td>
+      <td>M</td>
+      <td>Campbell</td>
+      <td>5</td>
+      <td>A</td>
+      <td>Y</td>
+      <td>Triple J</td>
+      <td>N10009</td>
+      <td>NaN</td>
+      <td>https://www.noradhockey.com/player/jason-mantaro/</td>
+      <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2022/08/Jason-Mantaro-2024.jpg?w=275&amp;ssl=1</td>
+      <td>Austin Gonzales</td>
+      <td>Austin</td>
+      <td>Gonzales</td>
+    </tr>
+    <tr>
+      <td>Zach</td>
+      <td>DeBlois</td>
+      <td>Zach DeBlois</td>
+      <td>P100008</td>
+      <td>Forward</td>
+      <td>4</td>
+      <td>1997.0</td>
+      <td>M</td>
+      <td>Intermediate</td>
+      <td>4</td>
+      <td>NaN</td>
+      <td>Y</td>
+      <td>Triple J</td>
+      <td>N10009</td>
+      <td>NaN</td>
+      <td>https://www.noradhockey.com/player/zach-deblois/</td>
+      <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2022/08/Zach-Deblois-2024.jpg?resize=300%2C300&amp;ssl=1</td>
+      <td>Christophe Ellis</td>
+      <td>Christophe</td>
+      <td>Ellis</td>
+    </tr>
+    <tr>
+      <td>Graham</td>
+      <td>Peters</td>
+      <td>Graham Peters</td>
+      <td>P100009</td>
+      <td>Goalie</td>
+      <td>5</td>
+      <td>1989.0</td>
+      <td>M</td>
+      <td>NaN</td>
+      <td>5</td>
+      <td>NaN</td>
+      <td>Y</td>
+      <td>Outlaws</td>
+      <td>N10007</td>
+      <td>NaN</td>
+      <td>https://www.noradhockey.com/player/graham-peters/</td>
+      <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2023/08/Graham-Peters-2024.jpg?resize=300%2C300&amp;ssl=1</td>
+      <td>David Boyer</td>
+      <td>David</td>
+      <td>Boyer</td>
+    </tr>
+    <tr>
+      <td>Jason</td>
+      <td>Judge</td>
+      <td>Jason Judge</td>
+      <td>P100010</td>
+      <td>Defense</td>
+      <td>4</td>
+      <td>1978.0</td>
+      <td>M</td>
+      <td>CSAHL intermediate... Patriots</td>
+      <td>4</td>
+      <td>NaN</td>
+      <td>Y</td>
+      <td>Triple J</td>
+      <td>N10009</td>
+      <td>NaN</td>
+      <td>https://www.noradhockey.com/player/jason-judge/</td>
+      <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2021/09/Jason-Judge-2024.jpg?w=275&amp;ssl=1</td>
+      <td>Thomas Haskins</td>
+      <td>Thomas</td>
+      <td>Haskins</td>
+    </tr>
+    <tr>
+      <td>Jake</td>
+      <td>Winger</td>
+      <td>Jake Winger</td>
+      <td>P100011</td>
+      <td>Forward</td>
+      <td>4</td>
+      <td>1998.0</td>
+      <td>M</td>
+      <td>NORAD</td>
+      <td>3</td>
+      <td>NaN</td>
+      <td>Y</td>
+      <td>Free Agent</td>
+      <td>N10026</td>
+      <td>NaN</td>
+      <td>https://www.noradhockey.com/player/jake-winger-4/</td>
+      <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2023/02/Jake-Winger-2024.jpg?resize=300%2C300&amp;ssl=1</td>
+      <td>Bret Massey</td>
+      <td>Bret</td>
+      <td>Massey</td>
+    </tr>
+    <tr>
+      <td>Hal</td>
+      <td>Jordan</td>
+      <td>Hal Jordan</td>
+      <td>P100012</td>
+      <td>Defense</td>
+      <td>3</td>
+      <td>1968.0</td>
+      <td>M</td>
+      <td>Bud Light</td>
+      <td>3</td>
+      <td>S</td>
+      <td>Y</td>
+      <td>Triple J</td>
+      <td>N10009</td>
+      <td>NaN</td>
+      <td>https://www.noradhockey.com/player/hal-jordan/</td>
+      <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2017/09/Hal-Jordan-2024.jpg?resize=300%2C300&amp;ssl=1</td>
+      <td>Willie Hampton</td>
+      <td>Willie</td>
+      <td>Hampton</td>
+    </tr>
+    <tr>
+      <td>Dan</td>
+      <td>Maddock</td>
+      <td>Dan Maddock</td>
+      <td>P100013</td>
+      <td>Defense</td>
+      <td>3</td>
+      <td>1973.0</td>
+      <td>M</td>
+      <td>C</td>
+      <td>3</td>
+      <td>NaN</td>
+      <td>Y</td>
+      <td>AMOS</td>
+      <td>N10001</td>
+      <td>NaN</td>
+      <td>https://www.noradhockey.com/player/dan-maddock/</td>
+      <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2021/12/Dan-Maddock-2024.jpg?resize=300%2C300&amp;ssl=1</td>
+      <td>Zachary Perry</td>
+      <td>Zachary</td>
+      <td>Perry</td>
+    </tr>
+    <tr>
+      <td>Jon</td>
+      <td>Schuepbach</td>
+      <td>Jon Schuepbach</td>
+      <td>P100014</td>
+      <td>Forward</td>
+      <td>3</td>
+      <td>1969.0</td>
+      <td>M</td>
+      <td>Monument C leage</td>
+      <td>3</td>
+      <td>NaN</td>
+      <td>Y</td>
+      <td>Triple J</td>
+      <td>N10009</td>
+      <td>NaN</td>
+      <td>https://www.noradhockey.com/player/jon-schuepbach/</td>
+      <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2020/10/Jon-Schuepbach-2024.jpg?resize=300%2C300&amp;ssl=1</td>
+      <td>Harold Fisher</td>
+      <td>Harold</td>
+      <td>Fisher</td>
+    </tr>
+    <tr>
+      <td>Sean</td>
+      <td>Kenyon</td>
+      <td>Sean Kenyon</td>
+      <td>P100015</td>
+      <td>Forward</td>
+      <td>2</td>
+      <td>1989.0</td>
+      <td>M</td>
+      <td>Norad</td>
+      <td>2</td>
+      <td>NaN</td>
+      <td>Y</td>
+      <td>Free Agent</td>
+      <td>N10026</td>
+      <td>NaN</td>
+      <td>https://www.noradhockey.com/player/sean-kenyon/</td>
+      <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2020/10/Sean-Kenyon.jpg?resize=300%2C300&amp;ssl=1</td>
+      <td>Terrance Riddle</td>
+      <td>Terrance</td>
+      <td>Riddle</td>
+    </tr>
+    <tr>
+      <td>Wyatt</td>
+      <td>Crandall</td>
+      <td>Wyatt Crandall</td>
+      <td>P100016</td>
+      <td>Goalie</td>
+      <td>5</td>
+      <td>1996.0</td>
+      <td>M</td>
+      <td>Advanced</td>
+      <td>5</td>
+      <td>NaN</td>
+      <td>Y</td>
+      <td>Velodrome</td>
+      <td>N10010</td>
+      <td>NaN</td>
+      <td>https://www.noradhockey.com/player/wyatt-crandall/</td>
+      <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2020/10/Wyatt-Crandall.jpg?resize=300%2C300&amp;ssl=1</td>
+      <td>Mohammad Merritt</td>
+      <td>Mohammad</td>
+      <td>Merritt</td>
+    </tr>
+    <tr>
+      <td>Owen</td>
+      <td>Kalbfleisch</td>
+      <td>Owen Kalbfleisch</td>
+      <td>P100017</td>
+      <td>Forward</td>
+      <td>5</td>
+      <td>2003.0</td>
+      <td>M</td>
+      <td>B league</td>
+      <td>4</td>
+      <td>NaN</td>
+      <td>Y</td>
+      <td>Ace</td>
+      <td>N10002</td>
+      <td>NaN</td>
+      <td>https://www.noradhockey.com/player/owen-kalbfleisch/</td>
+      <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2021/09/Owen-Kalbfleisch-2024.jpg?resize=300%2C300&amp;ssl=1</td>
+      <td>Will Proctor</td>
+      <td>Will</td>
+      <td>Proctor</td>
+    </tr>
+    <tr>
+      <td>Cody</td>
+      <td>Patterson</td>
+      <td>Cody Patterson</td>
+      <td>P100018</td>
+      <td>Forward</td>
+      <td>5</td>
+      <td>NaN</td>
+      <td>M</td>
+      <td>NaN</td>
+      <td>5</td>
+      <td>NaN</td>
+      <td>Y</td>
+      <td>Free Agent</td>
+      <td>N10026</td>
+      <td>NaN</td>
+      <td>https://www.noradhockey.com/player/cody-patterson/</td>
+      <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2022/08/Cody-Patterson-2024.jpg?resize=300%2C300&amp;ssl=1</td>
+      <td>Hugh Schmitt</td>
+      <td>Hugh</td>
+      <td>Schmitt</td>
+    </tr>
+    <tr>
+      <td>Matt</td>
+      <td>Lee</td>
+      <td>Matt Lee</td>
+      <td>P100019</td>
+      <td>Forward</td>
+      <td>5</td>
+      <td>1989.0</td>
+      <td>M</td>
+      <td>CSAHL Advanced</td>
+      <td>5</td>
+      <td>NaN</td>
+      <td>Y</td>
+      <td>Triple J</td>
+      <td>N10009</td>
+      <td>NaN</td>
+      <td>https://www.noradhockey.com/player/matt-lee/</td>
+      <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2024/08/Matt-Lee-2024.jpg?resize=300%2C300&amp;ssl=1</td>
+      <td>Brendan Hill</td>
+      <td>Brendan</td>
+      <td>Hill</td>
+    </tr>
+    <tr>
+      <td>Rick</td>
+      <td>Haenke</td>
+      <td>Rick Haenke</td>
+      <td>P100020</td>
+      <td>Goalie</td>
+      <td>5</td>
+      <td>1983.0</td>
+      <td>M</td>
+      <td>A league with High Life</td>
+      <td>5</td>
+      <td>NaN</td>
+      <td>Y</td>
+      <td>Triple J</td>
+      <td>N10009</td>
+      <td>NaN</td>
+      <td>https://www.noradhockey.com/player/rick-haenke/</td>
+      <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2023/08/Rick-Haenke-2024.jpg?resize=300%2C300&amp;ssl=1</td>
+      <td>Shane Delaney</td>
+      <td>Shane</td>
+      <td>Delaney</td>
+    </tr>
   </tbody>
 </table>
+            </div>
         </div>
         
         <footer>
-            BenchSight v0.01 | Generated: 2026-01-07 21:13 | <a href="../tables.html">Back to Tables</a>
+            BenchSight v11.04 | Generated 2026-01-12 23:37:10
         </footer>
     </div>
 </body>

@@ -1,0 +1,32 @@
+{
+  "last_full_run": "2026-01-09T18:24:46.097838",
+  "last_incremental_run": null,
+  "processed_games": {
+    "18969": {
+      "hash": "b445a8a33438be17cd6ac2bd7b97e9ef",
+      "mtime": 1767981513.0,
+      "processed_at": "2026-01-09T18:24:46.082028",
+      "schema_version": "10.03"
+    },
+    "18977": {
+      "hash": "fa6ce2a91072a33b3a8152b88b35f6da",
+      "mtime": 1767981513.0,
+      "processed_at": "2026-01-09T18:24:46.087006",
+      "schema_version": "10.03"
+    },
+    "18981": {
+      "hash": "403cca9fddbfd4669b9ed5dbf2d3bb4d",
+      "mtime": 1767981513.0,
+      "processed_at": "2026-01-09T18:24:46.091783",
+      "schema_version": "10.03"
+    },
+    "18987": {
+      "hash": "2f8e0235f9a0f0519a8e54c55ba567c0",
+      "mtime": 1767981513.0,
+      "processed_at": "2026-01-09T18:24:46.097836",
+      "schema_version": "10.03"
+    }
+  },
+  "table_versions": {},
+  "schema_version": "10.03"
+}

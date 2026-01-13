@@ -1,0 +1,22 @@
+table_name,tier,status,row_count,validated_date,notes
+dim_player,1,VALID,337,2026-01-10,No null player_ids
+dim_team,1,VALID,26,2026-01-10,All NORAD teams present
+dim_schedule,1,VALID,567,2026-01-10,All games loaded
+dim_event_type,1,VALID,23,2026-01-10,All event types present
+fact_events,1,VALID,5823,2026-01-10,4 games covered
+fact_shifts,1,VALID,399,2026-01-10,4 games covered
+fact_gameroster,1,VALID,14595,2026-01-10,25-27 players per game
+fact_player_game_stats,1,VALID,105,2026-01-10,Goals verified correct
+fact_team_game_stats,1,PENDING,16,2026-01-10,Needs noradhockey comparison
+fact_goalie_game_stats,1,BLOCKED,8,2026-01-10,Supabase upload failing
+dim_event_detail,2,PENDING,60,2026-01-10,Not yet validated
+dim_event_detail_2,2,PENDING,176,2026-01-10,Not yet validated
+dim_play_detail,2,PENDING,111,2026-01-10,Not yet validated
+dim_play_detail_2,2,PENDING,111,2026-01-10,Not yet validated
+fact_faceoffs,2,PENDING,169,2026-01-10,Not yet validated
+fact_shot_event,2,PENDING,435,2026-01-10,Not yet validated
+fact_penalties,2,PENDING,11,2026-01-10,Not yet validated
+fact_zone_entries,2,PENDING,567,2026-01-10,Not yet validated
+fact_zone_exits,2,PENDING,568,2026-01-10,Not yet validated
+fact_player_season_stats,2,PENDING,337,2026-01-10,Not yet validated
+fact_team_season_stats,2,PENDING,26,2026-01-10,Not yet validated

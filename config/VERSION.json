@@ -1,17 +1,22 @@
 {
-  "major": 17,
-  "minor": 0,
-  "version_string": "v17.00",
-  "last_updated": "2026-01-08T19:00:00Z",
-  "chat_number": 17,
-  "output_number": 0,
-  "notes": "Tracker v17 - Keyboard fixes, shift modal fixes, event log toggle",
-  "features": [
-    "FIXED: Alt+1-6 added for opponent player selection (Ctrl+1-6 browser conflict)",
-    "FIXED: Shift edit dropdown now shows correct selected values",
-    "FIXED: Added OnTheFly to shiftStart options list",
-    "FIXED: Default shift types from 'On The Fly' to 'OnTheFly'",
-    "ADDED: Event log visibility toggle button",
-    "UPDATED: Help section with Alt+1-6 as primary method"
-  ]
+  "version": "27.3",
+  "date": "2026-01-12",
+  "description": "Shift FK verification, early/late period CF/CA verified, defensive clutch stats",
+  "changes": [
+    "VERIFIED: shift_id FK on fact_events (99.8% populated)",
+    "VERIFIED: shift_id FK on fact_event_players (99.8% populated)",
+    "VERIFIED: early/late_period_cf_pct working (not hardcoded 50.0)",
+    "DOCUMENTED: p3_leading_* defensive clutch stats",
+    "DOCUMENTED: Comprehensive unverified table list",
+    "UPDATED: Tech debt assessment"
+  ],
+  "validation": {
+    "checks_passed": 10,
+    "checks_failed": 0,
+    "goals_validated": 16,
+    "tables_created": 135,
+    "shift_id_fill_events": "99.8%",
+    "shift_id_fill_event_players": "99.8%"
+  },
+  "next_priority": "fact_goalie_game_stats validation"
 }

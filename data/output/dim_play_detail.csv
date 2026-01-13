@@ -1,139 +1,112 @@
 play_detail_id,play_detail_code,play_detail_name,play_category,skill_level,description
-PD0001,AssistPrimary,AssistPrimary,scoring,Standard,Primary assist on goal
-PD0002,AssistSecondary,AssistSecondary,scoring,Standard,Secondary assist on goal
-PD0003,StickCheck,StickCheck,defense,Standard,Stick check to disrupt opponent
-PD0004,PokeCheck,PokeCheck,defense,Standard,Poke check to steal puck
-PD0005,BlockedShot,BlockedShot,defense,Standard,Blocked an opponent shot
-PD0006,InShotPassLane,InShotPassLane,defense,Standard,Positioned in shot/pass lane
-PD0007,SeparateFromPuck,SeparateFromPuck,defense,Standard,Separated opponent from puck
-PD0008,Backcheck,Backcheck,defense,Standard,Backcheck effort
-PD0009,ZoneEntryDenial,ZoneEntryDenial,defense,Standard,Denied zone entry
-PD0010,ZoneExitDenial,ZoneExitDenial,defense,Standard,Denied zone exit
-PD0011,TakeAway,TakeAway,defense,Standard,Took puck from opponent
-PD0012,Deke,Deke,offense,Standard,Deke attempt
-PD0013,BeatDeke,BeatDeke,offense,Standard,Successfully beat defender with deke
-PD0014,Screen,Screen,offense,Standard,Screen on goalie
-PD0015,DumpAndChase,DumpAndChase,offense,Standard,Dump and chase play
-PD0016,Tip,Tip,offense,Standard,Tip/deflection attempt
-PD0017,OneTimer,OneTimer,offense,Standard,One-timer shot
-PD0018,DriveMiddle,DriveMiddle,drive,Standard,Drive to middle
-PD0019,DriveWide,DriveWide,drive,Standard,Drive wide
-PD0020,DriveCorner,DriveCorner,drive,Standard,Drive to corner
-PD0021,DriveNetMiddle,DriveNetMiddle,drive,Standard,Drive to net front
-PD0022,BeatMiddle,BeatMiddle,drive,Standard,Beat defender to middle
-PD0023,BeatWide,BeatWide,drive,Standard,Beat defender wide
-PD0024,Breakout,Breakout,transition,Standard,Breakout play
-PD0025,AttemptedBreakOutPass,AttemptedBreakOutPass,transition,Standard,Attempted breakout pass
-PD0026,AttemptedBreakOutRush,AttemptedBreakOutRush,transition,Standard,Attempted breakout rush
-PD0027,PuckRecovery,PuckRecovery,recovery,Standard,Recovered loose puck
-PD0028,BoardBattleWin,BoardBattleWin,recovery,Standard,Won board battle
-PD0029,BoardBattleLoss,BoardBattleLoss,recovery,Standard,Lost board battle
-PD0030,CrashNet,CrashNet,offense,Standard,Crash the net
-PD0031,Cycle,Cycle,offense,Standard,Cycle play in offensive zone
-PD0032,Forecheck,Forecheck,offense,Standard,Forecheck pressure
-PD0033,QuickUp,QuickUp,offense,Standard,Quick up pass
-PD0034,Reverse,Reverse,offense,Standard,Reverse play direction
-PD0035,Pressure,Pressure,defense,Standard,Defensive pressure on puck carrier
-PD0036,Contain,Contain,defense,Standard,Contain opponent positioning
-PD0037,Surf,Surf,defense,Standard,Surf/shadow defensive positioning
-PD0038,AttemptedBlockedShot,AttemptedBlockedShot,other,Standard,Micro-play action from tracking data
-PD0039,AttemptedBreakOutClear,AttemptedBreakOutClear,other,Standard,Micro-play action from tracking data
-PD0040,AttemptedEntryDumpIn,AttemptedEntryDumpIn,other,Standard,Micro-play action from tracking data
-PD0041,AttemptedEntryPass,AttemptedEntryPass,other,Standard,Micro-play action from tracking data
-PD0042,AttemptedEntryRush,AttemptedEntryRush,other,Standard,Micro-play action from tracking data
-PD0043,AttemptedKeepin,AttemptedKeepin,other,Standard,Micro-play action from tracking data
-PD0044,AttemptedShot,AttemptedShot,other,Standard,Micro-play action from tracking data
-PD0045,AttemptedTip_Deflection,AttemptedTip_Deflection,other,Standard,Micro-play action from tracking data
-PD0046,BoxOut,BoxOut,other,Standard,Micro-play action from tracking data
-PD0047,Carry,Carry,other,Standard,Micro-play action from tracking data
-PD0048,CededZoneEntry,CededZoneEntry,other,Standard,Micro-play action from tracking data
-PD0049,Chip,Chip,other,Standard,Micro-play action from tracking data
-PD0050,CutBack,CutBack,other,Standard,Micro-play action from tracking data
-PD0051,DefensivePlay_Zone_PuckRecoveryFaceoff,DefensivePlay_Zone_PuckRecoveryFaceoff,defensive,Standard,Micro-play action from tracking data
-PD0052,DefensivePlay_Zone_PuckRetreivalFaceoff,DefensivePlay_Zone_PuckRetreivalFaceoff,defensive,Standard,Micro-play action from tracking data
-PD0053,DefensivePlay_Zone_PuckRetreivalOther,DefensivePlay_Zone_PuckRetreivalOther,defensive,Standard,Micro-play action from tracking data
-PD0054,Defensive_PlayPass_PassDeflected,Defensive_PlayPass_PassDeflected,defensive,Standard,Micro-play action from tracking data
-PD0055,Defensive_PlayPass_PassIntercepted,Defensive_PlayPass_PassIntercepted,defensive,Standard,Micro-play action from tracking data
-PD0056,Defensive_PlayPossession_FroceWide,Defensive_PlayPossession_FroceWide,defensive,Standard,Micro-play action from tracking data
-PD0057,Defensive_PlayPossession_ManOnMan,Defensive_PlayPossession_ManOnMan,defensive,Standard,Micro-play action from tracking data
-PD0058,Defensive_PlayShot_BoxOut,Defensive_PlayShot_BoxOut,defensive,Standard,Micro-play action from tracking data
-PD0059,Defensive_PlayShot_FrontofNet,Defensive_PlayShot_FrontofNet,defensive,Standard,Micro-play action from tracking data
-PD0060,Defensive_PlayZone_ForcedDumpin_Clear,Defensive_PlayZone_ForcedDumpin_Clear,defensive,Standard,Micro-play action from tracking data
-PD0061,Defensive_PlayZone_PuckRecoveryDumpIn,Defensive_PlayZone_PuckRecoveryDumpIn,defensive,Standard,Micro-play action from tracking data
-PD0062,Defensive_PlayZone_PuckRecoveryPass,Defensive_PlayZone_PuckRecoveryPass,defensive,Standard,Micro-play action from tracking data
-PD0063,Defensive_PlayZone_PuckRecoveryRebound,Defensive_PlayZone_PuckRecoveryRebound,defensive,Standard,Micro-play action from tracking data
-PD0064,Defensive_PlayZone_PuckRecoveryShot,Defensive_PlayZone_PuckRecoveryShot,defensive,Standard,Micro-play action from tracking data
-PD0065,Defensive_PlayZone_PuckRecoveryTurnover,Defensive_PlayZone_PuckRecoveryTurnover,defensive,Standard,Micro-play action from tracking data
-PD0066,Defensive_PlayZone_PuckRetreivalPass,Defensive_PlayZone_PuckRetreivalPass,defensive,Standard,Micro-play action from tracking data
-PD0067,Defensive_PlayZone_PuckRetreivalTurnover,Defensive_PlayZone_PuckRetreivalTurnover,defensive,Standard,Micro-play action from tracking data
-PD0068,Defensive_PlayZone_PuckRetrievalDumpIn,Defensive_PlayZone_PuckRetrievalDumpIn,defensive,Standard,Micro-play action from tracking data
-PD0069,Defensive_PlayZone_PuckRetrievalRebound,Defensive_PlayZone_PuckRetrievalRebound,defensive,Standard,Micro-play action from tracking data
-PD0070,Defensive_PlayZone_PuckRetrievalShot,Defensive_PlayZone_PuckRetrievalShot,defensive,Standard,Micro-play action from tracking data
-PD0071,Defensive_Zone_AttemptedBreakOutClear,Defensive_Zone_AttemptedBreakOutClear,defensive,Standard,Micro-play action from tracking data
-PD0072,DeflectedShot,DeflectedShot,other,Standard,Micro-play action from tracking data
-PD0073,Delay,Delay,other,Standard,Micro-play action from tracking data
-PD0074,DumpChase,DumpChase,other,Standard,Micro-play action from tracking data
-PD0075,DumpInAttempt,DumpInAttempt,other,Standard,Micro-play action from tracking data
-PD0076,Dump_RimInZone,Dump_RimInZone,other,Standard,Micro-play action from tracking data
-PD0077,ForceWide,ForceWide,other,Standard,Micro-play action from tracking data
-PD0078,ForcedDumpin_Clear,ForcedDumpin_Clear,other,Standard,Micro-play action from tracking data
-PD0079,ForcedTurnover,ForcedTurnover,other,Standard,Micro-play action from tracking data
-PD0080,FrontofNet,FrontofNet,other,Standard,Micro-play action from tracking data
-PD0081,GiveAndGo,GiveAndGo,other,Standard,Micro-play action from tracking data
-PD0082,Hit,Hit,other,Standard,Micro-play action from tracking data
-PD0083,LoosePuckBattleLost,LoosePuckBattleLost,other,Standard,Micro-play action from tracking data
-PD0084,LoosePuckBattleWon,LoosePuckBattleWon,other,Standard,Micro-play action from tracking data
-PD0085,LostPuck,LostPuck,other,Standard,Micro-play action from tracking data
-PD0086,ManOnMan,ManOnMan,other,Standard,Micro-play action from tracking data
-PD0087,OffensivePlay_Pass_SecondTouch,OffensivePlay_Pass_SecondTouch,offensive,Standard,Micro-play action from tracking data
-PD0088,OffensivePlay_Possession_CutBack,OffensivePlay_Possession_CutBack,offensive,Standard,Micro-play action from tracking data
-PD0089,OffensivePlay_Possession_DriveNetWide,OffensivePlay_Possession_DriveNetWide,offensive,Standard,Micro-play action from tracking data
-PD0090,OffensivePlay_Possession_FrontofNet,OffensivePlay_Possession_FrontofNet,offensive,Standard,Micro-play action from tracking data
-PD0091,OffensivePlay_Possession_OpenIceDeke,OffensivePlay_Possession_OpenIceDeke,offensive,Standard,Micro-play action from tracking data
-PD0092,OffensivePlay_Zone_Dump_RimInZone,OffensivePlay_Zone_Dump_RimInZone,offensive,Standard,Micro-play action from tracking data
-PD0093,OffensivePlay_Zone_PuckRecoveryDumpIn,OffensivePlay_Zone_PuckRecoveryDumpIn,offensive,Standard,Micro-play action from tracking data
-PD0094,OffensivePlay_Zone_PuckRecoveryFaceoff,OffensivePlay_Zone_PuckRecoveryFaceoff,offensive,Standard,Micro-play action from tracking data
-PD0095,OffensivePlay_Zone_PuckRecoveryOther,OffensivePlay_Zone_PuckRecoveryOther,offensive,Standard,Micro-play action from tracking data
-PD0096,OffensivePlay_Zone_PuckRecoveryPass,OffensivePlay_Zone_PuckRecoveryPass,offensive,Standard,Micro-play action from tracking data
-PD0097,OffensivePlay_Zone_PuckRecoveryRebound,OffensivePlay_Zone_PuckRecoveryRebound,offensive,Standard,Micro-play action from tracking data
-PD0098,OffensivePlay_Zone_PuckRecoveryShot,OffensivePlay_Zone_PuckRecoveryShot,offensive,Standard,Micro-play action from tracking data
-PD0099,OffensivePlay_Zone_PuckRecoveryTurnover,OffensivePlay_Zone_PuckRecoveryTurnover,offensive,Standard,Micro-play action from tracking data
-PD0100,OffensivePlay_Zone_PuckRetreivalFaceoff,OffensivePlay_Zone_PuckRetreivalFaceoff,offensive,Standard,Micro-play action from tracking data
-PD0101,OffensivePlay_Zone_PuckRetreivalPass,OffensivePlay_Zone_PuckRetreivalPass,offensive,Standard,Micro-play action from tracking data
-PD0102,OffensivePlay_Zone_PuckRetreivalRebound,OffensivePlay_Zone_PuckRetreivalRebound,offensive,Standard,Micro-play action from tracking data
-PD0103,OffensivePlay_Zone_PuckRetreivalShot,OffensivePlay_Zone_PuckRetreivalShot,offensive,Standard,Micro-play action from tracking data
-PD0104,OffensivePlay_Zone_PuckRetreivalTurnover,OffensivePlay_Zone_PuckRetreivalTurnover,offensive,Standard,Micro-play action from tracking data
-PD0105,OffensivePlay_Zone_PuckRetrievalDumpIn,OffensivePlay_Zone_PuckRetrievalDumpIn,offensive,Standard,Micro-play action from tracking data
-PD0106,OffensivePlay_Zone_PuckRetrievalShot,OffensivePlay_Zone_PuckRetrievalShot,offensive,Standard,Micro-play action from tracking data
-PD0107,Offensive_Zone_AttemptedEntryRush,Offensive_Zone_AttemptedEntryRush,offensive,Standard,Micro-play action from tracking data
-PD0108,Offensive_Zone_CededZoneExit,Offensive_Zone_CededZoneExit,offensive,Standard,Micro-play action from tracking data
-PD0109,Pass,Pass,other,Standard,Micro-play action from tracking data
-PD0110,PassDeflected,PassDeflected,other,Standard,Micro-play action from tracking data
-PD0111,PassForTip,PassForTip,other,Standard,Micro-play action from tracking data
-PD0112,PassIntercepted,PassIntercepted,other,Standard,Micro-play action from tracking data
-PD0113,Penalty,Penalty,other,Standard,Micro-play action from tracking data
-PD0114,PuckRecoveryRetreivalAttemptedClear,PuckRecoveryRetreivalAttemptedClear,recovery,Standard,Micro-play action from tracking data
-PD0115,PuckRecoveryRetreivalClear,PuckRecoveryRetreivalClear,recovery,Standard,Micro-play action from tracking data
-PD0116,PuckRecoveryRetreivalDumpIn,PuckRecoveryRetreivalDumpIn,recovery,Standard,Micro-play action from tracking data
-PD0117,PuckRecoveryRetreivalFaceoff,PuckRecoveryRetreivalFaceoff,recovery,Standard,Micro-play action from tracking data
-PD0118,PuckRecoveryRetreivalLoosePuckBattle,PuckRecoveryRetreivalLoosePuckBattle,recovery,Standard,Micro-play action from tracking data
-PD0119,PuckRecoveryRetreivalOther,PuckRecoveryRetreivalOther,recovery,Standard,Micro-play action from tracking data
-PD0120,PuckRecoveryRetreivalPass,PuckRecoveryRetreivalPass,recovery,Standard,Micro-play action from tracking data
-PD0121,PuckRecoveryRetreivalRebound,PuckRecoveryRetreivalRebound,recovery,Standard,Micro-play action from tracking data
-PD0122,PuckRecoveryRetreivalShot,PuckRecoveryRetreivalShot,recovery,Standard,Micro-play action from tracking data
-PD0123,PuckRecoveryRetreivalTurnover,PuckRecoveryRetreivalTurnover,recovery,Standard,Micro-play action from tracking data
-PD0124,ReceiverMissed,ReceiverMissed,other,Standard,Micro-play action from tracking data
-PD0125,RecoveryRetreivalAttemptedClear,RecoveryRetreivalAttemptedClear,recovery,Standard,Micro-play action from tracking data
-PD0126,RecoveryRetreivalClear,RecoveryRetreivalClear,recovery,Standard,Micro-play action from tracking data
-PD0127,RecoveryRetreivalDumpIn,RecoveryRetreivalDumpIn,recovery,Standard,Micro-play action from tracking data
-PD0128,RecoveryRetreivalFaceoff,RecoveryRetreivalFaceoff,recovery,Standard,Micro-play action from tracking data
-PD0129,RecoveryRetreivalPass,RecoveryRetreivalPass,recovery,Standard,Micro-play action from tracking data
-PD0130,RecoveryRetreivalRebound,RecoveryRetreivalRebound,recovery,Standard,Micro-play action from tracking data
-PD0131,RecoveryRetreivalShot,RecoveryRetreivalShot,recovery,Standard,Micro-play action from tracking data
-PD0132,RecoveryRetreivalTurnover,RecoveryRetreivalTurnover,recovery,Standard,Micro-play action from tracking data
-PD0133,Save,Save,other,Standard,Micro-play action from tracking data
-PD0134,SecondTouch,SecondTouch,other,Standard,Micro-play action from tracking data
-PD0135,Shoot,Shoot,other,Standard,Micro-play action from tracking data
-PD0136,StoppedDeke,StoppedDeke,other,Standard,Micro-play action from tracking data
-PD0137,Win,Win,other,Standard,Micro-play action from tracking data
-PD0138,ZoneKeepin,ZoneKeepin,other,Standard,Micro-play action from tracking data
+PD0001,AssistPrimary,AssistPrimary,scoring,Medium,scoring action: AssistPrimary
+PD0002,AssistSecondary,AssistSecondary,scoring,Medium,scoring action: AssistSecondary
+PD0003,AssistTertiary,AssistTertiary,scoring,Medium,scoring action: AssistTertiary
+PD0004,AttemptedBlockedShot,AttemptedBlockedShot,scoring,Medium,scoring action: AttemptedBlockedShot
+PD0005,AttemptedBreakOutClear,AttemptedBreakOutClear,transition,Medium,transition action: AttemptedBreakOutClear
+PD0006,AttemptedBreakOutPass,AttemptedBreakOutPass,playmaking,Medium,playmaking action: AttemptedBreakOutPass
+PD0007,AttemptedBreakOutRush,AttemptedBreakOutRush,transition,Medium,transition action: AttemptedBreakOutRush
+PD0008,AttemptedEntryDumpIn,AttemptedEntryDumpIn,transition,Medium,transition action: AttemptedEntryDumpIn
+PD0009,AttemptedEntryPass,AttemptedEntryPass,playmaking,Medium,playmaking action: AttemptedEntryPass
+PD0010,AttemptedEntryRush,AttemptedEntryRush,transition,Medium,transition action: AttemptedEntryRush
+PD0011,AttemptedKeepin,AttemptedKeepin,other,Medium,other action: AttemptedKeepin
+PD0012,AttemptedPass,AttemptedPass,playmaking,Medium,playmaking action: AttemptedPass
+PD0013,AttemptedShot,AttemptedShot,scoring,Medium,scoring action: AttemptedShot
+PD0014,AttemptedTip/Deflection,AttemptedTip/Deflection,scoring,Medium,scoring action: AttemptedTip/Deflection
+PD0015,Backcheck,Backcheck,defensive,Medium,defensive action: Backcheck
+PD0016,BeatDeke,BeatDeke,offensive,High,offensive action: BeatDeke
+PD0017,BeatFake,BeatFake,offensive,Medium,offensive action: BeatFake
+PD0018,BeatMiddle,BeatMiddle,offensive,High,offensive action: BeatMiddle
+PD0019,BeatSpeed,BeatSpeed,offensive,High,offensive action: BeatSpeed
+PD0020,BeatWide,BeatWide,offensive,High,offensive action: BeatWide
+PD0021,BlockedShot,BlockedShot,scoring,Medium,scoring action: BlockedShot
+PD0022,BoxOut,BoxOut,defensive,Low,defensive action: BoxOut
+PD0023,Breakout,Breakout,transition,Medium,transition action: Breakout
+PD0024,CededZoneEntry,CededZoneEntry,transition,Medium,transition action: CededZoneEntry
+PD0025,CededZoneExit,CededZoneExit,transition,Medium,transition action: CededZoneExit
+PD0026,Chip,Chip,other,Low,other action: Chip
+PD0027,ClearingAttempt,ClearingAttempt,other,Low,other action: ClearingAttempt
+PD0028,Contain,Contain,defensive,Low,defensive action: Contain
+PD0029,CrashNet,CrashNet,offensive,High,offensive action: CrashNet
+PD0030,CutBack,CutBack,other,Medium,other action: CutBack
+PD0031,Cycle,Cycle,offensive,Medium,offensive action: Cycle
+PD0032,DeflectedShot,DeflectedShot,scoring,Medium,scoring action: DeflectedShot
+PD0033,Deke,Deke,offensive,High,offensive action: Deke
+PD0034,Delay,Delay,other,Low,other action: Delay
+PD0035,DelayedOffside,DelayedOffside,other,Low,other action: DelayedOffside
+PD0036,DriveCorner,DriveCorner,offensive,Medium,offensive action: DriveCorner
+PD0037,DriveMiddle,DriveMiddle,offensive,Medium,offensive action: DriveMiddle
+PD0038,DriveNetMiddle,DriveNetMiddle,offensive,High,offensive action: DriveNetMiddle
+PD0039,DriveNetWide,DriveNetWide,offensive,High,offensive action: DriveNetWide
+PD0040,DriveWide,DriveWide,offensive,Medium,offensive action: DriveWide
+PD0041,Dump/RimInZone,Dump/RimInZone,transition,Medium,transition action: Dump/RimInZone
+PD0042,DumpChase,DumpChase,other,Low,other action: DumpChase
+PD0043,DumpInAttempt,DumpInAttempt,other,Medium,other action: DumpInAttempt
+PD0044,EndToEndRush,EndToEndRush,other,High,other action: EndToEndRush
+PD0045,FakeShot,FakeShot,scoring,Medium,scoring action: FakeShot
+PD0046,ForcedDumpin/Clear,ForcedDumpin/Clear,other,Medium,other action: ForcedDumpin/Clear
+PD0047,ForcedLostPossession,ForcedLostPossession,other,Medium,other action: ForcedLostPossession
+PD0048,ForcedMissedPass,ForcedMissedPass,playmaking,Medium,playmaking action: ForcedMissedPass
+PD0049,ForcedMissedShot,ForcedMissedShot,scoring,Medium,scoring action: ForcedMissedShot
+PD0050,ForcedTurnover,ForcedTurnover,other,Medium,other action: ForcedTurnover
+PD0051,ForceWide,ForceWide,other,Medium,other action: ForceWide
+PD0052,ForecedOutside,ForecedOutside,other,Medium,other action: ForecedOutside
+PD0053,Forecheck,Forecheck,defensive,Medium,defensive action: Forecheck
+PD0054,FrontofNet,FrontofNet,offensive,Medium,offensive action: FrontofNet
+PD0055,GapControl,GapControl,defensive,Medium,defensive action: GapControl
+PD0056,GiveAndGo,GiveAndGo,playmaking,High,playmaking action: GiveAndGo
+PD0057,InShotPassLane,InShotPassLane,scoring,Medium,scoring action: InShotPassLane
+PD0058,LoosePuckBattleLost,LoosePuckBattleLost,puck_battle,Medium,puck_battle action: LoosePuckBattleLost
+PD0059,LoosePuckBattleWon,LoosePuckBattleWon,puck_battle,Medium,puck_battle action: LoosePuckBattleWon
+PD0060,LostPuck,LostPuck,puck_battle,Medium,puck_battle action: LostPuck
+PD0061,ManOnMan,ManOnMan,other,Medium,other action: ManOnMan
+PD0062,MisplayedPuck,MisplayedPuck,puck_battle,Medium,puck_battle action: MisplayedPuck
+PD0063,OpenIceDeke,OpenIceDeke,offensive,High,offensive action: OpenIceDeke
+PD0064,Other,Other,other,Medium,other action: Other
+PD0065,PassDeflected,PassDeflected,scoring,Medium,scoring action: PassDeflected
+PD0066,PassForTip,PassForTip,scoring,Medium,scoring action: PassForTip
+PD0067,PassIntercepted,PassIntercepted,playmaking,Medium,playmaking action: PassIntercepted
+PD0068,PenaltyKillClear,PenaltyKillClear,other,Medium,other action: PenaltyKillClear
+PD0069,PokeCheck,PokeCheck,defensive,Medium,defensive action: PokeCheck
+PD0070,Pressure,Pressure,defensive,Medium,defensive action: Pressure
+PD0071,PuckRecoveryRetreivalAttemptedClear,PuckRecoveryRetreivalAttemptedClear,puck_battle,Medium,puck_battle action: PuckRecoveryRetreivalAttemptedClear
+PD0072,PuckRecoveryRetreivalClear,PuckRecoveryRetreivalClear,puck_battle,Medium,puck_battle action: PuckRecoveryRetreivalClear
+PD0073,PuckRecoveryRetreivalDumpIn,PuckRecoveryRetreivalDumpIn,puck_battle,Medium,puck_battle action: PuckRecoveryRetreivalDumpIn
+PD0074,PuckRecoveryRetreivalFaceoff,PuckRecoveryRetreivalFaceoff,puck_battle,Medium,puck_battle action: PuckRecoveryRetreivalFaceoff
+PD0075,PuckRecoveryRetreivalLoosePuckBattle,PuckRecoveryRetreivalLoosePuckBattle,puck_battle,Medium,puck_battle action: PuckRecoveryRetreivalLoosePuckBattle
+PD0076,PuckRecoveryRetreivalOther,PuckRecoveryRetreivalOther,puck_battle,Medium,puck_battle action: PuckRecoveryRetreivalOther
+PD0077,PuckRecoveryRetreivalPass,PuckRecoveryRetreivalPass,playmaking,Medium,playmaking action: PuckRecoveryRetreivalPass
+PD0078,PuckRecoveryRetreivalRebound,PuckRecoveryRetreivalRebound,puck_battle,Medium,puck_battle action: PuckRecoveryRetreivalRebound
+PD0079,PuckRecoveryRetreivalShot,PuckRecoveryRetreivalShot,scoring,Medium,scoring action: PuckRecoveryRetreivalShot
+PD0080,PuckRecoveryRetreivalTurnover,PuckRecoveryRetreivalTurnover,puck_battle,Medium,puck_battle action: PuckRecoveryRetreivalTurnover
+PD0081,PuckRetrievalDumpIn,PuckRetrievalDumpIn,puck_battle,Medium,puck_battle action: PuckRetrievalDumpIn
+PD0082,PuckRetrievalRebound,PuckRetrievalRebound,puck_battle,Medium,puck_battle action: PuckRetrievalRebound
+PD0083,PuckRetrievalShot,PuckRetrievalShot,scoring,Medium,scoring action: PuckRetrievalShot
+PD0084,QuickUp,QuickUp,playmaking,Medium,playmaking action: QuickUp
+PD0085,ReceiverMissed,ReceiverMissed,other,Medium,other action: ReceiverMissed
+PD0086,RecoveryRetreivalDumpIn,RecoveryRetreivalDumpIn,puck_battle,Medium,puck_battle action: RecoveryRetreivalDumpIn
+PD0087,RecoveryRetreivalFaceoff,RecoveryRetreivalFaceoff,puck_battle,Medium,puck_battle action: RecoveryRetreivalFaceoff
+PD0088,RecoveryRetreivalOther,RecoveryRetreivalOther,puck_battle,Medium,puck_battle action: RecoveryRetreivalOther
+PD0089,RecoveryRetreivalPass,RecoveryRetreivalPass,playmaking,Medium,playmaking action: RecoveryRetreivalPass
+PD0090,RecoveryRetreivalRebound,RecoveryRetreivalRebound,puck_battle,Medium,puck_battle action: RecoveryRetreivalRebound
+PD0091,RecoveryRetreivalShot,RecoveryRetreivalShot,scoring,Medium,scoring action: RecoveryRetreivalShot
+PD0092,RecoveryRetreivalTurnover,RecoveryRetreivalTurnover,puck_battle,Medium,puck_battle action: RecoveryRetreivalTurnover
+PD0093,RecoveryRetrievalDumpIn,RecoveryRetrievalDumpIn,puck_battle,Medium,puck_battle action: RecoveryRetrievalDumpIn
+PD0094,RecoveryRetrievalShot,RecoveryRetrievalShot,scoring,Medium,scoring action: RecoveryRetrievalShot
+PD0095,Regroup,Regroup,transition,Medium,transition action: Regroup
+PD0096,RegroupClear,RegroupClear,transition,Medium,transition action: RegroupClear
+PD0097,RegroupDumpin,RegroupDumpin,transition,Medium,transition action: RegroupDumpin
+PD0098,Reverse,Reverse,other,Medium,other action: Reverse
+PD0099,Screen,Screen,offensive,Medium,offensive action: Screen
+PD0100,SecondTouch,SecondTouch,other,Medium,other action: SecondTouch
+PD0101,SeperateFromPuck,SeperateFromPuck,puck_battle,Medium,puck_battle action: SeperateFromPuck
+PD0102,Speed,Speed,other,Medium,other action: Speed
+PD0103,StickCheck,StickCheck,defensive,Medium,defensive action: StickCheck
+PD0104,StoppedDeke,StoppedDeke,offensive,High,offensive action: StoppedDeke
+PD0105,Surf,Surf,other,Medium,other action: Surf
+PD0106,Tracker,Tracker,other,Medium,other action: Tracker
+PD0107,Wheel,Wheel,other,Medium,other action: Wheel
+PD0108,Zone,Zone,transition,Medium,transition action: Zone
+PD0109,ZoneEntryDenial,ZoneEntryDenial,defensive,Medium,defensive action: ZoneEntryDenial
+PD0110,ZoneExitDenial,ZoneExitDenial,defensive,Medium,defensive action: ZoneExitDenial
+PD0111,ZoneKeepin,ZoneKeepin,transition,Medium,transition action: ZoneKeepin

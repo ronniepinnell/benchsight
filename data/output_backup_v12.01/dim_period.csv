@@ -1,6 +1,0 @@
-period_id,period_number,period_name,period_type,period_minutes
-P01,1,1st Period,regulation,18
-P02,2,2nd Period,regulation,18
-P03,3,3rd Period,regulation,18
-P04,4,Overtime,overtime,5
-P05,5,Shootout,shootout,0

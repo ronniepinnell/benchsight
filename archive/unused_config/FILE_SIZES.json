@@ -1,0 +1,41 @@
+{
+    "_description": "Tracks critical file sizes to detect truncation. Auto-updated by pre_delivery.py.",
+    "_last_updated": "2026-01-09",
+    "critical_files": {
+        "LLM_REQUIREMENTS.md": {
+            "min_lines": 500,
+            "last_lines": 711,
+            "purpose": "Main LLM instruction file"
+        },
+        "docs/DATA_DICTIONARY.md": {
+            "min_lines": 1500,
+            "last_lines": 4678,
+            "purpose": "Column definitions for all tables"
+        },
+        "src/etl_orchestrator.py": {
+            "min_lines": 800,
+            "last_lines": 982,
+            "purpose": "Main ETL entry point"
+        },
+        "src/core/base_etl.py": {
+            "min_lines": 2500,
+            "last_lines": 4006,
+            "purpose": "Core ETL engine"
+        },
+        "README.md": {
+            "min_lines": 80,
+            "last_lines": 226,
+            "purpose": "Project readme"
+        },
+        "MASTER_GUIDE.md": {
+            "min_lines": 400,
+            "last_lines": 628,
+            "purpose": "Comprehensive project guide"
+        }
+    },
+    "_truncation_rules": {
+        "warning_threshold": 0.1,
+        "fail_threshold": 0.5,
+        "description": "Warn if file shrinks >10%, fail if shrinks >50%"
+    }
+}

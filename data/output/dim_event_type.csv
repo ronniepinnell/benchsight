@@ -11,3 +11,14 @@ ET0009,Hit,Hit,physical,Body check,False,False
 ET0010,Block,Block,defensive,Shot block,True,False
 ET0011,Stoppage,Stoppage,stoppage,Play stoppage,False,False
 ET0012,Goal,Goal,scoring,Goal scored,True,True
+ET0013,PenaltyShot_Shootout,Penalty Shot or Shootout,offensive,Penalty shot or shootout shot,False,False
+ET0014,LoosePuck,Loose Puck,transition,Loose puck battle,False,False
+ET0015,Rebound,Rebound from Shot,goaltending,Rebound generated from shot,False,False
+ET0016,DeadIce,Deadice,time,Time between whistle,False,False
+ET0017,Play,Play,other,Defensive or Offensive play,False,False
+ET0018,Timeout,Clockstop,time,Team timeout,False,False
+ET0019,Intermission,Intermission,time,Intermission,False,False
+ET0020,Clockstop,Clockstop,time,Clock stopped,False,False
+ET0021,GameStart,Game Start,time,Start of game,False,False
+ET0022,GameEnd,Game End,time,End of game,False,False
+ET0023,Penalty_Delayed,Delayed Penalty,penalty,Delayed Penalty,False,False

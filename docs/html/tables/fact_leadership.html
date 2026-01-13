@@ -3,243 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>fact_leadership - BenchSight v0.01</title>
+    <title>fact_leadership - BenchSight</title>
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #333; line-height: 1.6; }
-        .header { background: linear-gradient(135deg, #1a1a2e 0%, #4a4e69 100%); color: white; padding: 20px 40px; }
-        .header h1 { margin: 0; font-size: 24px; }
-        .nav { background: #4a4e69; padding: 0 20px; display: flex; flex-wrap: wrap; }
-        .nav a { color: white; text-decoration: none; padding: 10px 14px; font-size: 13px; }
-        .nav a:hover { background: rgba(255,255,255,0.1); }
-        .container { max-width: 1600px; margin: 0 auto; padding: 30px; }
-        
-        /* Table Overview Section */
-        .table-overview { background: white; border-radius: 8px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .table-overview h2 { margin-top: 0; color: #4a4e69; border-bottom: 2px solid #4a4e69; padding-bottom: 10px; }
-        .overview-desc { background: #e3f2fd; border-left: 4px solid #1976d2; padding: 15px; margin-bottom: 20px; font-size: 15px; }
-        .overview-grid { display: grid; grid-template-columns: 120px 1fr; gap: 10px 20px; }
-        .overview-label { font-weight: 600; color: #555; }
-        .overview-value { color: #333; }
-        .overview-value code { background: #f5f5f5; padding: 2px 8px; border-radius: 4px; font-family: 'SF Mono', Monaco, monospace; font-size: 12px; }
-        
-        /* Column Documentation Section */
-        .column-docs { background: white; border-radius: 8px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .column-docs h2 { margin-top: 0; color: #4a4e69; border-bottom: 2px solid #4a4e69; padding-bottom: 10px; }
-        
-        /* Legend */
-        .legend { margin-bottom: 20px; padding: 15px; background: #fafafa; border-radius: 6px; }
-        .legend-title { font-weight: 600; margin-right: 10px; }
-        .legend-item { display: inline-flex; align-items: center; margin-right: 20px; }
-        
-        /* Type badges */
-        .type-badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-        .badge-explicit { background: #e8f5e9; color: #2e7d32; }
-        .badge-calculated { background: #fff3e0; color: #e65100; }
-        .badge-derived { background: #e3f2fd; color: #1565c0; }
-        .badge-fk { background: #fce4ec; color: #c2185b; }
-        .badge-unknown { background: #f5f5f5; color: #757575; }
-        
-        /* Table styling */
-        table { border-collapse: collapse; width: 100%; margin: 15px 0; background: white; }
-        th { background: #4a4e69; color: white; padding: 12px 10px; text-align: left; font-size: 12px; font-weight: 600; position: sticky; top: 0; }
-        td { border: 1px solid #e0e0e0; padding: 10px; font-size: 13px; vertical-align: top; }
-        tr:nth-child(even) { background: #fafafa; }
-        tr:hover { background: #f0f7ff; }
-        code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-family: 'SF Mono', Monaco, monospace; font-size: 11px; }
-        
-        /* Column-specific styling */
-        .context-cell { max-width: 300px; font-size: 12px; color: #555; }
-        .calc-cell { max-width: 250px; font-size: 11px; }
-        .calc-cell code { background: #fff8e1; }
-        .stat-cell { text-align: right; font-size: 12px; }
-        .null-low { color: #2e7d32; }
-        .null-med { color: #f57c00; }
-        .null-high { color: #c62828; font-weight: 600; }
-        
-        /* Badge styles */
-        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-        .badge-blue { background: #1976d2; color: white; }
-        .badge-green { background: #388e3c; color: white; }
-        .badge-yellow { background: #f9a825; color: #333; }
-        
-        /* Sample data */
-        .data-table { font-size: 11px; overflow-x: auto; }
-        .data-table th { font-size: 11px; padding: 8px; }
-        .data-table td { padding: 6px 8px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        
-        footer { text-align: center; padding: 20px; color: #888; font-size: 11px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #4a4e69; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🏒 BenchSight <span style="font-size: 14px; opacity: 0.8;">v0.01</span></h1>
-    </div>
-    
-    <nav class="nav">
-        <a href="../index.html">🏠 Home</a>
-        <a href="../tables.html">📊 Tables (59)</a>
-        <a href="../BS_DETECTOR.html">🔍 BS Detector</a>
-        <a href="../DOC_MAINTENANCE.html">📝 Doc Guide</a>
-    </nav>
-
     <div class="container">
-        <h1>fact_leadership <span class="badge badge-green">Fact</span></h1>
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>fact_leadership</h1>
         
-        <!-- Table Overview Section -->
-        <div class="table-overview">
-            <h2>Table Overview</h2>
-            
-            <div class="overview-desc">
-                <strong>Description:</strong> No description available.
-            </div>
-            
-            <div class="overview-grid">
-                <div class="overview-label">Purpose:</div>
-                <div class="overview-value">Not documented.</div>
-                
-                <div class="overview-label">Source Module:</div>
-                <div class="overview-value"><code>Unknown</code></div>
-                
-                <div class="overview-label">Logic:</div>
-                <div class="overview-value">Not documented.</div>
-                
-                <div class="overview-label">Grain:</div>
-                <div class="overview-value">Not documented.</div>
-                
-                <div class="overview-label">Rows:</div>
-                <div class="overview-value">28</div>
-                
-                <div class="overview-label">Columns:</div>
-                <div class="overview-value">9</div>
-            </div>
+        
+        
+        <div class="meta">
+            <strong>Rows:</strong> 28 | 
+            <strong>Columns:</strong> 9 |
+            <strong>Last Updated:</strong> 2026-01-12 23:37:10 |
+            <strong>Version:</strong> 11.04
         </div>
         
-        <!-- Column Documentation Section -->
-        <div class="column-docs">
-            <h2>Column Documentation</h2>
-            
-            <div class="legend">
-                <span class="legend-title">Legend:</span>
-                <span class="legend-item"><span class="type-badge badge-explicit">Explicit</span> = From raw data</span>
-                <span class="legend-item"><span class="type-badge badge-calculated">Calculated</span> = Formula-based</span>
-                <span class="legend-item"><span class="type-badge badge-derived">Derived</span> = Generated key/aggregate</span>
-                <span class="legend-item"><span class="type-badge badge-fk">FK</span> = Foreign key lookup</span>
-            </div>
-            
-            <table>
-                <thead>
-                    <tr>
-                        <th>Column</th>
-                        <th>Data Type</th>
-                        <th>Description</th>
-                        <th>Context / Mapping</th>
-                        <th>Calculation / Formula</th>
-                        <th>Type</th>
-                        <th>Non-Null</th>
-                        <th>Null %</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    
-            <tr>
-                <td><code>player_full_name</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">28</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>player_id</code></td>
-                <td>object</td>
-                <td>Unique player identifier</td>
-                <td class="context-cell">Format: P######. Example: P100117.</td>
-                <td class="calc-cell"><code>Extracted from noradhockey.com player profile URL</code></td>
-                <td><span class="type-badge badge-derived">Derived</span></td>
-                <td class="stat-cell">28</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>leadership</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">28</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>skill_rating</code></td>
-                <td>int64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">28</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>n_player_url</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">28</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>team_name</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">28</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>team_id</code></td>
-                <td>object</td>
-                <td>Unique team identifier</td>
-                <td class="context-cell">Format varies by source.</td>
-                <td class="calc-cell"><code>From league roster/schedule data</code></td>
-                <td><span class="type-badge badge-explicit">Explicit</span></td>
-                <td class="stat-cell">28</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>season</code></td>
-                <td>int64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">28</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>season_id</code></td>
-                <td>object</td>
-                <td>Foreign key reference</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">28</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-                </tbody>
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>player_full_name</td><td>object</td><td>28</td><td>0.0%</td></tr><tr><td>player_id</td><td>object</td><td>28</td><td>0.0%</td></tr><tr><td>leadership</td><td>object</td><td>28</td><td>0.0%</td></tr><tr><td>skill_rating</td><td>int64</td><td>28</td><td>0.0%</td></tr><tr><td>n_player_url</td><td>object</td><td>28</td><td>0.0%</td></tr><tr><td>team_name</td><td>object</td><td>28</td><td>0.0%</td></tr><tr><td>team_id</td><td>object</td><td>28</td><td>0.0%</td></tr><tr><td>season</td><td>int64</td><td>28</td><td>0.0%</td></tr><tr><td>season_id</td><td>object</td><td>28</td><td>0.0%</td></tr>
             </table>
         </div>
         
-        <!-- Sample Data Section -->
-        <div class="column-docs">
-            <h2>Sample Data (First 5 Rows)</h2>
-            <table border="1" class="dataframe data-table">
+        <div class="card">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
   <thead>
     <tr style="text-align: right;">
       <th>player_full_name</th>
@@ -309,12 +121,178 @@
       <td>20252026</td>
       <td>N20252026F</td>
     </tr>
+    <tr>
+      <td>Matthew D’Addario</td>
+      <td>P100131</td>
+      <td>S</td>
+      <td>5</td>
+      <td>Matthew D’Addario (S) – 5</td>
+      <td>AMOS</td>
+      <td>N10001</td>
+      <td>20252026</td>
+      <td>N20252026F</td>
+    </tr>
+    <tr>
+      <td>Robert Mayfield</td>
+      <td>P100108</td>
+      <td>S</td>
+      <td>3</td>
+      <td>Robert Mayfield (S) – 3</td>
+      <td>Velodrome</td>
+      <td>N10010</td>
+      <td>20252026</td>
+      <td>N20252026F</td>
+    </tr>
+    <tr>
+      <td>Lee Smith</td>
+      <td>P100081</td>
+      <td>S</td>
+      <td>3</td>
+      <td>Lee Smith (S) – 3</td>
+      <td>HollowBrook</td>
+      <td>N10003</td>
+      <td>20252026</td>
+      <td>N20252026F</td>
+    </tr>
+    <tr>
+      <td>Christopher Mihlon</td>
+      <td>P100031</td>
+      <td>C</td>
+      <td>5</td>
+      <td>Christopher Mihlon (C) – 5</td>
+      <td>Outlaws</td>
+      <td>N10007</td>
+      <td>20252026</td>
+      <td>N20252026F</td>
+    </tr>
+    <tr>
+      <td>Marc Smith</td>
+      <td>P100052</td>
+      <td>C</td>
+      <td>4</td>
+      <td>Marc Smith (C) – 4</td>
+      <td>Orphans</td>
+      <td>N10006</td>
+      <td>20252026</td>
+      <td>N20252026F</td>
+    </tr>
+    <tr>
+      <td>Nick Henry</td>
+      <td>P100109</td>
+      <td>C</td>
+      <td>5</td>
+      <td>Nick Henry (C) – 5</td>
+      <td>OS Offices</td>
+      <td>N10005</td>
+      <td>20252026</td>
+      <td>N20252026F</td>
+    </tr>
+    <tr>
+      <td>Marko Somersalmi</td>
+      <td>P100074</td>
+      <td>C</td>
+      <td>4</td>
+      <td>Marko Somersalmi (C) – 4</td>
+      <td>Nelson</td>
+      <td>N10004</td>
+      <td>20252026</td>
+      <td>N20252026F</td>
+    </tr>
+    <tr>
+      <td>Ronnie Pinnell</td>
+      <td>P100105</td>
+      <td>C</td>
+      <td>4</td>
+      <td>Ronnie Pinnell (C) – 4</td>
+      <td>Velodrome</td>
+      <td>N10010</td>
+      <td>20252026</td>
+      <td>N20252026F</td>
+    </tr>
+    <tr>
+      <td>Ty Smith</td>
+      <td>P100084</td>
+      <td>C</td>
+      <td>6</td>
+      <td>Ty Smith (C) – 6</td>
+      <td>HollowBrook</td>
+      <td>N10003</td>
+      <td>20252026</td>
+      <td>N20252026F</td>
+    </tr>
+    <tr>
+      <td>Ryan Spradlin</td>
+      <td>P100029</td>
+      <td>C</td>
+      <td>3</td>
+      <td>Ryan Spradlin (C) – 3</td>
+      <td>Platinum</td>
+      <td>N10008</td>
+      <td>20252026</td>
+      <td>N20252026F</td>
+    </tr>
+    <tr>
+      <td>Mark Miquelon</td>
+      <td>P100114</td>
+      <td>C</td>
+      <td>3</td>
+      <td>Mark Miquelon (C) – 3</td>
+      <td>AMOS</td>
+      <td>N10001</td>
+      <td>20252026</td>
+      <td>N20252026F</td>
+    </tr>
+    <tr>
+      <td>Bob Colby</td>
+      <td>P100006</td>
+      <td>C</td>
+      <td>4</td>
+      <td>Bob Colby (C) – 4</td>
+      <td>Triple J</td>
+      <td>N10009</td>
+      <td>20252026</td>
+      <td>N20252026F</td>
+    </tr>
+    <tr>
+      <td>Lee Chiarizia</td>
+      <td>P100142</td>
+      <td>C</td>
+      <td>4</td>
+      <td>Lee Chiarizia (C) – 4</td>
+      <td>Ace</td>
+      <td>N10002</td>
+      <td>20252026</td>
+      <td>N20252026F</td>
+    </tr>
+    <tr>
+      <td>Karen Zietlow</td>
+      <td>P100027</td>
+      <td>A</td>
+      <td>2</td>
+      <td>Karen Zietlow (A) – 2</td>
+      <td>Platinum</td>
+      <td>N10008</td>
+      <td>20252026</td>
+      <td>N20252026F</td>
+    </tr>
+    <tr>
+      <td>Chad Miller</td>
+      <td>P100042</td>
+      <td>A</td>
+      <td>6</td>
+      <td>Chad Miller (A) – 6</td>
+      <td>AMOS</td>
+      <td>N10001</td>
+      <td>20252026</td>
+      <td>N20252026F</td>
+    </tr>
   </tbody>
 </table>
+            </div>
         </div>
         
         <footer>
-            BenchSight v0.01 | Generated: 2026-01-07 21:13 | <a href="../tables.html">Back to Tables</a>
+            BenchSight v11.04 | Generated 2026-01-12 23:37:10
         </footer>
     </div>
 </body>

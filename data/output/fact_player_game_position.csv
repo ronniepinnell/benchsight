@@ -34,6 +34,7 @@ game_id,player_id,total_shifts,dominant_position,dominant_position_pct,forward_s
 18977,P100047,48,Forward,100.0,48,0,0
 18977,P100049,28,Forward,100.0,28,0,0
 18977,P100070,40,Defense,100.0,0,40,0
+18977,P100081,17,Defense,100.0,0,17,0
 18977,P100084,58,Forward,100.0,58,0,0
 18977,P100086,37,Defense,100.0,0,37,0
 18977,P100088,53,Forward,100.0,53,0,0
@@ -47,6 +48,7 @@ game_id,player_id,total_shifts,dominant_position,dominant_position_pct,forward_s
 18977,P100132,27,Forward,100.0,27,0,0
 18977,P100159,39,Defense,100.0,0,39,0
 18977,P100161,33,Forward,100.0,33,0,0
+18977,P100198,41,Defense,100.0,0,41,0
 18977,P100201,32,Forward,100.0,32,0,0
 18977,P100211,36,Defense,100.0,0,36,0
 18977,P100224,27,Forward,100.0,27,0,0

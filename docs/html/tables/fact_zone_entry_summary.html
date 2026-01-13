@@ -32,10 +32,10 @@
         
         
         <div class="meta">
-            <strong>Rows:</strong> 68 | 
-            <strong>Columns:</strong> 5 |
-            <strong>Last Updated:</strong> 2026-01-07 05:03:20 |
-            <strong>Version:</strong> 12.03
+            <strong>Rows:</strong> 102 | 
+            <strong>Columns:</strong> 9 |
+            <strong>Last Updated:</strong> 2026-01-12 23:37:10 |
+            <strong>Version:</strong> 11.04
         </div>
         
         
@@ -44,7 +44,7 @@
             <h2>Column Schema</h2>
             <table class="columns-table">
                 <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
-                <tr><td>zone_entry_key</td><td>object</td><td>68</td><td>0.0%</td></tr><tr><td>player_id</td><td>object</td><td>68</td><td>0.0%</td></tr><tr><td>games</td><td>int64</td><td>68</td><td>0.0%</td></tr><tr><td>total_entries</td><td>int64</td><td>68</td><td>0.0%</td></tr><tr><td>entries_per_game</td><td>float64</td><td>68</td><td>0.0%</td></tr>
+                <tr><td>zone_entry_key</td><td>object</td><td>102</td><td>0.0%</td></tr><tr><td>game_id</td><td>int64</td><td>102</td><td>0.0%</td></tr><tr><td>player_id</td><td>object</td><td>102</td><td>0.0%</td></tr><tr><td>total_entries</td><td>int64</td><td>102</td><td>0.0%</td></tr><tr><td>controlled_entries</td><td>int64</td><td>102</td><td>0.0%</td></tr><tr><td>dump_entries</td><td>int64</td><td>102</td><td>0.0%</td></tr><tr><td>failed_entries</td><td>int64</td><td>102</td><td>0.0%</td></tr><tr><td>entry_success_rate</td><td>float64</td><td>102</td><td>0.0%</td></tr><tr><td>_export_timestamp</td><td>object</td><td>102</td><td>0.0%</td></tr>
             </table>
         </div>
         
@@ -55,152 +55,236 @@
   <thead>
     <tr style="text-align: right;">
       <th>zone_entry_key</th>
+      <th>game_id</th>
       <th>player_id</th>
-      <th>games</th>
       <th>total_entries</th>
-      <th>entries_per_game</th>
+      <th>controlled_entries</th>
+      <th>dump_entries</th>
+      <th>failed_entries</th>
+      <th>entry_success_rate</th>
+      <th>_export_timestamp</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td>ZE0000</td>
+      <td>P100192_18969</td>
+      <td>18969</td>
+      <td>P100192</td>
+      <td>38</td>
+      <td>0</td>
+      <td>0</td>
+      <td>4</td>
+      <td>0.0</td>
+      <td>2026-01-12T23:36:36.005140</td>
+    </tr>
+    <tr>
+      <td>P100093_18969</td>
+      <td>18969</td>
+      <td>P100093</td>
+      <td>25</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>2026-01-12T23:36:36.005979</td>
+    </tr>
+    <tr>
+      <td>P100064_18969</td>
+      <td>18969</td>
+      <td>P100064</td>
+      <td>13</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>2026-01-12T23:36:36.006844</td>
+    </tr>
+    <tr>
+      <td>P100198_18969</td>
+      <td>18969</td>
+      <td>P100198</td>
+      <td>20</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0.0</td>
+      <td>2026-01-12T23:36:36.007641</td>
+    </tr>
+    <tr>
+      <td>P100117_18969</td>
+      <td>18969</td>
+      <td>P100117</td>
+      <td>32</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>2026-01-12T23:36:36.008509</td>
+    </tr>
+    <tr>
+      <td>P100001_18969</td>
+      <td>18969</td>
       <td>P100001</td>
-      <td>4</td>
-      <td>52</td>
-      <td>13.00</td>
-    </tr>
-    <tr>
-      <td>ZE0001</td>
-      <td>P100002</td>
-      <td>4</td>
-      <td>12</td>
-      <td>3.00</td>
-    </tr>
-    <tr>
-      <td>ZE0002</td>
-      <td>P100004</td>
-      <td>1</td>
-      <td>4</td>
-      <td>4.00</td>
-    </tr>
-    <tr>
-      <td>ZE0003</td>
-      <td>P100009</td>
-      <td>1</td>
+      <td>37</td>
       <td>0</td>
-      <td>0.00</td>
-    </tr>
-    <tr>
-      <td>ZE0004</td>
-      <td>P100016</td>
-      <td>4</td>
       <td>0</td>
-      <td>0.00</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>2026-01-12T23:36:36.009353</td>
     </tr>
     <tr>
-      <td>ZE0005</td>
-      <td>P100022</td>
-      <td>1</td>
-      <td>12</td>
-      <td>12.00</td>
-    </tr>
-    <tr>
-      <td>ZE0006</td>
+      <td>P100023_18969</td>
+      <td>18969</td>
       <td>P100023</td>
-      <td>1</td>
-      <td>6</td>
-      <td>6.00</td>
-    </tr>
-    <tr>
-      <td>ZE0007</td>
-      <td>P100024</td>
-      <td>1</td>
-      <td>4</td>
-      <td>4.00</td>
-    </tr>
-    <tr>
-      <td>ZE0008</td>
-      <td>P100025</td>
-      <td>1</td>
-      <td>2</td>
-      <td>2.00</td>
-    </tr>
-    <tr>
-      <td>ZE0009</td>
-      <td>P100027</td>
-      <td>1</td>
-      <td>1</td>
-      <td>1.00</td>
-    </tr>
-    <tr>
-      <td>ZE0010</td>
-      <td>P100030</td>
-      <td>1</td>
-      <td>3</td>
-      <td>3.00</td>
-    </tr>
-    <tr>
-      <td>ZE0011</td>
-      <td>P100031</td>
-      <td>1</td>
-      <td>5</td>
-      <td>5.00</td>
-    </tr>
-    <tr>
-      <td>ZE0012</td>
-      <td>P100032</td>
-      <td>1</td>
-      <td>14</td>
-      <td>14.00</td>
-    </tr>
-    <tr>
-      <td>ZE0013</td>
-      <td>P100033</td>
-      <td>1</td>
-      <td>5</td>
-      <td>5.00</td>
-    </tr>
-    <tr>
-      <td>ZE0014</td>
-      <td>P100034</td>
-      <td>1</td>
-      <td>4</td>
-      <td>4.00</td>
-    </tr>
-    <tr>
-      <td>ZE0015</td>
-      <td>P100038</td>
-      <td>1</td>
+      <td>25</td>
       <td>0</td>
-      <td>0.00</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>2026-01-12T23:36:36.010140</td>
     </tr>
     <tr>
-      <td>ZE0016</td>
+      <td>P100132_18969</td>
+      <td>18969</td>
+      <td>P100132</td>
+      <td>14</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>2026-01-12T23:36:36.010981</td>
+    </tr>
+    <tr>
+      <td>P100039_18969</td>
+      <td>18969</td>
       <td>P100039</td>
-      <td>4</td>
-      <td>7</td>
-      <td>1.75</td>
+      <td>11</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>2026-01-12T23:36:36.011757</td>
     </tr>
     <tr>
-      <td>ZE0017</td>
-      <td>P100047</td>
-      <td>1</td>
-      <td>12</td>
-      <td>12.00</td>
+      <td>P100002_18969</td>
+      <td>18969</td>
+      <td>P100002</td>
+      <td>15</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>2026-01-12T23:36:36.012642</td>
     </tr>
     <tr>
-      <td>ZE0018</td>
-      <td>P100049</td>
-      <td>1</td>
-      <td>4</td>
-      <td>4.00</td>
-    </tr>
-    <tr>
-      <td>ZE0019</td>
-      <td>P100061</td>
-      <td>1</td>
+      <td>P100222_18969</td>
+      <td>18969</td>
+      <td>P100222</td>
+      <td>14</td>
+      <td>0</td>
+      <td>0</td>
       <td>2</td>
-      <td>2.00</td>
+      <td>0.0</td>
+      <td>2026-01-12T23:36:36.013494</td>
+    </tr>
+    <tr>
+      <td>P100107_18969</td>
+      <td>18969</td>
+      <td>P100107</td>
+      <td>16</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0.0</td>
+      <td>2026-01-12T23:36:36.014294</td>
+    </tr>
+    <tr>
+      <td>P100224_18969</td>
+      <td>18969</td>
+      <td>P100224</td>
+      <td>14</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0.0</td>
+      <td>2026-01-12T23:36:36.015446</td>
+    </tr>
+    <tr>
+      <td>P100210_18969</td>
+      <td>18969</td>
+      <td>P100210</td>
+      <td>20</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0.0</td>
+      <td>2026-01-12T23:36:36.016246</td>
+    </tr>
+    <tr>
+      <td>P100108_18969</td>
+      <td>18969</td>
+      <td>P100108</td>
+      <td>15</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>2026-01-12T23:36:36.017113</td>
+    </tr>
+    <tr>
+      <td>P100022_18969</td>
+      <td>18969</td>
+      <td>P100022</td>
+      <td>32</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>2026-01-12T23:36:36.017944</td>
+    </tr>
+    <tr>
+      <td>P100161_18969</td>
+      <td>18969</td>
+      <td>P100161</td>
+      <td>30</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0.0</td>
+      <td>2026-01-12T23:36:36.018745</td>
+    </tr>
+    <tr>
+      <td>P100070_18969</td>
+      <td>18969</td>
+      <td>P100070</td>
+      <td>26</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>2026-01-12T23:36:36.019524</td>
+    </tr>
+    <tr>
+      <td>P100201_18969</td>
+      <td>18969</td>
+      <td>P100201</td>
+      <td>28</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0.0</td>
+      <td>2026-01-12T23:36:36.020350</td>
+    </tr>
+    <tr>
+      <td>P100105_18969</td>
+      <td>18969</td>
+      <td>P100105</td>
+      <td>29</td>
+      <td>0</td>
+      <td>0</td>
+      <td>6</td>
+      <td>0.0</td>
+      <td>2026-01-12T23:36:36.021172</td>
     </tr>
   </tbody>
 </table>
@@ -208,7 +292,7 @@
         </div>
         
         <footer>
-            BenchSight v13.18 | Generated 2026-01-07 05:03:20
+            BenchSight v11.04 | Generated 2026-01-12 23:37:10
         </footer>
     </div>
 </body>

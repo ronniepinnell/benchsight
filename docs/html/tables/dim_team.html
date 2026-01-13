@@ -3,299 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>dim_team - BenchSight v0.01</title>
+    <title>dim_team - BenchSight</title>
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #333; line-height: 1.6; }
-        .header { background: linear-gradient(135deg, #1a1a2e 0%, #4a4e69 100%); color: white; padding: 20px 40px; }
-        .header h1 { margin: 0; font-size: 24px; }
-        .nav { background: #4a4e69; padding: 0 20px; display: flex; flex-wrap: wrap; }
-        .nav a { color: white; text-decoration: none; padding: 10px 14px; font-size: 13px; }
-        .nav a:hover { background: rgba(255,255,255,0.1); }
-        .container { max-width: 1600px; margin: 0 auto; padding: 30px; }
-        
-        /* Table Overview Section */
-        .table-overview { background: white; border-radius: 8px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .table-overview h2 { margin-top: 0; color: #4a4e69; border-bottom: 2px solid #4a4e69; padding-bottom: 10px; }
-        .overview-desc { background: #e3f2fd; border-left: 4px solid #1976d2; padding: 15px; margin-bottom: 20px; font-size: 15px; }
-        .overview-grid { display: grid; grid-template-columns: 120px 1fr; gap: 10px 20px; }
-        .overview-label { font-weight: 600; color: #555; }
-        .overview-value { color: #333; }
-        .overview-value code { background: #f5f5f5; padding: 2px 8px; border-radius: 4px; font-family: 'SF Mono', Monaco, monospace; font-size: 12px; }
-        
-        /* Column Documentation Section */
-        .column-docs { background: white; border-radius: 8px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .column-docs h2 { margin-top: 0; color: #4a4e69; border-bottom: 2px solid #4a4e69; padding-bottom: 10px; }
-        
-        /* Legend */
-        .legend { margin-bottom: 20px; padding: 15px; background: #fafafa; border-radius: 6px; }
-        .legend-title { font-weight: 600; margin-right: 10px; }
-        .legend-item { display: inline-flex; align-items: center; margin-right: 20px; }
-        
-        /* Type badges */
-        .type-badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-        .badge-explicit { background: #e8f5e9; color: #2e7d32; }
-        .badge-calculated { background: #fff3e0; color: #e65100; }
-        .badge-derived { background: #e3f2fd; color: #1565c0; }
-        .badge-fk { background: #fce4ec; color: #c2185b; }
-        .badge-unknown { background: #f5f5f5; color: #757575; }
-        
-        /* Table styling */
-        table { border-collapse: collapse; width: 100%; margin: 15px 0; background: white; }
-        th { background: #4a4e69; color: white; padding: 12px 10px; text-align: left; font-size: 12px; font-weight: 600; position: sticky; top: 0; }
-        td { border: 1px solid #e0e0e0; padding: 10px; font-size: 13px; vertical-align: top; }
-        tr:nth-child(even) { background: #fafafa; }
-        tr:hover { background: #f0f7ff; }
-        code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-family: 'SF Mono', Monaco, monospace; font-size: 11px; }
-        
-        /* Column-specific styling */
-        .context-cell { max-width: 300px; font-size: 12px; color: #555; }
-        .calc-cell { max-width: 250px; font-size: 11px; }
-        .calc-cell code { background: #fff8e1; }
-        .stat-cell { text-align: right; font-size: 12px; }
-        .null-low { color: #2e7d32; }
-        .null-med { color: #f57c00; }
-        .null-high { color: #c62828; font-weight: 600; }
-        
-        /* Badge styles */
-        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-        .badge-blue { background: #1976d2; color: white; }
-        .badge-green { background: #388e3c; color: white; }
-        .badge-yellow { background: #f9a825; color: #333; }
-        
-        /* Sample data */
-        .data-table { font-size: 11px; overflow-x: auto; }
-        .data-table th { font-size: 11px; padding: 8px; }
-        .data-table td { padding: 6px 8px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        
-        footer { text-align: center; padding: 20px; color: #888; font-size: 11px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #4a4e69; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🏒 BenchSight <span style="font-size: 14px; opacity: 0.8;">v0.01</span></h1>
-    </div>
-    
-    <nav class="nav">
-        <a href="../index.html">🏠 Home</a>
-        <a href="../tables.html">📊 Tables (59)</a>
-        <a href="../BS_DETECTOR.html">🔍 BS Detector</a>
-        <a href="../DOC_MAINTENANCE.html">📝 Doc Guide</a>
-    </nav>
-
     <div class="container">
-        <h1>dim_team <span class="badge badge-blue">Dimension</span></h1>
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>dim_team</h1>
         
-        <!-- Table Overview Section -->
-        <div class="table-overview">
-            <h2>Table Overview</h2>
-            
-            <div class="overview-desc">
-                <strong>Description:</strong> Team master data
-            </div>
-            
-            <div class="overview-grid">
-                <div class="overview-label">Purpose:</div>
-                <div class="overview-value">Central team reference for all joins.</div>
-                
-                <div class="overview-label">Source Module:</div>
-                <div class="overview-value"><code>src/core/base_etl.py:create_dim_team()</code></div>
-                
-                <div class="overview-label">Logic:</div>
-                <div class="overview-value">From league schedule and roster data.</div>
-                
-                <div class="overview-label">Grain:</div>
-                <div class="overview-value">One row per team</div>
-                
-                <div class="overview-label">Rows:</div>
-                <div class="overview-value">26</div>
-                
-                <div class="overview-label">Columns:</div>
-                <div class="overview-value">14</div>
-            </div>
+        
+        
+        <div class="meta">
+            <strong>Rows:</strong> 17 | 
+            <strong>Columns:</strong> 13 |
+            <strong>Last Updated:</strong> 2026-01-12 23:37:10 |
+            <strong>Version:</strong> 11.04
         </div>
         
-        <!-- Column Documentation Section -->
-        <div class="column-docs">
-            <h2>Column Documentation</h2>
-            
-            <div class="legend">
-                <span class="legend-title">Legend:</span>
-                <span class="legend-item"><span class="type-badge badge-explicit">Explicit</span> = From raw data</span>
-                <span class="legend-item"><span class="type-badge badge-calculated">Calculated</span> = Formula-based</span>
-                <span class="legend-item"><span class="type-badge badge-derived">Derived</span> = Generated key/aggregate</span>
-                <span class="legend-item"><span class="type-badge badge-fk">FK</span> = Foreign key lookup</span>
-            </div>
-            
-            <table>
-                <thead>
-                    <tr>
-                        <th>Column</th>
-                        <th>Data Type</th>
-                        <th>Description</th>
-                        <th>Context / Mapping</th>
-                        <th>Calculation / Formula</th>
-                        <th>Type</th>
-                        <th>Non-Null</th>
-                        <th>Null %</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    
-            <tr>
-                <td><code>team_name</code></td>
-                <td>object</td>
-                <td>Full team name</td>
-                <td class="context-cell">Example: Platinum, Velodrome</td>
-                <td class="calc-cell"><code>From league schedule</code></td>
-                <td><span class="type-badge badge-explicit">Explicit</span></td>
-                <td class="stat-cell">26</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>team_id</code></td>
-                <td>object</td>
-                <td>Unique team identifier (PK)</td>
-                <td class="context-cell">Format varies. Example: N10008.</td>
-                <td class="calc-cell"><code>From league data</code></td>
-                <td><span class="type-badge badge-explicit">Explicit</span></td>
-                <td class="stat-cell">26</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>norad_team</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">26</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>csah_team</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">26</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>league_id</code></td>
-                <td>object</td>
-                <td>Foreign key reference</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">26</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>league</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">26</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>long_team_name</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">26</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>team_cd</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">26</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>team_color1</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">26</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>team_color2</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">26</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>team_color3</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">23</td>
-                <td class="stat-cell null-high">11.5%</td>
-            </tr>
-            <tr>
-                <td><code>team_color4</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">2</td>
-                <td class="stat-cell null-high">92.3%</td>
-            </tr>
-            <tr>
-                <td><code>team_logo</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">26</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>team_url</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">26</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-                </tbody>
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>team_name</td><td>object</td><td>17</td><td>0.0%</td></tr><tr><td>team_id</td><td>object</td><td>17</td><td>0.0%</td></tr><tr><td>norad_team</td><td>object</td><td>17</td><td>0.0%</td></tr><tr><td>league_id</td><td>object</td><td>17</td><td>0.0%</td></tr><tr><td>league</td><td>object</td><td>17</td><td>0.0%</td></tr><tr><td>long_team_name</td><td>object</td><td>17</td><td>0.0%</td></tr><tr><td>team_cd</td><td>object</td><td>17</td><td>0.0%</td></tr><tr><td>team_color1</td><td>object</td><td>17</td><td>0.0%</td></tr><tr><td>team_color2</td><td>object</td><td>17</td><td>0.0%</td></tr><tr><td>team_color3</td><td>object</td><td>14</td><td>17.6%</td></tr><tr><td>team_color4</td><td>object</td><td>1</td><td>94.1%</td></tr><tr><td>team_logo</td><td>object</td><td>17</td><td>0.0%</td></tr><tr><td>team_url</td><td>object</td><td>17</td><td>0.0%</td></tr>
             </table>
         </div>
         
-        <!-- Sample Data Section -->
-        <div class="column-docs">
-            <h2>Sample Data (First 5 Rows)</h2>
-            <table border="1" class="dataframe data-table">
+        <div class="card">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
   <thead>
     <tr style="text-align: right;">
       <th>team_name</th>
       <th>team_id</th>
       <th>norad_team</th>
-      <th>csah_team</th>
       <th>league_id</th>
       <th>league</th>
       <th>long_team_name</th>
@@ -310,10 +71,9 @@
   </thead>
   <tbody>
     <tr>
-      <td>Amos</td>
+      <td>AMOS</td>
       <td>N10001</td>
       <td>Y</td>
-      <td>N</td>
       <td>N</td>
       <td>NORAD</td>
       <td>AMOS</td>
@@ -330,7 +90,6 @@
       <td>N10002</td>
       <td>Y</td>
       <td>N</td>
-      <td>N</td>
       <td>NORAD</td>
       <td>ACE</td>
       <td>AMOS</td>
@@ -345,7 +104,6 @@
       <td>HollowBrook</td>
       <td>N10003</td>
       <td>Y</td>
-      <td>N</td>
       <td>N</td>
       <td>NORAD</td>
       <td>HollowBrook Dental</td>
@@ -362,7 +120,6 @@
       <td>N10004</td>
       <td>Y</td>
       <td>N</td>
-      <td>N</td>
       <td>NORAD</td>
       <td>Nelson &amp; Company</td>
       <td>NAC</td>
@@ -378,7 +135,6 @@
       <td>N10005</td>
       <td>Y</td>
       <td>N</td>
-      <td>N</td>
       <td>NORAD</td>
       <td>OS Offices</td>
       <td>OSO</td>
@@ -389,12 +145,193 @@
       <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2020/10/Office-Scapes-Logo-Small-e1602519375735.png?resize=268%2C300&amp;ssl=1</td>
       <td>https://www.noradhockey.com/team/os-offices/</td>
     </tr>
+    <tr>
+      <td>Orphans</td>
+      <td>N10006</td>
+      <td>Y</td>
+      <td>N</td>
+      <td>NORAD</td>
+      <td>World Orphans</td>
+      <td>WOR</td>
+      <td>#000000</td>
+      <td>#257A78</td>
+      <td>#FFFFFF</td>
+      <td>NaN</td>
+      <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2023/07/World-Orphans-Logo-small.png?resize=128%2C125&amp;ssl=1</td>
+      <td>https://www.noradhockey.com/team/world-orphans/</td>
+    </tr>
+    <tr>
+      <td>Outlaws</td>
+      <td>N10007</td>
+      <td>Y</td>
+      <td>N</td>
+      <td>NORAD</td>
+      <td>OUTCAN Outlaws</td>
+      <td>OUT</td>
+      <td>#02007B</td>
+      <td>#C80000</td>
+      <td>#C5E002</td>
+      <td>NaN</td>
+      <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2024/08/OUTCAN-Outlaws-Logo.png?resize=128%2C117&amp;ssl=1</td>
+      <td>https://www.noradhockey.com/team/outcan-outlaws/</td>
+    </tr>
+    <tr>
+      <td>Platinum</td>
+      <td>N10008</td>
+      <td>Y</td>
+      <td>N</td>
+      <td>NORAD</td>
+      <td>Platinum Group</td>
+      <td>TPG</td>
+      <td>#919294</td>
+      <td>#253464</td>
+      <td>#126C3D</td>
+      <td>NaN</td>
+      <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/04/Hartford-Final-scaled.png?w=2534&amp;ssl=1</td>
+      <td>https://www.noradhockey.com/team/platinum-group/</td>
+    </tr>
+    <tr>
+      <td>Triple J</td>
+      <td>N10009</td>
+      <td>Y</td>
+      <td>N</td>
+      <td>NORAD</td>
+      <td>Triple J</td>
+      <td>JJJ</td>
+      <td>#4EB9E5</td>
+      <td>#D83E3D</td>
+      <td>#EFAD08</td>
+      <td>#030629</td>
+      <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2017/01/Image_11-11-24_at_10.17_AM-removebg-preview-1.png?resize=128%2C110&amp;ssl=1</td>
+      <td>https://www.noradhockey.com/team/triple-j/</td>
+    </tr>
+    <tr>
+      <td>Velodrome</td>
+      <td>N10010</td>
+      <td>Y</td>
+      <td>N</td>
+      <td>NORAD</td>
+      <td>Colorado Springs Velodrome</td>
+      <td>COS</td>
+      <td>#9C47E4</td>
+      <td>#000000</td>
+      <td>#FFFFFF</td>
+      <td>NaN</td>
+      <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/08/2024-25-VEL-Jersey-Logo.png?fit=128%2C128&amp;ssl=1</td>
+      <td>https://www.noradhockey.com/team/cos-velodrome/</td>
+    </tr>
+    <tr>
+      <td>Norad</td>
+      <td>N10011</td>
+      <td>Y</td>
+      <td>N</td>
+      <td>NORAD</td>
+      <td>Norad</td>
+      <td>NOR</td>
+      <td>#B21A18</td>
+      <td>#012B68</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://www.noradhockey.com/wp-content/uploads/2022/05/New-NORAD-Logo-White.png</td>
+      <td>https://www.noradhockey.com/</td>
+    </tr>
+    <tr>
+      <td>Canada</td>
+      <td>N10012</td>
+      <td>Y</td>
+      <td>N</td>
+      <td>NORAD</td>
+      <td>Canada Colorado</td>
+      <td>CAN</td>
+      <td>#B21A18</td>
+      <td>#012B68</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://www.noradhockey.com/wp-content/uploads/2022/05/New-NORAD-Logo-White.png</td>
+      <td>https://www.noradhockey.com/team/canada-colorado/</td>
+    </tr>
+    <tr>
+      <td>Red</td>
+      <td>N10022</td>
+      <td>Y</td>
+      <td>N</td>
+      <td>NORAD</td>
+      <td>Red</td>
+      <td>RED</td>
+      <td>#CA0527</td>
+      <td>#FFFFFF</td>
+      <td>#000000</td>
+      <td>NaN</td>
+      <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/05/Red.png?resize=294%2C300&amp;ssl=1</td>
+      <td>https://www.noradhockey.com/team/red-team/</td>
+    </tr>
+    <tr>
+      <td>Green</td>
+      <td>N10023</td>
+      <td>Y</td>
+      <td>N</td>
+      <td>NORAD</td>
+      <td>Green</td>
+      <td>GRN</td>
+      <td>#04c946</td>
+      <td>#FFFFFF</td>
+      <td>#000000</td>
+      <td>NaN</td>
+      <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/05/Green.png?resize=294%2C300&amp;ssl=1</td>
+      <td>https://www.noradhockey.com/team/green-team/</td>
+    </tr>
+    <tr>
+      <td>Blue</td>
+      <td>N10024</td>
+      <td>Y</td>
+      <td>N</td>
+      <td>NORAD</td>
+      <td>Blue</td>
+      <td>BLE</td>
+      <td>#0255d1</td>
+      <td>#FFFFFF</td>
+      <td>#000000</td>
+      <td>NaN</td>
+      <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/05/Blue.png?resize=294%2C300&amp;ssl=1</td>
+      <td>https://www.noradhockey.com/team/blue-team/</td>
+    </tr>
+    <tr>
+      <td>Yellow</td>
+      <td>N10025</td>
+      <td>Y</td>
+      <td>N</td>
+      <td>NORAD</td>
+      <td>Yellow</td>
+      <td>YEL</td>
+      <td>#F3C323</td>
+      <td>#FFFFFF</td>
+      <td>#000000</td>
+      <td>NaN</td>
+      <td>https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/06/Yellow-Team-Logo.png?resize=294%2C300&amp;ssl=1</td>
+      <td>https://www.noradhockey.com/team/yellow-team/</td>
+    </tr>
+    <tr>
+      <td>Free Agent</td>
+      <td>N10026</td>
+      <td>Y</td>
+      <td>N</td>
+      <td>NORAD</td>
+      <td>Free Agent</td>
+      <td>FRA</td>
+      <td>#B21A18</td>
+      <td>#012B68</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://www.noradhockey.com/wp-content/uploads/2022/05/New-NORAD-Logo-White.png</td>
+      <td>https://www.noradhockey.com/</td>
+    </tr>
   </tbody>
 </table>
+            </div>
         </div>
         
         <footer>
-            BenchSight v0.01 | Generated: 2026-01-07 21:13 | <a href="../tables.html">Back to Tables</a>
+            BenchSight v11.04 | Generated 2026-01-12 23:37:10
         </footer>
     </div>
 </body>

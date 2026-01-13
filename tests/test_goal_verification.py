@@ -164,7 +164,7 @@ class TestGoalScorerAttribution:
             pytest.skip("No goals found in fact_event_players")
         
         # Each goal should have at least one player row
-        goals_grouped = goals.groupby(['game_id', 'event_index']).size()
+        goals_grouped = goals.groupby(['game_id', 'event_id']).size()
         goals_without_players = goals_grouped[goals_grouped == 0]
         
         assert len(goals_without_players) == 0, \

@@ -646,7 +646,7 @@ class DataQualityCleaner:
 # CONVENIENCE FUNCTIONS
 # ============================================================
 
-def load_blb_schedule(blb_path: Path = Path('data/BLB_Tables.xlsx')) -> pd.DataFrame:
+def load_blb_schedule(blb_path: Path = Path('data/raw/BLB_Tables.xlsx')) -> pd.DataFrame:
     """Load schedule from BLB file."""
     if blb_path.exists():
         xl = pd.ExcelFile(blb_path)
@@ -664,7 +664,7 @@ def load_blb_schedule(blb_path: Path = Path('data/BLB_Tables.xlsx')) -> pd.DataF
 def create_cleaner(blb_path: Path = None) -> DataQualityCleaner:
     """Create a DataQualityCleaner with default settings."""
     if blb_path is None:
-        blb_path = Path('data/BLB_Tables.xlsx')
+        blb_path = Path('data/raw/BLB_Tables.xlsx')
     
     schedule = load_blb_schedule(blb_path)
     return DataQualityCleaner(schedule)

@@ -378,12 +378,19 @@ def assign_positions_from_shifts():
     
     shifts = pd.read_csv(shifts_file)
     
-    if 'slot' not in shifts.columns:
-        print("  ⚠️ 'slot' column not found in shifts - cannot determine position")
+    # Use 'position' column if 'slot' doesn't exist
+    pos_col = 'slot' if 'slot' in shifts.columns else 'position'
+    if pos_col not in shifts.columns:
+        print("  ⚠️ Neither 'slot' nor 'position' column found in shifts - cannot determine position")
         return
     
-    # Slot to position mapping (using actual slot values from data)
+    # Slot/position to position mapping (using actual slot values from data)
     slot_to_position = {
+        # New format (F1, D1, G, etc.)
+        'F1': 'Forward', 'F2': 'Forward', 'F3': 'Forward',
+        'D1': 'Defense', 'D2': 'Defense',
+        'G': 'Goalie', 'X': 'Extra',
+        # Old format
         'forward_1': 'Forward', 'forward_2': 'Forward', 'forward_3': 'Forward',
         'defense_1': 'Defense', 'defense_2': 'Defense',
         'goalie': 'Goalie',
@@ -391,7 +398,7 @@ def assign_positions_from_shifts():
         # Fallbacks
         'LW': 'Forward', 'C': 'Forward', 'RW': 'Forward',
         'LD': 'Defense', 'RD': 'Defense',
-        'G': 'Goalie', 'F': 'Forward', 'D': 'Defense'
+        'F': 'Forward', 'D': 'Defense'
     }
     
     # Calculate position % per player per game
@@ -405,7 +412,7 @@ def assign_positions_from_shifts():
         position_counts = {}
         
         for _, shift in group.iterrows():
-            slot = shift.get('slot', '')
+            slot = shift.get(pos_col, '')
             pos = slot_to_position.get(slot, 'Unknown')
             position_counts[pos] = position_counts.get(pos, 0) + 1
         

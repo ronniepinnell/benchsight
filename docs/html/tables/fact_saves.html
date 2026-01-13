@@ -3,943 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>fact_saves - BenchSight v0.01</title>
+    <title>fact_saves - BenchSight</title>
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #333; line-height: 1.6; }
-        .header { background: linear-gradient(135deg, #1a1a2e 0%, #4a4e69 100%); color: white; padding: 20px 40px; }
-        .header h1 { margin: 0; font-size: 24px; }
-        .nav { background: #4a4e69; padding: 0 20px; display: flex; flex-wrap: wrap; }
-        .nav a { color: white; text-decoration: none; padding: 10px 14px; font-size: 13px; }
-        .nav a:hover { background: rgba(255,255,255,0.1); }
-        .container { max-width: 1600px; margin: 0 auto; padding: 30px; }
-        
-        /* Table Overview Section */
-        .table-overview { background: white; border-radius: 8px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .table-overview h2 { margin-top: 0; color: #4a4e69; border-bottom: 2px solid #4a4e69; padding-bottom: 10px; }
-        .overview-desc { background: #e3f2fd; border-left: 4px solid #1976d2; padding: 15px; margin-bottom: 20px; font-size: 15px; }
-        .overview-grid { display: grid; grid-template-columns: 120px 1fr; gap: 10px 20px; }
-        .overview-label { font-weight: 600; color: #555; }
-        .overview-value { color: #333; }
-        .overview-value code { background: #f5f5f5; padding: 2px 8px; border-radius: 4px; font-family: 'SF Mono', Monaco, monospace; font-size: 12px; }
-        
-        /* Column Documentation Section */
-        .column-docs { background: white; border-radius: 8px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .column-docs h2 { margin-top: 0; color: #4a4e69; border-bottom: 2px solid #4a4e69; padding-bottom: 10px; }
-        
-        /* Legend */
-        .legend { margin-bottom: 20px; padding: 15px; background: #fafafa; border-radius: 6px; }
-        .legend-title { font-weight: 600; margin-right: 10px; }
-        .legend-item { display: inline-flex; align-items: center; margin-right: 20px; }
-        
-        /* Type badges */
-        .type-badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-        .badge-explicit { background: #e8f5e9; color: #2e7d32; }
-        .badge-calculated { background: #fff3e0; color: #e65100; }
-        .badge-derived { background: #e3f2fd; color: #1565c0; }
-        .badge-fk { background: #fce4ec; color: #c2185b; }
-        .badge-unknown { background: #f5f5f5; color: #757575; }
-        
-        /* Table styling */
-        table { border-collapse: collapse; width: 100%; margin: 15px 0; background: white; }
-        th { background: #4a4e69; color: white; padding: 12px 10px; text-align: left; font-size: 12px; font-weight: 600; position: sticky; top: 0; }
-        td { border: 1px solid #e0e0e0; padding: 10px; font-size: 13px; vertical-align: top; }
-        tr:nth-child(even) { background: #fafafa; }
-        tr:hover { background: #f0f7ff; }
-        code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-family: 'SF Mono', Monaco, monospace; font-size: 11px; }
-        
-        /* Column-specific styling */
-        .context-cell { max-width: 300px; font-size: 12px; color: #555; }
-        .calc-cell { max-width: 250px; font-size: 11px; }
-        .calc-cell code { background: #fff8e1; }
-        .stat-cell { text-align: right; font-size: 12px; }
-        .null-low { color: #2e7d32; }
-        .null-med { color: #f57c00; }
-        .null-high { color: #c62828; font-weight: 600; }
-        
-        /* Badge styles */
-        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-        .badge-blue { background: #1976d2; color: white; }
-        .badge-green { background: #388e3c; color: white; }
-        .badge-yellow { background: #f9a825; color: #333; }
-        
-        /* Sample data */
-        .data-table { font-size: 11px; overflow-x: auto; }
-        .data-table th { font-size: 11px; padding: 8px; }
-        .data-table td { padding: 6px 8px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        
-        footer { text-align: center; padding: 20px; color: #888; font-size: 11px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #4a4e69; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🏒 BenchSight <span style="font-size: 14px; opacity: 0.8;">v0.01</span></h1>
-    </div>
-    
-    <nav class="nav">
-        <a href="../index.html">🏠 Home</a>
-        <a href="../tables.html">📊 Tables (59)</a>
-        <a href="../BS_DETECTOR.html">🔍 BS Detector</a>
-        <a href="../DOC_MAINTENANCE.html">📝 Doc Guide</a>
-    </nav>
-
     <div class="container">
-        <h1>fact_saves <span class="badge badge-green">Fact</span></h1>
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>fact_saves</h1>
         
-        <!-- Table Overview Section -->
-        <div class="table-overview">
-            <h2>Table Overview</h2>
-            
-            <div class="overview-desc">
-                <strong>Description:</strong> No description available.
-            </div>
-            
-            <div class="overview-grid">
-                <div class="overview-label">Purpose:</div>
-                <div class="overview-value">Not documented.</div>
-                
-                <div class="overview-label">Source Module:</div>
-                <div class="overview-value"><code>Unknown</code></div>
-                
-                <div class="overview-label">Logic:</div>
-                <div class="overview-value">Not documented.</div>
-                
-                <div class="overview-label">Grain:</div>
-                <div class="overview-value">Not documented.</div>
-                
-                <div class="overview-label">Rows:</div>
-                <div class="overview-value">100</div>
-                
-                <div class="overview-label">Columns:</div>
-                <div class="overview-value">79</div>
-            </div>
+        
+        
+        <div class="meta">
+            <strong>Rows:</strong> 213 | 
+            <strong>Columns:</strong> 171 |
+            <strong>Last Updated:</strong> 2026-01-12 23:37:10 |
+            <strong>Version:</strong> 11.04
         </div>
         
-        <!-- Column Documentation Section -->
-        <div class="column-docs">
-            <h2>Column Documentation</h2>
-            
-            <div class="legend">
-                <span class="legend-title">Legend:</span>
-                <span class="legend-item"><span class="type-badge badge-explicit">Explicit</span> = From raw data</span>
-                <span class="legend-item"><span class="type-badge badge-calculated">Calculated</span> = Formula-based</span>
-                <span class="legend-item"><span class="type-badge badge-derived">Derived</span> = Generated key/aggregate</span>
-                <span class="legend-item"><span class="type-badge badge-fk">FK</span> = Foreign key lookup</span>
-            </div>
-            
-            <table>
-                <thead>
-                    <tr>
-                        <th>Column</th>
-                        <th>Data Type</th>
-                        <th>Description</th>
-                        <th>Context / Mapping</th>
-                        <th>Calculation / Formula</th>
-                        <th>Type</th>
-                        <th>Non-Null</th>
-                        <th>Null %</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    
-            <tr>
-                <td><code>event_id</code></td>
-                <td>object</td>
-                <td>Unique event identifier</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>game_id</code></td>
-                <td>int64</td>
-                <td>Unique game identifier from NORAD league</td>
-                <td class="context-cell">Numeric ID from league website URL. Example: 18969.</td>
-                <td class="calc-cell"><code>Extracted from tracking file directory name (data/raw/games/{game_id}/)</code></td>
-                <td><span class="type-badge badge-explicit">Explicit</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>period</code></td>
-                <td>int64</td>
-                <td>Game period</td>
-                <td class="context-cell">Values: 1, 2, 3, OT, SO</td>
-                <td class="calc-cell"><code>From tracking spreadsheet</code></td>
-                <td><span class="type-badge badge-explicit">Explicit</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>period_id</code></td>
-                <td>object</td>
-                <td>Game period (1, 2, 3, OT)</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>event_type</code></td>
-                <td>object</td>
-                <td>Type of event (Goal, Shot, Pass, etc.)</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>event_type_id</code></td>
-                <td>object</td>
-                <td>Type of event (Goal, Shot, Pass, etc.)</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>event_detail</code></td>
-                <td>object</td>
-                <td>Detailed event subtype</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>event_detail_id</code></td>
-                <td>object</td>
-                <td>Detailed event subtype</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">99</td>
-                <td class="stat-cell null-low">1.0%</td>
-            </tr>
-            <tr>
-                <td><code>event_detail_2</code></td>
-                <td>object</td>
-                <td>Detailed event subtype</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>event_detail_2_id</code></td>
-                <td>object</td>
-                <td>Detailed event subtype</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>event_successful</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>success_id</code></td>
-                <td>float64</td>
-                <td>Foreign key reference</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>event_team_zone</code></td>
-                <td>object</td>
-                <td>Ice zone (Off, Def, Neu)</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">58</td>
-                <td class="stat-cell null-high">42.0%</td>
-            </tr>
-            <tr>
-                <td><code>event_zone_id</code></td>
-                <td>object</td>
-                <td>Ice zone (Off, Def, Neu)</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">58</td>
-                <td class="stat-cell null-high">42.0%</td>
-            </tr>
-            <tr>
-                <td><code>sequence_key</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>play_key</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>event_chain_key</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>tracking_event_key</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>shift_key</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">97</td>
-                <td class="stat-cell null-med">3.0%</td>
-            </tr>
-            <tr>
-                <td><code>linked_event_key</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">47</td>
-                <td class="stat-cell null-high">53.0%</td>
-            </tr>
-            <tr>
-                <td><code>home_team</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>home_team_id</code></td>
-                <td>object</td>
-                <td>Unique team identifier</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>away_team</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>away_team_id</code></td>
-                <td>object</td>
-                <td>Unique team identifier</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>duration</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>event_player_ids</code></td>
-                <td>object</td>
-                <td>Unique player identifier</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>opp_player_ids</code></td>
-                <td>object</td>
-                <td>Unique player identifier</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">97</td>
-                <td class="stat-cell null-med">3.0%</td>
-            </tr>
-            <tr>
-                <td><code>player_name</code></td>
-                <td>object</td>
-                <td>Player full name</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>season_id</code></td>
-                <td>object</td>
-                <td>Foreign key reference</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>position_id</code></td>
-                <td>float64</td>
-                <td>Player position (C, LW, RW, D, G)</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>shot_type_id</code></td>
-                <td>float64</td>
-                <td>Foreign key reference</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>zone_entry_type_id</code></td>
-                <td>float64</td>
-                <td>Ice zone (Off, Def, Neu)</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>zone_exit_type_id</code></td>
-                <td>float64</td>
-                <td>Ice zone (Off, Def, Neu)</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>stoppage_type_id</code></td>
-                <td>float64</td>
-                <td>Foreign key reference</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>giveaway_type_id</code></td>
-                <td>float64</td>
-                <td>Foreign key reference</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>takeaway_type_id</code></td>
-                <td>float64</td>
-                <td>Foreign key reference</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>turnover_type_id</code></td>
-                <td>float64</td>
-                <td>Foreign key reference</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>pass_type_id</code></td>
-                <td>float64</td>
-                <td>Foreign key reference</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>time_bucket_id</code></td>
-                <td>object</td>
-                <td>Foreign key reference</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>strength_id</code></td>
-                <td>object</td>
-                <td>Foreign key reference</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">97</td>
-                <td class="stat-cell null-med">3.0%</td>
-            </tr>
-            <tr>
-                <td><code>cycle_key</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>is_cycle</code></td>
-                <td>int64</td>
-                <td>Boolean flag</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>event_start_min</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>event_start_sec</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>event_end_min</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">1</td>
-                <td class="stat-cell null-high">99.0%</td>
-            </tr>
-            <tr>
-                <td><code>event_end_sec</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">1</td>
-                <td class="stat-cell null-high">99.0%</td>
-            </tr>
-            <tr>
-                <td><code>running_video_time</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>event_running_start</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>event_running_end</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>play_detail1</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>is_rush</code></td>
-                <td>int64</td>
-                <td>Boolean flag</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>is_rebound</code></td>
-                <td>int64</td>
-                <td>Boolean flag</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>is_breakout</code></td>
-                <td>int64</td>
-                <td>Boolean flag</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>is_zone_entry</code></td>
-                <td>int64</td>
-                <td>Ice zone (Off, Def, Neu)</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>is_zone_exit</code></td>
-                <td>int64</td>
-                <td>Ice zone (Off, Def, Neu)</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>is_shot</code></td>
-                <td>int64</td>
-                <td>Boolean flag</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>is_goal</code></td>
-                <td>int64</td>
-                <td>Boolean flag</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>is_save</code></td>
-                <td>int64</td>
-                <td>Boolean flag</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>is_turnover</code></td>
-                <td>int64</td>
-                <td>Boolean flag</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>is_giveaway</code></td>
-                <td>int64</td>
-                <td>Boolean flag</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>is_takeaway</code></td>
-                <td>int64</td>
-                <td>Boolean flag</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>is_faceoff</code></td>
-                <td>int64</td>
-                <td>Boolean flag</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>is_penalty</code></td>
-                <td>int64</td>
-                <td>Boolean flag</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>is_blocked_shot</code></td>
-                <td>int64</td>
-                <td>Boolean flag</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>is_missed_shot</code></td>
-                <td>int64</td>
-                <td>Boolean flag</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>is_deflected</code></td>
-                <td>int64</td>
-                <td>Boolean flag</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>is_sog</code></td>
-                <td>int64</td>
-                <td>Boolean flag</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>shot_outcome_id</code></td>
-                <td>float64</td>
-                <td>Foreign key reference</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>pass_outcome_id</code></td>
-                <td>float64</td>
-                <td>Foreign key reference</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>save_outcome_id</code></td>
-                <td>object</td>
-                <td>Foreign key reference</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>zone_outcome_id</code></td>
-                <td>float64</td>
-                <td>Ice zone (Off, Def, Neu)</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>is_scoring_chance</code></td>
-                <td>int64</td>
-                <td>Boolean flag</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>is_high_danger</code></td>
-                <td>int64</td>
-                <td>Boolean flag</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>pressured_pressurer</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>is_pressured</code></td>
-                <td>int64</td>
-                <td>Boolean flag</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>danger_level</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>danger_level_id</code></td>
-                <td>float64</td>
-                <td>Foreign key reference</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>scoring_chance_key</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>save_key</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-                </tbody>
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>event_id</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>game_id</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>period</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>period_id</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>event_type</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>event_type_id</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>event_detail</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>event_detail_id</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>event_detail_2</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>event_detail_2_id</td><td>object</td><td>199</td><td>6.6%</td></tr><tr><td>event_successful</td><td>object</td><td>3</td><td>98.6%</td></tr><tr><td>success_id</td><td>object</td><td>3</td><td>98.6%</td></tr><tr><td>event_team_zone</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>event_zone_id</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>sequence_key</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>play_key</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>event_chain_key</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>tracking_event_key</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>home_team</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>home_team_id</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>away_team</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>away_team_id</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>duration</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>event_player_ids</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>opp_player_ids</td><td>object</td><td>211</td><td>0.9%</td></tr><tr><td>event_start_min</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>event_start_sec</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>event_end_min</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>event_end_sec</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>time_start_total_seconds</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>time_end_total_seconds</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>event_running_start</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>event_running_end</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>running_video_time</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>period_start_total_running_seconds</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>running_intermission_duration</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>team_venue</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>team_venue_abv</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>player_team</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>home_team_zone</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>away_team_zone</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>player_role</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>side_of_puck</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>role_number</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>role_abrev</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>player_game_number</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>strength</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>play_detail1</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>play_detail_2</td><td>object</td><td>2</td><td>99.1%</td></tr><tr><td>play_detail_successful</td><td>object</td><td>5</td><td>97.7%</td></tr><tr><td>pressured_pressurer</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>is_goal</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>is_highlight</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>player_name</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>season_id</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>position_id</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>shot_type_id</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>zone_entry_type_id</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>zone_exit_type_id</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>stoppage_type_id</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>giveaway_type_id</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>takeaway_type_id</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>turnover_type_id</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>pass_type_id</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>time_bucket_id</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>strength_id</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>player_rating</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>cycle_key</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>is_cycle</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>is_rebound</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>is_zone_entry</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>is_zone_exit</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>is_controlled_entry</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>is_carried_entry</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>is_controlled_exit</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>is_carried_exit</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>is_rush</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>is_save</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>is_turnover</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>is_giveaway</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>is_bad_giveaway</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>is_takeaway</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>is_faceoff</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>is_penalty</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>is_blocked_shot</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>is_missed_shot</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>is_deflected</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>is_tipped</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>is_sog</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>is_corsi</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>is_fenwick</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>shot_outcome_id</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>pass_outcome_id</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>save_outcome_id</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>zone_outcome_id</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>is_scoring_chance</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>is_high_danger</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>is_pressured</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>danger_level</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>danger_level_id</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>scoring_chance_key</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>prev_event_id</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>prev_event_type</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>prev_event_detail</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>prev_event_team</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>prev_event_same_team</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>next_event_id</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>next_event_type</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>next_event_detail</td><td>object</td><td>208</td><td>2.3%</td></tr><tr><td>next_event_team</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>next_event_same_team</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>time_since_prev</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>time_to_next</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>time_to_next_sog</td><td>float64</td><td>209</td><td>1.9%</td></tr><tr><td>time_since_last_sog</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>events_to_next_sog</td><td>float64</td><td>209</td><td>1.9%</td></tr><tr><td>events_since_last_sog</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>next_sog_result</td><td>object</td><td>209</td><td>1.9%</td></tr><tr><td>led_to_sog</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>is_pre_shot_event</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>is_shot_assist</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>time_to_next_goal</td><td>float64</td><td>175</td><td>17.8%</td></tr><tr><td>time_since_last_goal</td><td>float64</td><td>161</td><td>24.4%</td></tr><tr><td>events_to_next_goal</td><td>float64</td><td>175</td><td>17.8%</td></tr><tr><td>events_since_last_goal</td><td>float64</td><td>161</td><td>24.4%</td></tr><tr><td>led_to_goal</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>time_since_zone_entry</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>events_since_zone_entry</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>time_since_zone_exit</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>sequence_event_num</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>sequence_total_events</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>sequence_duration</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>is_sequence_first</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>is_sequence_last</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>sequence_has_sog</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>sequence_has_goal</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>sequence_shot_count</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>consecutive_team_events</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>time_since_possession_change</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>events_since_possession_change</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>time_since_faceoff</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>events_since_faceoff</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>is_rush_calculated</td><td>int64</td><td>213</td><td>0.0%</td></tr><tr><td>time_from_entry_to_shot</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>save_key</td><td>object</td><td>213</td><td>0.0%</td></tr><tr><td>time_to_next_event</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>time_from_last_event</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>time_to_next_goal_for</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>time_to_next_goal_against</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>time_from_last_goal_for</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>time_from_last_goal_against</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>time_to_next_stoppage</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>time_from_last_stoppage</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>event_player_1_toi</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>event_player_2_toi</td><td>float64</td><td>90</td><td>57.7%</td></tr><tr><td>event_player_3_toi</td><td>float64</td><td>8</td><td>96.2%</td></tr><tr><td>event_player_4_toi</td><td>float64</td><td>2</td><td>99.1%</td></tr><tr><td>event_player_5_toi</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>event_player_6_toi</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>opp_player_1_toi</td><td>float64</td><td>211</td><td>0.9%</td></tr><tr><td>opp_player_2_toi</td><td>float64</td><td>27</td><td>87.3%</td></tr><tr><td>opp_player_3_toi</td><td>float64</td><td>3</td><td>98.6%</td></tr><tr><td>opp_player_4_toi</td><td>float64</td><td>1</td><td>99.5%</td></tr><tr><td>opp_player_5_toi</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>opp_player_6_toi</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>team_on_ice_toi_avg</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>team_on_ice_toi_min</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>team_on_ice_toi_max</td><td>float64</td><td>213</td><td>0.0%</td></tr><tr><td>opp_on_ice_toi_avg</td><td>float64</td><td>211</td><td>0.9%</td></tr><tr><td>opp_on_ice_toi_min</td><td>float64</td><td>211</td><td>0.9%</td></tr><tr><td>opp_on_ice_toi_max</td><td>float64</td><td>211</td><td>0.9%</td></tr>
             </table>
         </div>
         
-        <!-- Sample Data Section -->
-        <div class="column-docs">
-            <h2>Sample Data (First 5 Rows)</h2>
-            <table border="1" class="dataframe data-table">
+        <div class="card">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
   <thead>
     <tr style="text-align: right;">
       <th>event_id</th>
@@ -960,8 +72,6 @@
       <th>play_key</th>
       <th>event_chain_key</th>
       <th>tracking_event_key</th>
-      <th>shift_key</th>
-      <th>linked_event_key</th>
       <th>home_team</th>
       <th>home_team_id</th>
       <th>away_team</th>
@@ -969,6 +79,34 @@
       <th>duration</th>
       <th>event_player_ids</th>
       <th>opp_player_ids</th>
+      <th>event_start_min</th>
+      <th>event_start_sec</th>
+      <th>event_end_min</th>
+      <th>event_end_sec</th>
+      <th>time_start_total_seconds</th>
+      <th>time_end_total_seconds</th>
+      <th>event_running_start</th>
+      <th>event_running_end</th>
+      <th>running_video_time</th>
+      <th>period_start_total_running_seconds</th>
+      <th>running_intermission_duration</th>
+      <th>team_venue</th>
+      <th>team_venue_abv</th>
+      <th>player_team</th>
+      <th>home_team_zone</th>
+      <th>away_team_zone</th>
+      <th>player_role</th>
+      <th>side_of_puck</th>
+      <th>role_number</th>
+      <th>role_abrev</th>
+      <th>player_game_number</th>
+      <th>strength</th>
+      <th>play_detail1</th>
+      <th>play_detail_2</th>
+      <th>play_detail_successful</th>
+      <th>pressured_pressurer</th>
+      <th>is_goal</th>
+      <th>is_highlight</th>
       <th>player_name</th>
       <th>season_id</th>
       <th>position_id</th>
@@ -982,79 +120,171 @@
       <th>pass_type_id</th>
       <th>time_bucket_id</th>
       <th>strength_id</th>
+      <th>player_rating</th>
       <th>cycle_key</th>
       <th>is_cycle</th>
-      <th>event_start_min</th>
-      <th>event_start_sec</th>
-      <th>event_end_min</th>
-      <th>event_end_sec</th>
-      <th>running_video_time</th>
-      <th>event_running_start</th>
-      <th>event_running_end</th>
-      <th>play_detail1</th>
-      <th>is_rush</th>
       <th>is_rebound</th>
-      <th>is_breakout</th>
       <th>is_zone_entry</th>
       <th>is_zone_exit</th>
-      <th>is_shot</th>
-      <th>is_goal</th>
+      <th>is_controlled_entry</th>
+      <th>is_carried_entry</th>
+      <th>is_controlled_exit</th>
+      <th>is_carried_exit</th>
+      <th>is_rush</th>
       <th>is_save</th>
       <th>is_turnover</th>
       <th>is_giveaway</th>
+      <th>is_bad_giveaway</th>
       <th>is_takeaway</th>
       <th>is_faceoff</th>
       <th>is_penalty</th>
       <th>is_blocked_shot</th>
       <th>is_missed_shot</th>
       <th>is_deflected</th>
+      <th>is_tipped</th>
       <th>is_sog</th>
+      <th>is_corsi</th>
+      <th>is_fenwick</th>
       <th>shot_outcome_id</th>
       <th>pass_outcome_id</th>
       <th>save_outcome_id</th>
       <th>zone_outcome_id</th>
       <th>is_scoring_chance</th>
       <th>is_high_danger</th>
-      <th>pressured_pressurer</th>
       <th>is_pressured</th>
       <th>danger_level</th>
       <th>danger_level_id</th>
       <th>scoring_chance_key</th>
+      <th>prev_event_id</th>
+      <th>prev_event_type</th>
+      <th>prev_event_detail</th>
+      <th>prev_event_team</th>
+      <th>prev_event_same_team</th>
+      <th>next_event_id</th>
+      <th>next_event_type</th>
+      <th>next_event_detail</th>
+      <th>next_event_team</th>
+      <th>next_event_same_team</th>
+      <th>time_since_prev</th>
+      <th>time_to_next</th>
+      <th>time_to_next_sog</th>
+      <th>time_since_last_sog</th>
+      <th>events_to_next_sog</th>
+      <th>events_since_last_sog</th>
+      <th>next_sog_result</th>
+      <th>led_to_sog</th>
+      <th>is_pre_shot_event</th>
+      <th>is_shot_assist</th>
+      <th>time_to_next_goal</th>
+      <th>time_since_last_goal</th>
+      <th>events_to_next_goal</th>
+      <th>events_since_last_goal</th>
+      <th>led_to_goal</th>
+      <th>time_since_zone_entry</th>
+      <th>events_since_zone_entry</th>
+      <th>time_since_zone_exit</th>
+      <th>sequence_event_num</th>
+      <th>sequence_total_events</th>
+      <th>sequence_duration</th>
+      <th>is_sequence_first</th>
+      <th>is_sequence_last</th>
+      <th>sequence_has_sog</th>
+      <th>sequence_has_goal</th>
+      <th>sequence_shot_count</th>
+      <th>consecutive_team_events</th>
+      <th>time_since_possession_change</th>
+      <th>events_since_possession_change</th>
+      <th>time_since_faceoff</th>
+      <th>events_since_faceoff</th>
+      <th>is_rush_calculated</th>
+      <th>time_from_entry_to_shot</th>
       <th>save_key</th>
+      <th>time_to_next_event</th>
+      <th>time_from_last_event</th>
+      <th>time_to_next_goal_for</th>
+      <th>time_to_next_goal_against</th>
+      <th>time_from_last_goal_for</th>
+      <th>time_from_last_goal_against</th>
+      <th>time_to_next_stoppage</th>
+      <th>time_from_last_stoppage</th>
+      <th>event_player_1_toi</th>
+      <th>event_player_2_toi</th>
+      <th>event_player_3_toi</th>
+      <th>event_player_4_toi</th>
+      <th>event_player_5_toi</th>
+      <th>event_player_6_toi</th>
+      <th>opp_player_1_toi</th>
+      <th>opp_player_2_toi</th>
+      <th>opp_player_3_toi</th>
+      <th>opp_player_4_toi</th>
+      <th>opp_player_5_toi</th>
+      <th>opp_player_6_toi</th>
+      <th>team_on_ice_toi_avg</th>
+      <th>team_on_ice_toi_min</th>
+      <th>team_on_ice_toi_max</th>
+      <th>opp_on_ice_toi_avg</th>
+      <th>opp_on_ice_toi_min</th>
+      <th>opp_on_ice_toi_max</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td>EV1896901033</td>
+      <td>EV1896901519</td>
       <td>18969</td>
-      <td>1</td>
-      <td>P01</td>
+      <td>2</td>
+      <td>P02</td>
       <td>Save</td>
       <td>ET0002</td>
       <td>Save_Rebound</td>
-      <td>ED0055</td>
-      <td>Save_LeftPad</td>
-      <td>ED248</td>
+      <td>ED0031</td>
+      <td>Save_Shoulder</td>
       <td>NaN</td>
       <td>NaN</td>
-      <td>d</td>
+      <td>NaN</td>
+      <td>Defensive</td>
       <td>ZN02</td>
-      <td>SQ1896900062</td>
-      <td>PL1896906205</td>
-      <td>EC18969001033</td>
-      <td>TV1896909004</td>
-      <td>SH1896900001</td>
-      <td>LV1896909004</td>
+      <td>SQ1896900054</td>
+      <td>PL1896905405</td>
+      <td>EC18969001519</td>
+      <td>TV1896901519</td>
       <td>Platinum</td>
       <td>N10008</td>
       <td>Velodrome</td>
       <td>N10010</td>
       <td>0.0</td>
-      <td>P100016,P100108</td>
-      <td>P100024</td>
-      <td>Wyatt Crandall</td>
+      <td>P100016,P100198</td>
+      <td>P100027,P100192</td>
+      <td>17.0</td>
+      <td>24.0</td>
+      <td>17.0</td>
+      <td>24.0</td>
+      <td>1044.0</td>
+      <td>1044.0</td>
+      <td>1356.0</td>
+      <td>1356.0</td>
+      <td>2256.0</td>
+      <td>1200</td>
+      <td>900</td>
+      <td>a</td>
+      <td>NaN</td>
+      <td>Velodrome</td>
+      <td>Offensive</td>
+      <td>Defensive</td>
+      <td>event_player_1</td>
+      <td>Defensive</td>
+      <td>1</td>
+      <td>e1</td>
+      <td>39.0</td>
+      <td>5v5</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>Maxwell Donaty</td>
       <td>N20252026F</td>
-      <td>6.0</td>
+      <td>5.0</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -1064,25 +294,23 @@
       <td>NaN</td>
       <td>NaN</td>
       <td>TB01</td>
-      <td>STR0001</td>
+      <td>STR01</td>
+      <td>4.0</td>
       <td>NaN</td>
       <td>0</td>
-      <td>16.0</td>
-      <td>48.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>72.0</td>
-      <td>67.0</td>
-      <td>72.0</td>
-      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
       <td>0</td>
       <td>1</td>
       <td>0</td>
       <td>0</td>
       <td>0</td>
       <td>0</td>
-      <td>0</td>
-      <td>1</td>
       <td>0</td>
       <td>0</td>
       <td>0</td>
@@ -1098,12 +326,599 @@
       <td>NaN</td>
       <td>0</td>
       <td>0</td>
-      <td>NaN</td>
       <td>0</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
-      <td>SV189690033</td>
+      <td>EV1896901518</td>
+      <td>Shot</td>
+      <td>Shot_OnNetSaved</td>
+      <td>Platinum</td>
+      <td>0</td>
+      <td>EV1896901520</td>
+      <td>Rebound</td>
+      <td>Rebound_TeamRecovered</td>
+      <td>Velodrome</td>
+      <td>1</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>36.0</td>
+      <td>0.0</td>
+      <td>40.0</td>
+      <td>1.0</td>
+      <td>save</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>333.0</td>
+      <td>4.0</td>
+      <td>503.0</td>
+      <td>7.0</td>
+      <td>0</td>
+      <td>10.0</td>
+      <td>19.0</td>
+      <td>13.0</td>
+      <td>16.0</td>
+      <td>37.0</td>
+      <td>68.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1.0</td>
+      <td>1</td>
+      <td>3.0</td>
+      <td>3.0</td>
+      <td>4.0</td>
+      <td>4.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>SV189690062</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>4.0</td>
+      <td>-1.0</td>
+      <td>696.0</td>
+      <td>333.0</td>
+      <td>4.0</td>
+      <td>43.0</td>
+      <td>3122.98</td>
+      <td>1562.98</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1224.98</td>
+      <td>1705.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2342.980000</td>
+      <td>1562.98</td>
+      <td>3122.98</td>
+      <td>1464.990</td>
+      <td>1224.98</td>
+      <td>1705.00</td>
+    </tr>
+    <tr>
+      <td>EV1896901033</td>
+      <td>18969</td>
+      <td>1</td>
+      <td>P01</td>
+      <td>Save</td>
+      <td>ET0002</td>
+      <td>Save_Rebound</td>
+      <td>ED0031</td>
+      <td>Save_LeftPad</td>
+      <td>ED100</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Defensive</td>
+      <td>ZN02</td>
+      <td>SQ1896900002</td>
+      <td>PL1896900207</td>
+      <td>EC18969001033</td>
+      <td>TV1896901033</td>
+      <td>Platinum</td>
+      <td>N10008</td>
+      <td>Velodrome</td>
+      <td>N10010</td>
+      <td>0.0</td>
+      <td>P100016,P100108</td>
+      <td>P100024</td>
+      <td>16.0</td>
+      <td>48.0</td>
+      <td>16.0</td>
+      <td>48.0</td>
+      <td>1008.0</td>
+      <td>1008.0</td>
+      <td>192.0</td>
+      <td>192.0</td>
+      <td>192.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>a</td>
+      <td>NaN</td>
+      <td>Velodrome</td>
+      <td>Offensive</td>
+      <td>Defensive</td>
+      <td>event_player_1</td>
+      <td>Defensive</td>
+      <td>1</td>
+      <td>e1</td>
+      <td>39.0</td>
+      <td>5v5</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>Wyatt Crandall</td>
+      <td>N20252026F</td>
+      <td>6.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TB01</td>
+      <td>STR01</td>
+      <td>5.0</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>SV01</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>EV1896901032</td>
+      <td>Shot</td>
+      <td>Shot_OnNetSaved</td>
+      <td>Platinum</td>
+      <td>0</td>
+      <td>EV1896901034</td>
+      <td>Rebound</td>
+      <td>Rebound_TeamRecovered</td>
+      <td>Velodrome</td>
+      <td>1</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>12.0</td>
+      <td>0.0</td>
+      <td>26.0</td>
+      <td>1.0</td>
+      <td>save</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>297.0</td>
+      <td>40.0</td>
+      <td>462.0</td>
+      <td>48.0</td>
+      <td>0</td>
+      <td>3.0</td>
+      <td>4.0</td>
+      <td>6.0</td>
+      <td>24.0</td>
+      <td>33.0</td>
+      <td>113.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>2.0</td>
+      <td>1</td>
+      <td>9.0</td>
+      <td>13.0</td>
+      <td>40.0</td>
+      <td>45.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>SV189690103</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>40.0</td>
+      <td>-1.0</td>
+      <td>660.0</td>
+      <td>297.0</td>
+      <td>40.0</td>
+      <td>7.0</td>
+      <td>2924.98</td>
+      <td>791.98</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>850.99</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1858.480000</td>
+      <td>791.98</td>
+      <td>2924.98</td>
+      <td>850.990</td>
+      <td>850.99</td>
+      <td>850.99</td>
+    </tr>
+    <tr>
+      <td>EV1896901548</td>
+      <td>18969</td>
+      <td>2</td>
+      <td>P02</td>
+      <td>Save</td>
+      <td>ET0002</td>
+      <td>Save_Freeze</td>
+      <td>ED0029</td>
+      <td>Save_Butterfly</td>
+      <td>ED097</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Defensive</td>
+      <td>ZN02</td>
+      <td>SQ1896900056</td>
+      <td>PL1896905601</td>
+      <td>EC18969001548</td>
+      <td>TV1896901548</td>
+      <td>Platinum</td>
+      <td>N10008</td>
+      <td>Velodrome</td>
+      <td>N10010</td>
+      <td>0.0</td>
+      <td>P100027,P100202</td>
+      <td>P100093</td>
+      <td>16.0</td>
+      <td>36.0</td>
+      <td>16.0</td>
+      <td>36.0</td>
+      <td>996.0</td>
+      <td>996.0</td>
+      <td>1404.0</td>
+      <td>1404.0</td>
+      <td>2304.0</td>
+      <td>1200</td>
+      <td>900</td>
+      <td>h</td>
+      <td>NaN</td>
+      <td>Platinum</td>
+      <td>Offensive</td>
+      <td>Defensive</td>
+      <td>event_player_1</td>
+      <td>Defensive</td>
+      <td>1</td>
+      <td>e1</td>
+      <td>99.0</td>
+      <td>5v5</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>Francis Forte</td>
+      <td>N20252026F</td>
+      <td>6.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TB01</td>
+      <td>STR01</td>
+      <td>5.0</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>SV02</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>EV1896901547</td>
+      <td>Shot</td>
+      <td>Shot_OnNetSaved</td>
+      <td>Velodrome</td>
+      <td>0</td>
+      <td>EV1896901040</td>
+      <td>Stoppage</td>
+      <td>Stoppage_Play</td>
+      <td>Velodrome</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>21.0</td>
+      <td>0.0</td>
+      <td>7.0</td>
+      <td>1.0</td>
+      <td>save</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>285.0</td>
+      <td>52.0</td>
+      <td>435.0</td>
+      <td>75.0</td>
+      <td>0</td>
+      <td>7.0</td>
+      <td>12.0</td>
+      <td>6.0</td>
+      <td>5.0</td>
+      <td>21.0</td>
+      <td>998.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1.0</td>
+      <td>1</td>
+      <td>5.0</td>
+      <td>6.0</td>
+      <td>52.0</td>
+      <td>72.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>SV189690130</td>
+      <td>4.0</td>
+      <td>0.0</td>
+      <td>-1.0</td>
+      <td>52.0</td>
+      <td>285.0</td>
+      <td>648.0</td>
+      <td>5.0</td>
+      <td>1.0</td>
+      <td>1026.98</td>
+      <td>3006.97</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1194.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2016.975000</td>
+      <td>1026.98</td>
+      <td>3006.97</td>
+      <td>1194.000</td>
+      <td>1194.00</td>
+      <td>1194.00</td>
+    </tr>
+    <tr>
+      <td>EV1896902090</td>
+      <td>18969</td>
+      <td>3</td>
+      <td>P03</td>
+      <td>Save</td>
+      <td>ET0002</td>
+      <td>Save_Freeze</td>
+      <td>ED0029</td>
+      <td>Save_Shoulder</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Defensive</td>
+      <td>ZN02</td>
+      <td>SQ1896900100</td>
+      <td>PL1896910001</td>
+      <td>EC18969002090</td>
+      <td>TV1896902090</td>
+      <td>Platinum</td>
+      <td>N10008</td>
+      <td>Velodrome</td>
+      <td>N10010</td>
+      <td>0.0</td>
+      <td>P100016,P100064</td>
+      <td>P100030</td>
+      <td>16.0</td>
+      <td>15.0</td>
+      <td>16.0</td>
+      <td>15.0</td>
+      <td>975.0</td>
+      <td>975.0</td>
+      <td>2625.0</td>
+      <td>2625.0</td>
+      <td>4425.0</td>
+      <td>2400</td>
+      <td>1800</td>
+      <td>a</td>
+      <td>NaN</td>
+      <td>Velodrome</td>
+      <td>Offensive</td>
+      <td>Defensive</td>
+      <td>event_player_1</td>
+      <td>Defensive</td>
+      <td>1</td>
+      <td>e1</td>
+      <td>39.0</td>
+      <td>5v5</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>Jesse Chambless</td>
+      <td>N20252026F</td>
+      <td>5.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TB01</td>
+      <td>STR01</td>
+      <td>5.0</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>SV02</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>EV1896902089</td>
+      <td>Shot</td>
+      <td>Shot_OnNetSaved</td>
+      <td>Platinum</td>
+      <td>0</td>
+      <td>EV1896901042</td>
+      <td>Faceoff</td>
+      <td>Faceoff_AfterStoppage</td>
+      <td>Platinum</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>3.0</td>
+      <td>0.0</td>
+      <td>5.0</td>
+      <td>1.0</td>
+      <td>save</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>264.0</td>
+      <td>73.0</td>
+      <td>427.0</td>
+      <td>83.0</td>
+      <td>0</td>
+      <td>28.0</td>
+      <td>20.0</td>
+      <td>27.0</td>
+      <td>4.0</td>
+      <td>63.0</td>
+      <td>1012.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1.0</td>
+      <td>1</td>
+      <td>2.0</td>
+      <td>3.0</td>
+      <td>2.0</td>
+      <td>3.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>SV189690138</td>
+      <td>2.0</td>
+      <td>0.0</td>
+      <td>73.0</td>
+      <td>-1.0</td>
+      <td>627.0</td>
+      <td>264.0</td>
+      <td>19.0</td>
+      <td>2.0</td>
+      <td>2907.98</td>
+      <td>856.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1597.98</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1881.990000</td>
+      <td>856.00</td>
+      <td>2907.98</td>
+      <td>1597.980</td>
+      <td>1597.98</td>
+      <td>1597.98</td>
     </tr>
     <tr>
       <td>EV1896901044</td>
@@ -1113,19 +928,17 @@
       <td>Save</td>
       <td>ET0002</td>
       <td>Save_Rebound</td>
-      <td>ED0055</td>
+      <td>ED0031</td>
       <td>Save_RightPad</td>
-      <td>ED250</td>
+      <td>ED102</td>
       <td>NaN</td>
       <td>NaN</td>
-      <td>d</td>
+      <td>Defensive</td>
       <td>ZN02</td>
-      <td>SQ1896900064</td>
-      <td>PL1896906401</td>
+      <td>SQ1896900002</td>
+      <td>PL1896900208</td>
       <td>EC18969001044</td>
-      <td>TV1896909007</td>
-      <td>SH1896900002</td>
-      <td>LV1896909007</td>
+      <td>TV1896901044</td>
       <td>Platinum</td>
       <td>N10008</td>
       <td>Velodrome</td>
@@ -1133,6 +946,34 @@
       <td>0.0</td>
       <td>P100016,P100093,P100224</td>
       <td>P100022,P100023</td>
+      <td>16.0</td>
+      <td>12.0</td>
+      <td>16.0</td>
+      <td>12.0</td>
+      <td>972.0</td>
+      <td>972.0</td>
+      <td>228.0</td>
+      <td>228.0</td>
+      <td>228.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>a</td>
+      <td>NaN</td>
+      <td>Velodrome</td>
+      <td>Offensive</td>
+      <td>Defensive</td>
+      <td>event_player_1</td>
+      <td>Defensive</td>
+      <td>1</td>
+      <td>e1</td>
+      <td>39.0</td>
+      <td>5v5</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
       <td>Wyatt Crandall</td>
       <td>N20252026F</td>
       <td>6.0</td>
@@ -1145,25 +986,23 @@
       <td>NaN</td>
       <td>NaN</td>
       <td>TB01</td>
-      <td>STR0001</td>
+      <td>STR01</td>
+      <td>5.0</td>
       <td>NaN</td>
       <td>0</td>
-      <td>16.0</td>
-      <td>12.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>108.0</td>
-      <td>103.0</td>
-      <td>108.0</td>
-      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
       <td>0</td>
       <td>1</td>
       <td>0</td>
       <td>0</td>
       <td>0</td>
       <td>0</td>
-      <td>0</td>
-      <td>1</td>
       <td>0</td>
       <td>0</td>
       <td>0</td>
@@ -1179,41 +1018,1000 @@
       <td>NaN</td>
       <td>0</td>
       <td>0</td>
-      <td>NaN</td>
       <td>0</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
-      <td>SV189690044</td>
+      <td>EV1896901043</td>
+      <td>Shot</td>
+      <td>Shot_OnNetSaved</td>
+      <td>Platinum</td>
+      <td>0</td>
+      <td>EV1896901045</td>
+      <td>Rebound</td>
+      <td>Rebound_OppTeamRecovered</td>
+      <td>Velodrome</td>
+      <td>1</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>23.0</td>
+      <td>0.0</td>
+      <td>39.0</td>
+      <td>1.0</td>
+      <td>save</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>261.0</td>
+      <td>76.0</td>
+      <td>421.0</td>
+      <td>89.0</td>
+      <td>0</td>
+      <td>31.0</td>
+      <td>26.0</td>
+      <td>30.0</td>
+      <td>30.0</td>
+      <td>33.0</td>
+      <td>113.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>2.0</td>
+      <td>1</td>
+      <td>2.0</td>
+      <td>4.0</td>
+      <td>2.0</td>
+      <td>4.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>SV189690144</td>
+      <td>0.0</td>
+      <td>2.0</td>
+      <td>76.0</td>
+      <td>-1.0</td>
+      <td>624.0</td>
+      <td>261.0</td>
+      <td>1.0</td>
+      <td>94.0</td>
+      <td>2907.98</td>
+      <td>1177.00</td>
+      <td>876.98</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>977.99</td>
+      <td>1585.99</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1653.986667</td>
+      <td>876.98</td>
+      <td>2907.98</td>
+      <td>1281.990</td>
+      <td>977.99</td>
+      <td>1585.99</td>
     </tr>
     <tr>
-      <td>EV1896901129</td>
+      <td>EV1896902102</td>
       <td>18969</td>
-      <td>1</td>
-      <td>P01</td>
+      <td>3</td>
+      <td>P03</td>
       <td>Save</td>
       <td>ET0002</td>
       <td>Save_Rebound</td>
-      <td>ED0055</td>
-      <td>Save_LeftPad</td>
-      <td>ED248</td>
+      <td>ED0031</td>
+      <td>Save_Butterfly</td>
+      <td>ED097</td>
       <td>NaN</td>
       <td>NaN</td>
-      <td>d</td>
+      <td>Defensive</td>
       <td>ZN02</td>
-      <td>SQ1896900066</td>
-      <td>PL1896906603</td>
-      <td>EC18969001129</td>
-      <td>TV1896909022</td>
-      <td>SH1896900007</td>
-      <td>LV1896909022</td>
+      <td>SQ1896900097</td>
+      <td>PL1896909705</td>
+      <td>EC18969002102</td>
+      <td>TV1896902102</td>
+      <td>Platinum</td>
+      <td>N10008</td>
+      <td>Velodrome</td>
+      <td>N10010</td>
+      <td>0.0</td>
+      <td>P100202</td>
+      <td>P100001</td>
+      <td>15.0</td>
+      <td>49.0</td>
+      <td>15.0</td>
+      <td>49.0</td>
+      <td>949.0</td>
+      <td>949.0</td>
+      <td>2651.0</td>
+      <td>2651.0</td>
+      <td>4451.0</td>
+      <td>2400</td>
+      <td>1800</td>
+      <td>h</td>
+      <td>NaN</td>
+      <td>Platinum</td>
+      <td>Offensive</td>
+      <td>Defensive</td>
+      <td>event_player_1</td>
+      <td>Defensive</td>
+      <td>1</td>
+      <td>e1</td>
+      <td>99.0</td>
+      <td>5v5</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>Francis Forte</td>
+      <td>N20252026F</td>
+      <td>6.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TB01</td>
+      <td>STR01</td>
+      <td>5.0</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>SV01</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>EV1896902101</td>
+      <td>Shot</td>
+      <td>Shot_OnNetSaved</td>
+      <td>Velodrome</td>
+      <td>0</td>
+      <td>EV1896902103</td>
+      <td>Rebound</td>
+      <td>Rebound_TeamRecovered</td>
+      <td>Platinum</td>
+      <td>1</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>12.0</td>
+      <td>0.0</td>
+      <td>22.0</td>
+      <td>1.0</td>
+      <td>save</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>238.0</td>
+      <td>99.0</td>
+      <td>381.0</td>
+      <td>129.0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>4.0</td>
+      <td>6.0</td>
+      <td>21.0</td>
+      <td>21.0</td>
+      <td>130.0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>3.0</td>
+      <td>1</td>
+      <td>0.0</td>
+      <td>2.0</td>
+      <td>13.0</td>
+      <td>27.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>SV189690184</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>-1.0</td>
+      <td>99.0</td>
+      <td>238.0</td>
+      <td>601.0</td>
+      <td>24.0</td>
+      <td>71.0</td>
+      <td>2989.97</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1564.97</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2989.970000</td>
+      <td>2989.97</td>
+      <td>2989.97</td>
+      <td>1564.970</td>
+      <td>1564.97</td>
+      <td>1564.97</td>
+    </tr>
+    <tr>
+      <td>EV1896902110</td>
+      <td>18969</td>
+      <td>3</td>
+      <td>P03</td>
+      <td>Save</td>
+      <td>ET0002</td>
+      <td>Save_Rebound</td>
+      <td>ED0031</td>
+      <td>Save_Butterfly</td>
+      <td>ED097</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Defensive</td>
+      <td>ZN02</td>
+      <td>SQ1896900100</td>
+      <td>PL1896910006</td>
+      <td>EC18969002110</td>
+      <td>TV1896902110</td>
+      <td>Platinum</td>
+      <td>N10008</td>
+      <td>Velodrome</td>
+      <td>N10010</td>
+      <td>0.0</td>
+      <td>P100202</td>
+      <td>P100198</td>
+      <td>15.0</td>
+      <td>37.0</td>
+      <td>15.0</td>
+      <td>37.0</td>
+      <td>937.0</td>
+      <td>937.0</td>
+      <td>2663.0</td>
+      <td>2663.0</td>
+      <td>4463.0</td>
+      <td>2400</td>
+      <td>1800</td>
+      <td>h</td>
+      <td>NaN</td>
+      <td>Platinum</td>
+      <td>Offensive</td>
+      <td>Defensive</td>
+      <td>event_player_1</td>
+      <td>Defensive</td>
+      <td>1</td>
+      <td>e1</td>
+      <td>99.0</td>
+      <td>5v5</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>Francis Forte</td>
+      <td>N20252026F</td>
+      <td>6.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TB01</td>
+      <td>STR01</td>
+      <td>5.0</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>SV01</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>EV1896902109</td>
+      <td>Shot</td>
+      <td>Shot_OnNetSaved</td>
+      <td>Velodrome</td>
+      <td>0</td>
+      <td>EV1896902111</td>
+      <td>Rebound</td>
+      <td>NaN</td>
+      <td>Platinum</td>
+      <td>1</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>2.0</td>
+      <td>1.0</td>
+      <td>save</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>226.0</td>
+      <td>111.0</td>
+      <td>358.0</td>
+      <td>152.0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>3.0</td>
+      <td>2.0</td>
+      <td>9.0</td>
+      <td>63.0</td>
+      <td>1012.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1.0</td>
+      <td>1</td>
+      <td>0.0</td>
+      <td>2.0</td>
+      <td>25.0</td>
+      <td>50.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>SV189690207</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>-1.0</td>
+      <td>111.0</td>
+      <td>226.0</td>
+      <td>589.0</td>
+      <td>36.0</td>
+      <td>59.0</td>
+      <td>2858.97</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1383.98</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2858.970000</td>
+      <td>2858.97</td>
+      <td>2858.97</td>
+      <td>1383.980</td>
+      <td>1383.98</td>
+      <td>1383.98</td>
+    </tr>
+    <tr>
+      <td>EV1896901575</td>
+      <td>18969</td>
+      <td>2</td>
+      <td>P02</td>
+      <td>Save</td>
+      <td>ET0002</td>
+      <td>Save_Rebound</td>
+      <td>ED0031</td>
+      <td>Save_LeftPad</td>
+      <td>ED100</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Defensive</td>
+      <td>ZN02</td>
+      <td>SQ1896900055</td>
+      <td>PL1896905502</td>
+      <td>EC18969001575</td>
+      <td>TV1896901575</td>
+      <td>Platinum</td>
+      <td>N10008</td>
+      <td>Velodrome</td>
+      <td>N10010</td>
+      <td>0.0</td>
+      <td>P100107,P100110,P100202</td>
+      <td>P100093,P100161</td>
+      <td>15.0</td>
+      <td>36.0</td>
+      <td>15.0</td>
+      <td>36.0</td>
+      <td>936.0</td>
+      <td>936.0</td>
+      <td>1464.0</td>
+      <td>1464.0</td>
+      <td>2364.0</td>
+      <td>1200</td>
+      <td>900</td>
+      <td>h</td>
+      <td>NaN</td>
+      <td>Platinum</td>
+      <td>Offensive</td>
+      <td>Defensive</td>
+      <td>event_player_1</td>
+      <td>Defensive</td>
+      <td>1</td>
+      <td>e1</td>
+      <td>99.0</td>
+      <td>5v5</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>Francis Forte</td>
+      <td>N20252026F</td>
+      <td>6.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TB01</td>
+      <td>STR01</td>
+      <td>5.0</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>SV01</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>EV1896901574</td>
+      <td>Shot</td>
+      <td>Shot_OnNetSaved</td>
+      <td>Velodrome</td>
+      <td>0</td>
+      <td>EV1896901576</td>
+      <td>Rebound</td>
+      <td>Rebound_TeamRecovered</td>
+      <td>Platinum</td>
+      <td>1</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>8.0</td>
+      <td>0.0</td>
+      <td>16.0</td>
+      <td>1.0</td>
+      <td>save</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>225.0</td>
+      <td>112.0</td>
+      <td>355.0</td>
+      <td>155.0</td>
+      <td>0</td>
+      <td>1.0</td>
+      <td>6.0</td>
+      <td>3.0</td>
+      <td>3.0</td>
+      <td>4.0</td>
+      <td>920.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>1</td>
+      <td>1.0</td>
+      <td>5.0</td>
+      <td>26.0</td>
+      <td>53.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>SV189690210</td>
+      <td>0.0</td>
+      <td>2.0</td>
+      <td>-1.0</td>
+      <td>112.0</td>
+      <td>225.0</td>
+      <td>588.0</td>
+      <td>37.0</td>
+      <td>58.0</td>
+      <td>1311.99</td>
+      <td>737.00</td>
+      <td>2858.97</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1046.00</td>
+      <td>1222.99</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1635.986667</td>
+      <td>737.00</td>
+      <td>2858.97</td>
+      <td>1134.495</td>
+      <td>1046.00</td>
+      <td>1222.99</td>
+    </tr>
+    <tr>
+      <td>EV1896901583</td>
+      <td>18969</td>
+      <td>2</td>
+      <td>P02</td>
+      <td>Save</td>
+      <td>ET0002</td>
+      <td>Save_Rebound</td>
+      <td>ED0031</td>
+      <td>Save_RightPad</td>
+      <td>ED102</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Defensive</td>
+      <td>ZN02</td>
+      <td>SQ1896900058</td>
+      <td>PL1896905804</td>
+      <td>EC18969001583</td>
+      <td>TV1896901583</td>
+      <td>Platinum</td>
+      <td>N10008</td>
+      <td>Velodrome</td>
+      <td>N10010</td>
+      <td>0.0</td>
+      <td>P100016,P100070</td>
+      <td>P100117</td>
+      <td>15.0</td>
+      <td>28.0</td>
+      <td>15.0</td>
+      <td>28.0</td>
+      <td>928.0</td>
+      <td>928.0</td>
+      <td>1472.0</td>
+      <td>1472.0</td>
+      <td>2372.0</td>
+      <td>1200</td>
+      <td>900</td>
+      <td>a</td>
+      <td>NaN</td>
+      <td>Velodrome</td>
+      <td>Offensive</td>
+      <td>Defensive</td>
+      <td>event_player_1</td>
+      <td>Defensive</td>
+      <td>1</td>
+      <td>e1</td>
+      <td>39.0</td>
+      <td>5v5</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>Wyatt Crandall</td>
+      <td>N20252026F</td>
+      <td>6.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TB01</td>
+      <td>STR01</td>
+      <td>5.0</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>SV01</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>EV1896901582</td>
+      <td>Shot</td>
+      <td>Shot_OnNetSaved</td>
+      <td>Platinum</td>
+      <td>0</td>
+      <td>EV1896901584</td>
+      <td>Rebound</td>
+      <td>Rebound_TeamRecovered</td>
+      <td>Velodrome</td>
+      <td>1</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>16.0</td>
+      <td>0.0</td>
+      <td>29.0</td>
+      <td>1.0</td>
+      <td>save</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>217.0</td>
+      <td>120.0</td>
+      <td>338.0</td>
+      <td>172.0</td>
+      <td>0</td>
+      <td>1.0</td>
+      <td>2.0</td>
+      <td>4.0</td>
+      <td>18.0</td>
+      <td>25.0</td>
+      <td>1000.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>2.0</td>
+      <td>1</td>
+      <td>4.0</td>
+      <td>8.0</td>
+      <td>34.0</td>
+      <td>70.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>SV189690227</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>120.0</td>
+      <td>-1.0</td>
+      <td>580.0</td>
+      <td>217.0</td>
+      <td>45.0</td>
+      <td>50.0</td>
+      <td>2693.98</td>
+      <td>1383.98</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1353.97</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2038.980000</td>
+      <td>1383.98</td>
+      <td>2693.98</td>
+      <td>1353.970</td>
+      <td>1353.97</td>
+      <td>1353.97</td>
+    </tr>
+    <tr>
+      <td>EV1896901592</td>
+      <td>18969</td>
+      <td>2</td>
+      <td>P02</td>
+      <td>Save</td>
+      <td>ET0002</td>
+      <td>Save_Rebound</td>
+      <td>ED0031</td>
+      <td>Save_Butterfly</td>
+      <td>ED097</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Defensive</td>
+      <td>ZN02</td>
+      <td>SQ1896900059</td>
+      <td>PL1896905906</td>
+      <td>EC18969001592</td>
+      <td>TV1896901592</td>
+      <td>Platinum</td>
+      <td>N10008</td>
+      <td>Velodrome</td>
+      <td>N10010</td>
+      <td>0.0</td>
+      <td>P100202</td>
+      <td>P100161</td>
+      <td>15.0</td>
+      <td>12.0</td>
+      <td>15.0</td>
+      <td>12.0</td>
+      <td>912.0</td>
+      <td>912.0</td>
+      <td>1488.0</td>
+      <td>1488.0</td>
+      <td>2388.0</td>
+      <td>1200</td>
+      <td>900</td>
+      <td>h</td>
+      <td>NaN</td>
+      <td>Platinum</td>
+      <td>Offensive</td>
+      <td>Defensive</td>
+      <td>event_player_1</td>
+      <td>Defensive</td>
+      <td>1</td>
+      <td>e1</td>
+      <td>99.0</td>
+      <td>5v5</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>Francis Forte</td>
+      <td>N20252026F</td>
+      <td>6.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TB01</td>
+      <td>STR01</td>
+      <td>5.0</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>SV01</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>EV1896901591</td>
+      <td>Shot</td>
+      <td>Shot_OnNetSaved</td>
+      <td>Velodrome</td>
+      <td>0</td>
+      <td>EV1896901593</td>
+      <td>Rebound</td>
+      <td>Rebound_TeamRecovered</td>
+      <td>Platinum</td>
+      <td>1</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>21.0</td>
+      <td>0.0</td>
+      <td>34.0</td>
+      <td>1.0</td>
+      <td>save</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>201.0</td>
+      <td>136.0</td>
+      <td>308.0</td>
+      <td>202.0</td>
+      <td>0</td>
+      <td>11.0</td>
+      <td>20.0</td>
+      <td>3.0</td>
+      <td>3.0</td>
+      <td>31.0</td>
+      <td>332.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>2.0</td>
+      <td>1</td>
+      <td>0.0</td>
+      <td>3.0</td>
+      <td>50.0</td>
+      <td>100.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>SV189690257</td>
+      <td>0.0</td>
+      <td>2.0</td>
+      <td>-1.0</td>
+      <td>136.0</td>
+      <td>201.0</td>
+      <td>564.0</td>
+      <td>61.0</td>
+      <td>34.0</td>
+      <td>2758.97</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1122.99</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2758.970000</td>
+      <td>2758.97</td>
+      <td>2758.97</td>
+      <td>1122.990</td>
+      <td>1122.99</td>
+      <td>1122.99</td>
+    </tr>
+    <tr>
+      <td>EV1896901606</td>
+      <td>18969</td>
+      <td>2</td>
+      <td>P02</td>
+      <td>Save</td>
+      <td>ET0002</td>
+      <td>Save_Rebound</td>
+      <td>ED0031</td>
+      <td>Save_RightPad</td>
+      <td>ED102</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Defensive</td>
+      <td>ZN02</td>
+      <td>SQ1896900068</td>
+      <td>PL1896906801</td>
+      <td>EC18969001606</td>
+      <td>TV1896901606</td>
       <td>Platinum</td>
       <td>N10008</td>
       <td>Velodrome</td>
       <td>N10010</td>
       <td>0.0</td>
       <td>P100016</td>
-      <td>P100222</td>
+      <td>P100210</td>
+      <td>14.0</td>
+      <td>51.0</td>
+      <td>14.0</td>
+      <td>51.0</td>
+      <td>891.0</td>
+      <td>891.0</td>
+      <td>1509.0</td>
+      <td>1509.0</td>
+      <td>2409.0</td>
+      <td>1200</td>
+      <td>900</td>
+      <td>a</td>
+      <td>NaN</td>
+      <td>Velodrome</td>
+      <td>Offensive</td>
+      <td>Defensive</td>
+      <td>event_player_1</td>
+      <td>Defensive</td>
+      <td>1</td>
+      <td>e1</td>
+      <td>39.0</td>
+      <td>5v5</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
       <td>Wyatt Crandall</td>
       <td>N20252026F</td>
       <td>6.0</td>
@@ -1226,25 +2024,23 @@
       <td>NaN</td>
       <td>NaN</td>
       <td>TB02</td>
-      <td>STR0001</td>
+      <td>STR01</td>
+      <td>5.0</td>
       <td>NaN</td>
       <td>0</td>
-      <td>13.0</td>
-      <td>33.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>267.0</td>
-      <td>262.0</td>
-      <td>267.0</td>
-      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
       <td>0</td>
       <td>1</td>
       <td>0</td>
       <td>0</td>
       <td>0</td>
       <td>0</td>
-      <td>0</td>
-      <td>1</td>
       <td>0</td>
       <td>0</td>
       <td>0</td>
@@ -1260,122 +2056,135 @@
       <td>NaN</td>
       <td>0</td>
       <td>0</td>
-      <td>NaN</td>
       <td>0</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
-      <td>SV189690129</td>
+      <td>EV1896901605</td>
+      <td>Shot</td>
+      <td>Shot_OnNetSaved</td>
+      <td>Platinum</td>
+      <td>0</td>
+      <td>EV1896901607</td>
+      <td>Rebound</td>
+      <td>Rebound_OppTeamRecovered</td>
+      <td>Velodrome</td>
+      <td>1</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>5.0</td>
+      <td>0.0</td>
+      <td>10.0</td>
+      <td>1.0</td>
+      <td>save</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>180.0</td>
+      <td>157.0</td>
+      <td>273.0</td>
+      <td>237.0</td>
+      <td>0</td>
+      <td>10.0</td>
+      <td>18.0</td>
+      <td>4.0</td>
+      <td>6.0</td>
+      <td>186.0</td>
+      <td>540.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>8.0</td>
+      <td>1</td>
+      <td>3.0</td>
+      <td>5.0</td>
+      <td>71.0</td>
+      <td>135.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>SV189690292</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>157.0</td>
+      <td>-1.0</td>
+      <td>543.0</td>
+      <td>180.0</td>
+      <td>82.0</td>
+      <td>13.0</td>
+      <td>2568.98</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1233.99</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2568.980000</td>
+      <td>2568.98</td>
+      <td>2568.98</td>
+      <td>1233.990</td>
+      <td>1233.99</td>
+      <td>1233.99</td>
     </tr>
     <tr>
-      <td>EV1896901135</td>
+      <td>EV1896902137</td>
       <td>18969</td>
-      <td>1</td>
-      <td>P01</td>
+      <td>3</td>
+      <td>P03</td>
       <td>Save</td>
       <td>ET0002</td>
       <td>Save_Rebound</td>
-      <td>ED0055</td>
+      <td>ED0031</td>
       <td>Save_Butterfly</td>
-      <td>ED245</td>
+      <td>ED097</td>
       <td>NaN</td>
       <td>NaN</td>
-      <td>d</td>
+      <td>Defensive</td>
       <td>ZN02</td>
-      <td>SQ1896900066</td>
-      <td>PL1896906603</td>
-      <td>EC18969001135</td>
-      <td>TV1896909024</td>
-      <td>SH1896900007</td>
-      <td>LV1896909024</td>
+      <td>SQ1896900071</td>
+      <td>PL1896907103</td>
+      <td>EC18969002137</td>
+      <td>TV1896902137</td>
       <td>Platinum</td>
       <td>N10008</td>
       <td>Velodrome</td>
       <td>N10010</td>
       <td>0.0</td>
-      <td>P100016,P100064</td>
-      <td>P100030</td>
-      <td>Wyatt Crandall</td>
-      <td>N20252026F</td>
-      <td>6.0</td>
+      <td>P100202</td>
+      <td>P100201</td>
+      <td>14.0</td>
+      <td>46.0</td>
+      <td>14.0</td>
+      <td>46.0</td>
+      <td>886.0</td>
+      <td>886.0</td>
+      <td>2714.0</td>
+      <td>2714.0</td>
+      <td>4514.0</td>
+      <td>2400</td>
+      <td>1800</td>
+      <td>h</td>
       <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>TB02</td>
-      <td>STR0001</td>
-      <td>NaN</td>
-      <td>0</td>
-      <td>13.0</td>
-      <td>28.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>272.0</td>
-      <td>267.0</td>
-      <td>272.0</td>
-      <td>NaN</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>SV01</td>
-      <td>NaN</td>
-      <td>0</td>
-      <td>0</td>
-      <td>NaN</td>
-      <td>0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>SV189690135</td>
-    </tr>
-    <tr>
-      <td>EV1896901159</td>
-      <td>18969</td>
-      <td>1</td>
-      <td>P01</td>
-      <td>Save</td>
-      <td>ET0002</td>
-      <td>Save_Rebound</td>
-      <td>ED0055</td>
-      <td>Save_Chest</td>
-      <td>ED246</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>d</td>
-      <td>ZN02</td>
-      <td>SQ1896900066</td>
-      <td>PL1896906607</td>
-      <td>EC18969001159</td>
-      <td>TV1896909028</td>
-      <td>SH1896900008</td>
-      <td>LV1896909028</td>
       <td>Platinum</td>
-      <td>N10008</td>
-      <td>Velodrome</td>
-      <td>N10010</td>
-      <td>0.0</td>
-      <td>P100030,P100202</td>
-      <td>P100001</td>
+      <td>Offensive</td>
+      <td>Defensive</td>
+      <td>event_player_1</td>
+      <td>Defensive</td>
+      <td>1</td>
+      <td>e1</td>
+      <td>99.0</td>
+      <td>5v5</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
       <td>Francis Forte</td>
       <td>N20252026F</td>
       <td>6.0</td>
@@ -1388,25 +2197,23 @@
       <td>NaN</td>
       <td>NaN</td>
       <td>TB02</td>
-      <td>STR0001</td>
+      <td>STR01</td>
+      <td>5.0</td>
       <td>NaN</td>
       <td>0</td>
-      <td>12.0</td>
-      <td>44.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>316.0</td>
-      <td>311.0</td>
-      <td>316.0</td>
-      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
       <td>0</td>
       <td>1</td>
       <td>0</td>
       <td>0</td>
       <td>0</td>
       <td>0</td>
-      <td>0</td>
-      <td>1</td>
       <td>0</td>
       <td>0</td>
       <td>0</td>
@@ -1422,19 +2229,1472 @@
       <td>NaN</td>
       <td>0</td>
       <td>0</td>
-      <td>NaN</td>
       <td>0</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
-      <td>SV189690159</td>
+      <td>EV1896902136</td>
+      <td>Shot</td>
+      <td>Shot_OnNetSaved</td>
+      <td>Velodrome</td>
+      <td>0</td>
+      <td>EV1896902138</td>
+      <td>Rebound</td>
+      <td>Rebound_TeamRecovered</td>
+      <td>Platinum</td>
+      <td>1</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>50.0</td>
+      <td>0.0</td>
+      <td>71.0</td>
+      <td>1.0</td>
+      <td>save</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>175.0</td>
+      <td>162.0</td>
+      <td>262.0</td>
+      <td>248.0</td>
+      <td>0</td>
+      <td>4.0</td>
+      <td>7.0</td>
+      <td>9.0</td>
+      <td>4.0</td>
+      <td>13.0</td>
+      <td>768.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1.0</td>
+      <td>1</td>
+      <td>1.0</td>
+      <td>3.0</td>
+      <td>76.0</td>
+      <td>146.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>SV189690303</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>-1.0</td>
+      <td>162.0</td>
+      <td>175.0</td>
+      <td>538.0</td>
+      <td>87.0</td>
+      <td>8.0</td>
+      <td>2650.97</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1371.99</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2650.970000</td>
+      <td>2650.97</td>
+      <td>2650.97</td>
+      <td>1371.990</td>
+      <td>1371.99</td>
+      <td>1371.99</td>
+    </tr>
+    <tr>
+      <td>EV1896902174</td>
+      <td>18969</td>
+      <td>3</td>
+      <td>P03</td>
+      <td>Save</td>
+      <td>ET0002</td>
+      <td>Save_Freeze</td>
+      <td>ED0029</td>
+      <td>Save_Chest</td>
+      <td>ED098</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Defensive</td>
+      <td>ZN02</td>
+      <td>SQ1896900103</td>
+      <td>PL1896910301</td>
+      <td>EC18969002174</td>
+      <td>TV1896902174</td>
+      <td>Platinum</td>
+      <td>N10008</td>
+      <td>Velodrome</td>
+      <td>N10010</td>
+      <td>0.0</td>
+      <td>P100016</td>
+      <td>P100025</td>
+      <td>13.0</td>
+      <td>56.0</td>
+      <td>13.0</td>
+      <td>56.0</td>
+      <td>836.0</td>
+      <td>836.0</td>
+      <td>2764.0</td>
+      <td>2764.0</td>
+      <td>4564.0</td>
+      <td>2400</td>
+      <td>1800</td>
+      <td>a</td>
+      <td>NaN</td>
+      <td>Velodrome</td>
+      <td>Offensive</td>
+      <td>Defensive</td>
+      <td>event_player_1</td>
+      <td>Defensive</td>
+      <td>1</td>
+      <td>e1</td>
+      <td>39.0</td>
+      <td>5v5</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>Wyatt Crandall</td>
+      <td>N20252026F</td>
+      <td>6.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TB02</td>
+      <td>STR01</td>
+      <td>5.0</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>SV02</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>EV1896902173</td>
+      <td>Shot</td>
+      <td>Shot_OnNetSaved</td>
+      <td>Platinum</td>
+      <td>0</td>
+      <td>EV1896901117</td>
+      <td>Turnover</td>
+      <td>Turnover_Takeaway</td>
+      <td>Velodrome</td>
+      <td>1</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>22.0</td>
+      <td>0.0</td>
+      <td>22.0</td>
+      <td>1.0</td>
+      <td>save</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>125.0</td>
+      <td>212.0</td>
+      <td>190.0</td>
+      <td>320.0</td>
+      <td>0</td>
+      <td>10.0</td>
+      <td>20.0</td>
+      <td>16.0</td>
+      <td>17.0</td>
+      <td>58.0</td>
+      <td>911.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1.0</td>
+      <td>1</td>
+      <td>2.0</td>
+      <td>6.0</td>
+      <td>12.0</td>
+      <td>23.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>SV189690375</td>
+      <td>2.0</td>
+      <td>0.0</td>
+      <td>212.0</td>
+      <td>-1.0</td>
+      <td>488.0</td>
+      <td>125.0</td>
+      <td>6.0</td>
+      <td>1.0</td>
+      <td>2493.98</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1328.98</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2493.980000</td>
+      <td>2493.98</td>
+      <td>2493.98</td>
+      <td>1328.980</td>
+      <td>1328.98</td>
+      <td>1328.98</td>
+    </tr>
+    <tr>
+      <td>EV1896901638</td>
+      <td>18969</td>
+      <td>2</td>
+      <td>P02</td>
+      <td>Save</td>
+      <td>ET0002</td>
+      <td>Save_Rebound</td>
+      <td>ED0031</td>
+      <td>Save_Butterfly</td>
+      <td>ED097</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Defensive</td>
+      <td>ZN02</td>
+      <td>SQ1896900065</td>
+      <td>PL1896906502</td>
+      <td>EC18969001638</td>
+      <td>TV1896901638</td>
+      <td>Platinum</td>
+      <td>N10008</td>
+      <td>Velodrome</td>
+      <td>N10010</td>
+      <td>0.0</td>
+      <td>P100002,P100016</td>
+      <td>P100025,P100210</td>
+      <td>13.0</td>
+      <td>34.0</td>
+      <td>13.0</td>
+      <td>34.0</td>
+      <td>814.0</td>
+      <td>814.0</td>
+      <td>1586.0</td>
+      <td>1586.0</td>
+      <td>2486.0</td>
+      <td>1200</td>
+      <td>900</td>
+      <td>a</td>
+      <td>NaN</td>
+      <td>Velodrome</td>
+      <td>Offensive</td>
+      <td>Defensive</td>
+      <td>event_player_1</td>
+      <td>Defensive</td>
+      <td>1</td>
+      <td>e1</td>
+      <td>39.0</td>
+      <td>5v5</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>Wyatt Crandall</td>
+      <td>N20252026F</td>
+      <td>6.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TB02</td>
+      <td>STR01</td>
+      <td>5.0</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>SV01</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>EV1896901637</td>
+      <td>Shot</td>
+      <td>Shot_OnNetSaved</td>
+      <td>Platinum</td>
+      <td>0</td>
+      <td>EV1896901639</td>
+      <td>Rebound</td>
+      <td>Rebound_TeamRecovered</td>
+      <td>Velodrome</td>
+      <td>1</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>3.0</td>
+      <td>1.0</td>
+      <td>save</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>103.0</td>
+      <td>234.0</td>
+      <td>167.0</td>
+      <td>343.0</td>
+      <td>0</td>
+      <td>32.0</td>
+      <td>43.0</td>
+      <td>38.0</td>
+      <td>5.0</td>
+      <td>12.0</td>
+      <td>308.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>1</td>
+      <td>5.0</td>
+      <td>6.0</td>
+      <td>12.0</td>
+      <td>12.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>SV189690398</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>234.0</td>
+      <td>-1.0</td>
+      <td>466.0</td>
+      <td>103.0</td>
+      <td>21.0</td>
+      <td>42.0</td>
+      <td>785.98</td>
+      <td>2493.98</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1265.98</td>
+      <td>1159.99</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1639.980000</td>
+      <td>785.98</td>
+      <td>2493.98</td>
+      <td>1212.985</td>
+      <td>1159.99</td>
+      <td>1265.98</td>
+    </tr>
+    <tr>
+      <td>EV1896901129</td>
+      <td>18969</td>
+      <td>1</td>
+      <td>P01</td>
+      <td>Save</td>
+      <td>ET0002</td>
+      <td>Save_Rebound</td>
+      <td>ED0031</td>
+      <td>Save_LeftPad</td>
+      <td>ED100</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Defensive</td>
+      <td>ZN02</td>
+      <td>SQ1896900008</td>
+      <td>PL1896900807</td>
+      <td>EC18969001129</td>
+      <td>TV1896901129</td>
+      <td>Platinum</td>
+      <td>N10008</td>
+      <td>Velodrome</td>
+      <td>N10010</td>
+      <td>0.0</td>
+      <td>P100016</td>
+      <td>P100222</td>
+      <td>13.0</td>
+      <td>33.0</td>
+      <td>13.0</td>
+      <td>33.0</td>
+      <td>813.0</td>
+      <td>813.0</td>
+      <td>387.0</td>
+      <td>387.0</td>
+      <td>387.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>a</td>
+      <td>NaN</td>
+      <td>Velodrome</td>
+      <td>Offensive</td>
+      <td>Defensive</td>
+      <td>event_player_1</td>
+      <td>Defensive</td>
+      <td>1</td>
+      <td>e1</td>
+      <td>39.0</td>
+      <td>5v5</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>Wyatt Crandall</td>
+      <td>N20252026F</td>
+      <td>6.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TB02</td>
+      <td>STR01</td>
+      <td>5.0</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>SV01</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>EV1896901128</td>
+      <td>Shot</td>
+      <td>Shot_OnNetSaved</td>
+      <td>Platinum</td>
+      <td>0</td>
+      <td>EV1896901130</td>
+      <td>Rebound</td>
+      <td>Rebound_OppTeamRecovered</td>
+      <td>Velodrome</td>
+      <td>1</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>5.0</td>
+      <td>0.0</td>
+      <td>14.0</td>
+      <td>1.0</td>
+      <td>save</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>102.0</td>
+      <td>235.0</td>
+      <td>163.0</td>
+      <td>347.0</td>
+      <td>1</td>
+      <td>33.0</td>
+      <td>47.0</td>
+      <td>39.0</td>
+      <td>12.0</td>
+      <td>60.0</td>
+      <td>698.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>2.0</td>
+      <td>1</td>
+      <td>6.0</td>
+      <td>10.0</td>
+      <td>13.0</td>
+      <td>16.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>SV189690402</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>235.0</td>
+      <td>-1.0</td>
+      <td>465.0</td>
+      <td>102.0</td>
+      <td>22.0</td>
+      <td>41.0</td>
+      <td>2493.98</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>996.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2493.980000</td>
+      <td>2493.98</td>
+      <td>2493.98</td>
+      <td>996.000</td>
+      <td>996.00</td>
+      <td>996.00</td>
+    </tr>
+    <tr>
+      <td>EV1896901135</td>
+      <td>18969</td>
+      <td>1</td>
+      <td>P01</td>
+      <td>Save</td>
+      <td>ET0002</td>
+      <td>Save_Rebound</td>
+      <td>ED0031</td>
+      <td>Save_Butterfly</td>
+      <td>ED097</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Defensive</td>
+      <td>ZN02</td>
+      <td>SQ1896900008</td>
+      <td>PL1896900807</td>
+      <td>EC18969001135</td>
+      <td>TV1896901135</td>
+      <td>Platinum</td>
+      <td>N10008</td>
+      <td>Velodrome</td>
+      <td>N10010</td>
+      <td>0.0</td>
+      <td>P100016,P100064</td>
+      <td>P100030</td>
+      <td>13.0</td>
+      <td>28.0</td>
+      <td>13.0</td>
+      <td>28.0</td>
+      <td>808.0</td>
+      <td>808.0</td>
+      <td>392.0</td>
+      <td>392.0</td>
+      <td>392.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>a</td>
+      <td>NaN</td>
+      <td>Velodrome</td>
+      <td>Offensive</td>
+      <td>Defensive</td>
+      <td>event_player_1</td>
+      <td>Defensive</td>
+      <td>1</td>
+      <td>e1</td>
+      <td>39.0</td>
+      <td>5v5</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>Wyatt Crandall</td>
+      <td>N20252026F</td>
+      <td>6.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TB02</td>
+      <td>STR01</td>
+      <td>5.0</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>SV01</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>EV1896901134</td>
+      <td>Shot</td>
+      <td>Shot_OnNetSaved</td>
+      <td>Platinum</td>
+      <td>0</td>
+      <td>EV1896901136</td>
+      <td>Rebound</td>
+      <td>Rebound_OppTeamRecovered</td>
+      <td>Velodrome</td>
+      <td>1</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>11.0</td>
+      <td>0.0</td>
+      <td>21.0</td>
+      <td>1.0</td>
+      <td>save</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>97.0</td>
+      <td>240.0</td>
+      <td>148.0</td>
+      <td>362.0</td>
+      <td>1</td>
+      <td>38.0</td>
+      <td>62.0</td>
+      <td>2.0</td>
+      <td>18.0</td>
+      <td>60.0</td>
+      <td>698.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>2.0</td>
+      <td>1</td>
+      <td>2.0</td>
+      <td>3.0</td>
+      <td>5.0</td>
+      <td>12.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>SV189690417</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>240.0</td>
+      <td>-1.0</td>
+      <td>460.0</td>
+      <td>97.0</td>
+      <td>27.0</td>
+      <td>36.0</td>
+      <td>2493.98</td>
+      <td>804.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1379.98</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1648.990000</td>
+      <td>804.00</td>
+      <td>2493.98</td>
+      <td>1379.980</td>
+      <td>1379.98</td>
+      <td>1379.98</td>
+    </tr>
+    <tr>
+      <td>EV1896901651</td>
+      <td>18969</td>
+      <td>2</td>
+      <td>P02</td>
+      <td>Save</td>
+      <td>ET0002</td>
+      <td>Save_Rebound</td>
+      <td>ED0031</td>
+      <td>Save_LeftPad</td>
+      <td>ED100</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Defensive</td>
+      <td>ZN02</td>
+      <td>SQ1896900067</td>
+      <td>PL1896906701</td>
+      <td>EC18969001651</td>
+      <td>TV1896901651</td>
+      <td>Platinum</td>
+      <td>N10008</td>
+      <td>Velodrome</td>
+      <td>N10010</td>
+      <td>3.0</td>
+      <td>P100202</td>
+      <td>P100224</td>
+      <td>13.0</td>
+      <td>17.0</td>
+      <td>13.0</td>
+      <td>14.0</td>
+      <td>797.0</td>
+      <td>794.0</td>
+      <td>1603.0</td>
+      <td>1606.0</td>
+      <td>2503.0</td>
+      <td>1200</td>
+      <td>900</td>
+      <td>h</td>
+      <td>NaN</td>
+      <td>Platinum</td>
+      <td>Offensive</td>
+      <td>Defensive</td>
+      <td>event_player_1</td>
+      <td>Defensive</td>
+      <td>1</td>
+      <td>e1</td>
+      <td>99.0</td>
+      <td>5v5</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>Francis Forte</td>
+      <td>N20252026F</td>
+      <td>6.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TB02</td>
+      <td>STR01</td>
+      <td>5.0</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>SV01</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>EV1896901650</td>
+      <td>Shot</td>
+      <td>Shot_OnNetSaved</td>
+      <td>Velodrome</td>
+      <td>0</td>
+      <td>EV1896901652</td>
+      <td>Rebound</td>
+      <td>Rebound_OppTeamRecovered</td>
+      <td>Platinum</td>
+      <td>1</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>27.0</td>
+      <td>0.0</td>
+      <td>46.0</td>
+      <td>1.0</td>
+      <td>save</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>86.0</td>
+      <td>251.0</td>
+      <td>126.0</td>
+      <td>384.0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>2.0</td>
+      <td>13.0</td>
+      <td>9.0</td>
+      <td>19.0</td>
+      <td>182.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>2.0</td>
+      <td>1</td>
+      <td>4.0</td>
+      <td>11.0</td>
+      <td>16.0</td>
+      <td>34.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>SV189690439</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>-1.0</td>
+      <td>251.0</td>
+      <td>86.0</td>
+      <td>449.0</td>
+      <td>38.0</td>
+      <td>25.0</td>
+      <td>2575.97</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>747.98</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2575.970000</td>
+      <td>2575.97</td>
+      <td>2575.97</td>
+      <td>747.980</td>
+      <td>747.98</td>
+      <td>747.98</td>
+    </tr>
+    <tr>
+      <td>EV1896902210</td>
+      <td>18969</td>
+      <td>3</td>
+      <td>P03</td>
+      <td>Save</td>
+      <td>ET0002</td>
+      <td>Save_Freeze</td>
+      <td>ED0029</td>
+      <td>Save_Glove</td>
+      <td>ED099</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Defensive</td>
+      <td>ZN02</td>
+      <td>SQ1896900109</td>
+      <td>PL1896910901</td>
+      <td>EC18969002210</td>
+      <td>TV1896902210</td>
+      <td>Platinum</td>
+      <td>N10008</td>
+      <td>Velodrome</td>
+      <td>N10010</td>
+      <td>0.0</td>
+      <td>P100202</td>
+      <td>P100198</td>
+      <td>12.0</td>
+      <td>50.0</td>
+      <td>12.0</td>
+      <td>50.0</td>
+      <td>770.0</td>
+      <td>770.0</td>
+      <td>2830.0</td>
+      <td>2830.0</td>
+      <td>4630.0</td>
+      <td>2400</td>
+      <td>1800</td>
+      <td>h</td>
+      <td>NaN</td>
+      <td>Platinum</td>
+      <td>Offensive</td>
+      <td>Defensive</td>
+      <td>event_player_1</td>
+      <td>Defensive</td>
+      <td>1</td>
+      <td>e1</td>
+      <td>99.0</td>
+      <td>5v5</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>Francis Forte</td>
+      <td>N20252026F</td>
+      <td>6.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TB02</td>
+      <td>STR01</td>
+      <td>5.0</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>SV02</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>EV1896902209</td>
+      <td>Shot</td>
+      <td>Shot_OnNetSaved</td>
+      <td>Velodrome</td>
+      <td>0</td>
+      <td>EV1896901156</td>
+      <td>Pass</td>
+      <td>Pass_Completed</td>
+      <td>Velodrome</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>6.0</td>
+      <td>0.0</td>
+      <td>5.0</td>
+      <td>1.0</td>
+      <td>save</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>59.0</td>
+      <td>278.0</td>
+      <td>79.0</td>
+      <td>431.0</td>
+      <td>0</td>
+      <td>8.0</td>
+      <td>16.0</td>
+      <td>0.0</td>
+      <td>4.0</td>
+      <td>14.0</td>
+      <td>175.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1.0</td>
+      <td>1</td>
+      <td>3.0</td>
+      <td>8.0</td>
+      <td>43.0</td>
+      <td>81.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>SV189690486</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>-1.0</td>
+      <td>278.0</td>
+      <td>59.0</td>
+      <td>422.0</td>
+      <td>2.0</td>
+      <td>1.0</td>
+      <td>2297.97</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1277.98</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2297.970000</td>
+      <td>2297.97</td>
+      <td>2297.97</td>
+      <td>1277.980</td>
+      <td>1277.98</td>
+      <td>1277.98</td>
+    </tr>
+    <tr>
+      <td>EV1896901159</td>
+      <td>18969</td>
+      <td>1</td>
+      <td>P01</td>
+      <td>Save</td>
+      <td>ET0002</td>
+      <td>Save_Rebound</td>
+      <td>ED0031</td>
+      <td>Save_Chest</td>
+      <td>ED098</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Defensive</td>
+      <td>ZN02</td>
+      <td>SQ1896900008</td>
+      <td>PL1896900812</td>
+      <td>EC18969001159</td>
+      <td>TV1896901159</td>
+      <td>Platinum</td>
+      <td>N10008</td>
+      <td>Velodrome</td>
+      <td>N10010</td>
+      <td>0.0</td>
+      <td>P100030,P100202</td>
+      <td>P100001</td>
+      <td>12.0</td>
+      <td>44.0</td>
+      <td>12.0</td>
+      <td>44.0</td>
+      <td>764.0</td>
+      <td>764.0</td>
+      <td>436.0</td>
+      <td>436.0</td>
+      <td>436.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>h</td>
+      <td>NaN</td>
+      <td>Platinum</td>
+      <td>Offensive</td>
+      <td>Defensive</td>
+      <td>event_player_1</td>
+      <td>Defensive</td>
+      <td>1</td>
+      <td>e1</td>
+      <td>99.0</td>
+      <td>5v5</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>Francis Forte</td>
+      <td>N20252026F</td>
+      <td>6.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TB02</td>
+      <td>STR01</td>
+      <td>5.0</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>SV01</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>EV1896901158</td>
+      <td>Shot</td>
+      <td>Shot_OnNetSaved</td>
+      <td>Velodrome</td>
+      <td>0</td>
+      <td>EV1896901160</td>
+      <td>Rebound</td>
+      <td>Rebound_TeamRecovered</td>
+      <td>Platinum</td>
+      <td>1</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>15.0</td>
+      <td>0.0</td>
+      <td>13.0</td>
+      <td>1.0</td>
+      <td>save</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>53.0</td>
+      <td>284.0</td>
+      <td>73.0</td>
+      <td>437.0</td>
+      <td>1</td>
+      <td>4.0</td>
+      <td>2.0</td>
+      <td>6.0</td>
+      <td>41.0</td>
+      <td>60.0</td>
+      <td>698.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>2.0</td>
+      <td>1</td>
+      <td>9.0</td>
+      <td>14.0</td>
+      <td>49.0</td>
+      <td>87.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>SV189690492</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>-1.0</td>
+      <td>284.0</td>
+      <td>53.0</td>
+      <td>416.0</td>
+      <td>5.0</td>
+      <td>23.0</td>
+      <td>1171.98</td>
+      <td>2297.97</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1258.97</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1734.975000</td>
+      <td>1171.98</td>
+      <td>2297.97</td>
+      <td>1258.970</td>
+      <td>1258.97</td>
+      <td>1258.97</td>
+    </tr>
+    <tr>
+      <td>EV1896901667</td>
+      <td>18969</td>
+      <td>2</td>
+      <td>P02</td>
+      <td>Save</td>
+      <td>ET0002</td>
+      <td>Save_Rebound</td>
+      <td>ED0031</td>
+      <td>Save_RightPad</td>
+      <td>ED102</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Defensive</td>
+      <td>ZN02</td>
+      <td>SQ1896900067</td>
+      <td>PL1896906701</td>
+      <td>EC18969001667</td>
+      <td>TV1896901667</td>
+      <td>Platinum</td>
+      <td>N10008</td>
+      <td>Velodrome</td>
+      <td>N10010</td>
+      <td>0.0</td>
+      <td>P100016</td>
+      <td>P100030,P100192</td>
+      <td>12.0</td>
+      <td>29.0</td>
+      <td>12.0</td>
+      <td>29.0</td>
+      <td>749.0</td>
+      <td>749.0</td>
+      <td>1651.0</td>
+      <td>1651.0</td>
+      <td>2551.0</td>
+      <td>1200</td>
+      <td>900</td>
+      <td>a</td>
+      <td>NaN</td>
+      <td>Velodrome</td>
+      <td>Offensive</td>
+      <td>Defensive</td>
+      <td>event_player_1</td>
+      <td>Defensive</td>
+      <td>1</td>
+      <td>e1</td>
+      <td>39.0</td>
+      <td>5v5</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>Wyatt Crandall</td>
+      <td>N20252026F</td>
+      <td>6.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>TB02</td>
+      <td>STR01</td>
+      <td>5.0</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>SV01</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>EV1896901666</td>
+      <td>Shot</td>
+      <td>Shot_OnNetSaved</td>
+      <td>Platinum</td>
+      <td>0</td>
+      <td>EV1896901668</td>
+      <td>Rebound</td>
+      <td>Rebound_OppTeamRecovered</td>
+      <td>Velodrome</td>
+      <td>1</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>6.0</td>
+      <td>0.0</td>
+      <td>8.0</td>
+      <td>1.0</td>
+      <td>save</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>38.0</td>
+      <td>299.0</td>
+      <td>59.0</td>
+      <td>451.0</td>
+      <td>0</td>
+      <td>8.0</td>
+      <td>8.0</td>
+      <td>13.0</td>
+      <td>16.0</td>
+      <td>19.0</td>
+      <td>182.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>2.0</td>
+      <td>1</td>
+      <td>3.0</td>
+      <td>4.0</td>
+      <td>3.0</td>
+      <td>4.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>SV189690506</td>
+      <td>2.0</td>
+      <td>0.0</td>
+      <td>299.0</td>
+      <td>-1.0</td>
+      <td>401.0</td>
+      <td>38.0</td>
+      <td>20.0</td>
+      <td>8.0</td>
+      <td>2109.98</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1065.98</td>
+      <td>998.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2109.980000</td>
+      <td>2109.98</td>
+      <td>2109.98</td>
+      <td>1031.990</td>
+      <td>998.00</td>
+      <td>1065.98</td>
     </tr>
   </tbody>
 </table>
+            </div>
         </div>
         
         <footer>
-            BenchSight v0.01 | Generated: 2026-01-07 21:13 | <a href="../tables.html">Back to Tables</a>
+            BenchSight v11.04 | Generated 2026-01-12 23:37:10
         </footer>
     </div>
 </body>

@@ -29,13 +29,13 @@
         <p><a href="../index.html" class="back-link">← Back to Index</a></p>
         <h1>fact_player_micro_stats</h1>
         
-        <div class="alert alert-danger">⚠️ 10 suspicious stat entries for games in this table</div>
+        
         
         <div class="meta">
-            <strong>Rows:</strong> 212 | 
-            <strong>Columns:</strong> 6 |
-            <strong>Last Updated:</strong> 2026-01-07 05:03:20 |
-            <strong>Version:</strong> 12.03
+            <strong>Rows:</strong> 107 | 
+            <strong>Columns:</strong> 12 |
+            <strong>Last Updated:</strong> 2026-01-12 23:37:10 |
+            <strong>Version:</strong> 11.04
         </div>
         
         
@@ -44,7 +44,7 @@
             <h2>Column Schema</h2>
             <table class="columns-table">
                 <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
-                <tr><td>micro_stat_key</td><td>object</td><td>212</td><td>0.0%</td></tr><tr><td>player_game_key</td><td>object</td><td>212</td><td>0.0%</td></tr><tr><td>game_id</td><td>int64</td><td>212</td><td>0.0%</td></tr><tr><td>player_id</td><td>object</td><td>212</td><td>0.0%</td></tr><tr><td>micro_stat</td><td>object</td><td>212</td><td>0.0%</td></tr><tr><td>count</td><td>int64</td><td>212</td><td>0.0%</td></tr>
+                <tr><td>micro_stats_key</td><td>object</td><td>107</td><td>0.0%</td></tr><tr><td>game_id</td><td>int64</td><td>107</td><td>0.0%</td></tr><tr><td>player_id</td><td>object</td><td>107</td><td>0.0%</td></tr><tr><td>screens</td><td>int64</td><td>107</td><td>0.0%</td></tr><tr><td>tips</td><td>int64</td><td>107</td><td>0.0%</td></tr><tr><td>one_timers</td><td>int64</td><td>107</td><td>0.0%</td></tr><tr><td>dekes</td><td>int64</td><td>107</td><td>0.0%</td></tr><tr><td>rebounds</td><td>int64</td><td>107</td><td>0.0%</td></tr><tr><td>backchecks</td><td>int64</td><td>107</td><td>0.0%</td></tr><tr><td>forechecks</td><td>int64</td><td>107</td><td>0.0%</td></tr><tr><td>board_battles</td><td>int64</td><td>107</td><td>0.0%</td></tr><tr><td>_export_timestamp</td><td>object</td><td>107</td><td>0.0%</td></tr>
             </table>
         </div>
         
@@ -54,174 +54,300 @@
                 <table border="1" class="dataframe data-table">
   <thead>
     <tr style="text-align: right;">
-      <th>micro_stat_key</th>
-      <th>player_game_key</th>
+      <th>micro_stats_key</th>
       <th>game_id</th>
       <th>player_id</th>
-      <th>micro_stat</th>
-      <th>count</th>
+      <th>screens</th>
+      <th>tips</th>
+      <th>one_timers</th>
+      <th>dekes</th>
+      <th>rebounds</th>
+      <th>backchecks</th>
+      <th>forechecks</th>
+      <th>board_battles</th>
+      <th>_export_timestamp</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td>PG1896900001_blocked_shots_play</td>
-      <td>PG1896900001</td>
-      <td>18969</td>
-      <td>P100001</td>
-      <td>blocked_shots_play</td>
-      <td>2</td>
-    </tr>
-    <tr>
-      <td>PG1896900002_loose_puck_wins</td>
-      <td>PG1896900002</td>
-      <td>18969</td>
-      <td>P100002</td>
-      <td>loose_puck_wins</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <td>PG1896900003_dekes_successful</td>
-      <td>PG1896900003</td>
-      <td>18969</td>
-      <td>P100016</td>
-      <td>dekes_successful</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <td>PG1896900004_dekes_successful</td>
-      <td>PG1896900004</td>
-      <td>18969</td>
-      <td>P100022</td>
-      <td>dekes_successful</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <td>PG1896900004_blocked_shots_play</td>
-      <td>PG1896900004</td>
-      <td>18969</td>
-      <td>P100022</td>
-      <td>blocked_shots_play</td>
-      <td>2</td>
-    </tr>
-    <tr>
-      <td>PG1896900005_dekes_successful</td>
-      <td>PG1896900005</td>
-      <td>18969</td>
-      <td>P100023</td>
-      <td>dekes_successful</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <td>PG1896900005_blocked_shots_play</td>
-      <td>PG1896900005</td>
-      <td>18969</td>
-      <td>P100023</td>
-      <td>blocked_shots_play</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <td>PG1896900006_blocked_shots_play</td>
-      <td>PG1896900006</td>
-      <td>18969</td>
-      <td>P100024</td>
-      <td>blocked_shots_play</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <td>PG1896900007_dekes_successful</td>
-      <td>PG1896900007</td>
-      <td>18969</td>
-      <td>P100025</td>
-      <td>dekes_successful</td>
-      <td>3</td>
-    </tr>
-    <tr>
-      <td>PG1896900007_blocked_shots_play</td>
-      <td>PG1896900007</td>
-      <td>18969</td>
-      <td>P100025</td>
-      <td>blocked_shots_play</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <td>PG1896900008_dekes_successful</td>
-      <td>PG1896900008</td>
-      <td>18969</td>
-      <td>P100027</td>
-      <td>dekes_successful</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <td>PG1896900008_blocked_shots_play</td>
-      <td>PG1896900008</td>
-      <td>18969</td>
-      <td>P100027</td>
-      <td>blocked_shots_play</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <td>PG1896900008_loose_puck_losses</td>
-      <td>PG1896900008</td>
-      <td>18969</td>
-      <td>P100027</td>
-      <td>loose_puck_losses</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <td>PG1896900009_zone_exit_denials</td>
-      <td>PG1896900009</td>
-      <td>18969</td>
-      <td>P100030</td>
-      <td>zone_exit_denials</td>
-      <td>3</td>
-    </tr>
-    <tr>
-      <td>PG1896900009_loose_puck_wins</td>
-      <td>PG1896900009</td>
-      <td>18969</td>
-      <td>P100030</td>
-      <td>loose_puck_wins</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <td>PG1896900009_loose_puck_losses</td>
-      <td>PG1896900009</td>
-      <td>18969</td>
-      <td>P100030</td>
-      <td>loose_puck_losses</td>
-      <td>2</td>
-    </tr>
-    <tr>
-      <td>PG1896900010_dekes_successful</td>
-      <td>PG1896900010</td>
-      <td>18969</td>
-      <td>P100039</td>
-      <td>dekes_successful</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <td>PG1896900010_blocked_shots_play</td>
-      <td>PG1896900010</td>
-      <td>18969</td>
-      <td>P100039</td>
-      <td>blocked_shots_play</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <td>PG1896900011_dekes_successful</td>
-      <td>PG1896900011</td>
+      <td>P100064_18969</td>
       <td>18969</td>
       <td>P100064</td>
-      <td>dekes_successful</td>
-      <td>1</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2026-01-12T23:36:32.229517</td>
     </tr>
     <tr>
-      <td>PG1896900012_blocked_shots_play</td>
-      <td>PG1896900012</td>
+      <td>P100132_18969</td>
+      <td>18969</td>
+      <td>P100132</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2026-01-12T23:36:32.231112</td>
+    </tr>
+    <tr>
+      <td>P100023_18969</td>
+      <td>18969</td>
+      <td>P100023</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2026-01-12T23:36:32.232862</td>
+    </tr>
+    <tr>
+      <td>P100202_18969</td>
+      <td>18969</td>
+      <td>P100202</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2026-01-12T23:36:32.234440</td>
+    </tr>
+    <tr>
+      <td>P100001_18969</td>
+      <td>18969</td>
+      <td>P100001</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2026-01-12T23:36:32.236348</td>
+    </tr>
+    <tr>
+      <td>P100192_18969</td>
+      <td>18969</td>
+      <td>P100192</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2026-01-12T23:36:32.238288</td>
+    </tr>
+    <tr>
+      <td>P100093_18969</td>
+      <td>18969</td>
+      <td>P100093</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2026-01-12T23:36:32.239853</td>
+    </tr>
+    <tr>
+      <td>P100198_18969</td>
+      <td>18969</td>
+      <td>P100198</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2026-01-12T23:36:32.241421</td>
+    </tr>
+    <tr>
+      <td>P100117_18969</td>
+      <td>18969</td>
+      <td>P100117</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2026-01-12T23:36:32.243281</td>
+    </tr>
+    <tr>
+      <td>P100107_18969</td>
+      <td>18969</td>
+      <td>P100107</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2026-01-12T23:36:32.244780</td>
+    </tr>
+    <tr>
+      <td>P100024_18969</td>
+      <td>18969</td>
+      <td>P100024</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2026-01-12T23:36:32.246197</td>
+    </tr>
+    <tr>
+      <td>P100030_18969</td>
+      <td>18969</td>
+      <td>P100030</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2026-01-12T23:36:32.247838</td>
+    </tr>
+    <tr>
+      <td>P100016_18969</td>
+      <td>18969</td>
+      <td>P100016</td>
+      <td>0</td>
+      <td>5</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2026-01-12T23:36:32.249447</td>
+    </tr>
+    <tr>
+      <td>P100025_18969</td>
+      <td>18969</td>
+      <td>P100025</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2026-01-12T23:36:32.250898</td>
+    </tr>
+    <tr>
+      <td>P100201_18969</td>
+      <td>18969</td>
+      <td>P100201</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2026-01-12T23:36:32.252566</td>
+    </tr>
+    <tr>
+      <td>P100002_18969</td>
+      <td>18969</td>
+      <td>P100002</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2026-01-12T23:36:32.254397</td>
+    </tr>
+    <tr>
+      <td>P100210_18969</td>
+      <td>18969</td>
+      <td>P100210</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2026-01-12T23:36:32.256014</td>
+    </tr>
+    <tr>
+      <td>P100108_18969</td>
+      <td>18969</td>
+      <td>P100108</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2026-01-12T23:36:32.257553</td>
+    </tr>
+    <tr>
+      <td>P100222_18969</td>
+      <td>18969</td>
+      <td>P100222</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2026-01-12T23:36:32.259103</td>
+    </tr>
+    <tr>
+      <td>P100070_18969</td>
       <td>18969</td>
       <td>P100070</td>
-      <td>blocked_shots_play</td>
-      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2026-01-12T23:36:32.260659</td>
     </tr>
   </tbody>
 </table>
@@ -229,7 +355,7 @@
         </div>
         
         <footer>
-            BenchSight v13.18 | Generated 2026-01-07 05:03:20
+            BenchSight v11.04 | Generated 2026-01-12 23:37:10
         </footer>
     </div>
 </body>

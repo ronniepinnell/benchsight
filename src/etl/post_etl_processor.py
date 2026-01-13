@@ -32,6 +32,7 @@ import numpy as np
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional
 import logging
+from src.core.table_writer import save_output_table
 
 # Configure logging
 logging.basicConfig(
@@ -175,7 +176,7 @@ def fix_dimension_key_format(dim_name: str, id_col: str, needs_fix_func, prefix:
                     pass
     
     if id_map:
-        df.to_csv(path, index=False)
+        save_output_table(df, path.stem, path.parent)
         logger.info(f"Fixed {len(id_map)} keys in {dim_name}")
     
     return id_map
@@ -225,7 +226,7 @@ def update_fk_in_fact_table(table_name: str, fk_col: str, id_map: Dict[str, str]
     
     changes = (original != df[fk_col].astype(str)).sum()
     if changes > 0:
-        df.to_csv(path, index=False)
+        save_output_table(df, path.stem, path.parent)
     
     return changes
 
@@ -357,7 +358,7 @@ def add_game_state_to_events():
     if 'scoring_team_id' in events.columns:
         events = events.drop(columns=['scoring_team_id'])
     
-    events.to_csv(OUTPUT_DIR / 'fact_events.csv', index=False)
+    save_output_table(events, 'fact_events', OUTPUT_DIR)
     populated = events['game_state_id'].notna().sum()
     logger.info(f"  Added game_state_id: {populated}/{len(events)} populated")
 
@@ -416,7 +417,7 @@ def add_competition_tier_to_events():
             # Fill missing with default
             events['competition_tier_id'] = events['competition_tier_id'].fillna('CT03')
             
-            events.to_csv(OUTPUT_DIR / 'fact_events.csv', index=False)
+            save_output_table(events, 'fact_events', OUTPUT_DIR)
             populated = events['competition_tier_id'].notna().sum()
             logger.info(f"  Added competition_tier_id: {populated}/{len(events)} populated")
             return
@@ -436,12 +437,12 @@ def add_competition_tier_to_events():
                 return 'CT04'
         
         events['competition_tier_id'] = events['opp_team_rating_avg'].apply(get_tier)
-        events.to_csv(OUTPUT_DIR / 'fact_events.csv', index=False)
+        save_output_table(events, 'fact_events', OUTPUT_DIR)
         populated = events['competition_tier_id'].notna().sum()
         logger.info(f"  Added competition_tier_id: {populated}/{len(events)} populated")
     else:
         events['competition_tier_id'] = 'CT03'  # Default
-        events.to_csv(OUTPUT_DIR / 'fact_events.csv', index=False)
+        save_output_table(events, 'fact_events', OUTPUT_DIR)
         logger.info("  Added competition_tier_id: default CT03 (no rating data)")
 
 
@@ -493,7 +494,7 @@ def add_turnover_quality_id():
     mask = events['takeaway_type_id'].notna() & events['turnover_quality_id'].isna()
     events.loc[mask, 'turnover_quality_id'] = 'TQ0003'
     
-    events.to_csv(OUTPUT_DIR / 'fact_events.csv', index=False)
+    save_output_table(events, 'fact_events', OUTPUT_DIR)
     populated = events['turnover_quality_id'].notna().sum()
     logger.info(f"  Added turnover_quality_id: {populated}/{len(events)} populated")
 
@@ -536,7 +537,7 @@ def add_cascade_columns(table_name: str = 'fact_events'):
             added_cols.append(new_col)
     
     if added_cols:
-        df.to_csv(path, index=False)
+        save_output_table(df, path.stem, path.parent)
         logger.info(f"  Added {len(added_cols)} cascade columns")
 
 
@@ -564,7 +565,7 @@ def propagate_to_tracking():
     if cols_to_add:
         events_subset = events[['event_id'] + cols_to_add].drop_duplicates()
         tracking = tracking.merge(events_subset, on='event_id', how='left')
-        tracking.to_csv(OUTPUT_DIR / 'fact_event_players.csv', index=False)
+        save_output_table(tracking, 'fact_event_players', OUTPUT_DIR)
         logger.info(f"  Propagated {len(cols_to_add)} columns")
 
 

@@ -1,11 +1,13 @@
-zone_exit_type_id,zone_exit_type_code,zone_exit_type_name
-ZX0001,ZoneExit_CausedTurnover,CausedTurnover
-ZX0002,ZoneExit_Chip,Chip
-ZX0003,ZoneExit_Clear,Clear
-ZX0004,ZoneExit_Lob,Lob
-ZX0005,ZoneExit_OppTeam,OppTeam
-ZX0006,ZoneExit_Other,Other
-ZX0007,ZoneExit_Pass,Pass
-ZX0008,ZoneExit_PassMiss_Misplay,PassMiss Misplay
-ZX0009,ZoneExit_PenaltyKillClear,PenaltyKillClear
-ZX0010,ZoneExit_Rush,Rush
+zone_exit_type_id,zone_exit_type_code,zone_exit_type_name,is_controlled
+ZX0001,ZoneExit_Carried,Carried,True
+ZX0002,ZoneExit_CausedTurnover,CausedTurnover,False
+ZX0003,ZoneExit_Chip,Chip,False
+ZX0004,ZoneExit_Clear,Clear,False
+ZX0005,ZoneExit_Lob,Lob,False
+ZX0006,ZoneExit_OppTeam,OppTeam,False
+ZX0007,ZoneExit_Other,Other,False
+ZX0008,ZoneExit_Pass,Pass,True
+ZX0009,ZoneExit_PassMiss/Misplay,PassMiss Misplay,False
+ZX0010,ZoneExit_PassMiss_Misplay,PassMiss Misplay,False
+ZX0011,ZoneExit_PenaltyKillClear,PenaltyKillClear,False
+ZX0012,ZoneExit_Shot,Shot,False

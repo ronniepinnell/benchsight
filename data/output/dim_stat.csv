@@ -1,0 +1,40 @@
+stat_id,stat_code,stat_name,category,description,formula,player_role,computable_now,benchmark_elite,nhl_avg_per_game,nhl_elite_threshold,nhl_min_threshold
+ST001,goals,Goals,scoring,Goals scored,count,all,True,0.5,0.3,0.5,0
+ST002,assists,Assists,scoring,Primary + secondary assists,count,all,True,0.6,0.4,0.8,0
+ST003,points,Points,scoring,Goals + assists,G + A,all,True,1.0,0.7,1.2,0
+ST004,primary_assists,Primary Assists,scoring,Last pass before goal,count,all,True,0.4,0.25,0.5,0
+ST005,secondary_assists,Secondary Assists,scoring,Second-to-last pass,count,all,True,0.2,0.15,0.3,0
+ST010,shots,Shots,shooting,Total shot attempts,count,all,True,3.0,2.5,4.0,0
+ST011,sog,Shots on Goal,shooting,Shots that reach goalie,count,all,True,2.0,1.8,3.0,0
+ST012,shots_blocked,Shots Blocked,shooting,Shots blocked by opponent,count,all,True,0.5,0.4,0.8,0
+ST013,shots_missed,Shots Missed,shooting,Shots that miss net,count,all,True,0.5,0.3,0.6,0
+ST014,shooting_pct,Shooting %,shooting,Goals / SOG,G / SOG * 100,all,True,15.0,10.0,20.0,0
+ST020,pass_attempts,Pass Attempts,passing,Total passes attempted,count,all,True,25.0,20.0,35.0,0
+ST021,pass_completed,Passes Completed,passing,Successful passes,count,all,True,20.0,16.0,28.0,0
+ST022,pass_pct,Pass %,passing,Completion rate,comp / att * 100,all,True,85.0,75.0,90.0,50
+ST023,dangerous_passes,Dangerous Passes,passing,Passes leading to chances,count,all,True,3.0,2.0,5.0,0
+ST030,fo_wins,Faceoff Wins,faceoffs,Faceoffs won,count,center,True,8.0,6.0,12.0,0
+ST031,fo_losses,Faceoff Losses,faceoffs,Faceoffs lost,count,center,True,8.0,6.0,12.0,0
+ST032,fo_pct,Faceoff %,faceoffs,Win rate,wins / total * 100,center,True,55.0,45.0,60.0,40
+ST040,zone_entries,Zone Entries,possession,Offensive zone entries,count,all,True,4.0,3.0,6.0,0
+ST041,zone_exits,Zone Exits,possession,Defensive zone exits,count,all,True,4.0,3.0,6.0,0
+ST042,controlled_entries,Controlled Entries,possession,Entries with control,count,all,True,2.0,1.5,3.0,0
+ST043,controlled_exits,Controlled Exits,possession,Exits with control,count,all,True,2.0,1.5,3.0,0
+ST050,giveaways,Giveaways,turnovers,Turnovers committed,count,all,True,2.0,1.5,3.0,0
+ST051,takeaways,Takeaways,turnovers,Turnovers forced,count,all,True,1.5,1.0,2.5,0
+ST052,turnover_diff,Turnover Diff,turnovers,Takeaways - giveaways,TA - GA,all,True,0.0,-1.0,1.0,-5
+ST060,blocks,Blocks,defense,Shots blocked,count,defense,True,2.0,1.5,3.5,0
+ST061,hits,Hits,defense,Body checks,count,all,True,2.0,1.0,4.0,0
+ST070,toi_seconds,TOI (sec),time,Time on ice in seconds,sum,all,True,900.0,600.0,1200.0,0
+ST071,toi_minutes,TOI (min),time,Time on ice in minutes,sum / 60,all,True,15.0,10.0,20.0,0
+ST072,shift_count,Shifts,time,Number of shifts,count,all,True,15.0,12.0,20.0,0
+ST073,avg_shift,Avg Shift,time,Average shift length,TOI / shifts,all,True,60.0,45.0,75.0,0
+ST080,corsi_for,Corsi For,advanced,Shot attempts for,count,all,True,8.0,6.0,12.0,0
+ST081,corsi_against,Corsi Against,advanced,Shot attempts against,count,all,True,8.0,6.0,12.0,0
+ST082,cf_pct,CF%,advanced,Corsi for %,CF / (CF+CA) * 100,all,True,55.0,45.0,60.0,40
+ST083,fenwick_for,Fenwick For,advanced,Unblocked attempts for,count,all,True,6.0,5.0,9.0,0
+ST084,fenwick_against,Fenwick Against,advanced,Unblocked attempts against,count,all,True,6.0,5.0,9.0,0
+ST085,ff_pct,FF%,advanced,Fenwick for %,FF / (FF+FA) * 100,all,True,55.0,45.0,60.0,40
+ST086,xgf,xGF,advanced,Expected goals for,sum xG,all,False,1.5,1.0,2.5,0
+ST087,xga,xGA,advanced,Expected goals against,sum xG,all,False,1.5,1.0,2.5,0
+ST088,plus_minus,+/-,advanced,Plus minus,GF - GA on ice,all,True,0.5,0.0,1.0,-3

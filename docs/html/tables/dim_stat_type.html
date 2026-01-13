@@ -32,10 +32,10 @@
         
         
         <div class="meta">
-            <strong>Rows:</strong> 57 | 
+            <strong>Rows:</strong> 8 | 
             <strong>Columns:</strong> 6 |
-            <strong>Last Updated:</strong> 2026-01-07 05:03:20 |
-            <strong>Version:</strong> 12.03
+            <strong>Last Updated:</strong> 2026-01-12 23:37:10 |
+            <strong>Version:</strong> 11.04
         </div>
         
         
@@ -44,7 +44,7 @@
             <h2>Column Schema</h2>
             <table class="columns-table">
                 <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
-                <tr><td>stat_id</td><td>object</td><td>57</td><td>0.0%</td></tr><tr><td>stat_name</td><td>object</td><td>57</td><td>0.0%</td></tr><tr><td>stat_category</td><td>object</td><td>57</td><td>0.0%</td></tr><tr><td>stat_level</td><td>object</td><td>57</td><td>0.0%</td></tr><tr><td>computable_now</td><td>object</td><td>57</td><td>0.0%</td></tr><tr><td>description</td><td>object</td><td>57</td><td>0.0%</td></tr>
+                <tr><td>stat_id</td><td>object</td><td>8</td><td>0.0%</td></tr><tr><td>stat_name</td><td>object</td><td>8</td><td>0.0%</td></tr><tr><td>stat_category</td><td>object</td><td>8</td><td>0.0%</td></tr><tr><td>stat_level</td><td>object</td><td>8</td><td>0.0%</td></tr><tr><td>computable_now</td><td>bool</td><td>8</td><td>0.0%</td></tr><tr><td>description</td><td>object</td><td>8</td><td>0.0%</td></tr>
             </table>
         </div>
         
@@ -64,164 +64,68 @@
   </thead>
   <tbody>
     <tr>
-      <td>MS0001</td>
-      <td>Goals</td>
-      <td>core</td>
-      <td>player_game</td>
-      <td>yes</td>
-      <td>Goals scored</td>
+      <td>STY01</td>
+      <td>count</td>
+      <td>counting</td>
+      <td>game</td>
+      <td>True</td>
+      <td>Raw count of events</td>
     </tr>
     <tr>
-      <td>MS0002</td>
-      <td>Primary Assists</td>
-      <td>core</td>
-      <td>player_game</td>
-      <td>yes</td>
-      <td>Primary assists</td>
+      <td>STY02</td>
+      <td>rate_60</td>
+      <td>rate</td>
+      <td>game</td>
+      <td>True</td>
+      <td>Per 60 minutes rate</td>
     </tr>
     <tr>
-      <td>MS0003</td>
-      <td>Secondary Assists</td>
-      <td>core</td>
-      <td>player_game</td>
-      <td>yes</td>
-      <td>Secondary assists</td>
+      <td>STY03</td>
+      <td>percentage</td>
+      <td>rate</td>
+      <td>game</td>
+      <td>True</td>
+      <td>Success rate %</td>
     </tr>
     <tr>
-      <td>MS0004</td>
-      <td>Points</td>
-      <td>core</td>
-      <td>player_game</td>
-      <td>yes</td>
-      <td>Goals + Assists</td>
+      <td>STY04</td>
+      <td>differential</td>
+      <td>delta</td>
+      <td>game</td>
+      <td>True</td>
+      <td>For minus against</td>
     </tr>
     <tr>
-      <td>MS0005</td>
-      <td>Penalty Minutes</td>
-      <td>core</td>
-      <td>player_game</td>
-      <td>yes</td>
-      <td>Penalty minutes</td>
+      <td>STY05</td>
+      <td>cumulative</td>
+      <td>counting</td>
+      <td>season</td>
+      <td>True</td>
+      <td>Season total</td>
     </tr>
     <tr>
-      <td>MS0006</td>
-      <td>Time on Ice</td>
-      <td>core</td>
-      <td>player_game</td>
-      <td>yes</td>
-      <td>Total time on ice in seconds</td>
+      <td>STY06</td>
+      <td>average</td>
+      <td>rate</td>
+      <td>season</td>
+      <td>True</td>
+      <td>Per game average</td>
     </tr>
     <tr>
-      <td>MS0007</td>
-      <td>Games Played</td>
-      <td>core</td>
-      <td>player_season</td>
-      <td>yes</td>
-      <td>Games played</td>
+      <td>STY07</td>
+      <td>xg_based</td>
+      <td>advanced</td>
+      <td>game</td>
+      <td>False</td>
+      <td>Requires XY data</td>
     </tr>
     <tr>
-      <td>MS0008</td>
-      <td>Plus/Minus</td>
-      <td>core</td>
-      <td>player_game</td>
-      <td>yes</td>
-      <td>Goals for minus goals against at EV</td>
-    </tr>
-    <tr>
-      <td>MS0009</td>
-      <td>Shots on Goal</td>
-      <td>shot</td>
-      <td>player_game</td>
-      <td>yes</td>
-      <td>Shots on goal</td>
-    </tr>
-    <tr>
-      <td>MS0010</td>
-      <td>Missed Shots</td>
-      <td>shot</td>
-      <td>player_game</td>
-      <td>yes</td>
-      <td>Shots that missed net</td>
-    </tr>
-    <tr>
-      <td>MS0011</td>
-      <td>Blocked Shots</td>
-      <td>shot</td>
-      <td>player_game</td>
-      <td>yes</td>
-      <td>Shots blocked by opponent</td>
-    </tr>
-    <tr>
-      <td>MS0012</td>
-      <td>Corsi For</td>
-      <td>shot</td>
-      <td>player_onice</td>
-      <td>yes</td>
-      <td>All shot attempts for while on ice</td>
-    </tr>
-    <tr>
-      <td>MS0013</td>
-      <td>Corsi Against</td>
-      <td>shot</td>
-      <td>player_onice</td>
-      <td>yes</td>
-      <td>All shot attempts against while on ice</td>
-    </tr>
-    <tr>
-      <td>MS0014</td>
-      <td>Corsi %</td>
-      <td>shot</td>
-      <td>player_onice</td>
-      <td>yes</td>
-      <td>CF / (CF + CA)</td>
-    </tr>
-    <tr>
-      <td>MS0015</td>
-      <td>Fenwick For</td>
-      <td>shot</td>
-      <td>player_onice</td>
-      <td>yes</td>
-      <td>Unblocked shot attempts for</td>
-    </tr>
-    <tr>
-      <td>MS0016</td>
-      <td>Fenwick Against</td>
-      <td>shot</td>
-      <td>player_onice</td>
-      <td>yes</td>
-      <td>Unblocked shot attempts against</td>
-    </tr>
-    <tr>
-      <td>MS0017</td>
-      <td>High-Danger Corsi For</td>
-      <td>shot</td>
-      <td>player_onice</td>
-      <td>needs_xy</td>
-      <td>Shot attempts from HD areas</td>
-    </tr>
-    <tr>
-      <td>MS0018</td>
-      <td>Expected Goals</td>
-      <td>xg</td>
-      <td>player_game</td>
-      <td>needs_xy</td>
-      <td>Sum of xG for shots taken</td>
-    </tr>
-    <tr>
-      <td>MS0019</td>
-      <td>On-Ice xG For</td>
-      <td>xg</td>
-      <td>player_onice</td>
-      <td>needs_xy</td>
-      <td>xG for team while on ice</td>
-    </tr>
-    <tr>
-      <td>MS0020</td>
-      <td>On-Ice xG Against</td>
-      <td>xg</td>
-      <td>player_onice</td>
-      <td>needs_xy</td>
-      <td>xG against while on ice</td>
+      <td>STY08</td>
+      <td>rating</td>
+      <td>composite</td>
+      <td>game</td>
+      <td>True</td>
+      <td>Calculated rating</td>
     </tr>
   </tbody>
 </table>
@@ -229,7 +133,7 @@
         </div>
         
         <footer>
-            BenchSight v13.18 | Generated 2026-01-07 05:03:20
+            BenchSight v11.04 | Generated 2026-01-12 23:37:10
         </footer>
     </div>
 </body>

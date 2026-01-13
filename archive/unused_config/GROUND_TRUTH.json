@@ -1,0 +1,23 @@
+{
+    "_generated": "2026-01-09T16:08:00.647471",
+    "_description": "Auto-computed by pre_delivery.py. Do not edit manually.",
+    "tables": {
+        "total": 125,
+        "dims": 55,
+        "facts": 65,
+        "qa": 4
+    },
+    "goals": {
+        "18969": 7,
+        "18977": 6,
+        "18981": 3,
+        "18987": 1
+    },
+    "total_goals": 17,
+    "games": [
+        "18969",
+        "18977",
+        "18981",
+        "18987"
+    ]
+}

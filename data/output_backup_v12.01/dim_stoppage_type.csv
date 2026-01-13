@@ -1,5 +1,0 @@
-stoppage_type_id,stoppage_type_code,stoppage_type_name
-SP0001,Stoppage_Freeze,Stoppage Freeze
-SP0002,Stoppage_GameEnd,Stoppage GameEnd
-SP0003,Stoppage_Period,Stoppage Period
-SP0004,Stoppage_Play,Stoppage Play

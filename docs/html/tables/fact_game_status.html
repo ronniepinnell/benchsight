@@ -3,35 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>fact_game_status - BenchSight v13.18</title>
+    <title>fact_game_status - BenchSight</title>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
-        .container { max-width: 1800px; margin: 0 auto; }
-        h1 { color: #1a1a2e; margin-bottom: 5px; }
-        h2 { color: #4a4e69; margin-top: 30px; border-bottom: 2px solid #4a4e69; padding-bottom: 5px; }
-        h3 { color: #22223b; margin-top: 20px; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
         .back-link { color: #4a4e69; text-decoration: none; }
         .back-link:hover { text-decoration: underline; }
         .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
         .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .description { background: #f0f7ff; border-left: 4px solid #0066cc; padding: 15px; margin: 15px 0; }
-        .critical { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 15px 0; }
+        h2 { color: #4a4e69; margin-top: 0; }
         table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 13px; vertical-align: top; }
-        th { background: #4a4e69; color: white; position: sticky; top: 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
         tr:nth-child(even) { background: #f9f9f9; }
-        tr:hover { background: #f0f0f0; }
-        .type-explicit { background: #d4edda; color: #155724; padding: 2px 6px; border-radius: 3px; font-size: 11px; }
-        .type-calculated { background: #cce5ff; color: #004085; padding: 2px 6px; border-radius: 3px; font-size: 11px; }
-        .type-derived { background: #e2d5f1; color: #4a235a; padding: 2px 6px; border-radius: 3px; font-size: 11px; }
-        .type-fk { background: #ffeeba; color: #856404; padding: 2px 6px; border-radius: 3px; font-size: 11px; }
-        .type-unknown { background: #e9ecef; color: #495057; padding: 2px 6px; border-radius: 3px; font-size: 11px; }
-        code { background: #e9ecef; padding: 2px 6px; border-radius: 3px; font-family: monospace; font-size: 12px; }
-        .null-high { color: #dc3545; font-weight: bold; }
-        .null-medium { color: #fd7e14; }
-        .null-low { color: #28a745; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
         footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
-        .scrollable { overflow-x: auto; max-height: 600px; overflow-y: auto; }
     </style>
 </head>
 <body>
@@ -39,292 +29,29 @@
         <p><a href="../index.html" class="back-link">← Back to Index</a></p>
         <h1>fact_game_status</h1>
         
+        
+        
         <div class="meta">
-            <strong>Rows:</strong> 562 | 
-            <strong>Columns:</strong> 24 |
-            <strong>Last Updated:</strong> 2026-01-07 17:16 |
-            <strong>Version:</strong> 12.03
+            <strong>Rows:</strong> 572 | 
+            <strong>Columns:</strong> 27 |
+            <strong>Last Updated:</strong> 2026-01-12 23:37:10 |
+            <strong>Version:</strong> 11.04
+        </div>
+        
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>game_id</td><td>int64</td><td>572</td><td>0.0%</td></tr><tr><td>game_date</td><td>object</td><td>572</td><td>0.0%</td></tr><tr><td>home_team</td><td>object</td><td>572</td><td>0.0%</td></tr><tr><td>away_team</td><td>object</td><td>572</td><td>0.0%</td></tr><tr><td>official_home_goals</td><td>int64</td><td>572</td><td>0.0%</td></tr><tr><td>official_away_goals</td><td>int64</td><td>572</td><td>0.0%</td></tr><tr><td>official_total_goals</td><td>int64</td><td>572</td><td>0.0%</td></tr><tr><td>game_url</td><td>object</td><td>572</td><td>0.0%</td></tr><tr><td>tracking_status</td><td>object</td><td>572</td><td>0.0%</td></tr><tr><td>tracking_pct</td><td>float64</td><td>572</td><td>0.0%</td></tr><tr><td>events_row_count</td><td>int64</td><td>572</td><td>0.0%</td></tr><tr><td>shifts_row_count</td><td>int64</td><td>572</td><td>0.0%</td></tr><tr><td>player_id_fill_pct</td><td>float64</td><td>572</td><td>0.0%</td></tr><tr><td>goal_events</td><td>int64</td><td>572</td><td>0.0%</td></tr><tr><td>periods_covered</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>tracking_start_period</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>tracking_start_time</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>tracking_end_period</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>tracking_end_time</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>is_loaded</td><td>bool</td><td>572</td><td>0.0%</td></tr><tr><td>goals_in_stats</td><td>int64</td><td>572</td><td>0.0%</td></tr><tr><td>goal_match</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>player_count</td><td>int64</td><td>572</td><td>0.0%</td></tr><tr><td>issues</td><td>object</td><td>572</td><td>0.0%</td></tr><tr><td>suspicious_stats_flag</td><td>bool</td><td>572</td><td>0.0%</td></tr><tr><td>suspicious_stats_count</td><td>int64</td><td>572</td><td>0.0%</td></tr><tr><td>suspicious_stats_summary</td><td>float64</td><td>0</td><td>100.0%</td></tr>
+            </table>
         </div>
         
         <div class="card">
-            <h2>Table Overview</h2>
-            <div class="description">
-                <strong>Description:</strong> Game processing status and completeness.
-            </div>
-            <p><strong>Purpose:</strong> QA tracking for data completeness.</p>
-            <p><strong>Source Module:</strong> <code>src/advanced/extended_tables.py</code></p>
-            <p><strong>Logic:</strong> Generated during ETL to track processing status.</p>
-
-        </div>
-        
-        <div class="card">
-            <h2>Column Documentation</h2>
-            <p><strong>Legend:</strong> 
-                <span class="type-explicit">Explicit</span> = From raw data |
-                <span class="type-calculated">Calculated</span> = Formula-based |
-                <span class="type-derived">Derived</span> = Generated key/aggregate |
-                <span class="type-fk">FK</span> = Foreign key lookup
-            </p>
-            <div class="scrollable">
-                <table>
-                    <tr>
-                        <th style="min-width:150px">Column</th>
-                        <th style="min-width:80px">Data Type</th>
-                        <th style="min-width:250px">Description</th>
-                        <th style="min-width:200px">Context / Mapping</th>
-                        <th style="min-width:200px">Calculation / Formula</th>
-                        <th style="min-width:70px">Type</th>
-                        <th style="min-width:60px">Non-Null</th>
-                        <th style="min-width:50px">Null %</th>
-                    </tr>
-                    <tr>
-                        <td><code>game_id</code></td>
-                        <td>int64</td>
-                        <td>Game identifier from noradhockey.com</td>
-                        <td>Numeric ID from league website URL. Example: 18969. Links to dim_schedule.game_id. Used as prefix in all composite keys.</td>
-                        <td>Extracted from tracking file directory name (data/raw/games/{game_id}/)</td>
-                        <td><span class="type-explicit">Explicit</span></td>
-                        <td>562</td>
-                        <td class="null-low">0.0%</td>
-                    </tr>
-                    <tr>
-                        <td><code>game_date</code></td>
-                        <td>object</td>
-                        <td>Game Date</td>
-                        <td></td>
-                        <td></td>
-                        <td><span class="type-unknown">Unknown</span></td>
-                        <td>562</td>
-                        <td class="null-low">0.0%</td>
-                    </tr>
-                    <tr>
-                        <td><code>home_team</code></td>
-                        <td>object</td>
-                        <td>Home team code</td>
-                        <td>Team abbreviation for home team. From tracking spreadsheet, validated against BLB schedule.</td>
-                        <td>From tracking, corrected via correct_venue_from_schedule() using BLB as authoritative</td>
-                        <td><span class="type-explicit">Explicit</span></td>
-                        <td>562</td>
-                        <td class="null-low">0.0%</td>
-                    </tr>
-                    <tr>
-                        <td><code>away_team</code></td>
-                        <td>object</td>
-                        <td>Away team code</td>
-                        <td>Team abbreviation for away team. From tracking spreadsheet, validated against BLB.</td>
-                        <td>From tracking, corrected via correct_venue_from_schedule()</td>
-                        <td><span class="type-explicit">Explicit</span></td>
-                        <td>562</td>
-                        <td class="null-low">0.0%</td>
-                    </tr>
-                    <tr>
-                        <td><code>official_home_goals</code></td>
-                        <td>int64</td>
-                        <td>Official Home Goals</td>
-                        <td></td>
-                        <td></td>
-                        <td><span class="type-unknown">Unknown</span></td>
-                        <td>562</td>
-                        <td class="null-low">0.0%</td>
-                    </tr>
-                    <tr>
-                        <td><code>official_away_goals</code></td>
-                        <td>int64</td>
-                        <td>Official Away Goals</td>
-                        <td></td>
-                        <td></td>
-                        <td><span class="type-unknown">Unknown</span></td>
-                        <td>562</td>
-                        <td class="null-low">0.0%</td>
-                    </tr>
-                    <tr>
-                        <td><code>official_total_goals</code></td>
-                        <td>int64</td>
-                        <td>Official Total Goals</td>
-                        <td></td>
-                        <td></td>
-                        <td><span class="type-unknown">Unknown</span></td>
-                        <td>562</td>
-                        <td class="null-low">0.0%</td>
-                    </tr>
-                    <tr>
-                        <td><code>game_url</code></td>
-                        <td>object</td>
-                        <td>Game Url</td>
-                        <td></td>
-                        <td></td>
-                        <td><span class="type-unknown">Unknown</span></td>
-                        <td>562</td>
-                        <td class="null-low">0.0%</td>
-                    </tr>
-                    <tr>
-                        <td><code>tracking_status</code></td>
-                        <td>object</td>
-                        <td>Tracking Status</td>
-                        <td></td>
-                        <td></td>
-                        <td><span class="type-unknown">Unknown</span></td>
-                        <td>562</td>
-                        <td class="null-low">0.0%</td>
-                    </tr>
-                    <tr>
-                        <td><code>tracking_pct</code></td>
-                        <td>float64</td>
-                        <td>Tracking Pct</td>
-                        <td></td>
-                        <td></td>
-                        <td><span class="type-unknown">Unknown</span></td>
-                        <td>562</td>
-                        <td class="null-low">0.0%</td>
-                    </tr>
-                    <tr>
-                        <td><code>events_row_count</code></td>
-                        <td>int64</td>
-                        <td>Events Row Count</td>
-                        <td></td>
-                        <td></td>
-                        <td><span class="type-unknown">Unknown</span></td>
-                        <td>562</td>
-                        <td class="null-low">0.0%</td>
-                    </tr>
-                    <tr>
-                        <td><code>shifts_row_count</code></td>
-                        <td>int64</td>
-                        <td>Shifts Row Count</td>
-                        <td></td>
-                        <td></td>
-                        <td><span class="type-unknown">Unknown</span></td>
-                        <td>562</td>
-                        <td class="null-low">0.0%</td>
-                    </tr>
-                    <tr>
-                        <td><code>player_id_fill_pct</code></td>
-                        <td>float64</td>
-                        <td>Player Id Fill Pct</td>
-                        <td></td>
-                        <td></td>
-                        <td><span class="type-unknown">Unknown</span></td>
-                        <td>562</td>
-                        <td class="null-low">0.0%</td>
-                    </tr>
-                    <tr>
-                        <td><code>goal_events</code></td>
-                        <td>int64</td>
-                        <td>Goal Events</td>
-                        <td></td>
-                        <td></td>
-                        <td><span class="type-unknown">Unknown</span></td>
-                        <td>562</td>
-                        <td class="null-low">0.0%</td>
-                    </tr>
-                    <tr>
-                        <td><code>periods_covered</code></td>
-                        <td>object</td>
-                        <td>Periods Covered</td>
-                        <td></td>
-                        <td></td>
-                        <td><span class="type-unknown">Unknown</span></td>
-                        <td>4</td>
-                        <td class="null-high">99.3%</td>
-                    </tr>
-                    <tr>
-                        <td><code>tracking_start_period</code></td>
-                        <td>float64</td>
-                        <td>Tracking Start Period</td>
-                        <td></td>
-                        <td></td>
-                        <td><span class="type-unknown">Unknown</span></td>
-                        <td>4</td>
-                        <td class="null-high">99.3%</td>
-                    </tr>
-                    <tr>
-                        <td><code>tracking_start_time</code></td>
-                        <td>float64</td>
-                        <td>Tracking Start Time</td>
-                        <td></td>
-                        <td></td>
-                        <td><span class="type-unknown">Unknown</span></td>
-                        <td>0</td>
-                        <td class="null-high">100.0%</td>
-                    </tr>
-                    <tr>
-                        <td><code>tracking_end_period</code></td>
-                        <td>float64</td>
-                        <td>Tracking End Period</td>
-                        <td></td>
-                        <td></td>
-                        <td><span class="type-unknown">Unknown</span></td>
-                        <td>4</td>
-                        <td class="null-high">99.3%</td>
-                    </tr>
-                    <tr>
-                        <td><code>tracking_end_time</code></td>
-                        <td>float64</td>
-                        <td>Tracking End Time</td>
-                        <td></td>
-                        <td></td>
-                        <td><span class="type-unknown">Unknown</span></td>
-                        <td>0</td>
-                        <td class="null-high">100.0%</td>
-                    </tr>
-                    <tr>
-                        <td><code>is_loaded</code></td>
-                        <td>bool</td>
-                        <td>Loaded indicator</td>
-                        <td></td>
-                        <td>Boolean flag</td>
-                        <td><span class="type-calculated">Calculated</span></td>
-                        <td>562</td>
-                        <td class="null-low">0.0%</td>
-                    </tr>
-                    <tr>
-                        <td><code>goals_in_stats</code></td>
-                        <td>int64</td>
-                        <td>Goals In Stats</td>
-                        <td></td>
-                        <td></td>
-                        <td><span class="type-unknown">Unknown</span></td>
-                        <td>562</td>
-                        <td class="null-low">0.0%</td>
-                    </tr>
-                    <tr>
-                        <td><code>goal_match</code></td>
-                        <td>float64</td>
-                        <td>Goal Match</td>
-                        <td></td>
-                        <td></td>
-                        <td><span class="type-unknown">Unknown</span></td>
-                        <td>0</td>
-                        <td class="null-high">100.0%</td>
-                    </tr>
-                    <tr>
-                        <td><code>player_count</code></td>
-                        <td>int64</td>
-                        <td>Player Count</td>
-                        <td></td>
-                        <td></td>
-                        <td><span class="type-unknown">Unknown</span></td>
-                        <td>562</td>
-                        <td class="null-low">0.0%</td>
-                    </tr>
-                    <tr>
-                        <td><code>issues</code></td>
-                        <td>object</td>
-                        <td>Issues</td>
-                        <td></td>
-                        <td></td>
-                        <td><span class="type-unknown">Unknown</span></td>
-                        <td>558</td>
-                        <td class="null-low">0.7%</td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-
-        <div class="card">
-            <h2>Sample Data (First 10 Rows)</h2>
-            <div class="scrollable">
-<table border="1" class="dataframe data-table">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
   <thead>
     <tr style="text-align: right;">
       <th>game_id</th>
@@ -351,6 +78,9 @@
       <th>goal_match</th>
       <th>player_count</th>
       <th>issues</th>
+      <th>suspicious_stats_flag</th>
+      <th>suspicious_stats_count</th>
+      <th>suspicious_stats_summary</th>
     </tr>
   </thead>
   <tbody>
@@ -369,16 +99,19 @@
       <td>0</td>
       <td>0.0</td>
       <td>0</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>False</td>
       <td>0</td>
-      <td>NULL</td>
+      <td>NaN</td>
       <td>0</td>
       <td>No tracking file</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
     </tr>
     <tr>
       <td>10063</td>
@@ -395,16 +128,19 @@
       <td>0</td>
       <td>0.0</td>
       <td>0</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>False</td>
       <td>0</td>
-      <td>NULL</td>
+      <td>NaN</td>
       <td>0</td>
       <td>No tracking file</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
     </tr>
     <tr>
       <td>10074</td>
@@ -421,16 +157,19 @@
       <td>0</td>
       <td>0.0</td>
       <td>0</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>False</td>
       <td>0</td>
-      <td>NULL</td>
+      <td>NaN</td>
       <td>0</td>
       <td>No tracking file</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
     </tr>
     <tr>
       <td>10073</td>
@@ -447,16 +186,19 @@
       <td>0</td>
       <td>0.0</td>
       <td>0</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>False</td>
       <td>0</td>
-      <td>NULL</td>
+      <td>NaN</td>
       <td>0</td>
       <td>No tracking file</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
     </tr>
     <tr>
       <td>10066</td>
@@ -473,16 +215,19 @@
       <td>0</td>
       <td>0.0</td>
       <td>0</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>False</td>
       <td>0</td>
-      <td>NULL</td>
+      <td>NaN</td>
       <td>0</td>
       <td>No tracking file</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
     </tr>
     <tr>
       <td>10065</td>
@@ -499,21 +244,24 @@
       <td>0</td>
       <td>0.0</td>
       <td>0</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>False</td>
       <td>0</td>
-      <td>NULL</td>
+      <td>NaN</td>
       <td>0</td>
       <td>No tracking file</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
     </tr>
     <tr>
       <td>10064</td>
       <td>2025-04-06 00:00:00</td>
-      <td>Amos</td>
+      <td>AMOS</td>
       <td>Triple J</td>
       <td>1</td>
       <td>2</td>
@@ -525,16 +273,19 @@
       <td>0</td>
       <td>0.0</td>
       <td>0</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>False</td>
       <td>0</td>
-      <td>NULL</td>
+      <td>NaN</td>
       <td>0</td>
       <td>No tracking file</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
     </tr>
     <tr>
       <td>10069</td>
@@ -551,16 +302,19 @@
       <td>0</td>
       <td>0.0</td>
       <td>0</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>False</td>
       <td>0</td>
-      <td>NULL</td>
+      <td>NaN</td>
       <td>0</td>
       <td>No tracking file</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
     </tr>
     <tr>
       <td>10068</td>
@@ -577,21 +331,24 @@
       <td>0</td>
       <td>0.0</td>
       <td>0</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>False</td>
       <td>0</td>
-      <td>NULL</td>
+      <td>NaN</td>
       <td>0</td>
       <td>No tracking file</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
     </tr>
     <tr>
       <td>10067</td>
       <td>2025-03-30 00:00:00</td>
-      <td>Amos</td>
+      <td>AMOS</td>
       <td>Orphans</td>
       <td>5</td>
       <td>3</td>
@@ -603,16 +360,309 @@
       <td>0</td>
       <td>0.0</td>
       <td>0</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
-      <td>NULL</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>False</td>
       <td>0</td>
-      <td>NULL</td>
+      <td>NaN</td>
       <td>0</td>
       <td>No tracking file</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>10072</td>
+      <td>2025-03-23 00:00:00</td>
+      <td>Nelson</td>
+      <td>Ace</td>
+      <td>7</td>
+      <td>4</td>
+      <td>11</td>
+      <td>https://www.noradhockey.com/event/seed-6-vs-seed-9/</td>
+      <td>NO_FILE</td>
+      <td>0.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>No tracking file</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>10071</td>
+      <td>2025-03-23 00:00:00</td>
+      <td>OS Offices</td>
+      <td>Outlaws</td>
+      <td>5</td>
+      <td>4</td>
+      <td>9</td>
+      <td>https://www.noradhockey.com/event/seed-5-vs-seed-8/</td>
+      <td>NO_FILE</td>
+      <td>0.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>No tracking file</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>10070</td>
+      <td>2025-03-23 00:00:00</td>
+      <td>Triple J</td>
+      <td>Orphans</td>
+      <td>5</td>
+      <td>1</td>
+      <td>6</td>
+      <td>https://www.noradhockey.com/event/seed-4-vs-seed-7/</td>
+      <td>NO_FILE</td>
+      <td>0.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>No tracking file</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>18001</td>
+      <td>2025-03-16 00:00:00</td>
+      <td>Nelson</td>
+      <td>Outlaws</td>
+      <td>0</td>
+      <td>3</td>
+      <td>3</td>
+      <td>https://www.noradhockey.com/event/18001/</td>
+      <td>NO_FILE</td>
+      <td>0.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>No tracking file</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>18000</td>
+      <td>2025-03-16 00:00:00</td>
+      <td>AMOS</td>
+      <td>Orphans</td>
+      <td>7</td>
+      <td>2</td>
+      <td>9</td>
+      <td>https://www.noradhockey.com/event/18000/</td>
+      <td>NO_FILE</td>
+      <td>0.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>No tracking file</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>17999</td>
+      <td>2025-03-16 00:00:00</td>
+      <td>OS Offices</td>
+      <td>Ace</td>
+      <td>5</td>
+      <td>6</td>
+      <td>11</td>
+      <td>https://www.noradhockey.com/event/17999/</td>
+      <td>NO_FILE</td>
+      <td>0.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>No tracking file</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>17998</td>
+      <td>2025-03-16 00:00:00</td>
+      <td>Platinum</td>
+      <td>Triple J</td>
+      <td>4</td>
+      <td>3</td>
+      <td>7</td>
+      <td>https://www.noradhockey.com/event/17998/</td>
+      <td>NO_FILE</td>
+      <td>0.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>No tracking file</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>18051</td>
+      <td>2025-03-09 00:00:00</td>
+      <td>HollowBrook</td>
+      <td>Orphans</td>
+      <td>4</td>
+      <td>3</td>
+      <td>7</td>
+      <td>https://www.noradhockey.com/event/18051/</td>
+      <td>NO_FILE</td>
+      <td>0.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>No tracking file</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>18050</td>
+      <td>2025-03-09 00:00:00</td>
+      <td>Nelson</td>
+      <td>Ace</td>
+      <td>4</td>
+      <td>4</td>
+      <td>8</td>
+      <td>https://www.noradhockey.com/event/18050/</td>
+      <td>NO_FILE</td>
+      <td>0.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>No tracking file</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>18049</td>
+      <td>2025-03-09 00:00:00</td>
+      <td>AMOS</td>
+      <td>Triple J</td>
+      <td>4</td>
+      <td>6</td>
+      <td>10</td>
+      <td>https://www.noradhockey.com/event/18049/</td>
+      <td>NO_FILE</td>
+      <td>0.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>No tracking file</td>
+      <td>False</td>
+      <td>0</td>
+      <td>NaN</td>
     </tr>
   </tbody>
 </table>
@@ -620,7 +670,7 @@
         </div>
         
         <footer>
-            BenchSight v13.18 | Generated 2026-01-07 17:16
+            BenchSight v11.04 | Generated 2026-01-12 23:37:10
         </footer>
     </div>
 </body>

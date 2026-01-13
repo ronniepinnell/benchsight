@@ -35,6 +35,9 @@ from src.core.key_utils import (
     generate_event_chain_key
 )
 
+# Import centralized key parser
+from src.utils.key_parser import parse_shift_key, make_shift_key, convert_le_to_lv_key
+
 # Import safe CSV utilities (with fallback)
 try:
     from src.core.safe_csv import safe_write_csv, safe_read_csv, CSVWriteError
@@ -42,11 +45,19 @@ try:
 except ImportError:
     SAFE_CSV_AVAILABLE = False
 
+# Import central table writer for Supabase integration
+from src.core.table_writer import (
+    save_output_table, 
+    enable_supabase as enable_supabase_upload,
+    disable_supabase as disable_supabase_upload,
+    is_supabase_enabled
+)
+
 # ============================================================
 # CONFIGURATION
 # ============================================================
 
-BLB_PATH = Path("data/BLB_Tables.xlsx")
+BLB_PATH = Path("data/raw/BLB_Tables.xlsx")
 GAMES_DIR = Path("data/raw/games")
 OUTPUT_DIR = Path("data/output")
 LOG_FILE = Path("logs/etl_v5.log")
@@ -105,10 +116,11 @@ def discover_games():
             
             if has_events:
                 events = pd.read_excel(xlsx_path, sheet_name='events', nrows=10)
-                has_tracking_index = 'tracking_event_index' in events.columns
+                # Accept either tracking_event_index (old format) or event_index (new tracker format)
+                has_index = 'tracking_event_index' in events.columns or 'event_index' in events.columns
                 has_enough_rows = len(events) >= 5
                 
-                if has_tracking_index and has_enough_rows:
+                if has_index and has_enough_rows:
                     valid_games.append(game_id)
                 else:
                     auto_excluded.append(game_id)
@@ -758,20 +770,13 @@ def validate_key(df, key_col, table_name):
     return issues
 
 def save_table(df, name):
-    """Save table with safe CSV write and return stats."""
-    path = OUTPUT_DIR / f"{name}.csv"
+    """Save table to CSV and optionally upload directly to Supabase.
     
-    if SAFE_CSV_AVAILABLE:
-        try:
-            safe_write_csv(df, str(path), atomic=True, validate=True)
-        except CSVWriteError as e:
-            log.error(f"Failed to save {name}: {e}")
-            # Fallback to standard write
-            df.to_csv(path, index=False)
-    else:
-        df.to_csv(path, index=False)
-    
-    return len(df), len(df.columns)
+    Uses the central table_writer module which handles:
+    1. Uploading to Supabase (if enabled) - DataFrame goes directly, no CSV read
+    2. Writing to CSV (always, for local backup)
+    """
+    return save_output_table(df, name, OUTPUT_DIR)
 
 def enhance_gameroster(df, dim_season_df=None, dim_schedule_df=None):
     """Clean and enhance fact_gameroster from BLB.
@@ -798,20 +803,37 @@ def enhance_gameroster(df, dim_season_df=None, dim_schedule_df=None):
     df['points'] = df['goals'] + df['assist']
     
     # Add season_id FK
+    # PRIMARY: Join to dim_schedule on game_id (single source of truth)
+    # FALLBACK: Map season string for any games not in schedule
+    if dim_schedule_df is not None and 'game_id' in df.columns and 'game_id' in dim_schedule_df.columns:
+        # Use schedule as authoritative source for season_id
+        schedule_season_map = dim_schedule_df.set_index('game_id')['season_id'].to_dict()
+        df['season_id'] = df['game_id'].map(schedule_season_map)
+        log.info(f"    season_id from schedule: {df['season_id'].notna().sum()}/{len(df)} mapped")
+    
+    # FALLBACK: For any remaining nulls, try season string mapping
     if dim_season_df is not None and 'season' in df.columns:
-        # Map season string to season_id
-        season_map = {}
-        for _, row in dim_season_df.iterrows():
-            sid = row.get('season_id', '')
-            # Extract year pattern from season_id (e.g., N20232024F -> 20232024)
-            if sid:
-                year_part = ''.join(c for c in str(sid) if c.isdigit())
-                if len(year_part) == 8:
-                    season_str = f"{year_part[:4]}-{year_part[4:]}"  # 2023-2024
-                    season_map[year_part] = sid
-                    season_map[season_str] = sid
-                    season_map[year_part.replace('-', '')] = sid  # 20232024
-        df['season_id'] = df['season'].astype(str).str.replace('-', '').map(season_map)
+        unmapped_mask = df['season_id'].isna() if 'season_id' in df.columns else pd.Series([True] * len(df))
+        if unmapped_mask.any():
+            # Build comprehensive season map
+            season_map = {}
+            for _, row in dim_season_df.iterrows():
+                sid = row.get('season_id', '')
+                season_val = str(row.get('season', ''))
+                if sid:
+                    # Direct season value mapping (e.g., "2025" -> "N2025S")
+                    season_map[season_val] = sid
+                    season_map[season_val.replace('-', '')] = sid
+                    # Extract year pattern from season_id (e.g., N20232024F -> 20232024)
+                    year_part = ''.join(c for c in str(sid) if c.isdigit())
+                    if len(year_part) == 8:
+                        season_str = f"{year_part[:4]}-{year_part[4:]}"  # 2023-2024
+                        season_map[year_part] = sid
+                        season_map[season_str] = sid
+            # Apply fallback mapping only to unmapped rows
+            fallback_ids = df.loc[unmapped_mask, 'season'].astype(str).str.replace('-', '').map(season_map)
+            df.loc[unmapped_mask, 'season_id'] = fallback_ids
+            log.info(f"    season_id fallback: {fallback_ids.notna().sum()} additional mapped")
     
     # Add venue_id FK based on team_venue (home/away)
     venue_map = {'home': 'VN01', 'Home': 'VN01', 'away': 'VN02', 'Away': 'VN02'}
@@ -862,15 +884,26 @@ def load_blb_tables():
     xl = pd.ExcelFile(BLB_PATH)
     
     # Sheet to output name mapping
+    # IMPORTANT: Load ALL reference tables from BLB_Tables.xlsx
     sheet_map = {
+        # Core dimensions
         'dim_player': 'dim_player',
         'dim_team': 'dim_team',
         'dim_league': 'dim_league',
         'dim_season': 'dim_season',
         'dim_schedule': 'dim_schedule',
         'dim_playerurlref': 'dim_playerurlref',
-        'dim_rink_zone': 'dim_rink_zone',
+        # dim_rink_zone is generated by code (dimension_tables.py), not loaded from BLB
         'dim_randomnames': 'dim_randomnames',
+        
+        # Event/Play reference tables (from BLB_Tables, NOT generated!)
+        'dim_event_type': 'dim_event_type',
+        'dim_event_detail': 'dim_event_detail',
+        'dim_event_detail_2': 'dim_event_detail_2',
+        'dim_play_detail': 'dim_play_detail',
+        'dim_play_detail_2': 'dim_play_detail_2',
+        
+        # Fact tables
         'fact_gameroster': 'fact_gameroster',
         'fact_leadership': 'fact_leadership',
         'fact_registration': 'fact_registration',
@@ -923,6 +956,56 @@ def load_blb_tables():
         # Special handling for fact_gameroster - clean and enhance
         if output == 'fact_gameroster':
             df = enhance_gameroster(df, loaded.get('dim_season'), loaded.get('dim_schedule'))
+        
+        # Special handling for dim_play_detail_2 - rename columns to have _2 suffix
+        # BLB sheet has: play_detail_id, play_detail_code, play_detail_name
+        # We need: play_detail_2_id, play_detail_2_code, play_detail_2_name
+        if output == 'dim_play_detail_2':
+            rename_map = {
+                'play_detail_id': 'play_detail_2_id',
+                'play_detail_code': 'play_detail_2_code',
+                'play_detail_name': 'play_detail_2_name',
+            }
+            df = df.rename(columns=rename_map)
+            log.info(f"  Renamed columns for {output}: {list(rename_map.keys())}")
+        
+        # ============================================================
+        # v23.0 CLEANUP: Remove legacy columns and filter tables
+        # ============================================================
+        
+        # dim_player: Remove 7 CSAH-specific columns (all 100% null, legacy)
+        if output == 'dim_player':
+            csah_cols_to_remove = [
+                'player_hand', 'player_notes', 'player_csaha',
+                'player_norad_primary_number', 'player_csah_primary_number',
+                'player_csah_current_team', 'player_csah_current_team_id'
+            ]
+            existing_to_remove = [c for c in csah_cols_to_remove if c in df.columns]
+            if existing_to_remove:
+                df = df.drop(columns=existing_to_remove)
+                log.info(f"  Removed {len(existing_to_remove)} CSAH columns from dim_player")
+        
+        # dim_team: Filter to NORAD teams only, remove csah_team column
+        if output == 'dim_team':
+            before_count = len(df)
+            if 'norad_team' in df.columns:
+                df = df[df['norad_team'].astype(str).str.upper() == 'Y']
+                log.info(f"  Filtered dim_team to NORAD only: {before_count} -> {len(df)} rows")
+            if 'csah_team' in df.columns:
+                df = df.drop(columns=['csah_team'])
+                log.info(f"  Removed csah_team column from dim_team")
+        
+        # dim_schedule: Remove video columns and team_game_id columns
+        if output == 'dim_schedule':
+            schedule_cols_to_remove = [
+                'home_team_game_id', 'away_team_game_id',
+                'video_id', 'video_start_time', 'video_end_time', 
+                'video_title', 'video_url'
+            ]
+            existing_to_remove = [c for c in schedule_cols_to_remove if c in df.columns]
+            if existing_to_remove:
+                df = df.drop(columns=existing_to_remove)
+                log.info(f"  Removed {len(existing_to_remove)} video/team_game_id columns from dim_schedule")
         
         loaded[output] = df
         rows, cols = save_table(df, output)
@@ -1020,12 +1103,13 @@ def load_tracking_data(player_lookup):
                 df, dropped = drop_underscore_columns(df)
                 log.info(f"  events: {len(df)} raw rows, dropped {len(dropped)} underscore cols")
                 
-                # Filter valid rows (has tracking_event_index)
-                if 'tracking_event_index' in df.columns:
-                    df = df[df['tracking_event_index'].apply(
+                # Filter valid rows - accept either tracking_event_index or event_index
+                index_col = 'tracking_event_index' if 'tracking_event_index' in df.columns else 'event_index'
+                if index_col in df.columns:
+                    df = df[df[index_col].apply(
                         lambda x: pd.notna(x) and str(x).replace('.', '').replace('-', '').isdigit()
                     )]
-                    log.info(f"  events: {len(df)} valid rows (by tracking_event_index)")
+                    log.info(f"  events: {len(df)} valid rows (by {index_col})")
                 
                 # VENUE SWAP CORRECTION: Use BLB schedule as authoritative source
                 df = correct_venue_from_schedule(df, game_id, schedule_df, log)
@@ -1065,6 +1149,19 @@ def load_tracking_data(player_lookup):
         # ================================================================
         df = calculate_derived_columns(df, log)
         
+        # ================================================================
+        # NORMALIZE TERMINOLOGY: Rush → Carried
+        # Tracker originally used "Rush" for carried zone entries/exits
+        # We normalize to "Carried" which is more accurate terminology
+        # (NHL "rush" = transition attack with quick shot, not just carrying in)
+        # ================================================================
+        if 'event_detail_2' in df.columns:
+            rush_count = df['event_detail_2'].str.contains('Rush', na=False).sum()
+            df['event_detail_2'] = df['event_detail_2'].str.replace('_Rush', '_Carried', regex=False)
+            df['event_detail_2'] = df['event_detail_2'].str.replace('Rush', 'Carried', regex=False)
+            if rush_count > 0:
+                log.info(f"  Normalized {rush_count} 'Rush' → 'Carried' in event_detail_2")
+        
         # Generate keys using correct index columns:
         # - event_id uses event_index (sequential event counter)
         # - tracking_event_key uses tracking_event_index (can differ for zone entries, etc.)
@@ -1073,7 +1170,7 @@ def load_tracking_data(player_lookup):
         else:
             # Fallback if event_index doesn't exist
             df['event_index_clean'] = df['tracking_event_index'].apply(clean_numeric_index)
-            log.warning("  Using tracking_event_index as fallback for event_index")
+            log.warn("  Using tracking_event_index as fallback for event_index")
         
         # Generate event_id from event_index (NOT tracking_event_index)
         df['event_id'] = df.apply(
@@ -1153,6 +1250,20 @@ def load_tracking_data(player_lookup):
         priority_cols = key_cols + fk_id_cols
         other_cols = [c for c in df.columns if c not in priority_cols]
         df = df[[c for c in priority_cols if c in df.columns] + other_cols]
+        
+        # v23.0: Remove unused flag columns
+        unused_cols = ['event_index_flag', 'sequence_index_flag', 'play_index_flag']
+        existing_unused = [c for c in unused_cols if c in df.columns]
+        if existing_unused:
+            df = df.drop(columns=existing_unused)
+            log.info(f"  Removed {len(existing_unused)} unused flag columns: {existing_unused}")
+        
+        # v23.1: Remove duplicate columns
+        duplicate_cols = ['team', 'Type', 'play_detail2']  # team=team_venue, Type=event_type, play_detail2=play_detail_2
+        existing_dups = [c for c in duplicate_cols if c in df.columns]
+        if existing_dups:
+            df = df.drop(columns=existing_dups)
+            log.info(f"  Removed {len(existing_dups)} duplicate columns: {existing_dups}")
         
         results['fact_event_players'] = df
         save_table(df, 'fact_event_players')
@@ -1389,8 +1500,12 @@ def create_derived_tables(tracking_data, player_lookup):
                         key = (game_id, player_num)
                         player_id = player_lookup.get(key)
                     
+                    # Venue code: H (home) or A (away)
+                    venue_code = 'H' if venue == 'home' else 'A'
+                    shift_idx = int(shift['shift_index'])
+                    pid_str = player_id if player_id else 'NULL'
                     rows.append({
-                        'shift_player_id': f"{shift['shift_id']}_{venue}_{pos}",
+                        'shift_player_id': f"SP{int(game_id):05d}{shift_idx:05d}{pid_str}",
                         'shift_id': shift['shift_id'],
                         'game_id': game_id,
                         'shift_index': shift['shift_index'],
@@ -1490,43 +1605,56 @@ def create_reference_tables():
     save_table(pd.DataFrame(venues), 'dim_venue')
     log.info("dim_venue: 2 rows")
     
-    # dim_event_type - from models/dimensions.py
-    from src.models.dimensions import EVENT_TYPES
-    event_types = []
-    for et in EVENT_TYPES:
-        event_types.append({
-            'event_type_id': f"ET{et['event_type_id']:04d}",
-            'event_type_code': et['event_type'],
-            'event_type_name': et['event_type'].replace('_', ' '),
-            'event_category': et.get('event_category', 'other'),
-            'description': et.get('description', ''),
-            'is_corsi': et.get('is_corsi', False),
-            'is_fenwick': et.get('is_fenwick', False),
-        })
-    save_table(pd.DataFrame(event_types), 'dim_event_type')
-    log.info(f"dim_event_type: {len(event_types)} rows")
+    # dim_event_type - LOADED FROM BLB_Tables.xlsx (not generated!)
+    # The sheet has more comprehensive data than the hardcoded EVENT_TYPES
+    if not Path(OUTPUT_DIR / 'dim_event_type.csv').exists():
+        log.warn("dim_event_type not loaded from BLB - generating from hardcoded...")
+        from src.models.dimensions import EVENT_TYPES
+        event_types = []
+        for et in EVENT_TYPES:
+            event_types.append({
+                'event_type_id': f"ET{et['event_type_id']:04d}",
+                'event_type_code': et['event_type'],
+                'event_type_name': et['event_type'].replace('_', ' '),
+                'event_category': et.get('event_category', 'other'),
+                'description': et.get('description', ''),
+                'is_corsi': et.get('is_corsi', False),
+                'is_fenwick': et.get('is_fenwick', False),
+            })
+        save_table(pd.DataFrame(event_types), 'dim_event_type')
+        log.info(f"dim_event_type: {len(event_types)} rows (generated)")
+    else:
+        log.info("dim_event_type: using BLB_Tables data")
     
-    # dim_event_detail - from models/dimensions.py
-    from src.models.dimensions import EVENT_DETAILS
-    event_details = []
-    for ed in EVENT_DETAILS:
-        event_details.append({
-            'event_detail_id': f"ED{ed['event_detail_id']:04d}",
-            'event_detail_code': ed['event_detail'],
-            'event_detail_name': ed['event_detail'].replace('_', ' '),
-            'event_type': ed.get('event_type', ''),
-            'category': ed.get('category', 'other'),
-            'is_shot_on_goal': ed.get('is_shot_on_goal', False),
-            'is_goal': ed.get('is_goal', False),
-            'is_miss': ed.get('is_miss', False),
-            'is_block': ed.get('is_block', False),
-            'danger_potential': ed.get('danger_potential', 'low'),
-        })
-    save_table(pd.DataFrame(event_details), 'dim_event_detail')
-    log.info(f"dim_event_detail: {len(event_details)} rows")
+    # dim_event_detail - LOADED FROM BLB_Tables.xlsx (not generated!)
+    if not Path(OUTPUT_DIR / 'dim_event_detail.csv').exists():
+        log.warn("dim_event_detail not loaded from BLB - generating from hardcoded...")
+        from src.models.dimensions import EVENT_DETAILS
+        event_details = []
+        for ed in EVENT_DETAILS:
+            event_details.append({
+                'event_detail_id': f"ED{ed['event_detail_id']:04d}",
+                'event_detail_code': ed['event_detail'],
+                'event_detail_name': ed['event_detail'].replace('_', ' '),
+                'event_type': ed.get('event_type', ''),
+                'category': ed.get('category', 'other'),
+                'is_shot_on_goal': ed.get('is_shot_on_goal', False),
+                'is_goal': ed.get('is_goal', False),
+                'is_miss': ed.get('is_miss', False),
+                'is_block': ed.get('is_block', False),
+                'danger_potential': ed.get('danger_potential', 'low'),
+            })
+        save_table(pd.DataFrame(event_details), 'dim_event_detail')
+        log.info(f"dim_event_detail: {len(event_details)} rows (generated)")
+    else:
+        log.info("dim_event_detail: using BLB_Tables data")
     
-    # dim_event_detail_2 - build dynamically from tracking data
-    _create_dim_event_detail_2()
+    # dim_event_detail_2 - LOADED FROM BLB_Tables.xlsx (not generated!)
+    if not Path(OUTPUT_DIR / 'dim_event_detail_2.csv').exists():
+        log.warn("dim_event_detail_2 not loaded from BLB - generating from tracking...")
+        _create_dim_event_detail_2()
+    else:
+        log.info("dim_event_detail_2: using BLB_Tables data")
     
     # dim_success - success codes
     success_codes = [
@@ -1578,11 +1706,19 @@ def create_reference_tables():
     # dim_takeaway_type - dynamically from tracking data
     _create_dim_takeaway_type()
     
-    # dim_play_detail - from PLAY_DETAILS constants + tracking data
-    _create_dim_play_detail()
+    # dim_play_detail - LOADED FROM BLB_Tables.xlsx (not generated!)
+    if not Path(OUTPUT_DIR / 'dim_play_detail.csv').exists():
+        log.warn("dim_play_detail not loaded from BLB - generating from hardcoded...")
+        _create_dim_play_detail()
+    else:
+        log.info("dim_play_detail: using BLB_Tables data")
     
-    # dim_play_detail_2 - from tracking data
-    _create_dim_play_detail_2()
+    # dim_play_detail_2 - LOADED FROM BLB_Tables.xlsx (not generated!)
+    if not Path(OUTPUT_DIR / 'dim_play_detail_2.csv').exists():
+        log.warn("dim_play_detail_2 not loaded from BLB - generating from tracking...")
+        _create_dim_play_detail_2()
+    else:
+        log.info("dim_play_detail_2: using BLB_Tables data")
 
 
 def _create_dim_event_detail_2():
@@ -1617,41 +1753,61 @@ def _create_dim_event_detail_2():
 
 
 def _create_dim_zone_entry_type():
-    """Create dim_zone_entry_type from tracking data."""
+    """Create dim_zone_entry_type from dim_event_detail_2."""
+    # Controlled entries = maintain possession (Carried, CarriedBreakaway, Pass - but not PassMiss)
+    # Uncontrolled entries = give up possession (DumpIn, Chip, Clear, etc.)
+    # NOTE: Tracker's "Rush" type = carried entry with speed, NOT NHL "rush" (which requires quick shot)
+    
     records = []
-    tracking_path = OUTPUT_DIR / 'fact_event_players.csv'
-    if tracking_path.exists():
-        tracking = pd.read_csv(tracking_path, low_memory=False)
-        if 'event_detail_2' in tracking.columns:
-            ze_codes = tracking[tracking['event_detail_2'].astype(str).str.startswith('ZoneEntry', na=False)]['event_detail_2'].unique()
-            codes = sorted(set(str(c).replace('-', '_') for c in ze_codes))
-            for i, code in enumerate(codes, 1):
-                records.append({
-                    'zone_entry_type_id': f'ZE{i:04d}',
-                    'zone_entry_type_code': code,
-                    'zone_entry_type_name': code.replace('ZoneEntry_', '').replace('_', ' '),
-                })
-    df = pd.DataFrame(records) if records else pd.DataFrame(columns=['zone_entry_type_id', 'zone_entry_type_code', 'zone_entry_type_name'])
+    ed2_path = OUTPUT_DIR / 'dim_event_detail_2.csv'
+    if ed2_path.exists():
+        ed2 = pd.read_csv(ed2_path, low_memory=False)
+        ze_codes = ed2[ed2['event_detail_2_code'].astype(str).str.startswith('ZoneEntry', na=False)]['event_detail_2_code'].unique()
+        codes = sorted(set(str(c) for c in ze_codes))
+        for i, code in enumerate(codes, 1):
+            entry_type = code.replace('ZoneEntry_', '').replace('_', ' ').replace('/', ' ')
+            # Rename "Rush" to "Carried" for clarity (tracker's Rush = carried in, not NHL rush)
+            entry_type = entry_type.replace('Rush', 'Carried')
+            # Controlled = Carried/Rush, CarriedBreakaway/RushBreakaway, Pass (but NOT PassMiss)
+            # Handle both old ("Rush") and new ("Carried") terminology
+            is_controlled = any(x in code for x in ['_Rush', '_Carried', '_Pass']) and 'Miss' not in code and 'Misplay' not in code
+            records.append({
+                'zone_entry_type_id': f'ZE{i:04d}',
+                'zone_entry_type_code': code,
+                'zone_entry_type_name': entry_type,
+                'is_controlled': is_controlled,
+            })
+    df = pd.DataFrame(records) if records else pd.DataFrame(columns=['zone_entry_type_id', 'zone_entry_type_code', 'zone_entry_type_name', 'is_controlled'])
     save_table(df, 'dim_zone_entry_type')
     log.info(f"dim_zone_entry_type: {len(df)} rows")
 
 
 def _create_dim_zone_exit_type():
-    """Create dim_zone_exit_type from tracking data."""
+    """Create dim_zone_exit_type from dim_event_detail_2."""
+    # Controlled exits = maintain possession (Carried, Pass - but not PassMiss)
+    # Uncontrolled exits = give up possession (Clear, Chip, Lob, etc.)
+    # NOTE: Tracker's "Rush" type = carried exit with speed, NOT NHL "rush"
+    
     records = []
-    tracking_path = OUTPUT_DIR / 'fact_event_players.csv'
-    if tracking_path.exists():
-        tracking = pd.read_csv(tracking_path, low_memory=False)
-        if 'event_detail_2' in tracking.columns:
-            zx_codes = tracking[tracking['event_detail_2'].astype(str).str.startswith('ZoneExit', na=False)]['event_detail_2'].unique()
-            codes = sorted(set(str(c).replace('-', '_') for c in zx_codes))
-            for i, code in enumerate(codes, 1):
-                records.append({
-                    'zone_exit_type_id': f'ZX{i:04d}',
-                    'zone_exit_type_code': code,
-                    'zone_exit_type_name': code.replace('ZoneExit_', '').replace('_', ' '),
-                })
-    df = pd.DataFrame(records) if records else pd.DataFrame(columns=['zone_exit_type_id', 'zone_exit_type_code', 'zone_exit_type_name'])
+    ed2_path = OUTPUT_DIR / 'dim_event_detail_2.csv'
+    if ed2_path.exists():
+        ed2 = pd.read_csv(ed2_path, low_memory=False)
+        zx_codes = ed2[ed2['event_detail_2_code'].astype(str).str.startswith('ZoneExit', na=False)]['event_detail_2_code'].unique()
+        codes = sorted(set(str(c) for c in zx_codes))
+        for i, code in enumerate(codes, 1):
+            exit_type = code.replace('ZoneExit_', '').replace('_', ' ').replace('/', ' ')
+            # Rename "Rush" to "Carried" for clarity (tracker's Rush = carried out, not NHL rush)
+            exit_type = exit_type.replace('Rush', 'Carried')
+            # Controlled = Carried/Rush, Pass (but NOT PassMiss)
+            # Handle both old ("Rush") and new ("Carried") terminology
+            is_controlled = any(x in code for x in ['_Rush', '_Carried', '_Pass']) and 'Miss' not in code and 'Misplay' not in code
+            records.append({
+                'zone_exit_type_id': f'ZX{i:04d}',
+                'zone_exit_type_code': code,
+                'zone_exit_type_name': exit_type,
+                'is_controlled': is_controlled,
+            })
+    df = pd.DataFrame(records) if records else pd.DataFrame(columns=['zone_exit_type_id', 'zone_exit_type_code', 'zone_exit_type_name', 'is_controlled'])
     save_table(df, 'dim_zone_exit_type')
     log.info(f"dim_zone_exit_type: {len(df)} rows")
 
@@ -1678,43 +1834,67 @@ def _create_dim_stoppage_type():
 
 
 def _create_dim_giveaway_type():
-    """Create dim_giveaway_type from tracking data."""
+    """Create dim_giveaway_type from dim_event_detail_2.
+    
+    Only includes event_detail_2 values containing 'Giveaway'.
+    Adds is_bad column: True for misplays/turnovers, False for neutral (dumps, battles, shots).
+    
+    Neutral giveaways (is_bad=False):
+    - Giveaway_AttemptedZoneClear/Dump, Giveaway_DumpInZone, Giveaway_ZoneClear/Dump
+    - Giveaway_BattleLost, Giveaway_Other
+    - Giveaway_ShotBlocked, Giveaway_ShotMissed
+    
+    Bad giveaways (is_bad=True):
+    - Giveaway_Misplayed, Giveaway_PassBlocked, Giveaway_PassIntercepted
+    - Giveaway_PassMissed, Giveaway_PassReceiverMissed, Giveaway_ZoneEntry/ExitMisplay
+    """
+    # Neutral giveaway types (not penalized as bad turnovers)
+    neutral_patterns = [
+        'AttemptedZoneClear', 'DumpInZone', 'ZoneClear',
+        'BattleLost', 'Other', 'ShotBlocked', 'ShotMissed',
+    ]
+    
     records = []
-    tracking_path = OUTPUT_DIR / 'fact_event_players.csv'
-    if tracking_path.exists():
-        tracking = pd.read_csv(tracking_path, low_memory=False)
-        if 'event_detail' in tracking.columns:
-            giveaway_rows = tracking[tracking['event_type'] == 'Turnover']
-            if len(giveaway_rows) > 0 and 'event_detail_2' in tracking.columns:
-                codes = sorted(giveaway_rows['event_detail_2'].dropna().unique())
-                for i, code in enumerate(codes, 1):
-                    records.append({
-                        'giveaway_type_id': f'GA{i:04d}',
-                        'giveaway_type_code': str(code).replace('-', '_'),
-                        'giveaway_type_name': str(code).replace('_', ' '),
-                    })
-    df = pd.DataFrame(records) if records else pd.DataFrame(columns=['giveaway_type_id', 'giveaway_type_code', 'giveaway_type_name'])
+    dim_path = OUTPUT_DIR / 'dim_event_detail_2.csv'
+    if dim_path.exists():
+        dim_ed2 = pd.read_csv(dim_path)
+        # Only get event_detail_2 codes containing 'Giveaway'
+        giveaway_rows = dim_ed2[dim_ed2['event_detail_2_code'].str.contains('Giveaway', case=False, na=False)]
+        giveaway_codes = sorted(giveaway_rows['event_detail_2_code'].tolist())
+        for i, code in enumerate(giveaway_codes, 1):
+            code_str = str(code)
+            # Determine if this is a bad giveaway (not matching any neutral pattern)
+            is_bad = not any(pattern in code_str for pattern in neutral_patterns)
+            records.append({
+                'giveaway_type_id': f'GA{i:04d}',
+                'giveaway_type_code': code_str.replace('-', '_'),
+                'giveaway_type_name': code_str.replace('_', ' ').replace('/', ' '),
+                'is_bad': is_bad,
+            })
+    df = pd.DataFrame(records) if records else pd.DataFrame(columns=['giveaway_type_id', 'giveaway_type_code', 'giveaway_type_name', 'is_bad'])
     save_table(df, 'dim_giveaway_type')
-    log.info(f"dim_giveaway_type: {len(df)} rows")
+    log.info(f"dim_giveaway_type: {len(df)} rows ({sum(r['is_bad'] for r in records)} bad, {sum(not r['is_bad'] for r in records)} neutral)")
 
 
 def _create_dim_takeaway_type():
-    """Create dim_takeaway_type from tracking data."""
+    """Create dim_takeaway_type from dim_event_detail_2.
+    
+    Only includes event_detail_2 values containing 'Takeaway'.
+    """
     records = []
-    tracking_path = OUTPUT_DIR / 'fact_event_players.csv'
-    if tracking_path.exists():
-        tracking = pd.read_csv(tracking_path, low_memory=False)
-        if 'event_detail' in tracking.columns:
-            # Takeaways are typically recoveries/steals
-            takeaway_rows = tracking[tracking['event_detail'].astype(str).str.contains('Takeaway|Steal|Recovery', case=False, na=False)]
-            if len(takeaway_rows) > 0:
-                codes = sorted(takeaway_rows['event_detail'].dropna().unique())
-                for i, code in enumerate(codes, 1):
-                    records.append({
-                        'takeaway_type_id': f'TA{i:04d}',
-                        'takeaway_type_code': str(code).replace('-', '_'),
-                        'takeaway_type_name': str(code).replace('_', ' '),
-                    })
+    dim_path = OUTPUT_DIR / 'dim_event_detail_2.csv'
+    if dim_path.exists():
+        dim_ed2 = pd.read_csv(dim_path)
+        # Only get event_detail_2 codes containing 'Takeaway'
+        takeaway_rows = dim_ed2[dim_ed2['event_detail_2_code'].str.contains('Takeaway', case=False, na=False)]
+        takeaway_codes = sorted(takeaway_rows['event_detail_2_code'].tolist())
+        for i, code in enumerate(takeaway_codes, 1):
+            code_str = str(code)
+            records.append({
+                'takeaway_type_id': f'TA{i:04d}',
+                'takeaway_type_code': code_str.replace('-', '_'),
+                'takeaway_type_name': code_str.replace('_', ' ').replace('/', ' '),
+            })
     df = pd.DataFrame(records) if records else pd.DataFrame(columns=['takeaway_type_id', 'takeaway_type_code', 'takeaway_type_name'])
     save_table(df, 'dim_takeaway_type')
     log.info(f"dim_takeaway_type: {len(df)} rows")
@@ -2037,7 +2217,7 @@ def main():
     enhance_derived_event_tables()
     
     # Phase 5.9: Enhance events with flags (MOVED EARLIER - before sequences)
-    # This adds is_goal, is_shot, etc. which are needed for sequences/plays
+    # This adds is_goal, is_sog, is_corsi, is_fenwick, etc. which are needed for sequences/plays
     enhance_events_with_flags()
     
     # Phase 5.7: Create fact_sequences (now has is_goal flag)
@@ -2051,6 +2231,9 @@ def main():
     
     # Phase 5.11: Enhance shift tables
     enhance_shift_tables()
+    
+    # Phase 5.11B: Enhance shift players (v19.00)
+    enhance_shift_players()
     
     # Phase 5.12: Update roster positions from shifts
     update_roster_positions_from_shifts()
@@ -2105,6 +2288,81 @@ def enhance_event_tables():
     log.info(f"Enhancing fact_event_players: {len(tracking)} rows, {len(tracking.columns)} cols")
     log.info(f"Enhancing fact_events: {len(events)} rows, {len(events.columns)} cols")
     
+    # 0. Add shift_id FK by matching event time to shift time ranges
+    log.info("  Adding shift_id FK (matching events to shifts)...")
+    
+    # CRITICAL: Event times are ASCENDING (0 = period start, counting up to ~1080)
+    # Shift times are DESCENDING (1080 = period start, counting down to ~0)
+    # Need to convert event time to shift time format: shift_time = period_max - event_time
+    
+    if 'shift_start_total_seconds' in shifts.columns and 'shift_end_total_seconds' in shifts.columns:
+        # Find period max time for each game/period (= period duration in countdown format)
+        period_max = {}
+        for _, shift in shifts.iterrows():
+            key = (int(shift['game_id']), int(shift['period']))
+            start = float(shift['shift_start_total_seconds']) if pd.notna(shift['shift_start_total_seconds']) else 0
+            if key not in period_max or start > period_max[key]:
+                period_max[key] = start
+        
+        # Build lookup: for each game/period, list of (shift_id, start_countdown, end_countdown)
+        shift_ranges = {}
+        for _, shift in shifts.iterrows():
+            key = (int(shift['game_id']), int(shift['period']))
+            if key not in shift_ranges:
+                shift_ranges[key] = []
+            shift_ranges[key].append((
+                shift['shift_id'],
+                float(shift['shift_start_total_seconds']) if pd.notna(shift['shift_start_total_seconds']) else 0,
+                float(shift['shift_end_total_seconds']) if pd.notna(shift['shift_end_total_seconds']) else 0
+            ))
+        
+        def find_shift_id(row):
+            """Find shift_id for an event based on game, period, and time."""
+            try:
+                game_id = int(row['game_id'])
+                period = int(row['period']) if pd.notna(row.get('period')) else 1
+                
+                # Get event time (elapsed format: 0 = period start)
+                event_elapsed = None
+                for col in ['time_start_total_seconds', 'event_total_seconds']:
+                    if col in row.index and pd.notna(row.get(col)):
+                        event_elapsed = float(row[col])
+                        break
+                
+                if event_elapsed is None:
+                    return None
+                
+                key = (game_id, period)
+                if key not in shift_ranges or key not in period_max:
+                    return None
+                
+                # Convert event elapsed time to countdown format
+                # countdown = period_max - elapsed
+                event_countdown = period_max[key] - event_elapsed
+                
+                # Find shift containing this event time
+                # Shift times are countdown: start > end (start is higher number)
+                # Event is in shift if: shift_end <= event_countdown <= shift_start
+                for shift_id, start, end in shift_ranges[key]:
+                    if end <= event_countdown <= start:
+                        return shift_id
+                
+                return None
+            except (ValueError, TypeError):
+                return None
+        
+        # Apply to fact_event_players
+        tracking['shift_id'] = tracking.apply(find_shift_id, axis=1)
+        shift_fill = tracking['shift_id'].notna().sum()
+        log.info(f"    fact_event_players.shift_id: {shift_fill}/{len(tracking)} ({100*shift_fill/len(tracking):.1f}%)")
+        
+        # Apply to fact_events
+        events['shift_id'] = events.apply(find_shift_id, axis=1)
+        shift_fill_ev = events['shift_id'].notna().sum()
+        log.info(f"    fact_events.shift_id: {shift_fill_ev}/{len(events)} ({100*shift_fill_ev/len(events):.1f}%)")
+    else:
+        log.warn("    Shift time columns not found, skipping shift_id FK")
+    
     # Load dimension tables for mapping
     shot_type = pd.read_csv(OUTPUT_DIR / 'dim_shot_type.csv', low_memory=False)
     ze_type = pd.read_csv(OUTPUT_DIR / 'dim_zone_entry_type.csv', low_memory=False)
@@ -2147,9 +2405,20 @@ def enhance_event_tables():
     for _, row in shot_type.iterrows():
         code = row['shot_type_code'].replace('-', '_')
         shot_map[code] = row['shot_type_id']
-    tracking['shot_type_id'] = tracking.apply(
-        lambda r: shot_map.get(r['event_detail_2']) if r['event_type'] in ['Shot', 'Goal'] else None, axis=1
-    )
+        shot_map[code.lower()] = row['shot_type_id']  # Also lowercase
+    
+    def get_shot_type(row):
+        if row['event_type'] not in ['Shot', 'Goal']:
+            return None
+        detail2 = str(row['event_detail_2']) if pd.notna(row['event_detail_2']) else ''
+        # Strip prefixes: Shot_, Goal_
+        for prefix in ['Shot_', 'Goal_']:
+            if detail2.startswith(prefix):
+                detail2 = detail2[len(prefix):]
+                break
+        return shot_map.get(detail2) or shot_map.get(detail2.lower())
+    
+    tracking['shot_type_id'] = tracking.apply(get_shot_type, axis=1)
     
     # 5. zone_entry_type_id
     log.info("  Adding zone_entry_type_id...")
@@ -2157,6 +2426,11 @@ def enhance_event_tables():
     for _, row in ze_type.iterrows():
         code = row['zone_entry_type_code'].replace('-', '_')
         ze_map[code] = row['zone_entry_type_id']
+        # Add aliases for Rush <-> Carried normalization
+        if 'Rush' in code:
+            ze_map[code.replace('Rush', 'Carried')] = row['zone_entry_type_id']
+        if 'Carried' in code:
+            ze_map[code.replace('Carried', 'Rush')] = row['zone_entry_type_id']
     
     def get_ze_type(row):
         if row['event_type'] != 'Zone_Entry_Exit':
@@ -2176,6 +2450,11 @@ def enhance_event_tables():
     for _, row in zx_type.iterrows():
         code = row['zone_exit_type_code'].replace('-', '_')
         zx_map[code] = row['zone_exit_type_id']
+        # Add aliases for Rush <-> Carried normalization
+        if 'Rush' in code:
+            zx_map[code.replace('Rush', 'Carried')] = row['zone_exit_type_id']
+        if 'Carried' in code:
+            zx_map[code.replace('Carried', 'Rush')] = row['zone_exit_type_id']
     
     def get_zx_type(row):
         if row['event_type'] != 'Zone_Entry_Exit':
@@ -2189,100 +2468,107 @@ def enhance_event_tables():
         return None
     tracking['zone_exit_type_id'] = tracking.apply(get_zx_type, axis=1)
     
-    # 7. stoppage_type_id (NEW)
+    # 7. stoppage_type_id - Dynamic lookup from dim_stoppage_type
     log.info("  Adding stoppage_type_id...")
-    stoppage_map = {
-        'Stoppage_Play': 'SP0010',  # OTHER
-        'Stoppage_Period': 'SP0008',  # PERIOD_END
-        'Stoppage_GameEnd': 'SP0008',  # PERIOD_END
-        'Stoppage_Freeze': 'SP0005',  # PUCK_FROZEN
-        'Stoppage_Goal': 'SP0001',  # GOAL
-        'Stoppage_Offside': 'SP0002',  # OFFSIDE
-        'Stoppage_Icing': 'SP0003',  # ICING
-        'Stoppage_Penalty': 'SP0004',  # PENALTY
-    }
+    stoppage_type_path = OUTPUT_DIR / 'dim_stoppage_type.csv'
+    if stoppage_type_path.exists():
+        stoppage_dim = pd.read_csv(stoppage_type_path)
+        # Build mapping from code to ID
+        stoppage_map = dict(zip(stoppage_dim['stoppage_type_code'], stoppage_dim['stoppage_type_id']))
+    else:
+        stoppage_map = {}
+        log.warn("  dim_stoppage_type.csv not found - stoppage_type_id will be None")
+    
     tracking['stoppage_type_id'] = tracking.apply(
         lambda r: stoppage_map.get(r['event_detail']) if r['event_type'] == 'Stoppage' else None, axis=1
     )
     
     # 8. giveaway_type_id (NEW) 
     log.info("  Adding giveaway_type_id...")
-    # Map common giveaway patterns
+    # Dynamic lookup from dim_giveaway_type - match event_detail_2 to giveaway_type_code
+    giveaway_type_path = OUTPUT_DIR / 'dim_giveaway_type.csv'
+    if giveaway_type_path.exists():
+        giveaway_dim = pd.read_csv(giveaway_type_path)
+        # Build mapping from code to ID (handles variations like / vs _)
+        giveaway_map = {}
+        for _, row in giveaway_dim.iterrows():
+            code = row['giveaway_type_code']
+            giveaway_map[code] = row['giveaway_type_id']
+            # Also map variations (replace / with _)
+            giveaway_map[code.replace('/', '_')] = row['giveaway_type_id']
+    else:
+        giveaway_map = {}
+        log.warn("  dim_giveaway_type.csv not found - giveaway_type_id will be None")
+    
     def get_giveaway_type(row):
         if row['event_type'] != 'Turnover':
             return None
         detail = str(row['event_detail']) if pd.notna(row['event_detail']) else ''
         if 'Giveaway' not in detail:
             return None
-        play_det = str(row.get('play_detail1', '')) if pd.notna(row.get('play_detail1')) else ''
-        
-        if 'PassIntercepted' in play_det:
-            return 'GT0007'
-        elif 'PassBlocked' in play_det or 'ShotPassLane' in play_det:
-            return 'GT0006'
-        elif 'PassMissed' in play_det or 'Pass' in play_det:
-            return 'GT0008'
-        elif 'Battle' in play_det:
-            return 'GT0002'
-        elif 'Blocked' in play_det or 'ShotBlocked' in play_det:
-            return 'GT0009'
-        elif 'Clear' in play_det or 'Dump' in play_det:
-            return 'GT0001'
-        elif 'Misplay' in play_det:
-            return 'GT0004'
-        else:
-            return 'GT0005'  # Other
+        # Use event_detail_2 to determine giveaway type
+        detail2 = str(row['event_detail_2']) if pd.notna(row.get('event_detail_2')) else ''
+        if detail2 in giveaway_map:
+            return giveaway_map[detail2]
+        # Try variations
+        detail2_alt = detail2.replace('/', '_')
+        if detail2_alt in giveaway_map:
+            return giveaway_map[detail2_alt]
+        return None
     tracking['giveaway_type_id'] = tracking.apply(get_giveaway_type, axis=1)
     
-    # 9. takeaway_type_id (NEW)
+    # 9. takeaway_type_id - Dynamic lookup from dim_takeaway_type
     log.info("  Adding takeaway_type_id...")
+    takeaway_type_path = OUTPUT_DIR / 'dim_takeaway_type.csv'
+    if takeaway_type_path.exists():
+        takeaway_dim = pd.read_csv(takeaway_type_path)
+        takeaway_map = {}
+        for _, row in takeaway_dim.iterrows():
+            code = row['takeaway_type_code']
+            takeaway_map[code] = row['takeaway_type_id']
+            takeaway_map[code.replace('/', '_')] = row['takeaway_type_id']
+    else:
+        takeaway_map = {}
+        log.warn("  dim_takeaway_type.csv not found - takeaway_type_id will be None")
+    
     def get_takeaway_type(row):
         if row['event_type'] != 'Turnover':
             return None
         detail = str(row['event_detail']) if pd.notna(row['event_detail']) else ''
         if 'Takeaway' not in detail:
             return None
-        play_det = str(row.get('play_detail1', '')) if pd.notna(row.get('play_detail1')) else ''
-        
-        if 'Intercept' in play_det:
-            return 'TA0002'
-        elif 'PokeCheck' in play_det or 'Poke' in play_det:
-            return 'TA0003'
-        elif 'StickCheck' in play_det:
-            return 'TA0008'
-        elif 'Battle' in play_det:
-            return 'TA0001'
-        elif 'Recovery' in play_det or 'Retrieval' in play_det:
-            return 'TA0005'
-        elif 'Strip' in play_det:
-            return 'TA0009'
-        elif 'Forced' in play_det:
-            return 'TA0004'
-        else:
-            return 'TA0010'  # Other
+        # Use event_detail_2 to determine takeaway type
+        detail2 = str(row['event_detail_2']) if pd.notna(row.get('event_detail_2')) else ''
+        if detail2 in takeaway_map:
+            return takeaway_map[detail2]
+        detail2_alt = detail2.replace('/', '_')
+        if detail2_alt in takeaway_map:
+            return takeaway_map[detail2_alt]
+        return None
     tracking['takeaway_type_id'] = tracking.apply(get_takeaway_type, axis=1)
     
-    # 10. turnover_type_id (simplified - giveaway or takeaway)
-    log.info("  Adding turnover_type_id...")
-    def get_to_type(row):
-        if row['event_type'] != 'Turnover':
-            return None
-        detail = str(row['event_detail']) if pd.notna(row['event_detail']) else ''
-        if 'Giveaway' in detail:
-            return 'TO0007'  # Other Giveaway (general)
-        elif 'Takeaway' in detail:
-            return 'TO0007'  # Other (general)
-        return None
-    tracking['turnover_type_id'] = tracking.apply(get_to_type, axis=1)
+    # 10. turnover_type_id - NOTE: dim_turnover_type is created later in static dimensions
+    # giveaway_type_id and takeaway_type_id provide more specific categorization
+    log.info("  Adding turnover_type_id (placeholder - linked in post-ETL)...")
+    tracking['turnover_type_id'] = None  # Will be populated if needed in post-ETL
     
     # 11. pass_type_id
     log.info("  Adding pass_type_id...")
     pass_map = {}
     for _, row in pass_type.iterrows():
         pass_map[row['pass_type_code']] = row['pass_type_id']
-    tracking['pass_type_id'] = tracking.apply(
-        lambda r: pass_map.get(r['event_detail_2']) if r['event_type'] == 'Pass' else None, axis=1
-    )
+        pass_map[row['pass_type_code'].lower()] = row['pass_type_id']  # Also lowercase
+    
+    def get_pass_type(row):
+        if row['event_type'] != 'Pass':
+            return None
+        detail2 = str(row['event_detail_2']) if pd.notna(row['event_detail_2']) else ''
+        # Strip Pass_ prefix
+        if detail2.startswith('Pass_'):
+            detail2 = detail2[5:]
+        return pass_map.get(detail2) or pass_map.get(detail2.lower())
+    
+    tracking['pass_type_id'] = tracking.apply(get_pass_type, axis=1)
     
     # 12. time_bucket_id
     log.info("  Adding time_bucket_id...")
@@ -2333,13 +2619,27 @@ def enhance_event_tables():
         shift_key = row.get('shift_key')
         if pd.isna(shift_key):
             return None
-        try:
-            game_id = int(shift_key[2:7])
-            shift_idx = int(shift_key[7:])
-            return shift_strength.get((game_id, shift_idx), 'STR0001')
-        except Exception as e:
+        parts = parse_shift_key(shift_key)
+        if parts is None:
             return None
+        return shift_strength.get((parts.game_id, parts.shift_index), 'STR0001')
     tracking['strength_id'] = tracking.apply(get_strength, axis=1)
+    
+    # Fallback: Map from strength column if strength_id is still null
+    if 'strength' in tracking.columns:
+        strength_direct_map = {
+            '5v5': 'STR01', '5v4': 'STR02', '4v5': 'STR03', '5v3': 'STR04',
+            '3v5': 'STR05', '4v4': 'STR06', '3v3': 'STR07', '4v3': 'STR08',
+            '3v4': 'STR09', '6v5': 'STR10', '5v6': 'STR11', '6v4': 'STR12',
+            '4v6': 'STR13', '6v3': 'STR14', '3v6': 'STR15'
+        }
+        strength_from_col = tracking['strength'].map(strength_direct_map)
+        tracking['strength_id'] = tracking['strength_id'].fillna(strength_from_col)
+    
+    # 15. player_rating (from dim_player)
+    log.info("  Adding player_rating...")
+    player_rating_map = dict(zip(players['player_id'], players['current_skill_rating']))
+    tracking['player_rating'] = tracking['player_id'].map(player_rating_map)
     
     # 14. Drop unwanted columns
     log.info("  Dropping: role_number, role_abrev, team_venue_abv...")
@@ -2348,22 +2648,29 @@ def enhance_event_tables():
             tracking = tracking.drop(columns=[col])
     
     # Save enhanced tracking
-    tracking.to_csv(tracking_path, index=False)
+    save_output_table(tracking, 'fact_event_players')
     log.info(f"  ✓ fact_event_players: {len(tracking)} rows, {len(tracking.columns)} cols")
     
     # Now enhance fact_events (get first row per event from tracking)
     log.info("  Enhancing fact_events from tracking...")
     new_cols = ['player_name', 'season_id', 'position_id', 'shot_type_id', 'zone_entry_type_id', 
                 'zone_exit_type_id', 'stoppage_type_id', 'giveaway_type_id', 'takeaway_type_id',
-                'turnover_type_id', 'pass_type_id', 'time_bucket_id', 'strength_id']
+                'turnover_type_id', 'pass_type_id', 'time_bucket_id', 'strength_id',
+                'player_rating']
     
     tracking_first = tracking.groupby('event_id').first().reset_index()
     for col in new_cols:
         if col in tracking_first.columns:
             col_map = dict(zip(tracking_first['event_id'], tracking_first[col]))
-            events[col] = events['event_id'].map(col_map)
+            # Only overwrite if column doesn't exist or new value is not null
+            if col not in events.columns:
+                events[col] = events['event_id'].map(col_map)
+            else:
+                # Keep existing non-null values, fill nulls from tracking
+                new_vals = events['event_id'].map(col_map)
+                events[col] = events[col].fillna(new_vals)
     
-    events.to_csv(events_path, index=False)
+    save_output_table(events, 'fact_events')
     log.info(f"  ✓ fact_events: {len(events)} rows, {len(events.columns)} cols")
     
     # Log fill rates
@@ -2495,7 +2802,7 @@ def _build_cycle_events(tracking, events, output_dir, log):
         cycles_df['period_id'] = cycles_df['period'].apply(lambda x: f'P{int(x):02d}' if pd.notna(x) else None)
         
         # Save fact_cycle_events
-        cycles_df.to_csv(output_dir / 'fact_cycle_events.csv', index=False)
+        save_output_table(cycles_df, 'fact_cycle_events', output_dir)
         log.info(f"  ✓ fact_cycle_events: {len(cycles_df)} rows")
         
         # Build event_id -> cycle_key mapping
@@ -2509,16 +2816,16 @@ def _build_cycle_events(tracking, events, output_dir, log):
         # Update tracking with cycle_key
         tracking['cycle_key'] = tracking['event_id'].map(event_to_cycle)
         tracking['is_cycle'] = tracking['cycle_key'].notna().astype(int)
-        tracking.to_csv(output_dir / 'fact_event_players.csv', index=False)
+        save_output_table(tracking, 'fact_event_players', output_dir)
         
         # Update events with cycle_key
         events['cycle_key'] = events['event_id'].map(event_to_cycle)
         events['is_cycle'] = events['cycle_key'].notna().astype(int)
-        events.to_csv(output_dir / 'fact_events.csv', index=False)
+        save_output_table(events, 'fact_events', output_dir)
         
         log.info(f"  ✓ Updated is_cycle flag: {tracking['is_cycle'].sum()} tracking rows, {events['is_cycle'].sum()} event rows")
     else:
-        log.warning("  No cycles detected")
+        log.warn("  No cycles detected")
 
 
 def _make_cycle_record(cycle_num, game_id, team_name, events_list, pass_count, end_type, team_map, first_row):
@@ -2581,13 +2888,17 @@ def enhance_derived_event_tables():
     if pec_path.exists():
         pec = pd.read_csv(pec_path, low_memory=False)
         
-        # Add FKs via event_key
-        for col in ['season_id', 'time_bucket_id', 'strength_id']:
-            if col in event_lookup:
-                pec[col] = pec['event_key'].map(event_lookup[col])
-        
-        pec.to_csv(pec_path, index=False)
-        log.info(f"  ✓ fact_player_event_chains: {len(pec)} rows, {len(pec.columns)} cols")
+        # Skip if empty or missing event_key
+        if len(pec) > 0 and 'event_key' in pec.columns:
+            # Add FKs via event_key
+            for col in ['season_id', 'time_bucket_id', 'strength_id']:
+                if col in event_lookup:
+                    pec[col] = pec['event_key'].map(event_lookup[col])
+            
+            save_output_table(pec, 'fact_player_event_chains')
+            log.info(f"  ✓ fact_player_event_chains: {len(pec)} rows, {len(pec.columns)} cols")
+        else:
+            log.info(f"  - fact_player_event_chains: skipped (empty or no event_key)")
     
     # 2. Enhance fact_tracking
     log.info("Enhancing fact_tracking...")
@@ -2600,105 +2911,16 @@ def enhance_derived_event_tables():
             if col in tracking_lookup:
                 ft[col] = ft['tracking_event_key'].map(tracking_lookup[col])
         
-        ft.to_csv(ft_path, index=False)
+        save_output_table(ft, 'fact_tracking')
         log.info(f"  ✓ fact_tracking: {len(ft)} rows, {len(ft.columns)} cols")
     
-    # 3. Enhance fact_shot_chains
-    log.info("Enhancing fact_shot_chains...")
-    ec_path = OUTPUT_DIR / 'fact_shot_chains.csv'
-    if ec_path.exists():
-        ec = pd.read_csv(ec_path, low_memory=False)
-        
-        # Add FKs via entry_event_key
-        for col in ['time_bucket_id', 'strength_id']:
-            if col in event_lookup:
-                ec[col] = ec['entry_event_key'].map(event_lookup[col])
-        
-        # Add shot_type_id via shot_event_key
-        if 'shot_type_id' in event_lookup:
-            ec['shot_type_id'] = ec['shot_event_key'].map(event_lookup['shot_type_id'])
-        
-        ec.to_csv(ec_path, index=False)
-        log.info(f"  ✓ fact_shot_chains: {len(ec)} rows, {len(ec.columns)} cols")
+    # NOTE: fact_shot_chains, fact_linked_events, fact_scoring_chances, fact_rush_events
+    # are created later in Phase 4D/4E by event_analytics.py and shot_chain_builder.py
+    # No enhancement needed here.
     
-    # 4. Enhance fact_linked_events
-    log.info("Enhancing fact_linked_events...")
-    le_path = OUTPUT_DIR / 'fact_linked_events.csv'
-    if le_path.exists():
-        le = pd.read_csv(le_path, low_memory=False)
-        
-        # Convert LE format to LV format: LE18969009001 -> LV1896909001
-        def le_to_lv(le_key):
-            if pd.isna(le_key):
-                return None
-            # LE18969009001 -> LV1896909001
-            return 'LV' + le_key[2:7] + le_key[8:]
-        
-        le['_lv_key'] = le['linked_event_key'].apply(le_to_lv)
-        
-        # Create lookup by linked_event_key from tracking
-        link_fks = tracking[tracking['linked_event_key'].notna()].groupby('linked_event_key').first().reset_index()
-        for col in ['time_bucket_id', 'strength_id']:
-            if col in link_fks.columns:
-                link_map = dict(zip(link_fks['linked_event_key'], link_fks[col]))
-                le[col] = le['_lv_key'].map(link_map)
-        
-        le = le.drop(columns=['_lv_key'], errors='ignore')
-        le.to_csv(le_path, index=False)
-        log.info(f"  ✓ fact_linked_events: {len(le)} rows, {len(le.columns)} cols")
-    
-    # 4b. Build fact_cycle_events with zone inference
+    # 3. Build fact_cycle_events with zone inference
     log.info("Building fact_cycle_events with zone inference...")
     _build_cycle_events(tracking, events, OUTPUT_DIR, log)
-    
-    # 5. Enhance fact_scoring_chances
-    log.info("Enhancing fact_scoring_chances...")
-    sc_path = OUTPUT_DIR / 'fact_scoring_chances.csv'
-    if sc_path.exists():
-        sc = pd.read_csv(sc_path, low_memory=False)
-        
-        # scoring_chance_key format: E18969001012 -> event_id format: EV1896901012
-        # Need to map game_id + event_index to event_id
-        # Create map: (game_id, event_index) -> event_id
-        events['event_index_parsed'] = events['event_id'].str.extract(r'EV\d{5}(\d+)')[0].astype(int)
-        event_idx_map = {}
-        for _, row in events.iterrows():
-            key = (row['game_id'], row['event_index_parsed'])
-            event_idx_map[key] = row['event_id']
-        
-        # Map scoring chances to event_ids
-        def get_event_id(row):
-            # Parse scoring_chance_key: E18969001012 -> game=18969, index=1012
-            key = row['scoring_chance_key']
-            if pd.isna(key):
-                return None
-            try:
-                game_id = int(key[1:6])
-                event_idx = int(key[6:])
-                return event_idx_map.get((game_id, event_idx))
-            except Exception as e:
-                return None
-        
-        sc['_event_id'] = sc.apply(get_event_id, axis=1)
-        
-        # Now map FKs
-        for col in ['time_bucket_id', 'strength_id', 'shot_type_id']:
-            if col in event_lookup:
-                sc[col] = sc['_event_id'].map(event_lookup[col])
-        
-        # Drop temp column
-        sc = sc.drop(columns=['_event_id'], errors='ignore')
-        
-        sc.to_csv(sc_path, index=False)
-        log.info(f"  ✓ fact_scoring_chances: {len(sc)} rows, {len(sc.columns)} cols")
-    
-    # 6. Enhance fact_rush_events
-    log.info("Enhancing fact_rush_events...")
-    re_path = OUTPUT_DIR / 'fact_rush_events.csv'
-    if re_path.exists():
-        re = pd.read_csv(re_path, low_memory=False)
-        # This is a summary table - likely already has what it needs
-        log.info(f"  ✓ fact_rush_events: {len(re)} rows, {len(re.columns)} cols (no changes)")
     
     log.info("  Done enhancing derived tables")
 
@@ -2973,8 +3195,7 @@ def enhance_events_with_flags():
         events['play_detail1'] = events['event_id'].map(dict(zip(first_per_event['event_id'], first_per_event['play_detail1'])))
     
     # Create flags
-    events['is_rush'] = (events['event_detail_2'].str.contains('Rush', na=False) | events['event_detail'].str.contains('Rush', na=False)).astype(int)
-    events['is_rebound'] = (events['event_detail'].str.contains('Rebound', na=False) | events['event_detail_2'].str.contains('Rebound', na=False)).astype(int)
+    events['is_rebound'] = (events['event_type'] == 'Rebound').astype(int)
     # is_cycle is set by _build_cycle_events based on cycle_key - preserve if already set
     if 'cycle_key' in events.columns:
         events['is_cycle'] = events['cycle_key'].notna().astype(int)
@@ -2984,11 +3205,57 @@ def enhance_events_with_flags():
     # Using event_detail='Zone_Exit' as primary indicator - covers all games consistently
     # NOTE: Some games also have play_detail1 'Breakout' annotations, but this is inconsistent
     # Legacy logic (inconsistent across games): events['event_detail'].str.contains('Breakout', na=False) | events['play_detail1'].str.contains('Breakout', na=False, case=False)
-    events['is_breakout'] = (events['event_detail'] == 'Zone_Exit').astype(int)
-    events['is_zone_entry'] = (events['zone_entry_type_id'].notna() | (events['event_detail'] == 'Zone_Entry')).astype(int)
-    # Zone exit = event_detail contains 'Zone_Exit' (includes Zone_Exit and Zone_ExitFailed)
-    events['is_zone_exit'] = events['event_detail'].str.contains('Zone_Exit', na=False).astype(int)
-    events['is_shot'] = events['event_type'].isin(['Shot', 'Goal']).astype(int)
+    # Zone entry = successful zone entries only (exclude Zone_Entryfailed)
+    events['is_zone_entry'] = (events['event_detail'] == 'Zone_Entry').astype(int)
+    # Zone exit = successful zone exits only (exclude Zone_ExitFailed)
+    events['is_zone_exit'] = (events['event_detail'] == 'Zone_Exit').astype(int)
+    
+    # is_controlled_entry: Zone entry with puck control (not dump-in)
+    # Dynamically lookup from dim_zone_entry_type - NO HARDCODED IDs
+    ze_type_path = OUTPUT_DIR / 'dim_zone_entry_type.csv'
+    if not ze_type_path.exists():
+        raise FileNotFoundError(f"dim_zone_entry_type.csv not found - must run dim table creation first")
+    
+    ze_types = pd.read_csv(ze_type_path)
+    controlled_entry_ids = ze_types[ze_types['is_controlled'] == True]['zone_entry_type_id'].tolist()
+    carried_entry_ids = ze_types[ze_types['zone_entry_type_name'].str.contains('Carried', na=False)]['zone_entry_type_id'].tolist()
+    
+    events['is_controlled_entry'] = (
+        (events['is_zone_entry'] == 1) & 
+        (events['zone_entry_type_id'].isin(controlled_entry_ids))
+    ).astype(int)
+    
+    # is_carried_entry: Carried in (subset of controlled, excludes pass-in)
+    events['is_carried_entry'] = (
+        (events['is_zone_entry'] == 1) & 
+        (events['zone_entry_type_id'].isin(carried_entry_ids))
+    ).astype(int)
+    
+    # is_controlled_exit: Zone exit with puck control
+    # Dynamically lookup from dim_zone_exit_type - NO HARDCODED IDs
+    zx_type_path = OUTPUT_DIR / 'dim_zone_exit_type.csv'
+    if not zx_type_path.exists():
+        raise FileNotFoundError(f"dim_zone_exit_type.csv not found - must run dim table creation first")
+    
+    zx_types = pd.read_csv(zx_type_path)
+    controlled_exit_ids = zx_types[zx_types['is_controlled'] == True]['zone_exit_type_id'].tolist()
+    carried_exit_ids = zx_types[zx_types['zone_exit_type_name'].str.contains('Carried', na=False)]['zone_exit_type_id'].tolist()
+    
+    events['is_controlled_exit'] = (
+        (events['is_zone_exit'] == 1) & 
+        (events['zone_exit_type_id'].isin(controlled_exit_ids))
+    ).astype(int)
+    
+    # is_carried_exit: Carried out (subset of controlled)
+    events['is_carried_exit'] = (
+        (events['is_zone_exit'] == 1) & 
+        (events['zone_exit_type_id'].isin(carried_exit_ids))
+    ).astype(int)
+    
+    # is_rush: Will be populated later as NHL true rush (controlled entry + shot ≤7s)
+    # Initialize to 0, will be set in context columns section
+    events['is_rush'] = 0
+    
     # Goal = event_type='Goal' AND event_detail='Goal_Scored'
     # Shot_Goal is just the shot that resulted in a goal, not the goal itself
     # Faceoff_AfterGoal is the faceoff after a goal, not a goal
@@ -2996,15 +3263,34 @@ def enhance_events_with_flags():
     events['is_save'] = events['event_detail'].str.startswith('Save', na=False).astype(int)
     events['is_turnover'] = (events['event_type'] == 'Turnover').astype(int)
     events['is_giveaway'] = events['giveaway_type_id'].notna().astype(int)
+    # Bad giveaways = misplays/turnovers that hurt the team (not neutral like dumps, battles, shots)
+    bad_giveaway_types = [
+        'Giveaway_Misplayed', 'Giveaway_PassBlocked', 'Giveaway_PassIntercepted',
+        'Giveaway_PassMissed', 'Giveaway_PassReceiverMissed', 'Giveaway_ZoneEntry_ExitMisplay',
+        'Giveaway_ZoneEntry/ExitMisplay',  # handle both formats
+    ]
+    events['is_bad_giveaway'] = ((events['is_giveaway'] == 1) & 
+                                  events['event_detail_2'].isin(bad_giveaway_types)).astype(int)
     events['is_takeaway'] = events['takeaway_type_id'].notna().astype(int)
     events['is_faceoff'] = (events['event_type'] == 'Faceoff').astype(int)
-    events['is_penalty'] = events['event_detail'].str.contains('Penalty', na=False).astype(int)
+    events['is_penalty'] = (events['event_type'] == 'Penalty').astype(int)
     events['is_blocked_shot'] = events['event_detail'].str.contains('Blocked', na=False).astype(int)
     events['is_missed_shot'] = events['event_detail'].isin(['Shot_Missed', 'Shot_MissedPost']).astype(int)
     events['is_deflected'] = (events['event_detail'] == 'Shot_Deflected').astype(int)
-    # Shots on goal = shots that reached the goalie (saved or scored)
-    # Includes Goal_Scored, Shot_Goal, Shot_OnNetSaved, Shot_OnNet
-    events['is_sog'] = events['event_detail'].isin(['Shot_OnNetSaved', 'Shot_OnNet', 'Shot_Goal', 'Goal_Scored']).astype(int)
+    # Tipped shots (from event_detail_2)
+    events['is_tipped'] = events['event_detail_2'].isin(['Shot_Tip', 'Shot_Tipped', 'Goal_Tip']).astype(int)
+    # Shots on goal (SOG) = shots that reached the goalie (saved or scored)
+    # EXCLUDES Goal_Scored to avoid double-counting (Shot_Goal + Goal_Scored are linked events)
+    # Only count the shot event (Shot_Goal), not the goal event (Goal_Scored)
+    events['is_sog'] = ((events['event_type'] == 'Shot') & 
+                        events['event_detail'].isin(['Shot_OnNetSaved', 'Shot_OnNet', 'Shot_Goal'])).astype(int)
+    # Corsi = all shot attempts (SOG + blocked + missed)
+    events['is_corsi'] = ((events['is_sog'] == 1) | 
+                          (events['is_blocked_shot'] == 1) | 
+                          (events['is_missed_shot'] == 1)).astype(int)
+    # Fenwick = unblocked shot attempts (SOG + missed, excludes blocked)
+    events['is_fenwick'] = ((events['is_sog'] == 1) | 
+                            (events['is_missed_shot'] == 1)).astype(int)
     
     # shot_outcome_id - maps event_detail to dim_shot_outcome
     shot_outcome_map = {
@@ -3044,8 +3330,10 @@ def enhance_events_with_flags():
     }
     events['zone_outcome_id'] = events['event_detail'].map(zone_outcome_map)
     
-    events['is_scoring_chance'] = ((events['is_shot'] == 1) | (events['is_goal'] == 1)).astype(int)
-    events['is_high_danger'] = (((events['is_shot'] == 1) | (events['is_goal'] == 1)) & (
+    # is_scoring_chance and is_high_danger: DEFERRED - needs XY data for proper implementation
+    # Placeholder: using is_sog | is_goal until XY-based logic is implemented
+    events['is_scoring_chance'] = ((events['is_sog'] == 1) | (events['is_goal'] == 1)).astype(int)
+    events['is_high_danger'] = (((events['is_sog'] == 1) | (events['is_goal'] == 1)) & (
         (events['is_rebound'] == 1) | events['event_detail_2'].str.contains('Tip|OneTime|Deflect', na=False))).astype(int)
     
     # Pressure
@@ -3055,7 +3343,7 @@ def enhance_events_with_flags():
     
     # Danger level
     def calc_danger(row):
-        if row['is_shot'] != 1 and row['is_goal'] != 1:
+        if row['is_sog'] != 1 and row['is_goal'] != 1:
             return None
         if row['is_high_danger'] == 1:
             return 'high'
@@ -3066,14 +3354,262 @@ def enhance_events_with_flags():
     events['danger_level_id'] = events['danger_level'].map({'high': 'DL01', 'medium': 'DL02', 'low': 'DL03'})
     
     # Scoring chance key
-    sc_events = events[(events['is_shot'] == 1) | (events['is_goal'] == 1)].copy()
+    sc_events = events[(events['is_sog'] == 1) | (events['is_goal'] == 1)].copy()
     sc_events = sc_events.reset_index(drop=True)
     sc_events['scoring_chance_key'] = 'SC' + sc_events['game_id'].astype(str) + sc_events.index.astype(str).str.zfill(4)
     events['scoring_chance_key'] = events['event_id'].map(dict(zip(sc_events['event_id'], sc_events['scoring_chance_key'])))
     
+    # ==========================================================================
+    # CONTEXT COLUMNS - Previous/Next Event Relationships
+    # ==========================================================================
+    log.info("  Adding context columns...")
+    
+    # Sort by game and time (descending time = ascending chronological order for countdown clock)
+    events = events.sort_values(['game_id', 'time_start_total_seconds'], ascending=[True, False]).reset_index(drop=True)
+    
+    # Initialize all context columns
+    context_cols = [
+        # Basic prev/next
+        'prev_event_id', 'prev_event_type', 'prev_event_detail', 'prev_event_team', 'prev_event_same_team',
+        'next_event_id', 'next_event_type', 'next_event_detail', 'next_event_team', 'next_event_same_team',
+        'time_since_prev', 'time_to_next',
+        # Shot context
+        'time_to_next_sog', 'time_since_last_sog', 'events_to_next_sog', 'events_since_last_sog',
+        'next_sog_result', 'led_to_sog', 'is_pre_shot_event', 'is_shot_assist',
+        # Goal context
+        'time_to_next_goal', 'time_since_last_goal', 'events_to_next_goal', 'events_since_last_goal', 'led_to_goal',
+        # Zone context
+        'time_since_zone_entry', 'events_since_zone_entry', 'time_since_zone_exit',
+        # Sequence context
+        'sequence_event_num', 'sequence_total_events', 'sequence_duration',
+        'is_sequence_first', 'is_sequence_last', 'sequence_has_sog', 'sequence_has_goal', 'sequence_shot_count',
+        # Possession context
+        'consecutive_team_events', 'time_since_possession_change', 'events_since_possession_change',
+        # Faceoff context
+        'time_since_faceoff', 'events_since_faceoff',
+        # Rush calculated
+        'is_rush_calculated', 'time_from_entry_to_shot',
+    ]
+    for col in context_cols:
+        events[col] = None
+    
+    # Process each game
+    for game_id in events['game_id'].unique():
+        game_mask = events['game_id'] == game_id
+        game_idx = events[game_mask].index.tolist()
+        
+        if len(game_idx) < 2:
+            continue
+        
+        # Get game events in chronological order (higher time_start = earlier in countdown)
+        game_events = events.loc[game_idx].copy()
+        
+        # Track last seen events for lookback
+        last_sog_idx = None
+        last_sog_time = None
+        last_goal_idx = None
+        last_goal_time = None
+        last_zone_entry_idx = None
+        last_zone_entry_time = None
+        last_zone_exit_idx = None
+        last_zone_exit_time = None
+        last_faceoff_idx = None
+        last_faceoff_time = None
+        last_possession_change_idx = None
+        last_possession_change_time = None
+        consecutive_team_count = 0
+        prev_team = None
+        
+        # Forward pass - looking back at previous events
+        for i, idx in enumerate(game_idx):
+            row = events.loc[idx]
+            curr_time = row['time_start_total_seconds']
+            curr_team = row.get('player_team')
+            
+            # Previous event (i-1 in game_idx)
+            if i > 0:
+                prev_idx = game_idx[i - 1]
+                prev_row = events.loc[prev_idx]
+                events.at[idx, 'prev_event_id'] = prev_row['event_id']
+                events.at[idx, 'prev_event_type'] = prev_row['event_type']
+                events.at[idx, 'prev_event_detail'] = prev_row['event_detail']
+                events.at[idx, 'prev_event_team'] = prev_row.get('player_team')
+                events.at[idx, 'prev_event_same_team'] = 1 if prev_row.get('player_team') == curr_team else 0
+                prev_time = prev_row['time_start_total_seconds']
+                if pd.notna(curr_time) and pd.notna(prev_time):
+                    events.at[idx, 'time_since_prev'] = prev_time - curr_time  # Countdown: prev > curr
+            
+            # Next event (i+1 in game_idx)
+            if i < len(game_idx) - 1:
+                next_idx = game_idx[i + 1]
+                next_row = events.loc[next_idx]
+                events.at[idx, 'next_event_id'] = next_row['event_id']
+                events.at[idx, 'next_event_type'] = next_row['event_type']
+                events.at[idx, 'next_event_detail'] = next_row['event_detail']
+                events.at[idx, 'next_event_team'] = next_row.get('player_team')
+                events.at[idx, 'next_event_same_team'] = 1 if next_row.get('player_team') == curr_team else 0
+                next_time = next_row['time_start_total_seconds']
+                if pd.notna(curr_time) and pd.notna(next_time):
+                    events.at[idx, 'time_to_next'] = curr_time - next_time  # Countdown: curr > next
+            
+            # Time/events since last SOG
+            if last_sog_idx is not None and pd.notna(curr_time) and pd.notna(last_sog_time):
+                events.at[idx, 'time_since_last_sog'] = last_sog_time - curr_time
+                events.at[idx, 'events_since_last_sog'] = i - game_idx.index(last_sog_idx)
+            
+            # Time/events since last goal
+            if last_goal_idx is not None and pd.notna(curr_time) and pd.notna(last_goal_time):
+                events.at[idx, 'time_since_last_goal'] = last_goal_time - curr_time
+                events.at[idx, 'events_since_last_goal'] = i - game_idx.index(last_goal_idx)
+            
+            # Time/events since zone entry
+            if last_zone_entry_idx is not None and pd.notna(curr_time) and pd.notna(last_zone_entry_time):
+                events.at[idx, 'time_since_zone_entry'] = last_zone_entry_time - curr_time
+                events.at[idx, 'events_since_zone_entry'] = i - game_idx.index(last_zone_entry_idx)
+            
+            # Time since zone exit
+            if last_zone_exit_idx is not None and pd.notna(curr_time) and pd.notna(last_zone_exit_time):
+                events.at[idx, 'time_since_zone_exit'] = last_zone_exit_time - curr_time
+            
+            # Time/events since faceoff
+            if last_faceoff_idx is not None and pd.notna(curr_time) and pd.notna(last_faceoff_time):
+                events.at[idx, 'time_since_faceoff'] = last_faceoff_time - curr_time
+                events.at[idx, 'events_since_faceoff'] = i - game_idx.index(last_faceoff_idx)
+            
+            # Time/events since possession change
+            if last_possession_change_idx is not None and pd.notna(curr_time) and pd.notna(last_possession_change_time):
+                events.at[idx, 'time_since_possession_change'] = last_possession_change_time - curr_time
+                events.at[idx, 'events_since_possession_change'] = i - game_idx.index(last_possession_change_idx)
+            
+            # Consecutive team events
+            if curr_team == prev_team and pd.notna(curr_team):
+                consecutive_team_count += 1
+            else:
+                consecutive_team_count = 1
+            events.at[idx, 'consecutive_team_events'] = consecutive_team_count
+            prev_team = curr_team
+            
+            # Update trackers
+            if row.get('is_sog') == 1:
+                last_sog_idx = idx
+                last_sog_time = curr_time
+            if row.get('is_goal') == 1:
+                last_goal_idx = idx
+                last_goal_time = curr_time
+            if row.get('is_zone_entry') == 1:
+                last_zone_entry_idx = idx
+                last_zone_entry_time = curr_time
+            if row.get('is_zone_exit') == 1:
+                last_zone_exit_idx = idx
+                last_zone_exit_time = curr_time
+            if row.get('is_faceoff') == 1:
+                last_faceoff_idx = idx
+                last_faceoff_time = curr_time
+            if row.get('is_turnover') == 1 or row.get('is_faceoff') == 1:
+                last_possession_change_idx = idx
+                last_possession_change_time = curr_time
+        
+        # Reverse pass - looking forward at next events (for time_to_next_sog, etc.)
+        next_sog_idx = None
+        next_sog_time = None
+        next_sog_detail = None
+        next_goal_idx = None
+        next_goal_time = None
+        
+        for i in range(len(game_idx) - 1, -1, -1):
+            idx = game_idx[i]
+            row = events.loc[idx]
+            curr_time = row['time_start_total_seconds']
+            
+            # Time/events to next SOG
+            if next_sog_idx is not None and pd.notna(curr_time) and pd.notna(next_sog_time):
+                events.at[idx, 'time_to_next_sog'] = curr_time - next_sog_time
+                events.at[idx, 'events_to_next_sog'] = game_idx.index(next_sog_idx) - i
+                events.at[idx, 'next_sog_result'] = 'goal' if 'Goal' in str(next_sog_detail) else 'save'
+                # Events within same sequence that led to SOG
+                if row.get('sequence_key') == events.loc[next_sog_idx].get('sequence_key'):
+                    events.at[idx, 'led_to_sog'] = 1
+                    if game_idx.index(next_sog_idx) - i <= 3:
+                        events.at[idx, 'is_pre_shot_event'] = 1
+                    if game_idx.index(next_sog_idx) - i == 1:
+                        events.at[idx, 'is_shot_assist'] = 1
+            
+            # Time/events to next goal
+            if next_goal_idx is not None and pd.notna(curr_time) and pd.notna(next_goal_time):
+                events.at[idx, 'time_to_next_goal'] = curr_time - next_goal_time
+                events.at[idx, 'events_to_next_goal'] = game_idx.index(next_goal_idx) - i
+                if row.get('sequence_key') == events.loc[next_goal_idx].get('sequence_key'):
+                    events.at[idx, 'led_to_goal'] = 1
+            
+            # Update trackers (looking backward in time = forward in game)
+            if row.get('is_sog') == 1:
+                next_sog_idx = idx
+                next_sog_time = curr_time
+                next_sog_detail = row.get('event_detail')
+            if row.get('is_goal') == 1:
+                next_goal_idx = idx
+                next_goal_time = curr_time
+    
+    # Sequence context - aggregate per sequence
+    if 'sequence_key' in events.columns:
+        seq_stats = events.groupby('sequence_key').agg({
+            'event_id': 'count',
+            'time_start_total_seconds': ['max', 'min'],
+            'is_sog': 'sum',
+            'is_goal': 'sum',
+        }).reset_index()
+        seq_stats.columns = ['sequence_key', 'seq_event_count', 'seq_time_max', 'seq_time_min', 'seq_sog_count', 'seq_goal_count']
+        seq_stats['seq_duration'] = seq_stats['seq_time_max'] - seq_stats['seq_time_min']
+        seq_stats['seq_has_sog'] = (seq_stats['seq_sog_count'] > 0).astype(int)
+        seq_stats['seq_has_goal'] = (seq_stats['seq_goal_count'] > 0).astype(int)
+        
+        # Map to events
+        seq_map = seq_stats.set_index('sequence_key').to_dict()
+        events['sequence_total_events'] = events['sequence_key'].map(seq_map['seq_event_count'])
+        events['sequence_duration'] = events['sequence_key'].map(seq_map['seq_duration'])
+        events['sequence_has_sog'] = events['sequence_key'].map(seq_map['seq_has_sog'])
+        events['sequence_has_goal'] = events['sequence_key'].map(seq_map['seq_has_goal'])
+        events['sequence_shot_count'] = events['sequence_key'].map(seq_map['seq_sog_count'])
+        
+        # Event position within sequence
+        events['sequence_event_num'] = events.groupby('sequence_key').cumcount() + 1
+        events['is_sequence_first'] = (events['sequence_event_num'] == 1).astype(int)
+        events['is_sequence_last'] = (events['sequence_event_num'] == events['sequence_total_events']).astype(int)
+    
+    # Rush calculation:
+    # is_rush_calculated: zone entry → SOG within 10 seconds and ≤5 events (any entry type)
+    # is_rush: NHL definition - controlled entry + shot within 7 seconds (true transition attack)
+    zone_entries = events[events['is_zone_entry'] == 1].index
+    for idx in zone_entries:
+        time_to_sog = events.at[idx, 'time_to_next_sog']
+        events_to_sog = events.at[idx, 'events_to_next_sog']
+        is_controlled = events.at[idx, 'is_controlled_entry'] == 1
+        
+        if pd.notna(time_to_sog) and pd.notna(events_to_sog):
+            # Calculated rush: ≤10s AND ≤5 events (any entry type)
+            if time_to_sog <= 10 and events_to_sog <= 5:
+                events.at[idx, 'is_rush_calculated'] = 1
+                events.at[idx, 'time_from_entry_to_shot'] = time_to_sog
+            
+            # is_rush (NHL definition): controlled entry + shot within 7 seconds
+            # This is the "attack before defense sets up" definition
+            if is_controlled and time_to_sog <= 7:
+                events.at[idx, 'is_rush'] = 1
+    
+    # Fill NaN with 0 for binary flags
+    binary_flags = ['prev_event_same_team', 'next_event_same_team', 'led_to_sog', 'is_pre_shot_event', 
+                    'is_shot_assist', 'led_to_goal', 'is_sequence_first', 'is_sequence_last',
+                    'sequence_has_sog', 'sequence_has_goal', 'is_rush_calculated', 'is_rush',
+                    'is_controlled_entry', 'is_carried_entry', 'is_controlled_exit', 'is_carried_exit']
+    for col in binary_flags:
+        if col in events.columns:
+            events[col] = events[col].fillna(0).astype(int)
+    
+    log.info(f"    Context columns added: {len(context_cols)}")
+    
     save_table(events, 'fact_events')
     log.info(f"  ✓ fact_events: {len(events)} rows, {len(events.columns)} cols")
-    log.info(f"    Flags: rush={events['is_rush'].sum()}, rebound={events['is_rebound'].sum()}, shot={events['is_shot'].sum()}, goal={events['is_goal'].sum()}")
+    log.info(f"    Flags: rush={events['is_rush'].sum()}, controlled_entry={events['is_controlled_entry'].sum()}, carried_entry={events['is_carried_entry'].sum()}, sog={events['is_sog'].sum()}")
 
 
 def create_derived_event_tables():
@@ -3095,14 +3631,14 @@ def create_derived_event_tables():
     # fact_rushes
     rushes = events[events['is_rush'] == 1].copy()
     rushes['rush_key'] = 'RU' + rushes['game_id'].astype(str) + rushes.index.astype(str).str.zfill(4)
-    rushes['rush_outcome'] = rushes.apply(lambda r: 'goal' if r['is_goal'] == 1 else 'shot' if r['is_shot'] == 1 else 'zone_entry' if r['is_zone_entry'] == 1 else 'other', axis=1)
+    rushes['rush_outcome'] = rushes.apply(lambda r: 'goal' if r['is_goal'] == 1 else 'shot' if r['is_sog'] == 1 else 'zone_entry' if r['is_zone_entry'] == 1 else 'other', axis=1)
     save_table(rushes, 'fact_rushes')
     log.info(f"  ✓ fact_rushes: {len(rushes)} rows")
     
     # fact_breakouts - Zone exits (breakouts from defensive zone)
     # Definition: Breakout = Zone_Exit event (successful exit from defensive zone with puck control)
     # Coverage: All 4 games consistently (475 events vs 193 with old play_detail1 logic)
-    breakouts = events[events['is_breakout'] == 1].copy()
+    breakouts = events[events['is_zone_exit'] == 1].copy()
     breakouts['breakout_key'] = 'BO' + breakouts['game_id'].astype(str) + breakouts.index.astype(str).str.zfill(4)
     
     # FUTURE: When event_successful is consistently populated across all games,
@@ -3344,7 +3880,12 @@ def enhance_shift_tables():
     zones_data = [get_start_end_zones(shift_events_map[sid]) for sid in shifts['shift_id']]
     shifts['start_zone'] = [z[0] for z in zones_data]
     shifts['end_zone'] = [z[1] for z in zones_data]
-    zone_map = {'o': 1, 'd': 2, 'n': 3}
+    # Map zone names to zone_id (ZN01=Offensive, ZN02=Defensive, ZN03=Neutral)
+    zone_map = {
+        'Offensive': 'ZN01', 'offensive': 'ZN01', 'O': 'ZN01', 'o': 'ZN01',
+        'Defensive': 'ZN02', 'defensive': 'ZN02', 'D': 'ZN02', 'd': 'ZN02',
+        'Neutral': 'ZN03', 'neutral': 'ZN03', 'N': 'ZN03', 'n': 'ZN03',
+    }
     shifts['start_zone_id'] = shifts['start_zone'].map(zone_map)
     shifts['end_zone_id'] = shifts['end_zone'].map(zone_map)
     
@@ -3372,8 +3913,54 @@ def enhance_shift_tables():
                 player_ids.append(roster_lookup.get(key, None))
         shifts[id_col] = player_ids
     
+    # 4.5 Add team ratings (v19.00 ROOT CAUSE FIX)
+    # Calculate avg/min/max ratings for home and away teams (excluding goalies)
+    log.info("  Adding team ratings (excluding goalies)...")
+    
+    player_rating_map = dict(zip(dim_player['player_id'], dim_player['current_skill_rating']))
+    
+    # Skater position columns (exclude goalies)
+    home_skater_cols = ['home_forward_1_id', 'home_forward_2_id', 'home_forward_3_id',
+                        'home_defense_1_id', 'home_defense_2_id']
+    away_skater_cols = ['away_forward_1_id', 'away_forward_2_id', 'away_forward_3_id',
+                        'away_defense_1_id', 'away_defense_2_id']
+    
+    def calc_team_ratings(row, cols, rating_map):
+        """Calculate avg, min, max ratings for a set of player columns."""
+        ratings = []
+        for col in cols:
+            pid = row.get(col)
+            if pd.notna(pid) and pid in rating_map:
+                rating = rating_map[pid]
+                if pd.notna(rating):
+                    ratings.append(float(rating))
+        if not ratings:
+            return None, None, None
+        return round(sum(ratings) / len(ratings), 2), min(ratings), max(ratings)
+    
+    # Calculate for each shift
+    home_ratings_data = shifts.apply(lambda r: calc_team_ratings(r, home_skater_cols, player_rating_map), axis=1)
+    shifts['home_avg_rating'] = [r[0] for r in home_ratings_data]
+    shifts['home_min_rating'] = [r[1] for r in home_ratings_data]
+    shifts['home_max_rating'] = [r[2] for r in home_ratings_data]
+    
+    away_ratings_data = shifts.apply(lambda r: calc_team_ratings(r, away_skater_cols, player_rating_map), axis=1)
+    shifts['away_avg_rating'] = [r[0] for r in away_ratings_data]
+    shifts['away_min_rating'] = [r[1] for r in away_ratings_data]
+    shifts['away_max_rating'] = [r[2] for r in away_ratings_data]
+    
+    # Calculate rating differential and advantage
+    shifts['rating_differential'] = shifts['home_avg_rating'] - shifts['away_avg_rating']
+    shifts['home_rating_advantage'] = shifts['rating_differential'] > 0
+    
+    # Log summary
+    home_avg = shifts['home_avg_rating'].mean()
+    away_avg = shifts['away_avg_rating'].mean()
+    log.info(f"  Team ratings: home_avg={home_avg:.2f}, away_avg={away_avg:.2f}, differential={home_avg-away_avg:.2f}")
+    
     # 5. Plus/minus
-    actual_goals = events[(events['event_detail'] == 'Shot_Goal') | (events['event_detail'] == 'Goal_Scored')].copy()
+    # CRITICAL: Goals ONLY via event_type='Goal' AND event_detail='Goal_Scored' (per CODE_STANDARDS.md)
+    actual_goals = events[(events['event_type'] == 'Goal') & (events['event_detail'] == 'Goal_Scored')].copy()
     actual_goals['scoring_team'] = actual_goals.apply(lambda r: player_team_map.get(str(r['event_player_ids']).split(',')[0].strip(), None), axis=1)
     actual_goals['is_home_goal'] = actual_goals['scoring_team'] == actual_goals['home_team']
     
@@ -3390,10 +3977,12 @@ def enhance_shift_tables():
         end_sec = shift_row['shift_end_total_seconds']
         if pd.isna(period) or pd.isna(start_sec) or pd.isna(end_sec):
             return pd.DataFrame()
+        # Use > for end boundary to avoid double-counting goals at exact shift boundaries
+        # (goals at boundary time belong to shift starting at that time, not ending)
         mask = (goals_df['game_id'] == game_id) & \
                (goals_df['period'] == period) & \
                (goals_df['event_total_seconds'] <= start_sec) & \
-               (goals_df['event_total_seconds'] >= end_sec)
+               (goals_df['event_total_seconds'] > end_sec)
         return goals_df[mask]
     
     for i, shift in shifts.iterrows():
@@ -3407,19 +3996,32 @@ def enhance_shift_tables():
         
         for _, goal in shift_goals.iterrows():
             is_home_goal = goal['is_home_goal']
+            
+            # FIX: Use the GOAL's strength, not the shift's strength
+            # A goal at 5v5 should not be credited as PP/PK even if shift started as PP
+            goal_strength = str(goal.get('strength', '')).lower()
+            goal_is_ev = goal_strength in ['5v5', '4v4', '3v3']
+            goal_is_pp_home = goal_strength in ['5v4', '5v3', '4v3']  # Home has more players
+            goal_is_pk_home = goal_strength in ['4v5', '3v5', '3v4']  # Home has fewer players
+            
+            # All goals count
             if is_home_goal:
                 shifts.at[i, 'home_gf_all'] += 1
                 shifts.at[i, 'away_ga_all'] += 1
             else:
                 shifts.at[i, 'away_gf_all'] += 1
                 shifts.at[i, 'home_ga_all'] += 1
-            if is_ev:
+            
+            # EV goals (use goal strength, not shift strength)
+            if goal_is_ev:
                 if is_home_goal:
                     shifts.at[i, 'home_gf_ev'] += 1
                     shifts.at[i, 'away_ga_ev'] += 1
                 else:
                     shifts.at[i, 'away_gf_ev'] += 1
                     shifts.at[i, 'home_ga_ev'] += 1
+            
+            # Non-empty-net (still use shift status for EN)
             if is_nen:
                 if is_home_goal:
                     shifts.at[i, 'home_gf_nen'] += 1
@@ -3427,14 +4029,16 @@ def enhance_shift_tables():
                 else:
                     shifts.at[i, 'away_gf_nen'] += 1
                     shifts.at[i, 'home_ga_nen'] += 1
-            if is_home_pp:
+            
+            # PP/PK goals (use goal strength, not shift strength)
+            if goal_is_pp_home:
                 if is_home_goal:
                     shifts.at[i, 'home_gf_pp'] += 1
                     shifts.at[i, 'away_ga_pk'] += 1
                 else:
                     shifts.at[i, 'away_gf_pk'] += 1
                     shifts.at[i, 'home_ga_pp'] += 1
-            elif is_home_pk:
+            elif goal_is_pk_home:
                 if is_home_goal:
                     shifts.at[i, 'home_gf_pk'] += 1
                     shifts.at[i, 'away_ga_pp'] += 1
@@ -3446,10 +4050,68 @@ def enhance_shift_tables():
         shifts[f'home_pm_{pm_type}'] = shifts[f'home_gf_{pm_type}'] - shifts[f'home_ga_{pm_type}']
         shifts[f'away_pm_{pm_type}'] = shifts[f'away_gf_{pm_type}'] - shifts[f'away_ga_{pm_type}']
     
+    # 5b. Game state tracking (leading/trailing/tied)
+    # Calculate running score at each shift start
+    log.info("  Calculating game state (leading/trailing/tied)...")
+    shifts['game_state'] = 'tied'  # Default
+    shifts['score_differential'] = 0  # Home perspective: positive = home leading
+    
+    for game_id in shifts['game_id'].unique():
+        game_shifts = shifts[shifts['game_id'] == game_id].copy()
+        game_goals = actual_goals[actual_goals['game_id'] == game_id].sort_values('event_total_seconds')
+        
+        if len(game_goals) == 0:
+            # No goals in game = always tied
+            continue
+        
+        # Build running score at each goal
+        home_score = 0
+        away_score = 0
+        goal_scores = []  # (time, home_score, away_score)
+        
+        for _, goal in game_goals.iterrows():
+            if goal['is_home_goal']:
+                home_score += 1
+            else:
+                away_score += 1
+            goal_scores.append((goal['event_total_seconds'], home_score, away_score))
+        
+        # For each shift, find score at shift start
+        for idx in game_shifts.index:
+            shift_start = shifts.at[idx, 'shift_start_total_seconds']
+            if pd.isna(shift_start):
+                continue
+            
+            # Find most recent goal before shift start
+            h_score, a_score = 0, 0
+            for goal_time, h, a in goal_scores:
+                if goal_time < shift_start:
+                    h_score, a_score = h, a
+                else:
+                    break
+            
+            diff = h_score - a_score
+            shifts.at[idx, 'score_differential'] = diff
+            
+            if diff > 0:
+                shifts.at[idx, 'game_state'] = 'home_leading'
+            elif diff < 0:
+                shifts.at[idx, 'game_state'] = 'home_trailing'
+            else:
+                shifts.at[idx, 'game_state'] = 'tied'
+    
+    # Add close game flag (within 1 goal)
+    shifts['is_close_game'] = shifts['score_differential'].abs() <= 1
+    
+    log.info(f"  Game states: tied={len(shifts[shifts['game_state']=='tied'])}, home_leading={len(shifts[shifts['game_state']=='home_leading'])}, home_trailing={len(shifts[shifts['game_state']=='home_trailing'])}")
+    
     # 6. Shift stats
     stat_cols = ['sf', 'sa', 'shot_diff', 'cf', 'ca', 'cf_pct', 'ff', 'fa', 'ff_pct',
-                 'scf', 'sca', 'hdf', 'hda', 'zone_entries', 'zone_exits',
-                 'giveaways', 'takeaways', 'fo_won', 'fo_lost', 'fo_pct', 'event_count']
+                 'scf', 'sca', 'hdf', 'hda', 
+                 'home_zone_entries', 'away_zone_entries', 'home_zone_exits', 'away_zone_exits',
+                 'home_giveaways', 'away_giveaways', 'home_bad_giveaways', 'away_bad_giveaways',
+                 'home_takeaways', 'away_takeaways',
+                 'fo_won', 'fo_lost', 'fo_pct', 'event_count']
     for col in stat_cols:
         shifts[col] = 0 if col not in ['cf_pct', 'ff_pct', 'fo_pct'] else 0.0
     
@@ -3465,17 +4127,19 @@ def enhance_shift_tables():
         shifts.at[i, 'sa'] = len(sog) - home_sog
         shifts.at[i, 'shot_diff'] = shifts.at[i, 'sf'] - shifts.at[i, 'sa']
         
-        shot_attempts = shift_ev[(shift_ev['is_shot'] == 1) | (shift_ev['is_blocked_shot'] == 1) | (shift_ev['is_missed_shot'] == 1)]
-        home_corsi = shot_attempts['is_home_event'].sum()
+        # Corsi = all shot attempts (SOG + blocked + missed) - use is_corsi flag
+        corsi_events = shift_ev[shift_ev['is_corsi'] == 1]
+        home_corsi = corsi_events['is_home_event'].sum()
         shifts.at[i, 'cf'] = home_corsi
-        shifts.at[i, 'ca'] = len(shot_attempts) - home_corsi
+        shifts.at[i, 'ca'] = len(corsi_events) - home_corsi
         total_corsi = shifts.at[i, 'cf'] + shifts.at[i, 'ca']
         shifts.at[i, 'cf_pct'] = (shifts.at[i, 'cf'] / total_corsi * 100) if total_corsi > 0 else 50.0
         
-        fenwick = shift_ev[(shift_ev['is_shot'] == 1) | (shift_ev['is_missed_shot'] == 1)]
-        home_fenwick = fenwick['is_home_event'].sum()
+        # Fenwick = unblocked shot attempts (SOG + missed) - use is_fenwick flag
+        fenwick_events = shift_ev[shift_ev['is_fenwick'] == 1]
+        home_fenwick = fenwick_events['is_home_event'].sum()
         shifts.at[i, 'ff'] = home_fenwick
-        shifts.at[i, 'fa'] = len(fenwick) - home_fenwick
+        shifts.at[i, 'fa'] = len(fenwick_events) - home_fenwick
         total_fenwick = shifts.at[i, 'ff'] + shifts.at[i, 'fa']
         shifts.at[i, 'ff_pct'] = (shifts.at[i, 'ff'] / total_fenwick * 100) if total_fenwick > 0 else 50.0
         
@@ -3487,14 +4151,39 @@ def enhance_shift_tables():
         shifts.at[i, 'hdf'] = hd['is_home_event'].sum()
         shifts.at[i, 'hda'] = len(hd) - shifts.at[i, 'hdf']
         
-        shifts.at[i, 'zone_entries'] = shift_ev['is_zone_entry'].sum()
-        shifts.at[i, 'zone_exits'] = shift_ev['is_zone_exit'].sum()
-        shifts.at[i, 'giveaways'] = shift_ev['is_giveaway'].sum()
-        shifts.at[i, 'takeaways'] = shift_ev['is_takeaway'].sum()
+        # Zone entries/exits - team-specific (home vs away)
+        ze = shift_ev[shift_ev['is_zone_entry'] == 1]
+        shifts.at[i, 'home_zone_entries'] = ze['is_home_event'].sum()
+        shifts.at[i, 'away_zone_entries'] = len(ze) - shifts.at[i, 'home_zone_entries']
+        
+        zx = shift_ev[shift_ev['is_zone_exit'] == 1]
+        shifts.at[i, 'home_zone_exits'] = zx['is_home_event'].sum()
+        shifts.at[i, 'away_zone_exits'] = len(zx) - shifts.at[i, 'home_zone_exits']
+        
+        # Giveaways/takeaways - team-specific
+        ga = shift_ev[shift_ev['is_giveaway'] == 1]
+        shifts.at[i, 'home_giveaways'] = ga['is_home_event'].sum()
+        shifts.at[i, 'away_giveaways'] = len(ga) - shifts.at[i, 'home_giveaways']
+        
+        # Bad giveaways - team-specific
+        bad_ga = shift_ev[shift_ev['is_bad_giveaway'] == 1]
+        shifts.at[i, 'home_bad_giveaways'] = bad_ga['is_home_event'].sum()
+        shifts.at[i, 'away_bad_giveaways'] = len(bad_ga) - shifts.at[i, 'home_bad_giveaways']
+        
+        ta = shift_ev[shift_ev['is_takeaway'] == 1]
+        shifts.at[i, 'home_takeaways'] = ta['is_home_event'].sum()
+        shifts.at[i, 'away_takeaways'] = len(ta) - shifts.at[i, 'home_takeaways']
         
         faceoffs = shift_ev[shift_ev['is_faceoff'] == 1]
-        shifts.at[i, 'fo_won'] = len(faceoffs[faceoffs['event_successful'] == 's'])
-        shifts.at[i, 'fo_lost'] = len(faceoffs[faceoffs['event_successful'] == 'u'])
+        # Faceoff winner = event_player_1 (player_team). Compare to home_team.
+        # fo_won = home team won the faceoff (player_team == home_team)
+        # fo_lost = home team lost the faceoff (player_team != home_team)
+        if len(faceoffs) > 0 and 'player_team' in faceoffs.columns and 'home_team' in faceoffs.columns:
+            shifts.at[i, 'fo_won'] = len(faceoffs[faceoffs['player_team'] == faceoffs['home_team']])
+            shifts.at[i, 'fo_lost'] = len(faceoffs[faceoffs['player_team'] != faceoffs['home_team']])
+        else:
+            shifts.at[i, 'fo_won'] = 0
+            shifts.at[i, 'fo_lost'] = 0
         total_fo = shifts.at[i, 'fo_won'] + shifts.at[i, 'fo_lost']
         shifts.at[i, 'fo_pct'] = (shifts.at[i, 'fo_won'] / total_fo * 100) if total_fo > 0 else 0.0
     
@@ -3532,6 +4221,371 @@ def enhance_shift_tables():
     save_table(shifts, 'fact_shifts')
     log.info(f"  ✓ fact_shifts: {len(shifts)} rows, {len(shifts.columns)} cols")
     log.info(f"  ✓ Player IDs, plus/minus (5 types), shift stats added")
+
+
+# ============================================================
+# PHASE 5.11B: ENHANCE SHIFT PLAYERS (v19.00 ROOT CAUSE FIX)
+# ============================================================
+
+def enhance_shift_players():
+    """
+    v19.00 ROOT CAUSE FIX: Expand fact_shift_players from 9 to 65+ columns.
+    
+    This is a TWO-PASS approach:
+    - Pass 1: Pull stats from fact_shifts, calculate logical shifts
+    - Pass 2: Add rating columns and adjusted stats
+    
+    LOGICAL SHIFT RULE: Any gap in shift_index = new logical shift
+    """
+    log.section("PHASE 5.11B: ENHANCE SHIFT PLAYERS (v19.00)")
+    
+    shift_players_path = OUTPUT_DIR / 'fact_shift_players.csv'
+    shifts_path = OUTPUT_DIR / 'fact_shifts.csv'
+    
+    if not shift_players_path.exists() or not shifts_path.exists():
+        log.warn("Required tables not found, skipping shift_players enhancement")
+        return
+    
+    sp = pd.read_csv(shift_players_path, low_memory=False)
+    shifts = pd.read_csv(shifts_path, low_memory=False)
+    dim_player = pd.read_csv(OUTPUT_DIR / 'dim_player.csv', low_memory=False)
+    
+    log.info(f"Enhancing {len(sp)} shift-player records...")
+    log.info(f"  Source: fact_shifts has {len(shifts.columns)} columns")
+    
+    # ========================================
+    # PASS 1: Pull stats from fact_shifts
+    # ========================================
+    log.info("  Pass 1: Pulling stats from fact_shifts...")
+    
+    # Create shift lookup for fast joining
+    shifts_lookup = shifts.set_index('shift_id').to_dict('index')
+    
+    # Columns to pull from fact_shifts (shift-level data)
+    time_cols = ['shift_duration', 'shift_start_total_seconds', 'shift_end_total_seconds', 'stoppage_time']
+    context_cols = ['situation', 'situation_id', 'strength', 'strength_id', 'start_zone', 'end_zone',
+                    'game_state', 'score_differential', 'is_close_game']
+    
+    # Faceoff columns - fo_won/fo_lost are from home perspective, need venue mapping
+    # (home player: fo_won = home wins, away player: fo_won = away wins)
+    
+    # Corsi/Fenwick/Shot columns need venue mapping (home perspective → player perspective)
+    # These are stored in fact_shifts from home team's perspective, but need to be
+    # flipped for away team players so their "for" = their team's events
+    stat_cols_venue = ['cf', 'ca', 'cf_pct', 'ff', 'fa', 'ff_pct', 'sf', 'sa', 'shot_diff',
+                       'scf', 'sca', 'hdf', 'hda']
+    stat_cols_direct = ['event_count']
+    
+    # Rating columns from fact_shifts (team-level)
+    rating_cols_shifts = ['home_avg_rating', 'home_min_rating', 'home_max_rating',
+                          'away_avg_rating', 'away_min_rating', 'away_max_rating',
+                          'rating_differential', 'home_rating_advantage']
+    
+    # FK columns
+    fk_cols = ['period_id', 'season_id', 'home_team_id', 'away_team_id']
+    
+    # Goal columns need venue mapping
+    goal_cols_home = ['home_gf_all', 'home_ga_all', 'home_gf_ev', 'home_ga_ev', 
+                      'home_gf_pp', 'home_ga_pp', 'home_gf_pk', 'home_ga_pk',
+                      'home_pm_all', 'home_pm_ev']
+    goal_cols_away = ['away_gf_all', 'away_ga_all', 'away_gf_ev', 'away_ga_ev',
+                      'away_gf_pp', 'away_ga_pp', 'away_gf_pk', 'away_ga_pk',
+                      'away_pm_all', 'away_pm_ev']
+    
+    # Pull direct columns
+    all_pull_cols = time_cols + context_cols + stat_cols_direct + rating_cols_shifts + fk_cols
+    
+    for col in all_pull_cols:
+        sp[col] = sp['shift_id'].apply(lambda sid: shifts_lookup.get(sid, {}).get(col, None))
+    
+    # Map venue-specific goal columns
+    def get_venue_stat(row, home_col, away_col):
+        shift_data = shifts_lookup.get(row['shift_id'], {})
+        if row['venue'] == 'home':
+            return shift_data.get(home_col, 0)
+        else:
+            return shift_data.get(away_col, 0)
+    
+    # Goals for/against (mapped by venue)
+    sp['gf'] = sp.apply(lambda r: get_venue_stat(r, 'home_gf_all', 'away_gf_all'), axis=1)
+    sp['ga'] = sp.apply(lambda r: get_venue_stat(r, 'home_ga_all', 'away_ga_all'), axis=1)
+    sp['pm'] = sp['gf'] - sp['ga']
+    sp['gf_ev'] = sp.apply(lambda r: get_venue_stat(r, 'home_gf_ev', 'away_gf_ev'), axis=1)
+    sp['ga_ev'] = sp.apply(lambda r: get_venue_stat(r, 'home_ga_ev', 'away_ga_ev'), axis=1)
+    sp['gf_pp'] = sp.apply(lambda r: get_venue_stat(r, 'home_gf_pp', 'away_gf_pp'), axis=1)
+    sp['ga_pp'] = sp.apply(lambda r: get_venue_stat(r, 'home_ga_pp', 'away_ga_pp'), axis=1)
+    sp['gf_pk'] = sp.apply(lambda r: get_venue_stat(r, 'home_gf_pk', 'away_gf_pk'), axis=1)
+    sp['ga_pk'] = sp.apply(lambda r: get_venue_stat(r, 'home_ga_pk', 'away_ga_pk'), axis=1)
+    sp['pm_ev'] = sp.apply(lambda r: get_venue_stat(r, 'home_pm_ev', 'away_pm_ev'), axis=1)
+    
+    # Team/opponent ratings (mapped by venue)
+    sp['team_avg_rating'] = sp.apply(lambda r: get_venue_stat(r, 'home_avg_rating', 'away_avg_rating'), axis=1)
+    sp['opp_avg_rating'] = sp.apply(lambda r: get_venue_stat(r, 'away_avg_rating', 'home_avg_rating'), axis=1)
+    sp['team_id'] = sp.apply(lambda r: get_venue_stat(r, 'home_team_id', 'away_team_id'), axis=1)
+    sp['opp_team_id'] = sp.apply(lambda r: get_venue_stat(r, 'away_team_id', 'home_team_id'), axis=1)
+    
+    # Corsi/Fenwick/Shot columns (venue-mapped: "for" = player's team, "against" = opponent)
+    # fact_shifts stores from home perspective (cf = home corsi, ca = away corsi)
+    # For away players, we swap: their cf = shift's ca, their ca = shift's cf
+    def get_for_stat(row, col):
+        """Get 'for' stat - home players get home value, away players get away value."""
+        shift_data = shifts_lookup.get(row['shift_id'], {})
+        if row['venue'] == 'home':
+            return shift_data.get(col, 0)
+        else:
+            # Swap: away player's "for" = shift's "against" (opponent's perspective)
+            swap_map = {'cf': 'ca', 'ca': 'cf', 'ff': 'fa', 'fa': 'ff', 
+                        'sf': 'sa', 'sa': 'sf', 'scf': 'sca', 'sca': 'scf',
+                        'hdf': 'hda', 'hda': 'hdf'}
+            return shift_data.get(swap_map.get(col, col), 0)
+    
+    # Map venue-specific corsi/fenwick/shot stats
+    sp['cf'] = sp.apply(lambda r: get_for_stat(r, 'cf'), axis=1)
+    sp['ca'] = sp.apply(lambda r: get_for_stat(r, 'ca'), axis=1)
+    sp['ff'] = sp.apply(lambda r: get_for_stat(r, 'ff'), axis=1)
+    sp['fa'] = sp.apply(lambda r: get_for_stat(r, 'fa'), axis=1)
+    sp['sf'] = sp.apply(lambda r: get_for_stat(r, 'sf'), axis=1)
+    sp['sa'] = sp.apply(lambda r: get_for_stat(r, 'sa'), axis=1)
+    sp['scf'] = sp.apply(lambda r: get_for_stat(r, 'scf'), axis=1)
+    sp['sca'] = sp.apply(lambda r: get_for_stat(r, 'sca'), axis=1)
+    sp['hdf'] = sp.apply(lambda r: get_for_stat(r, 'hdf'), axis=1)
+    sp['hda'] = sp.apply(lambda r: get_for_stat(r, 'hda'), axis=1)
+    sp['shot_diff'] = sp['sf'] - sp['sa']
+    
+    # Recalculate percentages
+    sp['cf_pct'] = sp.apply(lambda r: (r['cf'] / (r['cf'] + r['ca']) * 100) if (r['cf'] + r['ca']) > 0 else 50.0, axis=1)
+    sp['ff_pct'] = sp.apply(lambda r: (r['ff'] / (r['ff'] + r['fa']) * 100) if (r['ff'] + r['fa']) > 0 else 50.0, axis=1)
+    
+    # Zone entries/exits/giveaways/takeaways - venue mapped
+    # Home player gets home team's events, away player gets away team's events
+    sp['zone_entries'] = sp.apply(lambda r: get_venue_stat(r, 'home_zone_entries', 'away_zone_entries'), axis=1)
+    sp['zone_exits'] = sp.apply(lambda r: get_venue_stat(r, 'home_zone_exits', 'away_zone_exits'), axis=1)
+    sp['giveaways'] = sp.apply(lambda r: get_venue_stat(r, 'home_giveaways', 'away_giveaways'), axis=1)
+    sp['bad_giveaways'] = sp.apply(lambda r: get_venue_stat(r, 'home_bad_giveaways', 'away_bad_giveaways'), axis=1)
+    sp['takeaways'] = sp.apply(lambda r: get_venue_stat(r, 'home_takeaways', 'away_takeaways'), axis=1)
+    
+    # Faceoffs - venue mapped (fo_won/fo_lost are from home perspective in fact_shifts)
+    sp['fo_won'] = sp.apply(lambda r: get_venue_stat(r, 'fo_won', 'fo_lost'), axis=1)
+    sp['fo_lost'] = sp.apply(lambda r: get_venue_stat(r, 'fo_lost', 'fo_won'), axis=1)
+    sp['fo_pct'] = sp.apply(lambda r: (r['fo_won'] / (r['fo_won'] + r['fo_lost']) * 100) if (r['fo_won'] + r['fo_lost']) > 0 else 0.0, axis=1)
+    
+    # Calculate playing time
+    sp['playing_time'] = sp['shift_duration'].fillna(0) - sp['stoppage_time'].fillna(0)
+    sp['playing_time'] = sp['playing_time'].clip(lower=0)
+    
+    log.info(f"    Pulled {len(all_pull_cols)} columns from fact_shifts")
+    
+    # ========================================
+    # PASS 1B: Calculate Logical Shifts
+    # ========================================
+    log.info("  Pass 1B: Calculating logical shifts...")
+    
+    # Rule: Any gap in shift_index = new logical shift
+    sp = sp.sort_values(['game_id', 'player_id', 'shift_index'])
+    
+    logical_shift_nums = []
+    shift_segments = []
+    
+    prev_game = None
+    prev_player = None
+    prev_idx = None
+    logical_num = 0
+    segment = 0
+    
+    for _, row in sp.iterrows():
+        game_id = row['game_id']
+        player_id = row['player_id']
+        shift_idx = row['shift_index']
+        
+        # New player-game combination
+        if game_id != prev_game or player_id != prev_player:
+            logical_num = 1
+            segment = 1
+        # Same player-game, check for gap
+        elif pd.notna(prev_idx) and pd.notna(shift_idx):
+            if int(shift_idx) != int(prev_idx) + 1:
+                # Gap detected - new logical shift
+                logical_num += 1
+                segment = 1
+            else:
+                segment += 1
+        else:
+            segment += 1
+        
+        logical_shift_nums.append(logical_num)
+        shift_segments.append(segment)
+        
+        prev_game = game_id
+        prev_player = player_id
+        prev_idx = shift_idx
+    
+    sp['logical_shift_number'] = logical_shift_nums
+    sp['shift_segment'] = shift_segments
+    
+    # Calculate is_first_segment and is_last_segment
+    sp['is_first_segment'] = sp['shift_segment'] == 1
+    
+    # For is_last_segment, need to look ahead (groupby approach)
+    sp['logical_key'] = sp['game_id'].astype(str) + '_' + sp['player_id'].astype(str) + '_' + sp['logical_shift_number'].astype(str)
+    max_segments = sp.groupby('logical_key')['shift_segment'].transform('max')
+    sp['is_last_segment'] = sp['shift_segment'] == max_segments
+    
+    # Calculate logical_shift_duration (sum of all segments in the logical shift)
+    logical_durations = sp.groupby('logical_key')['shift_duration'].transform('sum')
+    sp['logical_shift_duration'] = logical_durations
+    
+    # Calculate running TOI within game
+    sp['running_toi_game'] = sp.groupby(['game_id', 'player_id'])['shift_duration'].cumsum()
+    
+    # Drop helper column
+    sp = sp.drop(columns=['logical_key'])
+    
+    unique_logical = sp.groupby(['game_id', 'player_id'])['logical_shift_number'].max()
+    log.info(f"    Logical shifts: max per player-game = {unique_logical.max()}, avg = {unique_logical.mean():.1f}")
+    
+    # ========================================
+    # PASS 2: Add Player Ratings
+    # ========================================
+    log.info("  Pass 2: Adding player ratings and adjusted stats...")
+    
+    player_rating_map = dict(zip(dim_player['player_id'], dim_player['current_skill_rating']))
+    
+    # Player's own rating
+    sp['player_rating'] = sp['player_id'].map(player_rating_map)
+    
+    # Quality of competition (opponent avg rating)
+    sp['qoc_rating'] = sp['opp_avg_rating']
+    
+    # Quality of teammates (team avg rating excluding self)
+    # Approximation: team_avg - (player_rating / 5) + adjustment
+    # For simplicity, use team_avg directly (slight overestimate)
+    sp['qot_rating'] = sp['team_avg_rating']
+    
+    # Competition tier based on opponent rating
+    def get_competition_tier(opp_rating):
+        if pd.isna(opp_rating):
+            return None
+        # Match dim_competition_tier: TI01=Elite(5+), TI02=AboveAvg(4-5), TI03=Avg(3-4), TI04=BelowAvg(2-3)
+        if opp_rating >= 5.0:
+            return 'TI01'  # Elite
+        elif opp_rating >= 4.0:
+            return 'TI02'  # Above Average
+        elif opp_rating >= 3.0:
+            return 'TI03'  # Average
+        else:
+            return 'TI04'  # Below Average
+    
+    sp['competition_tier_id'] = sp['opp_avg_rating'].apply(get_competition_tier)
+    
+    # Opponent multiplier for adjusted stats
+    # Formula: opp_avg_rating / 4.0 (where 4.0 is midpoint)
+    sp['opp_multiplier'] = sp['opp_avg_rating'] / 4.0
+    sp['opp_multiplier'] = sp['opp_multiplier'].fillna(1.0)
+    
+    # ========================================
+    # PASS 2B: Calculate Adjusted Stats
+    # ========================================
+    log.info("  Pass 2B: Calculating adjusted stats...")
+    
+    # Player's rating differential vs opponents
+    sp['player_rating_diff'] = sp['player_rating'] - sp['opp_avg_rating']
+    
+    # Expected CF% based on rating differential
+    # Formula: 50 + (rating_diff * 5) where each rating point = 5% CF advantage
+    sp['expected_cf_pct'] = 50 + (sp['rating_differential'].fillna(0) * 5)
+    sp['expected_cf_pct'] = sp['expected_cf_pct'].clip(30, 70)  # Cap at reasonable bounds
+    
+    # CF% vs expected
+    sp['cf_pct_vs_expected'] = sp['cf_pct'] - sp['expected_cf_pct']
+    
+    # Performance flag
+    def get_performance(row):
+        diff = row['cf_pct_vs_expected']
+        if pd.isna(diff):
+            return None
+        if diff > 5:
+            return 'Over'
+        elif diff < -5:
+            return 'Under'
+        else:
+            return 'Expected'
+    
+    sp['performance'] = sp.apply(get_performance, axis=1)
+    
+    # Adjusted Corsi (multiply by opponent multiplier)
+    sp['cf_adj'] = sp['cf'] * sp['opp_multiplier']
+    sp['ca_adj'] = sp['ca'] / sp['opp_multiplier'].replace(0, 1)
+    
+    # Adjusted CF%
+    total_adj = sp['cf_adj'] + sp['ca_adj']
+    sp['cf_pct_adj'] = (sp['cf_adj'] / total_adj * 100).where(total_adj > 0, 50.0)
+    
+    log.info(f"    Performance distribution: Over={len(sp[sp['performance']=='Over'])}, Expected={len(sp[sp['performance']=='Expected'])}, Under={len(sp[sp['performance']=='Under'])}")
+    
+    # ========================================
+    # Reorder columns
+    # ========================================
+    # Group A: Identifiers
+    id_cols = ['shift_player_id', 'shift_id', 'game_id', 'shift_index', 
+               'player_game_number', 'player_id', 'venue', 'position', 'period']
+    
+    # Group B: Time
+    time_cols_out = ['shift_duration', 'shift_start_total_seconds', 'shift_end_total_seconds',
+                     'stoppage_time', 'playing_time', 'running_toi_game']
+    
+    # Group C: Logical shifts
+    logical_cols = ['logical_shift_number', 'shift_segment', 'is_first_segment', 
+                    'is_last_segment', 'logical_shift_duration']
+    
+    # Group D: Goals (raw)
+    goal_cols = ['gf', 'ga', 'pm', 'gf_ev', 'ga_ev', 'gf_pp', 'ga_pp', 'gf_pk', 'ga_pk', 'pm_ev']
+    
+    # Group E: Corsi/Fenwick (raw)
+    corsi_cols = ['cf', 'ca', 'cf_pct', 'ff', 'fa', 'ff_pct']
+    
+    # Group F: Shots
+    shot_cols = ['sf', 'sa', 'shot_diff']
+    
+    # Group G: Zone/Events
+    zone_event_cols = ['zone_entries', 'zone_exits', 'giveaways', 'takeaways', 'fo_won', 'fo_lost']
+    
+    # Group H: Context
+    context_cols_out = ['situation', 'situation_id', 'strength', 'strength_id', 'start_zone', 'end_zone']
+    
+    # Group I: Ratings
+    rating_cols = ['player_rating', 'team_avg_rating', 'opp_avg_rating', 'rating_differential',
+                   'qoc_rating', 'qot_rating', 'competition_tier_id', 'opp_multiplier', 'player_rating_diff']
+    
+    # Group J: Adjusted stats
+    adj_cols = ['expected_cf_pct', 'cf_pct_vs_expected', 'performance', 
+                'cf_adj', 'ca_adj', 'cf_pct_adj']
+    
+    # Group K: FKs
+    fk_cols_out = ['team_id', 'opp_team_id', 'season_id', 'period_id']
+    
+    # Group L: Additional (from shifts)
+    extra_cols = ['scf', 'sca', 'hdf', 'hda', 'event_count',
+                  'home_avg_rating', 'away_avg_rating', 'home_min_rating', 'away_min_rating',
+                  'home_max_rating', 'away_max_rating', 'home_rating_advantage',
+                  'home_team_id', 'away_team_id']
+    
+    # Build ordered column list
+    ordered_cols = (id_cols + time_cols_out + logical_cols + goal_cols + corsi_cols + 
+                    shot_cols + zone_event_cols + context_cols_out + rating_cols + adj_cols + fk_cols_out)
+    
+    # Add any remaining columns
+    remaining = [c for c in sp.columns if c not in ordered_cols and c not in extra_cols]
+    extra_existing = [c for c in extra_cols if c in sp.columns]
+    
+    final_cols = ordered_cols + extra_existing + remaining
+    final_cols = [c for c in final_cols if c in sp.columns]
+    
+    sp = sp[final_cols]
+    
+    # Save
+    save_table(sp, 'fact_shift_players')
+    log.info(f"  ✓ fact_shift_players: {len(sp)} rows, {len(sp.columns)} columns")
+    log.info(f"  ✓ Enhanced from 9 to {len(sp.columns)} columns (v19.00 fix)")
 
 
 # ============================================================

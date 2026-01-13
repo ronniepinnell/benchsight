@@ -1,0 +1,14 @@
+stat_category_id,category_code,category_name,description
+SC01,scoring,Scoring,"Goals, assists, points"
+SC02,shooting,Shooting,"Shots, accuracy, danger"
+SC03,passing,Passing,"Pass attempts, completion, quality"
+SC04,faceoffs,Faceoffs,"Faceoff wins, losses, percentage"
+SC05,possession,Possession,"Zone entries, exits, control"
+SC06,turnovers,Turnovers,"Giveaways, takeaways, differential"
+SC07,defense,Defense,"Blocks, hits, defensive plays"
+SC08,time,Time on Ice,"Ice time, shifts, averages"
+SC09,advanced,Advanced Stats,"Corsi, Fenwick, expected goals"
+SC10,micro,Micro Stats,Detailed play-by-play actions
+SC11,rating,Ratings,Performance ratings and scores
+SC12,special_teams,Special Teams,Power play and penalty kill
+SC13,goalie,Goaltending,"Saves, goals against, save %"

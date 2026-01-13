@@ -29,13 +29,13 @@
         <p><a href="../index.html" class="back-link">← Back to Index</a></p>
         <h1>qa_suspicious_stats</h1>
         
-        <div class="alert alert-danger">⚠️ 15 suspicious stat entries for games in this table</div>
+        
         
         <div class="meta">
-            <strong>Rows:</strong> 15 | 
-            <strong>Columns:</strong> 12 |
-            <strong>Last Updated:</strong> 2026-01-07 05:03:20 |
-            <strong>Version:</strong> 12.03
+            <strong>Rows:</strong> 0 | 
+            <strong>Columns:</strong> 8 |
+            <strong>Last Updated:</strong> 2026-01-12 23:37:10 |
+            <strong>Version:</strong> 11.04
         </div>
         
         
@@ -44,248 +44,19 @@
             <h2>Column Schema</h2>
             <table class="columns-table">
                 <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
-                <tr><td>timestamp</td><td>object</td><td>15</td><td>0.0%</td></tr><tr><td>game_id</td><td>int64</td><td>15</td><td>0.0%</td></tr><tr><td>season_id</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>player_id</td><td>object</td><td>15</td><td>0.0%</td></tr><tr><td>player_name</td><td>object</td><td>15</td><td>0.0%</td></tr><tr><td>category</td><td>object</td><td>15</td><td>0.0%</td></tr><tr><td>stat</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>value</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>expected</td><td>float64</td><td>0</td><td>100.0%</td></tr><tr><td>severity</td><td>object</td><td>15</td><td>0.0%</td></tr><tr><td>note</td><td>object</td><td>15</td><td>0.0%</td></tr><tr><td>resolved</td><td>bool</td><td>15</td><td>0.0%</td></tr>
+                <tr><td>suspicious_key</td><td>object</td><td>0</td><td>0.0%</td></tr><tr><td>game_id</td><td>object</td><td>0</td><td>0.0%</td></tr><tr><td>player_id</td><td>object</td><td>0</td><td>0.0%</td></tr><tr><td>flags</td><td>object</td><td>0</td><td>0.0%</td></tr><tr><td>goals</td><td>object</td><td>0</td><td>0.0%</td></tr><tr><td>shots</td><td>object</td><td>0</td><td>0.0%</td></tr><tr><td>toi_minutes</td><td>object</td><td>0</td><td>0.0%</td></tr><tr><td>_export_timestamp</td><td>object</td><td>0</td><td>0.0%</td></tr>
             </table>
         </div>
         
         <div class="card">
             <h2>Data Preview (First 20 Rows)</h2>
             <div style="overflow-x: auto;">
-                <table border="1" class="dataframe data-table">
-  <thead>
-    <tr style="text-align: right;">
-      <th>timestamp</th>
-      <th>game_id</th>
-      <th>season_id</th>
-      <th>player_id</th>
-      <th>player_name</th>
-      <th>category</th>
-      <th>stat</th>
-      <th>value</th>
-      <th>expected</th>
-      <th>severity</th>
-      <th>note</th>
-      <th>resolved</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>2026-01-05T18:30:10.378477</td>
-      <td>18969</td>
-      <td>NaN</td>
-      <td>P100202</td>
-      <td>Francis Forte</td>
-      <td>STATISTICAL_OUTLIER</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>INFO</td>
-      <td>Z-score=3.67 exceeds 3</td>
-      <td>False</td>
-    </tr>
-    <tr>
-      <td>2026-01-05T18:30:10.365859</td>
-      <td>18969</td>
-      <td>NaN</td>
-      <td>P100161</td>
-      <td>Galen Wood</td>
-      <td>STATISTICAL_OUTLIER</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>INFO</td>
-      <td>Z-score=3.50 exceeds 3</td>
-      <td>False</td>
-    </tr>
-    <tr>
-      <td>2026-01-05T18:30:10.365783</td>
-      <td>18969</td>
-      <td>NaN</td>
-      <td>P100117</td>
-      <td>Keegan Mantaro</td>
-      <td>STATISTICAL_OUTLIER</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>INFO</td>
-      <td>Z-score=3.50 exceeds 3</td>
-      <td>False</td>
-    </tr>
-    <tr>
-      <td>2026-01-05T18:30:10.365708</td>
-      <td>18969</td>
-      <td>NaN</td>
-      <td>P100108</td>
-      <td>Robert Mayfield</td>
-      <td>STATISTICAL_OUTLIER</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>INFO</td>
-      <td>Z-score=3.50 exceeds 3</td>
-      <td>False</td>
-    </tr>
-    <tr>
-      <td>2026-01-05T18:30:10.365664</td>
-      <td>18969</td>
-      <td>NaN</td>
-      <td>P100107</td>
-      <td>Matt Quinn</td>
-      <td>STATISTICAL_OUTLIER</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>INFO</td>
-      <td>Z-score=3.50 exceeds 3</td>
-      <td>False</td>
-    </tr>
-    <tr>
-      <td>2026-01-05T18:30:10.365525</td>
-      <td>18969</td>
-      <td>NaN</td>
-      <td>P100064</td>
-      <td>James Rynearson</td>
-      <td>STATISTICAL_OUTLIER</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>INFO</td>
-      <td>Z-score=3.50 exceeds 3</td>
-      <td>False</td>
-    </tr>
-    <tr>
-      <td>2026-01-05T18:30:10.365294</td>
-      <td>18969</td>
-      <td>NaN</td>
-      <td>P100023</td>
-      <td>Alex Considine</td>
-      <td>STATISTICAL_OUTLIER</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>INFO</td>
-      <td>Z-score=3.50 exceeds 3</td>
-      <td>False</td>
-    </tr>
-    <tr>
-      <td>2026-01-05T18:30:10.361608</td>
-      <td>18969</td>
-      <td>NaN</td>
-      <td>P100132</td>
-      <td>Nick Ciampoli</td>
-      <td>STATISTICAL_OUTLIER</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>INFO</td>
-      <td>Z-score=4.43 exceeds 3</td>
-      <td>False</td>
-    </tr>
-    <tr>
-      <td>2026-01-05T18:30:10.374903</td>
-      <td>18977</td>
-      <td>NaN</td>
-      <td>P100088</td>
-      <td>Hayden Smith</td>
-      <td>STATISTICAL_OUTLIER</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>INFO</td>
-      <td>Z-score=5.10 exceeds 3</td>
-      <td>False</td>
-    </tr>
-    <tr>
-      <td>2026-01-05T18:30:10.356926</td>
-      <td>18977</td>
-      <td>NaN</td>
-      <td>P100198</td>
-      <td>Maxwell Donaty</td>
-      <td>THRESHOLD_EXCEEDED</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>WARNING</td>
-      <td>cf_pct=0.0 exceeds &lt;15</td>
-      <td>False</td>
-    </tr>
-    <tr>
-      <td>2026-01-05T18:30:10.356279</td>
-      <td>18977</td>
-      <td>NaN</td>
-      <td>P100096</td>
-      <td>Jared Wolf</td>
-      <td>THRESHOLD_EXCEEDED</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>WARNING</td>
-      <td>toi_seconds=3185.0 exceeds &gt;2400</td>
-      <td>False</td>
-    </tr>
-    <tr>
-      <td>2026-01-05T18:30:10.356123</td>
-      <td>18977</td>
-      <td>NaN</td>
-      <td>P100088</td>
-      <td>Hayden Smith</td>
-      <td>THRESHOLD_EXCEEDED</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>WARNING</td>
-      <td>shots=23 exceeds &gt;20</td>
-      <td>False</td>
-    </tr>
-    <tr>
-      <td>2026-01-05T18:30:10.355956</td>
-      <td>18977</td>
-      <td>NaN</td>
-      <td>P100081</td>
-      <td>Lee Smith</td>
-      <td>THRESHOLD_EXCEEDED</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>WARNING</td>
-      <td>cf_pct=0.0 exceeds &lt;15</td>
-      <td>False</td>
-    </tr>
-    <tr>
-      <td>2026-01-05T18:30:10.368464</td>
-      <td>18987</td>
-      <td>NaN</td>
-      <td>P100201</td>
-      <td>Garrett Ashcroft</td>
-      <td>STATISTICAL_OUTLIER</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>INFO</td>
-      <td>Z-score=3.50 exceeds 3</td>
-      <td>False</td>
-    </tr>
-    <tr>
-      <td>2026-01-05T18:30:10.367832</td>
-      <td>18987</td>
-      <td>NaN</td>
-      <td>P100002</td>
-      <td>Kevin White</td>
-      <td>STATISTICAL_OUTLIER</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>INFO</td>
-      <td>Z-score=3.50 exceeds 3</td>
-      <td>False</td>
-    </tr>
-  </tbody>
-</table>
+                <p>No data</p>
             </div>
         </div>
         
         <footer>
-            BenchSight v13.18 | Generated 2026-01-07 05:03:20
+            BenchSight v11.04 | Generated 2026-01-12 23:37:10
         </footer>
     </div>
 </body>

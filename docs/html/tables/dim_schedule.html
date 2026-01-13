@@ -3,601 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>dim_schedule - BenchSight v0.01</title>
+    <title>dim_schedule - BenchSight</title>
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #333; line-height: 1.6; }
-        .header { background: linear-gradient(135deg, #1a1a2e 0%, #4a4e69 100%); color: white; padding: 20px 40px; }
-        .header h1 { margin: 0; font-size: 24px; }
-        .nav { background: #4a4e69; padding: 0 20px; display: flex; flex-wrap: wrap; }
-        .nav a { color: white; text-decoration: none; padding: 10px 14px; font-size: 13px; }
-        .nav a:hover { background: rgba(255,255,255,0.1); }
-        .container { max-width: 1600px; margin: 0 auto; padding: 30px; }
-        
-        /* Table Overview Section */
-        .table-overview { background: white; border-radius: 8px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .table-overview h2 { margin-top: 0; color: #4a4e69; border-bottom: 2px solid #4a4e69; padding-bottom: 10px; }
-        .overview-desc { background: #e3f2fd; border-left: 4px solid #1976d2; padding: 15px; margin-bottom: 20px; font-size: 15px; }
-        .overview-grid { display: grid; grid-template-columns: 120px 1fr; gap: 10px 20px; }
-        .overview-label { font-weight: 600; color: #555; }
-        .overview-value { color: #333; }
-        .overview-value code { background: #f5f5f5; padding: 2px 8px; border-radius: 4px; font-family: 'SF Mono', Monaco, monospace; font-size: 12px; }
-        
-        /* Column Documentation Section */
-        .column-docs { background: white; border-radius: 8px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .column-docs h2 { margin-top: 0; color: #4a4e69; border-bottom: 2px solid #4a4e69; padding-bottom: 10px; }
-        
-        /* Legend */
-        .legend { margin-bottom: 20px; padding: 15px; background: #fafafa; border-radius: 6px; }
-        .legend-title { font-weight: 600; margin-right: 10px; }
-        .legend-item { display: inline-flex; align-items: center; margin-right: 20px; }
-        
-        /* Type badges */
-        .type-badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-        .badge-explicit { background: #e8f5e9; color: #2e7d32; }
-        .badge-calculated { background: #fff3e0; color: #e65100; }
-        .badge-derived { background: #e3f2fd; color: #1565c0; }
-        .badge-fk { background: #fce4ec; color: #c2185b; }
-        .badge-unknown { background: #f5f5f5; color: #757575; }
-        
-        /* Table styling */
-        table { border-collapse: collapse; width: 100%; margin: 15px 0; background: white; }
-        th { background: #4a4e69; color: white; padding: 12px 10px; text-align: left; font-size: 12px; font-weight: 600; position: sticky; top: 0; }
-        td { border: 1px solid #e0e0e0; padding: 10px; font-size: 13px; vertical-align: top; }
-        tr:nth-child(even) { background: #fafafa; }
-        tr:hover { background: #f0f7ff; }
-        code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-family: 'SF Mono', Monaco, monospace; font-size: 11px; }
-        
-        /* Column-specific styling */
-        .context-cell { max-width: 300px; font-size: 12px; color: #555; }
-        .calc-cell { max-width: 250px; font-size: 11px; }
-        .calc-cell code { background: #fff8e1; }
-        .stat-cell { text-align: right; font-size: 12px; }
-        .null-low { color: #2e7d32; }
-        .null-med { color: #f57c00; }
-        .null-high { color: #c62828; font-weight: 600; }
-        
-        /* Badge styles */
-        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-        .badge-blue { background: #1976d2; color: white; }
-        .badge-green { background: #388e3c; color: white; }
-        .badge-yellow { background: #f9a825; color: #333; }
-        
-        /* Sample data */
-        .data-table { font-size: 11px; overflow-x: auto; }
-        .data-table th { font-size: 11px; padding: 8px; }
-        .data-table td { padding: 6px 8px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        
-        footer { text-align: center; padding: 20px; color: #888; font-size: 11px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #4a4e69; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🏒 BenchSight <span style="font-size: 14px; opacity: 0.8;">v0.01</span></h1>
-    </div>
-    
-    <nav class="nav">
-        <a href="../index.html">🏠 Home</a>
-        <a href="../tables.html">📊 Tables (59)</a>
-        <a href="../BS_DETECTOR.html">🔍 BS Detector</a>
-        <a href="../DOC_MAINTENANCE.html">📝 Doc Guide</a>
-    </nav>
-
     <div class="container">
-        <h1>dim_schedule <span class="badge badge-blue">Dimension</span></h1>
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>dim_schedule</h1>
         
-        <!-- Table Overview Section -->
-        <div class="table-overview">
-            <h2>Table Overview</h2>
-            
-            <div class="overview-desc">
-                <strong>Description:</strong> No description available.
-            </div>
-            
-            <div class="overview-grid">
-                <div class="overview-label">Purpose:</div>
-                <div class="overview-value">Not documented.</div>
-                
-                <div class="overview-label">Source Module:</div>
-                <div class="overview-value"><code>Unknown</code></div>
-                
-                <div class="overview-label">Logic:</div>
-                <div class="overview-value">Not documented.</div>
-                
-                <div class="overview-label">Grain:</div>
-                <div class="overview-value">Not documented.</div>
-                
-                <div class="overview-label">Rows:</div>
-                <div class="overview-value">100</div>
-                
-                <div class="overview-label">Columns:</div>
-                <div class="overview-value">44</div>
-            </div>
+        
+        
+        <div class="meta">
+            <strong>Rows:</strong> 572 | 
+            <strong>Columns:</strong> 37 |
+            <strong>Last Updated:</strong> 2026-01-12 23:37:10 |
+            <strong>Version:</strong> 11.04
         </div>
         
-        <!-- Column Documentation Section -->
-        <div class="column-docs">
-            <h2>Column Documentation</h2>
-            
-            <div class="legend">
-                <span class="legend-title">Legend:</span>
-                <span class="legend-item"><span class="type-badge badge-explicit">Explicit</span> = From raw data</span>
-                <span class="legend-item"><span class="type-badge badge-calculated">Calculated</span> = Formula-based</span>
-                <span class="legend-item"><span class="type-badge badge-derived">Derived</span> = Generated key/aggregate</span>
-                <span class="legend-item"><span class="type-badge badge-fk">FK</span> = Foreign key lookup</span>
-            </div>
-            
-            <table>
-                <thead>
-                    <tr>
-                        <th>Column</th>
-                        <th>Data Type</th>
-                        <th>Description</th>
-                        <th>Context / Mapping</th>
-                        <th>Calculation / Formula</th>
-                        <th>Type</th>
-                        <th>Non-Null</th>
-                        <th>Null %</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    
-            <tr>
-                <td><code>game_id</code></td>
-                <td>int64</td>
-                <td>Unique game identifier from NORAD league</td>
-                <td class="context-cell">Numeric ID from league website URL. Example: 18969.</td>
-                <td class="calc-cell"><code>Extracted from tracking file directory name (data/raw/games/{game_id}/)</code></td>
-                <td><span class="type-badge badge-explicit">Explicit</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>season</code></td>
-                <td>int64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>season_id</code></td>
-                <td>object</td>
-                <td>Foreign key reference</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>game_url</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>home_team_game_id</code></td>
-                <td>object</td>
-                <td>Unique game identifier</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>away_team_game_id</code></td>
-                <td>object</td>
-                <td>Unique game identifier</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>date</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>game_time</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">1</td>
-                <td class="stat-cell null-high">99.0%</td>
-            </tr>
-            <tr>
-                <td><code>home_team_name</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>away_team_name</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>home_team_id</code></td>
-                <td>object</td>
-                <td>Unique team identifier</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>away_team_id</code></td>
-                <td>object</td>
-                <td>Unique team identifier</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>head_to_head_id</code></td>
-                <td>object</td>
-                <td>Foreign key reference</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>game_type</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>playoff_round</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">12</td>
-                <td class="stat-cell null-high">88.0%</td>
-            </tr>
-            <tr>
-                <td><code>last_period_type</code></td>
-                <td>object</td>
-                <td>Game period (1, 2, 3, OT)</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>period_length</code></td>
-                <td>object</td>
-                <td>Game period (1, 2, 3, OT)</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>ot_period_length</code></td>
-                <td>object</td>
-                <td>Game period (1, 2, 3, OT)</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>shootout_rounds</code></td>
-                <td>int64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>home_total_goals</code></td>
-                <td>int64</td>
-                <td>Goals scored</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>away_total_goals</code></td>
-                <td>int64</td>
-                <td>Goals scored</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>home_team_period1_goals</code></td>
-                <td>float64</td>
-                <td>Game period (1, 2, 3, OT)</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">99</td>
-                <td class="stat-cell null-low">1.0%</td>
-            </tr>
-            <tr>
-                <td><code>home_team_period2_goals</code></td>
-                <td>float64</td>
-                <td>Game period (1, 2, 3, OT)</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">99</td>
-                <td class="stat-cell null-low">1.0%</td>
-            </tr>
-            <tr>
-                <td><code>home_team_period3_goals</code></td>
-                <td>float64</td>
-                <td>Game period (1, 2, 3, OT)</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">99</td>
-                <td class="stat-cell null-low">1.0%</td>
-            </tr>
-            <tr>
-                <td><code>home_team_periodOT_goals</code></td>
-                <td>float64</td>
-                <td>Game period (1, 2, 3, OT)</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">98</td>
-                <td class="stat-cell null-med">2.0%</td>
-            </tr>
-            <tr>
-                <td><code>away_team_period1_goals</code></td>
-                <td>float64</td>
-                <td>Game period (1, 2, 3, OT)</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">99</td>
-                <td class="stat-cell null-low">1.0%</td>
-            </tr>
-            <tr>
-                <td><code>away_team_period2_goals</code></td>
-                <td>float64</td>
-                <td>Game period (1, 2, 3, OT)</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">99</td>
-                <td class="stat-cell null-low">1.0%</td>
-            </tr>
-            <tr>
-                <td><code>away_team_period3_goals</code></td>
-                <td>float64</td>
-                <td>Game period (1, 2, 3, OT)</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">99</td>
-                <td class="stat-cell null-low">1.0%</td>
-            </tr>
-            <tr>
-                <td><code>away_team_periodOT_goals</code></td>
-                <td>float64</td>
-                <td>Game period (1, 2, 3, OT)</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">99</td>
-                <td class="stat-cell null-low">1.0%</td>
-            </tr>
-            <tr>
-                <td><code>home_team_seeding</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">12</td>
-                <td class="stat-cell null-high">88.0%</td>
-            </tr>
-            <tr>
-                <td><code>away_team_seeding</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">12</td>
-                <td class="stat-cell null-high">88.0%</td>
-            </tr>
-            <tr>
-                <td><code>home_team_w</code></td>
-                <td>int64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>home_team_l</code></td>
-                <td>int64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>home_team_t</code></td>
-                <td>int64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>home_team_pts</code></td>
-                <td>int64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>away_team_w</code></td>
-                <td>int64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>away_team_l</code></td>
-                <td>int64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>away_team_t</code></td>
-                <td>int64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>away_team_pts</code></td>
-                <td>int64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>video_id</code></td>
-                <td>float64</td>
-                <td>Foreign key reference</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>video_start_time</code></td>
-                <td>float64</td>
-                <td>Shift start time</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>video_end_time</code></td>
-                <td>float64</td>
-                <td>Shift end time</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>video_title</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>video_url</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-                </tbody>
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>game_id</td><td>int64</td><td>572</td><td>0.0%</td></tr><tr><td>season</td><td>int64</td><td>572</td><td>0.0%</td></tr><tr><td>season_id</td><td>object</td><td>572</td><td>0.0%</td></tr><tr><td>game_url</td><td>object</td><td>572</td><td>0.0%</td></tr><tr><td>date</td><td>object</td><td>572</td><td>0.0%</td></tr><tr><td>game_time</td><td>object</td><td>91</td><td>84.1%</td></tr><tr><td>home_team_name</td><td>object</td><td>572</td><td>0.0%</td></tr><tr><td>away_team_name</td><td>object</td><td>572</td><td>0.0%</td></tr><tr><td>home_team_id</td><td>object</td><td>572</td><td>0.0%</td></tr><tr><td>away_team_id</td><td>object</td><td>572</td><td>0.0%</td></tr><tr><td>head_to_head_id</td><td>object</td><td>572</td><td>0.0%</td></tr><tr><td>game_type</td><td>object</td><td>572</td><td>0.0%</td></tr><tr><td>playoff_round</td><td>object</td><td>54</td><td>90.6%</td></tr><tr><td>last_period_type</td><td>object</td><td>572</td><td>0.0%</td></tr><tr><td>period_length</td><td>object</td><td>572</td><td>0.0%</td></tr><tr><td>ot_period_length</td><td>object</td><td>571</td><td>0.2%</td></tr><tr><td>shootout_rounds</td><td>float64</td><td>121</td><td>78.8%</td></tr><tr><td>home_total_goals</td><td>int64</td><td>572</td><td>0.0%</td></tr><tr><td>away_total_goals</td><td>int64</td><td>572</td><td>0.0%</td></tr><tr><td>home_team_period1_goals</td><td>float64</td><td>366</td><td>36.0%</td></tr><tr><td>home_team_period2_goals</td><td>float64</td><td>371</td><td>35.1%</td></tr><tr><td>home_team_period3_goals</td><td>float64</td><td>366</td><td>36.0%</td></tr><tr><td>home_team_periodOT_goals</td><td>float64</td><td>128</td><td>77.6%</td></tr><tr><td>away_team_period1_goals</td><td>float64</td><td>371</td><td>35.1%</td></tr><tr><td>away_team_period2_goals</td><td>float64</td><td>355</td><td>37.9%</td></tr><tr><td>away_team_period3_goals</td><td>float64</td><td>363</td><td>36.5%</td></tr><tr><td>away_team_periodOT_goals</td><td>float64</td><td>127</td><td>77.8%</td></tr><tr><td>home_team_seeding</td><td>float64</td><td>40</td><td>93.0%</td></tr><tr><td>away_team_seeding</td><td>float64</td><td>40</td><td>93.0%</td></tr><tr><td>home_team_w</td><td>int64</td><td>572</td><td>0.0%</td></tr><tr><td>home_team_l</td><td>int64</td><td>572</td><td>0.0%</td></tr><tr><td>home_team_t</td><td>int64</td><td>572</td><td>0.0%</td></tr><tr><td>home_team_pts</td><td>int64</td><td>572</td><td>0.0%</td></tr><tr><td>away_team_w</td><td>int64</td><td>572</td><td>0.0%</td></tr><tr><td>away_team_l</td><td>int64</td><td>572</td><td>0.0%</td></tr><tr><td>away_team_t</td><td>int64</td><td>572</td><td>0.0%</td></tr><tr><td>away_team_pts</td><td>int64</td><td>572</td><td>0.0%</td></tr>
             </table>
         </div>
         
-        <!-- Sample Data Section -->
-        <div class="column-docs">
-            <h2>Sample Data (First 5 Rows)</h2>
-            <table border="1" class="dataframe data-table">
+        <div class="card">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
   <thead>
     <tr style="text-align: right;">
       <th>game_id</th>
       <th>season</th>
       <th>season_id</th>
       <th>game_url</th>
-      <th>home_team_game_id</th>
-      <th>away_team_game_id</th>
       <th>date</th>
       <th>game_time</th>
       <th>home_team_name</th>
@@ -631,11 +91,6 @@
       <th>away_team_l</th>
       <th>away_team_t</th>
       <th>away_team_pts</th>
-      <th>video_id</th>
-      <th>video_start_time</th>
-      <th>video_end_time</th>
-      <th>video_title</th>
-      <th>video_url</th>
     </tr>
   </thead>
   <tbody>
@@ -644,8 +99,6 @@
       <td>2025</td>
       <td>N2025S</td>
       <td>https://www.noradhockey.com/event/18619/</td>
-      <td>18619N10022</td>
-      <td>18619N10023</td>
       <td>2025-07-13 00:00:00</td>
       <td>18:45:00</td>
       <td>Red</td>
@@ -658,7 +111,7 @@
       <td>Regulation</td>
       <td>00:18:00</td>
       <td>00:00:00</td>
-      <td>0</td>
+      <td>0.0</td>
       <td>4</td>
       <td>5</td>
       <td>NaN</td>
@@ -679,19 +132,12 @@
       <td>0</td>
       <td>0</td>
       <td>2</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td>10063</td>
       <td>20242025</td>
       <td>N20242025F</td>
       <td>https://www.noradhockey.com/event/tbd-vs-tbd-3/</td>
-      <td>10063N10003</td>
-      <td>10063N10009</td>
       <td>2025-04-27 00:00:00</td>
       <td>NaN</td>
       <td>HollowBrook</td>
@@ -704,7 +150,7 @@
       <td>Overtime</td>
       <td>00:18:00</td>
       <td>00:03:00</td>
-      <td>0</td>
+      <td>0.0</td>
       <td>1</td>
       <td>2</td>
       <td>1.0</td>
@@ -725,19 +171,12 @@
       <td>0</td>
       <td>0</td>
       <td>2</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td>10074</td>
       <td>20242025</td>
       <td>N20242025F</td>
       <td>https://www.noradhockey.com/event/tbd-vs-tbd/</td>
-      <td>10074N10008</td>
-      <td>10074N10003</td>
       <td>2025-04-13 00:00:00</td>
       <td>NaN</td>
       <td>Platinum</td>
@@ -750,7 +189,7 @@
       <td>Regulation</td>
       <td>00:18:00</td>
       <td>00:00:00</td>
-      <td>0</td>
+      <td>0.0</td>
       <td>2</td>
       <td>4</td>
       <td>2.0</td>
@@ -771,19 +210,12 @@
       <td>0</td>
       <td>0</td>
       <td>2</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td>10073</td>
       <td>20242025</td>
       <td>N20242025F</td>
       <td>https://www.noradhockey.com/event/tbd-vs-tbd-2/</td>
-      <td>10073N10004</td>
-      <td>10073N10009</td>
       <td>2025-04-13 00:00:00</td>
       <td>NaN</td>
       <td>Nelson</td>
@@ -796,7 +228,7 @@
       <td>Regulation</td>
       <td>00:18:00</td>
       <td>00:00:00</td>
-      <td>0</td>
+      <td>0.0</td>
       <td>4</td>
       <td>7</td>
       <td>7.0</td>
@@ -817,19 +249,12 @@
       <td>0</td>
       <td>0</td>
       <td>2</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <td>10066</td>
       <td>20242025</td>
       <td>N20242025F</td>
       <td>https://www.noradhockey.com/event/platinum-vs-nelson/</td>
-      <td>10066N10008</td>
-      <td>10066N10004</td>
       <td>2025-04-06 00:00:00</td>
       <td>NaN</td>
       <td>Platinum</td>
@@ -842,7 +267,7 @@
       <td>Regulation</td>
       <td>00:18:00</td>
       <td>00:00:00</td>
-      <td>0</td>
+      <td>0.0</td>
       <td>3</td>
       <td>4</td>
       <td>2.0</td>
@@ -863,18 +288,599 @@
       <td>0</td>
       <td>0</td>
       <td>2</td>
+    </tr>
+    <tr>
+      <td>10065</td>
+      <td>20242025</td>
+      <td>N20242025F</td>
+      <td>https://www.noradhockey.com/event/hollowbrook-vs-os-offices/</td>
+      <td>2025-04-06 00:00:00</td>
+      <td>NaN</td>
+      <td>HollowBrook</td>
+      <td>OS Offices</td>
+      <td>N10003</td>
+      <td>N10005</td>
+      <td>N10003_N10005</td>
+      <td>Playoffs</td>
+      <td>RoundRobin</td>
+      <td>Regulation</td>
+      <td>00:18:00</td>
+      <td>00:00:00</td>
+      <td>0.0</td>
+      <td>9</td>
+      <td>0</td>
+      <td>2.0</td>
+      <td>5.0</td>
+      <td>2.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>2.0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>10064</td>
+      <td>20242025</td>
+      <td>N20242025F</td>
+      <td>https://www.noradhockey.com/event/amos-vs-triple-j/</td>
+      <td>2025-04-06 00:00:00</td>
+      <td>NaN</td>
+      <td>AMOS</td>
+      <td>Triple J</td>
+      <td>N10001</td>
+      <td>N10009</td>
+      <td>N10001_N10009</td>
+      <td>Playoffs</td>
+      <td>RoundRobin</td>
+      <td>Regulation</td>
+      <td>00:18:00</td>
+      <td>00:00:00</td>
+      <td>0.0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>2.0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>10069</td>
+      <td>20242025</td>
+      <td>N20242025F</td>
+      <td>https://www.noradhockey.com/event/platinum-vs-ace/</td>
+      <td>2025-03-30 00:00:00</td>
+      <td>NaN</td>
+      <td>Platinum</td>
+      <td>Ace</td>
+      <td>N10008</td>
+      <td>N10002</td>
+      <td>N10002_N10008</td>
+      <td>Playoffs</td>
+      <td>RoundRobin</td>
+      <td>Regulation</td>
+      <td>00:18:00</td>
+      <td>00:00:00</td>
+      <td>0.0</td>
+      <td>12</td>
+      <td>2</td>
+      <td>4.0</td>
+      <td>5.0</td>
+      <td>3.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>3.0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>10068</td>
+      <td>20242025</td>
+      <td>N20242025F</td>
+      <td>https://www.noradhockey.com/event/hollowbrook-vs-outlaws/</td>
+      <td>2025-03-30 00:00:00</td>
+      <td>NaN</td>
+      <td>HollowBrook</td>
+      <td>Outlaws</td>
+      <td>N10003</td>
+      <td>N10007</td>
+      <td>N10003_N10007</td>
+      <td>Playoffs</td>
+      <td>RoundRobin</td>
+      <td>Regulation</td>
+      <td>00:18:00</td>
+      <td>00:00:00</td>
+      <td>0.0</td>
+      <td>6</td>
+      <td>2</td>
+      <td>1.0</td>
+      <td>3.0</td>
+      <td>2.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>3.0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>10067</td>
+      <td>20242025</td>
+      <td>N20242025F</td>
+      <td>https://www.noradhockey.com/event/amos-vs-orphans/</td>
+      <td>2025-03-30 00:00:00</td>
+      <td>NaN</td>
+      <td>AMOS</td>
+      <td>Orphans</td>
+      <td>N10001</td>
+      <td>N10006</td>
+      <td>N10001_N10006</td>
+      <td>Playoffs</td>
+      <td>RoundRobin</td>
+      <td>Regulation</td>
+      <td>00:18:00</td>
+      <td>00:00:00</td>
+      <td>0.0</td>
+      <td>5</td>
+      <td>3</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>4.0</td>
+      <td>0.0</td>
+      <td>2.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>3.0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>10072</td>
+      <td>20242025</td>
+      <td>N20242025F</td>
+      <td>https://www.noradhockey.com/event/seed-6-vs-seed-9/</td>
+      <td>2025-03-23 00:00:00</td>
+      <td>NaN</td>
+      <td>Nelson</td>
+      <td>Ace</td>
+      <td>N10004</td>
+      <td>N10002</td>
+      <td>N10002_N10004</td>
+      <td>Playoffs</td>
+      <td>RoundRobin</td>
+      <td>Regulation</td>
+      <td>00:18:00</td>
+      <td>00:00:00</td>
+      <td>0.0</td>
+      <td>7</td>
+      <td>4</td>
+      <td>1.0</td>
+      <td>4.0</td>
+      <td>2.0</td>
+      <td>0.0</td>
+      <td>2.0</td>
+      <td>2.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>2.0</td>
+      <td>3.0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>10071</td>
+      <td>20242025</td>
+      <td>N20242025F</td>
+      <td>https://www.noradhockey.com/event/seed-5-vs-seed-8/</td>
+      <td>2025-03-23 00:00:00</td>
+      <td>NaN</td>
+      <td>OS Offices</td>
+      <td>Outlaws</td>
+      <td>N10005</td>
+      <td>N10007</td>
+      <td>N10005_N10007</td>
+      <td>Playoffs</td>
+      <td>RoundRobin</td>
+      <td>Regulation</td>
+      <td>00:18:00</td>
+      <td>00:00:00</td>
+      <td>0.0</td>
+      <td>5</td>
+      <td>4</td>
+      <td>1.0</td>
+      <td>2.0</td>
+      <td>2.0</td>
+      <td>0.0</td>
+      <td>3.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>2.0</td>
+      <td>3.0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>10070</td>
+      <td>20242025</td>
+      <td>N20242025F</td>
+      <td>https://www.noradhockey.com/event/seed-4-vs-seed-7/</td>
+      <td>2025-03-23 00:00:00</td>
+      <td>NaN</td>
+      <td>Triple J</td>
+      <td>Orphans</td>
+      <td>N10009</td>
+      <td>N10006</td>
+      <td>N10006_N10009</td>
+      <td>Playoffs</td>
+      <td>RoundRobin</td>
+      <td>Regulation</td>
+      <td>00:18:00</td>
+      <td>00:00:00</td>
+      <td>0.0</td>
+      <td>5</td>
+      <td>1</td>
+      <td>2.0</td>
+      <td>0.0</td>
+      <td>3.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>2.0</td>
+      <td>3.0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>18001</td>
+      <td>20242025</td>
+      <td>N20242025F</td>
+      <td>https://www.noradhockey.com/event/18001/</td>
+      <td>2025-03-16 00:00:00</td>
+      <td>NaN</td>
+      <td>Nelson</td>
+      <td>Outlaws</td>
+      <td>N10004</td>
+      <td>N10007</td>
+      <td>N10004_N10007</td>
+      <td>Regular</td>
+      <td>NaN</td>
+      <td>Regulation</td>
+      <td>00:18:00</td>
+      <td>00:00:00</td>
+      <td>0.0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
       <td>NaN</td>
       <td>NaN</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>18000</td>
+      <td>20242025</td>
+      <td>N20242025F</td>
+      <td>https://www.noradhockey.com/event/18000/</td>
+      <td>2025-03-16 00:00:00</td>
+      <td>NaN</td>
+      <td>AMOS</td>
+      <td>Orphans</td>
+      <td>N10001</td>
+      <td>N10006</td>
+      <td>N10001_N10006</td>
+      <td>Regular</td>
+      <td>NaN</td>
+      <td>Regulation</td>
+      <td>00:18:00</td>
+      <td>00:00:00</td>
+      <td>0.0</td>
+      <td>7</td>
+      <td>2</td>
+      <td>3.0</td>
+      <td>2.0</td>
+      <td>2.0</td>
+      <td>0.0</td>
+      <td>2.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
       <td>NaN</td>
       <td>NaN</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>17999</td>
+      <td>20242025</td>
+      <td>N20242025F</td>
+      <td>https://www.noradhockey.com/event/17999/</td>
+      <td>2025-03-16 00:00:00</td>
       <td>NaN</td>
+      <td>OS Offices</td>
+      <td>Ace</td>
+      <td>N10005</td>
+      <td>N10002</td>
+      <td>N10002_N10005</td>
+      <td>Regular</td>
+      <td>NaN</td>
+      <td>Regulation</td>
+      <td>00:18:00</td>
+      <td>00:00:00</td>
+      <td>0.0</td>
+      <td>5</td>
+      <td>6</td>
+      <td>2.0</td>
+      <td>1.0</td>
+      <td>2.0</td>
+      <td>0.0</td>
+      <td>3.0</td>
+      <td>3.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>17998</td>
+      <td>20242025</td>
+      <td>N20242025F</td>
+      <td>https://www.noradhockey.com/event/17998/</td>
+      <td>2025-03-16 00:00:00</td>
+      <td>NaN</td>
+      <td>Platinum</td>
+      <td>Triple J</td>
+      <td>N10008</td>
+      <td>N10009</td>
+      <td>N10008_N10009</td>
+      <td>Regular</td>
+      <td>NaN</td>
+      <td>Regulation</td>
+      <td>00:18:00</td>
+      <td>00:00:00</td>
+      <td>0.0</td>
+      <td>4</td>
+      <td>3</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>2.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>18051</td>
+      <td>20242025</td>
+      <td>N20242025F</td>
+      <td>https://www.noradhockey.com/event/18051/</td>
+      <td>2025-03-09 00:00:00</td>
+      <td>NaN</td>
+      <td>HollowBrook</td>
+      <td>Orphans</td>
+      <td>N10003</td>
+      <td>N10006</td>
+      <td>N10003_N10006</td>
+      <td>Regular</td>
+      <td>NaN</td>
+      <td>Regulation</td>
+      <td>00:18:00</td>
+      <td>00:00:00</td>
+      <td>0.0</td>
+      <td>4</td>
+      <td>3</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>3.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>18050</td>
+      <td>20242025</td>
+      <td>N20242025F</td>
+      <td>https://www.noradhockey.com/event/18050/</td>
+      <td>2025-03-09 00:00:00</td>
+      <td>NaN</td>
+      <td>Nelson</td>
+      <td>Ace</td>
+      <td>N10004</td>
+      <td>N10002</td>
+      <td>N10002_N10004</td>
+      <td>Regular</td>
+      <td>NaN</td>
+      <td>Regulation</td>
+      <td>00:18:00</td>
+      <td>00:00:00</td>
+      <td>0.0</td>
+      <td>4</td>
+      <td>4</td>
+      <td>2.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>2.0</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>18049</td>
+      <td>20242025</td>
+      <td>N20242025F</td>
+      <td>https://www.noradhockey.com/event/18049/</td>
+      <td>2025-03-09 00:00:00</td>
+      <td>NaN</td>
+      <td>AMOS</td>
+      <td>Triple J</td>
+      <td>N10001</td>
+      <td>N10009</td>
+      <td>N10001_N10009</td>
+      <td>Regular</td>
+      <td>NaN</td>
+      <td>Regulation</td>
+      <td>00:18:00</td>
+      <td>00:00:00</td>
+      <td>0.0</td>
+      <td>4</td>
+      <td>6</td>
+      <td>1.0</td>
+      <td>2.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>3.0</td>
+      <td>1.0</td>
+      <td>2.0</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
     </tr>
   </tbody>
 </table>
+            </div>
         </div>
         
         <footer>
-            BenchSight v0.01 | Generated: 2026-01-07 21:13 | <a href="../tables.html">Back to Tables</a>
+            BenchSight v11.04 | Generated 2026-01-12 23:37:10
         </footer>
     </div>
 </body>

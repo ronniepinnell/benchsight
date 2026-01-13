@@ -1,7 +1,0 @@
-zone_outcome_id,zone_outcome_code,zone_outcome_name,is_controlled,zone_type
-ZO01,CARRY,Carry In/Out,True,entry
-ZO02,PASS,Pass In/Out,True,entry
-ZO03,DUMP,Dump In/Out,False,entry
-ZO04,FAILED,Failed Entry/Exit,False,entry
-ZO05,CLEAR,Clear,False,exit
-ZO06,RECOVERED,Recovered,True,exit

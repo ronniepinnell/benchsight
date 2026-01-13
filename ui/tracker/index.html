@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BenchSight Tracker v16.08</title>
+<title>BenchSight Tracker v22.1</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -101,9 +101,18 @@ kbd { background: var(--bg); border: 1px solid var(--border); padding: 0 3px; bo
 .xy-player-sel { min-width: 80px; font-size: 9px; }
 
 /* Event List */
-.evt-list { border-top: 1px solid var(--border); flex: 0 0 auto; min-height: 120px; max-height: 200px; overflow-y: auto; background: var(--card); }
+.evt-list { border-top: 1px solid var(--border); flex: 0 0 auto; min-height: 120px; max-height: 280px; overflow-y: auto; background: var(--card); }
 .evt-header { display: grid; grid-template-columns: 35px 45px 100px 1fr 20px; gap: 2px; padding: 2px 6px; background: var(--card); font-size: 7px; color: var(--muted); position: sticky; top: 0; }
-.evt-item { display: grid; grid-template-columns: 22px 25px 20px 52px 14px 48px 70px 14px 12px 32px 32px 50px 14px 12px 12px; gap: 1px; padding: 2px 3px; border-bottom: 1px solid var(--border); font-size: 7px; cursor: pointer; align-items: center; }
+/* v20.4: Expanded columns - #, Sh, Lnk, Time, T, Type, Detail1, Detail2, Z, S, EvtP, OppP, PD1, PD2, PS, XY, ⭐ */
+.evt-item { display: grid; grid-template-columns: 22px 22px 20px 48px 14px 46px 58px 58px 14px 12px 30px 30px 46px 46px 12px 12px 12px; gap: 1px; padding: 2px 3px; border-bottom: 1px solid var(--border); font-size: 7px; cursor: pointer; align-items: center; }
+/* v20.4: Event log filter row */
+.evt-filter-row { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px 6px; background: var(--panel); border-bottom: 1px solid var(--border); align-items: center; }
+.evt-filter-row select, .evt-filter-row input { font-size: 8px; padding: 2px 4px; background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 3px; }
+.evt-filter-row select { max-width: 80px; }
+.evt-filter-row input { width: 40px; }
+.evt-filter-row label { font-size: 7px; color: var(--muted); margin-right: 2px; }
+.evt-filter-row .filter-group { display: flex; align-items: center; gap: 2px; }
+.evt-filter-row .btn-clear { font-size: 8px; padding: 2px 6px; background: var(--danger); color: white; border: none; border-radius: 3px; cursor: pointer; }
 .evt-item:hover { background: var(--panel); }
 .evt-item.active { background: rgba(0,212,170,0.1); }
 .evt-item .idx { color: var(--accent); font-family: monospace; font-size: 7px; }
@@ -163,6 +172,28 @@ kbd { background: var(--bg); border: 1px solid var(--border); padding: 0 3px; bo
 .modal h3 { font-size: 12px; color: var(--accent); margin-bottom: 8px; }
 .modal-actions { display: flex; gap: 4px; margin-top: 10px; }
 .modal-actions button { flex: 1; }
+/* v20.5: Mapping modal for import validation */
+.mapping-modal { min-width: 700px; max-width: 900px; }
+.mapping-modal h3 { font-size: 14px; margin-bottom: 12px; }
+.mapping-modal .summary { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+.mapping-table { width: 100%; border-collapse: collapse; font-size: 10px; margin: 10px 0; }
+.mapping-table th { background: var(--card); color: var(--accent); padding: 6px 8px; text-align: left; border: 1px solid var(--border); }
+.mapping-table td { padding: 6px 8px; border: 1px solid var(--border); }
+.mapping-table tr:hover { background: rgba(0,212,255,0.1); }
+.mapping-table .field { color: var(--muted); font-size: 9px; }
+.mapping-table .original { color: var(--warn); font-family: monospace; }
+.mapping-table .matched { color: var(--success); font-family: monospace; }
+.mapping-table .no-match { color: var(--danger); }
+.mapping-table select { font-size: 9px; padding: 2px 4px; max-width: 180px; background: var(--card); border: 1px solid var(--border); color: var(--text); }
+.mapping-table .score { font-size: 9px; color: var(--muted); }
+.mapping-legend { display: flex; gap: 15px; font-size: 9px; margin: 8px 0; }
+.mapping-legend span { display: flex; align-items: center; gap: 4px; }
+.mapping-legend .dot { width: 8px; height: 8px; border-radius: 50%; }
+.mapping-legend .dot.exact { background: var(--success); }
+.mapping-legend .dot.fuzzy { background: var(--accent); }
+.mapping-legend .dot.none { background: var(--danger); }
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 999; }
+.mapping-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; }
 
 /* Edit Modal Specific */
 .edit-player-row { display: flex; gap: 4px; align-items: center; padding: 4px; background: var(--input); border-radius: 3px; margin-bottom: 4px; }
@@ -260,12 +291,14 @@ kbd { background: var(--bg); border: 1px solid var(--border); padding: 0 3px; bo
     <div style="display:flex;gap:4px;align-items:center;">
       <input type="text" id="gameSearch" class="game-search" placeholder="🔍 Search games..." oninput="filterGames(this.value)">
       <select id="gameSelect" class="game-select" onchange="selectGame(this.value)"></select>
+      <button class="btn-sm" onclick="loadGames()" title="Reload Games">🔄</button>
     </div>
     <div class="period-btns">
       <button class="period-btn active" data-p="1" onclick="setPeriod(1)">P1</button>
       <button class="period-btn" data-p="2" onclick="setPeriod(2)">P2</button>
       <button class="period-btn" data-p="3" onclick="setPeriod(3)">P3</button>
       <button class="period-btn" data-p="OT" onclick="setPeriod('OT')">OT</button>
+      <button id="flipZonesBtn" onclick="flipZones()" title="Flip which end home attacks in P1 (for beer league variable benches)" style="margin-left:8px;padding:2px 6px;font-size:10px;background:#374151;">⟷ Flip</button>
     </div>
     <span class="score"><span class="score-h" id="scoreH">0</span> - <span class="score-a" id="scoreA">0</span></span>
     <input type="text" class="clock" id="clock" value="18:00" style="width:60px;text-align:center;" onchange="updateClock()">
@@ -279,6 +312,8 @@ kbd { background: var(--bg); border: 1px solid var(--border); padding: 0 3px; bo
       <button class="btn-sm" onclick="openSettings()">⚙️</button>
       <button class="btn-sm" onclick="openHelp()">❓</button>
       <button class="btn-sm btn-success" onclick="exportData()">📥 Export</button>
+      <button class="btn-sm" style="background:#6366f1;" onclick="document.getElementById('importFileInput').click()">📤 Import</button>
+      <input type="file" id="importFileInput" accept=".xlsx,.xls" style="display:none" onchange="importExcel(this.files[0])">
     </div>
   </header>
   
@@ -362,6 +397,7 @@ kbd { background: var(--bg); border: 1px solid var(--border); padding: 0 3px; bo
           <div class="panel-header" style="font-size:8px;display:flex;justify-content:space-between;">
             <span>Shift Log</span>
             <span>
+              <button class="btn-sm" onclick="addNewShift()" title="Add New Shift" style="background:var(--success);">➕</button>
               <button class="clear-all-btn" onclick="clearAllShifts()" title="Clear All Shifts">🗑️ All</button>
               <button class="btn-sm" onclick="showAllShifts()">View All</button>
             </span>
@@ -593,14 +629,15 @@ kbd { background: var(--bg); border: 1px solid var(--border); padding: 0 3px; bo
       <!-- Event List -->
       <div class="evt-list" id="eventLogSection">
         <div class="evt-header" style="display:flex;justify-content:space-between;align-items:center;">
-          <!-- v15: Header columns now match body columns -->
+          <!-- v20.4: Header columns now match expanded body columns -->
           <span style="display:flex;align-items:center;gap:4px;">
             <button class="btn-sm" onclick="toggleEventLog()" title="Toggle Event Log">📝</button>
-            <span id="evtLogHeader" style="display:grid;grid-template-columns:25px 35px 25px 55px 20px 50px 60px 20px 15px 40px 40px 50px 15px 15px 15px;gap:2px;flex:1;font-size:7px;">
-              <span>#</span><span>Seq</span><span>Lnk</span><span>Time</span><span>T</span><span>Type</span><span>Detail</span><span>Z</span><span>S</span><span>EvtP</span><span>OppP</span><span>PD1</span><span>PS</span><span>XY</span><span>⭐</span>
+            <span id="evtLogHeader" style="display:grid;grid-template-columns:22px 22px 20px 48px 14px 46px 58px 58px 14px 12px 30px 30px 46px 46px 12px 12px 12px;gap:1px;flex:1;font-size:6px;">
+              <span>#</span><span>Sh</span><span>Lnk</span><span>Time</span><span>T</span><span>Type</span><span>Detail1</span><span>Detail2</span><span>Z</span><span>S</span><span>EvtP</span><span>OppP</span><span>PD1</span><span>PD2</span><span>PS</span><span>XY</span><span>⭐</span>
             </span>
           </span>
           <span>
+            <button class="btn-sm" onclick="addNewEvent()" title="Add New Event" style="background:var(--success);">➕</button>
             <button class="clear-all-btn" onclick="clearAllEvents()" title="Clear All Events">🗑️ All</button>
             <button class="btn-sm" onclick="showAllEvents()" style="margin-left:4px;">All</button>
           </span>
@@ -612,6 +649,60 @@ kbd { background: var(--bg); border: 1px solid var(--border); padding: 0 3px; bo
           <button class="period-filter-tab" data-filter="2" onclick="filterEventLog('2')">P2</button>
           <button class="period-filter-tab" data-filter="3" onclick="filterEventLog('3')">P3</button>
           <button class="period-filter-tab" data-filter="OT" onclick="filterEventLog('OT')">OT</button>
+        </div>
+        <!-- v20.4: Advanced filter row -->
+        <div class="evt-filter-row" id="evtFilterRow">
+          <div class="filter-group">
+            <label>Type:</label>
+            <select id="filterEvtType" onchange="applyEventFilters()">
+              <option value="">All</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Detail1:</label>
+            <select id="filterEvtDetail1" onchange="applyEventFilters()">
+              <option value="">All</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Detail2:</label>
+            <select id="filterEvtDetail2" onchange="applyEventFilters()">
+              <option value="">All</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>PD1:</label>
+            <select id="filterPlayDetail1" onchange="applyEventFilters()">
+              <option value="">All</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>PD2:</label>
+            <select id="filterPlayDetail2" onchange="applyEventFilters()">
+              <option value="">All</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Team:</label>
+            <select id="filterEvtTeam" onchange="applyEventFilters()">
+              <option value="">All</option>
+              <option value="home">Home</option>
+              <option value="away">Away</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Evt#:</label>
+            <input type="number" id="filterEvtIdx" min="1" placeholder="#" onchange="applyEventFilters()">
+          </div>
+          <div class="filter-group">
+            <label>Link#:</label>
+            <input type="number" id="filterLinkIdx" min="1" placeholder="#" onchange="applyEventFilters()">
+          </div>
+          <div class="filter-group">
+            <label>Shift#:</label>
+            <input type="number" id="filterShiftIdx" min="1" placeholder="#" onchange="applyEventFilters()">
+          </div>
+          <button class="btn-clear" onclick="clearEventFilters()">Clear</button>
         </div>
         <div id="evtListBody" style="max-height:300px;overflow-y:auto;"></div>
       </div>
@@ -852,9 +943,11 @@ kbd { background: var(--bg); border: 1px solid var(--border); padding: 0 3px; bo
           </ul>
           <p><strong>4. Track Shifts:</strong> Press L to log, E to set end time, Q for quick line change</p>
           <p><strong>5. Export:</strong> Click Export to download Excel file</p>
+          <p><strong>6. Import:</strong> Click Import to load a half-tracked Excel file</p>
         </div>
-        <h4 style="color:var(--accent);margin:12px 0 8px;font-size:12px;">🆕 v6 Features</h4>
+        <h4 style="color:var(--accent);margin:12px 0 8px;font-size:12px;">🆕 v17+ Features</h4>
         <div style="font-size:9px;line-height:1.5;color:var(--muted);">
+          <p>• <strong>Excel Import</strong> - Load half-tracked games to continue tracking</p>
           <p>• <strong>Line Presets</strong> - Save/load F-lines & D-pairs with W/Shift+W</p>
           <p>• <strong>Period Filtering</strong> - P1/P2/P3/OT tabs in event & shift logs</p>
           <p>• <strong>Player Selection</strong> - 1-6 for event players, Alt+1-6 for opponents</p>
@@ -1291,6 +1384,12 @@ kbd { background: var(--bg); border: 1px solid var(--border); padding: 0 3px; bo
         </div>
       </div>
     </div>
+    <!-- v20.7: Insert/Delete actions -->
+    <div style="display:flex;gap:4px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+      <button class="btn-sm" onclick="insertEventBefore()" title="Insert new event before this one" style="flex:1;background:var(--accent2);">➕ Insert Before</button>
+      <button class="btn-sm" onclick="insertEventAfter()" title="Insert new event after this one" style="flex:1;background:var(--accent2);">➕ Insert After</button>
+      <button class="btn-sm" onclick="duplicateEvent()" title="Duplicate this event" style="flex:1;">📋 Duplicate</button>
+    </div>
     <div class="modal-actions">
       <button class="btn-danger" onclick="deleteEvent()">Delete</button>
       <button class="btn-primary" onclick="saveEditEvent()">Save</button>
@@ -1350,6 +1449,12 @@ kbd { background: var(--bg); border: 1px solid var(--border); padding: 0 3px; bo
     </div>
     <div class="section-title" style="margin-top:8px;"><span>Players on Ice</span></div>
     <div id="editShiftPlayersContainer" style="background:var(--card);padding:8px;border-radius:4px;"></div>
+    <!-- v20.6: Insert/Delete actions -->
+    <div style="display:flex;gap:4px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+      <button class="btn-sm" onclick="insertShiftBefore()" title="Insert new shift before this one" style="flex:1;background:var(--accent2);">➕ Insert Before</button>
+      <button class="btn-sm" onclick="insertShiftAfter()" title="Insert new shift after this one" style="flex:1;background:var(--accent2);">➕ Insert After</button>
+      <button class="btn-sm" onclick="duplicateShift()" title="Duplicate this shift" style="flex:1;">📋 Duplicate</button>
+    </div>
     <div class="modal-actions">
       <button class="btn-danger" onclick="deleteShift()">Delete</button>
       <button class="btn-primary" onclick="saveEditShift()">Save</button>
@@ -1511,8 +1616,11 @@ const S = {
   playDetails2: [],  // dim_play_detail_2
   eventDetails1: [], // dim_event_detail (v16.06)
   eventDetails2: [], // dim_event_detail_2 (v16.06)
+  eventTypesDB: [],  // dim_event_type (v22.1)
+  showAllEventTypes: false, // v22.1: Toggle for showing all event types
   playerRoles: [],   // dim_player_role
   period: 1, evtTeam: 'home', periodLength: 18, // Variable period length (NORAD default: 18 min)
+  homeAttacksRightP1: true, // v19: Configurable per game - which end home attacks in P1
   slots: { home: {F1:null,F2:null,F3:null,D1:null,D2:null,G:null,X:null}, away: {F1:null,F2:null,F3:null,D1:null,D2:null,G:null,X:null} },
   selectedSlot: null, events: [], shifts: [], evtIdx: 0, shiftIdx: 0,
   curr: { type: null, players: [], puckXY: [], netXY: null },
@@ -1575,7 +1683,7 @@ const LISTS = {
     Timeout: { d1: ['Timeout_Home','Timeout_Away'], d2: [] }
   },
   shiftStart: ['GameStart','PeriodStart','FaceoffAfterGoal','FaceoffAfterPenalty','OtherFaceoff','Stoppage','Intermission','OnTheFly'],
-  shiftStop: ['PeriodEnd','GoalScored','Penalty','Stoppage','OtherFaceoff','OnTheFly','Intermission'],
+  shiftStop: ['','OnTheFly','PeriodEnd','Period End','GoalScored','Home Goal','Away Goal','Penalty','Stoppage','OtherFaceoff','Intermission','GameEnd','High Stick','Away Icing','Home Icing','Away Offside','Home Offside','Puck Out of Play','Away Goalie Stopped (after Home SOG)','Home Goalie Stopped (after Away SOG)'],
   playOffensive: ['Play-DriveMiddle','Play-DriveWide','Play-CrashNet','Play-Delay','Play-Deke','Play-DumpChase','Play-Forecheck','Play-Other'],
   playDefensive: ['Play-PokeCheck','Play-Backcheck','Play-Contain','Play-BoxOut','Play-Other'],
   // Events where puck XY = event_player_1 XY
@@ -1669,19 +1777,33 @@ function saveSettings() {
 async function tryConnect() {
   const url = document.getElementById('sbUrl').value;
   const key = document.getElementById('sbKey').value;
-  if (!url || !key) { updateConn(false); return; }
+  if (!url || !key) { 
+    updateConn(false); 
+    return; 
+  }
   try {
     S.sb = supabase.createClient(url, key);
     // Try to query a table that exists
-    const { error } = await S.sb.from('dim_schedule').select('game_id').limit(1);
-    if (error) throw error;
+    const { data, error } = await S.sb.from('dim_schedule').select('game_id').limit(1);
+    if (error) {
+      console.error('Supabase query error:', error);
+      // Provide helpful error messages
+      if (error.message?.includes('permission denied') || error.code === '42501') {
+        toast('RLS is blocking queries. Disable RLS in Supabase SQL Editor.', 'error');
+      } else if (error.message?.includes('does not exist') || error.code === '42P01') {
+        toast('Tables not found. Run upload.py --schema then upload.py', 'error');
+      } else {
+        toast('Connection error: ' + (error.message || error.code), 'error');
+      }
+      throw error;
+    }
     S.connected = true;
     updateConn(true);
     
     // Load reference data (play details, player roles)
     await loadReferenceData();
   } catch(e) { 
-    console.log('Connection failed:', e);
+    console.error('Connection failed:', e);
     S.sb = null; S.connected = false; updateConn(false); 
   }
 }
@@ -1723,14 +1845,14 @@ async function loadReferenceData() {
     
     // v16.06: Load dim_event_detail for event detail 1 dropdown
     const { data: ed1, error: e2a } = await S.sb.from('dim_event_detail')
-      .select('event_detail_id,event_detail_name,event_type_name')
-      .order('event_type_name,event_detail_name');
+      .select('event_detail_id,event_detail_name,event_type')
+      .order('event_type,event_detail_name');
     
     if (!e2a && ed1) {
       S.eventDetails1 = ed1.map(e => ({
         id: e.event_detail_id,
         name: e.event_detail_name,
-        eventType: e.event_type_name
+        eventType: e.event_type
       }));
       console.log('Loaded', S.eventDetails1.length, 'event details 1');
     }
@@ -1738,7 +1860,7 @@ async function loadReferenceData() {
     // v16.08: Load dim_event_detail_2 for event detail 2 dropdown
     // Note: category is "other" for most entries, so we filter by code prefix
     const { data: ed2, error: e2b } = await S.sb.from('dim_event_detail_2')
-      .select('event_detail_2_id,event_detail_2_code,event_detail_2_name,event_detail_category')
+      .select('event_detail_2_id,event_detail_2_code,event_detail_2_name,category')
       .order('event_detail_2_code');
     
     if (!e2b && ed2) {
@@ -1746,9 +1868,26 @@ async function loadReferenceData() {
         id: e.event_detail_2_id,
         code: e.event_detail_2_code,  // e.g., "ZoneEntry_Rush"
         name: e.event_detail_2_name,   // e.g., "ZoneEntry Rush"
-        category: e.event_detail_category
+        category: e.category
       }));
       console.log('Loaded', S.eventDetails2.length, 'event details 2');
+    }
+    
+    // v22.1: Load dim_event_type for event type buttons
+    const { data: et, error: etErr } = await S.sb.from('dim_event_type')
+      .select('event_type_id,event_type_code,event_type_name,event_category')
+      .order('event_type_code');
+    
+    if (!etErr && et) {
+      S.eventTypesDB = et.map(e => ({
+        id: e.event_type_id,
+        code: e.event_type_code,
+        name: e.event_type_name,
+        category: e.event_category
+      }));
+      console.log('Loaded', S.eventTypesDB.length, 'event types from dim_event_type');
+      // Rebuild UI to use dynamic event types
+      buildEventTypeButtons();
     }
     
     // Load dim_player_role
@@ -2076,6 +2215,7 @@ function autoSave() {
     shiftIdx: S.shiftIdx, 
     videoTiming: S.videoTiming,  // Save video timing per game
     periodLength: S.periodLength,
+    homeAttacksRightP1: S.homeAttacksRightP1, // v19: Zone orientation per game
     savedAt: new Date().toISOString() 
   };
   localStorage.setItem(key, JSON.stringify(data));
@@ -2157,6 +2297,26 @@ function resumeSession() {
     S.shiftIdx = data.shiftIdx || S.shifts.length;
     S.lastSave = data.savedAt ? new Date(data.savedAt) : null;
     
+    // v19: Restore zone orientation
+    if (data.homeAttacksRightP1 !== undefined) {
+      S.homeAttacksRightP1 = data.homeAttacksRightP1;
+    }
+    if (data.periodLength) {
+      S.periodLength = data.periodLength;
+    }
+    if (data.videoTiming) {
+      S.videoTiming = data.videoTiming;
+    }
+    
+    // Update zone labels with restored orientation
+    updateZoneLabels();
+    
+    // Update flip button visual
+    const btn = document.getElementById('flipZonesBtn');
+    if (btn) {
+      btn.style.background = S.homeAttacksRightP1 ? '#374151' : '#7c3aed';
+    }
+    
     toast(`Restored ${S.events.length} events, ${S.shifts.length} shifts`, 'success');
     renderAll();
     updateSaveIndicator();
@@ -2213,8 +2373,8 @@ function clearSavedData() {
 // ============================================================
 function buildUI() {
   const grid = document.getElementById('evtTypeGrid');
-  const mainTypes = ['Faceoff','Shot','Pass','Goal','Turnover','Zone_Entry_Exit','Stoppage','Penalty','Possession','Save','Rebound','Play'];
-  grid.innerHTML = mainTypes.map(t => `<button class="evt-btn" data-type="${t}" onclick="setEvtType('${t}')">${t.replace('_Entry_Exit','')}<kbd>${LISTS.hotkeys[t]||''}</kbd></button>`).join('');
+  // v22.1: Use dynamic event types from Supabase, with "Show More" toggle
+  buildEventTypeButtons();
   
   document.getElementById('shiftStartType').innerHTML = LISTS.shiftStart.map(t => `<option value="${t}">${t}</option>`).join('');
   document.getElementById('shiftStopType').innerHTML = LISTS.shiftStop.map(t => `<option value="${t}">${t}</option>`).join('');
@@ -2225,16 +2385,73 @@ function buildUI() {
     document.getElementById(`${team}G`).innerHTML = ['G','X'].map(p => `<div class="slot" data-team="${team}" data-pos="${p}" onclick="selectSlot(this)"><span class="num">${p}</span></div>`).join('');
   });
   
-  // Edit type dropdown
-  document.getElementById('editType').innerHTML = LISTS.eventTypes.map(t => `<option value="${t}">${t}</option>`).join('');
+  // Edit type dropdown - use dynamic types if available
+  buildEditTypeDropdown();
   
   renderXYSlots();
+}
+
+// v22.1: Build event type buttons dynamically from dim_event_type
+function buildEventTypeButtons() {
+  const grid = document.getElementById('evtTypeGrid');
+  
+  // Main types always shown (common event types)
+  const mainTypeCodes = ['Faceoff','Shot','Pass','Goal','Turnover','Zone_Entry_Exit','Stoppage','Penalty','Possession','Save','Rebound','Play'];
+  
+  // Get types from Supabase or fall back to LISTS.eventTypes
+  let allTypes = S.eventTypesDB.length > 0 
+    ? S.eventTypesDB.map(e => e.code) 
+    : LISTS.eventTypes;
+  
+  // Separate main and extra types
+  const mainTypes = allTypes.filter(t => mainTypeCodes.includes(t));
+  const extraTypes = allTypes.filter(t => !mainTypeCodes.includes(t));
+  
+  // Build main type buttons
+  let html = mainTypes.map(t => 
+    `<button class="evt-btn" data-type="${t}" onclick="setEvtType('${t}')">${t.replace('_Entry_Exit','')}<kbd>${LISTS.hotkeys[t]||''}</kbd></button>`
+  ).join('');
+  
+  // Add "Show More" button if there are extra types
+  if (extraTypes.length > 0) {
+    html += `<button class="evt-btn" id="showMoreTypesBtn" onclick="toggleMoreEventTypes()" style="background:var(--surface);border:1px dashed var(--muted);">
+      ${S.showAllEventTypes ? '◀ Less' : 'More ▶'}
+    </button>`;
+    
+    // Add extra types (hidden by default)
+    html += `<div id="extraEventTypes" style="display:${S.showAllEventTypes ? 'contents' : 'none'};">`;
+    html += extraTypes.map(t => 
+      `<button class="evt-btn" data-type="${t}" onclick="setEvtType('${t}')">${t}<kbd>${LISTS.hotkeys[t]||''}</kbd></button>`
+    ).join('');
+    html += '</div>';
+  }
+  
+  grid.innerHTML = html;
+}
+
+// v22.1: Toggle showing all event types
+function toggleMoreEventTypes() {
+  S.showAllEventTypes = !S.showAllEventTypes;
+  buildEventTypeButtons();
+}
+
+// v22.1: Build edit type dropdown with dynamic types
+function buildEditTypeDropdown() {
+  const dropdown = document.getElementById('editType');
+  
+  // Get types from Supabase or fall back to LISTS.eventTypes
+  const types = S.eventTypesDB.length > 0 
+    ? S.eventTypesDB.map(e => e.code) 
+    : LISTS.eventTypes;
+  
+  dropdown.innerHTML = types.map(t => `<option value="${t}">${t}</option>`).join('');
 }
 
 // ============================================================
 // GAMES & ROSTERS - SUPABASE CONNECTED
 // ============================================================
 async function loadGames() {
+  console.log('loadGames called, S.connected:', S.connected);
   if (S.connected) {
     try {
       console.log('Loading ALL games from dim_schedule...');
@@ -2247,6 +2464,7 @@ async function loadGames() {
       let hasMore = true;
       
       while (hasMore && offset < 50000) {
+        console.log(`  Fetching page at offset ${offset}...`);
         const { data, error } = await S.sb.from('dim_schedule')
           .select('game_id,date,home_team_name,away_team_name')
           .order('date', {ascending: false})
@@ -2254,8 +2472,11 @@ async function loadGames() {
         
         if (error) {
           console.error('Error at offset', offset, ':', error);
+          toast('Error loading games: ' + (error.message || error.code), 'error');
           break;
         }
+        
+        console.log(`  Got ${data?.length || 0} games`);
         
         if (!data || data.length === 0) {
           hasMore = false;
@@ -2564,13 +2785,14 @@ function calculateZone() {
   // NHL Rink: 200 wide
   // Blue lines at x=75 and x=125 (correct NHL dimensions)
   // 0-75 = left zone, 75-125 = neutral, 125-200 = right zone
-  // Odd periods (1, 3, OT): Home attacks RIGHT, Away attacks LEFT
-  // Even periods (2): Home attacks LEFT, Away attacks RIGHT
+  // Use S.homeAttacksRightP1 to determine initial orientation
+  // Odd periods (1, 3, OT): Use P1 setting
+  // Even periods (2): Flip from P1 setting
   const x = lastXY.x;
   const isOddPeriod = S.period === 1 || S.period === 3 || S.period === 'OT';
   
-  // Determine which end is offensive for each team
-  const homeOffensiveRight = isOddPeriod;
+  // Determine which end is offensive for each team based on configurable setting
+  const homeOffensiveRight = isOddPeriod ? S.homeAttacksRightP1 : !S.homeAttacksRightP1;
   
   if (S.evtTeam === 'home') {
     if (homeOffensiveRight) {
@@ -2597,17 +2819,18 @@ function calculateZone() {
 }
 
 function updateZoneLabels() {
-  // Update zone labels on rink based on period
+  // Update zone labels on rink based on period and configurable setting
   const isOddPeriod = S.period === 1 || S.period === 3 || S.period === 'OT';
+  const homeOffensiveRight = isOddPeriod ? S.homeAttacksRightP1 : !S.homeAttacksRightP1;
   const homeShort = (S.homeTeam || 'HOME').toUpperCase().slice(0,6);
   const awayShort = (S.awayTeam || 'AWAY').toUpperCase().slice(0,6);
   
-  if (isOddPeriod) {
-    // Odd periods: Home attacks right
+  if (homeOffensiveRight) {
+    // Home attacks right
     document.getElementById('leftZoneLbl').textContent = awayShort + ' OFF';
     document.getElementById('rightZoneLbl').textContent = homeShort + ' OFF';
   } else {
-    // Even periods: Home attacks left
+    // Home attacks left
     document.getElementById('leftZoneLbl').textContent = homeShort + ' OFF';
     document.getElementById('rightZoneLbl').textContent = awayShort + ' OFF';
   }
@@ -2913,6 +3136,135 @@ function deleteShift() {
   renderShiftLog();
   autoSave();
   toast('Shift deleted', 'success');
+}
+
+/**
+ * v20.6: Insert a new shift BEFORE the current one
+ */
+function insertShiftBefore() {
+  if (S.editingShiftIdx === null) return;
+  
+  const currentShift = S.shifts[S.editingShiftIdx];
+  const prevShift = S.editingShiftIdx > 0 ? S.shifts[S.editingShiftIdx - 1] : null;
+  
+  // Create new shift with interpolated times
+  const newShift = {
+    period: currentShift.period,
+    start_time: prevShift ? prevShift.end_time : currentShift.start_time,
+    end_time: currentShift.start_time,
+    start_type: prevShift ? deriveShiftStartType(S.editingShiftIdx) : 'OnTheFly',
+    stop_type: 'OnTheFly',
+    strength: '5v5',
+    home: { F1: null, F2: null, F3: null, D1: null, D2: null, G: null, X: null },
+    away: { F1: null, F2: null, F3: null, D1: null, D2: null, G: null, X: null }
+  };
+  
+  // Insert at position
+  S.shifts.splice(S.editingShiftIdx, 0, newShift);
+  
+  // Update current index to point to newly inserted shift
+  const newIdx = S.editingShiftIdx;
+  S.editingShiftIdx = null; // Clear to allow re-edit
+  
+  closeEditShiftModal();
+  renderShiftLog();
+  autoSave();
+  toast(`Inserted shift #${newIdx + 1}`, 'success');
+  
+  // Open the new shift for editing
+  setTimeout(() => editShift(newIdx), 100);
+}
+
+/**
+ * v20.6: Insert a new shift AFTER the current one
+ */
+function insertShiftAfter() {
+  if (S.editingShiftIdx === null) return;
+  
+  const currentShift = S.shifts[S.editingShiftIdx];
+  const nextShift = S.editingShiftIdx < S.shifts.length - 1 ? S.shifts[S.editingShiftIdx + 1] : null;
+  
+  // Create new shift with interpolated times
+  const newShift = {
+    period: currentShift.period,
+    start_time: currentShift.end_time,
+    end_time: nextShift ? nextShift.start_time : currentShift.end_time,
+    start_type: deriveShiftStartType(S.editingShiftIdx + 1),
+    stop_type: 'OnTheFly',
+    strength: '5v5',
+    home: { F1: null, F2: null, F3: null, D1: null, D2: null, G: null, X: null },
+    away: { F1: null, F2: null, F3: null, D1: null, D2: null, G: null, X: null }
+  };
+  
+  // Insert after current position
+  const insertIdx = S.editingShiftIdx + 1;
+  S.shifts.splice(insertIdx, 0, newShift);
+  
+  S.editingShiftIdx = null; // Clear to allow re-edit
+  
+  closeEditShiftModal();
+  renderShiftLog();
+  autoSave();
+  toast(`Inserted shift #${insertIdx + 1}`, 'success');
+  
+  // Open the new shift for editing
+  setTimeout(() => editShift(insertIdx), 100);
+}
+
+/**
+ * v20.6: Duplicate the current shift
+ */
+function duplicateShift() {
+  if (S.editingShiftIdx === null) return;
+  
+  const currentShift = S.shifts[S.editingShiftIdx];
+  
+  // Deep clone the shift
+  const newShift = JSON.parse(JSON.stringify(currentShift));
+  
+  // Insert after current position
+  const insertIdx = S.editingShiftIdx + 1;
+  S.shifts.splice(insertIdx, 0, newShift);
+  
+  S.editingShiftIdx = null;
+  
+  closeEditShiftModal();
+  renderShiftLog();
+  autoSave();
+  toast(`Duplicated shift → #${insertIdx + 1}`, 'success');
+  
+  // Open the new shift for editing
+  setTimeout(() => editShift(insertIdx), 100);
+}
+
+/**
+ * v20.6: Add a new shift at the end of the list
+ */
+function addNewShift() {
+  const lastShift = S.shifts.length > 0 ? S.shifts[S.shifts.length - 1] : null;
+  
+  // Create new shift
+  const newShift = {
+    period: lastShift ? lastShift.period : S.period || 1,
+    start_time: lastShift ? lastShift.end_time : '20:00',
+    end_time: '',
+    start_type: lastShift ? deriveShiftStartType(S.shifts.length) : 'GameStart',
+    stop_type: '',
+    strength: '5v5',
+    home: { F1: null, F2: null, F3: null, D1: null, D2: null, G: null, X: null },
+    away: { F1: null, F2: null, F3: null, D1: null, D2: null, G: null, X: null }
+  };
+  
+  // Add to end
+  S.shifts.push(newShift);
+  const newIdx = S.shifts.length - 1;
+  
+  renderShiftLog();
+  autoSave();
+  toast(`Added shift #${newIdx + 1}`, 'success');
+  
+  // Open the new shift for editing
+  setTimeout(() => editShift(newIdx), 100);
 }
 
 function closeEditShiftModal() {
@@ -3700,36 +4052,67 @@ function renderEvents() {
     return;
   }
   
+  // v20.4: Populate filter dropdowns with current values
+  populateEventFilterDropdowns();
+  
   // v16.04: Debug - log event periods
   console.log('renderEvents called');
   console.log('  S.events count:', S.events?.length || 0);
   console.log('  S.eventLogFilter:', S.eventLogFilter);
-  if (S.events?.length > 0) {
-    const periodCounts = {};
-    S.events.forEach(e => {
-      const p = String(e.period || 'unknown');
-      periodCounts[p] = (periodCounts[p] || 0) + 1;
-    });
-    console.log('  Period distribution:', periodCounts);
-  }
   
-  // v15.02: Improved filter logic - handle 'all', 'ALL', numeric periods, and 'OT'
+  // v15.02: Period filter
   let filteredEvents = S.events || [];
-  const filter = (S.eventLogFilter || 'all').toLowerCase();
+  const periodFilter = (S.eventLogFilter || 'all').toLowerCase();
   
-  if (filter && filter !== 'all') {
+  if (periodFilter && periodFilter !== 'all') {
     filteredEvents = filteredEvents.filter(e => {
       const evtPeriod = String(e.period || '').toLowerCase();
-      // Handle OT periods (could be 'OT', 'ot', 4, '4', etc)
-      if (filter === 'ot') {
+      if (periodFilter === 'ot') {
         return evtPeriod === 'ot' || evtPeriod === '4' || parseInt(evtPeriod) > 3;
       }
-      return evtPeriod === filter;
+      return evtPeriod === periodFilter;
     });
+  }
+  
+  // v20.4: Apply advanced filters
+  const f = S.eventFilters || {};
+  
+  if (f.type) {
+    filteredEvents = filteredEvents.filter(e => e.type === f.type);
+  }
+  if (f.detail1) {
+    filteredEvents = filteredEvents.filter(e => (e.detail1 || e.detail) === f.detail1);
+  }
+  if (f.detail2) {
+    filteredEvents = filteredEvents.filter(e => e.detail2 === f.detail2);
+  }
+  if (f.playDetail1) {
+    filteredEvents = filteredEvents.filter(e => {
+      const p1 = (e.players || []).find(p => p.role?.startsWith('event') || !p.role?.startsWith('opp'));
+      return p1?.playD1 === f.playDetail1;
+    });
+  }
+  if (f.playDetail2) {
+    filteredEvents = filteredEvents.filter(e => {
+      const p1 = (e.players || []).find(p => p.role?.startsWith('event') || !p.role?.startsWith('opp'));
+      return p1?.playD2 === f.playDetail2;
+    });
+  }
+  if (f.team) {
+    filteredEvents = filteredEvents.filter(e => e.team === f.team);
+  }
+  if (f.eventIdx !== null && f.eventIdx !== undefined) {
+    filteredEvents = filteredEvents.filter(e => S.events.indexOf(e) + 1 === f.eventIdx);
+  }
+  if (f.linkedIdx !== null && f.linkedIdx !== undefined) {
+    filteredEvents = filteredEvents.filter(e => e.linkedEventIdx !== null && e.linkedEventIdx + 1 === f.linkedIdx);
+  }
+  if (f.shiftIdx !== null && f.shiftIdx !== undefined) {
+    filteredEvents = filteredEvents.filter(e => e.shiftIdx === f.shiftIdx || e.shift_index === f.shiftIdx);
   }
   
   // Debug log
-  console.log(`  After filter: ${filteredEvents.length} events to display`);
+  console.log('  After filters: ' + filteredEvents.length + ' events to display');
   
   body.innerHTML = filteredEvents.map((e) => {
     const i = S.events.indexOf(e); // Get actual index in full array
@@ -3743,10 +4126,8 @@ function renderEvents() {
     
     // Get primary player info
     const primaryPlayer = evtPlayers[0];
-    const primaryNum = primaryPlayer?.num || '';
-    const primaryName = primaryPlayer?.name?.split(' ').pop() || '';
-    const primaryPD1 = primaryPlayer?.playD1?.replace('Play-','').replace('_',' ').substring(0,10) || '';
-    const primaryPD2 = primaryPlayer?.playD2?.replace('Play-','').replace('_',' ').substring(0,10) || '';
+    const primaryPD1 = primaryPlayer?.playD1?.replace('Play-','').replace(/_/g,' ').substring(0,10) || '';
+    const primaryPD2 = primaryPlayer?.playD2?.replace('Play-','').replace(/_/g,' ').substring(0,10) || '';
     const primarySuccess = primaryPlayer?.playSuccess || '';
     
     // Other display values
@@ -3759,47 +4140,48 @@ function renderEvents() {
     const zone = e.zone ? e.zone.substring(0,1).toUpperCase() : '';
     const success = e.success === true || e.success === 1 || e.success === 's' || e.success === 'Y' ? '✓' : 
                    (e.success === false || e.success === 0 || e.success === 'u' || e.success === 'N' ? '✗' : '');
-    const seqIdx = e.sequenceIdx || e.seqIdx || '';
-    const playIdx = e.playIdx || '';
     const team = e.team === 'home' ? 'H' : 'A';
+    const shiftIdx = e.shiftIdx || e.shift_index || '';
     
     // Build title for hover
     const hoverTitle = [
-      `Event #${i+1}`,
-      `Type: ${e.type}`,
-      `Detail: ${detail}${detail2 ? ' / ' + detail2 : ''}`,
-      `Team: ${e.team}`,
-      `Event Players: ${evtPlayers.map(p => `#${p.num} ${p.name}`).join(', ') || 'none'}`,
-      `Opp Players: ${oppPlayers.map(p => `#${p.num} ${p.name}`).join(', ') || 'none'}`,
-      primaryPlayer ? `P1 Play: ${primaryPD1}${primaryPD2 ? ' / ' + primaryPD2 : ''} ${primarySuccess}` : '',
-      e.linkedEventIdx != null ? `Linked to #${e.linkedEventIdx + 1}` : '',
-      hasXY ? `Has XY: Yes` : ''
+      'Event #' + (i+1),
+      'Type: ' + e.type,
+      'Detail: ' + detail + (detail2 ? ' / ' + detail2 : ''),
+      'Team: ' + e.team,
+      'Shift: ' + (shiftIdx || 'none'),
+      'Event Players: ' + (evtPlayers.map(p => '#' + p.num + ' ' + p.name).join(', ') || 'none'),
+      'Opp Players: ' + (oppPlayers.map(p => '#' + p.num + ' ' + p.name).join(', ') || 'none'),
+      primaryPlayer ? 'P1 Play: ' + primaryPD1 + (primaryPD2 ? ' / ' + primaryPD2 : '') + ' ' + primarySuccess : '',
+      e.linkedEventIdx != null ? 'Linked to #' + (e.linkedEventIdx + 1) : '',
+      hasXY ? 'Has XY: Yes' : ''
     ].filter(Boolean).join('\\n');
     
-    return `<div class="evt-item" onclick="editEvent(${i})" ondblclick="quickEditEvent(${i})" title="${hoverTitle}">
-      <span class="idx">${i+1}</span>
-      <span class="seq" title="Seq/Play">${seqIdx}${playIdx ? '/'+playIdx : ''}</span>
-      <span class="link" title="Linked Event">${linked}</span>
-      <span class="time">P${e.period} ${timeDisplay}</span>
-      <span class="team">${team}</span>
-      <span class="type">${e.type}</span>
-      <span class="detail" title="${detail}${detail2 ? ' - ' + detail2 : ''}">${detail.substring(0,15)}</span>
-      <span class="zone">${zone}</span>
-      <span class="success">${success}</span>
-      <span class="evtp" title="Event Players: ${evtPlayers.map(p => p.num + ':' + p.name).join(', ')}">${evtPlayerStr}</span>
-      <span class="oppp" title="Opp Players: ${oppPlayers.map(p => p.num + ':' + p.name).join(', ')}">${oppPlayerStr}</span>
-      <span class="pd1" title="${primaryPD1}">${primaryPD1.substring(0,8)}</span>
-      <span class="psucc">${primarySuccess}</span>
-      <span class="xy-dot">${hasXY?'●':''}</span>
-      <span class="hl">${highlight}</span>
-    </div>`;
+    // v20.4: Expanded columns - #, Sh, Lnk, Time, T, Type, Detail1, Detail2, Z, S, EvtP, OppP, PD1, PD2, PS, XY, star
+    return '<div class="evt-item" onclick="editEvent(' + i + ')" ondblclick="quickEditEvent(' + i + ')" title="' + hoverTitle + '">' +
+      '<span class="idx">' + (i+1) + '</span>' +
+      '<span class="seq" title="Shift #' + shiftIdx + '">' + shiftIdx + '</span>' +
+      '<span class="link" title="Linked Event #' + linked + '">' + linked + '</span>' +
+      '<span class="time">P' + e.period + ' ' + timeDisplay + '</span>' +
+      '<span class="team">' + team + '</span>' +
+      '<span class="type">' + e.type + '</span>' +
+      '<span class="detail" title="' + detail + '">' + detail.substring(0,12) + '</span>' +
+      '<span class="detail" title="' + detail2 + '">' + detail2.substring(0,12) + '</span>' +
+      '<span class="zone">' + zone + '</span>' +
+      '<span class="success">' + success + '</span>' +
+      '<span class="evtp" title="Event Players: ' + evtPlayers.map(p => p.num + ':' + p.name).join(', ') + '">' + evtPlayerStr + '</span>' +
+      '<span class="oppp" title="Opp Players: ' + oppPlayers.map(p => p.num + ':' + p.name).join(', ') + '">' + oppPlayerStr + '</span>' +
+      '<span class="pd1" title="' + primaryPD1 + '">' + primaryPD1.substring(0,8) + '</span>' +
+      '<span class="pd1" title="' + primaryPD2 + '">' + primaryPD2.substring(0,8) + '</span>' +
+      '<span class="psucc">' + primarySuccess + '</span>' +
+      '<span class="xy-dot">' + (hasXY?'●':'') + '</span>' +
+      '<span class="hl">' + highlight + '</span>' +
+    '</div>';
   }).join('') || '<div style="color:var(--muted);padding:10px;text-align:center;font-size:10px;">No events to display</div>';
   
-  // v16.04: Debug - log what was actually rendered
-  console.log('  renderEvents complete. body.innerHTML length:', body.innerHTML.length);
-  console.log('  First 200 chars:', body.innerHTML.substring(0, 200));
+  // Debug log
+  console.log('  renderEvents complete. Filtered count:', filteredEvents.length);
 }
-
 // Quick inline edit for event
 function quickEditEvent(idx) {
   const evt = S.events[idx];
@@ -4939,22 +5321,35 @@ function renderEditPlayers(players) {
       ? roleOptions.map(r => `<option value="${r.code}" ${p.role===r.code?'selected':''}>${r.name}</option>`).join('')
       : `<option value="event_player_1">Event Player 1</option><option value="event_player_2">Event Player 2</option><option value="opp_player_1">Opp Player 1</option>`;
     
+    // Build role select with current value highlighted
+    const currentRole = p.role || '';
+    const buildRoleOption = (val, label) => {
+      const selected = currentRole === val ? 'selected' : '';
+      return `<option value="${val}" ${selected}>${label}</option>`;
+    };
+    
     return `
     <div class="edit-player-row" data-idx="${i}" style="display:grid;grid-template-columns:80px 90px 130px 130px 60px 25px;gap:4px;align-items:center;margin-bottom:6px;padding:4px;background:var(--panel);border-radius:3px;">
       <span class="pnum" style="font-weight:bold;font-size:10px;">#${p.num} ${p.name?.split(' ').pop() || ''}</span>
       <select onchange="updateEditPlayer(${i}, 'role', this.value)" style="font-size:9px;" title="Player Role">
         <option value="">-- Role --</option>
         <optgroup label="Event Team">
-          <option value="event_player_1" ${p.role==='event_player_1'?'selected':''}>Event P1</option>
-          <option value="event_player_2" ${p.role==='event_player_2'?'selected':''}>Event P2</option>
-          <option value="event_player_3" ${p.role==='event_player_3'?'selected':''}>Event P3</option>
-          <option value="event_goalie" ${p.role==='event_goalie'?'selected':''}>Event Goalie</option>
+          ${buildRoleOption('event_player_1', 'Event P1')}
+          ${buildRoleOption('event_player_2', 'Event P2')}
+          ${buildRoleOption('event_player_3', 'Event P3')}
+          ${buildRoleOption('event_player_4', 'Event P4')}
+          ${buildRoleOption('event_player_5', 'Event P5')}
+          ${buildRoleOption('event_player_6', 'Event P6')}
+          ${buildRoleOption('event_goalie', 'Event Goalie')}
         </optgroup>
         <optgroup label="Opponent">
-          <option value="opp_player_1" ${p.role==='opp_player_1'?'selected':''}>Opp P1</option>
-          <option value="opp_player_2" ${p.role==='opp_player_2'?'selected':''}>Opp P2</option>
-          <option value="opp_player_3" ${p.role==='opp_player_3'?'selected':''}>Opp P3</option>
-          <option value="opp_goalie" ${p.role==='opp_goalie'?'selected':''}>Opp Goalie</option>
+          ${buildRoleOption('opp_player_1', 'Opp P1')}
+          ${buildRoleOption('opp_player_2', 'Opp P2')}
+          ${buildRoleOption('opp_player_3', 'Opp P3')}
+          ${buildRoleOption('opp_player_4', 'Opp P4')}
+          ${buildRoleOption('opp_player_5', 'Opp P5')}
+          ${buildRoleOption('opp_player_6', 'Opp P6')}
+          ${buildRoleOption('opp_goalie', 'Opp Goalie')}
         </optgroup>
       </select>
       <select onchange="updateEditPlayer(${i}, 'playD1', this.value)" style="font-size:9px;" title="Play Detail 1">
@@ -5864,60 +6259,122 @@ function clearAllShifts() {
 // LINKED EVENT LOGIC
 // ============================================================
 function applyLinkedEventData() {
-  // When setting event type, check if we should auto-link and carry over data
-  if (!S.linkedEventIdx) return;
-  
-  const linkedEvt = S.events.find(e => e.idx === S.linkedEventIdx);
-  if (!linkedEvt) return;
+  // Copy XY data from linked event chain to current event
+  // This applies to ALL linked event types
+  if (S.linkedEventIdx === null && S.linkedEventIdx !== 0) return;
   
   const currType = S.curr.type;
   
-  // Shot > Save: Copy shooter info to save event as opp
-  if (currType === 'Save' && linkedEvt.type === 'Shot') {
-    const shooter = linkedEvt.players?.find(p => p.role === 'event_team_player_1');
-    if (shooter) {
-      // Add shooter as opp player
-      S.curr.players.push({
-        ...shooter,
-        role: 'opp_team_player_1',
-        roleNum: 1
-      });
-    }
-    // Copy puck XY
-    if (linkedEvt.puckXY?.length) {
-      S.curr.puckXY = [...linkedEvt.puckXY];
+  // ============================================================
+  // FIND THE BEST SOURCE FOR XY DATA
+  // Priority: 1) Most recent sibling (same linked_event), 2) Source event, 3) Previous event
+  // ============================================================
+  
+  let sourceEvt = null;
+  let sourceDesc = '';
+  
+  // 1. Check for sibling events (same linked_event) - get the most recent one with XY
+  const siblings = S.events
+    .filter(e => e.linkedEventIdx === S.linkedEventIdx && e.puckXY?.length)
+    .sort((a, b) => b.idx - a.idx); // Most recent first
+  
+  if (siblings.length > 0) {
+    sourceEvt = siblings[0];
+    sourceDesc = `sibling #${sourceEvt.idx + 1} (${sourceEvt.type})`;
+  }
+  
+  // 2. If no sibling has XY, check the source event itself
+  if (!sourceEvt) {
+    const linkedEvt = S.events.find(e => e.idx === S.linkedEventIdx);
+    if (linkedEvt?.puckXY?.length) {
+      sourceEvt = linkedEvt;
+      sourceDesc = `source #${linkedEvt.idx + 1} (${linkedEvt.type})`;
     }
   }
   
-  // Shot > Rebound: Copy location
-  if (currType === 'Rebound' && (linkedEvt.type === 'Shot' || linkedEvt.type === 'Save')) {
-    if (linkedEvt.puckXY?.length) {
-      S.curr.puckXY = [...linkedEvt.puckXY];
+  // 3. If still no XY, check the most recent event (regardless of linked_event)
+  if (!sourceEvt && S.events.length > 0) {
+    const lastEvt = S.events[S.events.length - 1];
+    if (lastEvt?.puckXY?.length) {
+      sourceEvt = lastEvt;
+      sourceDesc = `previous #${lastEvt.idx + 1} (${lastEvt.type})`;
     }
   }
   
-  // Shot > Goal: Copy location and shooter
-  if (currType === 'Goal' && linkedEvt.type === 'Shot') {
-    const shooter = linkedEvt.players?.find(p => p.role === 'event_team_player_1');
-    if (shooter) {
-      S.curr.players.push({
-        ...shooter,
-        role: 'event_team_player_1',
-        roleNum: 1
-      });
+  // If no source found with XY, just copy zone from linked event
+  if (!sourceEvt) {
+    const linkedEvt = S.events.find(e => e.idx === S.linkedEventIdx);
+    if (linkedEvt?.zone) {
+      document.getElementById('evtZone').value = linkedEvt.zone;
     }
-    if (linkedEvt.puckXY?.length) {
-      S.curr.puckXY = [...linkedEvt.puckXY];
-    }
+    toast(`Linked to #${S.linkedEventIdx + 1} (no XY to copy)`, 'info');
+    return;
   }
   
-  // Copy zone
-  if (linkedEvt.zone) {
-    document.getElementById('evtZone').value = linkedEvt.zone;
+  // ============================================================
+  // COPY ALL XY DATA FROM SOURCE
+  // ============================================================
+  
+  // Copy puck XY
+  if (sourceEvt.puckXY?.length) {
+    S.curr.puckXY = JSON.parse(JSON.stringify(sourceEvt.puckXY));
   }
   
+  // Copy net XY if available
+  if (sourceEvt.netXY) {
+    S.curr.netXY = JSON.parse(JSON.stringify(sourceEvt.netXY));
+  }
+  
+  // Copy ALL player positions from source event
+  if (sourceEvt.players?.length) {
+    // Determine if teams should swap roles (e.g., Shot→Save)
+    const shouldSwapTeams = (
+      (currType === 'Save' && sourceEvt.type === 'Shot') ||
+      (currType === 'Block' && sourceEvt.type === 'Shot')
+    );
+    
+    sourceEvt.players.forEach(srcPlayer => {
+      // Deep copy the player
+      const newPlayer = JSON.parse(JSON.stringify(srcPlayer));
+      
+      // Map role if teams should swap
+      if (shouldSwapTeams && newPlayer.role) {
+        if (newPlayer.role.includes('event_team')) {
+          newPlayer.role = newPlayer.role.replace('event_team', 'opp_team');
+        } else if (newPlayer.role.includes('opp_team')) {
+          newPlayer.role = newPlayer.role.replace('opp_team', 'event_team');
+        }
+      }
+      
+      // Check if this player already exists in current event
+      const existingIdx = S.curr.players.findIndex(p => 
+        p.num === newPlayer.num && p.team === newPlayer.team
+      );
+      
+      if (existingIdx >= 0) {
+        // Merge XY data into existing player
+        if (newPlayer.xy?.length) {
+          S.curr.players[existingIdx].xy = newPlayer.xy;
+        }
+      } else {
+        // Add player with XY
+        S.curr.players.push(newPlayer);
+      }
+    });
+  }
+  
+  // Copy zone from source or linked event
+  const zoneSource = sourceEvt.zone || S.events.find(e => e.idx === S.linkedEventIdx)?.zone;
+  if (zoneSource) {
+    document.getElementById('evtZone').value = zoneSource;
+  }
+  
+  // Re-render to show copied data
   renderQuickAdd();
   renderMarkers();
+  
+  // Show confirmation
+  toast(`Copied XY from ${sourceDesc}`, 'info');
 }
 
 // ============================================================
@@ -5950,9 +6407,19 @@ function renderEditShiftPlayers(shift) {
   // Build player options for each team
   const buildPlayerOptions = (team, currentNum) => {
     const roster = S.rosters[team] || [];
-    return `<option value="">--</option>` + roster.map(p => 
-      `<option value="${p.num}" ${p.num === currentNum ? 'selected' : ''}>#${p.num} ${p.name?.split(' ').pop() || ''}</option>`
-    ).join('');
+    // Convert currentNum to string for comparison (Excel imports as number, roster might be string)
+    const currentNumStr = currentNum != null ? String(currentNum) : '';
+    
+    // If roster is empty but we have a current number, show it as an option
+    if (roster.length === 0 && currentNumStr) {
+      return `<option value="">--</option><option value="${currentNumStr}" selected>#${currentNumStr}</option>`;
+    }
+    
+    return `<option value="">--</option>` + roster.map(p => {
+      const numStr = String(p.num);
+      const selected = numStr === currentNumStr ? 'selected' : '';
+      return `<option value="${numStr}" ${selected}>#${p.num} ${p.name?.split(' ').pop() || ''}</option>`;
+    }).join('');
   };
   
   let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">';
@@ -6136,6 +6603,154 @@ function deleteEvent() {
   renderEvents(); updateScores(); updateBoxScore();
   autoSave();
   toast('Event deleted', 'success');
+}
+
+/**
+ * v20.7: Insert a new event BEFORE the current one
+ */
+function insertEventBefore() {
+  if (S.editingEvtIdx === null) return;
+  
+  const currentEvt = S.events[S.editingEvtIdx];
+  
+  // Create new blank event with same context
+  const newEvt = {
+    period: currentEvt.period,
+    team: currentEvt.team,
+    type: '',
+    detail1: '',
+    detail2: '',
+    zone: currentEvt.zone || '',
+    success: '',
+    strength: currentEvt.strength || '5v5',
+    start_time: currentEvt.start_time,
+    end_time: '',
+    players: [],
+    puckXY: [],
+    linkedEventIdx: null,
+    isHighlight: false
+  };
+  
+  // Insert at position
+  S.events.splice(S.editingEvtIdx, 0, newEvt);
+  
+  const newIdx = S.editingEvtIdx;
+  S.editingEvtIdx = null;
+  
+  closeEditModal();
+  renderEvents(); updateScores(); updateBoxScore();
+  autoSave();
+  toast(`Inserted event #${newIdx + 1}`, 'success');
+  
+  // Open the new event for editing
+  setTimeout(() => editEvent(newIdx), 100);
+}
+
+/**
+ * v20.7: Insert a new event AFTER the current one
+ */
+function insertEventAfter() {
+  if (S.editingEvtIdx === null) return;
+  
+  const currentEvt = S.events[S.editingEvtIdx];
+  
+  // Create new blank event with same context
+  const newEvt = {
+    period: currentEvt.period,
+    team: currentEvt.team,
+    type: '',
+    detail1: '',
+    detail2: '',
+    zone: currentEvt.zone || '',
+    success: '',
+    strength: currentEvt.strength || '5v5',
+    start_time: currentEvt.start_time,
+    end_time: '',
+    players: [],
+    puckXY: [],
+    linkedEventIdx: null,
+    isHighlight: false
+  };
+  
+  // Insert after current position
+  const insertIdx = S.editingEvtIdx + 1;
+  S.events.splice(insertIdx, 0, newEvt);
+  
+  S.editingEvtIdx = null;
+  
+  closeEditModal();
+  renderEvents(); updateScores(); updateBoxScore();
+  autoSave();
+  toast(`Inserted event #${insertIdx + 1}`, 'success');
+  
+  // Open the new event for editing
+  setTimeout(() => editEvent(insertIdx), 100);
+}
+
+/**
+ * v20.7: Duplicate the current event
+ */
+function duplicateEvent() {
+  if (S.editingEvtIdx === null) return;
+  
+  const currentEvt = S.events[S.editingEvtIdx];
+  
+  // Deep clone the event
+  const newEvt = JSON.parse(JSON.stringify(currentEvt));
+  // Clear linking to avoid confusion
+  newEvt.linkedEventIdx = null;
+  newEvt.eventId = null;
+  newEvt.event_id = null;
+  
+  // Insert after current position
+  const insertIdx = S.editingEvtIdx + 1;
+  S.events.splice(insertIdx, 0, newEvt);
+  
+  S.editingEvtIdx = null;
+  
+  closeEditModal();
+  renderEvents(); updateScores(); updateBoxScore();
+  autoSave();
+  toast(`Duplicated event → #${insertIdx + 1}`, 'success');
+  
+  // Open the new event for editing
+  setTimeout(() => editEvent(insertIdx), 100);
+}
+
+/**
+ * v20.7: Add a new event at the end of the list
+ */
+function addNewEvent() {
+  const lastEvt = S.events.length > 0 ? S.events[S.events.length - 1] : null;
+  
+  // Create new blank event
+  const newEvt = {
+    period: lastEvt ? lastEvt.period : S.period || 1,
+    team: S.evtTeam || 'home',
+    type: '',
+    detail1: '',
+    detail2: '',
+    zone: '',
+    success: '',
+    strength: '5v5',
+    start_time: lastEvt ? lastEvt.start_time : '',
+    end_time: '',
+    players: [],
+    puckXY: [],
+    linkedEventIdx: null,
+    isHighlight: false
+  };
+  
+  // Add to end
+  S.events.push(newEvt);
+  const newIdx = S.events.length - 1;
+  
+  renderEvents(); updateScores(); updateBoxScore();
+  autoSave();
+  toast(`Added event #${newIdx + 1}`, 'success');
+  
+  // Open the new event for editing
+  setTimeout(() => editEvent(newIdx), 100);
 }
 
 function closeEditModal() {
@@ -6323,6 +6938,25 @@ function calculateShiftDuration(shift) {
   return parseTime(shift.start_time) - parseTime(shift.end_time);
 }
 
+// Helper to check if event time falls within shift time range
+// Clock counts DOWN (18:00 -> 0:00), so "between" means: start >= time >= end
+function isTimeBetween(eventTime, shiftStart, shiftEnd) {
+  if (!eventTime || !shiftStart || !shiftEnd) return false;
+  
+  const parseTime = (t) => {
+    if (!t) return 0;
+    const [min, sec] = String(t).split(':').map(Number);
+    return (min || 0) * 60 + (sec || 0);
+  };
+  
+  const evt = parseTime(eventTime);
+  const start = parseTime(shiftStart);
+  const end = parseTime(shiftEnd);
+  
+  // Clock counts down, so start > end (e.g., 18:00 to 16:30)
+  return evt <= start && evt >= end;
+}
+
 function logShift() {
   const start = document.getElementById('shiftStart').value;
   const end = document.getElementById('shiftEnd').value || document.getElementById('clock').value;
@@ -6382,6 +7016,27 @@ function setPeriod(p) {
   updateZoneLabels();
 }
 
+/**
+ * Flip which end home team attacks in P1
+ * For beer league where benches aren't fixed home/away
+ */
+function flipZones() {
+  S.homeAttacksRightP1 = !S.homeAttacksRightP1;
+  updateZoneLabels();
+  
+  const direction = S.homeAttacksRightP1 ? 'RIGHT' : 'LEFT';
+  const homeShort = (S.homeTeam || 'HOME').toUpperCase();
+  toast(`${homeShort} attacks ${direction} in P1/P3`, 'info');
+  
+  // Update button visual
+  const btn = document.getElementById('flipZonesBtn');
+  if (btn) {
+    btn.style.background = S.homeAttacksRightP1 ? '#374151' : '#7c3aed';
+  }
+  
+  autoSave();
+}
+
 function updateClock() {
   // Just store the value, could trigger other updates
 }
@@ -6396,6 +7051,10 @@ function exportData() {
   // Format matches ETL expected input with underscore suffix for input columns
   const rows = [];
   
+  // Track zone changes for zone_change_index
+  let lastZone = null;
+  let zoneChangeIdx = 0;
+  
   S.events.forEach((evt, i) => {
     const startTime = evt.start_time || evt.time || '';
     const endTime = evt.end_time || evt.start_time || evt.time || '';
@@ -6405,12 +7064,36 @@ function exportData() {
     // Map zone to abbreviation (o/d/n)
     const zoneAbbr = evt.zone || 'n';
     
+    // Track zone changes
+    if (zoneAbbr !== lastZone) {
+      zoneChangeIdx++;
+      lastZone = zoneAbbr;
+    }
+    
+    // Calculate time totals
+    const periodLength = S.periodLength || 18;
+    const startMinInt = parseInt(startMin) || 0;
+    const startSecInt = parseInt(startSec) || 0;
+    const endMinInt = parseInt(endMin) || startMinInt;
+    const endSecInt = parseInt(endSec) || startSecInt;
+    const startTotalSec = (periodLength - startMinInt) * 60 + startSecInt;
+    const endTotalSec = (periodLength - endMinInt) * 60 + endSecInt;
+    
+    // Running time calculations
+    const period = parseInt(evt.period) || 1;
+    const periodOffset = (period - 1) * periodLength * 60;
+    const eventRunningStart = periodOffset + startTotalSec;
+    const eventRunningEnd = periodOffset + endTotalSec;
+    
+    // Duration
+    const duration = endTotalSec - startTotalSec;
+    
     const base = {
       // Input columns (underscore suffix for ETL)
       'event_index_flag_': i + 1,
       'sequence_index_flag_': evt.sequenceIdx || '',
       'play_index_flag_': evt.playIdx || '',
-      'linked_event_index_flag_': evt.linkedEventIdx || '',
+      'linked_event_index_flag_': evt.linkedEventIdx !== null ? evt.linkedEventIdx + 1 : '',
       'event_start_min_': startMin || '',
       'event_start_sec_': startSec || '',
       'event_end_min_': endMin || '',
@@ -6423,12 +7106,35 @@ function exportData() {
       'team_': evt.team === 'home' ? 'h' : 'a',
       // Additional derived columns
       'period': evt.period,
-      'event_index': i + 1,
+      'event_index': 1000 + i,  // ETL format: 1000-based
+      'tracking_event_index': 1000 + i,  // Same as event_index
+      'linked_event_index': evt.linkedEventIdx !== null ? 1000 + evt.linkedEventIdx : '',
       'game_id': S.gameId,
       'home_team': S.homeTeam,
       'away_team': S.awayTeam,
       'strength': evt.strength || '5v5',
-      'event_team_zone': zoneAbbr === 'o' ? 'Offensive' : zoneAbbr === 'd' ? 'Defensive' : 'Neutral'
+      'event_team_zone': zoneAbbr === 'o' ? 'Offensive' : zoneAbbr === 'd' ? 'Defensive' : 'Neutral',
+      // Non-underscore duplicates (ETL uses both)
+      'event_start_min': startMin || '',
+      'event_start_sec': startSec || '',
+      'event_end_min': endMin || '',
+      'event_end_sec': endSec || '',
+      'event_detail': evt.detail1 || '',
+      'event_detail_2': evt.detail2 || '',
+      'event_successful': evt.success || '',
+      // Calculated columns
+      'time_start_total_seconds': startTotalSec,
+      'time_end_total_seconds': endTotalSec,
+      'duration': duration,
+      'period_start_total_running_seconds': periodOffset,
+      'running_video_time': evt.videoTime || eventRunningStart,
+      'event_running_start': eventRunningStart,
+      'event_running_end': eventRunningEnd,
+      'running_intermission_duration': 0,  // TODO: track intermissions
+      'zone_change_index': zoneChangeIdx,
+      'shift_index': evt.shiftIdx || '',
+      'is_highlight': evt.isHighlight ? 1 : 0,
+      'Type': evt.type  // Legacy uppercase column
     };
     
     // Add puck XY
@@ -6449,7 +7155,11 @@ function exportData() {
         const row = {...base};
         row['player_game_number_'] = p.num;
         row['player_game_number'] = p.num;
-        row['role_abrev'] = p.role.replace('_team_player_', '').charAt(0) + p.roleNum;
+        // role_abrev: e1, e2, o1, o2, etc.
+        const isOpp = p.role?.includes('opp');
+        const rolePrefix = isOpp ? 'o' : 'e';
+        row['role_abrev'] = rolePrefix + (p.roleNum || 1);
+        row['role_abrev_binary_'] = rolePrefix;  // Just 'e' or 'o'
         row.player_role = p.role;
         row.player_name = p.name;
         row['play_detail1_'] = p.playD1 || '';
@@ -6482,6 +7192,19 @@ function exportData() {
   // Create workbook
   const wb = XLSX.utils.book_new();
   
+  // Metadata sheet (v19: includes zone orientation)
+  const metadata = [{
+    game_id: S.gameId,
+    home_team: S.homeTeam,
+    away_team: S.awayTeam,
+    period_length_minutes: S.periodLength,
+    home_attacks_right_p1: S.homeAttacksRightP1 ? 1 : 0,
+    export_timestamp: new Date().toISOString(),
+    tracker_version: 'v19.18'
+  }];
+  const wsMeta = XLSX.utils.json_to_sheet(metadata);
+  XLSX.utils.book_append_sheet(wb, wsMeta, 'metadata');
+  
   // Events sheet
   if (rows.length) {
     const ws = XLSX.utils.json_to_sheet(rows);
@@ -6490,10 +7213,144 @@ function exportData() {
   
   // Shifts sheet
   if (S.shifts.length) {
+    // Calculate running goals from events AND per-shift goals
+    let homeGoals = 0;
+    let awayGoals = 0;
+    
+    // Pre-calculate goals by shift for running totals AND per-shift plus/minus
+    const goalsByShift = [];
+    S.shifts.forEach((s, i) => {
+      // Store running total at shift START
+      const goalsAtStart = { home: homeGoals, away: awayGoals };
+      
+      // Find goals that occurred IN this shift
+      const shiftEvents = S.events.filter(e => 
+        e.shiftIdx === i || 
+        (e.period === s.period && isTimeBetween(e.start_time, s.start_time, s.end_time))
+      );
+      
+      let homePlus = 0;  // Goals FOR home during this shift (EV/SH only)
+      let awayPlus = 0;  // Goals FOR away during this shift (EV/SH only)
+      
+      // Get shift strength for PP determination
+      const shiftStrength = s.strength || '5v5';
+      const [homeStr, awayStr] = shiftStrength.split('v').map(n => parseInt(n) || 5);
+      const homePP = homeStr > awayStr;  // Home on power play
+      const awayPP = awayStr > homeStr;  // Away on power play
+      
+      shiftEvents.forEach(e => {
+        if (e.type === 'Goal' && e.detail1 === 'Goal_Scored') {
+          // Always update running total
+          if (e.team === 'home') {
+            homeGoals++;
+            // Plus/minus: Only count if NOT a power play goal
+            // Home goal on home PP = no +/- change
+            // Home goal at EV or SH = +1 for home, -1 for away
+            if (!homePP) {
+              homePlus++;
+            }
+          } else {
+            awayGoals++;
+            // Away goal on away PP = no +/- change
+            // Away goal at EV or SH = +1 for away, -1 for home
+            if (!awayPP) {
+              awayPlus++;
+            }
+          }
+        }
+      });
+      
+      goalsByShift.push({ 
+        startHome: goalsAtStart.home, 
+        startAway: goalsAtStart.away,
+        homePlus: homePlus,      // Home EV/SH goals during shift (home +)
+        homeMinus: awayPlus,     // Away EV/SH goals during shift (home -)
+        awayPlus: awayPlus,      // Away EV/SH goals during shift (away +)
+        awayMinus: homePlus      // Home EV/SH goals during shift (away -)
+      });
+    });
+    
+    // Helper to determine zone from X coordinate
+    const getZoneFromX = (x, team) => {
+      if (x === null || x === undefined) return null;
+      // Rink is 200ft, center at 100
+      // Home attacks right (x > 125 = offensive), Away attacks left (x < 75 = offensive)
+      const isHome = team === 'home';
+      if (x > 125) return isHome ? 'o' : 'd';  // Right side
+      if (x < 75) return isHome ? 'd' : 'o';   // Left side
+      return 'n';  // Neutral zone (75-125)
+    };
+    
     const shiftRows = S.shifts.map((s, i) => {
       // Calculate stoppage time if not already calculated
       const stoppageTime = s.stoppageTime ?? calculateShiftStoppageTime(s);
       const duration = s.duration ?? calculateShiftDuration(s);
+      
+      // Calculate time totals
+      const startMin = parseInt(s.start_time?.split(':')[0]) || 0;
+      const startSec = parseInt(s.start_time?.split(':')[1]) || 0;
+      const endMin = parseInt(s.end_time?.split(':')[0]) || 0;
+      const endSec = parseInt(s.end_time?.split(':')[1]) || 0;
+      const periodLength = S.periodLength || 18;
+      
+      const startTotalSec = (periodLength - startMin) * 60 + startSec;
+      const endTotalSec = (periodLength - endMin) * 60 + endSec;
+      
+      // Running time calculations
+      const periodOffset = ((parseInt(s.period) || 1) - 1) * periodLength * 60;
+      const startRunning = periodOffset + startTotalSec;
+      const endRunning = periodOffset + endTotalSec;
+      
+      // Count skaters (F + D only, not goalie or xtra for strength)
+      const homeSkaters = ['F1','F2','F3','D1','D2'].filter(p => s.home?.[p]?.num).length 
+                        + (s.home?.X?.num ? 1 : 0);  // Add xtra if present
+      const awaySkaters = ['F1','F2','F3','D1','D2'].filter(p => s.away?.[p]?.num).length
+                        + (s.away?.X?.num ? 1 : 0);  // Add xtra if present
+      
+      // Empty net flags (1 if NO goalie)
+      const homeEN = s.home?.G?.num ? 0 : 1;
+      const awayEN = s.away?.G?.num ? 0 : 1;
+      
+      // Power play / penalty kill flags
+      // PP = more skaters than opponent AND have a goalie (not empty net)
+      const homePP = (homeSkaters > awaySkaters && homeEN === 0) ? 1 : 0;
+      const awayPP = (awaySkaters > homeSkaters && awayEN === 0) ? 1 : 0;
+      // PK = opponent has PP
+      const homePK = awayPP;
+      const awayPK = homePP;
+      
+      // Situation text
+      let situation = 'Full Strength';
+      if (homePP) situation = 'Power Play';
+      else if (homePK) situation = 'Shorthanded';
+      else if (homeSkaters === 4 && awaySkaters === 4) situation = '4v4';
+      else if (homeSkaters === 3 && awaySkaters === 3) situation = '3v3';
+      else if (homeEN || awayEN) situation = 'Empty Net';
+      
+      // Get events in this shift for zone derivation
+      const shiftEvents = S.events.filter(e => 
+        e.shiftIdx === i || 
+        (e.period === s.period && isTimeBetween(e.start_time, s.start_time, s.end_time))
+      );
+      
+      // Derive start zone from first event with XY
+      let startZone = s.zoneStart || null;
+      let endZone = s.zoneEnd || null;
+      
+      if (!startZone && shiftEvents.length > 0) {
+        const firstEvt = shiftEvents[0];
+        const firstX = firstEvt.puckXY?.[0]?.x;
+        startZone = getZoneFromX(firstX, 'home');
+      }
+      
+      if (!endZone && shiftEvents.length > 0) {
+        const lastEvt = shiftEvents[shiftEvents.length - 1];
+        const lastX = lastEvt.puckXY?.[lastEvt.puckXY?.length - 1]?.x || lastEvt.puckXY?.[0]?.x;
+        endZone = getZoneFromX(lastX, 'home');
+      }
+      
+      // Running score at shift start and plus/minus during shift
+      const shiftGoals = goalsByShift[i] || { startHome: 0, startAway: 0, homePlus: 0, homeMinus: 0, awayPlus: 0, awayMinus: 0 };
       
       return {
         shift_index: i + 1,
@@ -6523,7 +7380,37 @@ function exportData() {
         game_id: S.gameId,
         home_team: S.homeTeam,
         away_team: S.awayTeam,
-        strength: s.strength || '5v5'
+        strength: `${homeSkaters}v${awaySkaters}`,
+        // Calculated columns for ETL
+        shift_start_total_seconds: startTotalSec,
+        shift_end_total_seconds: endTotalSec,
+        home_team_strength: homeSkaters,
+        away_team_strength: awaySkaters,
+        home_team_en: homeEN,
+        away_team_en: awayEN,
+        home_team_pk: homePK,
+        home_team_pp: homePP,
+        away_team_pp: awayPP,
+        away_team_pk: awayPK,
+        situation: situation,
+        home_goals: shiftGoals.startHome,
+        away_goals: shiftGoals.startAway,
+        // Plus/minus: goals FOR and AGAINST during this shift
+        home_team_plus: shiftGoals.homePlus,    // Home goals scored during shift
+        home_team_minus: shiftGoals.homeMinus,  // Away goals scored during shift (against home)
+        away_team_plus: shiftGoals.awayPlus,    // Away goals scored during shift
+        away_team_minus: shiftGoals.awayMinus,  // Home goals scored during shift (against away)
+        // Zone tracking (derived from XY or explicit)
+        home_ozone_start: startZone === 'o' ? 1 : 0,
+        home_ozone_end: endZone === 'o' ? 1 : 0,
+        home_dzone_start: startZone === 'd' ? 1 : 0,
+        home_dzone_end: endZone === 'd' ? 1 : 0,
+        home_nzone_start: startZone === 'n' ? 1 : 0,
+        home_nzone_end: endZone === 'n' ? 1 : 0,
+        period_start_total_running_seconds: periodOffset,
+        running_video_time: s.videoTime || startRunning,
+        shift_start_running_time: startRunning,
+        shift_end_running_time: endRunning
       };
     });
     const ws2 = XLSX.utils.json_to_sheet(shiftRows);
@@ -6532,6 +7419,513 @@ function exportData() {
   
   XLSX.writeFile(wb, `${S.gameId}_tracking.xlsx`);
   toast('Exported!', 'success');
+}
+
+// ============================================================
+// IMPORT EXCEL
+// ============================================================
+async function importExcel(file) {
+  if (!file) return;
+  
+  try {
+    const data = await file.arrayBuffer();
+    const wb = XLSX.read(data, { type: 'array' });
+    
+    console.log('Import: Sheets found:', wb.SheetNames);
+    
+    // Check for required sheets
+    const hasEvents = wb.SheetNames.includes('events');
+    const hasShifts = wb.SheetNames.includes('shifts');
+    const hasMetadata = wb.SheetNames.includes('metadata');
+    
+    if (!hasEvents && !hasShifts) {
+      toast('No events or shifts sheet found', 'error');
+      return;
+    }
+    
+    // Read metadata sheet if present (v19: includes zone orientation)
+    if (hasMetadata) {
+      const metaSheet = XLSX.utils.sheet_to_json(wb.Sheets['metadata']);
+      if (metaSheet.length > 0) {
+        const meta = metaSheet[0];
+        if (meta.home_attacks_right_p1 !== undefined) {
+          S.homeAttacksRightP1 = meta.home_attacks_right_p1 === 1 || meta.home_attacks_right_p1 === true;
+          updateZoneLabels();
+          const btn = document.getElementById('flipZonesBtn');
+          if (btn) btn.style.background = S.homeAttacksRightP1 ? '#374151' : '#7c3aed';
+        }
+        if (meta.period_length_minutes) {
+          S.periodLength = meta.period_length_minutes;
+        }
+        console.log('Import: Loaded metadata - homeAttacksRightP1:', S.homeAttacksRightP1);
+      }
+    }
+    
+    // Parse events sheet
+    let importedEvents = [];
+    let gameId = null;
+    let homeTeam = null;
+    let awayTeam = null;
+    
+    if (hasEvents) {
+      const eventsSheet = XLSX.utils.sheet_to_json(wb.Sheets['events']);
+      console.log('Import: Raw events rows:', eventsSheet.length);
+      
+      // Get game info from first row
+      if (eventsSheet.length > 0) {
+        gameId = eventsSheet[0].game_id;
+        homeTeam = eventsSheet[0].home_team;
+        awayTeam = eventsSheet[0].away_team;
+      }
+      
+      // Group rows by event_index to reconstruct events with multiple players
+      // The Excel is in LONG format (one row per player per event)
+      const eventGroups = {};
+      
+      eventsSheet.forEach(row => {
+        // Get event index - try multiple column names
+        const eventIdx = row.event_index || row['event_index_flag_'] || row.event_index_ || row.tracking_event_index || 0;
+        if (!eventIdx) return;
+        
+        // Get event type - prefer event_type_ over Type (Type is often sparse/calculated)
+        const eventType = row.event_type_ || row['event_type_'] || row.Type || '';
+        if (!eventType) return; // Skip rows without event type
+        
+        // Get times - check non-underscore columns first (they have actual data), then underscore versions
+        const startMin = row.event_start_min ?? row['event_start_min_'] ?? '';
+        const startSec = row.event_start_sec ?? row['event_start_sec_'] ?? '';
+        const endMin = row.event_end_min ?? row['event_end_min_'] ?? '';
+        const endSec = row.event_end_sec ?? row['event_end_sec_'] ?? '';
+        
+        if (!eventGroups[eventIdx]) {
+          eventGroups[eventIdx] = {
+            rows: [],
+            period: row.period,
+            type: eventType,
+            team: parseTeam(row.team_ || row['team_'] || row.team_venue || row.team_venue_abv),
+            zone: parseZone(row.event_team_zone_ || row['event_team_zone_'] || row.event_team_zone),
+            success: parseSuccess(row.event_successful_ || row['event_successful_'] || row.event_successful),
+            detail1: row.event_detail_ || row['event_detail_'] || row.event_detail || '',
+            detail2: row.event_detail_2_ || row['event_detail_2_'] || row.event_detail_2 || '',
+            start_time: formatTime(startMin, startSec),
+            end_time: formatTime(endMin, endSec),
+            strength: row.strength || '5v5',
+            linkedEventIdx: row.linked_event_index_ || row['linked_event_index_'] || row.linked_event_index || null,
+            sequenceIdx: row.sequence_index_ || row['sequence_index_'] || row.sequence_index || null,
+            playIdx: row.play_index_ || row['play_index_'] || row.play_index || null
+          };
+        }
+        eventGroups[eventIdx].rows.push(row);
+      });
+      
+      // Convert groups to events
+      Object.keys(eventGroups).sort((a, b) => parseInt(a) - parseInt(b)).forEach((idx, i) => {
+        const group = eventGroups[idx];
+        const evt = {
+          idx: i,
+          period: parseInt(group.period) || 1,
+          type: group.type || 'Unknown',
+          team: group.team,
+          zone: group.zone,
+          success: group.success,
+          detail1: group.detail1,
+          detail2: group.detail2,
+          start_time: group.start_time,
+          end_time: group.end_time || group.start_time,
+          strength: group.strength,
+          linkedEventIdx: group.linkedEventIdx ? parseInt(group.linkedEventIdx) - 1 : null,
+          sequenceIdx: group.sequenceIdx,
+          playIdx: group.playIdx,
+          players: [],
+          puckXY: [],
+          isHighlight: false
+        };
+        
+        // Add players from rows
+        group.rows.forEach(row => {
+          const playerNum = row.player_game_number_ || row['player_game_number_'] || row.player_game_number;
+          if (playerNum && !isNaN(parseInt(playerNum))) {
+            const roleAbrev = row.role_abrev || '';
+            const playerRoleRaw = row.player_role || '';
+            const playerRole = parseRoleFromRaw(playerRoleRaw, roleAbrev);
+            const numInt = parseInt(playerNum);
+            
+            // Determine player team based on role
+            // event_team_player = same team as event
+            // opp_team_player = opposite team
+            const isOppPlayer = playerRoleRaw.includes('opp') || roleAbrev.toLowerCase().startsWith('o');
+            const playerTeam = isOppPlayer 
+              ? (group.team === 'home' ? 'away' : 'home')
+              : group.team;
+            
+            // Try to get name from roster
+            const roster = S.rosters?.[playerTeam] || [];
+            const rosterPlayer = roster.find(p => parseInt(p.num) === numInt);
+            const playerName = rosterPlayer?.name || row.player_name || `#${numInt}`;
+            
+            evt.players.push({
+              num: numInt,
+              name: playerName,
+              team: playerTeam,
+              role: playerRole,
+              roleNum: parseRoleNum(roleAbrev),
+              playD1: row.play_detail1_ || row['play_detail1_'] || row.play_detail1 || '',
+              playD2: row.play_detail2_ || row['play_detail2_'] || row.play_detail_2 || '',
+              playSuccess: row.play_detail_successful_ || row['play_detail_successful_'] || row.play_detail_successful || '',
+              pressure: row.pressured_pressurer_ || row['pressured_pressurer_'] || row.pressured_pressurer || '',
+              sideOfPuck: row.side_of_puck_ || row['side_of_puck_'] || row.side_of_puck || '',
+              xy: []
+            });
+          }
+          
+          // Extract puck XY coordinates
+          for (let j = 1; j <= 10; j++) {
+            const px = row[`puck_x_${j}`];
+            const py = row[`puck_y_${j}`];
+            if (px !== undefined && py !== undefined && !isNaN(px) && !isNaN(py)) {
+              // Only add if not already present (since it's repeated per player row)
+              if (!evt.puckXY.find(p => p.x === px && p.y === py)) {
+                evt.puckXY.push({ x: parseFloat(px), y: parseFloat(py) });
+              }
+            }
+          }
+        });
+        
+        importedEvents.push(evt);
+      });
+      
+      console.log('Import: Parsed events:', importedEvents.length);
+    }
+    
+    // Parse shifts sheet
+    let importedShifts = [];
+    
+    if (hasShifts) {
+      const shiftsSheet = XLSX.utils.sheet_to_json(wb.Sheets['shifts']);
+      console.log('Import: Raw shifts rows:', shiftsSheet.length);
+      
+      // Get game info if not already set
+      if (!gameId && shiftsSheet.length > 0) {
+        gameId = shiftsSheet[0].game_id;
+        homeTeam = shiftsSheet[0].home_team;
+        awayTeam = shiftsSheet[0].away_team;
+      }
+      
+      shiftsSheet.forEach((row, i) => {
+        // Handle NaN values for stop_type
+        let stopType = row.shift_stop_type;
+        if (stopType === null || stopType === undefined || (typeof stopType === 'number' && isNaN(stopType)) || stopType === 'nan') {
+          stopType = '';
+        }
+        
+        const shift = {
+          period: parseInt(row.Period) || 1,
+          start_time: formatTime(row.shift_start_min, row.shift_start_sec),
+          end_time: formatTime(row.shift_end_min, row.shift_end_sec),
+          start_type: row.shift_start_type || 'OnTheFly',
+          stop_type: stopType,
+          strength: row.strength || '5v5',
+          duration: row.shift_duration || null,
+          stoppageTime: row.stoppage_time || 0,
+          home: {
+            F1: parsePlayer(row.home_forward_1, 'home'),
+            F2: parsePlayer(row.home_forward_2, 'home'),
+            F3: parsePlayer(row.home_forward_3, 'home'),
+            D1: parsePlayer(row.home_defense_1, 'home'),
+            D2: parsePlayer(row.home_defense_2, 'home'),
+            G: parsePlayer(row.home_goalie, 'home'),
+            X: parsePlayer(row.home_xtra, 'home')
+          },
+          away: {
+            F1: parsePlayer(row.away_forward_1, 'away'),
+            F2: parsePlayer(row.away_forward_2, 'away'),
+            F3: parsePlayer(row.away_forward_3, 'away'),
+            D1: parsePlayer(row.away_defense_1, 'away'),
+            D2: parsePlayer(row.away_defense_2, 'away'),
+            G: parsePlayer(row.away_goalie, 'away'),
+            X: parsePlayer(row.away_xtra, 'away')
+          }
+        };
+        importedShifts.push(shift);
+      });
+      
+      console.log('Import: Parsed shifts:', importedShifts.length);
+    }
+    
+    // Confirm import
+    const evtCount = importedEvents.length;
+    const shiftCount = importedShifts.length;
+    const msg = `Import ${evtCount} events and ${shiftCount} shifts from game ${gameId}?\n\nThis will REPLACE current data.\n\nNote: Select the game in dropdown FIRST to load rosters for player name lookup.`;
+    
+    if (!confirm(msg)) {
+      toast('Import cancelled', 'info');
+      document.getElementById('importFileInput').value = '';
+      return;
+    }
+    
+    // Try to select the game if we have a gameId
+    if (gameId) {
+      S.gameId = parseInt(gameId);
+      S.homeTeam = homeTeam;
+      S.awayTeam = awayTeam;
+      
+      // Try to select the game in dropdown and load roster
+      const gameSelect = document.getElementById('gameSelect');
+      if (gameSelect && gameSelect.querySelector(`option[value="${gameId}"]`)) {
+        gameSelect.value = gameId;
+        // Try to load roster for this game
+        try {
+          await selectGame(gameId);
+          // Re-process players with loaded roster
+          importedShifts = importedShifts.map(shift => ({
+            ...shift,
+            home: {
+              F1: shift.home.F1 ? parsePlayer(shift.home.F1.num, 'home') : null,
+              F2: shift.home.F2 ? parsePlayer(shift.home.F2.num, 'home') : null,
+              F3: shift.home.F3 ? parsePlayer(shift.home.F3.num, 'home') : null,
+              D1: shift.home.D1 ? parsePlayer(shift.home.D1.num, 'home') : null,
+              D2: shift.home.D2 ? parsePlayer(shift.home.D2.num, 'home') : null,
+              G: shift.home.G ? parsePlayer(shift.home.G.num, 'home') : null,
+              X: shift.home.X ? parsePlayer(shift.home.X.num, 'home') : null
+            },
+            away: {
+              F1: shift.away.F1 ? parsePlayer(shift.away.F1.num, 'away') : null,
+              F2: shift.away.F2 ? parsePlayer(shift.away.F2.num, 'away') : null,
+              F3: shift.away.F3 ? parsePlayer(shift.away.F3.num, 'away') : null,
+              D1: shift.away.D1 ? parsePlayer(shift.away.D1.num, 'away') : null,
+              D2: shift.away.D2 ? parsePlayer(shift.away.D2.num, 'away') : null,
+              G: shift.away.G ? parsePlayer(shift.away.G.num, 'away') : null,
+              X: shift.away.X ? parsePlayer(shift.away.X.num, 'away') : null
+            }
+          }));
+        } catch (e) {
+          console.log('Could not load game roster:', e);
+        }
+      }
+    }
+    
+    // v20.5: Load dim values and check for mapping needs
+    await loadDimValuesForValidation();
+    const mappingsNeeded = analyzeImportMappings(importedEvents);
+    
+    // Function to complete import (called after mappings are applied or skipped)
+    const completeImport = (events, shifts) => {
+      S.events = events;
+      S.shifts = shifts;
+      S.evtIdx = events.length;
+      S.shiftIdx = shifts.length;
+      
+      // POST-IMPORT: Propagate XY data to linked events missing it
+      propagateXYToLinkedEvents();
+      
+      // Render
+      renderAll();
+      autoSave();
+      
+      toast(`Imported ${events.length} events, ${shifts.length} shifts`, 'success');
+      console.log('Import complete:', { events: S.events.length, shifts: S.shifts.length });
+    };
+    
+    // If mappings needed, show modal
+    if (mappingsNeeded.length > 0) {
+      console.log('Import: Found', mappingsNeeded.length, 'values needing mapping review');
+      showMappingModal(
+        mappingsNeeded,
+        // onAccept - apply mappings then complete
+        (finalMappings) => {
+          const mappedEvents = applyMappingsToEvents(importedEvents, finalMappings);
+          completeImport(mappedEvents, importedShifts);
+        },
+        // onSkip - complete without mappings
+        () => {
+          toast('Skipped value mapping - using original values', 'info');
+          completeImport(importedEvents, importedShifts);
+        }
+      );
+    } else {
+      // No mappings needed - all values match
+      console.log('Import: All values match dim tables');
+      completeImport(importedEvents, importedShifts);
+    }
+    
+  } catch (e) {
+    console.error('Import error:', e);
+    toast('Import failed: ' + e.message, 'error');
+  }
+  
+  // Reset file input
+  document.getElementById('importFileInput').value = '';
+}
+
+/**
+ * POST-IMPORT: Propagate XY data to linked events missing it
+ * For each event without puckXY, find a sibling (same linkedEventIdx) that has XY and copy it
+ */
+function propagateXYToLinkedEvents() {
+  if (!S.events?.length) return;
+  
+  let propagatedCount = 0;
+  
+  // Group events by linkedEventIdx
+  const linkedGroups = {};
+  S.events.forEach((evt, idx) => {
+    if (evt.linkedEventIdx !== null && evt.linkedEventIdx !== undefined) {
+      const key = evt.linkedEventIdx;
+      if (!linkedGroups[key]) linkedGroups[key] = [];
+      linkedGroups[key].push({ evt, idx });
+    }
+  });
+  
+  // For each linked group, find events with XY and propagate to those without
+  Object.values(linkedGroups).forEach(group => {
+    // Find events in this group that have XY data
+    const withXY = group.filter(g => g.evt.puckXY?.length > 0);
+    const withoutXY = group.filter(g => !g.evt.puckXY?.length);
+    
+    if (withXY.length === 0 || withoutXY.length === 0) return;
+    
+    // Use the most recent event with XY as source
+    const source = withXY.sort((a, b) => b.idx - a.idx)[0].evt;
+    
+    // Copy XY to events missing it
+    withoutXY.forEach(({ evt, idx }) => {
+      // Copy puck XY
+      if (source.puckXY?.length) {
+        S.events[idx].puckXY = JSON.parse(JSON.stringify(source.puckXY));
+      }
+      // Copy net XY
+      if (source.netXY) {
+        S.events[idx].netXY = JSON.parse(JSON.stringify(source.netXY));
+      }
+      // Copy player XY (without role swapping for simplicity during import)
+      if (source.players?.length) {
+        source.players.forEach(srcPlayer => {
+          if (!srcPlayer.xy?.length) return;
+          
+          const existingIdx = S.events[idx].players?.findIndex(p => 
+            p.num === srcPlayer.num && p.team === srcPlayer.team
+          );
+          
+          if (existingIdx >= 0) {
+            S.events[idx].players[existingIdx].xy = JSON.parse(JSON.stringify(srcPlayer.xy));
+          } else {
+            if (!S.events[idx].players) S.events[idx].players = [];
+            S.events[idx].players.push(JSON.parse(JSON.stringify(srcPlayer)));
+          }
+        });
+      }
+      propagatedCount++;
+    });
+  });
+  
+  if (propagatedCount > 0) {
+    console.log(`Propagated XY data to ${propagatedCount} linked events`);
+    toast(`Filled XY for ${propagatedCount} linked events`, 'info');
+  }
+}
+
+// Helper functions for import
+function parseTeam(value) {
+  if (!value) return 'home';
+  const v = String(value).toLowerCase().trim();
+  if (v === 'h' || v === 'home' || v.includes('home')) return 'home';
+  if (v === 'a' || v === 'away' || v.includes('away')) return 'away';
+  return 'home';
+}
+
+function parseZone(value) {
+  if (!value) return 'n';
+  const v = String(value).toLowerCase().trim();
+  if (v === 'o' || v === 'off' || v.includes('offensive')) return 'o';
+  if (v === 'd' || v === 'def' || v.includes('defensive')) return 'd';
+  if (v === 'n' || v === 'neu' || v.includes('neutral')) return 'n';
+  return 'n';
+}
+
+function parseSuccess(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const v = String(value).toLowerCase().trim();
+  if (v === 's' || v === 'y' || v === 'yes' || v === 'true' || v === '1') return true;
+  if (v === 'u' || v === 'n' || v === 'no' || v === 'false' || v === '0') return false;
+  return null;
+}
+
+function formatTime(min, sec) {
+  if (min === null || min === undefined || min === '') return '';
+  const m = String(min).padStart(2, '0');
+  const s = String(sec || 0).padStart(2, '0');
+  return `${m}:${s}`;
+}
+
+function parsePlayer(num, team) {
+  if (!num || isNaN(parseInt(num))) return null;
+  const numInt = parseInt(num);
+  
+  // Try to find player name from roster
+  const roster = S.rosters?.[team] || [];
+  const rosterPlayer = roster.find(p => parseInt(p.num) === numInt);
+  
+  return { 
+    num: numInt, 
+    name: rosterPlayer?.name || `#${numInt}` 
+  };
+}
+
+function parseRoleFromRaw(rawRole, abrev) {
+  // Convert Excel role format to tracker format
+  // Excel: event_team_player_1, opp_team_player_1
+  // Tracker: event_player_1, opp_player_1
+  if (rawRole) {
+    // Replace event_team_player with event_player
+    if (rawRole.includes('event_team_player')) {
+      return rawRole.replace('event_team_player', 'event_player');
+    }
+    // Replace opp_team_player with opp_player
+    if (rawRole.includes('opp_team_player')) {
+      return rawRole.replace('opp_team_player', 'opp_player');
+    }
+    // Already in correct format
+    if (rawRole.includes('event_player') || rawRole.includes('opp_player')) {
+      return rawRole;
+    }
+  }
+  
+  // Fall back to parsing from abbreviation
+  return parseRoleFromAbrev(abrev);
+}
+
+function parseRoleFromAbrev(abrev) {
+  if (!abrev) return 'event_player_1';
+  const a = String(abrev).toLowerCase().trim();
+  
+  // e, e1, e2 -> event_player_X
+  if (a === 'e' || a.startsWith('e')) {
+    const num = parseInt(a.substring(1)) || 1;
+    return `event_player_${num}`;
+  }
+  // o, o1, o2 -> opp_player_X
+  if (a === 'o' || a.startsWith('o')) {
+    const num = parseInt(a.substring(1)) || 1;
+    return `opp_player_${num}`;
+  }
+  // h1, h2 -> event_player (home)
+  if (a.startsWith('h')) {
+    const num = parseInt(a.substring(1)) || 1;
+    return `event_player_${num}`;
+  }
+  // a1, a2 -> could be either depending on context
+  if (a.startsWith('a')) {
+    const num = parseInt(a.substring(1)) || 1;
+    return `event_player_${num}`;
+  }
+  
+  return 'event_player_1';
+}
+
+function parseRoleNum(abrev) {
+  if (!abrev) return 1;
+  const match = String(abrev).match(/\d+/);
+  return match ? parseInt(match[0]) : 1;
 }
 
 // ============================================================
@@ -6668,8 +8062,444 @@ function endShift() {
 S.linePresets = JSON.parse(localStorage.getItem('bs_line_presets') || '{}');
 S.shiftLogFilter = 'all';
 S.eventLogFilter = 'all';
+// v20.4: Advanced event filters
+S.eventFilters = {
+  type: '',
+  detail1: '',
+  detail2: '',
+  playDetail1: '',
+  playDetail2: '',
+  team: '',
+  eventIdx: null,
+  linkedIdx: null,
+  shiftIdx: null
+};
 S.selectedPlayerSlot = null;
 S.compactMode = false;
+
+// v20.5: Dim table value cache for import validation
+S.dimValues = {
+  event_type: [],
+  event_detail: [],
+  event_detail_2: [],
+  play_detail: [],
+  play_detail_2: [],
+  loaded: false
+};
+S.pendingMappings = null; // Holds mappings during modal review
+
+/**
+ * v20.5: Load dim table values from Supabase for import validation
+ * v22.1: Fixed to load ALL values and better fallback
+ */
+async function loadDimValuesForValidation() {
+  if (S.dimValues.loaded) return true;
+  
+  try {
+    // Try Supabase first
+    if (typeof supabase !== 'undefined' && S.sb) {
+      const tables = [
+        { name: 'dim_event_type', field: 'event_type', col: 'event_type_code' },
+        { name: 'dim_event_detail', field: 'event_detail', col: 'event_detail_code' },
+        { name: 'dim_event_detail_2', field: 'event_detail_2', col: 'event_detail_2_code' },
+        { name: 'dim_play_detail', field: 'play_detail', col: 'play_detail_code' },
+        { name: 'dim_play_detail_2', field: 'play_detail_2', col: 'play_detail_2_code' }
+      ];
+      
+      let loadedCount = 0;
+      for (const t of tables) {
+        // v22.1: Load ALL rows (up to 1000) - use .limit(1000) to ensure we get everything
+        const { data, error } = await S.sb.from(t.name).select(t.col).limit(1000);
+        if (!error && data && data.length > 0) {
+          S.dimValues[t.field] = data.map(r => r[t.col]).filter(Boolean);
+          loadedCount++;
+          console.log(`Loaded ${S.dimValues[t.field].length} values from ${t.name}`);
+        } else {
+          console.warn(`Failed to load ${t.name}:`, error || 'no data');
+        }
+      }
+      
+      if (loadedCount >= 3) {
+        S.dimValues.loaded = true;
+        console.log('Loaded dim values from Supabase:', Object.keys(S.dimValues).map(k => `${k}: ${S.dimValues[k]?.length || 0}`).join(', '));
+        return true;
+      }
+    }
+  } catch (e) {
+    console.warn('Supabase dim load failed, using fallback:', e);
+  }
+  
+  // v22.1: Comprehensive fallback values (if Supabase load fails)
+  S.dimValues.event_type = ['Shot', 'Save', 'Pass', 'Faceoff', 'Turnover', 'Zone_Entry_Exit', 'Possession', 'Penalty', 'Hit', 'Block', 'Stoppage', 'Goal', 'GameStart', 'GameEnd', 'PeriodStart', 'PeriodEnd', 'Rebound', 'DeadIce', 'Play', 'Intermission', 'Clockstop', 'Timeout', 'LoosePuck', 'PenaltyShot_Shootout', 'Penalty_Delayed'];
+  
+  S.dimValues.event_detail = ['Shot_OnNetSaved', 'Shot_Goal', 'Goal_Scored', 'Shot_Missed', 'Shot_MissedWide', 'Shot_MissedHigh', 'Shot_HitPost', 'Shot_Blocked', 'Shot_TippedOnNetSaved', 'Shot_OnNetGoal', 'Shot_BlockedSameTeam', 'Shot_Deflected', 'Pass_Completed', 'Pass_Missed', 'Pass_Intercepted', 'Pass_Deflected', 'Turnover_Giveaway', 'Turnover_Takeaway', 'Zone_Entry', 'Zone_Exit', 'Zone_Keepin', 'Zone_EntryFailed', 'Zone_ExitFailed', 'Faceoff_Won', 'Faceoff_Lost', 'Faceoff_PeriodStart', 'Faceoff_GameStart', 'Faceoff_AfterGoal', 'Faceoff_AfterPenalty', 'Faceoff_AfterStoppage', 'Save_Rebound', 'Save_Freeze', 'Save_Played', 'Stoppage_PeriodEnd', 'Stoppage_Play', 'Stoppage_Other', 'Stoppage_GameEnd', 'Penalty_Minor', 'Penalty_Major', 'Penalty_Misconduct', 'Goal_Shootout', 'Goal_PenaltyShot', 'Rebound_TeamRecovered', 'Rebound_OppRecovered', 'Rebound_ShotGenerated', 'DeadIce_Icing', 'DeadIce_Offside', 'DeadIce_PuckOut', 'Play_Offensive', 'Play_Defensive', 'Breakaway', 'PuckRetrieval', 'PuckRecovery', 'Regroup', 'LoosePuck'];
+  
+  // v22.1: Full list of event_detail_2 values
+  S.dimValues.event_detail_2 = [
+    // Pass modifiers
+    'Pass_Forehand', 'Pass_Backhand', 'Pass_Bank', 'Pass_Stretch', 'Pass_Rim/Wrap', 'Pass_Drop', 'Pass_Dump', 'Pass_OneTouch', 'Pass_Lob', 'Pass_Reverse', 'Pass_QuickUp', 'Pass_GiveAndGo', 'Pass_SecondTouch', 'Pass_Tipped', 'Pass_Deflected/TippedShot', 'Pass_ReceiverMissed', 'Pass_Other',
+    // Shot modifiers
+    'Shot_Wrist', 'Shot_Slap', 'Shot_Backhand', 'Shot_Snap', 'Shot_WrapAround', 'Shot_Bat', 'Shot_Poke', 'Shot_OneTime', 'Shot_Tip', 'Shot_Deflection', 'Shot_Other', 'Shot_BetweenLegs', 'Shot_Cradle',
+    // Goal modifiers
+    'Goal_Wrist', 'Goal_Slap', 'Goal_Backhand', 'Goal_Snap', 'Goal_WrapAround', 'Goal_Bat', 'Goal_Poke', 'Goal_OneTime', 'Goal_Tip', 'Goal_Deflection', 'Goal_Dumpin', 'Goal_Other', 'Goal_BetweenLegs', 'Goal_Cradle',
+    // Save modifiers
+    'Save_Glove', 'Save_Blocker', 'Save_Pad', 'Save_Stick', 'Save_Butterfly', 'Save_Other',
+    // Zone entry modifiers
+    'ZoneEntry_Rush', 'ZoneEntry_Carry', 'ZoneEntry_Pass', 'ZoneEntry_DumpIn', 'ZoneEntry_Chip', 'ZoneEntry_OppTeam', 'ZoneEntry_PassMiss/Misplay',
+    // Zone exit modifiers  
+    'ZoneExit_Rush', 'ZoneExit_Carry', 'ZoneExit_Pass', 'ZoneExit_Clear', 'ZoneExit_Chip', 'ZoneExit_PassMiss/Misplay',
+    // Giveaway modifiers
+    'Giveaway_Misplayed', 'Giveaway_BattleLost', 'Giveaway_PassIntercepted', 'Giveaway_PassMissed', 'Giveaway_PassBlocked', 'Giveaway_PassReceiverMissed', 'Giveaway_ShotBlocked', 'Giveaway_ShotMissed', 'Giveaway_DumpInZone', 'Giveaway_ZoneClear/Dump', 'Giveaway_ZoneEntry/ExitMisplay', 'Giveaway_AttemptedZoneClear/Dump', 'Giveaway_Other',
+    // Takeaway modifiers
+    'Takeaway_BattleWon', 'Takeaway_PokeCheck', 'Takeaway_PassIntercepted', 'Takeaway_PassBlocked', 'Takeaway_Other',
+    // Stoppage modifiers
+    'Stoppage_Icing', 'Stoppage_Offsides', 'Stoppage_GoalieStoppage', 'Stoppage_PuckOut', 'Stoppage_Penalty', 'Stoppage_Goal', 'Stoppage_HandPass', 'Stoppage_NetOff', 'Stoppage_Injury',
+    // Penalty modifiers
+    'Penalty_Tripping', 'Penalty_Hooking', 'Penalty_Slashing', 'Penalty_Interference', 'Penalty_Holding', 'Penalty_Roughing', 'Penalty_HighSticking', 'Penalty_CrossChecking', 'Penalty_Boarding', 'Penalty_Other',
+    // Play context modifiers
+    'Deke', 'DriveMiddle', 'DriveWide', 'DumpChase', 'Rush', 'Cycle', 'Rebound', 'OneTimer', 'Tip', 'Deflection', 'Breakaway', 'OddManRush', 'CrashNet', 'Forecheck', 'Backcheck', 'NetFront', 'PointShot', 'Screen',
+    // Zone keep-in
+    'Zone_KeepIn', 'ZoneEntry_KeepIn'
+  ];
+  
+  // v22.1: Comprehensive play_detail fallback (111 values from dim_play_detail)
+  S.dimValues.play_detail = ['AssistPrimary','AssistSecondary','AssistTertiary','AttemptedBlockedShot','AttemptedBreakOutClear','AttemptedBreakOutPass','AttemptedBreakOutRush','AttemptedEntryDumpIn','AttemptedEntryPass','AttemptedEntryRush','AttemptedKeepin','AttemptedPass','AttemptedShot','AttemptedTip/Deflection','Backcheck','BeatDeke','BeatFake','BeatMiddle','BeatSpeed','BeatWide','BlockedShot','BoxOut','Breakout','CededZoneEntry','CededZoneExit','Chip','ClearingAttempt','Contain','CrashNet','CutBack','Cycle','DeflectedShot','Deke','Delay','DelayedOffside','DriveCorner','DriveMiddle','DriveNetMiddle','DriveNetWide','DriveWide','Dump/RimInZone','DumpChase','DumpInAttempt','EndToEndRush','FakeShot','ForcedDumpin/Clear','ForcedLostPossession','ForcedMissedPass','ForcedMissedShot','ForcedTurnover','ForceWide','ForecedOutside','Forecheck','FrontofNet','GapControl','GiveAndGo','InShotPassLane','LoosePuckBattleLost','LoosePuckBattleWon','LostPuck','ManOnMan','MisplayedPuck','OpenIceDeke','Other','PassDeflected','PassForTip','PassIntercepted','PenaltyKillClear','PokeCheck','Pressure','PuckRecoveryRetreivalAttemptedClear','PuckRecoveryRetreivalClear','PuckRecoveryRetreivalDumpIn','PuckRecoveryRetreivalFaceoff','PuckRecoveryRetreivalLoosePuckBattle','PuckRecoveryRetreivalOther','PuckRecoveryRetreivalPass','PuckRecoveryRetreivalRebound','PuckRecoveryRetreivalShot','PuckRecoveryRetreivalTurnover','PuckRetrievalDumpIn','PuckRetrievalRebound','PuckRetrievalShot','QuickUp','ReceiverMissed','RecoveryRetreivalDumpIn','RecoveryRetreivalFaceoff','RecoveryRetreivalOther','RecoveryRetreivalPass','RecoveryRetreivalRebound','RecoveryRetreivalShot','RecoveryRetreivalTurnover','RecoveryRetrievalDumpIn','RecoveryRetrievalShot','Regroup','RegroupClear','RegroupDumpin','Reverse','Screen','SecondTouch','SeperateFromPuck','Speed','StickCheck','StoppedDeke','Surf','Tracker','Wheel','Zone','ZoneEntryDenial','ZoneExitDenial','ZoneKeepin'];
+  
+  // v22.1: Comprehensive play_detail_2 fallback (111 values from dim_play_detail_2)
+  S.dimValues.play_detail_2 = ['AssistPrimary','AssistSecondary','AssistTertiary','AttemptedBlockedShot','AttemptedBreakOutClear','AttemptedBreakOutPass','AttemptedBreakOutRush','AttemptedEntryDumpIn','AttemptedEntryPass','AttemptedEntryRush','AttemptedKeepin','AttemptedPass','AttemptedShot','AttemptedTip/Deflection','Backcheck','BeatDeke','BeatFake','BeatMiddle','BeatSpeed','BeatWide','BlockedShot','BoxOut','Breakout','CededZoneEntry','CededZoneExit','Chip','ClearingAttempt','Contain','CrashNet','CutBack','Cycle','DeflectedShot','Deke','Delay','DelayedOffside','DriveCorner','DriveMiddle','DriveNetMiddle','DriveNetWide','DriveWide','Dump/RimInZone','DumpChase','DumpInAttempt','EndToEndRush','FakeShot','ForcedDumpin/Clear','ForcedLostPossession','ForcedMissedPass','ForcedMissedShot','ForcedTurnover','ForceWide','ForecedOutside','Forecheck','FrontofNet','GapControl','GiveAndGo','InShotPassLane','LoosePuckBattleLost','LoosePuckBattleWon','LostPuck','ManOnMan','MisplayedPuck','OpenIceDeke','Other','PassDeflected','PassForTip','PassIntercepted','PenaltyKillClear','PokeCheck','Pressure','PuckRecoveryRetreivalAttemptedClear','PuckRecoveryRetreivalClear','PuckRecoveryRetreivalDumpIn','PuckRecoveryRetreivalFaceoff','PuckRecoveryRetreivalLoosePuckBattle','PuckRecoveryRetreivalOther','PuckRecoveryRetreivalPass','PuckRecoveryRetreivalRebound','PuckRecoveryRetreivalShot','PuckRecoveryRetreivalTurnover','PuckRetrievalDumpIn','PuckRetrievalRebound','PuckRetrievalShot','QuickUp','ReceiverMissed','RecoveryRetreivalDumpIn','RecoveryRetreivalFaceoff','RecoveryRetreivalOther','RecoveryRetreivalPass','RecoveryRetreivalRebound','RecoveryRetreivalShot','RecoveryRetreivalTurnover','RecoveryRetrievalDumpIn','RecoveryRetrievalShot','Regroup','RegroupClear','RegroupDumpin','Reverse','Screen','SecondTouch','SeperateFromPuck','Speed','StickCheck','StoppedDeke','Surf','Tracker','Wheel','Zone','ZoneEntryDenial','ZoneExitDenial','ZoneKeepin'];
+  
+  S.dimValues.loaded = true;
+  console.log('Loaded fallback dim values (Supabase unavailable)');
+  return true;
+}
+
+/**
+ * v20.5: Normalize string for fuzzy matching
+ * Handles: case, underscores vs hyphens vs spaces, common prefixes
+ */
+function normalizeForMatch(str) {
+  if (!str) return '';
+  return str
+    .toLowerCase()
+    .replace(/[-_ ]/g, '')  // Remove separators
+    .replace(/^(play|shot|pass|zone|turnover|giveaway|takeaway|save|faceoff|goal)[_-]?/i, '')  // Remove common prefixes for matching
+    .trim();
+}
+
+/**
+ * v20.5: Calculate match score between two strings (0-100)
+ */
+function matchScore(a, b) {
+  if (!a || !b) return 0;
+  const na = normalizeForMatch(a);
+  const nb = normalizeForMatch(b);
+  
+  // Exact match (normalized)
+  if (na === nb) return 100;
+  
+  // One contains the other
+  if (na.includes(nb) || nb.includes(na)) return 85;
+  
+  // Levenshtein-ish: count common chars
+  const setA = new Set(na.split(''));
+  const setB = new Set(nb.split(''));
+  const intersection = [...setA].filter(c => setB.has(c)).length;
+  const union = new Set([...setA, ...setB]).size;
+  const similarity = union > 0 ? (intersection / union) * 100 : 0;
+  
+  return Math.round(similarity);
+}
+
+/**
+ * v20.5: Find best match from valid values
+ */
+function findBestMatch(value, validValues, threshold = 60) {
+  if (!value || !validValues?.length) return { match: null, score: 0, type: 'none' };
+  
+  // Check exact match first (case-insensitive)
+  const exactMatch = validValues.find(v => v.toLowerCase() === value.toLowerCase());
+  if (exactMatch) return { match: exactMatch, score: 100, type: 'exact' };
+  
+  // Fuzzy match
+  let best = { match: null, score: 0 };
+  for (const candidate of validValues) {
+    const score = matchScore(value, candidate);
+    if (score > best.score) {
+      best = { match: candidate, score };
+    }
+  }
+  
+  if (best.score >= threshold) {
+    return { ...best, type: 'fuzzy' };
+  }
+  
+  return { match: null, score: best.score, type: 'none' };
+}
+
+/**
+ * v20.5: Analyze imported events and find mappings needed
+ */
+function analyzeImportMappings(events) {
+  const fields = [
+    { key: 'type', dimKey: 'event_type', label: 'Event Type' },
+    { key: 'detail1', dimKey: 'event_detail', label: 'Event Detail' },
+    { key: 'detail', dimKey: 'event_detail', label: 'Event Detail' },  // Alias
+    { key: 'detail2', dimKey: 'event_detail_2', label: 'Event Detail 2' }
+  ];
+  
+  // Also check player play details
+  const playerFields = [
+    { key: 'playD1', dimKey: 'play_detail', label: 'Play Detail 1' },
+    { key: 'playD2', dimKey: 'play_detail_2', label: 'Play Detail 2' }
+  ];
+  
+  const mappings = [];
+  const seenValues = new Set();
+  
+  // Collect unique values from events
+  for (const evt of events) {
+    for (const f of fields) {
+      const val = evt[f.key];
+      if (val && !seenValues.has(`${f.dimKey}:${val}`)) {
+        seenValues.add(`${f.dimKey}:${val}`);
+        const result = findBestMatch(val, S.dimValues[f.dimKey]);
+        if (result.type !== 'exact') {
+          mappings.push({
+            field: f.label,
+            dimKey: f.dimKey,
+            eventKey: f.key,
+            original: val,
+            ...result
+          });
+        }
+      }
+    }
+    
+    // Check player play details
+    for (const player of (evt.players || [])) {
+      for (const f of playerFields) {
+        const val = player[f.key];
+        if (val && !seenValues.has(`${f.dimKey}:${val}`)) {
+          seenValues.add(`${f.dimKey}:${val}`);
+          const result = findBestMatch(val, S.dimValues[f.dimKey]);
+          if (result.type !== 'exact') {
+            mappings.push({
+              field: f.label,
+              dimKey: f.dimKey,
+              eventKey: f.key,
+              isPlayerField: true,
+              original: val,
+              ...result
+            });
+          }
+        }
+      }
+    }
+  }
+  
+  return mappings;
+}
+
+/**
+ * v20.5: Show mapping modal for user review
+ * v22.1: Added "Show More" functionality and ensured correct dim table per field
+ */
+function showMappingModal(mappings, onAccept, onSkip) {
+  // Create modal HTML
+  const fuzzyCount = mappings.filter(m => m.type === 'fuzzy').length;
+  const noMatchCount = mappings.filter(m => m.type === 'none').length;
+  
+  let tableRows = mappings.map((m, i) => {
+    // v22.1: Get options ONLY from the correct dim table for this field
+    const allOptions = S.dimValues[m.dimKey] || [];
+    const dimTableName = m.dimKey; // e.g., "event_detail_2"
+    
+    // v22.1: Sort options by relevance to the original value
+    const scoredOptions = allOptions.map(o => ({
+      value: o,
+      score: matchScore(m.original, o)
+    })).sort((a, b) => b.score - a.score);
+    
+    // v22.1: Show top 8 matches initially, with "Show More" to expand
+    const topOptions = scoredOptions.slice(0, 8);
+    const hasMore = scoredOptions.length > 8;
+    
+    // Build select HTML with top matches first
+    let selectHtml = '<select id="mapping_' + i + '" class="mapping-select" onchange="handleMappingSelect(this, ' + i + ', \'' + m.dimKey + '\')">';
+    selectHtml += '<option value="">-- No mapping --</option>';
+    
+    // Add suggested match first if it exists and not in top options
+    if (m.match && !topOptions.find(o => o.value === m.match)) {
+      const mScore = scoredOptions.find(o => o.value === m.match)?.score || m.score;
+      selectHtml += '<option value="' + m.match + '" selected>✓ ' + m.match + ' (' + mScore + '%)</option>';
+    }
+    
+    // Add top scored options
+    for (const opt of topOptions) {
+      const selected = opt.value === m.match ? 'selected' : '';
+      const scoreLabel = opt.score > 0 ? ' (' + opt.score + '%)' : '';
+      selectHtml += '<option value="' + opt.value + '" ' + selected + '>' + opt.value + scoreLabel + '</option>';
+    }
+    
+    // Add "Show More" option if there are more values
+    if (hasMore) {
+      selectHtml += '<option value="__SHOW_MORE__">▼ Show all ' + allOptions.length + ' from ' + dimTableName + '...</option>';
+    }
+    
+    selectHtml += '</select>';
+    
+    const typeIcon = m.type === 'fuzzy' ? '≈' : '?';
+    
+    return '<tr data-dimkey="' + m.dimKey + '">' +
+      '<td class="field">' + m.field + '</td>' +
+      '<td class="original">' + m.original + '</td>' +
+      '<td>' + typeIcon + '</td>' +
+      '<td>' + selectHtml + '</td>' +
+      '<td class="score">' + m.score + '%</td>' +
+    '</tr>';
+  }).join('');
+  
+  const modalHtml = 
+    '<div class="modal mapping-modal" id="mappingModal">' +
+      '<h3>📋 Import Value Mapping</h3>' +
+      '<p class="summary">' +
+        'Found <strong>' + mappings.length + '</strong> values needing review: ' +
+        '<span style="color:var(--accent)">' + fuzzyCount + ' fuzzy matches</span>, ' +
+        '<span style="color:var(--danger)">' + noMatchCount + ' no matches</span>' +
+      '</p>' +
+      '<p style="font-size:10px;color:var(--muted);">Each dropdown shows top matches from its correct dim table. Click "Show all" to see all options.</p>' +
+      '<div class="mapping-legend">' +
+        '<span><span class="dot exact"></span> Exact (auto-mapped)</span>' +
+        '<span><span class="dot fuzzy"></span> Fuzzy (suggested)</span>' +
+        '<span><span class="dot none"></span> No match (select manually)</span>' +
+      '</div>' +
+      '<table class="mapping-table">' +
+        '<thead>' +
+          '<tr><th>Field</th><th>Original Value</th><th>Type</th><th>Map To</th><th>Score</th></tr>' +
+        '</thead>' +
+        '<tbody>' + tableRows + '</tbody>' +
+      '</table>' +
+      '<div class="modal-actions">' +
+        '<button class="btn-cancel" onclick="closeMappingModal(false)">Skip (Keep Original)</button>' +
+        '<button class="btn-success" onclick="closeMappingModal(true)">Apply Mappings</button>' +
+      '</div>' +
+    '</div>' +
+    '<div class="modal-overlay" onclick="closeMappingModal(false)"></div>';
+  
+  // Store callbacks
+  S.pendingMappings = { mappings, onAccept, onSkip };
+  
+  // Show modal
+  const container = document.createElement('div');
+  container.id = 'mappingModalContainer';
+  container.innerHTML = modalHtml;
+  document.body.appendChild(container);
+}
+
+/**
+ * v22.1: Handle mapping select change - expand to show all options when "Show More" selected
+ */
+function handleMappingSelect(select, idx, dimKey) {
+  if (select.value === '__SHOW_MORE__') {
+    // Get all options from the correct dim table
+    const allOptions = S.dimValues[dimKey] || [];
+    const original = S.pendingMappings?.mappings[idx]?.original || '';
+    
+    // Sort by match score
+    const scoredOptions = allOptions.map(o => ({
+      value: o,
+      score: matchScore(original, o)
+    })).sort((a, b) => b.score - a.score);
+    
+    // Rebuild select with ALL options
+    let newHtml = '<option value="">-- No mapping --</option>';
+    for (const opt of scoredOptions) {
+      const scoreLabel = opt.score > 0 ? ' (' + opt.score + '%)' : '';
+      newHtml += '<option value="' + opt.value + '">' + opt.value + scoreLabel + '</option>';
+    }
+    
+    select.innerHTML = newHtml;
+    select.value = ''; // Reset selection so user can pick
+    
+    // Update the row to show it's expanded
+    const row = select.closest('tr');
+    if (row) {
+      row.style.backgroundColor = 'rgba(100, 200, 255, 0.1)';
+    }
+    
+    toast('Showing all ' + allOptions.length + ' values from ' + dimKey, 'info');
+  }
+}
+
+function closeMappingModal(apply) {
+  const container = document.getElementById('mappingModalContainer');
+  if (!container) return;
+  
+  if (apply && S.pendingMappings) {
+    // Read user selections
+    const finalMappings = S.pendingMappings.mappings.map((m, i) => {
+      const select = document.getElementById(`mapping_${i}`);
+      return {
+        ...m,
+        mappedTo: select?.value || null
+      };
+    }).filter(m => m.mappedTo); // Only include ones with a mapping
+    
+    if (S.pendingMappings.onAccept) {
+      S.pendingMappings.onAccept(finalMappings);
+    }
+  } else {
+    if (S.pendingMappings?.onSkip) {
+      S.pendingMappings.onSkip();
+    }
+  }
+  
+  container.remove();
+  S.pendingMappings = null;
+}
+
+/**
+ * v20.5: Apply mappings to events array
+ */
+function applyMappingsToEvents(events, mappings) {
+  if (!mappings?.length) return events;
+  
+  // Build lookup: original -> mapped
+  const lookup = {};
+  for (const m of mappings) {
+    const key = `${m.eventKey}:${m.original}`;
+    lookup[key] = m.mappedTo;
+  }
+  
+  // Apply to events
+  let changeCount = 0;
+  for (const evt of events) {
+    // Event-level fields
+    for (const field of ['type', 'detail', 'detail1', 'detail2']) {
+      const key = `${field}:${evt[field]}`;
+      if (lookup[key]) {
+        console.log(`Mapping ${field}: ${evt[field]} → ${lookup[key]}`);
+        evt[field] = lookup[key];
+        changeCount++;
+      }
+    }
+    
+    // Player-level fields
+    for (const player of (evt.players || [])) {
+      for (const field of ['playD1', 'playD2']) {
+        const key = `${field}:${player[field]}`;
+        if (lookup[key]) {
+          console.log(`Mapping player ${field}: ${player[field]} → ${lookup[key]}`);
+          player[field] = lookup[key];
+          changeCount++;
+        }
+      }
+    }
+  }
+  
+  toast(`Applied ${changeCount} value mappings`, 'success');
+  return events;
+}
 
 /**
  * Load a line preset into slots
@@ -6845,6 +8675,101 @@ function filterEventLog(period) {
 }
 
 /**
+ * v20.4: Populate filter dropdowns with unique values from events
+ */
+function populateEventFilterDropdowns() {
+  if (!S.events?.length) return;
+  
+  // Collect unique values
+  const types = new Set();
+  const detail1s = new Set();
+  const detail2s = new Set();
+  const pd1s = new Set();
+  const pd2s = new Set();
+  
+  S.events.forEach(e => {
+    if (e.type) types.add(e.type);
+    if (e.detail1 || e.detail) detail1s.add(e.detail1 || e.detail);
+    if (e.detail2) detail2s.add(e.detail2);
+    
+    // Get play details from primary player
+    const primaryPlayer = (e.players || []).find(p => p.role?.startsWith('event') || !p.role?.startsWith('opp'));
+    if (primaryPlayer?.playD1) pd1s.add(primaryPlayer.playD1);
+    if (primaryPlayer?.playD2) pd2s.add(primaryPlayer.playD2);
+  });
+  
+  // Helper to populate a select
+  const populateSelect = (id, values) => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const current = sel.value;
+    sel.innerHTML = '<option value="">All</option>' + 
+      [...values].sort().map(v => `<option value="${v}">${v.substring(0,15)}</option>`).join('');
+    sel.value = current; // Restore selection
+  };
+  
+  populateSelect('filterEvtType', types);
+  populateSelect('filterEvtDetail1', detail1s);
+  populateSelect('filterEvtDetail2', detail2s);
+  populateSelect('filterPlayDetail1', pd1s);
+  populateSelect('filterPlayDetail2', pd2s);
+}
+
+/**
+ * v20.4: Apply event filters from UI
+ */
+function applyEventFilters() {
+  S.eventFilters.type = document.getElementById('filterEvtType')?.value || '';
+  S.eventFilters.detail1 = document.getElementById('filterEvtDetail1')?.value || '';
+  S.eventFilters.detail2 = document.getElementById('filterEvtDetail2')?.value || '';
+  S.eventFilters.playDetail1 = document.getElementById('filterPlayDetail1')?.value || '';
+  S.eventFilters.playDetail2 = document.getElementById('filterPlayDetail2')?.value || '';
+  S.eventFilters.team = document.getElementById('filterEvtTeam')?.value || '';
+  
+  const evtIdxVal = document.getElementById('filterEvtIdx')?.value;
+  S.eventFilters.eventIdx = evtIdxVal ? parseInt(evtIdxVal) : null;
+  
+  const linkIdxVal = document.getElementById('filterLinkIdx')?.value;
+  S.eventFilters.linkedIdx = linkIdxVal ? parseInt(linkIdxVal) : null;
+  
+  const shiftIdxVal = document.getElementById('filterShiftIdx')?.value;
+  S.eventFilters.shiftIdx = shiftIdxVal ? parseInt(shiftIdxVal) : null;
+  
+  renderEvents();
+}
+
+/**
+ * v20.4: Clear all event filters
+ */
+function clearEventFilters() {
+  S.eventFilters = {
+    type: '',
+    detail1: '',
+    detail2: '',
+    playDetail1: '',
+    playDetail2: '',
+    team: '',
+    eventIdx: null,
+    linkedIdx: null,
+    shiftIdx: null
+  };
+  
+  // Clear UI elements
+  ['filterEvtType', 'filterEvtDetail1', 'filterEvtDetail2', 'filterPlayDetail1', 
+   'filterPlayDetail2', 'filterEvtTeam'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  ['filterEvtIdx', 'filterLinkIdx', 'filterShiftIdx'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  
+  renderEvents();
+  toast('Filters cleared', 'info');
+}
+
+/**
  * Toggle compact mode
  */
 function toggleCompactMode() {
@@ -6879,46 +8804,52 @@ function selectEventPlayerSlot(type, num) {
   // Check if player with this role already exists
   let player = S.curr.players.find(p => p.role === role);
   
-  if (!player) {
-    // v16.06: Auto-add player from slots if available
-    const team = type === 'evt' ? S.evtTeam : (S.evtTeam === 'home' ? 'away' : 'home');
-    const slots = S.slots[team];
-    
-    // Map slot positions to player numbers (F1, F2, F3, D1, D2)
-    const slotMap = { 1: 'F1', 2: 'F2', 3: 'F3', 4: 'D1', 5: 'D2', 6: 'G' };
-    const slotKey = slotMap[num];
-    const slotPlayer = slots[slotKey];
-    
-    if (slotPlayer) {
-      // Add player to current event
-      player = {
-        num: slotPlayer.number,
-        name: slotPlayer.name,
-        team: team,
-        role: role,
-        xy: [],
-        playD1: '',
-        playD2: '',
-        playSuccess: '',
-        pressuredBy: '',
-        sideOfPuck: ''
-      };
-      S.curr.players.push(player);
-      renderCurrentPlayers();
-      toast(`Added ${type === 'evt' ? 'Event' : 'Opp'} P${num}: #${slotPlayer.number} ${slotPlayer.name}`, 'success');
-    } else {
-      toast(`${type === 'evt' ? 'Event' : 'Opp'} Player ${num} - No player in slot ${slotKey}`, 'warning');
-      return;
-    }
-  } else {
+  if (player) {
+    // Player exists - just SELECT them (don't add duplicate)
+    S.selectedPlayer = player;
+    setXYMode('player');
+    S.xySlot = 1;
+    renderXYSlots();
+    renderCurrentPlayers(); // Highlight selected player
     toast(`Selected ${type === 'evt' ? 'Event' : 'Opp'} P${num}: #${player.num}`, 'info');
+    return;
   }
   
-  // Update XY mode to player and select this player
-  S.selectedPlayer = player;
-  setXYMode('player');
-  S.xySlot = 1; // Start at XY slot 1 for this player
-  renderXYSlots();
+  // Player doesn't exist - try to add from slots
+  const team = type === 'evt' ? S.evtTeam : (S.evtTeam === 'home' ? 'away' : 'home');
+  const slots = S.slots[team];
+  
+  // Map slot positions to player numbers (F1, F2, F3, D1, D2)
+  const slotMap = { 1: 'F1', 2: 'F2', 3: 'F3', 4: 'D1', 5: 'D2', 6: 'G' };
+  const slotKey = slotMap[num];
+  const slotPlayer = slots[slotKey];
+  
+  if (slotPlayer) {
+    // Add player to current event
+    player = {
+      num: slotPlayer.num,
+      name: slotPlayer.name,
+      team: team,
+      role: role,
+      roleNum: num,
+      xy: [],
+      playD1: '',
+      playD2: '',
+      playSuccess: '',
+      pressuredBy: '',
+      sideOfPuck: ''
+    };
+    S.curr.players.push(player);
+    S.selectedPlayer = player;
+    setXYMode('player');
+    S.xySlot = 1;
+    renderXYSlots();
+    renderCurrentPlayers();
+    toast(`Added ${type === 'evt' ? 'Event' : 'Opp'} P${num}: #${slotPlayer.num} ${slotPlayer.name}`, 'success');
+  } else {
+    toast(`${type === 'evt' ? 'Event' : 'Opp'} Player ${num} - No player in slot ${slotKey}`, 'warning');
+    return;
+  }
 }
 
 /**

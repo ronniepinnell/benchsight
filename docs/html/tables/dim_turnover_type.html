@@ -32,10 +32,10 @@
         
         
         <div class="meta">
-            <strong>Rows:</strong> 21 | 
+            <strong>Rows:</strong> 12 | 
             <strong>Columns:</strong> 10 |
-            <strong>Last Updated:</strong> 2026-01-07 05:03:20 |
-            <strong>Version:</strong> 12.03
+            <strong>Last Updated:</strong> 2026-01-12 23:37:10 |
+            <strong>Version:</strong> 11.04
         </div>
         
         
@@ -44,7 +44,7 @@
             <h2>Column Schema</h2>
             <table class="columns-table">
                 <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
-                <tr><td>turnover_type_id</td><td>object</td><td>21</td><td>0.0%</td></tr><tr><td>turnover_type_code</td><td>object</td><td>21</td><td>0.0%</td></tr><tr><td>turnover_type_name</td><td>object</td><td>21</td><td>0.0%</td></tr><tr><td>category</td><td>object</td><td>21</td><td>0.0%</td></tr><tr><td>quality</td><td>object</td><td>21</td><td>0.0%</td></tr><tr><td>weight</td><td>float64</td><td>21</td><td>0.0%</td></tr><tr><td>description</td><td>object</td><td>21</td><td>0.0%</td></tr><tr><td>zone_context</td><td>object</td><td>21</td><td>0.0%</td></tr><tr><td>zone_danger_multiplier</td><td>float64</td><td>21</td><td>0.0%</td></tr><tr><td>old_equiv</td><td>object</td><td>14</td><td>33.3%</td></tr>
+                <tr><td>turnover_type_id</td><td>object</td><td>12</td><td>0.0%</td></tr><tr><td>turnover_type_code</td><td>object</td><td>12</td><td>0.0%</td></tr><tr><td>turnover_type_name</td><td>object</td><td>12</td><td>0.0%</td></tr><tr><td>category</td><td>object</td><td>12</td><td>0.0%</td></tr><tr><td>quality</td><td>object</td><td>12</td><td>0.0%</td></tr><tr><td>weight</td><td>float64</td><td>12</td><td>0.0%</td></tr><tr><td>description</td><td>object</td><td>12</td><td>0.0%</td></tr><tr><td>zone_context</td><td>object</td><td>12</td><td>0.0%</td></tr><tr><td>zone_danger_multiplier</td><td>float64</td><td>12</td><td>0.0%</td></tr><tr><td>old_equiv</td><td>object</td><td>12</td><td>0.0%</td></tr>
             </table>
         </div>
         
@@ -68,244 +68,148 @@
   </thead>
   <tbody>
     <tr>
-      <td>TO0001</td>
-      <td>GIVE_MISPLAY</td>
-      <td>Misplayed Puck</td>
-      <td>giveaway</td>
-      <td>bad</td>
-      <td>1.0</td>
-      <td>Player error handling puck</td>
-      <td>any</td>
-      <td>1.0</td>
-      <td>Giveaway-Misplayed</td>
-    </tr>
-    <tr>
-      <td>TO0002</td>
-      <td>GIVE_PASS_INT</td>
+      <td>TO01</td>
+      <td>giveaway_pass_intercept</td>
       <td>Pass Intercepted</td>
       <td>giveaway</td>
       <td>bad</td>
       <td>1.0</td>
-      <td>Pass picked off by opponent</td>
+      <td>Pass picked off</td>
       <td>any</td>
-      <td>1.2</td>
-      <td>Giveaway-PassIntercepted</td>
+      <td>1.0</td>
+      <td>Pass_Intercepted</td>
     </tr>
     <tr>
-      <td>TO0003</td>
-      <td>GIVE_PASS_MISS</td>
-      <td>Pass Missed</td>
+      <td>TO02</td>
+      <td>giveaway_bad_pass</td>
+      <td>Bad Pass</td>
       <td>giveaway</td>
       <td>bad</td>
+      <td>1.0</td>
+      <td>Pass to nobody</td>
+      <td>any</td>
+      <td>1.0</td>
+      <td>Pass_Missed</td>
+    </tr>
+    <tr>
+      <td>TO03</td>
+      <td>giveaway_puck_lost</td>
+      <td>Puck Lost</td>
+      <td>giveaway</td>
+      <td>neutral</td>
       <td>0.8</td>
-      <td>Pass missed target</td>
+      <td>Lost possession</td>
       <td>any</td>
-      <td>0.9</td>
-      <td>Giveaway-PassMissed</td>
+      <td>1.0</td>
+      <td>PuckLost</td>
     </tr>
     <tr>
-      <td>TO0004</td>
-      <td>GIVE_PASS_BLK</td>
-      <td>Pass Blocked</td>
+      <td>TO04</td>
+      <td>giveaway_forced</td>
+      <td>Forced Turnover</td>
       <td>giveaway</td>
-      <td>bad</td>
+      <td>neutral</td>
       <td>0.6</td>
-      <td>Pass blocked by stick/body</td>
+      <td>Under pressure</td>
       <td>any</td>
       <td>0.8</td>
-      <td>Giveaway-PassBlocked</td>
+      <td>Forced</td>
     </tr>
     <tr>
-      <td>TO0005</td>
-      <td>GIVE_BATTLE</td>
-      <td>Battle Lost</td>
+      <td>TO05</td>
+      <td>giveaway_zone_clear_fail</td>
+      <td>Failed Clear</td>
       <td>giveaway</td>
       <td>bad</td>
-      <td>0.5</td>
-      <td>Lost puck battle</td>
-      <td>any</td>
-      <td>0.7</td>
-      <td>Giveaway-BattleLost</td>
-    </tr>
-    <tr>
-      <td>TO0006</td>
-      <td>GIVE_ZONE_MISPLAY</td>
-      <td>Zone Misplay</td>
-      <td>giveaway</td>
-      <td>bad</td>
-      <td>1.0</td>
-      <td>Zone entry/exit error</td>
-      <td>transition</td>
+      <td>1.2</td>
+      <td>Defensive zone</td>
+      <td>D</td>
       <td>1.5</td>
-      <td>Giveaway-ZoneEntry/ExitMisplay</td>
+      <td>ZoneClear_Fail</td>
     </tr>
     <tr>
-      <td>TO0007</td>
-      <td>GIVE_OTHER</td>
-      <td>Other Giveaway</td>
+      <td>TO06</td>
+      <td>giveaway_dump_fail</td>
+      <td>Failed Dump</td>
       <td>giveaway</td>
-      <td>bad</td>
-      <td>0.7</td>
-      <td>Unclassified giveaway</td>
+      <td>neutral</td>
+      <td>0.5</td>
+      <td>Dump and no chase</td>
       <td>any</td>
-      <td>0.9</td>
-      <td>Giveaway-Other</td>
+      <td>0.5</td>
+      <td>DumpIn_Fail</td>
     </tr>
     <tr>
-      <td>TO0008</td>
-      <td>GIVE_DUMP</td>
-      <td>Intentional Dump</td>
-      <td>giveaway</td>
-      <td>neutral</td>
-      <td>0.0</td>
-      <td>Strategic dump-in</td>
-      <td>offensive</td>
-      <td>0.0</td>
-      <td>Giveaway-DumpInZone</td>
-    </tr>
-    <tr>
-      <td>TO0009</td>
-      <td>GIVE_CLEAR</td>
-      <td>Zone Clear</td>
-      <td>giveaway</td>
-      <td>neutral</td>
-      <td>0.0</td>
-      <td>Intentional clear</td>
-      <td>defensive</td>
-      <td>0.0</td>
-      <td>Giveaway-ZoneClear/Dump</td>
-    </tr>
-    <tr>
-      <td>TO0010</td>
-      <td>GIVE_SHOT_BLK</td>
-      <td>Shot Blocked</td>
-      <td>giveaway</td>
-      <td>neutral</td>
-      <td>0.0</td>
-      <td>Shot attempt blocked</td>
-      <td>offensive</td>
-      <td>0.0</td>
-      <td>Giveaway-ShotBlocked</td>
-    </tr>
-    <tr>
-      <td>TO0011</td>
-      <td>GIVE_SHOT_MISS</td>
-      <td>Shot Missed</td>
-      <td>giveaway</td>
-      <td>neutral</td>
-      <td>0.0</td>
-      <td>Shot missed net</td>
-      <td>offensive</td>
-      <td>0.0</td>
-      <td>Giveaway-ShotMissed</td>
-    </tr>
-    <tr>
-      <td>TO0012</td>
-      <td>GIVE_RCV_MISS</td>
-      <td>Receiver Missed</td>
-      <td>giveaway</td>
-      <td>neutral</td>
-      <td>0.2</td>
-      <td>Good pass, receiver error</td>
-      <td>any</td>
-      <td>0.3</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <td>TO0013</td>
-      <td>TAKE_BATTLE</td>
-      <td>Battle Won</td>
+      <td>TO10</td>
+      <td>takeaway_stick_check</td>
+      <td>Stick Check</td>
       <td>takeaway</td>
       <td>good</td>
       <td>1.0</td>
-      <td>Won puck battle</td>
+      <td>Poke or lift</td>
       <td>any</td>
       <td>1.0</td>
-      <td>Takeaway-BattleWon</td>
+      <td>StickCheck</td>
     </tr>
     <tr>
-      <td>TO0014</td>
-      <td>TAKE_POKE</td>
-      <td>Poke Check</td>
-      <td>takeaway</td>
-      <td>good</td>
-      <td>1.0</td>
-      <td>Poke check steal</td>
-      <td>any</td>
-      <td>1.1</td>
-      <td>Takeaway-PokeCheck</td>
-    </tr>
-    <tr>
-      <td>TO0015</td>
-      <td>TAKE_INTERCEPT</td>
+      <td>TO11</td>
+      <td>takeaway_intercept</td>
       <td>Interception</td>
       <td>takeaway</td>
       <td>good</td>
       <td>1.2</td>
-      <td>Intercepted pass</td>
+      <td>Read the play</td>
       <td>any</td>
-      <td>1.3</td>
-      <td>Takeaway-PassIntercepted</td>
+      <td>1.0</td>
+      <td>Intercept</td>
     </tr>
     <tr>
-      <td>TO0016</td>
-      <td>TAKE_PASS_BLK</td>
-      <td>Pass Block</td>
-      <td>takeaway</td>
-      <td>good</td>
-      <td>0.8</td>
-      <td>Blocked pass recovery</td>
-      <td>any</td>
-      <td>0.9</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <td>TO0017</td>
-      <td>TAKE_SHOT_BLK</td>
-      <td>Shot Block Recovery</td>
-      <td>takeaway</td>
-      <td>good</td>
-      <td>0.6</td>
-      <td>Recovered blocked shot</td>
-      <td>any</td>
-      <td>0.7</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <td>TO0018</td>
-      <td>TAKE_FORCED</td>
-      <td>Forced Turnover</td>
+      <td>TO12</td>
+      <td>takeaway_body_check</td>
+      <td>Body Check</td>
       <td>takeaway</td>
       <td>good</td>
       <td>1.0</td>
-      <td>Pressure-caused turnover</td>
+      <td>Physical separation</td>
       <td>any</td>
+      <td>1.0</td>
+      <td>BodyCheck</td>
+    </tr>
+    <tr>
+      <td>TO13</td>
+      <td>takeaway_forecheck</td>
+      <td>Forecheck Win</td>
+      <td>takeaway</td>
+      <td>good</td>
+      <td>1.1</td>
+      <td>Won on forecheck</td>
+      <td>O</td>
       <td>1.2</td>
-      <td>NaN</td>
+      <td>Forecheck</td>
     </tr>
     <tr>
-      <td>TO0019</td>
-      <td>TAKE_RECOVERY</td>
-      <td>Puck Recovery</td>
+      <td>TO14</td>
+      <td>takeaway_backcheck</td>
+      <td>Backcheck Win</td>
       <td>takeaway</td>
       <td>good</td>
-      <td>0.5</td>
-      <td>Recovered loose puck</td>
-      <td>any</td>
-      <td>0.5</td>
-      <td>NaN</td>
+      <td>1.1</td>
+      <td>Won on backcheck</td>
+      <td>D</td>
+      <td>1.2</td>
+      <td>Backcheck</td>
     </tr>
     <tr>
-      <td>TO0020</td>
-      <td>TAKE_RETRIEVAL</td>
-      <td>Dump Retrieval</td>
+      <td>TO15</td>
+      <td>takeaway_battle</td>
+      <td>Battle Win</td>
       <td>takeaway</td>
       <td>good</td>
-      <td>0.4</td>
-      <td>Retrieved dump-in</td>
+      <td>0.9</td>
+      <td>Won puck battle</td>
       <td>any</td>
-      <td>0.4</td>
-      <td>NaN</td>
+      <td>1.0</td>
+      <td>BattleWin</td>
     </tr>
   </tbody>
 </table>
@@ -313,7 +217,7 @@
         </div>
         
         <footer>
-            BenchSight v13.18 | Generated 2026-01-07 05:03:20
+            BenchSight v11.04 | Generated 2026-01-12 23:37:10
         </footer>
     </div>
 </body>

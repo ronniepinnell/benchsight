@@ -29,13 +29,13 @@
         <p><a href="../index.html" class="back-link">← Back to Index</a></p>
         <h1>fact_suspicious_stats</h1>
         
-        <div class="alert alert-danger">⚠️ 15 suspicious stat entries for games in this table</div>
+        
         
         <div class="meta">
-            <strong>Rows:</strong> 18 | 
+            <strong>Rows:</strong> 11 | 
             <strong>Columns:</strong> 14 |
-            <strong>Last Updated:</strong> 2026-01-07 05:03:20 |
-            <strong>Version:</strong> 12.03
+            <strong>Last Updated:</strong> 2026-01-12 23:37:10 |
+            <strong>Version:</strong> 11.04
         </div>
         
         
@@ -44,7 +44,7 @@
             <h2>Column Schema</h2>
             <table class="columns-table">
                 <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
-                <tr><td>game_id</td><td>int64</td><td>18</td><td>0.0%</td></tr><tr><td>player_id</td><td>object</td><td>18</td><td>0.0%</td></tr><tr><td>player_name</td><td>object</td><td>18</td><td>0.0%</td></tr><tr><td>position</td><td>object</td><td>18</td><td>0.0%</td></tr><tr><td>stat_name</td><td>object</td><td>18</td><td>0.0%</td></tr><tr><td>stat_value</td><td>float64</td><td>18</td><td>0.0%</td></tr><tr><td>threshold</td><td>int64</td><td>18</td><td>0.0%</td></tr><tr><td>threshold_direction</td><td>object</td><td>18</td><td>0.0%</td></tr><tr><td>flag_type</td><td>object</td><td>18</td><td>0.0%</td></tr><tr><td>severity</td><td>object</td><td>18</td><td>0.0%</td></tr><tr><td>category</td><td>object</td><td>18</td><td>0.0%</td></tr><tr><td>note</td><td>object</td><td>18</td><td>0.0%</td></tr><tr><td>resolved</td><td>bool</td><td>18</td><td>0.0%</td></tr><tr><td>created_at</td><td>object</td><td>18</td><td>0.0%</td></tr>
+                <tr><td>game_id</td><td>int64</td><td>11</td><td>0.0%</td></tr><tr><td>player_id</td><td>object</td><td>11</td><td>0.0%</td></tr><tr><td>player_name</td><td>object</td><td>11</td><td>0.0%</td></tr><tr><td>position</td><td>object</td><td>11</td><td>0.0%</td></tr><tr><td>stat_name</td><td>object</td><td>11</td><td>0.0%</td></tr><tr><td>stat_value</td><td>int64</td><td>11</td><td>0.0%</td></tr><tr><td>threshold</td><td>int64</td><td>11</td><td>0.0%</td></tr><tr><td>threshold_direction</td><td>object</td><td>11</td><td>0.0%</td></tr><tr><td>flag_type</td><td>object</td><td>11</td><td>0.0%</td></tr><tr><td>severity</td><td>object</td><td>11</td><td>0.0%</td></tr><tr><td>category</td><td>object</td><td>11</td><td>0.0%</td></tr><tr><td>note</td><td>object</td><td>11</td><td>0.0%</td></tr><tr><td>resolved</td><td>bool</td><td>11</td><td>0.0%</td></tr><tr><td>created_at</td><td>object</td><td>11</td><td>0.0%</td></tr>
             </table>
         </div>
         
@@ -73,43 +73,11 @@
   <tbody>
     <tr>
       <td>18977</td>
-      <td>P100081</td>
-      <td>Lee Smith</td>
-      <td>Defense</td>
-      <td>toi_seconds</td>
-      <td>0.0</td>
-      <td>60</td>
-      <td>&lt;</td>
-      <td>LOW</td>
-      <td>WARNING</td>
-      <td>THRESHOLD_EXCEEDED</td>
-      <td>toi_seconds=0.0 exceeds &lt;60</td>
-      <td>False</td>
-      <td>2026-01-05T18:30:10.355943</td>
-    </tr>
-    <tr>
-      <td>18977</td>
-      <td>P100081</td>
-      <td>Lee Smith</td>
-      <td>Defense</td>
-      <td>cf_pct</td>
-      <td>0.0</td>
-      <td>15</td>
-      <td>&lt;</td>
-      <td>LOW</td>
-      <td>WARNING</td>
-      <td>THRESHOLD_EXCEEDED</td>
-      <td>cf_pct=0.0 exceeds &lt;15</td>
-      <td>False</td>
-      <td>2026-01-05T18:30:10.355956</td>
-    </tr>
-    <tr>
-      <td>18977</td>
       <td>P100088</td>
       <td>Hayden Smith</td>
       <td>Forward</td>
       <td>shots</td>
-      <td>23.0</td>
+      <td>23</td>
       <td>20</td>
       <td>&gt;</td>
       <td>HIGH</td>
@@ -117,55 +85,7 @@
       <td>THRESHOLD_EXCEEDED</td>
       <td>shots=23 exceeds &gt;20</td>
       <td>False</td>
-      <td>2026-01-05T18:30:10.356123</td>
-    </tr>
-    <tr>
-      <td>18977</td>
-      <td>P100096</td>
-      <td>Jared Wolf</td>
-      <td>Forward</td>
-      <td>toi_seconds</td>
-      <td>3185.0</td>
-      <td>2400</td>
-      <td>&gt;</td>
-      <td>HIGH</td>
-      <td>WARNING</td>
-      <td>THRESHOLD_EXCEEDED</td>
-      <td>toi_seconds=3185.0 exceeds &gt;2400</td>
-      <td>False</td>
-      <td>2026-01-05T18:30:10.356279</td>
-    </tr>
-    <tr>
-      <td>18977</td>
-      <td>P100198</td>
-      <td>Maxwell Donaty</td>
-      <td>Defense</td>
-      <td>toi_seconds</td>
-      <td>0.0</td>
-      <td>60</td>
-      <td>&lt;</td>
-      <td>LOW</td>
-      <td>WARNING</td>
-      <td>THRESHOLD_EXCEEDED</td>
-      <td>toi_seconds=0.0 exceeds &lt;60</td>
-      <td>False</td>
-      <td>2026-01-05T18:30:10.356918</td>
-    </tr>
-    <tr>
-      <td>18977</td>
-      <td>P100198</td>
-      <td>Maxwell Donaty</td>
-      <td>Defense</td>
-      <td>cf_pct</td>
-      <td>0.0</td>
-      <td>15</td>
-      <td>&lt;</td>
-      <td>LOW</td>
-      <td>WARNING</td>
-      <td>THRESHOLD_EXCEEDED</td>
-      <td>cf_pct=0.0 exceeds &lt;15</td>
-      <td>False</td>
-      <td>2026-01-05T18:30:10.356926</td>
+      <td>2026-01-12T23:37:09.897196</td>
     </tr>
     <tr>
       <td>18969</td>
@@ -173,15 +93,15 @@
       <td>Keegan Mantaro</td>
       <td>Forward</td>
       <td>goals</td>
-      <td>2.0</td>
+      <td>2</td>
       <td>3</td>
       <td>z&gt;</td>
       <td>ZSCORE</td>
       <td>INFO</td>
       <td>STATISTICAL_OUTLIER</td>
-      <td>Z-score=4.43 exceeds 3</td>
+      <td>Z-score=4.36 exceeds 3</td>
       <td>False</td>
-      <td>2026-01-05T18:30:10.361557</td>
+      <td>2026-01-12T23:37:09.901912</td>
     </tr>
     <tr>
       <td>18969</td>
@@ -189,79 +109,15 @@
       <td>Nick Ciampoli</td>
       <td>Forward</td>
       <td>goals</td>
-      <td>2.0</td>
+      <td>2</td>
       <td>3</td>
       <td>z&gt;</td>
       <td>ZSCORE</td>
       <td>INFO</td>
       <td>STATISTICAL_OUTLIER</td>
-      <td>Z-score=4.43 exceeds 3</td>
+      <td>Z-score=4.36 exceeds 3</td>
       <td>False</td>
-      <td>2026-01-05T18:30:10.361608</td>
-    </tr>
-    <tr>
-      <td>18969</td>
-      <td>P100023</td>
-      <td>Alex Considine</td>
-      <td>Defense</td>
-      <td>assists</td>
-      <td>1.0</td>
-      <td>3</td>
-      <td>z&gt;</td>
-      <td>ZSCORE</td>
-      <td>INFO</td>
-      <td>STATISTICAL_OUTLIER</td>
-      <td>Z-score=3.50 exceeds 3</td>
-      <td>False</td>
-      <td>2026-01-05T18:30:10.365294</td>
-    </tr>
-    <tr>
-      <td>18969</td>
-      <td>P100064</td>
-      <td>James Rynearson</td>
-      <td>Forward</td>
-      <td>assists</td>
-      <td>1.0</td>
-      <td>3</td>
-      <td>z&gt;</td>
-      <td>ZSCORE</td>
-      <td>INFO</td>
-      <td>STATISTICAL_OUTLIER</td>
-      <td>Z-score=3.50 exceeds 3</td>
-      <td>False</td>
-      <td>2026-01-05T18:30:10.365525</td>
-    </tr>
-    <tr>
-      <td>18969</td>
-      <td>P100107</td>
-      <td>Matt Quinn</td>
-      <td>Defense</td>
-      <td>assists</td>
-      <td>1.0</td>
-      <td>3</td>
-      <td>z&gt;</td>
-      <td>ZSCORE</td>
-      <td>INFO</td>
-      <td>STATISTICAL_OUTLIER</td>
-      <td>Z-score=3.50 exceeds 3</td>
-      <td>False</td>
-      <td>2026-01-05T18:30:10.365664</td>
-    </tr>
-    <tr>
-      <td>18969</td>
-      <td>P100108</td>
-      <td>Robert Mayfield</td>
-      <td>Defense</td>
-      <td>assists</td>
-      <td>1.0</td>
-      <td>3</td>
-      <td>z&gt;</td>
-      <td>ZSCORE</td>
-      <td>INFO</td>
-      <td>STATISTICAL_OUTLIER</td>
-      <td>Z-score=3.50 exceeds 3</td>
-      <td>False</td>
-      <td>2026-01-05T18:30:10.365708</td>
+      <td>2026-01-12T23:37:09.902557</td>
     </tr>
     <tr>
       <td>18969</td>
@@ -269,15 +125,79 @@
       <td>Keegan Mantaro</td>
       <td>Forward</td>
       <td>assists</td>
-      <td>1.0</td>
+      <td>1</td>
       <td>3</td>
       <td>z&gt;</td>
       <td>ZSCORE</td>
       <td>INFO</td>
       <td>STATISTICAL_OUTLIER</td>
-      <td>Z-score=3.50 exceeds 3</td>
+      <td>Z-score=3.92 exceeds 3</td>
       <td>False</td>
-      <td>2026-01-05T18:30:10.365783</td>
+      <td>2026-01-12T23:37:09.905869</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>P100064</td>
+      <td>James Rynearson</td>
+      <td>Forward</td>
+      <td>assists</td>
+      <td>1</td>
+      <td>3</td>
+      <td>z&gt;</td>
+      <td>ZSCORE</td>
+      <td>INFO</td>
+      <td>STATISTICAL_OUTLIER</td>
+      <td>Z-score=3.92 exceeds 3</td>
+      <td>False</td>
+      <td>2026-01-12T23:37:09.906026</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>P100108</td>
+      <td>Robert Mayfield</td>
+      <td>Defense</td>
+      <td>assists</td>
+      <td>1</td>
+      <td>3</td>
+      <td>z&gt;</td>
+      <td>ZSCORE</td>
+      <td>INFO</td>
+      <td>STATISTICAL_OUTLIER</td>
+      <td>Z-score=3.92 exceeds 3</td>
+      <td>False</td>
+      <td>2026-01-12T23:37:09.906151</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>P100023</td>
+      <td>Alex Considine</td>
+      <td>Defense</td>
+      <td>assists</td>
+      <td>1</td>
+      <td>3</td>
+      <td>z&gt;</td>
+      <td>ZSCORE</td>
+      <td>INFO</td>
+      <td>STATISTICAL_OUTLIER</td>
+      <td>Z-score=3.92 exceeds 3</td>
+      <td>False</td>
+      <td>2026-01-12T23:37:09.906410</td>
+    </tr>
+    <tr>
+      <td>18969</td>
+      <td>P100107</td>
+      <td>Matt Quinn</td>
+      <td>Defense</td>
+      <td>assists</td>
+      <td>1</td>
+      <td>3</td>
+      <td>z&gt;</td>
+      <td>ZSCORE</td>
+      <td>INFO</td>
+      <td>STATISTICAL_OUTLIER</td>
+      <td>Z-score=3.92 exceeds 3</td>
+      <td>False</td>
+      <td>2026-01-12T23:37:09.906545</td>
     </tr>
     <tr>
       <td>18969</td>
@@ -285,47 +205,15 @@
       <td>Galen Wood</td>
       <td>Forward</td>
       <td>assists</td>
-      <td>1.0</td>
+      <td>1</td>
       <td>3</td>
       <td>z&gt;</td>
       <td>ZSCORE</td>
       <td>INFO</td>
       <td>STATISTICAL_OUTLIER</td>
-      <td>Z-score=3.50 exceeds 3</td>
+      <td>Z-score=3.92 exceeds 3</td>
       <td>False</td>
-      <td>2026-01-05T18:30:10.365859</td>
-    </tr>
-    <tr>
-      <td>18987</td>
-      <td>P100002</td>
-      <td>Kevin White</td>
-      <td>Forward</td>
-      <td>assists</td>
-      <td>1.0</td>
-      <td>3</td>
-      <td>z&gt;</td>
-      <td>ZSCORE</td>
-      <td>INFO</td>
-      <td>STATISTICAL_OUTLIER</td>
-      <td>Z-score=3.50 exceeds 3</td>
-      <td>False</td>
-      <td>2026-01-05T18:30:10.367832</td>
-    </tr>
-    <tr>
-      <td>18987</td>
-      <td>P100201</td>
-      <td>Garrett Ashcroft</td>
-      <td>Forward</td>
-      <td>assists</td>
-      <td>1.0</td>
-      <td>3</td>
-      <td>z&gt;</td>
-      <td>ZSCORE</td>
-      <td>INFO</td>
-      <td>STATISTICAL_OUTLIER</td>
-      <td>Z-score=3.50 exceeds 3</td>
-      <td>False</td>
-      <td>2026-01-05T18:30:10.368464</td>
+      <td>2026-01-12T23:37:09.906680</td>
     </tr>
     <tr>
       <td>18977</td>
@@ -333,31 +221,31 @@
       <td>Hayden Smith</td>
       <td>Forward</td>
       <td>shots</td>
-      <td>23.0</td>
+      <td>23</td>
       <td>3</td>
       <td>z&gt;</td>
       <td>ZSCORE</td>
       <td>INFO</td>
       <td>STATISTICAL_OUTLIER</td>
-      <td>Z-score=5.10 exceeds 3</td>
+      <td>Z-score=5.09 exceeds 3</td>
       <td>False</td>
-      <td>2026-01-05T18:30:10.374903</td>
+      <td>2026-01-12T23:37:09.914767</td>
     </tr>
     <tr>
-      <td>18969</td>
-      <td>P100202</td>
-      <td>Francis Forte</td>
-      <td>Goalie</td>
+      <td>18977</td>
+      <td>P100084</td>
+      <td>Ty Smith</td>
+      <td>Forward</td>
       <td>corsi_for</td>
-      <td>75.0</td>
+      <td>54</td>
       <td>3</td>
       <td>z&gt;</td>
       <td>ZSCORE</td>
       <td>INFO</td>
       <td>STATISTICAL_OUTLIER</td>
-      <td>Z-score=3.67 exceeds 3</td>
+      <td>Z-score=3.09 exceeds 3</td>
       <td>False</td>
-      <td>2026-01-05T18:30:10.378477</td>
+      <td>2026-01-12T23:37:09.919093</td>
     </tr>
   </tbody>
 </table>
@@ -365,7 +253,7 @@
         </div>
         
         <footer>
-            BenchSight v13.18 | Generated 2026-01-07 05:03:20
+            BenchSight v11.04 | Generated 2026-01-12 23:37:10
         </footer>
     </div>
 </body>

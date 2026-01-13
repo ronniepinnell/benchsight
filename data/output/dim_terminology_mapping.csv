@@ -1,0 +1,24 @@
+dimension,old_value,new_value,match_type
+event_type,Shot,Shot,exact
+event_type,Pass,Pass,exact
+event_type,Faceoff,Faceoff,exact
+event_type,Zone_Entry_Exit,Zone_Entry_Exit,exact
+event_type,Turnover,Turnover,exact
+event_type,Save,Save,exact
+event_type,Goal,Goal,exact
+event_detail,Shot_OnNet,Shot_OnNetSaved,contains
+event_detail,Shot_Goal,Goal_Scored,contains
+event_detail,Shot_Missed,Shot_Missed,exact
+event_detail,Shot_Blocked,Shot_Blocked,exact
+zone,o,O,exact
+zone,d,D,exact
+zone,n,N,exact
+zone,offensive,O,contains
+zone,defensive,D,contains
+zone,neutral,N,contains
+position,F,Forward,exact
+position,D,Defense,exact
+position,G,Goalie,exact
+position,C,Center,exact
+position,LW,Left Wing,exact
+position,RW,Right Wing,exact

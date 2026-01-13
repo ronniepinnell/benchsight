@@ -1,3 +1,9 @@
 takeaway_type_id,takeaway_type_code,takeaway_type_name
-TA0001,PuckRecovery,PuckRecovery
-TA0002,Turnover_Takeaway,Turnover Takeaway
+TA0001,Takeaway_AttemptedZoneClear/Dump,Takeaway AttemptedZoneClear Dump
+TA0002,Takeaway_BattleWon,Takeaway BattleWon
+TA0003,Takeaway_Other,Takeaway Other
+TA0004,Takeaway_PassBlocked,Takeaway PassBlocked
+TA0005,Takeaway_PassIntercepted,Takeaway PassIntercepted
+TA0006,Takeaway_PokeCheck,Takeaway PokeCheck
+TA0007,Takeaway_ShotBlocked,Takeaway ShotBlocked
+TA0008,Takeaway_ZoneClear/Dump,Takeaway ZoneClear Dump

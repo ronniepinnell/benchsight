@@ -23,10 +23,270 @@ import numpy as np
 from pathlib import Path
 from typing import Dict, Optional, Tuple
 import logging
+from src.core.table_writer import save_output_table
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+def calculate_shift_toi_at_event(events_df: pd.DataFrame, shift_players_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Calculate shift-based TOI for fact_event_players.
+    
+    For each player-event row, calculates:
+    - player_toi: Time from current shift start to event time (in seconds)
+    - team_on_ice_toi_avg/min/max: Aggregate of all teammates on ice (excl goalies)
+    - opp_on_ice_toi_avg/min/max: Aggregate of all opponents on ice (excl goalies)
+    
+    Args:
+        events_df: fact_event_players with game_id, player_id, team_venue, time_start_total_seconds
+        shift_players_df: fact_shift_players with player shifts and timing
+    
+    Returns:
+        DataFrame with TOI columns added
+    """
+    logger.info("Calculating shift-based TOI at event time...")
+    
+    df = events_df.copy()
+    
+    # Initialize columns
+    df['player_toi'] = np.nan
+    df['team_on_ice_toi_avg'] = np.nan
+    df['team_on_ice_toi_min'] = np.nan
+    df['team_on_ice_toi_max'] = np.nan
+    df['opp_on_ice_toi_avg'] = np.nan
+    df['opp_on_ice_toi_min'] = np.nan
+    df['opp_on_ice_toi_max'] = np.nan
+    
+    # Required columns check
+    required = ['game_id', 'time_start_total_seconds']
+    if not all(c in df.columns for c in required):
+        logger.warning(f"Missing required columns for TOI: {required}")
+        return df
+    
+    sp = shift_players_df.copy()
+    
+    # Exclude goalies from shift data for aggregates
+    sp_skaters = sp[sp['position'] != 'G'].copy()
+    
+    # Pre-build lookup: game_id -> list of (player_id, venue, shift_start, shift_end)
+    logger.info("  Building shift lookup by game...")
+    shift_lookup = {}
+    for game_id, group in sp_skaters.groupby('game_id'):
+        shift_lookup[game_id] = group[['player_id', 'venue', 'shift_start_total_seconds', 'shift_end_total_seconds']].values.tolist()
+    
+    # Process each unique game + event_time combination
+    logger.info("  Processing events...")
+    unique_events = df[['game_id', 'event_id', 'time_start_total_seconds', 'team_venue']].drop_duplicates()
+    
+    event_toi_cache = {}  # (game_id, event_time, team_venue) -> {player_id: toi, team_agg, opp_agg}
+    
+    for _, evt in unique_events.iterrows():
+        game_id = evt['game_id']
+        event_time = evt['time_start_total_seconds']
+        event_team_venue = evt['team_venue']
+        
+        if pd.isna(event_time) or game_id not in shift_lookup:
+            continue
+        
+        cache_key = (game_id, event_time, event_team_venue)
+        if cache_key in event_toi_cache:
+            continue
+        
+        # Find all players on ice at this event time
+        shifts = shift_lookup[game_id]
+        players_on_ice = {}  # player_id -> {'toi': x, 'venue': v, 'shift_end': e}
+        
+        for player_id, venue, shift_start, shift_end in shifts:
+            # Countdown clock: shift_start >= event_time >= shift_end
+            if shift_start >= event_time >= shift_end:
+                toi = shift_start - event_time
+                # If player already found, keep the shift with end closest to event
+                if player_id not in players_on_ice or (event_time - shift_end) < (event_time - players_on_ice[player_id]['shift_end']):
+                    players_on_ice[player_id] = {'toi': toi, 'venue': venue, 'shift_end': shift_end}
+        
+        # Split by team vs opp
+        team_venue_full = 'away' if event_team_venue == 'a' else 'home'
+        team_tois = [p['toi'] for pid, p in players_on_ice.items() if p['venue'] == team_venue_full]
+        opp_tois = [p['toi'] for pid, p in players_on_ice.items() if p['venue'] != team_venue_full]
+        
+        # Calculate aggregates
+        result = {'players': {pid: p['toi'] for pid, p in players_on_ice.items()}}
+        
+        if team_tois:
+            result['team_avg'] = np.mean(team_tois)
+            result['team_min'] = np.min(team_tois)
+            result['team_max'] = np.max(team_tois)
+        
+        if opp_tois:
+            result['opp_avg'] = np.mean(opp_tois)
+            result['opp_min'] = np.min(opp_tois)
+            result['opp_max'] = np.max(opp_tois)
+        
+        event_toi_cache[cache_key] = result
+    
+    # Apply to dataframe
+    logger.info("  Applying TOI values...")
+    for idx, row in df.iterrows():
+        cache_key = (row['game_id'], row['time_start_total_seconds'], row['team_venue'])
+        if cache_key not in event_toi_cache:
+            continue
+        
+        result = event_toi_cache[cache_key]
+        
+        # Player TOI
+        player_id = row.get('player_id')
+        if pd.notna(player_id) and player_id in result['players']:
+            df.at[idx, 'player_toi'] = result['players'][player_id]
+        
+        # Team aggregates
+        if 'team_avg' in result:
+            df.at[idx, 'team_on_ice_toi_avg'] = result['team_avg']
+            df.at[idx, 'team_on_ice_toi_min'] = result['team_min']
+            df.at[idx, 'team_on_ice_toi_max'] = result['team_max']
+        
+        # Opp aggregates
+        if 'opp_avg' in result:
+            df.at[idx, 'opp_on_ice_toi_avg'] = result['opp_avg']
+            df.at[idx, 'opp_on_ice_toi_min'] = result['opp_min']
+            df.at[idx, 'opp_on_ice_toi_max'] = result['opp_max']
+    
+    # Calculate fill rates
+    player_toi_fill = df['player_toi'].notna().sum() / len(df) * 100
+    team_toi_fill = df['team_on_ice_toi_avg'].notna().sum() / len(df) * 100
+    opp_toi_fill = df['opp_on_ice_toi_avg'].notna().sum() / len(df) * 100
+    
+    logger.info(f"  player_toi: {player_toi_fill:.1f}% populated")
+    logger.info(f"  team_on_ice_toi: {team_toi_fill:.1f}% populated")
+    logger.info(f"  opp_on_ice_toi: {opp_toi_fill:.1f}% populated")
+    
+    return df
+
+
+def calculate_shift_ratings_at_event(events_df: pd.DataFrame, shift_players_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Calculate shift-based ratings for fact_event_players.
+    
+    For each player-event row, calculates:
+    - event_team_avg_rating: Avg rating of teammates on ice (excl goalies)
+    - opp_team_avg_rating: Avg rating of opponents on ice (excl goalies)
+    - rating_vs_opp: player_rating - opp_team_avg_rating
+    
+    Args:
+        events_df: fact_event_players with game_id, player_id, team_venue, time_start_total_seconds, player_rating
+        shift_players_df: fact_shift_players with player shifts, timing, and player_rating
+    
+    Returns:
+        DataFrame with rating columns added
+    """
+    logger.info("Calculating shift-based ratings at event time...")
+    
+    df = events_df.copy()
+    
+    # Initialize rating columns
+    df['event_team_avg_rating'] = np.nan
+    df['opp_team_avg_rating'] = np.nan
+    df['rating_vs_opp'] = np.nan
+    
+    # Required columns check
+    required = ['game_id', 'time_start_total_seconds']
+    if not all(c in df.columns for c in required):
+        logger.warning(f"Missing required columns for ratings: {required}")
+        return df
+    
+    sp = shift_players_df.copy()
+    
+    # Check if player_rating is available
+    if 'player_rating' not in sp.columns:
+        logger.warning("player_rating not in shift_players - skipping rating calculation")
+        return df
+    
+    # Exclude goalies from shift data for aggregates
+    sp_skaters = sp[sp['position'] != 'G'].copy()
+    
+    # Pre-build lookup: game_id -> list of (player_id, venue, shift_start, shift_end, rating)
+    logger.info("  Building shift-rating lookup by game...")
+    shift_lookup = {}
+    for game_id, group in sp_skaters.groupby('game_id'):
+        shift_lookup[game_id] = group[['player_id', 'venue', 'shift_start_total_seconds', 'shift_end_total_seconds', 'player_rating']].values.tolist()
+    
+    # Process each unique game + event_time combination
+    logger.info("  Processing events...")
+    unique_events = df[['game_id', 'event_id', 'time_start_total_seconds', 'team_venue']].drop_duplicates()
+    
+    event_rating_cache = {}  # (game_id, event_time, team_venue) -> {team_avg, opp_avg}
+    
+    for _, evt in unique_events.iterrows():
+        game_id = evt['game_id']
+        event_time = evt['time_start_total_seconds']
+        event_team_venue = evt['team_venue']
+        
+        if pd.isna(event_time) or game_id not in shift_lookup:
+            continue
+        
+        cache_key = (game_id, event_time, event_team_venue)
+        if cache_key in event_rating_cache:
+            continue
+        
+        # Find all players on ice at this event time
+        shifts = shift_lookup[game_id]
+        players_on_ice = {}  # player_id -> {'rating': r, 'venue': v, 'shift_end': e}
+        
+        for player_id, venue, shift_start, shift_end, rating in shifts:
+            # Countdown clock: shift_start >= event_time >= shift_end
+            if shift_start >= event_time >= shift_end:
+                # If player already found, keep the shift with end closest to event
+                if player_id not in players_on_ice or (event_time - shift_end) < (event_time - players_on_ice[player_id]['shift_end']):
+                    players_on_ice[player_id] = {'rating': rating, 'venue': venue, 'shift_end': shift_end}
+        
+        # Split by team vs opp
+        team_venue_full = 'away' if event_team_venue == 'a' else 'home'
+        team_ratings = [p['rating'] for pid, p in players_on_ice.items() if p['venue'] == team_venue_full and pd.notna(p['rating'])]
+        opp_ratings = [p['rating'] for pid, p in players_on_ice.items() if p['venue'] != team_venue_full and pd.notna(p['rating'])]
+        
+        # Calculate aggregates
+        result = {}
+        if team_ratings:
+            result['team_avg'] = np.mean(team_ratings)
+        if opp_ratings:
+            result['opp_avg'] = np.mean(opp_ratings)
+        
+        event_rating_cache[cache_key] = result
+    
+    # Apply to dataframe
+    logger.info("  Applying rating values...")
+    for idx, row in df.iterrows():
+        cache_key = (row['game_id'], row['time_start_total_seconds'], row['team_venue'])
+        if cache_key not in event_rating_cache:
+            continue
+        
+        result = event_rating_cache[cache_key]
+        
+        # Team avg rating
+        if 'team_avg' in result:
+            df.at[idx, 'event_team_avg_rating'] = result['team_avg']
+        
+        # Opp avg rating
+        if 'opp_avg' in result:
+            df.at[idx, 'opp_team_avg_rating'] = result['opp_avg']
+            
+            # Calculate rating_vs_opp if player has rating
+            player_rating = row.get('player_rating')
+            if pd.notna(player_rating):
+                df.at[idx, 'rating_vs_opp'] = player_rating - result['opp_avg']
+    
+    # Calculate fill rates
+    team_fill = df['event_team_avg_rating'].notna().sum() / len(df) * 100
+    opp_fill = df['opp_team_avg_rating'].notna().sum() / len(df) * 100
+    vs_fill = df['rating_vs_opp'].notna().sum() / len(df) * 100
+    
+    logger.info(f"  event_team_avg_rating: {team_fill:.1f}% populated")
+    logger.info(f"  opp_team_avg_rating: {opp_fill:.1f}% populated")
+    logger.info(f"  rating_vs_opp: {vs_fill:.1f}% populated")
+    
+    return df
+
 
 # Output directory
 OUTPUT_DIR = Path(__file__).parent.parent.parent / 'data' / 'output'
@@ -245,17 +505,34 @@ def calculate_player_toi_at_event(events_df: pd.DataFrame,
             logger.warning("No time column found for TOI calculation")
             return df
     
-    # If we have shifts_tracking_df, join it with shifts_player_df to get timing
-    if shifts_tracking_df is not None and len(shifts_tracking_df) > 0:
-        # Join to get shift timing for each player-shift
+    # Check if shifts_player_df already has timing columns (no merge needed)
+    timing_cols = ['shift_start_total_seconds', 'shift_end_total_seconds']
+    has_timing_cols = all(c in shifts_player_df.columns for c in timing_cols)
+    
+    if has_timing_cols:
+        # fact_shift_players already has timing - use directly
+        shifts_combined = shifts_player_df.copy()
+        logger.info("  Using timing columns already in shift_players")
+    elif shifts_tracking_df is not None and len(shifts_tracking_df) > 0:
+        # Need to merge with shifts to get timing
+        # Note: fact_shift_players uses shift_id, fact_shifts uses shift_id and shift_key
+        merge_col = 'shift_id' if 'shift_id' in shifts_player_df.columns else 'shift_key'
+        tracking_merge_col = 'shift_id' if 'shift_id' in shifts_tracking_df.columns else 'shift_key'
+        
+        available_timing = [c for c in timing_cols if c in shifts_tracking_df.columns]
+        
+        if not available_timing:
+            logger.warning("No timing columns found in shifts_tracking_df")
+            return df
+        
         shifts_combined = shifts_player_df.merge(
-            shifts_tracking_df[['shift_key', 'game_id', 'shift_start_total_seconds', 'shift_end_total_seconds']],
-            on=['shift_key', 'game_id'],
+            shifts_tracking_df[[tracking_merge_col, 'game_id'] + available_timing],
+            left_on=[merge_col, 'game_id'],
+            right_on=[tracking_merge_col, 'game_id'],
             how='left'
         )
     else:
-        shifts_combined = shifts_player_df.copy()
-        logger.warning("No shifts_tracking_df provided, TOI calculation will be limited")
+        logger.warning("No shifts_tracking_df provided and no timing in shifts_player")
         return df
     
     # Check we have required timing columns
@@ -450,6 +727,120 @@ def calculate_team_toi_aggregates(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def calculate_rating_context(events_df: pd.DataFrame, shifts_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Add team rating context to events based on shift data.
+    
+    Adds columns:
+    - event_team_avg_rating: Avg rating of event player's team on ice
+    - opp_team_avg_rating: Avg rating of opponent team on ice
+    - rating_vs_opp: player_rating minus opp_team_avg_rating
+    
+    Args:
+        events_df: DataFrame with events (needs shift_key, player_rating, event_team/team_name)
+        shifts_df: DataFrame with shifts (needs home_avg_rating, away_avg_rating, home_team)
+    
+    Returns:
+        DataFrame with rating context columns added
+    """
+    logger.info("Calculating rating context from shift data...")
+    
+    df = events_df.copy()
+    
+    # Check if we have required columns
+    if 'home_avg_rating' not in shifts_df.columns:
+        logger.warning("home_avg_rating not in shifts - skipping rating context")
+        df['event_team_avg_rating'] = np.nan
+        df['opp_team_avg_rating'] = np.nan
+        df['rating_vs_opp'] = np.nan
+        return df
+    
+    if 'shift_key' not in df.columns:
+        logger.info("shift_key not in events - rating context will be added later")
+        df['event_team_avg_rating'] = np.nan
+        df['opp_team_avg_rating'] = np.nan
+        df['rating_vs_opp'] = np.nan
+        return df
+    
+    # Build shift rating lookup: (game_id, shift_index) -> {ratings}
+    shift_rating_lookup = {}
+    for _, row in shifts_df.iterrows():
+        key = (int(row['game_id']), int(row['shift_index']))
+        shift_rating_lookup[key] = {
+            'home_avg_rating': row.get('home_avg_rating'),
+            'away_avg_rating': row.get('away_avg_rating'),
+            'home_team': str(row.get('home_team', '')).strip().lower(),
+            'away_team': str(row.get('away_team', '')).strip().lower(),
+        }
+    
+    logger.info(f"  Built rating lookup with {len(shift_rating_lookup)} shifts")
+    
+    # Import centralized key parser
+    from src.utils.key_parser import parse_shift_key as _parse_shift_key
+    
+    def parse_shift_key(shift_key):
+        """Parse shift_key using centralized utility."""
+        result = _parse_shift_key(shift_key)
+        if result is None:
+            return None, None
+        return result.game_id, result.shift_index
+    
+    # Get event team from available columns
+    def get_event_team(row):
+        for col in ['event_team', 'team_name', 'player_team']:
+            if col in row.index and pd.notna(row[col]):
+                return str(row[col]).strip().lower()
+        return None
+    
+    # Calculate ratings for each event
+    event_team_ratings = []
+    opp_team_ratings = []
+    
+    for _, row in df.iterrows():
+        game_id, shift_idx = parse_shift_key(row.get('shift_key'))
+        
+        if game_id is None or (game_id, shift_idx) not in shift_rating_lookup:
+            event_team_ratings.append(np.nan)
+            opp_team_ratings.append(np.nan)
+            continue
+        
+        shift_data = shift_rating_lookup[(game_id, shift_idx)]
+        event_team = get_event_team(row)
+        home_team = shift_data['home_team']
+        
+        # Determine if event team is home or away
+        if event_team and home_team:
+            if event_team in home_team or home_team in event_team:
+                # Event team is home
+                event_team_ratings.append(shift_data['home_avg_rating'])
+                opp_team_ratings.append(shift_data['away_avg_rating'])
+            else:
+                # Event team is away
+                event_team_ratings.append(shift_data['away_avg_rating'])
+                opp_team_ratings.append(shift_data['home_avg_rating'])
+        else:
+            # Can't determine, use home as default
+            event_team_ratings.append(shift_data['home_avg_rating'])
+            opp_team_ratings.append(shift_data['away_avg_rating'])
+    
+    df['event_team_avg_rating'] = event_team_ratings
+    df['opp_team_avg_rating'] = opp_team_ratings
+    
+    # Calculate rating vs opponent
+    if 'player_rating' in df.columns:
+        df['rating_vs_opp'] = df['player_rating'] - df['opp_team_avg_rating']
+    else:
+        df['rating_vs_opp'] = np.nan
+    
+    # Log fill rates
+    for col in ['event_team_avg_rating', 'opp_team_avg_rating', 'rating_vs_opp']:
+        fill = df[col].notna().sum()
+        pct = 100 * fill / len(df) if len(df) > 0 else 0
+        logger.info(f"  {col}: {fill}/{len(df)} ({pct:.1f}%)")
+    
+    return df
+
+
 def enhance_event_tables() -> Dict[str, int]:
     """
     Main function to enhance all event tables with time and TOI context.
@@ -497,11 +888,79 @@ def enhance_event_tables() -> Dict[str, int]:
         'time_from_last_goal_for', 'time_from_last_goal_against',
         'time_to_next_stoppage', 'time_from_last_stoppage',
     ]
-    toi_cols = [f'event_player_{i}_toi' for i in range(1, 7)]
-    toi_cols += [f'opp_player_{i}_toi' for i in range(1, 7)]
-    toi_cols += ['player_toi', 'team_on_ice_toi_avg', 'team_on_ice_toi_min', 'team_on_ice_toi_max',
+    # v23.1: Simplified TOI columns - removed unused event_player_2-6_toi, opp_player_2-6_toi
+    toi_cols = ['player_toi', 'team_on_ice_toi_avg', 'team_on_ice_toi_min', 'team_on_ice_toi_max',
                  'opp_on_ice_toi_avg', 'opp_on_ice_toi_min', 'opp_on_ice_toi_max']
     all_new_cols = time_cols + toi_cols
+    
+    # ========================================
+    # 0. ADD SHIFT_ID FK TO EVENTS
+    # ========================================
+    # Links each event to the shift it occurred during
+    # CRITICAL: Event times are ASCENDING (0 = period start), shift times are DESCENDING (1080 = period start)
+    logger.info("\n--- Adding shift_id FK ---")
+    
+    if len(shifts_tracking) > 0 and 'shift_start_total_seconds' in shifts_tracking.columns:
+        # Find period max time for each game/period
+        period_max = {}
+        for _, shift in shifts_tracking.iterrows():
+            try:
+                key = (int(shift['game_id']), int(shift['period']))
+                start = float(shift['shift_start_total_seconds']) if pd.notna(shift['shift_start_total_seconds']) else 0
+                if key not in period_max or start > period_max[key]:
+                    period_max[key] = start
+            except (ValueError, TypeError):
+                continue
+        
+        # Build shift lookup
+        shift_ranges = {}
+        for _, shift in shifts_tracking.iterrows():
+            try:
+                key = (int(shift['game_id']), int(shift['period']))
+                if key not in shift_ranges:
+                    shift_ranges[key] = []
+                shift_ranges[key].append((
+                    shift['shift_id'],
+                    float(shift['shift_start_total_seconds']) if pd.notna(shift['shift_start_total_seconds']) else 0,
+                    float(shift['shift_end_total_seconds']) if pd.notna(shift['shift_end_total_seconds']) else 0
+                ))
+            except (ValueError, TypeError):
+                continue
+        
+        def find_shift_id(row):
+            """Find shift_id for an event based on game, period, and time."""
+            try:
+                game_id = int(row['game_id'])
+                period = int(row['period']) if pd.notna(row.get('period')) else 1
+                
+                # Get event time (elapsed format: 0 = period start)
+                event_elapsed = row.get('time_start_total_seconds')
+                if pd.isna(event_elapsed):
+                    return None
+                event_elapsed = float(event_elapsed)
+                
+                key = (game_id, period)
+                if key not in shift_ranges or key not in period_max:
+                    return None
+                
+                # Convert elapsed to countdown: countdown = period_max - elapsed
+                event_countdown = period_max[key] - event_elapsed
+                
+                # Find shift where shift_end <= event_countdown <= shift_start
+                for shift_id, start, end in shift_ranges[key]:
+                    if end <= event_countdown <= start:
+                        return shift_id
+                
+                return None
+            except (ValueError, TypeError):
+                return None
+        
+        # Apply to fact_event_players
+        events_tracking['shift_id'] = events_tracking.apply(find_shift_id, axis=1)
+        shift_fill = events_tracking['shift_id'].notna().sum()
+        logger.info(f"  fact_event_players.shift_id: {shift_fill}/{len(events_tracking)} ({100*shift_fill/len(events_tracking):.1f}%)")
+    else:
+        logger.warning("  Shift time columns not found, skipping shift_id FK")
     
     # ========================================
     # 1. ENHANCE fact_event_players (single player per row)
@@ -509,13 +968,25 @@ def enhance_event_tables() -> Dict[str, int]:
     logger.info("\n--- Enhancing fact_event_players ---")
     events_tracking = calculate_time_to_events(events_tracking)
     
-    if len(shifts_player) > 0 and len(shifts_tracking) > 0:
-        events_tracking = calculate_player_toi_at_event(events_tracking, shifts_player, shifts_tracking)
+    # v23.1: Use new shift-based TOI calculation
+    if len(shifts_player) > 0:
+        events_tracking = calculate_shift_toi_at_event(events_tracking, shifts_player)
     
-    events_tracking = calculate_team_toi_aggregates(events_tracking)
+    # Remove old unused TOI columns if they exist
+    old_toi_cols = [f'event_player_{i}_toi' for i in range(1, 7)] + [f'opp_player_{i}_toi' for i in range(1, 7)]
+    existing_old_cols = [c for c in old_toi_cols if c in events_tracking.columns]
+    if existing_old_cols:
+        events_tracking = events_tracking.drop(columns=existing_old_cols)
+        logger.info(f"  Removed {len(existing_old_cols)} unused TOI columns")
+    
+    # Note: Team TOI aggregates are now calculated in calculate_shift_toi_at_event
+    
+    # v23.1: Add rating context from shift_player data (same pattern as TOI)
+    if len(shifts_player) > 0:
+        events_tracking = calculate_shift_ratings_at_event(events_tracking, shifts_player)
     
     # Save enhanced fact_event_players
-    events_tracking.to_csv(OUTPUT_DIR / 'fact_event_players.csv', index=False)
+    save_output_table(events_tracking, 'fact_event_players', OUTPUT_DIR)
     results['fact_event_players'] = len(events_tracking)
     logger.info(f"Saved fact_event_players: {len(events_tracking)} rows, {len(events_tracking.columns)} cols")
     
@@ -526,6 +997,13 @@ def enhance_event_tables() -> Dict[str, int]:
         events = pd.read_csv(OUTPUT_DIR / 'fact_events.csv', low_memory=False)
         logger.info(f"\n--- Enhancing fact_events ---")
         logger.info(f"Loaded: {len(events)} rows")
+        
+        # Add shift_id FK from events_tracking (already calculated)
+        if 'shift_id' in events_tracking.columns:
+            shift_id_map = events_tracking.groupby('event_id')['shift_id'].first().to_dict()
+            events['shift_id'] = events['event_id'].map(shift_id_map)
+            shift_fill = events['shift_id'].notna().sum()
+            logger.info(f"  fact_events.shift_id: {shift_fill}/{len(events)} ({100*shift_fill/len(events):.1f}%)")
         
         # First, add team columns from tracking data if not present
         # (needed for goal_for/goal_against calculations)
@@ -551,7 +1029,37 @@ def enhance_event_tables() -> Dict[str, int]:
         # Calculate team aggregates
         events = calculate_team_toi_aggregates(events)
         
-        events.to_csv(OUTPUT_DIR / 'fact_events.csv', index=False)
+        # v23.2: Add rating columns from fact_event_players (already calculated)
+        # Get first row per event from tracking which has the ratings
+        if 'event_team_avg_rating' in events_tracking.columns:
+            rating_cols = ['event_team_avg_rating', 'opp_team_avg_rating', 'rating_vs_opp']
+            existing_rating_cols = [c for c in rating_cols if c in events_tracking.columns]
+            if existing_rating_cols:
+                rating_context = events_tracking.groupby('event_id')[existing_rating_cols].first().reset_index()
+                events = events.merge(rating_context, on='event_id', how='left', suffixes=('', '_new'))
+                # Handle potential column conflicts
+                for col in existing_rating_cols:
+                    if f'{col}_new' in events.columns:
+                        events[col] = events[col].fillna(events[f'{col}_new'])
+                        events = events.drop(columns=[f'{col}_new'])
+                logger.info(f"Added rating columns from fact_event_players: {existing_rating_cols}")
+        else:
+            # Fallback: empty columns
+            for col in ['event_team_avg_rating', 'opp_team_avg_rating', 'rating_vs_opp']:
+                if col not in events.columns:
+                    events[col] = np.nan
+        
+        # v23.2: Remove unused/empty columns from fact_events
+        remove_cols = [
+            'team_venue_abv',  # Unused abbreviation
+            'player_toi',  # Player-level metric, not for event-level
+        ]
+        existing_remove = [c for c in remove_cols if c in events.columns]
+        if existing_remove:
+            events = events.drop(columns=existing_remove)
+            logger.info(f"Removed unused columns: {existing_remove}")
+        
+        save_output_table(events, 'fact_events', OUTPUT_DIR)
         results['fact_events'] = len(events)
         logger.info(f"Saved fact_events: {len(events)} rows, {len(events.columns)} cols")
         

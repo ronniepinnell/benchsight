@@ -1,6 +1,5 @@
 situation_id,situation_name
 SIT0001,Full Strength
-SIT0002,Away PowerPlay
-SIT0003,Away EmptyNet
-SIT0004,Home PowerPlay
-SIT0005,Home EmptyNet
+SIT0002,Empty Net
+SIT0003,Shorthanded
+SIT0004,Power Play

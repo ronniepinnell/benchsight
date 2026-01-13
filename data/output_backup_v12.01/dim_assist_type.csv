@@ -1,6 +1,0 @@
-assist_type_id,assist_type_code,assist_type_name,points_value,description
-AT001,primary,Primary Assist,1,Last pass before goal
-AT002,secondary,Secondary Assist,1,Second-to-last pass
-AT003,rush,Rush Assist,1,Assist on rush play
-AT004,cycle,Cycle Assist,1,Assist during cycle
-AT005,special_teams,Special Teams Assist,1,Assist on PP/PK

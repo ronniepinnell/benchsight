@@ -1,8 +1,0 @@
-Index,SequenceIndex,PlayIndex,Play2Index,Team,Note1,Period,PeriodTime,End,Type,EventType,EventTypeDetail,EventDetail2,OffensivePlay,DefensivePlay,ChangePossession,TeamPossession,Note2,X,Y,X2,Y2,x3,y3,note3,Player,EventPlayer2,EventPlayer3,EventPlayer4,EventPlayer5,EventPlayer6,EventTeamG,note4,note5,OppPlayer1,OppPlayer2,OppPlayer3,OppPlayer4,OppPlayer5,OppPlayer6,OppTeamG,Distance
-1,,,,Orphans,,1,18,18:00,-,Faceoff,Faceoff-PeriodStart,-,-,-,0,-,,0.09,0.2,22.17,-17.89,,,,11,10,,,,,,orph pos,,70,,,,,,,28.55
-2,,,,Orphans,,1,17:59,17:56,-,Possession,-,-,-,-,0,-,,23.83,-21.54,25.48,-33.28,,,,10,,,,,,,orph pos,,14,70,,,,,,11.85
-3,,,,Orphans,,1,17:56,17:54,-,Pass,Pass-Completed,Pass-Bank,-,-,0,-,,25.65,-33.63,6.96,-42.15,-13,-37.64,,10,11,,,,,,orph pos,,14,70,,,,,,20.55
-4,1,1,,Orphans,,1,17:55,17:52,-,Zone Entry/Exit,Zone-Entry,ZoneEntry-Rush,-,-,0,-,,-9.39,-38.5,-58.7,-40.24,,,,11,9,5,,,,,orp pos,,70,87,84,,,,,49.34
-5,1,1,,Orphans,,1,17:52,,-,Pass,Pass-Missed,Pass-Forehand,-,-,0,-,,-58.43,-39.8,-62.26,-5.11,,,,11,9,5,,,,,orph pos,,70,87,84,,,,,34.91
-5,1,1,,Orphans,,1,17:52,,-,Turnover,Turnover-Giveaway,Giveaway-PassMissed,-,-,0,-,,-62.43,-4.5,-78.43,39.33,,,,11,9,,,,,,orp pos,,70,87,84,,,,,46.66
-7,,,,Orphans,,1,17:50,,-,Shot,Shot-Missed,Shot-Wrist,-,-,0,Away,,-75.3,31.24,-98.61,0.46,,,,5,,,,,,,,,84,70,,,,,39,38.61

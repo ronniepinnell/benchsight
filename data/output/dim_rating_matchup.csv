@@ -1,0 +1,6 @@
+matchup_id,matchup_name,min_diff,max_diff
+RM01,Big Advantage,1.0,99.0
+RM02,Slight Advantage,0.25,0.99
+RM03,Even,-0.24,0.24
+RM04,Slight Disadvantage,-0.99,-0.25
+RM05,Big Disadvantage,-99.0,-1.0

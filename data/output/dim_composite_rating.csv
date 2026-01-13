@@ -1,0 +1,9 @@
+rating_id,rating_code,rating_name,description,scale_min,scale_max
+CR01,off,Offensive Rating,"Points, shots, dangerous passes",0,100
+CR02,def,Defensive Rating,"Takeaways, blocks, coverage",0,100
+CR03,twoway,Two-Way Rating,Combined offensive and defensive,0,100
+CR04,hustle,Hustle Rating,"Backchecking, pressure, battles",0,100
+CR05,impact,Impact Score,Overall game impact,-10,10
+CR06,game_score,Game Score,NHL-style game score,-5,5
+CR07,xg_impact,xG Impact,Expected goals differential,-2,2
+CR08,beer_league,Beer League Index,Fun/intangibles metric,0,100

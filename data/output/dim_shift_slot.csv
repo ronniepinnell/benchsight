@@ -1,0 +1,8 @@
+slot_id,slot_code,slot_name
+SL01,F1,Forward 1
+SL02,F2,Forward 2
+SL03,F3,Forward 3
+SL04,D1,Defense 1
+SL05,D2,Defense 2
+SL06,G,Goalie
+SL07,X,Extra

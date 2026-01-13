@@ -29,13 +29,13 @@
         <p><a href="../index.html" class="back-link">← Back to Index</a></p>
         <h1>fact_player_qoc_summary</h1>
         
-        <div class="alert alert-danger">⚠️ 15 suspicious stat entries for games in this table</div>
+        
         
         <div class="meta">
-            <strong>Rows:</strong> 105 | 
-            <strong>Columns:</strong> 9 |
-            <strong>Last Updated:</strong> 2026-01-07 05:03:20 |
-            <strong>Version:</strong> 12.03
+            <strong>Rows:</strong> 107 | 
+            <strong>Columns:</strong> 8 |
+            <strong>Last Updated:</strong> 2026-01-12 23:37:10 |
+            <strong>Version:</strong> 11.04
         </div>
         
         
@@ -44,7 +44,7 @@
             <h2>Column Schema</h2>
             <table class="columns-table">
                 <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
-                <tr><td>game_id</td><td>int64</td><td>105</td><td>0.0%</td></tr><tr><td>season_id</td><td>object</td><td>105</td><td>0.0%</td></tr><tr><td>player_id</td><td>object</td><td>105</td><td>0.0%</td></tr><tr><td>player_name</td><td>object</td><td>105</td><td>0.0%</td></tr><tr><td>team_id</td><td>object</td><td>105</td><td>0.0%</td></tr><tr><td>team_name</td><td>object</td><td>105</td><td>0.0%</td></tr><tr><td>toi_seconds</td><td>float64</td><td>105</td><td>0.0%</td></tr><tr><td>player_rating</td><td>int64</td><td>105</td><td>0.0%</td></tr><tr><td>qoc</td><td>float64</td><td>105</td><td>0.0%</td></tr>
+                <tr><td>qoc_key</td><td>object</td><td>107</td><td>0.0%</td></tr><tr><td>game_id</td><td>int64</td><td>107</td><td>0.0%</td></tr><tr><td>player_id</td><td>object</td><td>107</td><td>0.0%</td></tr><tr><td>avg_opp_rating</td><td>float64</td><td>107</td><td>0.0%</td></tr><tr><td>avg_own_rating</td><td>float64</td><td>107</td><td>0.0%</td></tr><tr><td>rating_diff</td><td>float64</td><td>107</td><td>0.0%</td></tr><tr><td>shifts_tracked</td><td>int64</td><td>107</td><td>0.0%</td></tr><tr><td>_export_timestamp</td><td>object</td><td>107</td><td>0.0%</td></tr>
             </table>
         </div>
         
@@ -54,237 +54,216 @@
                 <table border="1" class="dataframe data-table">
   <thead>
     <tr style="text-align: right;">
+      <th>qoc_key</th>
       <th>game_id</th>
-      <th>season_id</th>
       <th>player_id</th>
-      <th>player_name</th>
-      <th>team_id</th>
-      <th>team_name</th>
-      <th>toi_seconds</th>
-      <th>player_rating</th>
-      <th>qoc</th>
+      <th>avg_opp_rating</th>
+      <th>avg_own_rating</th>
+      <th>rating_diff</th>
+      <th>shifts_tracked</th>
+      <th>_export_timestamp</th>
     </tr>
   </thead>
   <tbody>
     <tr>
+      <td>P100001_18969</td>
       <td>18969</td>
-      <td>N20252026F</td>
       <td>P100001</td>
-      <td>Sam Downs</td>
-      <td>N10010</td>
-      <td>Velodrome</td>
-      <td>1730.0</td>
-      <td>6</td>
-      <td>3.988776</td>
+      <td>3.99</td>
+      <td>6.0</td>
+      <td>2.01</td>
+      <td>49</td>
+      <td>2026-01-12T23:36:32.440520</td>
     </tr>
     <tr>
+      <td>P100002_18969</td>
       <td>18969</td>
-      <td>N20252026F</td>
       <td>P100002</td>
-      <td>Kevin White</td>
-      <td>N10010</td>
-      <td>Velodrome</td>
-      <td>939.0</td>
-      <td>4</td>
-      <td>4.115000</td>
+      <td>4.12</td>
+      <td>4.0</td>
+      <td>-0.12</td>
+      <td>29</td>
+      <td>2026-01-12T23:36:32.441053</td>
     </tr>
     <tr>
+      <td>P100016_18969</td>
       <td>18969</td>
-      <td>N20252026F</td>
       <td>P100016</td>
-      <td>Wyatt Crandall</td>
-      <td>N10010</td>
-      <td>Velodrome</td>
-      <td>3158.0</td>
-      <td>5</td>
-      <td>3.936022</td>
+      <td>3.94</td>
+      <td>5.0</td>
+      <td>1.06</td>
+      <td>93</td>
+      <td>2026-01-12T23:36:32.441635</td>
     </tr>
     <tr>
+      <td>P100022_18969</td>
       <td>18969</td>
-      <td>N20252026F</td>
       <td>P100022</td>
-      <td>Chris Dube</td>
-      <td>N10008</td>
-      <td>Platinum</td>
-      <td>995.0</td>
-      <td>4</td>
-      <td>4.005714</td>
+      <td>4.01</td>
+      <td>4.0</td>
+      <td>-0.01</td>
+      <td>35</td>
+      <td>2026-01-12T23:36:32.442182</td>
     </tr>
     <tr>
+      <td>P100023_18969</td>
       <td>18969</td>
-      <td>N20252026F</td>
       <td>P100023</td>
-      <td>Alex Considine</td>
-      <td>N10008</td>
-      <td>Platinum</td>
-      <td>1754.0</td>
-      <td>4</td>
-      <td>3.981818</td>
+      <td>3.98</td>
+      <td>4.0</td>
+      <td>0.02</td>
+      <td>55</td>
+      <td>2026-01-12T23:36:32.442601</td>
     </tr>
     <tr>
+      <td>P100024_18969</td>
       <td>18969</td>
-      <td>N20252026F</td>
       <td>P100024</td>
-      <td>John Thien</td>
-      <td>N10008</td>
-      <td>Platinum</td>
-      <td>1084.0</td>
-      <td>3</td>
-      <td>3.979487</td>
+      <td>3.98</td>
+      <td>3.0</td>
+      <td>-0.98</td>
+      <td>26</td>
+      <td>2026-01-12T23:36:32.443065</td>
     </tr>
     <tr>
+      <td>P100025_18969</td>
       <td>18969</td>
-      <td>N20252026F</td>
       <td>P100025</td>
-      <td>Andrew Marshall</td>
-      <td>N10008</td>
-      <td>Platinum</td>
-      <td>1566.0</td>
-      <td>4</td>
-      <td>3.966667</td>
+      <td>3.97</td>
+      <td>4.0</td>
+      <td>0.03</td>
+      <td>40</td>
+      <td>2026-01-12T23:36:32.443530</td>
     </tr>
     <tr>
+      <td>P100027_18969</td>
       <td>18969</td>
-      <td>N20252026F</td>
       <td>P100027</td>
-      <td>Karen Zietlow</td>
-      <td>N10008</td>
-      <td>Platinum</td>
-      <td>1225.0</td>
-      <td>2</td>
-      <td>3.995556</td>
+      <td>4.00</td>
+      <td>2.0</td>
+      <td>-2.00</td>
+      <td>30</td>
+      <td>2026-01-12T23:36:32.443990</td>
     </tr>
     <tr>
+      <td>P100030_18969</td>
       <td>18969</td>
-      <td>N20252026F</td>
       <td>P100030</td>
-      <td>Jesse Chambless</td>
-      <td>N10008</td>
-      <td>Platinum</td>
-      <td>1680.0</td>
-      <td>5</td>
-      <td>3.993197</td>
+      <td>4.00</td>
+      <td>5.0</td>
+      <td>1.00</td>
+      <td>49</td>
+      <td>2026-01-12T23:36:32.444429</td>
     </tr>
     <tr>
+      <td>P100039_18969</td>
       <td>18969</td>
-      <td>N20252026F</td>
       <td>P100039</td>
-      <td>Nicole Downs</td>
-      <td>N10010</td>
-      <td>Velodrome</td>
-      <td>1257.0</td>
-      <td>2</td>
-      <td>3.905556</td>
+      <td>3.91</td>
+      <td>2.0</td>
+      <td>-1.91</td>
+      <td>36</td>
+      <td>2026-01-12T23:36:32.444806</td>
     </tr>
     <tr>
+      <td>P100064_18969</td>
       <td>18969</td>
-      <td>N20252026F</td>
       <td>P100064</td>
-      <td>James Rynearson</td>
-      <td>N10010</td>
-      <td>Velodrome</td>
-      <td>1024.0</td>
-      <td>3</td>
-      <td>3.776000</td>
+      <td>3.78</td>
+      <td>3.0</td>
+      <td>-0.78</td>
+      <td>25</td>
+      <td>2026-01-12T23:36:32.445292</td>
     </tr>
     <tr>
+      <td>P100070_18969</td>
       <td>18969</td>
-      <td>N20252026F</td>
       <td>P100070</td>
-      <td>Hayden Perea</td>
-      <td>N10010</td>
-      <td>Velodrome</td>
-      <td>1569.0</td>
-      <td>4</td>
-      <td>3.953571</td>
+      <td>3.95</td>
+      <td>4.0</td>
+      <td>0.05</td>
+      <td>42</td>
+      <td>2026-01-12T23:36:32.445765</td>
     </tr>
     <tr>
+      <td>P100093_18969</td>
       <td>18969</td>
-      <td>N20252026F</td>
       <td>P100093</td>
-      <td>Pat Major</td>
-      <td>N10010</td>
-      <td>Velodrome</td>
-      <td>1296.0</td>
-      <td>3</td>
-      <td>3.850000</td>
+      <td>3.85</td>
+      <td>3.0</td>
+      <td>-0.85</td>
+      <td>44</td>
+      <td>2026-01-12T23:36:32.446347</td>
     </tr>
     <tr>
+      <td>P100105_18969</td>
       <td>18969</td>
-      <td>N20252026F</td>
       <td>P100105</td>
-      <td>Ronnie Pinnell</td>
-      <td>N10010</td>
-      <td>Velodrome</td>
-      <td>1045.0</td>
-      <td>4</td>
-      <td>3.973333</td>
+      <td>3.97</td>
+      <td>4.0</td>
+      <td>0.03</td>
+      <td>30</td>
+      <td>2026-01-12T23:36:32.446731</td>
     </tr>
     <tr>
+      <td>P100107_18969</td>
       <td>18969</td>
-      <td>N20252026F</td>
       <td>P100107</td>
-      <td>Matt Quinn</td>
-      <td>N10008</td>
-      <td>Platinum</td>
-      <td>1480.0</td>
-      <td>3</td>
-      <td>3.965217</td>
+      <td>3.97</td>
+      <td>3.0</td>
+      <td>-0.97</td>
+      <td>46</td>
+      <td>2026-01-12T23:36:32.447114</td>
     </tr>
     <tr>
+      <td>P100108_18969</td>
       <td>18969</td>
-      <td>N20252026F</td>
       <td>P100108</td>
-      <td>Robert Mayfield</td>
-      <td>N10010</td>
-      <td>Velodrome</td>
-      <td>923.0</td>
-      <td>3</td>
-      <td>4.009615</td>
+      <td>4.01</td>
+      <td>3.0</td>
+      <td>-1.01</td>
+      <td>26</td>
+      <td>2026-01-12T23:36:32.447473</td>
     </tr>
     <tr>
+      <td>P100110_18969</td>
       <td>18969</td>
-      <td>N20252026F</td>
       <td>P100110</td>
-      <td>JoLyn Maly</td>
-      <td>N10008</td>
-      <td>Platinum</td>
-      <td>737.0</td>
-      <td>2</td>
-      <td>3.965217</td>
+      <td>3.97</td>
+      <td>2.0</td>
+      <td>-1.97</td>
+      <td>23</td>
+      <td>2026-01-12T23:36:32.447821</td>
     </tr>
     <tr>
+      <td>P100117_18969</td>
       <td>18969</td>
-      <td>N20252026F</td>
       <td>P100117</td>
-      <td>Keegan Mantaro</td>
-      <td>N10008</td>
-      <td>Platinum</td>
-      <td>1535.0</td>
-      <td>6</td>
-      <td>4.059649</td>
+      <td>4.06</td>
+      <td>6.0</td>
+      <td>1.94</td>
+      <td>38</td>
+      <td>2026-01-12T23:36:32.448208</td>
     </tr>
     <tr>
+      <td>P100132_18969</td>
       <td>18969</td>
-      <td>N20252026F</td>
       <td>P100132</td>
-      <td>Nick Ciampoli</td>
-      <td>N10010</td>
-      <td>Velodrome</td>
-      <td>968.0</td>
-      <td>4</td>
-      <td>3.773913</td>
+      <td>3.77</td>
+      <td>4.0</td>
+      <td>0.23</td>
+      <td>23</td>
+      <td>2026-01-12T23:36:32.448571</td>
     </tr>
     <tr>
+      <td>P100161_18969</td>
       <td>18969</td>
-      <td>N20252026F</td>
       <td>P100161</td>
-      <td>Galen Wood</td>
-      <td>N10010</td>
-      <td>Velodrome</td>
-      <td>1357.0</td>
-      <td>5</td>
-      <td>3.906977</td>
+      <td>3.91</td>
+      <td>5.0</td>
+      <td>1.09</td>
+      <td>43</td>
+      <td>2026-01-12T23:36:32.448942</td>
     </tr>
   </tbody>
 </table>
@@ -292,7 +271,7 @@
         </div>
         
         <footer>
-            BenchSight v13.18 | Generated 2026-01-07 05:03:20
+            BenchSight v11.04 | Generated 2026-01-12 23:37:10
         </footer>
     </div>
 </body>

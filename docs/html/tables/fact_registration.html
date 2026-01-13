@@ -3,333 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>fact_registration - BenchSight v0.01</title>
+    <title>fact_registration - BenchSight</title>
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #333; line-height: 1.6; }
-        .header { background: linear-gradient(135deg, #1a1a2e 0%, #4a4e69 100%); color: white; padding: 20px 40px; }
-        .header h1 { margin: 0; font-size: 24px; }
-        .nav { background: #4a4e69; padding: 0 20px; display: flex; flex-wrap: wrap; }
-        .nav a { color: white; text-decoration: none; padding: 10px 14px; font-size: 13px; }
-        .nav a:hover { background: rgba(255,255,255,0.1); }
-        .container { max-width: 1600px; margin: 0 auto; padding: 30px; }
-        
-        /* Table Overview Section */
-        .table-overview { background: white; border-radius: 8px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .table-overview h2 { margin-top: 0; color: #4a4e69; border-bottom: 2px solid #4a4e69; padding-bottom: 10px; }
-        .overview-desc { background: #e3f2fd; border-left: 4px solid #1976d2; padding: 15px; margin-bottom: 20px; font-size: 15px; }
-        .overview-grid { display: grid; grid-template-columns: 120px 1fr; gap: 10px 20px; }
-        .overview-label { font-weight: 600; color: #555; }
-        .overview-value { color: #333; }
-        .overview-value code { background: #f5f5f5; padding: 2px 8px; border-radius: 4px; font-family: 'SF Mono', Monaco, monospace; font-size: 12px; }
-        
-        /* Column Documentation Section */
-        .column-docs { background: white; border-radius: 8px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .column-docs h2 { margin-top: 0; color: #4a4e69; border-bottom: 2px solid #4a4e69; padding-bottom: 10px; }
-        
-        /* Legend */
-        .legend { margin-bottom: 20px; padding: 15px; background: #fafafa; border-radius: 6px; }
-        .legend-title { font-weight: 600; margin-right: 10px; }
-        .legend-item { display: inline-flex; align-items: center; margin-right: 20px; }
-        
-        /* Type badges */
-        .type-badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-        .badge-explicit { background: #e8f5e9; color: #2e7d32; }
-        .badge-calculated { background: #fff3e0; color: #e65100; }
-        .badge-derived { background: #e3f2fd; color: #1565c0; }
-        .badge-fk { background: #fce4ec; color: #c2185b; }
-        .badge-unknown { background: #f5f5f5; color: #757575; }
-        
-        /* Table styling */
-        table { border-collapse: collapse; width: 100%; margin: 15px 0; background: white; }
-        th { background: #4a4e69; color: white; padding: 12px 10px; text-align: left; font-size: 12px; font-weight: 600; position: sticky; top: 0; }
-        td { border: 1px solid #e0e0e0; padding: 10px; font-size: 13px; vertical-align: top; }
-        tr:nth-child(even) { background: #fafafa; }
-        tr:hover { background: #f0f7ff; }
-        code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-family: 'SF Mono', Monaco, monospace; font-size: 11px; }
-        
-        /* Column-specific styling */
-        .context-cell { max-width: 300px; font-size: 12px; color: #555; }
-        .calc-cell { max-width: 250px; font-size: 11px; }
-        .calc-cell code { background: #fff8e1; }
-        .stat-cell { text-align: right; font-size: 12px; }
-        .null-low { color: #2e7d32; }
-        .null-med { color: #f57c00; }
-        .null-high { color: #c62828; font-weight: 600; }
-        
-        /* Badge styles */
-        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-        .badge-blue { background: #1976d2; color: white; }
-        .badge-green { background: #388e3c; color: white; }
-        .badge-yellow { background: #f9a825; color: #333; }
-        
-        /* Sample data */
-        .data-table { font-size: 11px; overflow-x: auto; }
-        .data-table th { font-size: 11px; padding: 8px; }
-        .data-table td { padding: 6px 8px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        
-        footer { text-align: center; padding: 20px; color: #888; font-size: 11px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #4a4e69; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🏒 BenchSight <span style="font-size: 14px; opacity: 0.8;">v0.01</span></h1>
-    </div>
-    
-    <nav class="nav">
-        <a href="../index.html">🏠 Home</a>
-        <a href="../tables.html">📊 Tables (59)</a>
-        <a href="../BS_DETECTOR.html">🔍 BS Detector</a>
-        <a href="../DOC_MAINTENANCE.html">📝 Doc Guide</a>
-    </nav>
-
     <div class="container">
-        <h1>fact_registration <span class="badge badge-green">Fact</span></h1>
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>fact_registration</h1>
         
-        <!-- Table Overview Section -->
-        <div class="table-overview">
-            <h2>Table Overview</h2>
-            
-            <div class="overview-desc">
-                <strong>Description:</strong> No description available.
-            </div>
-            
-            <div class="overview-grid">
-                <div class="overview-label">Purpose:</div>
-                <div class="overview-value">Not documented.</div>
-                
-                <div class="overview-label">Source Module:</div>
-                <div class="overview-value"><code>Unknown</code></div>
-                
-                <div class="overview-label">Logic:</div>
-                <div class="overview-value">Not documented.</div>
-                
-                <div class="overview-label">Grain:</div>
-                <div class="overview-value">Not documented.</div>
-                
-                <div class="overview-label">Rows:</div>
-                <div class="overview-value">100</div>
-                
-                <div class="overview-label">Columns:</div>
-                <div class="overview-value">18</div>
-            </div>
+        
+        
+        <div class="meta">
+            <strong>Rows:</strong> 190 | 
+            <strong>Columns:</strong> 18 |
+            <strong>Last Updated:</strong> 2026-01-12 23:37:10 |
+            <strong>Version:</strong> 11.04
         </div>
         
-        <!-- Column Documentation Section -->
-        <div class="column-docs">
-            <h2>Column Documentation</h2>
-            
-            <div class="legend">
-                <span class="legend-title">Legend:</span>
-                <span class="legend-item"><span class="type-badge badge-explicit">Explicit</span> = From raw data</span>
-                <span class="legend-item"><span class="type-badge badge-calculated">Calculated</span> = Formula-based</span>
-                <span class="legend-item"><span class="type-badge badge-derived">Derived</span> = Generated key/aggregate</span>
-                <span class="legend-item"><span class="type-badge badge-fk">FK</span> = Foreign key lookup</span>
-            </div>
-            
-            <table>
-                <thead>
-                    <tr>
-                        <th>Column</th>
-                        <th>Data Type</th>
-                        <th>Description</th>
-                        <th>Context / Mapping</th>
-                        <th>Calculation / Formula</th>
-                        <th>Type</th>
-                        <th>Non-Null</th>
-                        <th>Null %</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    
-            <tr>
-                <td><code>player_full_name</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>player_id</code></td>
-                <td>object</td>
-                <td>Unique player identifier</td>
-                <td class="context-cell">Format: P######. Example: P100117.</td>
-                <td class="calc-cell"><code>Extracted from noradhockey.com player profile URL</code></td>
-                <td><span class="type-badge badge-derived">Derived</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>season_id</code></td>
-                <td>object</td>
-                <td>Foreign key reference</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>season</code></td>
-                <td>int64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>restricted</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>email</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>position</code></td>
-                <td>object</td>
-                <td>Player position (C, LW, RW, D, G)</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>norad_experience</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>CAF</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>highest_beer_league_played</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">88</td>
-                <td class="stat-cell null-high">12.0%</td>
-            </tr>
-            <tr>
-                <td><code>skill_rating</code></td>
-                <td>int64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>age</code></td>
-                <td>int64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>referred_by</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>notes</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">6</td>
-                <td class="stat-cell null-high">94.0%</td>
-            </tr>
-            <tr>
-                <td><code>sub_yn</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>drafted_team_name</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>drafted_team_id</code></td>
-                <td>object</td>
-                <td>Unique team identifier</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>player_season_registration_id</code></td>
-                <td>object</td>
-                <td>Foreign key reference</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-                </tbody>
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>player_full_name</td><td>object</td><td>190</td><td>0.0%</td></tr><tr><td>player_id</td><td>object</td><td>190</td><td>0.0%</td></tr><tr><td>season_id</td><td>object</td><td>190</td><td>0.0%</td></tr><tr><td>season</td><td>int64</td><td>190</td><td>0.0%</td></tr><tr><td>restricted</td><td>object</td><td>190</td><td>0.0%</td></tr><tr><td>email</td><td>object</td><td>190</td><td>0.0%</td></tr><tr><td>position</td><td>object</td><td>190</td><td>0.0%</td></tr><tr><td>norad_experience</td><td>object</td><td>190</td><td>0.0%</td></tr><tr><td>CAF</td><td>object</td><td>190</td><td>0.0%</td></tr><tr><td>highest_beer_league_played</td><td>object</td><td>172</td><td>9.5%</td></tr><tr><td>skill_rating</td><td>int64</td><td>190</td><td>0.0%</td></tr><tr><td>age</td><td>int64</td><td>190</td><td>0.0%</td></tr><tr><td>referred_by</td><td>object</td><td>189</td><td>0.5%</td></tr><tr><td>notes</td><td>object</td><td>10</td><td>94.7%</td></tr><tr><td>sub_yn</td><td>object</td><td>190</td><td>0.0%</td></tr><tr><td>drafted_team_name</td><td>object</td><td>190</td><td>0.0%</td></tr><tr><td>drafted_team_id</td><td>object</td><td>190</td><td>0.0%</td></tr><tr><td>player_season_registration_id</td><td>object</td><td>190</td><td>0.0%</td></tr>
             </table>
         </div>
         
-        <!-- Sample Data Section -->
-        <div class="column-docs">
-            <h2>Sample Data (First 5 Rows)</h2>
-            <table border="1" class="dataframe data-table">
+        <div class="card">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
   <thead>
     <tr style="text-align: right;">
       <th>player_full_name</th>
@@ -453,12 +175,313 @@
       <td>N10007</td>
       <td>R_N20252026FP100185</td>
     </tr>
+    <tr>
+      <td>Keegan Mantaro</td>
+      <td>P100117</td>
+      <td>N20252026F</td>
+      <td>20252026</td>
+      <td>N</td>
+      <td>keeganmantaro@gmail.com</td>
+      <td>Forward</td>
+      <td>1</td>
+      <td>No</td>
+      <td>Campbell; Platinum</td>
+      <td>6</td>
+      <td>26</td>
+      <td>-</td>
+      <td>NaN</td>
+      <td>N</td>
+      <td>Platinum</td>
+      <td>N10008</td>
+      <td>R_N20252026FP100117</td>
+    </tr>
+    <tr>
+      <td>Brock Lofgren</td>
+      <td>P100066</td>
+      <td>N20252026F</td>
+      <td>20252026</td>
+      <td>N</td>
+      <td>brockster13@yahoo.com</td>
+      <td>Forward</td>
+      <td>2</td>
+      <td>No</td>
+      <td>NORAD</td>
+      <td>6</td>
+      <td>32</td>
+      <td>-</td>
+      <td>NaN</td>
+      <td>N</td>
+      <td>Nelson</td>
+      <td>N10004</td>
+      <td>R_N20252026FP100066</td>
+    </tr>
+    <tr>
+      <td>Zach Schirm</td>
+      <td>P100186</td>
+      <td>N20252026F</td>
+      <td>20252026</td>
+      <td>N</td>
+      <td>schirm175@icloud.com</td>
+      <td>Forward</td>
+      <td>0</td>
+      <td>No</td>
+      <td>Campbell, advanced</td>
+      <td>6</td>
+      <td>23</td>
+      <td>Owen Kalbfleisch</td>
+      <td>NaN</td>
+      <td>Y</td>
+      <td>Free Agent</td>
+      <td>N10026</td>
+      <td>R_N20252026FP100186</td>
+    </tr>
+    <tr>
+      <td>Simon Kurtz</td>
+      <td>P100187</td>
+      <td>N20252026F</td>
+      <td>20252026</td>
+      <td>N</td>
+      <td>kurtz.w.simon@gmail.com</td>
+      <td>Defense</td>
+      <td>0</td>
+      <td>No</td>
+      <td>B League monument, Mountaineers</td>
+      <td>6</td>
+      <td>24</td>
+      <td>Owen Kalbfleisch</td>
+      <td>NaN</td>
+      <td>N</td>
+      <td>Free Agent</td>
+      <td>N10026</td>
+      <td>R_N20252026FP100187</td>
+    </tr>
+    <tr>
+      <td>Austin Storm</td>
+      <td>P100026</td>
+      <td>N20252026F</td>
+      <td>20252026</td>
+      <td>N</td>
+      <td>stormhockey2795@gmail.com</td>
+      <td>Forward</td>
+      <td>2</td>
+      <td>No</td>
+      <td>Ace Level 6</td>
+      <td>6</td>
+      <td>29</td>
+      <td>-</td>
+      <td>NaN</td>
+      <td>N</td>
+      <td>Ace</td>
+      <td>N10002</td>
+      <td>R_N20252026FP100026</td>
+    </tr>
+    <tr>
+      <td>Sam Downs</td>
+      <td>P100001</td>
+      <td>N20252026F</td>
+      <td>20252026</td>
+      <td>N</td>
+      <td>downsthethird@gmail.com</td>
+      <td>Forward</td>
+      <td>10+</td>
+      <td>No</td>
+      <td>B - Platinum Group</td>
+      <td>6</td>
+      <td>39</td>
+      <td>-</td>
+      <td>Wants to play with wife Nicole Downs</td>
+      <td>N</td>
+      <td>Velodrome</td>
+      <td>N10010</td>
+      <td>R_N20252026FP100001</td>
+    </tr>
+    <tr>
+      <td>Logan Dineen</td>
+      <td>P100188</td>
+      <td>N20252026F</td>
+      <td>20252026</td>
+      <td>N</td>
+      <td>in2hockey@icloud.com</td>
+      <td>Forward</td>
+      <td>0</td>
+      <td>No</td>
+      <td>Monument B league</td>
+      <td>6</td>
+      <td>24</td>
+      <td>Internet</td>
+      <td>NaN</td>
+      <td>N</td>
+      <td>Free Agent</td>
+      <td>N10026</td>
+      <td>R_N20252026FP100188</td>
+    </tr>
+    <tr>
+      <td>Garret Orth</td>
+      <td>P100189</td>
+      <td>N20252026F</td>
+      <td>20252026</td>
+      <td>N</td>
+      <td>garret.orth@hotmail.com</td>
+      <td>Forward</td>
+      <td>0</td>
+      <td>No</td>
+      <td>NaN</td>
+      <td>5</td>
+      <td>28</td>
+      <td>Jared Wolf</td>
+      <td>NaN</td>
+      <td>N</td>
+      <td>HollowBrook</td>
+      <td>N10003</td>
+      <td>R_N20252026FP100189</td>
+    </tr>
+    <tr>
+      <td>Anthony Mandt</td>
+      <td>P100190</td>
+      <td>N20252026F</td>
+      <td>20252026</td>
+      <td>N</td>
+      <td>mandt2123@gmail.com</td>
+      <td>Forward</td>
+      <td>0</td>
+      <td>No</td>
+      <td>Hawaii Hockey Club A Division</td>
+      <td>5</td>
+      <td>35</td>
+      <td>Chris Premo</td>
+      <td>NaN</td>
+      <td>N</td>
+      <td>Free Agent</td>
+      <td>N10026</td>
+      <td>R_N20252026FP100190</td>
+    </tr>
+    <tr>
+      <td>Austin Webb</td>
+      <td>P100051</td>
+      <td>N20252026F</td>
+      <td>20252026</td>
+      <td>Y</td>
+      <td>austinwebb4848@gmail.com</td>
+      <td>Forward</td>
+      <td>4</td>
+      <td>No</td>
+      <td>No other teams</td>
+      <td>5</td>
+      <td>27</td>
+      <td>-</td>
+      <td>NaN</td>
+      <td>N</td>
+      <td>Orphans</td>
+      <td>N10006</td>
+      <td>R_N20252026FP100051</td>
+    </tr>
+    <tr>
+      <td>Michael Gipson</td>
+      <td>P100118</td>
+      <td>N20252026F</td>
+      <td>20252026</td>
+      <td>N</td>
+      <td>goaliegipper30@gmail.com</td>
+      <td>Goalie</td>
+      <td>2</td>
+      <td>No</td>
+      <td>Beer league campbell</td>
+      <td>5</td>
+      <td>49</td>
+      <td>-</td>
+      <td>NaN</td>
+      <td>N</td>
+      <td>Orphans</td>
+      <td>N10006</td>
+      <td>R_N20252026FP100118</td>
+    </tr>
+    <tr>
+      <td>Peter Dowling</td>
+      <td>P100191</td>
+      <td>N20252026F</td>
+      <td>20252026</td>
+      <td>N</td>
+      <td>phdowling@gmail.com</td>
+      <td>Defense</td>
+      <td>1</td>
+      <td>Yes</td>
+      <td>N/A - played with base team in Germany last season</td>
+      <td>5</td>
+      <td>42</td>
+      <td>-</td>
+      <td>NaN</td>
+      <td>N</td>
+      <td>Triple J</td>
+      <td>N10009</td>
+      <td>R_N20252026FP100191</td>
+    </tr>
+    <tr>
+      <td>Christopher Premo</td>
+      <td>P100192</td>
+      <td>N20252026F</td>
+      <td>20252026</td>
+      <td>N</td>
+      <td>crpremo@yahoo.com</td>
+      <td>Forward</td>
+      <td>0</td>
+      <td>No</td>
+      <td>B</td>
+      <td>5</td>
+      <td>40</td>
+      <td>Sam Downs</td>
+      <td>NaN</td>
+      <td>N</td>
+      <td>Platinum</td>
+      <td>N10008</td>
+      <td>R_N20252026FP100192</td>
+    </tr>
+    <tr>
+      <td>Ryan Case</td>
+      <td>P100193</td>
+      <td>N20252026F</td>
+      <td>20252026</td>
+      <td>N</td>
+      <td>ryca7143@colorado.edu</td>
+      <td>Forward</td>
+      <td>0</td>
+      <td>No</td>
+      <td>Competitive AAA hockey and High School hockey</td>
+      <td>5</td>
+      <td>28</td>
+      <td>Beau Kelly</td>
+      <td>NaN</td>
+      <td>N</td>
+      <td>Orphans</td>
+      <td>N10006</td>
+      <td>R_N20252026FP100193</td>
+    </tr>
+    <tr>
+      <td>Mitchell Liebl</td>
+      <td>P100194</td>
+      <td>N20252026F</td>
+      <td>20252026</td>
+      <td>N</td>
+      <td>mitchliebl@msn.com</td>
+      <td>Forward</td>
+      <td>0</td>
+      <td>No</td>
+      <td>CSAHL Advanced Pikas</td>
+      <td>5</td>
+      <td>39</td>
+      <td>TJ Liebl</td>
+      <td>NaN</td>
+      <td>N</td>
+      <td>OS Offices</td>
+      <td>N10005</td>
+      <td>R_N20252026FP100194</td>
+    </tr>
   </tbody>
 </table>
+            </div>
         </div>
         
         <footer>
-            BenchSight v0.01 | Generated: 2026-01-07 21:13 | <a href="../tables.html">Back to Tables</a>
+            BenchSight v11.04 | Generated 2026-01-12 23:37:10
         </footer>
     </div>
 </body>

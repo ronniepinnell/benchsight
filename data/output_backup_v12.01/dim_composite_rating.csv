@@ -1,9 +1,0 @@
-rating_id,rating_code,rating_name,description,scale_min,scale_max
-CR001,offensive_rating,Offensive Rating,"Weighted composite of goals, assists, shots, xG",0,100
-CR002,defensive_rating,Defensive Rating,"Weighted composite of takeaways, blocks, backchecks",0,100
-CR003,hustle_rating,Hustle Rating,"Weighted composite of forechecks, backchecks, puck battles",0,100
-CR004,playmaking_rating,Playmaking Rating,"Weighted composite of pass %, assists, primary assists",0,100
-CR005,shooting_rating,Shooting Rating,"Weighted composite of shooting %, shot volume",0,100
-CR006,physical_rating,Physical Rating,"Weighted composite of hits, blocks",0,100
-CR007,impact_score,Impact Score,"Overall game impact: CF%, +/-, points",-50,50
-CR008,war_estimate,WAR Estimate,Estimated wins above replacement player,-1,2

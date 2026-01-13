@@ -163,7 +163,7 @@ Examples:
     
     parser.add_argument('games', nargs='*', type=int, help='Game IDs to extract')
     parser.add_argument('--all', action='store_true', help='Extract all games with roster data')
-    parser.add_argument('--blb', type=str, default='data/BLB_Tables.xlsx', help='Path to BLB_Tables.xlsx')
+    parser.add_argument('--blb', type=str, default='data/raw/BLB_TABLES.xlsx', help='Path to BLB_Tables.xlsx')
     
     args = parser.parse_args()
     

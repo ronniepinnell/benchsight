@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fact_shot_chains - BenchSight</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #4a4e69; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>fact_shot_chains</h1>
+        
+        
+        
+        <div class="meta">
+            <strong>Rows:</strong> 431 | 
+            <strong>Columns:</strong> 33 |
+            <strong>Last Updated:</strong> 2026-01-12 23:37:10 |
+            <strong>Version:</strong> 11.04
+        </div>
+        
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>chain_id</td><td>object</td><td>431</td><td>0.0%</td></tr><tr><td>game_id</td><td>int64</td><td>431</td><td>0.0%</td></tr><tr><td>season_id</td><td>object</td><td>431</td><td>0.0%</td></tr><tr><td>period</td><td>int64</td><td>431</td><td>0.0%</td></tr><tr><td>entry_event_key</td><td>object</td><td>431</td><td>0.0%</td></tr><tr><td>shot_event_key</td><td>object</td><td>431</td><td>0.0%</td></tr><tr><td>time_to_shot</td><td>float64</td><td>431</td><td>0.0%</td></tr><tr><td>pass_count</td><td>int64</td><td>431</td><td>0.0%</td></tr><tr><td>events_to_shot</td><td>int64</td><td>431</td><td>0.0%</td></tr><tr><td>touch_count</td><td>int64</td><td>431</td><td>0.0%</td></tr><tr><td>entry_type</td><td>object</td><td>431</td><td>0.0%</td></tr><tr><td>shot_result</td><td>object</td><td>431</td><td>0.0%</td></tr><tr><td>is_goal</td><td>bool</td><td>431</td><td>0.0%</td></tr><tr><td>team_id</td><td>object</td><td>431</td><td>0.0%</td></tr><tr><td>team_name</td><td>object</td><td>431</td><td>0.0%</td></tr><tr><td>home_team_id</td><td>object</td><td>431</td><td>0.0%</td></tr><tr><td>away_team_id</td><td>object</td><td>431</td><td>0.0%</td></tr><tr><td>home_team_name</td><td>object</td><td>431</td><td>0.0%</td></tr><tr><td>away_team_name</td><td>object</td><td>431</td><td>0.0%</td></tr><tr><td>event_types_chain</td><td>object</td><td>431</td><td>0.0%</td></tr><tr><td>event_details_chain</td><td>object</td><td>431</td><td>0.0%</td></tr><tr><td>entry_player_id</td><td>object</td><td>429</td><td>0.5%</td></tr><tr><td>entry_player_name</td><td>object</td><td>431</td><td>0.0%</td></tr><tr><td>shot_player_id</td><td>object</td><td>431</td><td>0.0%</td></tr><tr><td>shot_player_name</td><td>object</td><td>431</td><td>0.0%</td></tr><tr><td>sequence_key</td><td>object</td><td>431</td><td>0.0%</td></tr><tr><td>play_key</td><td>object</td><td>431</td><td>0.0%</td></tr><tr><td>zone_id</td><td>object</td><td>431</td><td>0.0%</td></tr><tr><td>zone_entry_type_id</td><td>object</td><td>431</td><td>0.0%</td></tr><tr><td>shot_result_detail_id</td><td>object</td><td>420</td><td>2.6%</td></tr><tr><td>time_bucket_id</td><td>object</td><td>431</td><td>0.0%</td></tr><tr><td>strength_id</td><td>object</td><td>431</td><td>0.0%</td></tr><tr><td>shot_type_id</td><td>object</td><td>395</td><td>8.4%</td></tr>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>chain_id</th>
+      <th>game_id</th>
+      <th>season_id</th>
+      <th>period</th>
+      <th>entry_event_key</th>
+      <th>shot_event_key</th>
+      <th>time_to_shot</th>
+      <th>pass_count</th>
+      <th>events_to_shot</th>
+      <th>touch_count</th>
+      <th>entry_type</th>
+      <th>shot_result</th>
+      <th>is_goal</th>
+      <th>team_id</th>
+      <th>team_name</th>
+      <th>home_team_id</th>
+      <th>away_team_id</th>
+      <th>home_team_name</th>
+      <th>away_team_name</th>
+      <th>event_types_chain</th>
+      <th>event_details_chain</th>
+      <th>entry_player_id</th>
+      <th>entry_player_name</th>
+      <th>shot_player_id</th>
+      <th>shot_player_name</th>
+      <th>sequence_key</th>
+      <th>play_key</th>
+      <th>zone_id</th>
+      <th>zone_entry_type_id</th>
+      <th>shot_result_detail_id</th>
+      <th>time_bucket_id</th>
+      <th>strength_id</th>
+      <th>shot_type_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>CH1896900001</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>2</td>
+      <td>EV1896901498</td>
+      <td>EV1896901515</td>
+      <td>29.0</td>
+      <td>5</td>
+      <td>19</td>
+      <td>7</td>
+      <td>ZoneEntry_OppTeam</td>
+      <td>Shot_Missed</td>
+      <td>False</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>Zone_Entry_Exit &gt; Faceoff &gt; Pass &gt; Possession &gt; Possession &gt; Pass &gt; Pass &gt; Zone_Entry_Exit &gt; Possession &gt; Zone_Entry_Exit &gt; Pass &gt; Pass &gt; Possession &gt; Turnover &gt; Possession &gt; Zone_Entry_Exit &gt; Possession &gt; Zone_Entry_Exit &gt; Shot</td>
+      <td>Zone_Entry &gt; Faceoff_PeriodStart &gt; Pass_Completed &gt; PuckRecovery &gt; Pass_Completed &gt; Pass_Completed &gt; Zone_Exit &gt; Zone_Entry &gt; Pass_Missed &gt; Pass_Intercepted &gt; PuckRecovery &gt; Turnover_Giveaway &gt; Zone_Exit &gt; Zone_Entry &gt; Shot_Missed</td>
+      <td>NaN</td>
+      <td>Chris Premo</td>
+      <td>P100192</td>
+      <td>Chris Premo</td>
+      <td>SQ1896900052</td>
+      <td>PL1896905201</td>
+      <td>ZN01</td>
+      <td>ZE0008</td>
+      <td>ED0039</td>
+      <td>TB01</td>
+      <td>STR01</td>
+      <td>ST0001</td>
+    </tr>
+    <tr>
+      <td>CH1896900002</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>3</td>
+      <td>EV1896902050</td>
+      <td>EV1896902067</td>
+      <td>31.0</td>
+      <td>4</td>
+      <td>21</td>
+      <td>8</td>
+      <td>ZoneEntry_PenaltyKillClear</td>
+      <td>Goal</td>
+      <td>True</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>Zone_Entry_Exit &gt; Possession &gt; Zone_Entry_Exit &gt; Pass &gt; Possession &gt; Zone_Entry_Exit &gt; Turnover &gt; Possession &gt; Turnover &gt; Zone_Entry_Exit &gt; Possession &gt; Pass &gt; Possession &gt; Pass &gt; Possession &gt; Pass &gt; Stoppage &gt; Faceoff &gt; DeadIce &gt; Shot &gt; Goal</td>
+      <td>Zone_Entry &gt; PuckRetrieval &gt; Zone_Exit &gt; Pass_Missed &gt; PuckRecovery &gt; Zone_Entry &gt; Turnover_Takeaway &gt; PuckRetrieval &gt; Turnover_Giveaway &gt; Zone_Keepin &gt; PuckRetrieval &gt; Pass_Completed &gt; Pass_Completed &gt; Pass_Completed &gt; Stoppage_Play &gt; Shot_Goal &gt; Goal_Scored</td>
+      <td>P100023</td>
+      <td>Alex Considine</td>
+      <td>P100132</td>
+      <td>Nick Ciampoli</td>
+      <td>SQ1896900097</td>
+      <td>PL1896909702</td>
+      <td>ZN03</td>
+      <td>ZE0012</td>
+      <td>ED0006</td>
+      <td>TB01</td>
+      <td>STR01</td>
+      <td>ST0005</td>
+    </tr>
+    <tr>
+      <td>CH1896900003</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>1</td>
+      <td>EV1896901005</td>
+      <td>EV1896901012</td>
+      <td>16.0</td>
+      <td>1</td>
+      <td>8</td>
+      <td>3</td>
+      <td>ZoneEntry_DumpIn</td>
+      <td>Shot_Blocked</td>
+      <td>False</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>Zone_Entry_Exit &gt; Turnover &gt; Possession &gt; Zone_Entry_Exit &gt; Pass &gt; Possession &gt; Zone_Entry_Exit &gt; Shot</td>
+      <td>Zone_Entry &gt; Turnover_Giveaway &gt; PuckRetrieval &gt; Zone_Exit &gt; Pass_Completed &gt; Zone_Entry &gt; Shot_Blocked</td>
+      <td>P100024</td>
+      <td>John Thien</td>
+      <td>P100161</td>
+      <td>John Thien</td>
+      <td>SQ1896900001</td>
+      <td>PL1896900102</td>
+      <td>ZN03</td>
+      <td>ZE0005</td>
+      <td>ED0035</td>
+      <td>TB01</td>
+      <td>STR01</td>
+      <td>ST0001</td>
+    </tr>
+    <tr>
+      <td>CH1896900004</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>2</td>
+      <td>EV1896901506</td>
+      <td>EV1896901515</td>
+      <td>17.0</td>
+      <td>2</td>
+      <td>10</td>
+      <td>4</td>
+      <td>ZoneEntry_Carried</td>
+      <td>Shot_Missed</td>
+      <td>False</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>Zone_Entry_Exit &gt; Pass &gt; Pass &gt; Possession &gt; Turnover &gt; Possession &gt; Zone_Entry_Exit &gt; Possession &gt; Zone_Entry_Exit &gt; Shot</td>
+      <td>Zone_Entry &gt; Pass_Missed &gt; Pass_Intercepted &gt; PuckRecovery &gt; Turnover_Giveaway &gt; Zone_Exit &gt; Zone_Entry &gt; Shot_Missed</td>
+      <td>P100201</td>
+      <td>Garrett Ashcroft</td>
+      <td>P100192</td>
+      <td>Chris Premo</td>
+      <td>SQ1896900054</td>
+      <td>PL1896905413</td>
+      <td>ZN01</td>
+      <td>ZE0001</td>
+      <td>ED0039</td>
+      <td>TB01</td>
+      <td>STR01</td>
+      <td>ST0001</td>
+    </tr>
+    <tr>
+      <td>CH1896900005</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>3</td>
+      <td>EV1896902055</td>
+      <td>EV1896902067</td>
+      <td>16.0</td>
+      <td>3</td>
+      <td>16</td>
+      <td>7</td>
+      <td>ZoneEntry_Carried</td>
+      <td>Goal</td>
+      <td>True</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>Zone_Entry_Exit &gt; Turnover &gt; Possession &gt; Turnover &gt; Zone_Entry_Exit &gt; Possession &gt; Pass &gt; Possession &gt; Pass &gt; Possession &gt; Pass &gt; Stoppage &gt; Faceoff &gt; DeadIce &gt; Shot &gt; Goal</td>
+      <td>Zone_Entry &gt; Turnover_Takeaway &gt; PuckRetrieval &gt; Turnover_Giveaway &gt; Zone_Keepin &gt; PuckRetrieval &gt; Pass_Completed &gt; Pass_Completed &gt; Pass_Completed &gt; Stoppage_Play &gt; Shot_Goal &gt; Goal_Scored</td>
+      <td>P100064</td>
+      <td>James Rynearson</td>
+      <td>P100132</td>
+      <td>Nick Ciampoli</td>
+      <td>SQ1896900093</td>
+      <td>PL1896909306</td>
+      <td>ZN01</td>
+      <td>ZE0001</td>
+      <td>ED0006</td>
+      <td>TB01</td>
+      <td>STR01</td>
+      <td>ST0005</td>
+    </tr>
+    <tr>
+      <td>CH1896900006</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>1</td>
+      <td>EV1896901011</td>
+      <td>EV1896901012</td>
+      <td>4.0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>1</td>
+      <td>ZoneEntry_Carried</td>
+      <td>Shot_Blocked</td>
+      <td>False</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>Zone_Entry_Exit &gt; Shot</td>
+      <td>Zone_Entry &gt; Shot_Blocked</td>
+      <td>P100161</td>
+      <td>Galen Wood</td>
+      <td>P100161</td>
+      <td>John Thien</td>
+      <td>SQ1896900002</td>
+      <td>PL1896900206</td>
+      <td>ZN01</td>
+      <td>ZE0001</td>
+      <td>ED0035</td>
+      <td>TB01</td>
+      <td>STR01</td>
+      <td>ST0001</td>
+    </tr>
+    <tr>
+      <td>CH1896900007</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>2</td>
+      <td>EV1896901514</td>
+      <td>EV1896901515</td>
+      <td>3.0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>2</td>
+      <td>ZoneEntry_Pass</td>
+      <td>Shot_Missed</td>
+      <td>False</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>Zone_Entry_Exit &gt; Shot</td>
+      <td>Zone_Entry &gt; Shot_Missed</td>
+      <td>P100027</td>
+      <td>Karen Zietlow</td>
+      <td>P100192</td>
+      <td>Chris Premo</td>
+      <td>SQ1896900054</td>
+      <td>PL1896905401</td>
+      <td>ZN01</td>
+      <td>ZE0010</td>
+      <td>ED0039</td>
+      <td>TB01</td>
+      <td>STR01</td>
+      <td>ST0001</td>
+    </tr>
+    <tr>
+      <td>CH1896900008</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>2</td>
+      <td>EV1896901525</td>
+      <td>EV1896901539</td>
+      <td>29.0</td>
+      <td>2</td>
+      <td>16</td>
+      <td>5</td>
+      <td>ZoneEntry_Carried</td>
+      <td>Shot_Missed</td>
+      <td>False</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>Zone_Entry_Exit &gt; Possession &gt; Possession &gt; Turnover &gt; Zone_Entry_Exit &gt; Possession &gt; Zone_Entry_Exit &gt; Pass &gt; Turnover &gt; Possession &gt; Zone_Entry_Exit &gt; Possession &gt; Zone_Entry_Exit &gt; Possession &gt; Shot &gt; Pass</td>
+      <td>Zone_Entry &gt; PuckRecovery &gt; Turnover_Takeaway &gt; Zone_Exit &gt; Zone_Entry &gt; Pass_Deflected &gt; Turnover_Giveaway &gt; PuckRetrieval &gt; Zone_Exit &gt; Zone_Entry &gt; Shot_Missed &gt; Pass_Completed</td>
+      <td>P100201</td>
+      <td>Garrett Ashcroft</td>
+      <td>P100064</td>
+      <td>James Rynearson</td>
+      <td>SQ1896900054</td>
+      <td>PL1896905407</td>
+      <td>ZN01</td>
+      <td>ZE0001</td>
+      <td>ED0039</td>
+      <td>TB01</td>
+      <td>STR01</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>CH1896900009</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>1</td>
+      <td>EV1896901022</td>
+      <td>EV1896901027</td>
+      <td>13.0</td>
+      <td>0</td>
+      <td>6</td>
+      <td>3</td>
+      <td>ZoneEntry_Carried</td>
+      <td>Shot_Missed</td>
+      <td>False</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>Zone_Entry_Exit &gt; Possession &gt; Turnover &gt; Turnover &gt; Possession &gt; Shot</td>
+      <td>Zone_Entry &gt; Turnover_Takeaway &gt; Turnover_Giveaway &gt; PuckRetrieval &gt; Shot_Missed</td>
+      <td>P100030</td>
+      <td>Jesse Chambless</td>
+      <td>P100192</td>
+      <td>Chris Premo</td>
+      <td>SQ1896900002</td>
+      <td>PL1896900201</td>
+      <td>ZN01</td>
+      <td>ZE0001</td>
+      <td>ED0039</td>
+      <td>TB01</td>
+      <td>STR01</td>
+      <td>ST0001</td>
+    </tr>
+    <tr>
+      <td>CH1896900010</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>2</td>
+      <td>EV1896901530</td>
+      <td>EV1896901539</td>
+      <td>18.0</td>
+      <td>2</td>
+      <td>10</td>
+      <td>5</td>
+      <td>ZoneEntry_Carried</td>
+      <td>Shot_Missed</td>
+      <td>False</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>Zone_Entry_Exit &gt; Pass &gt; Turnover &gt; Possession &gt; Zone_Entry_Exit &gt; Possession &gt; Zone_Entry_Exit &gt; Possession &gt; Shot &gt; Pass</td>
+      <td>Zone_Entry &gt; Pass_Deflected &gt; Turnover_Giveaway &gt; PuckRetrieval &gt; Zone_Exit &gt; Zone_Entry &gt; Shot_Missed &gt; Pass_Completed</td>
+      <td>P100023</td>
+      <td>Pat Major</td>
+      <td>P100064</td>
+      <td>James Rynearson</td>
+      <td>SQ1896900054</td>
+      <td>PL1896905412</td>
+      <td>ZN01</td>
+      <td>ZE0001</td>
+      <td>ED0039</td>
+      <td>TB01</td>
+      <td>STR01</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>CH1896900011</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>3</td>
+      <td>EV1896902072</td>
+      <td>EV1896902073</td>
+      <td>1.0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>1</td>
+      <td>ZoneEntry_Carried</td>
+      <td>Shot_Blocked</td>
+      <td>False</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>Zone_Entry_Exit &gt; Turnover &gt; Shot</td>
+      <td>Zone_Entry &gt; Turnover_Giveaway &gt; Shot_Blocked</td>
+      <td>P100192</td>
+      <td>Chris Premo</td>
+      <td>P100192</td>
+      <td>Chris Premo</td>
+      <td>SQ1896900093</td>
+      <td>PL1896909309</td>
+      <td>ZN01</td>
+      <td>ZE0001</td>
+      <td>ED0035</td>
+      <td>TB01</td>
+      <td>STR01</td>
+      <td>ST0001</td>
+    </tr>
+    <tr>
+      <td>CH1896900012</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>2</td>
+      <td>EV1896901536</td>
+      <td>EV1896901539</td>
+      <td>5.0</td>
+      <td>1</td>
+      <td>4</td>
+      <td>3</td>
+      <td>ZoneEntry_Carried</td>
+      <td>Shot_Missed</td>
+      <td>False</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>Zone_Entry_Exit &gt; Possession &gt; Shot &gt; Pass</td>
+      <td>Zone_Entry &gt; Shot_Missed &gt; Pass_Completed</td>
+      <td>P100132</td>
+      <td>Garrett Ashcroft</td>
+      <td>P100064</td>
+      <td>James Rynearson</td>
+      <td>SQ1896900054</td>
+      <td>PL1896905409</td>
+      <td>ZN01</td>
+      <td>ZE0001</td>
+      <td>ED0039</td>
+      <td>TB01</td>
+      <td>STR01</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <td>CH1896900013</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>3</td>
+      <td>EV1896902083</td>
+      <td>EV1896902084</td>
+      <td>1.0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>1</td>
+      <td>ZoneEntry_Carried</td>
+      <td>Shot_Blocked</td>
+      <td>False</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>Zone_Entry_Exit &gt; Shot</td>
+      <td>Zone_Entry &gt; Shot_Blocked</td>
+      <td>P100023</td>
+      <td>Alex Considine</td>
+      <td>P100023</td>
+      <td>Alex Considine</td>
+      <td>SQ1896900097</td>
+      <td>PL1896909701</td>
+      <td>ZN01</td>
+      <td>ZE0001</td>
+      <td>ED0035</td>
+      <td>TB01</td>
+      <td>STR01</td>
+      <td>ST0001</td>
+    </tr>
+    <tr>
+      <td>CH1896900014</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>2</td>
+      <td>EV1896901556</td>
+      <td>EV1896901567</td>
+      <td>18.0</td>
+      <td>2</td>
+      <td>13</td>
+      <td>7</td>
+      <td>ZoneEntry_Carried</td>
+      <td>Shot_Blocked</td>
+      <td>False</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>Zone_Entry_Exit &gt; Turnover &gt; Possession &gt; Zone_Entry_Exit &gt; Possession &gt; Play &gt; Zone_Entry_Exit &gt; Pass &gt; Possession &gt; Shot &gt; Zone_Entry_Exit &gt; Turnover &gt; Pass</td>
+      <td>Zone_Entry &gt; Turnover_Giveaway &gt; PuckRetrieval &gt; Zone_Exit &gt; Play_Defensive &gt; Zone_Entryfailed &gt; Pass_Completed &gt; PuckRecovery &gt; Shot_Blocked &gt; Zone_Entry &gt; Turnover_Giveaway &gt; Pass_Completed</td>
+      <td>P100022</td>
+      <td>Chris Dube</td>
+      <td>P100039</td>
+      <td>Nicole Downs</td>
+      <td>SQ1896900056</td>
+      <td>PL1896905606</td>
+      <td>ZN01</td>
+      <td>ZE0001</td>
+      <td>ED0035</td>
+      <td>TB01</td>
+      <td>STR01</td>
+      <td>ST0001</td>
+    </tr>
+    <tr>
+      <td>CH1896900015</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>3</td>
+      <td>EV1896902095</td>
+      <td>EV1896902101</td>
+      <td>13.0</td>
+      <td>2</td>
+      <td>11</td>
+      <td>4</td>
+      <td>ZoneEntry_FromExitClear</td>
+      <td>Shot_OnNetSaved</td>
+      <td>False</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>Faceoff &gt; Zone_Entry_Exit &gt; Zone_Entry_Exit &gt; Possession &gt; Pass &gt; Possession &gt; Pass &gt; Possession &gt; Rebound &gt; Shot &gt; Save</td>
+      <td>Faceoff_AfterStoppage &gt; Zone_Exit &gt; Zone_Entry &gt; PuckRetrieval &gt; Pass_Completed &gt; Regroup &gt; Pass_Intercepted &gt; Rebound_TeamRecovered &gt; Shot_OnNetSaved &gt; Save_Rebound</td>
+      <td>P100001</td>
+      <td>Sam Downs</td>
+      <td>P100001</td>
+      <td>Sam Downs</td>
+      <td>SQ1896900097</td>
+      <td>PL1896909705</td>
+      <td>ZN02</td>
+      <td>ZE0006</td>
+      <td>ED0040</td>
+      <td>TB01</td>
+      <td>STR01</td>
+      <td>ST0001</td>
+    </tr>
+    <tr>
+      <td>CH1896900016</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>2</td>
+      <td>EV1896901566</td>
+      <td>EV1896901574</td>
+      <td>13.0</td>
+      <td>2</td>
+      <td>12</td>
+      <td>7</td>
+      <td>ZoneEntry_Pass</td>
+      <td>Shot_OnNetSaved</td>
+      <td>False</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>Shot &gt; Zone_Entry_Exit &gt; Turnover &gt; Pass &gt; Possession &gt; Turnover &gt; Possession &gt; Pass &gt; Possession &gt; Rebound &gt; Save &gt; Shot</td>
+      <td>Shot_Blocked &gt; Zone_Entry &gt; Turnover_Giveaway &gt; Pass_Completed &gt; PuckRetrieval &gt; Turnover_Giveaway &gt; PuckRetrieval &gt; Pass_Completed &gt; Rebound_TeamRecovered &gt; Save_Rebound &gt; Shot_OnNetSaved</td>
+      <td>P100039</td>
+      <td>Pat Major</td>
+      <td>P100093</td>
+      <td>Pat Major</td>
+      <td>SQ1896900058</td>
+      <td>PL1896905805</td>
+      <td>ZN03</td>
+      <td>ZE0010</td>
+      <td>ED0040</td>
+      <td>TB01</td>
+      <td>STR01</td>
+      <td>ST0001</td>
+    </tr>
+    <tr>
+      <td>CH1896900017</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>3</td>
+      <td>EV1896902108</td>
+      <td>EV1896902109</td>
+      <td>3.0</td>
+      <td>0</td>
+      <td>4</td>
+      <td>3</td>
+      <td>ZoneEntry_Carried</td>
+      <td>Shot_OnNetSaved</td>
+      <td>False</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>Zone_Entry_Exit &gt; Save &gt; Shot &gt; Rebound</td>
+      <td>Zone_Entry &gt; Save_Rebound &gt; Shot_OnNetSaved</td>
+      <td>P100161</td>
+      <td>Maxwell Donaty</td>
+      <td>P100198</td>
+      <td>Maxwell Donaty</td>
+      <td>SQ1896900100</td>
+      <td>PL1896910001</td>
+      <td>ZN01</td>
+      <td>ZE0001</td>
+      <td>ED0040</td>
+      <td>TB01</td>
+      <td>STR01</td>
+      <td>ST0001</td>
+    </tr>
+    <tr>
+      <td>CH1896900018</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>2</td>
+      <td>EV1896901581</td>
+      <td>EV1896901582</td>
+      <td>1.0</td>
+      <td>0</td>
+      <td>4</td>
+      <td>3</td>
+      <td>ZoneEntry_Carried</td>
+      <td>Shot_OnNetSaved</td>
+      <td>False</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>Zone_Entry_Exit &gt; Shot &gt; Rebound &gt; Save</td>
+      <td>Zone_Entry &gt; Shot_OnNetSaved &gt; Rebound_TeamRecovered &gt; Save_Rebound</td>
+      <td>P100117</td>
+      <td>Keegan Mantaro</td>
+      <td>P100117</td>
+      <td>Keegan Mantaro</td>
+      <td>SQ1896900058</td>
+      <td>PL1896905804</td>
+      <td>ZN01</td>
+      <td>ZE0001</td>
+      <td>ED0040</td>
+      <td>TB01</td>
+      <td>STR01</td>
+      <td>ST0001</td>
+    </tr>
+    <tr>
+      <td>CH1896900019</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>2</td>
+      <td>EV1896901598</td>
+      <td>EV1896901605</td>
+      <td>10.0</td>
+      <td>3</td>
+      <td>10</td>
+      <td>4</td>
+      <td>ZoneEntry_Carried</td>
+      <td>Shot_OnNetSaved</td>
+      <td>False</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>Zone_Entry_Exit &gt; Pass &gt; Pass &gt; Possession &gt; Possession &gt; Pass &gt; Possession &gt; Save &gt; Shot &gt; Rebound</td>
+      <td>Zone_Entry &gt; Pass_Deflected &gt; Pass_Completed &gt; PuckRecovery &gt; Pass_Completed &gt; Save_Rebound &gt; Shot_OnNetSaved &gt; Rebound_OppTeamRecovered</td>
+      <td>P100022</td>
+      <td>Chris Dube</td>
+      <td>P100210</td>
+      <td>Josh Simonds</td>
+      <td>SQ1896900059</td>
+      <td>PL1896905904</td>
+      <td>ZN01</td>
+      <td>ZE0001</td>
+      <td>ED0040</td>
+      <td>TB01</td>
+      <td>STR01</td>
+      <td>ST0001</td>
+    </tr>
+    <tr>
+      <td>CH1896900020</td>
+      <td>18969</td>
+      <td>N20252026F</td>
+      <td>3</td>
+      <td>EV1896902134</td>
+      <td>EV1896902136</td>
+      <td>15.0</td>
+      <td>0</td>
+      <td>10</td>
+      <td>4</td>
+      <td>ZoneEntry_Carried</td>
+      <td>Shot_OnNetSaved</td>
+      <td>False</td>
+      <td>N10010</td>
+      <td>Velodrome</td>
+      <td>N10008</td>
+      <td>N10010</td>
+      <td>Platinum</td>
+      <td>Velodrome</td>
+      <td>Zone_Entry_Exit &gt; Possession &gt; Zone_Entry_Exit &gt; Possession &gt; Turnover &gt; Possession &gt; Zone_Entry_Exit &gt; Rebound &gt; Shot &gt; Save</td>
+      <td>Zone_Entry &gt; Zone_Exit &gt; PuckRetrieval &gt; Turnover_Giveaway &gt; PuckRetrieval &gt; Zone_Entry &gt; Rebound_TeamRecovered &gt; Shot_OnNetSaved &gt; Save_Rebound</td>
+      <td>P100201</td>
+      <td>Garrett Ashcroft</td>
+      <td>P100201</td>
+      <td>Garrett Ashcroft</td>
+      <td>SQ1896900081</td>
+      <td>PL1896908107</td>
+      <td>ZN01</td>
+      <td>ZE0001</td>
+      <td>ED0040</td>
+      <td>TB01</td>
+      <td>STR01</td>
+      <td>ST0001</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+        </div>
+        
+        <footer>
+            BenchSight v11.04 | Generated 2026-01-12 23:37:10
+        </footer>
+    </div>
+</body>
+</html>

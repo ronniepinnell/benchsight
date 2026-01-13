@@ -42,7 +42,7 @@ def build_shot_chains():
     
     # Shots - any shot attempt including goals
     shots = events[
-        (events['is_shot'] == 1) | 
+        (events['is_sog'] == 1) | 
         (events['is_goal'] == 1) |
         (events['event_type'] == 'Shot') |
         (events['event_type'] == 'Goal')

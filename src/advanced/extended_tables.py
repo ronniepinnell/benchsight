@@ -17,6 +17,7 @@ import numpy as np
 from pathlib import Path
 from datetime import datetime
 import logging
+from src.core.table_writer import save_output_table
 
 # Import safe CSV utilities (with fallback)
 try:
@@ -35,7 +36,7 @@ def save_table_safe(df, name):
     if SAFE_CSV_AVAILABLE:
         safe_write_csv(df, str(path), atomic=True, validate=True)
     else:
-        df.to_csv(path, index=False)
+        save_output_table(df, path.stem, path.parent)
     return len(df)
 
 
@@ -564,7 +565,7 @@ def main():
     
     for name, df in dim_tables.items():
         path = OUTPUT_DIR / f'{name}.csv'
-        df.to_csv(path, index=False)
+        save_output_table(df, path.stem, path.parent)
         print(f"  ✓ {name}: {len(df)} rows")
         tables_created += 1
     
@@ -574,7 +575,8 @@ def main():
     fact_builders = [
         ('fact_player_career_stats', lambda: create_fact_player_career_stats(pgs)),
         ('fact_team_season_stats', lambda: create_fact_team_season_stats(tgs)),
-        ('fact_season_summary', lambda: create_fact_season_summary(pgs)),
+        # DEPRECATED - replaced by v_summary_league view (v28.3):
+        # ('fact_season_summary', lambda: create_fact_season_summary(pgs)),
         ('fact_player_trends', lambda: create_fact_player_trends(pgs)),
         ('fact_zone_entry_summary', lambda: create_fact_zone_entry_summary(pgs)),
         ('fact_zone_exit_summary', lambda: create_fact_zone_exit_summary(pgs)),
@@ -588,7 +590,7 @@ def main():
             df = builder()
             if df is not None and len(df) > 0:
                 path = OUTPUT_DIR / f'{name}.csv'
-                df.to_csv(path, index=False)
+                save_output_table(df, path.stem, path.parent)
                 print(f"  ✓ {name}: {len(df)} rows")
                 tables_created += 1
             else:
@@ -606,7 +608,7 @@ def main():
     
     for name, df in qa_tables.items():
         path = OUTPUT_DIR / f'{name}.csv'
-        df.to_csv(path, index=False)
+        save_output_table(df, path.stem, path.parent)
         print(f"  ✓ {name}: {len(df)} rows")
         tables_created += 1
     

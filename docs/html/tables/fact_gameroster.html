@@ -3,393 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>fact_gameroster - BenchSight v0.01</title>
+    <title>fact_gameroster - BenchSight</title>
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #333; line-height: 1.6; }
-        .header { background: linear-gradient(135deg, #1a1a2e 0%, #4a4e69 100%); color: white; padding: 20px 40px; }
-        .header h1 { margin: 0; font-size: 24px; }
-        .nav { background: #4a4e69; padding: 0 20px; display: flex; flex-wrap: wrap; }
-        .nav a { color: white; text-decoration: none; padding: 10px 14px; font-size: 13px; }
-        .nav a:hover { background: rgba(255,255,255,0.1); }
-        .container { max-width: 1600px; margin: 0 auto; padding: 30px; }
-        
-        /* Table Overview Section */
-        .table-overview { background: white; border-radius: 8px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .table-overview h2 { margin-top: 0; color: #4a4e69; border-bottom: 2px solid #4a4e69; padding-bottom: 10px; }
-        .overview-desc { background: #e3f2fd; border-left: 4px solid #1976d2; padding: 15px; margin-bottom: 20px; font-size: 15px; }
-        .overview-grid { display: grid; grid-template-columns: 120px 1fr; gap: 10px 20px; }
-        .overview-label { font-weight: 600; color: #555; }
-        .overview-value { color: #333; }
-        .overview-value code { background: #f5f5f5; padding: 2px 8px; border-radius: 4px; font-family: 'SF Mono', Monaco, monospace; font-size: 12px; }
-        
-        /* Column Documentation Section */
-        .column-docs { background: white; border-radius: 8px; padding: 25px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .column-docs h2 { margin-top: 0; color: #4a4e69; border-bottom: 2px solid #4a4e69; padding-bottom: 10px; }
-        
-        /* Legend */
-        .legend { margin-bottom: 20px; padding: 15px; background: #fafafa; border-radius: 6px; }
-        .legend-title { font-weight: 600; margin-right: 10px; }
-        .legend-item { display: inline-flex; align-items: center; margin-right: 20px; }
-        
-        /* Type badges */
-        .type-badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-        .badge-explicit { background: #e8f5e9; color: #2e7d32; }
-        .badge-calculated { background: #fff3e0; color: #e65100; }
-        .badge-derived { background: #e3f2fd; color: #1565c0; }
-        .badge-fk { background: #fce4ec; color: #c2185b; }
-        .badge-unknown { background: #f5f5f5; color: #757575; }
-        
-        /* Table styling */
-        table { border-collapse: collapse; width: 100%; margin: 15px 0; background: white; }
-        th { background: #4a4e69; color: white; padding: 12px 10px; text-align: left; font-size: 12px; font-weight: 600; position: sticky; top: 0; }
-        td { border: 1px solid #e0e0e0; padding: 10px; font-size: 13px; vertical-align: top; }
-        tr:nth-child(even) { background: #fafafa; }
-        tr:hover { background: #f0f7ff; }
-        code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-family: 'SF Mono', Monaco, monospace; font-size: 11px; }
-        
-        /* Column-specific styling */
-        .context-cell { max-width: 300px; font-size: 12px; color: #555; }
-        .calc-cell { max-width: 250px; font-size: 11px; }
-        .calc-cell code { background: #fff8e1; }
-        .stat-cell { text-align: right; font-size: 12px; }
-        .null-low { color: #2e7d32; }
-        .null-med { color: #f57c00; }
-        .null-high { color: #c62828; font-weight: 600; }
-        
-        /* Badge styles */
-        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-        .badge-blue { background: #1976d2; color: white; }
-        .badge-green { background: #388e3c; color: white; }
-        .badge-yellow { background: #f9a825; color: #333; }
-        
-        /* Sample data */
-        .data-table { font-size: 11px; overflow-x: auto; }
-        .data-table th { font-size: 11px; padding: 8px; }
-        .data-table td { padding: 6px 8px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        
-        footer { text-align: center; padding: 20px; color: #888; font-size: 11px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #4a4e69; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🏒 BenchSight <span style="font-size: 14px; opacity: 0.8;">v0.01</span></h1>
-    </div>
-    
-    <nav class="nav">
-        <a href="../index.html">🏠 Home</a>
-        <a href="../tables.html">📊 Tables (59)</a>
-        <a href="../BS_DETECTOR.html">🔍 BS Detector</a>
-        <a href="../DOC_MAINTENANCE.html">📝 Doc Guide</a>
-    </nav>
-
     <div class="container">
-        <h1>fact_gameroster <span class="badge badge-green">Fact</span></h1>
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>fact_gameroster</h1>
         
-        <!-- Table Overview Section -->
-        <div class="table-overview">
-            <h2>Table Overview</h2>
-            
-            <div class="overview-desc">
-                <strong>Description:</strong> No description available.
-            </div>
-            
-            <div class="overview-grid">
-                <div class="overview-label">Purpose:</div>
-                <div class="overview-value">Not documented.</div>
-                
-                <div class="overview-label">Source Module:</div>
-                <div class="overview-value"><code>Unknown</code></div>
-                
-                <div class="overview-label">Logic:</div>
-                <div class="overview-value">Not documented.</div>
-                
-                <div class="overview-label">Grain:</div>
-                <div class="overview-value">Not documented.</div>
-                
-                <div class="overview-label">Rows:</div>
-                <div class="overview-value">100</div>
-                
-                <div class="overview-label">Columns:</div>
-                <div class="overview-value">24</div>
-            </div>
+        
+        
+        <div class="meta">
+            <strong>Rows:</strong> 14,724 | 
+            <strong>Columns:</strong> 24 |
+            <strong>Last Updated:</strong> 2026-01-12 23:37:10 |
+            <strong>Version:</strong> 11.04
         </div>
         
-        <!-- Column Documentation Section -->
-        <div class="column-docs">
-            <h2>Column Documentation</h2>
-            
-            <div class="legend">
-                <span class="legend-title">Legend:</span>
-                <span class="legend-item"><span class="type-badge badge-explicit">Explicit</span> = From raw data</span>
-                <span class="legend-item"><span class="type-badge badge-calculated">Calculated</span> = Formula-based</span>
-                <span class="legend-item"><span class="type-badge badge-derived">Derived</span> = Generated key/aggregate</span>
-                <span class="legend-item"><span class="type-badge badge-fk">FK</span> = Foreign key lookup</span>
-            </div>
-            
-            <table>
-                <thead>
-                    <tr>
-                        <th>Column</th>
-                        <th>Data Type</th>
-                        <th>Description</th>
-                        <th>Context / Mapping</th>
-                        <th>Calculation / Formula</th>
-                        <th>Type</th>
-                        <th>Non-Null</th>
-                        <th>Null %</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    
-            <tr>
-                <td><code>game_id</code></td>
-                <td>int64</td>
-                <td>Unique game identifier from NORAD league</td>
-                <td class="context-cell">Numeric ID from league website URL. Example: 18969.</td>
-                <td class="calc-cell"><code>Extracted from tracking file directory name (data/raw/games/{game_id}/)</code></td>
-                <td><span class="type-badge badge-explicit">Explicit</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>player_id</code></td>
-                <td>object</td>
-                <td>Unique player identifier</td>
-                <td class="context-cell">Format: P######. Example: P100117.</td>
-                <td class="calc-cell"><code>Extracted from noradhockey.com player profile URL</code></td>
-                <td><span class="type-badge badge-derived">Derived</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>team_id</code></td>
-                <td>object</td>
-                <td>Unique team identifier</td>
-                <td class="context-cell">Format varies by source.</td>
-                <td class="calc-cell"><code>From league roster/schedule data</code></td>
-                <td><span class="type-badge badge-explicit">Explicit</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>opp_team_id</code></td>
-                <td>object</td>
-                <td>Unique team identifier</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>season_id</code></td>
-                <td>object</td>
-                <td>Foreign key reference</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>venue_id</code></td>
-                <td>object</td>
-                <td>Foreign key reference</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>position_id</code></td>
-                <td>object</td>
-                <td>Player position (C, LW, RW, D, G)</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>team_name</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>opp_team_name</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>team_venue</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>date</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>season</code></td>
-                <td>int64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>player_full_name</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>player_game_number</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">97</td>
-                <td class="stat-cell null-med">3.0%</td>
-            </tr>
-            <tr>
-                <td><code>player_position</code></td>
-                <td>object</td>
-                <td>Player position (C, LW, RW, D, G)</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>goals</code></td>
-                <td>float64</td>
-                <td>Goals scored</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>assist</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>points</code></td>
-                <td>float64</td>
-                <td>Total points (goals + assists)</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>goals_against</code></td>
-                <td>float64</td>
-                <td>Goals scored</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>pim</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>shutouts</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>games_played</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-            <tr>
-                <td><code>sub</code></td>
-                <td>float64</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">0</td>
-                <td class="stat-cell null-high">100.0%</td>
-            </tr>
-            <tr>
-                <td><code>current_team</code></td>
-                <td>object</td>
-                <td>-</td>
-                <td class="context-cell"></td>
-                <td class="calc-cell"><code></code></td>
-                <td><span class="type-badge badge-unknown">Unknown</span></td>
-                <td class="stat-cell">100</td>
-                <td class="stat-cell null-low">0.0%</td>
-            </tr>
-                </tbody>
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>game_id</td><td>int64</td><td>14,724</td><td>0.0%</td></tr><tr><td>player_id</td><td>object</td><td>14,724</td><td>0.0%</td></tr><tr><td>team_id</td><td>object</td><td>14,724</td><td>0.0%</td></tr><tr><td>opp_team_id</td><td>object</td><td>14,724</td><td>0.0%</td></tr><tr><td>season_id</td><td>object</td><td>14,702</td><td>0.1%</td></tr><tr><td>venue_id</td><td>object</td><td>14,724</td><td>0.0%</td></tr><tr><td>position_id</td><td>object</td><td>14,722</td><td>0.0%</td></tr><tr><td>team_name</td><td>object</td><td>14,724</td><td>0.0%</td></tr><tr><td>opp_team_name</td><td>object</td><td>14,724</td><td>0.0%</td></tr><tr><td>team_venue</td><td>object</td><td>14,724</td><td>0.0%</td></tr><tr><td>date</td><td>object</td><td>14,724</td><td>0.0%</td></tr><tr><td>season</td><td>int64</td><td>14,724</td><td>0.0%</td></tr><tr><td>player_full_name</td><td>object</td><td>14,724</td><td>0.0%</td></tr><tr><td>player_game_number</td><td>object</td><td>14,446</td><td>1.9%</td></tr><tr><td>player_position</td><td>object</td><td>14,722</td><td>0.0%</td></tr><tr><td>goals</td><td>float64</td><td>14,724</td><td>0.0%</td></tr><tr><td>assist</td><td>float64</td><td>14,724</td><td>0.0%</td></tr><tr><td>points</td><td>float64</td><td>14,724</td><td>0.0%</td></tr><tr><td>goals_against</td><td>float64</td><td>14,724</td><td>0.0%</td></tr><tr><td>pim</td><td>float64</td><td>14,724</td><td>0.0%</td></tr><tr><td>shutouts</td><td>float64</td><td>14,724</td><td>0.0%</td></tr><tr><td>games_played</td><td>float64</td><td>14,724</td><td>0.0%</td></tr><tr><td>sub</td><td>object</td><td>47</td><td>99.7%</td></tr><tr><td>current_team</td><td>object</td><td>14,724</td><td>0.0%</td></tr>
             </table>
         </div>
         
-        <!-- Sample Data Section -->
-        <div class="column-docs">
-            <h2>Sample Data (First 5 Rows)</h2>
-            <table border="1" class="dataframe data-table">
+        <div class="card">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
   <thead>
     <tr style="text-align: right;">
       <th>game_id</th>
@@ -433,7 +95,7 @@
       <td>2023-10-08 00:00:00</td>
       <td>20232024</td>
       <td>Geoff Nolan</td>
-      <td>2.0</td>
+      <td>2</td>
       <td>Defense</td>
       <td>0.0</td>
       <td>2.0</td>
@@ -459,7 +121,7 @@
       <td>2023-10-08 00:00:00</td>
       <td>20232024</td>
       <td>Garrett Ashcroft</td>
-      <td>5.0</td>
+      <td>5</td>
       <td>Forward</td>
       <td>0.0</td>
       <td>1.0</td>
@@ -485,7 +147,7 @@
       <td>2023-10-08 00:00:00</td>
       <td>20232024</td>
       <td>Darren Reck</td>
-      <td>12.0</td>
+      <td>12</td>
       <td>Forward</td>
       <td>0.0</td>
       <td>0.0</td>
@@ -511,7 +173,7 @@
       <td>2023-10-08 00:00:00</td>
       <td>20232024</td>
       <td>Austin Storm</td>
-      <td>20.0</td>
+      <td>20</td>
       <td>Forward</td>
       <td>3.0</td>
       <td>0.0</td>
@@ -537,7 +199,7 @@
       <td>2023-10-08 00:00:00</td>
       <td>20232024</td>
       <td>John Morrow</td>
-      <td>25.0</td>
+      <td>25</td>
       <td>Forward</td>
       <td>0.0</td>
       <td>0.0</td>
@@ -549,12 +211,403 @@
       <td>NaN</td>
       <td>Ace</td>
     </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100132</td>
+      <td>N10002</td>
+      <td>N10004</td>
+      <td>N20232024F</td>
+      <td>VN02</td>
+      <td>PS0004</td>
+      <td>Ace</td>
+      <td>Nelson</td>
+      <td>away</td>
+      <td>2023-10-08 00:00:00</td>
+      <td>20232024</td>
+      <td>Nick Ciampoli</td>
+      <td>28</td>
+      <td>Forward</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>Velodrome</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100064</td>
+      <td>N10002</td>
+      <td>N10004</td>
+      <td>N20232024F</td>
+      <td>VN02</td>
+      <td>PS0004</td>
+      <td>Ace</td>
+      <td>Nelson</td>
+      <td>away</td>
+      <td>2023-10-08 00:00:00</td>
+      <td>20232024</td>
+      <td>James Rynearson</td>
+      <td>51</td>
+      <td>Forward</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>Velodrome</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100277</td>
+      <td>N10002</td>
+      <td>N10004</td>
+      <td>N20232024F</td>
+      <td>VN02</td>
+      <td>PS0004</td>
+      <td>Ace</td>
+      <td>Nelson</td>
+      <td>away</td>
+      <td>2023-10-08 00:00:00</td>
+      <td>20232024</td>
+      <td>Brent Bak</td>
+      <td>65</td>
+      <td>Forward</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>Free Agent</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100113</td>
+      <td>N10002</td>
+      <td>N10004</td>
+      <td>N20232024F</td>
+      <td>VN02</td>
+      <td>PS0005</td>
+      <td>Ace</td>
+      <td>Nelson</td>
+      <td>away</td>
+      <td>2023-10-08 00:00:00</td>
+      <td>20232024</td>
+      <td>James McCarron</td>
+      <td>92</td>
+      <td>Defense</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>Free Agent</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100321</td>
+      <td>N10002</td>
+      <td>N10004</td>
+      <td>N20232024F</td>
+      <td>VN02</td>
+      <td>PS0006</td>
+      <td>Ace</td>
+      <td>Nelson</td>
+      <td>away</td>
+      <td>2023-10-08 00:00:00</td>
+      <td>20232024</td>
+      <td>Zach Adams</td>
+      <td>NaN</td>
+      <td>Goalie</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>7.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>Free Agent</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100078</td>
+      <td>N10004</td>
+      <td>N10002</td>
+      <td>N20232024F</td>
+      <td>VN02</td>
+      <td>PS0004</td>
+      <td>Nelson</td>
+      <td>Ace</td>
+      <td>away</td>
+      <td>2023-10-08 00:00:00</td>
+      <td>20232024</td>
+      <td>Kyle Popovich</td>
+      <td>0</td>
+      <td>Forward</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>3.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>Nelson</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100068</td>
+      <td>N10004</td>
+      <td>N10002</td>
+      <td>N20232024F</td>
+      <td>VN02</td>
+      <td>PS0004</td>
+      <td>Nelson</td>
+      <td>Ace</td>
+      <td>away</td>
+      <td>2023-10-08 00:00:00</td>
+      <td>20232024</td>
+      <td>Ian Barr</td>
+      <td>4</td>
+      <td>Forward</td>
+      <td>0.0</td>
+      <td>3.0</td>
+      <td>3.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>Nelson</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100241</td>
+      <td>N10004</td>
+      <td>N10002</td>
+      <td>N20232024F</td>
+      <td>VN02</td>
+      <td>PS0005</td>
+      <td>Nelson</td>
+      <td>Ace</td>
+      <td>away</td>
+      <td>2023-10-08 00:00:00</td>
+      <td>20232024</td>
+      <td>Jacob Trivers</td>
+      <td>5</td>
+      <td>Defense</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>Free Agent</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100240</td>
+      <td>N10004</td>
+      <td>N10002</td>
+      <td>N20232024F</td>
+      <td>VN02</td>
+      <td>PS0005</td>
+      <td>Nelson</td>
+      <td>Ace</td>
+      <td>away</td>
+      <td>2023-10-08 00:00:00</td>
+      <td>20232024</td>
+      <td>Tyler Walker</td>
+      <td>6</td>
+      <td>Defense</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>Free Agent</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100243</td>
+      <td>N10004</td>
+      <td>N10002</td>
+      <td>N20232024F</td>
+      <td>VN02</td>
+      <td>PS0004</td>
+      <td>Nelson</td>
+      <td>Ace</td>
+      <td>away</td>
+      <td>2023-10-08 00:00:00</td>
+      <td>20232024</td>
+      <td>Holly Sly</td>
+      <td>8</td>
+      <td>Forward</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>Free Agent</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100237</td>
+      <td>N10004</td>
+      <td>N10002</td>
+      <td>N20232024F</td>
+      <td>VN02</td>
+      <td>PS0004</td>
+      <td>Nelson</td>
+      <td>Ace</td>
+      <td>away</td>
+      <td>2023-10-08 00:00:00</td>
+      <td>20232024</td>
+      <td>Shawn Ryan</td>
+      <td>12</td>
+      <td>Forward</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>Free Agent</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100062</td>
+      <td>N10004</td>
+      <td>N10002</td>
+      <td>N20232024F</td>
+      <td>VN02</td>
+      <td>PS0004</td>
+      <td>Nelson</td>
+      <td>Ace</td>
+      <td>away</td>
+      <td>2023-10-08 00:00:00</td>
+      <td>20232024</td>
+      <td>Gary Buck</td>
+      <td>18</td>
+      <td>Forward</td>
+      <td>2.0</td>
+      <td>0.0</td>
+      <td>2.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>Nelson</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100065</td>
+      <td>N10004</td>
+      <td>N10002</td>
+      <td>N20232024F</td>
+      <td>VN02</td>
+      <td>PS0004</td>
+      <td>Nelson</td>
+      <td>Ace</td>
+      <td>away</td>
+      <td>2023-10-08 00:00:00</td>
+      <td>20232024</td>
+      <td>Josh Twitchell</td>
+      <td>21</td>
+      <td>Forward</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>Nelson</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100061</td>
+      <td>N10004</td>
+      <td>N10002</td>
+      <td>N20232024F</td>
+      <td>VN02</td>
+      <td>PS0005</td>
+      <td>Nelson</td>
+      <td>Ace</td>
+      <td>away</td>
+      <td>2023-10-08 00:00:00</td>
+      <td>20232024</td>
+      <td>Eric Larson</td>
+      <td>23</td>
+      <td>Defense</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>Nelson</td>
+    </tr>
+    <tr>
+      <td>10001</td>
+      <td>P100057</td>
+      <td>N10004</td>
+      <td>N10002</td>
+      <td>N20232024F</td>
+      <td>VN01</td>
+      <td>PS0005</td>
+      <td>Nelson</td>
+      <td>Ace</td>
+      <td>home</td>
+      <td>2023-10-08 00:00:00</td>
+      <td>20232024</td>
+      <td>Alice Burley</td>
+      <td>24</td>
+      <td>Defense</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>Free Agent</td>
+    </tr>
   </tbody>
 </table>
+            </div>
         </div>
         
         <footer>
-            BenchSight v0.01 | Generated: 2026-01-07 21:13 | <a href="../tables.html">Back to Tables</a>
+            BenchSight v11.04 | Generated 2026-01-12 23:37:10
         </footer>
     </div>
 </body>

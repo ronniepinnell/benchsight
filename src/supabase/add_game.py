@@ -21,9 +21,14 @@ except ImportError:
     sys.exit(1)
 
 # Config
-SUPABASE_URL = "https://uuaowslhpgyiudmbvqze.supabase.co"
-SUPABASE_KEY = "sb_publishable_t1lIOebbbCjAu_YBKc8tLg_B_zH_l73"
-BLB_FILE = "data/BLB_Tables.xlsx"
+# Load from config
+import configparser
+from pathlib import Path
+_config = configparser.ConfigParser()
+_config.read(Path(__file__).parent.parent.parent / "config" / "config_local.ini")
+SUPABASE_URL = _config.get("supabase", "url", fallback="https://uuaowslhpgyiudmbvqze.supabase.co")
+SUPABASE_KEY = _config.get("supabase", "service_key", fallback="")
+BLB_FILE = "data/raw/BLB_Tables.xlsx"
 GAMES_DIR = "data/raw/games"
 
 

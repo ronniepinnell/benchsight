@@ -1,0 +1,6 @@
+shot_outcome_id,shot_outcome_code,shot_outcome_name,is_goal,is_save,is_block,is_miss,xg_multiplier
+SH01,goal,Goal,True,False,False,False,1.0
+SH02,save,Save,False,True,False,False,0.0
+SH03,block,Blocked,False,False,True,False,0.0
+SH04,miss,Missed,False,False,False,True,0.0
+SH05,post,Post/Crossbar,False,False,False,True,0.0

@@ -29,13 +29,13 @@
         <p><a href="../index.html" class="back-link">← Back to Index</a></p>
         <h1>fact_league_leaders_snapshot</h1>
         
-        <div class="alert alert-danger">⚠️ 15 suspicious stat entries for games in this table</div>
+        
         
         <div class="meta">
-            <strong>Rows:</strong> 14,473 | 
-            <strong>Columns:</strong> 14 |
-            <strong>Last Updated:</strong> 2026-01-07 05:03:20 |
-            <strong>Version:</strong> 12.03
+            <strong>Rows:</strong> 20 | 
+            <strong>Columns:</strong> 8 |
+            <strong>Last Updated:</strong> 2026-01-12 23:20:17 |
+            <strong>Version:</strong> 11.04
         </div>
         
         
@@ -44,7 +44,7 @@
             <h2>Column Schema</h2>
             <table class="columns-table">
                 <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
-                <tr><td>game_id</td><td>int64</td><td>14,473</td><td>0.0%</td></tr><tr><td>season_id</td><td>object</td><td>14,473</td><td>0.0%</td></tr><tr><td>date</td><td>object</td><td>14,473</td><td>0.0%</td></tr><tr><td>player_id</td><td>object</td><td>14,473</td><td>0.0%</td></tr><tr><td>player_name</td><td>object</td><td>14,473</td><td>0.0%</td></tr><tr><td>team_name</td><td>object</td><td>14,473</td><td>0.0%</td></tr><tr><td>gp</td><td>int64</td><td>14,473</td><td>0.0%</td></tr><tr><td>goals</td><td>int64</td><td>14,473</td><td>0.0%</td></tr><tr><td>assists</td><td>int64</td><td>14,473</td><td>0.0%</td></tr><tr><td>pts</td><td>int64</td><td>14,473</td><td>0.0%</td></tr><tr><td>pim</td><td>int64</td><td>14,473</td><td>0.0%</td></tr><tr><td>gpg</td><td>float64</td><td>14,473</td><td>0.0%</td></tr><tr><td>ppg</td><td>float64</td><td>14,473</td><td>0.0%</td></tr><tr><td>team_id</td><td>object</td><td>14,473</td><td>0.0%</td></tr>
+                <tr><td>leader_key</td><td>object</td><td>20</td><td>0.0%</td></tr><tr><td>category</td><td>object</td><td>20</td><td>0.0%</td></tr><tr><td>rank</td><td>int64</td><td>20</td><td>0.0%</td></tr><tr><td>player_id</td><td>object</td><td>20</td><td>0.0%</td></tr><tr><td>value</td><td>int64</td><td>20</td><td>0.0%</td></tr><tr><td>games_played</td><td>int64</td><td>20</td><td>0.0%</td></tr><tr><td>snapshot_date</td><td>object</td><td>20</td><td>0.0%</td></tr><tr><td>_export_timestamp</td><td>object</td><td>20</td><td>0.0%</td></tr>
             </table>
         </div>
         
@@ -54,342 +54,216 @@
                 <table border="1" class="dataframe data-table">
   <thead>
     <tr style="text-align: right;">
-      <th>game_id</th>
-      <th>season_id</th>
-      <th>date</th>
+      <th>leader_key</th>
+      <th>category</th>
+      <th>rank</th>
       <th>player_id</th>
-      <th>player_name</th>
-      <th>team_name</th>
-      <th>gp</th>
-      <th>goals</th>
-      <th>assists</th>
-      <th>pts</th>
-      <th>pim</th>
-      <th>gpg</th>
-      <th>ppg</th>
-      <th>team_id</th>
+      <th>value</th>
+      <th>games_played</th>
+      <th>snapshot_date</th>
+      <th>_export_timestamp</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td>13244</td>
-      <td>N20212022F</td>
-      <td>2021-03-03</td>
+      <td>goals_1</td>
+      <td>goals</td>
+      <td>1</td>
+      <td>P100117</td>
+      <td>2</td>
+      <td>1</td>
+      <td>2026-01-12</td>
+      <td>2026-01-12T23:19:38.626622</td>
+    </tr>
+    <tr>
+      <td>goals_2</td>
+      <td>goals</td>
+      <td>2</td>
       <td>P100132</td>
-      <td>Nick Ciampoli</td>
-      <td>Canada</td>
+      <td>2</td>
+      <td>4</td>
+      <td>2026-01-12</td>
+      <td>2026-01-12T23:19:38.626673</td>
+    </tr>
+    <tr>
+      <td>goals_3</td>
+      <td>goals</td>
+      <td>3</td>
+      <td>P100001</td>
+      <td>1</td>
+      <td>4</td>
+      <td>2026-01-12</td>
+      <td>2026-01-12T23:19:38.626717</td>
+    </tr>
+    <tr>
+      <td>goals_4</td>
+      <td>goals</td>
+      <td>4</td>
+      <td>P100002</td>
+      <td>1</td>
+      <td>4</td>
+      <td>2026-01-12</td>
+      <td>2026-01-12T23:19:38.626791</td>
+    </tr>
+    <tr>
+      <td>goals_5</td>
+      <td>goals</td>
+      <td>5</td>
+      <td>P100022</td>
+      <td>1</td>
+      <td>1</td>
+      <td>2026-01-12</td>
+      <td>2026-01-12T23:19:38.626846</td>
+    </tr>
+    <tr>
+      <td>goals_6</td>
+      <td>goals</td>
+      <td>6</td>
+      <td>P100023</td>
+      <td>1</td>
+      <td>1</td>
+      <td>2026-01-12</td>
+      <td>2026-01-12T23:19:38.626887</td>
+    </tr>
+    <tr>
+      <td>goals_7</td>
+      <td>goals</td>
+      <td>7</td>
+      <td>P100047</td>
+      <td>1</td>
+      <td>1</td>
+      <td>2026-01-12</td>
+      <td>2026-01-12T23:19:38.626928</td>
+    </tr>
+    <tr>
+      <td>goals_8</td>
+      <td>goals</td>
+      <td>8</td>
+      <td>P100078</td>
+      <td>1</td>
+      <td>1</td>
+      <td>2026-01-12</td>
+      <td>2026-01-12T23:19:38.626968</td>
+    </tr>
+    <tr>
+      <td>goals_9</td>
+      <td>goals</td>
+      <td>9</td>
+      <td>P100088</td>
+      <td>1</td>
+      <td>1</td>
+      <td>2026-01-12</td>
+      <td>2026-01-12T23:19:38.627007</td>
+    </tr>
+    <tr>
+      <td>goals_10</td>
+      <td>goals</td>
+      <td>10</td>
+      <td>P100108</td>
+      <td>1</td>
+      <td>4</td>
+      <td>2026-01-12</td>
+      <td>2026-01-12T23:19:38.627048</td>
+    </tr>
+    <tr>
+      <td>points_1</td>
+      <td>points</td>
+      <td>1</td>
+      <td>P100117</td>
+      <td>3</td>
+      <td>1</td>
+      <td>2026-01-12</td>
+      <td>2026-01-12T23:19:38.627821</td>
+    </tr>
+    <tr>
+      <td>points_2</td>
+      <td>points</td>
+      <td>2</td>
+      <td>P100023</td>
+      <td>2</td>
+      <td>1</td>
+      <td>2026-01-12</td>
+      <td>2026-01-12T23:19:38.627889</td>
+    </tr>
+    <tr>
+      <td>points_3</td>
+      <td>points</td>
+      <td>3</td>
+      <td>P100108</td>
+      <td>2</td>
+      <td>4</td>
+      <td>2026-01-12</td>
+      <td>2026-01-12T23:19:38.627944</td>
+    </tr>
+    <tr>
+      <td>points_4</td>
+      <td>points</td>
+      <td>4</td>
+      <td>P100132</td>
+      <td>2</td>
+      <td>4</td>
+      <td>2026-01-12</td>
+      <td>2026-01-12T23:19:38.627998</td>
+    </tr>
+    <tr>
+      <td>points_5</td>
+      <td>points</td>
+      <td>5</td>
+      <td>P100001</td>
+      <td>1</td>
+      <td>4</td>
+      <td>2026-01-12</td>
+      <td>2026-01-12T23:19:38.628050</td>
+    </tr>
+    <tr>
+      <td>points_6</td>
+      <td>points</td>
+      <td>6</td>
+      <td>P100002</td>
+      <td>1</td>
+      <td>4</td>
+      <td>2026-01-12</td>
+      <td>2026-01-12T23:19:38.628101</td>
+    </tr>
+    <tr>
+      <td>points_7</td>
+      <td>points</td>
+      <td>7</td>
+      <td>P100022</td>
+      <td>1</td>
+      <td>1</td>
+      <td>2026-01-12</td>
+      <td>2026-01-12T23:19:38.628151</td>
+    </tr>
+    <tr>
+      <td>points_8</td>
+      <td>points</td>
+      <td>8</td>
+      <td>P100047</td>
+      <td>1</td>
+      <td>1</td>
+      <td>2026-01-12</td>
+      <td>2026-01-12T23:19:38.628190</td>
+    </tr>
+    <tr>
+      <td>points_9</td>
+      <td>points</td>
+      <td>9</td>
+      <td>P100064</td>
       <td>1</td>
       <td>2</td>
-      <td>0</td>
-      <td>2</td>
-      <td>0</td>
-      <td>2.0</td>
-      <td>2.0</td>
-      <td>N10012</td>
+      <td>2026-01-12</td>
+      <td>2026-01-12T23:19:38.628226</td>
     </tr>
     <tr>
-      <td>13244</td>
-      <td>N20212022F</td>
-      <td>2021-03-03</td>
-      <td>P100282</td>
-      <td>Casey Victor</td>
-      <td>Triple J</td>
-      <td>1</td>
-      <td>2</td>
-      <td>0</td>
-      <td>2</td>
-      <td>0</td>
-      <td>2.0</td>
-      <td>2.0</td>
-      <td>N10009</td>
-    </tr>
-    <tr>
-      <td>13244</td>
-      <td>N20212022F</td>
-      <td>2021-03-03</td>
-      <td>P100053</td>
-      <td>Joshua Parmiter</td>
-      <td>Triple J</td>
+      <td>points_10</td>
+      <td>points</td>
+      <td>10</td>
+      <td>P100078</td>
       <td>1</td>
       <td>1</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>1.0</td>
-      <td>1.0</td>
-      <td>N10009</td>
-    </tr>
-    <tr>
-      <td>13244</td>
-      <td>N20212022F</td>
-      <td>2021-03-03</td>
-      <td>P100268</td>
-      <td>Kevin Charlebois</td>
-      <td>Canada</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>1.0</td>
-      <td>1.0</td>
-      <td>N10012</td>
-    </tr>
-    <tr>
-      <td>13244</td>
-      <td>N20212022F</td>
-      <td>2021-03-03</td>
-      <td>P100285</td>
-      <td>Cory Fagan</td>
-      <td>Triple J</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>1.0</td>
-      <td>1.0</td>
-      <td>N10009</td>
-    </tr>
-    <tr>
-      <td>13244</td>
-      <td>N20212022F</td>
-      <td>2021-03-03</td>
-      <td>P100307</td>
-      <td>Matthew Greb</td>
-      <td>Canada</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>1.0</td>
-      <td>1.0</td>
-      <td>N10012</td>
-    </tr>
-    <tr>
-      <td>13244</td>
-      <td>N20212022F</td>
-      <td>2021-03-03</td>
-      <td>P100015</td>
-      <td>Sean Kenyon</td>
-      <td>Triple J</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>N10009</td>
-    </tr>
-    <tr>
-      <td>13244</td>
-      <td>N20212022F</td>
-      <td>2021-03-03</td>
-      <td>P100036</td>
-      <td>Guy Girardeau</td>
-      <td>Canada</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>N10012</td>
-    </tr>
-    <tr>
-      <td>13244</td>
-      <td>N20212022F</td>
-      <td>2021-03-03</td>
-      <td>P100052</td>
-      <td>Marc Smith</td>
-      <td>Triple J</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>N10009</td>
-    </tr>
-    <tr>
-      <td>13244</td>
-      <td>N20212022F</td>
-      <td>2021-03-03</td>
-      <td>P100054</td>
-      <td>Daniel Heck</td>
-      <td>Triple J</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>N10009</td>
-    </tr>
-    <tr>
-      <td>13244</td>
-      <td>N20212022F</td>
-      <td>2021-03-03</td>
-      <td>P100058</td>
-      <td>Wayne Kohut</td>
-      <td>Triple J</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>N10009</td>
-    </tr>
-    <tr>
-      <td>13244</td>
-      <td>N20212022F</td>
-      <td>2021-03-03</td>
-      <td>P100059</td>
-      <td>Greg Hoyt</td>
-      <td>Triple J</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>N10009</td>
-    </tr>
-    <tr>
-      <td>13244</td>
-      <td>N20212022F</td>
-      <td>2021-03-03</td>
-      <td>P100060</td>
-      <td>Mark Haverkate</td>
-      <td>Triple J</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>N10009</td>
-    </tr>
-    <tr>
-      <td>13244</td>
-      <td>N20212022F</td>
-      <td>2021-03-03</td>
-      <td>P100080</td>
-      <td>Steve Klyn</td>
-      <td>Triple J</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>N10009</td>
-    </tr>
-    <tr>
-      <td>13244</td>
-      <td>N20212022F</td>
-      <td>2021-03-03</td>
-      <td>P100095</td>
-      <td>Chuck Webb</td>
-      <td>Triple J</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>N10009</td>
-    </tr>
-    <tr>
-      <td>13244</td>
-      <td>N20212022F</td>
-      <td>2021-03-03</td>
-      <td>P100142</td>
-      <td>Lee Chiarizia</td>
-      <td>Canada</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>N10012</td>
-    </tr>
-    <tr>
-      <td>13244</td>
-      <td>N20212022F</td>
-      <td>2021-03-03</td>
-      <td>P100158</td>
-      <td>Charlie Holland</td>
-      <td>Canada</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>N10012</td>
-    </tr>
-    <tr>
-      <td>13244</td>
-      <td>N20212022F</td>
-      <td>2021-03-03</td>
-      <td>P100235</td>
-      <td>Serena Palmer</td>
-      <td>Canada</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>N10012</td>
-    </tr>
-    <tr>
-      <td>13244</td>
-      <td>N20212022F</td>
-      <td>2021-03-03</td>
-      <td>P100255</td>
-      <td>Gordon Limb</td>
-      <td>Triple J</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>N10009</td>
-    </tr>
-    <tr>
-      <td>13244</td>
-      <td>N20212022F</td>
-      <td>2021-03-03</td>
-      <td>P100266</td>
-      <td>Andrew Dalton</td>
-      <td>Canada</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>N10012</td>
+      <td>2026-01-12</td>
+      <td>2026-01-12T23:19:38.628262</td>
     </tr>
   </tbody>
 </table>
@@ -397,7 +271,7 @@
         </div>
         
         <footer>
-            BenchSight v13.18 | Generated 2026-01-07 05:03:20
+            BenchSight v11.04 | Generated 2026-01-12 23:20:17
         </footer>
     </div>
 </body>

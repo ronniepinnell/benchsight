@@ -1,4 +1,0 @@
-turnover_quality_id,turnover_quality_code,turnover_quality_name,description,counts_against
-TQ0001,BAD,Bad Turnover,"Turnover due to player error - pass missed, giveaway, misplay",True
-TQ0002,NEUTRAL,Neutral Turnover,"Turnover from normal play - shot blocked, battle lost",False
-TQ0003,GOOD,Good Turnover (Intentional),"Intentional dump/clear, zone exit, strategic play",False

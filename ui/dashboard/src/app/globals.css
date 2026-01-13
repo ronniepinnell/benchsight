@@ -1,0 +1,116 @@
+/* src/app/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 47% 5%;
+    --foreground: 210 40% 96%;
+    
+    --card: 222 47% 7%;
+    --card-foreground: 210 40% 96%;
+    
+    --popover: 222 47% 7%;
+    --popover-foreground: 210 40% 96%;
+    
+    --primary: 215 20% 65%;
+    --primary-foreground: 222 47% 5%;
+    
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 96%;
+    
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 16% 47%;
+    
+    --accent: 220 40% 8%;
+    --accent-foreground: 210 40% 96%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    
+    --border: 213 50% 24%;
+    --input: 213 50% 24%;
+    --ring: 215 20% 65%;
+    
+    --radius: 0.5rem;
+    
+    /* Hockey-specific colors */
+    --goal: 0 84% 60%;
+    --assist: 45 93% 58%;
+    --save: 142 71% 45%;
+    --shot: 217 91% 60%;
+    --hit: 330 81% 60%;
+    --penalty: 25 95% 53%;
+    --faceoff: 258 90% 66%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+  }
+  
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 4px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
+  }
+}
+
+@layer utilities {
+  /* Gradient text */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-foreground;
+  }
+  
+  /* Pulse animation for status indicators */
+  @keyframes pulse-glow {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+  
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  
+  /* Hockey stat colors */
+  .text-goal { color: hsl(var(--goal)); }
+  .text-assist { color: hsl(var(--assist)); }
+  .text-save { color: hsl(var(--save)); }
+  .text-shot { color: hsl(var(--shot)); }
+  .text-hit { color: hsl(var(--hit)); }
+  .text-penalty { color: hsl(var(--penalty)); }
+  .text-faceoff { color: hsl(var(--faceoff)); }
+  
+  .bg-goal { background-color: hsl(var(--goal)); }
+  .bg-assist { background-color: hsl(var(--assist)); }
+  .bg-save { background-color: hsl(var(--save)); }
+  .bg-shot { background-color: hsl(var(--shot)); }
+  
+  .border-goal { border-color: hsl(var(--goal)); }
+  .border-assist { border-color: hsl(var(--assist)); }
+  .border-save { border-color: hsl(var(--save)); }
+  .border-shot { border-color: hsl(var(--shot)); }
+}

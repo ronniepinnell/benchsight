@@ -11,16 +11,16 @@
         .back-link { color: #4a4e69; text-decoration: none; }
         .back-link:hover { text-decoration: underline; }
         .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
-        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; }
-        .alert-success { background: #d4edda; color: #155724; border: 1px solid #28a745; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
         .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         h2 { color: #4a4e69; margin-top: 0; }
         table { border-collapse: collapse; width: 100%; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
         th { background: #4a4e69; color: white; }
         tr:nth-child(even) { background: #f9f9f9; }
-        .match-true { background: #d4edda; }
-        .match-false { background: #f8d7da; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
         footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
     </style>
 </head>
@@ -29,337 +29,89 @@
         <p><a href="../index.html" class="back-link">← Back to Index</a></p>
         <h1>qa_scorer_comparison</h1>
         
+        
+        
         <div class="meta">
-            <strong>Rows:</strong> 25 | 
-            <strong>Columns:</strong> 12 |
-            <strong>Last Updated:</strong> 2026-01-07 13:22:26 |
-            <strong>Version:</strong> 12.01
+            <strong>Rows:</strong> 4 | 
+            <strong>Columns:</strong> 8 |
+            <strong>Last Updated:</strong> 2026-01-12 23:37:10 |
+            <strong>Version:</strong> 11.04
         </div>
         
-        <div class="alert alert-success">
-            ✅ Player-level goal/assist comparison against noradhockey.com official box scores
-        </div>
         
-        <div class="card">
-            <h2>Description</h2>
-            <p><strong>Purpose:</strong> Verify individual player goal and assist counts match official NORAD records.</p>
-            <p><strong>Source:</strong> noradhockey.com event pages for games 18969, 18977, 18981, 18987</p>
-            <p><strong>Key:</strong> qa_key (QA_SCORER_{game_id}_{player_name})</p>
-        </div>
         
         <div class="card">
             <h2>Column Schema</h2>
-            <table>
-                <tr><th>Column</th><th>Type</th><th>Description</th></tr>
-                <tr><td>qa_key</td><td>string</td><td>Unique QA record identifier</td></tr>
-                <tr><td>game_id</td><td>int</td><td>Game identifier</td></tr>
-                <tr><td>player_name</td><td>string</td><td>Player full name</td></tr>
-                <tr><td>team</td><td>string</td><td>Team name</td></tr>
-                <tr><td>norad_goals</td><td>int</td><td>Goals from noradhockey.com</td></tr>
-                <tr><td>norad_assists</td><td>int</td><td>Assists from noradhockey.com</td></tr>
-                <tr><td>events_goals</td><td>int</td><td>Goals from our fact_player_game_stats</td></tr>
-                <tr><td>events_assists</td><td>int</td><td>Assists from our fact_player_game_stats</td></tr>
-                <tr><td>goals_match</td><td>bool</td><td>True if goal counts match</td></tr>
-                <tr><td>assists_match</td><td>bool</td><td>True if assist counts match</td></tr>
-                <tr><td>source</td><td>string</td><td>Data source (noradhockey.com)</td></tr>
-                <tr><td>check_date</td><td>datetime</td><td>When comparison was run</td></tr>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>comparison_key</td><td>object</td><td>4</td><td>0.0%</td></tr><tr><td>game_id</td><td>int64</td><td>4</td><td>0.0%</td></tr><tr><td>metric</td><td>object</td><td>4</td><td>0.0%</td></tr><tr><td>events_value</td><td>int64</td><td>4</td><td>0.0%</td></tr><tr><td>stats_value</td><td>int64</td><td>4</td><td>0.0%</td></tr><tr><td>match</td><td>bool</td><td>4</td><td>0.0%</td></tr><tr><td>difference</td><td>int64</td><td>4</td><td>0.0%</td></tr><tr><td>_export_timestamp</td><td>object</td><td>4</td><td>0.0%</td></tr>
             </table>
         </div>
         
         <div class="card">
-            <h2>Data</h2>
-            <table>
-                <tr>
-                    <th>Game</th>
-                    <th>Player</th>
-                    <th>Team</th>
-                    <th>NORAD G</th>
-                    <th>Events G</th>
-                    <th>G Match</th>
-                    <th>NORAD A</th>
-                    <th>Events A</th>
-                    <th>A Match</th>
-                </tr>
-                <tr>
-                    <td>18969</td>
-                    <td>Keegan Mantaro</td>
-                    <td>Platinum</td>
-                    <td>2</td>
-                    <td>2</td>
-                    <td class="match-true">True</td>
-                    <td>1</td>
-                    <td>1</td>
-                    <td class="match-true">True</td>
-                </tr>
-                <tr>
-                    <td>18969</td>
-                    <td>Alex Considine</td>
-                    <td>Platinum</td>
-                    <td>1</td>
-                    <td>1</td>
-                    <td class="match-true">True</td>
-                    <td>0</td>
-                    <td>1</td>
-                    <td class="match-false">False</td>
-                </tr>
-                <tr>
-                    <td>18969</td>
-                    <td>Josh Simonds</td>
-                    <td>Platinum</td>
-                    <td>1</td>
-                    <td>0</td>
-                    <td class="match-false">False</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="match-true">True</td>
-                </tr>
-                <tr>
-                    <td>18969</td>
-                    <td>Chris Premo</td>
-                    <td>Platinum</td>
-                    <td>0</td>
-                    <td>1</td>
-                    <td class="match-false">False</td>
-                    <td>2</td>
-                    <td>0</td>
-                    <td class="match-false">False</td>
-                </tr>
-                <tr>
-                    <td>18969</td>
-                    <td>Matt Quinn</td>
-                    <td>Platinum</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="match-true">True</td>
-                    <td>1</td>
-                    <td>1</td>
-                    <td class="match-true">True</td>
-                </tr>
-                <tr>
-                    <td>18969</td>
-                    <td>Nick Ciampoli</td>
-                    <td>Velodrome</td>
-                    <td>2</td>
-                    <td>2</td>
-                    <td class="match-true">True</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="match-true">True</td>
-                </tr>
-                <tr>
-                    <td>18969</td>
-                    <td>Garrett Ashcroft</td>
-                    <td>Velodrome</td>
-                    <td>1</td>
-                    <td>1</td>
-                    <td class="match-true">True</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="match-true">True</td>
-                </tr>
-                <tr>
-                    <td>18969</td>
-                    <td>Robert Mayfield</td>
-                    <td>Velodrome</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="match-true">True</td>
-                    <td>1</td>
-                    <td>1</td>
-                    <td class="match-true">True</td>
-                </tr>
-                <tr>
-                    <td>18969</td>
-                    <td>Galen Wood</td>
-                    <td>Velodrome</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="match-true">True</td>
-                    <td>1</td>
-                    <td>1</td>
-                    <td class="match-true">True</td>
-                </tr>
-                <tr>
-                    <td>18969</td>
-                    <td>James Rynearson</td>
-                    <td>Velodrome</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="match-true">True</td>
-                    <td>1</td>
-                    <td>1</td>
-                    <td class="match-true">True</td>
-                </tr>
-                <tr>
-                    <td>18977</td>
-                    <td>Hayden Smith</td>
-                    <td>HollowBrook</td>
-                    <td>2</td>
-                    <td>0</td>
-                    <td class="match-false">False</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="match-true">True</td>
-                </tr>
-                <tr>
-                    <td>18977</td>
-                    <td>Ty Smith</td>
-                    <td>HollowBrook</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="match-true">True</td>
-                    <td>1</td>
-                    <td>0</td>
-                    <td class="match-false">False</td>
-                </tr>
-                <tr>
-                    <td>18977</td>
-                    <td>Nathan Watts</td>
-                    <td>HollowBrook</td>
-                    <td>0</td>
-                    <td>1</td>
-                    <td class="match-false">False</td>
-                    <td>1</td>
-                    <td>0</td>
-                    <td class="match-false">False</td>
-                </tr>
-                <tr>
-                    <td>18977</td>
-                    <td>Robert Mayfield</td>
-                    <td>Velodrome</td>
-                    <td>1</td>
-                    <td>1</td>
-                    <td class="match-true">True</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="match-true">True</td>
-                </tr>
-                <tr>
-                    <td>18977</td>
-                    <td>Galen Wood</td>
-                    <td>Velodrome</td>
-                    <td>1</td>
-                    <td>1</td>
-                    <td class="match-true">True</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="match-true">True</td>
-                </tr>
-                <tr>
-                    <td>18977</td>
-                    <td>Josh Cronk</td>
-                    <td>Velodrome</td>
-                    <td>1</td>
-                    <td>1</td>
-                    <td class="match-true">True</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="match-true">True</td>
-                </tr>
-                <tr>
-                    <td>18977</td>
-                    <td>Kevin White</td>
-                    <td>Velodrome</td>
-                    <td>1</td>
-                    <td>1</td>
-                    <td class="match-true">True</td>
-                    <td>1</td>
-                    <td>0</td>
-                    <td class="match-false">False</td>
-                </tr>
-                <tr>
-                    <td>18977</td>
-                    <td>Sam Downs</td>
-                    <td>Velodrome</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="match-true">True</td>
-                    <td>3</td>
-                    <td>0</td>
-                    <td class="match-false">False</td>
-                </tr>
-                <tr>
-                    <td>18977</td>
-                    <td>Nicole Downs</td>
-                    <td>Velodrome</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="match-true">True</td>
-                    <td>2</td>
-                    <td>0</td>
-                    <td class="match-false">False</td>
-                </tr>
-                <tr>
-                    <td>18981</td>
-                    <td>Kyle Popovich</td>
-                    <td>Nelson</td>
-                    <td>1</td>
-                    <td>1</td>
-                    <td class="match-true">True</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="match-true">True</td>
-                </tr>
-                <tr>
-                    <td>18981</td>
-                    <td>Zachary Coleman</td>
-                    <td>Nelson</td>
-                    <td>1</td>
-                    <td>1</td>
-                    <td class="match-true">True</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="match-true">True</td>
-                </tr>
-                <tr>
-                    <td>18981</td>
-                    <td>Samuel Yetsko</td>
-                    <td>Nelson</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="match-true">True</td>
-                    <td>1</td>
-                    <td>0</td>
-                    <td class="match-false">False</td>
-                </tr>
-                <tr>
-                    <td>18981</td>
-                    <td>Sam Downs</td>
-                    <td>Velodrome</td>
-                    <td>1</td>
-                    <td>1</td>
-                    <td class="match-true">True</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="match-true">True</td>
-                </tr>
-                <tr>
-                    <td>18987</td>
-                    <td>Kaitlyn Shain</td>
-                    <td>Velodrome</td>
-                    <td>1</td>
-                    <td>1</td>
-                    <td class="match-true">True</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="match-true">True</td>
-                </tr>
-                <tr>
-                    <td>18987</td>
-                    <td>Garrett Ashcroft</td>
-                    <td>Velodrome</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td class="match-true">True</td>
-                    <td>1</td>
-                    <td>1</td>
-                    <td class="match-true">True</td>
-                </tr>
-            </table>
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>comparison_key</th>
+      <th>game_id</th>
+      <th>metric</th>
+      <th>events_value</th>
+      <th>stats_value</th>
+      <th>match</th>
+      <th>difference</th>
+      <th>_export_timestamp</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>18969_goals</td>
+      <td>18969</td>
+      <td>goals</td>
+      <td>7</td>
+      <td>7</td>
+      <td>True</td>
+      <td>0</td>
+      <td>2026-01-12T23:36:36.683908</td>
+    </tr>
+    <tr>
+      <td>18977_goals</td>
+      <td>18977</td>
+      <td>goals</td>
+      <td>5</td>
+      <td>5</td>
+      <td>True</td>
+      <td>0</td>
+      <td>2026-01-12T23:36:36.687511</td>
+    </tr>
+    <tr>
+      <td>18981_goals</td>
+      <td>18981</td>
+      <td>goals</td>
+      <td>3</td>
+      <td>3</td>
+      <td>True</td>
+      <td>0</td>
+      <td>2026-01-12T23:36:36.690666</td>
+    </tr>
+    <tr>
+      <td>18987_goals</td>
+      <td>18987</td>
+      <td>goals</td>
+      <td>1</td>
+      <td>1</td>
+      <td>True</td>
+      <td>0</td>
+      <td>2026-01-12T23:36:36.694026</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
         </div>
         
         <footer>
-            BenchSight v13.18 | Generated 2026-01-07 13:22:26
+            BenchSight v11.04 | Generated 2026-01-12 23:37:10
         </footer>
     </div>
 </body>

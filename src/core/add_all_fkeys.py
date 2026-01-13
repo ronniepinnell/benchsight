@@ -16,6 +16,16 @@ OUTPUT_DIR = Path('data/output')
 RAW_DIR = Path('data/raw/games')
 
 
+def has_event_index(df):
+    """Check if DataFrame has event_index column for FK lookups.
+    
+    event_index is added by V11 enhancements, which runs AFTER FK phase.
+    So during normal ETL, event_index won't exist yet and we should skip
+    any operations that depend on it.
+    """
+    return 'event_index' in df.columns
+
+
 class FKBuilder:
     """Build foreign keys for all fact tables."""
     
@@ -55,15 +65,18 @@ class FKBuilder:
                 self.dim_lookups[name] = {}
                 
                 if code_col in df.columns and id_col in df.columns:
+                    # Ensure code column is string before using .str accessor
+                    code_series = df[code_col].astype(str)
                     # Lowercase lookup
-                    self.dim_lookups[name]['code'] = df.set_index(df[code_col].str.lower())[id_col].to_dict()
+                    self.dim_lookups[name]['code'] = df.set_index(code_series.str.lower())[id_col].to_dict()
                     # Original case lookup
-                    self.dim_lookups[name]['code_orig'] = df.set_index(code_col)[id_col].to_dict()
+                    self.dim_lookups[name]['code_orig'] = df.set_index(code_series)[id_col].to_dict()
                 
                 # Add name-based lookups if available
                 name_col = code_col.replace('_code', '_name')
                 if name_col in df.columns:
-                    self.dim_lookups[name]['name'] = df.set_index(df[name_col].str.lower())[id_col].to_dict()
+                    name_series = df[name_col].astype(str)
+                    self.dim_lookups[name]['name'] = df.set_index(name_series.str.lower())[id_col].to_dict()
                 
             except Exception as e:
                 logger.warning(f"Could not load {table}: {e}")
@@ -109,8 +122,9 @@ class FKBuilder:
         # Situation ID
         df['situation_id'] = df['situation'].apply(lambda x: self._lookup_id('situation', x))
         
-        # Slot/Position ID
-        df['slot_id'] = df['slot'].apply(lambda x: self._lookup_id('slot', x))
+        # Slot/Position ID (if slot column exists)
+        if 'slot' in df.columns:
+            df['slot_id'] = df['slot'].apply(lambda x: self._lookup_id('slot', x))
         
         # Team ID (need to lookup from roster or schedule)
         schedule = pd.read_csv(OUTPUT_DIR / 'dim_schedule.csv')
@@ -231,7 +245,7 @@ class FKBuilder:
                     raw_events = raw_events[[c for c in raw_events.columns if not c.endswith('_')]]
                     
                     for col in zone_cols + time_cols:
-                        if col in raw_events.columns:
+                        if col in raw_events.columns and 'event_index' in df.columns and 'event_index' in raw_events.columns:
                             # Create lookup by event_index
                             lookup = raw_events.groupby('event_index')[col].first().to_dict()
                             mask = df['game_id'] == str(game_id)
@@ -259,18 +273,23 @@ class FKBuilder:
         df = pd.read_csv(seq_file)
         events = pd.read_csv(OUTPUT_DIR / 'fact_event_players.csv', low_memory=False)
         
-        # Build event_key lookup
-        event_keys = events.drop_duplicates(['game_id', 'event_index']).set_index(
-            ['game_id', 'event_index']
-        )['event_key'].to_dict()
-        
-        # Add first/last event keys
-        df['first_event_key'] = df.apply(
-            lambda r: event_keys.get((str(r['game_id']), r.get('start_event_index'))), axis=1
-        )
-        df['last_event_key'] = df.apply(
-            lambda r: event_keys.get((str(r['game_id']), r.get('end_event_index'))), axis=1
-        )
+        # Build event_key lookup (if required columns exist)
+        required_cols = ['game_id', 'event_index', 'event_key']
+        if all(c in events.columns for c in required_cols):
+            event_keys = events.drop_duplicates(['game_id', 'event_index']).set_index(
+                ['game_id', 'event_index']
+            )['event_key'].to_dict()
+            
+            # Add first/last event keys
+            df['first_event_key'] = df.apply(
+                lambda r: event_keys.get((str(r['game_id']), r.get('start_event_index'))), axis=1
+            )
+            df['last_event_key'] = df.apply(
+                lambda r: event_keys.get((str(r['game_id']), r.get('end_event_index'))), axis=1
+            )
+        else:
+            missing = [c for c in required_cols if c not in events.columns]
+            logger.info(f"Skipping event_key lookup - columns added later by V11: {missing}")
         
         # Add zone IDs
         if 'start_zone' in df.columns:
@@ -294,13 +313,16 @@ class FKBuilder:
                     df.loc[mask_home, 'team_id'] = home_team
                     df.loc[mask_away, 'team_id'] = away_team
         
-        # Add video time columns
-        df['video_time_start'] = df.apply(
-            lambda r: events[(events['game_id'] == str(r['game_id'])) & 
-                            (events['event_index'] == r.get('start_event_index'))]['running_video_time'].iloc[0]
-            if len(events[(events['game_id'] == str(r['game_id'])) & 
-                         (events['event_index'] == r.get('start_event_index'))]) > 0 else None, axis=1
-        )
+        # Add video time columns (if event_index exists)
+        if 'event_index' in events.columns and 'start_event_index' in df.columns:
+            df['video_time_start'] = df.apply(
+                lambda r: events[(events['game_id'] == str(r['game_id'])) & 
+                                (events['event_index'] == r.get('start_event_index'))]['running_video_time'].iloc[0]
+                if len(events[(events['game_id'] == str(r['game_id'])) & 
+                             (events['event_index'] == r.get('start_event_index'))]) > 0 else None, axis=1
+            )
+        else:
+            logger.info("Skipping video_time_start - event_index added later by V11")
         
         df.to_csv(seq_file, index=False)
         logger.info(f"  ✓ fact_sequences: Added FKs")
@@ -317,29 +339,28 @@ class FKBuilder:
         df = pd.read_csv(rush_file)
         events = pd.read_csv(OUTPUT_DIR / 'fact_event_players.csv', low_memory=False)
         
-        # Build event_key lookup
-        event_keys = events.drop_duplicates(['game_id', 'event_index']).set_index(
-            ['game_id', 'event_index']
-        )['event_key'].to_dict()
-        
-        # Convert game_id to int for lookup
-        df['game_id'] = pd.to_numeric(df['game_id'], errors='coerce')
-        
-        # Add first/last event keys - rushes use entry_event_index and shot_event_index
-        df['first_event_key'] = df.apply(
-            lambda r: event_keys.get((int(r['game_id']), r.get('entry_event_index'))), axis=1
-        )
-        df['last_event_key'] = df.apply(
-            lambda r: event_keys.get((int(r['game_id']), r.get('shot_event_index'))), axis=1
-        )
+        # The rush file uses event_id columns (entry_event_id, shot_event_id), not indices
+        # Build event_key lookup by event_id
+        if 'event_id' in events.columns and 'event_key' in events.columns:
+            event_keys = events.drop_duplicates('event_id').set_index('event_id')['event_key'].to_dict()
+            
+            # Add first/last event keys
+            if 'entry_event_id' in df.columns:
+                df['first_event_key'] = df['entry_event_id'].map(event_keys)
+            if 'shot_event_id' in df.columns:
+                df['last_event_key'] = df['shot_event_id'].map(event_keys)
         
         # Add entry type ID
         df['zone_entry_type_id'] = df['entry_type'].apply(lambda x: self._lookup_id('zone_entry', x)) if 'entry_type' in df.columns else None
         
-        # Add team ID
+        # Add team ID from schedule
         schedule = pd.read_csv(OUTPUT_DIR / 'dim_schedule.csv')
+        df['game_id'] = pd.to_numeric(df['game_id'], errors='coerce')
+        
         if 'team_venue' in df.columns:
             for game_id in df['game_id'].unique():
+                if pd.isna(game_id):
+                    continue
                 game_sched = schedule[schedule['game_id'] == int(game_id)]
                 if not game_sched.empty:
                     home_team = game_sched.iloc[0].get('home_team_id')
@@ -352,25 +373,19 @@ class FKBuilder:
                     df.loc[mask_away, 'team_id'] = away_team
         
         # Generate rush_key if not present
-        if 'rush_key' not in df.columns:
-            df['rush_key'] = df.apply(
-                lambda r: f"RU{int(r['game_id']):05d}{int(r.get('entry_event_index', 0)):06d}"
-                if pd.notna(r.get('entry_event_index')) else None, axis=1
+        if 'rush_key' not in df.columns and 'entry_event_id' in df.columns:
+            df['rush_key'] = df['entry_event_id'].apply(
+                lambda x: f"RU{x[2:]}" if pd.notna(x) and str(x).startswith('EV') else None
             )
         
         # Add video time columns
-        if 'running_video_time' in events.columns:
-            events['game_id'] = pd.to_numeric(events['game_id'], errors='coerce')
-            start_times = events.drop_duplicates(['game_id', 'event_index']).set_index(
-                ['game_id', 'event_index']
-            )['running_video_time'].to_dict()
+        if 'running_video_time' in events.columns and 'event_id' in events.columns:
+            video_times = events.drop_duplicates('event_id').set_index('event_id')['running_video_time'].to_dict()
             
-            df['video_time_start'] = df.apply(
-                lambda r: start_times.get((int(r['game_id']), r.get('entry_event_index'))), axis=1
-            )
-            df['video_time_end'] = df.apply(
-                lambda r: start_times.get((int(r['game_id']), r.get('shot_event_index'))), axis=1
-            )
+            if 'entry_event_id' in df.columns:
+                df['video_time_start'] = df['entry_event_id'].map(video_times)
+            if 'shot_event_id' in df.columns:
+                df['video_time_end'] = df['shot_event_id'].map(video_times)
         
         df.to_csv(rush_file, index=False)
         logger.info(f"  ✓ fact_rush_events: Added FKs")
@@ -381,24 +396,29 @@ class FKBuilder:
         
         cycle_file = OUTPUT_DIR / 'fact_cycle_events.csv'
         if not cycle_file.exists():
-            logger.warning("fact_cycle_events.csv not found")
+            logger.info("fact_cycle_events not created - requires 3+ consecutive passes in O-zone")
             return
         
         df = pd.read_csv(cycle_file)
         events = pd.read_csv(OUTPUT_DIR / 'fact_event_players.csv', low_memory=False)
         
-        # Build event_key lookup
-        event_keys = events.drop_duplicates(['game_id', 'event_index']).set_index(
-            ['game_id', 'event_index']
-        )['event_key'].to_dict()
-        
-        # Add first/last event keys
-        df['first_event_key'] = df.apply(
-            lambda r: event_keys.get((str(r['game_id']), r.get('cycle_start_event_index'))), axis=1
-        )
-        df['last_event_key'] = df.apply(
-            lambda r: event_keys.get((str(r['game_id']), r.get('cycle_end_event_index'))), axis=1
-        )
+        # Build event_key lookup (if required columns exist)
+        required_cols = ['game_id', 'event_index', 'event_key']
+        if all(c in events.columns for c in required_cols):
+            event_keys = events.drop_duplicates(['game_id', 'event_index']).set_index(
+                ['game_id', 'event_index']
+            )['event_key'].to_dict()
+            
+            # Add first/last event keys
+            df['first_event_key'] = df.apply(
+                lambda r: event_keys.get((str(r['game_id']), r.get('cycle_start_event_index'))), axis=1
+            )
+            df['last_event_key'] = df.apply(
+                lambda r: event_keys.get((str(r['game_id']), r.get('cycle_end_event_index'))), axis=1
+            )
+        else:
+            missing = [c for c in required_cols if c not in events.columns]
+            logger.info(f"Skipping event_key lookup - columns added later by V11: {missing}")
         
         # Generate cycle_key if not present
         if 'cycle_key' not in df.columns:
@@ -408,7 +428,7 @@ class FKBuilder:
             )
         
         # Add video time columns
-        if 'running_video_time' in events.columns:
+        if 'running_video_time' in events.columns and 'event_index' in events.columns:
             start_times = events.drop_duplicates(['game_id', 'event_index']).set_index(
                 ['game_id', 'event_index']
             )['running_video_time'].to_dict()
@@ -435,20 +455,25 @@ class FKBuilder:
         df = pd.read_csv(plays_file)
         events = pd.read_csv(OUTPUT_DIR / 'fact_event_players.csv', low_memory=False)
         
-        # Build event_key lookup
-        event_keys = events.drop_duplicates(['game_id', 'event_index']).set_index(
-            ['game_id', 'event_index']
-        )['event_key'].to_dict()
-        
-        # Add first/last event keys
-        if 'start_event_index' in df.columns:
-            df['first_event_key'] = df.apply(
-                lambda r: event_keys.get((str(r['game_id']), r.get('start_event_index'))), axis=1
-            )
-        if 'end_event_index' in df.columns:
-            df['last_event_key'] = df.apply(
-                lambda r: event_keys.get((str(r['game_id']), r.get('end_event_index'))), axis=1
-            )
+        # Build event_key lookup (if required columns exist)
+        required_cols = ['game_id', 'event_index', 'event_key']
+        if all(c in events.columns for c in required_cols):
+            event_keys = events.drop_duplicates(['game_id', 'event_index']).set_index(
+                ['game_id', 'event_index']
+            )['event_key'].to_dict()
+            
+            # Add first/last event keys
+            if 'start_event_index' in df.columns:
+                df['first_event_key'] = df.apply(
+                    lambda r: event_keys.get((str(r['game_id']), r.get('start_event_index'))), axis=1
+                )
+            if 'end_event_index' in df.columns:
+                df['last_event_key'] = df.apply(
+                    lambda r: event_keys.get((str(r['game_id']), r.get('end_event_index'))), axis=1
+                )
+        else:
+            missing = [c for c in required_cols if c not in events.columns]
+            logger.info(f"Skipping event_key lookup - columns added later by V11: {missing}")
         
         # Add zone ID
         if 'zone' in df.columns:
@@ -484,7 +509,13 @@ class FKBuilder:
         df = pd.read_csv(chains_file)
         events = pd.read_csv(OUTPUT_DIR / 'fact_event_players.csv', low_memory=False)
         
-        # Build event_key and type lookups
+        # Build event_key and type lookups (if event_index exists)
+        if not has_event_index(events):
+            logger.info("Skipping event data lookup - event_index added later by V11")
+            df.to_csv(chains_file, index=False)
+            logger.info(f"  ✓ fact_shot_chains: Basic FKs only")
+            return
+        
         event_data = events.drop_duplicates(['game_id', 'event_index']).set_index(['game_id', 'event_index'])
         
         # Add event_type_id
@@ -512,6 +543,13 @@ class FKBuilder:
         
         df = pd.read_csv(linked_file)
         events = pd.read_csv(OUTPUT_DIR / 'fact_event_players.csv', low_memory=False)
+        
+        # Check if event_index is available (added by V11 enhancements later)
+        if not has_event_index(events):
+            logger.info("Skipping linked events FK - event_index added later by V11")
+            df.to_csv(linked_file, index=False)
+            logger.info(f"  ✓ fact_linked_events: Basic save only")
+            return
         
         # Build event_key lookup
         event_keys = events.drop_duplicates(['game_id', 'event_index']).set_index(
@@ -649,21 +687,47 @@ class FKBuilder:
         df = pd.read_csv(goalie_file)
         schedule = pd.read_csv(OUTPUT_DIR / 'dim_schedule.csv')
         
-        # Add venue ID
-        df['venue_id'] = df['venue'].apply(lambda x: self._lookup_id('venue', x))
-        
-        # Add team ID
-        for game_id in df['game_id'].unique():
-            game_sched = schedule[schedule['game_id'] == int(game_id)]
-            if not game_sched.empty:
-                home_team = game_sched.iloc[0].get('home_team_id')
-                away_team = game_sched.iloc[0].get('away_team_id')
-                
-                mask_home = (df['game_id'] == str(game_id)) & (df['venue'] == 'home')
-                mask_away = (df['game_id'] == str(game_id)) & (df['venue'] == 'away')
-                
-                df.loc[mask_home, 'team_id'] = home_team
-                df.loc[mask_away, 'team_id'] = away_team
+        # Add venue ID (if venue column exists)
+        if 'venue' in df.columns:
+            df['venue_id'] = df['venue'].apply(lambda x: self._lookup_id('venue', x))
+            
+            # Add team ID by venue
+            for game_id in df['game_id'].unique():
+                game_sched = schedule[schedule['game_id'] == int(game_id)]
+                if not game_sched.empty:
+                    home_team = game_sched.iloc[0].get('home_team_id')
+                    away_team = game_sched.iloc[0].get('away_team_id')
+                    
+                    mask_home = (df['game_id'] == str(game_id)) & (df['venue'] == 'home')
+                    mask_away = (df['game_id'] == str(game_id)) & (df['venue'] == 'away')
+                    
+                    df.loc[mask_home, 'team_id'] = home_team
+                    df.loc[mask_away, 'team_id'] = away_team
+        elif 'is_home' in df.columns:
+            # Derive venue from is_home column (v28.0 fix)
+            logger.info("  Deriving venue from is_home column...")
+            df['venue'] = df['is_home'].apply(lambda x: 'home' if x else 'away')
+            df['venue_id'] = df['venue'].apply(lambda x: self._lookup_id('venue', x))
+        elif 'team_name' in df.columns:
+            # Derive venue from team_name by matching to schedule
+            logger.info("  Deriving venue from team_name...")
+            for game_id in df['game_id'].unique():
+                game_sched = schedule[schedule['game_id'] == int(game_id)]
+                if not game_sched.empty:
+                    home_team_name = str(game_sched.iloc[0].get('home_team', '')).strip()
+                    away_team_name = str(game_sched.iloc[0].get('away_team', '')).strip()
+                    
+                    mask = df['game_id'] == game_id
+                    for idx in df[mask].index:
+                        team_name = str(df.loc[idx, 'team_name']).strip()
+                        if team_name.lower() in home_team_name.lower() or home_team_name.lower() in team_name.lower():
+                            df.loc[idx, 'venue'] = 'home'
+                        else:
+                            df.loc[idx, 'venue'] = 'away'
+            
+            # Now add venue_id
+            if 'venue' in df.columns:
+                df['venue_id'] = df['venue'].apply(lambda x: self._lookup_id('venue', x))
         
         df.to_csv(goalie_file, index=False)
         logger.info(f"  ✓ fact_goalie_game_stats: Added FKs")
@@ -703,6 +767,11 @@ class FKBuilder:
         logger.info("Building play chain descriptions...")
         
         events = pd.read_csv(OUTPUT_DIR / 'fact_event_players.csv', low_memory=False)
+        
+        # Check if event_index is available (added by V11 enhancements later)
+        if not has_event_index(events):
+            logger.info("Skipping play chain descriptions - event_index added later by V11")
+            return
         
         # Normalize game_id to int for comparison
         events['game_id'] = pd.to_numeric(events['game_id'], errors='coerce').astype('Int64')

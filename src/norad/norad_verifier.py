@@ -313,7 +313,7 @@ class NoradVerifier:
 
 def main():
     parser = argparse.ArgumentParser(description='Verify BLB data against NORAD website')
-    parser.add_argument('--xlsx', type=str, default='data/BLB_Tables.xlsx', 
+    parser.add_argument('--xlsx', type=str, default='data/raw/BLB_TABLES.xlsx', 
                        help='Path to BLB_Tables.xlsx')
     parser.add_argument('--check', action='store_true', help='Run full verification')
     parser.add_argument('--standings', action='store_true', help='Verify standings only')

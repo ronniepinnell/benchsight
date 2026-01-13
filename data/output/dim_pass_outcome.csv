@@ -1,0 +1,5 @@
+pass_outcome_id,pass_outcome_code,pass_outcome_name,is_successful
+PO01,completed,Completed,True
+PO02,missed,Missed,False
+PO03,intercepted,Intercepted,False
+PO04,blocked,Blocked,False

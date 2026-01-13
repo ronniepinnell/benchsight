@@ -177,7 +177,7 @@ def main():
     parser = argparse.ArgumentParser(description='Generate game configs from BLB_Tables.xlsx')
     parser.add_argument('--game', type=int, help='Generate config for specific game ID')
     parser.add_argument('--season', type=str, help='Generate configs for specific season (e.g., 20252026)')
-    parser.add_argument('--xlsx', type=str, default='data/BLB_Tables.xlsx', help='Path to BLB_Tables.xlsx')
+    parser.add_argument('--xlsx', type=str, default='data/raw/BLB_TABLES.xlsx', help='Path to BLB_Tables.xlsx')
     parser.add_argument('--output', type=str, default='data/output/games_config.json', help='Output path for combined config')
     parser.add_argument('--games-dir', type=str, default='data/raw/games', help='Directory for game folders')
     parser.add_argument('--dry-run', action='store_true', help='Print config without saving')

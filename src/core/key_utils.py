@@ -301,9 +301,14 @@ def add_all_keys(df: pd.DataFrame) -> pd.DataFrame:
             df['event_index'] = df['tracking_event_index']
         df['event_id'] = df.apply(generate_event_id, axis=1)
     
-    # Tracking event key
+    # Tracking event key - use tracking_event_index if available, else fall back to event_index
     if 'tracking_event_index' in df.columns:
         df['tracking_event_key'] = df.apply(generate_tracking_event_key, axis=1)
+    elif 'event_index' in df.columns:
+        # Fallback: use event_index to generate tracking_event_key
+        df['tracking_event_key'] = df.apply(
+            lambda row: format_key('TV', row.get('game_id'), row.get('event_index')), axis=1
+        )
     
     # Linked event key
     if 'linked_event_index' in df.columns:
@@ -566,18 +571,29 @@ def add_fact_events_fkeys(df: pd.DataFrame, output_dir) -> pd.DataFrame:
         lookups['event_detail_2'] = {}
     
     # dim_success: success_code -> success_id
+    # Also build mapping for True/False values
     try:
         dim = pd.read_csv(output_dir / 'dim_success.csv', dtype=str)
         lookups['success'] = dict(zip(dim['success_code'], dim['success_id']))
+        # Add boolean mappings: True -> SC01 (Successful), False -> SC02 (Unsuccessful)
+        lookups['success_bool'] = {True: 'SC01', 'True': 'SC01', False: 'SC02', 'False': 'SC02'}
     except (ValueError, TypeError, KeyError, FileNotFoundError):
         lookups['success'] = {}
+        lookups['success_bool'] = {}
     
     # dim_zone: zone_code -> zone_id (uppercase)
+    # Also build mapping for full names
     try:
         dim = pd.read_csv(output_dir / 'dim_zone.csv', dtype=str)
         lookups['zone'] = dict(zip(dim['zone_code'].str.upper(), dim['zone_id']))
         # Also add lowercase
         lookups['zone'].update({k.lower(): v for k, v in lookups['zone'].items()})
+        # Add full name mappings: Offensive -> ZN01, Defensive -> ZN02, Neutral -> ZN03
+        name_to_code = {'Offensive': 'O', 'Defensive': 'D', 'Neutral': 'N'}
+        for name, code in name_to_code.items():
+            if code.upper() in lookups['zone']:
+                lookups['zone'][name] = lookups['zone'][code.upper()]
+                lookups['zone'][name.lower()] = lookups['zone'][code.upper()]
     except (ValueError, TypeError, KeyError, FileNotFoundError):
         lookups['zone'] = {}
     
@@ -607,13 +623,26 @@ def add_fact_events_fkeys(df: pd.DataFrame, output_dir) -> pd.DataFrame:
     if 'event_detail_2' in df.columns and lookups['event_detail_2']:
         df['event_detail_2_id'] = df['event_detail_2'].map(lookups['event_detail_2'])
     
-    # success_id
-    if 'event_successful' in df.columns and lookups['success']:
-        df['success_id'] = df['event_successful'].map(lookups['success'])
+    # success_id - map True/False to SC01/SC02
+    if 'event_successful' in df.columns and lookups.get('success_bool'):
+        def map_success(val):
+            if pd.isna(val):
+                return None
+            return lookups['success_bool'].get(val) or lookups['success_bool'].get(str(val))
+        df['success_id'] = df['event_successful'].apply(map_success)
     
     # event_zone_id
     if 'event_team_zone' in df.columns and lookups['zone']:
         df['event_zone_id'] = df['event_team_zone'].map(lookups['zone'])
+    
+    # strength_id - map '5v5' -> 'STR01', etc.
+    if 'strength' in df.columns:
+        try:
+            dim = pd.read_csv(output_dir / 'dim_strength.csv', dtype=str)
+            strength_map = dict(zip(dim['strength_code'], dim['strength_id']))
+            df['strength_id'] = df['strength'].map(strength_map)
+        except (ValueError, TypeError, KeyError, FileNotFoundError):
+            pass
     
     # home_team_id
     if 'home_team' in df.columns and lookups['team']:
@@ -774,6 +803,14 @@ def add_fact_event_players_fkeys(df: pd.DataFrame, output_dir) -> pd.DataFrame:
     # away_team_id
     if 'away_team' in df.columns and lookups['team']:
         df['away_team_id'] = df['away_team'].map(lookups['team'])
+    
+    # Derive player_team from team_venue if not populated
+    if 'team_venue' in df.columns and 'home_team' in df.columns and 'away_team' in df.columns:
+        if 'player_team' not in df.columns or df['player_team'].isna().all():
+            df['player_team'] = df.apply(
+                lambda r: r['home_team'] if r['team_venue'] == 'h' else r['away_team'], 
+                axis=1
+            )
     
     # player_team_id
     if 'player_team' in df.columns and lookups['team']:

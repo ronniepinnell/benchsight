@@ -32,10 +32,10 @@
         
         
         <div class="meta">
-            <strong>Rows:</strong> 84 | 
+            <strong>Rows:</strong> 23 | 
             <strong>Columns:</strong> 4 |
-            <strong>Last Updated:</strong> 2026-01-07 05:03:20 |
-            <strong>Version:</strong> 12.03
+            <strong>Last Updated:</strong> 2026-01-12 23:37:10 |
+            <strong>Version:</strong> 11.04
         </div>
         
         
@@ -44,7 +44,7 @@
             <h2>Column Schema</h2>
             <table class="columns-table">
                 <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
-                <tr><td>dimension</td><td>object</td><td>84</td><td>0.0%</td></tr><tr><td>old_value</td><td>object</td><td>84</td><td>0.0%</td></tr><tr><td>new_value</td><td>object</td><td>84</td><td>0.0%</td></tr><tr><td>match_type</td><td>object</td><td>84</td><td>0.0%</td></tr>
+                <tr><td>dimension</td><td>object</td><td>23</td><td>0.0%</td></tr><tr><td>old_value</td><td>object</td><td>23</td><td>0.0%</td></tr><tr><td>new_value</td><td>object</td><td>23</td><td>0.0%</td></tr><tr><td>match_type</td><td>object</td><td>23</td><td>0.0%</td></tr>
             </table>
         </div>
         
@@ -63,123 +63,123 @@
   <tbody>
     <tr>
       <td>event_type</td>
+      <td>Shot</td>
+      <td>Shot</td>
+      <td>exact</td>
+    </tr>
+    <tr>
+      <td>event_type</td>
+      <td>Pass</td>
+      <td>Pass</td>
+      <td>exact</td>
+    </tr>
+    <tr>
+      <td>event_type</td>
+      <td>Faceoff</td>
+      <td>Faceoff</td>
+      <td>exact</td>
+    </tr>
+    <tr>
+      <td>event_type</td>
+      <td>Zone_Entry_Exit</td>
+      <td>Zone_Entry_Exit</td>
+      <td>exact</td>
+    </tr>
+    <tr>
+      <td>event_type</td>
       <td>Turnover</td>
       <td>Turnover</td>
       <td>exact</td>
     </tr>
     <tr>
       <td>event_type</td>
-      <td>Turn</td>
-      <td>Turnover</td>
-      <td>fuzzy</td>
-    </tr>
-    <tr>
-      <td>event_type</td>
-      <td>TO</td>
-      <td>Turnover</td>
-      <td>abbreviation</td>
-    </tr>
-    <tr>
-      <td>event_type</td>
-      <td>Giveaway</td>
-      <td>Turnover</td>
-      <td>subcategory</td>
-    </tr>
-    <tr>
-      <td>event_type</td>
-      <td>Takeaway</td>
-      <td>Turnover</td>
-      <td>subcategory</td>
-    </tr>
-    <tr>
-      <td>event_type</td>
-      <td>FaceOff</td>
-      <td>Faceoff</td>
-      <td>case_variant</td>
-    </tr>
-    <tr>
-      <td>event_type</td>
-      <td>Face-off</td>
-      <td>Faceoff</td>
-      <td>hyphen_variant</td>
-    </tr>
-    <tr>
-      <td>event_type</td>
-      <td>FO</td>
-      <td>Faceoff</td>
-      <td>abbreviation</td>
-    </tr>
-    <tr>
-      <td>event_type</td>
-      <td>Sht</td>
-      <td>Shot</td>
-      <td>abbreviation</td>
-    </tr>
-    <tr>
-      <td>event_type</td>
-      <td>SOG</td>
-      <td>Shot</td>
-      <td>abbreviation</td>
-    </tr>
-    <tr>
-      <td>event_type</td>
-      <td>Zone</td>
-      <td>Zone_Entry_Exit</td>
-      <td>partial</td>
-    </tr>
-    <tr>
-      <td>event_type</td>
-      <td>ZoneEntry</td>
-      <td>Zone_Entry_Exit</td>
-      <td>partial</td>
-    </tr>
-    <tr>
-      <td>event_type</td>
-      <td>ZoneExit</td>
-      <td>Zone_Entry_Exit</td>
-      <td>partial</td>
-    </tr>
-    <tr>
-      <td>event_type</td>
-      <td>Entry</td>
-      <td>Zone_Entry_Exit</td>
-      <td>partial</td>
-    </tr>
-    <tr>
-      <td>event_type</td>
-      <td>Exit</td>
-      <td>Zone_Entry_Exit</td>
-      <td>partial</td>
-    </tr>
-    <tr>
-      <td>event_type</td>
-      <td>Play</td>
-      <td>Play</td>
+      <td>Save</td>
+      <td>Save</td>
       <td>exact</td>
     </tr>
     <tr>
       <td>event_type</td>
+      <td>Goal</td>
+      <td>Goal</td>
+      <td>exact</td>
+    </tr>
+    <tr>
+      <td>event_detail</td>
+      <td>Shot_OnNet</td>
+      <td>Shot_OnNetSaved</td>
+      <td>contains</td>
+    </tr>
+    <tr>
+      <td>event_detail</td>
+      <td>Shot_Goal</td>
+      <td>Goal_Scored</td>
+      <td>contains</td>
+    </tr>
+    <tr>
+      <td>event_detail</td>
+      <td>Shot_Missed</td>
+      <td>Shot_Missed</td>
+      <td>exact</td>
+    </tr>
+    <tr>
+      <td>event_detail</td>
+      <td>Shot_Blocked</td>
+      <td>Shot_Blocked</td>
+      <td>exact</td>
+    </tr>
+    <tr>
+      <td>zone</td>
+      <td>o</td>
+      <td>O</td>
+      <td>exact</td>
+    </tr>
+    <tr>
+      <td>zone</td>
+      <td>d</td>
+      <td>D</td>
+      <td>exact</td>
+    </tr>
+    <tr>
+      <td>zone</td>
+      <td>n</td>
+      <td>N</td>
+      <td>exact</td>
+    </tr>
+    <tr>
+      <td>zone</td>
+      <td>offensive</td>
+      <td>O</td>
+      <td>contains</td>
+    </tr>
+    <tr>
+      <td>zone</td>
+      <td>defensive</td>
+      <td>D</td>
+      <td>contains</td>
+    </tr>
+    <tr>
+      <td>zone</td>
+      <td>neutral</td>
+      <td>N</td>
+      <td>contains</td>
+    </tr>
+    <tr>
+      <td>position</td>
+      <td>F</td>
+      <td>Forward</td>
+      <td>exact</td>
+    </tr>
+    <tr>
+      <td>position</td>
+      <td>D</td>
       <td>Defense</td>
-      <td>Play</td>
-      <td>subcategory</td>
+      <td>exact</td>
     </tr>
     <tr>
-      <td>event_type</td>
-      <td>Offense</td>
-      <td>Play</td>
-      <td>subcategory</td>
-    </tr>
-    <tr>
-      <td>event_type</td>
-      <td>Def</td>
-      <td>Play</td>
-      <td>abbreviation</td>
-    </tr>
-    <tr>
-      <td>event_type</td>
-      <td>Off</td>
-      <td>Play</td>
-      <td>abbreviation</td>
+      <td>position</td>
+      <td>G</td>
+      <td>Goalie</td>
+      <td>exact</td>
     </tr>
   </tbody>
 </table>
@@ -187,7 +187,7 @@
         </div>
         
         <footer>
-            BenchSight v13.18 | Generated 2026-01-07 05:03:20
+            BenchSight v11.04 | Generated 2026-01-12 23:37:10
         </footer>
     </div>
 </body>

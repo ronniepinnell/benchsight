@@ -1,17 +1,14 @@
-giveaway_type_id,giveaway_type_code,giveaway_type_name
-GA0001,Giveaway_AttemptedZoneClear_Dump,Giveaway AttemptedZoneClear Dump
-GA0002,Giveaway_BattleLost,Giveaway BattleLost
-GA0003,Giveaway_DumpInZone,Giveaway DumpInZone
-GA0004,Giveaway_Misplayed,Giveaway Misplayed
-GA0005,Giveaway_Other,Giveaway Other
-GA0006,Giveaway_PassBlocked,Giveaway PassBlocked
-GA0007,Giveaway_PassIntercepted,Giveaway PassIntercepted
-GA0008,Giveaway_PassMissed,Giveaway PassMissed
-GA0009,Giveaway_PassReceiverMissed,Giveaway PassReceiverMissed
-GA0010,Giveaway_ShotBlocked,Giveaway ShotBlocked
-GA0011,Giveaway_ShotMissed,Giveaway ShotMissed
-GA0012,Giveaway_ZoneClear_Dump,Giveaway ZoneClear Dump
-GA0013,Giveaway_ZoneEntry_ExitMisplay,Giveaway ZoneEntry ExitMisplay
-GA0014,Takeaway_BattleWon,Takeaway BattleWon
-GA0015,Takeaway_PassIntercepted,Takeaway PassIntercepted
-GA0016,Takeaway_PokeCheck,Takeaway PokeCheck
+giveaway_type_id,giveaway_type_code,giveaway_type_name,is_bad
+GA0001,Giveaway_AttemptedZoneClear/Dump,Giveaway AttemptedZoneClear Dump,False
+GA0002,Giveaway_BattleLost,Giveaway BattleLost,False
+GA0003,Giveaway_DumpInZone,Giveaway DumpInZone,False
+GA0004,Giveaway_Misplayed,Giveaway Misplayed,True
+GA0005,Giveaway_Other,Giveaway Other,False
+GA0006,Giveaway_PassBlocked,Giveaway PassBlocked,True
+GA0007,Giveaway_PassIntercepted,Giveaway PassIntercepted,True
+GA0008,Giveaway_PassMissed,Giveaway PassMissed,True
+GA0009,Giveaway_PassReceiverMissed,Giveaway PassReceiverMissed,True
+GA0010,Giveaway_ShotBlocked,Giveaway ShotBlocked,False
+GA0011,Giveaway_ShotMissed,Giveaway ShotMissed,False
+GA0012,Giveaway_ZoneClear/Dump,Giveaway ZoneClear Dump,False
+GA0013,Giveaway_ZoneEntry/ExitMisplay,Giveaway ZoneEntry ExitMisplay,True

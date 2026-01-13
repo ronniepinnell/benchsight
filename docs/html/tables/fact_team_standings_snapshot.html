@@ -29,13 +29,13 @@
         <p><a href="../index.html" class="back-link">← Back to Index</a></p>
         <h1>fact_team_standings_snapshot</h1>
         
-        <div class="alert alert-danger">⚠️ 15 suspicious stat entries for games in this table</div>
+        
         
         <div class="meta">
-            <strong>Rows:</strong> 1,124 | 
-            <strong>Columns:</strong> 15 |
-            <strong>Last Updated:</strong> 2026-01-07 05:03:20 |
-            <strong>Version:</strong> 12.03
+            <strong>Rows:</strong> 5 | 
+            <strong>Columns:</strong> 10 |
+            <strong>Last Updated:</strong> 2026-01-12 23:20:17 |
+            <strong>Version:</strong> 11.04
         </div>
         
         
@@ -44,7 +44,7 @@
             <h2>Column Schema</h2>
             <table class="columns-table">
                 <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
-                <tr><td>game_id</td><td>int64</td><td>1,124</td><td>0.0%</td></tr><tr><td>season_id</td><td>object</td><td>1,124</td><td>0.0%</td></tr><tr><td>date</td><td>object</td><td>1,124</td><td>0.0%</td></tr><tr><td>team_name</td><td>object</td><td>1,124</td><td>0.0%</td></tr><tr><td>games_played</td><td>int64</td><td>1,124</td><td>0.0%</td></tr><tr><td>wins</td><td>int64</td><td>1,124</td><td>0.0%</td></tr><tr><td>losses</td><td>int64</td><td>1,124</td><td>0.0%</td></tr><tr><td>ties</td><td>int64</td><td>1,124</td><td>0.0%</td></tr><tr><td>points</td><td>int64</td><td>1,124</td><td>0.0%</td></tr><tr><td>goals_for</td><td>int64</td><td>1,124</td><td>0.0%</td></tr><tr><td>goals_against</td><td>int64</td><td>1,124</td><td>0.0%</td></tr><tr><td>goal_diff</td><td>int64</td><td>1,124</td><td>0.0%</td></tr><tr><td>gaa</td><td>float64</td><td>1,124</td><td>0.0%</td></tr><tr><td>gpg</td><td>float64</td><td>1,124</td><td>0.0%</td></tr><tr><td>team_id</td><td>object</td><td>1,124</td><td>0.0%</td></tr>
+                <tr><td>standings_key</td><td>object</td><td>5</td><td>0.0%</td></tr><tr><td>team_id</td><td>object</td><td>5</td><td>0.0%</td></tr><tr><td>games_played</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>wins</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>losses</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>points</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>goals_for</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>goals_against</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>snapshot_date</td><td>object</td><td>5</td><td>0.0%</td></tr><tr><td>_export_timestamp</td><td>object</td><td>5</td><td>0.0%</td></tr>
             </table>
         </div>
         
@@ -54,363 +54,78 @@
                 <table border="1" class="dataframe data-table">
   <thead>
     <tr style="text-align: right;">
-      <th>game_id</th>
-      <th>season_id</th>
-      <th>date</th>
-      <th>team_name</th>
+      <th>standings_key</th>
+      <th>team_id</th>
       <th>games_played</th>
       <th>wins</th>
       <th>losses</th>
-      <th>ties</th>
       <th>points</th>
       <th>goals_for</th>
       <th>goals_against</th>
-      <th>goal_diff</th>
-      <th>gaa</th>
-      <th>gpg</th>
-      <th>team_id</th>
+      <th>snapshot_date</th>
+      <th>_export_timestamp</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td>13244</td>
-      <td>N20212022F</td>
-      <td>2021-03-03</td>
-      <td>Canada</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>2</td>
-      <td>5</td>
+      <td>N10010_current</td>
+      <td>N10010</td>
       <td>4</td>
-      <td>1</td>
-      <td>4.00</td>
-      <td>5.00</td>
-      <td>N10012</td>
+      <td>4</td>
+      <td>0</td>
+      <td>8</td>
+      <td>8</td>
+      <td>0</td>
+      <td>2026-01-12</td>
+      <td>2026-01-12T23:19:38.607983</td>
     </tr>
     <tr>
-      <td>13244</td>
-      <td>N20212022F</td>
-      <td>2021-03-03</td>
-      <td>Orphans</td>
-      <td>1</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>4</td>
-      <td>5</td>
-      <td>-1</td>
-      <td>5.00</td>
-      <td>4.00</td>
-      <td>N10006</td>
-    </tr>
-    <tr>
-      <td>13241</td>
-      <td>N20212022F</td>
-      <td>2021-10-02</td>
-      <td>Platinum</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>2</td>
-      <td>6</td>
-      <td>3</td>
-      <td>3</td>
-      <td>3.00</td>
-      <td>6.00</td>
+      <td>N10008_current</td>
       <td>N10008</td>
-    </tr>
-    <tr>
-      <td>13241</td>
-      <td>N20212022F</td>
-      <td>2021-10-02</td>
-      <td>Triple J</td>
-      <td>1</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>3</td>
-      <td>6</td>
-      <td>-3</td>
-      <td>6.00</td>
-      <td>3.00</td>
-      <td>N10009</td>
-    </tr>
-    <tr>
-      <td>13242</td>
-      <td>N20212022F</td>
-      <td>2021-10-03</td>
-      <td>AMOS</td>
       <td>1</td>
       <td>1</td>
-      <td>0</td>
       <td>0</td>
       <td>2</td>
-      <td>10</td>
-      <td>3</td>
-      <td>7</td>
-      <td>3.00</td>
-      <td>10.00</td>
-      <td>N10001</td>
+      <td>4</td>
+      <td>0</td>
+      <td>2026-01-12</td>
+      <td>2026-01-12T23:19:38.608452</td>
     </tr>
     <tr>
-      <td>13243</td>
-      <td>N20212022F</td>
-      <td>2021-10-03</td>
-      <td>HollowBrook</td>
-      <td>1</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>5</td>
-      <td>9</td>
-      <td>-4</td>
-      <td>9.00</td>
-      <td>5.00</td>
+      <td>N10003_current</td>
       <td>N10003</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>2</td>
+      <td>2</td>
+      <td>0</td>
+      <td>2026-01-12</td>
+      <td>2026-01-12T23:19:38.608862</td>
     </tr>
     <tr>
-      <td>13242</td>
-      <td>N20212022F</td>
-      <td>2021-10-03</td>
-      <td>Nelson</td>
-      <td>1</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>3</td>
-      <td>10</td>
-      <td>-7</td>
-      <td>10.00</td>
-      <td>3.00</td>
+      <td>N10004_current</td>
       <td>N10004</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>2</td>
+      <td>2</td>
+      <td>0</td>
+      <td>2026-01-12</td>
+      <td>2026-01-12T23:19:38.609236</td>
     </tr>
     <tr>
-      <td>13243</td>
-      <td>N20212022F</td>
-      <td>2021-10-03</td>
-      <td>OS Offices</td>
-      <td>1</td>
+      <td>N10007_current</td>
+      <td>N10007</td>
       <td>1</td>
       <td>0</td>
-      <td>0</td>
-      <td>2</td>
-      <td>9</td>
-      <td>5</td>
-      <td>4</td>
-      <td>5.00</td>
-      <td>9.00</td>
-      <td>N10005</td>
-    </tr>
-    <tr>
-      <td>13425</td>
-      <td>N20212022F</td>
-      <td>2021-10-10</td>
-      <td>Nelson</td>
-      <td>2</td>
-      <td>0</td>
-      <td>2</td>
-      <td>0</td>
-      <td>0</td>
-      <td>5</td>
-      <td>15</td>
-      <td>-10</td>
-      <td>7.50</td>
-      <td>2.50</td>
-      <td>N10004</td>
-    </tr>
-    <tr>
-      <td>13423</td>
-      <td>N20212022F</td>
-      <td>2021-10-10</td>
-      <td>OS Offices</td>
-      <td>2</td>
-      <td>2</td>
-      <td>0</td>
-      <td>0</td>
-      <td>4</td>
-      <td>13</td>
-      <td>8</td>
-      <td>5</td>
-      <td>4.00</td>
-      <td>6.50</td>
-      <td>N10005</td>
-    </tr>
-    <tr>
-      <td>13423</td>
-      <td>N20212022F</td>
-      <td>2021-10-10</td>
-      <td>Platinum</td>
-      <td>2</td>
-      <td>1</td>
       <td>1</td>
       <td>0</td>
-      <td>2</td>
-      <td>9</td>
-      <td>7</td>
-      <td>2</td>
-      <td>3.50</td>
-      <td>4.50</td>
-      <td>N10008</td>
-    </tr>
-    <tr>
-      <td>13425</td>
-      <td>N20212022F</td>
-      <td>2021-10-10</td>
-      <td>Triple J</td>
-      <td>2</td>
-      <td>1</td>
-      <td>1</td>
       <td>0</td>
-      <td>2</td>
-      <td>8</td>
-      <td>8</td>
       <td>0</td>
-      <td>4.00</td>
-      <td>4.00</td>
-      <td>N10009</td>
-    </tr>
-    <tr>
-      <td>13426</td>
-      <td>N20212022F</td>
-      <td>2021-10-17</td>
-      <td>AMOS</td>
-      <td>2</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>2</td>
-      <td>15</td>
-      <td>11</td>
-      <td>4</td>
-      <td>5.50</td>
-      <td>7.50</td>
-      <td>N10001</td>
-    </tr>
-    <tr>
-      <td>10004</td>
-      <td>N20212022F</td>
-      <td>2021-10-17</td>
-      <td>AMOS</td>
-      <td>3</td>
-      <td>2</td>
-      <td>1</td>
-      <td>0</td>
-      <td>4</td>
-      <td>24</td>
-      <td>14</td>
-      <td>10</td>
-      <td>4.67</td>
-      <td>8.00</td>
-      <td>N10001</td>
-    </tr>
-    <tr>
-      <td>13424</td>
-      <td>N20212022F</td>
-      <td>2021-10-17</td>
-      <td>Canada</td>
-      <td>2</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>2</td>
-      <td>6</td>
-      <td>18</td>
-      <td>-12</td>
-      <td>9.00</td>
-      <td>3.00</td>
-      <td>N10012</td>
-    </tr>
-    <tr>
-      <td>10004</td>
-      <td>N20212022F</td>
-      <td>2021-10-17</td>
-      <td>Canada</td>
-      <td>3</td>
-      <td>1</td>
-      <td>2</td>
-      <td>0</td>
-      <td>2</td>
-      <td>9</td>
-      <td>27</td>
-      <td>-18</td>
-      <td>9.00</td>
-      <td>3.00</td>
-      <td>N10012</td>
-    </tr>
-    <tr>
-      <td>13424</td>
-      <td>N20212022F</td>
-      <td>2021-10-17</td>
-      <td>HollowBrook</td>
-      <td>2</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>2</td>
-      <td>19</td>
-      <td>10</td>
-      <td>9</td>
-      <td>5.00</td>
-      <td>9.50</td>
-      <td>N10003</td>
-    </tr>
-    <tr>
-      <td>13426</td>
-      <td>N20212022F</td>
-      <td>2021-10-17</td>
-      <td>Orphans</td>
-      <td>2</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>2</td>
-      <td>12</td>
-      <td>10</td>
-      <td>2</td>
-      <td>5.00</td>
-      <td>6.00</td>
-      <td>N10006</td>
-    </tr>
-    <tr>
-      <td>13428</td>
-      <td>N20212022F</td>
-      <td>2021-10-17</td>
-      <td>Orphans</td>
-      <td>3</td>
-      <td>2</td>
-      <td>1</td>
-      <td>0</td>
-      <td>4</td>
-      <td>19</td>
-      <td>12</td>
-      <td>7</td>
-      <td>4.00</td>
-      <td>6.33</td>
-      <td>N10006</td>
-    </tr>
-    <tr>
-      <td>13428</td>
-      <td>N20212022F</td>
-      <td>2021-10-17</td>
-      <td>Triple J</td>
-      <td>3</td>
-      <td>1</td>
-      <td>2</td>
-      <td>0</td>
-      <td>2</td>
-      <td>10</td>
-      <td>15</td>
-      <td>-5</td>
-      <td>5.00</td>
-      <td>3.33</td>
-      <td>N10009</td>
+      <td>2026-01-12</td>
+      <td>2026-01-12T23:19:38.609641</td>
     </tr>
   </tbody>
 </table>
@@ -418,7 +133,7 @@
         </div>
         
         <footer>
-            BenchSight v13.18 | Generated 2026-01-07 05:03:20
+            BenchSight v11.04 | Generated 2026-01-12 23:20:17
         </footer>
     </div>
 </body>

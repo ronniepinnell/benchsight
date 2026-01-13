@@ -24,6 +24,7 @@ from datetime import datetime
 from typing import Dict, List, Optional
 import logging
 import html
+from src.core.table_writer import save_output_table
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -67,7 +68,7 @@ def create_dim_shift_duration() -> pd.DataFrame:
     ]
     
     df = pd.DataFrame(data)
-    df.to_csv(OUTPUT_DIR / 'dim_shift_duration.csv', index=False)
+    save_output_table(df, 'dim_shift_duration', OUTPUT_DIR)
     logger.info(f"  Created dim_shift_duration: {len(df)} rows")
     return df
 
@@ -96,7 +97,7 @@ def add_shift_duration_fks() -> Dict[str, int]:
         df = pd.read_csv(shifts_tracking_path, low_memory=False)
         if 'shift_duration' in df.columns:
             df['shift_duration_id'] = df['shift_duration'].apply(get_duration_id)
-            df.to_csv(shifts_tracking_path, index=False)
+            save_output_table(df, shifts_tracking_path.stem, shifts_tracking_path.parent)
             results['fact_shifts'] = len(df)
             logger.info(f"  Added shift_duration_id to fact_shifts")
     
@@ -106,7 +107,7 @@ def add_shift_duration_fks() -> Dict[str, int]:
         df = pd.read_csv(shifts_player_path, low_memory=False)
         if 'shift_duration' in df.columns:
             df['shift_duration_id'] = df['shift_duration'].apply(get_duration_id)
-            df.to_csv(shifts_player_path, index=False)
+            save_output_table(df, shifts_player_path.stem, shifts_player_path.parent)
             results['fact_shift_players'] = len(df)
             logger.info(f"  Added shift_duration_id to fact_shift_players")
     
@@ -116,7 +117,7 @@ def add_shift_duration_fks() -> Dict[str, int]:
         df = pd.read_csv(shifts_path, low_memory=False)
         if 'shift_duration' in df.columns:
             df['shift_duration_id'] = df['shift_duration'].apply(get_duration_id)
-            df.to_csv(shifts_path, index=False)
+            save_output_table(df, shifts_path.stem, shifts_path.parent)
             results['fact_shifts'] = len(df)
             logger.info(f"  Added shift_duration_id to fact_shifts")
     
@@ -140,10 +141,15 @@ def add_event_index_to_tracking():
         df['event_index'] = df['event_id'].str.extract(r'EV\d{5}(\d{5})')[0].astype(int)
         logger.info("  Added event_index")
     
-    # Add event_player_key
-    if 'event_player_key' not in df.columns:
-        df['event_player_key'] = 'EP' + df['game_id'].astype(str) + '_' + df['event_id'] + '_' + df.groupby(['game_id', 'event_id']).cumcount().add(1).astype(str)
-        logger.info("  Added event_player_key")
+    # Add event_player_key (format: EP{game_id:05d}{event_index:05d}{player_id})
+    # player_id is string like P100001, use as-is (or NULL for missing)
+    df['event_player_key'] = (
+        'EP' + 
+        df['game_id'].astype(str).str.zfill(5) + 
+        df['event_index'].astype(str).str.zfill(5) + 
+        df['player_id'].fillna('NULL').astype(str)
+    )
+    logger.info("  Added event_player_key")
     
     # Reorder columns - put key columns first
     key_cols = ['event_player_key', 'game_id', 'event_id', 'event_index', 'player_id', 'player_role']
@@ -151,7 +157,7 @@ def add_event_index_to_tracking():
     other_cols = [c for c in df.columns if c not in key_cols]
     df = df[existing_key_cols + other_cols]
     
-    df.to_csv(tracking_path, index=False)
+    save_output_table(df, tracking_path.stem, tracking_path.parent)
     logger.info(f"  Updated fact_event_players: {len(df)} rows, {len(df.columns)} columns")
 
 
@@ -252,21 +258,31 @@ def update_game_status_with_suspicious_flag():
         
         # Group by game_id and count issues
         for game_id in df['game_id'].unique():
-            game_suspicious = suspicious[
-                (suspicious['game_id'] == game_id) & 
-                (suspicious['resolved'] == False)
-            ]
+            # Filter by game_id, and optionally by resolved status if column exists
+            game_suspicious = suspicious[suspicious['game_id'] == game_id]
+            
+            # If there's a resolved column, only count unresolved
+            if 'resolved' in suspicious.columns:
+                game_suspicious = game_suspicious[game_suspicious['resolved'] == False]
             
             if len(game_suspicious) > 0:
                 df.loc[df['game_id'] == game_id, 'suspicious_stats_flag'] = True
                 df.loc[df['game_id'] == game_id, 'suspicious_stats_count'] = len(game_suspicious)
                 
-                # Create summary
-                categories = game_suspicious['category'].value_counts().to_dict()
-                summary = "; ".join([f"{cat}: {count}" for cat, count in categories.items()])
+                # Create summary based on available columns
+                if 'category' in game_suspicious.columns:
+                    categories = game_suspicious['category'].value_counts().to_dict()
+                    summary = "; ".join([f"{cat}: {count}" for cat, count in categories.items()])
+                elif 'flags' in game_suspicious.columns:
+                    # New schema uses 'flags' instead of 'category'
+                    flags = game_suspicious['flags'].value_counts().to_dict()
+                    summary = "; ".join([f"{flag}: {count}" for flag, count in flags.items()])
+                else:
+                    summary = f"{len(game_suspicious)} issues"
+                
                 df.loc[df['game_id'] == game_id, 'suspicious_stats_summary'] = summary
     
-    df.to_csv(game_status_path, index=False)
+    save_output_table(df, game_status_path.stem, game_status_path.parent)
     
     flagged_count = df['suspicious_stats_flag'].sum()
     logger.info(f"  Updated fact_game_status: {flagged_count} games with suspicious stats")
@@ -284,24 +300,43 @@ def clean_qa_suspicious_stats():
     df = pd.read_csv(suspicious_path)
     original_count = len(df)
     
-    # Get list of games that are actually tracked
-    game_status = pd.read_csv(OUTPUT_DIR / 'fact_game_status.csv')
-    tracked_games = game_status[game_status['tracking_status'].isin(['COMPLETE', 'PARTIAL'])]['game_id'].tolist()
+    # Get list of games that are actually tracked (if file exists)
+    game_status_path = OUTPUT_DIR / 'fact_game_status.csv'
+    if game_status_path.exists():
+        game_status = pd.read_csv(game_status_path)
+        if 'tracking_status' in game_status.columns:
+            tracked_games = game_status[game_status['tracking_status'].isin(['COMPLETE', 'PARTIAL'])]['game_id'].tolist()
+            # Filter to only tracked games
+            df = df[df['game_id'].isin(tracked_games)]
+    else:
+        logger.warning("fact_game_status.csv not found, skipping game filter")
     
-    # Filter to only tracked games
-    df = df[df['game_id'].isin(tracked_games)]
+    # Remove duplicates based on available columns
+    # Check which schema we have
+    if 'category' in df.columns and 'stat' in df.columns:
+        # Old schema
+        dedup_cols = ['game_id', 'player_id', 'category', 'stat']
+        sort_cols = ['game_id', 'category', 'stat']
+    elif 'suspicious_key' in df.columns:
+        # New schema
+        dedup_cols = ['suspicious_key']
+        sort_cols = ['game_id', 'player_id']
+    else:
+        # Fallback - just dedup by game and player
+        dedup_cols = ['game_id', 'player_id']
+        sort_cols = ['game_id', 'player_id']
     
-    # Remove duplicates - keep most recent
-    df = df.sort_values('timestamp', ascending=False)
-    df = df.drop_duplicates(
-        subset=['game_id', 'player_id', 'category', 'stat'], 
-        keep='first'
-    )
+    # Check all columns exist
+    dedup_cols = [c for c in dedup_cols if c in df.columns]
+    sort_cols = [c for c in sort_cols if c in df.columns]
     
-    # Re-sort by game_id, then category
-    df = df.sort_values(['game_id', 'category', 'stat'])
+    if dedup_cols:
+        df = df.drop_duplicates(subset=dedup_cols, keep='first')
     
-    df.to_csv(suspicious_path, index=False)
+    if sort_cols:
+        df = df.sort_values(sort_cols)
+    
+    save_output_table(df, suspicious_path.stem, suspicious_path.parent)
     
     logger.info(f"  Cleaned qa_suspicious_stats: {original_count} -> {len(df)} rows")
     return df
@@ -362,7 +397,9 @@ def generate_html_documentation():
     suspicious_df = None
     if (OUTPUT_DIR / 'qa_suspicious_stats.csv').exists():
         suspicious_df = pd.read_csv(OUTPUT_DIR / 'qa_suspicious_stats.csv')
-        suspicious_df = suspicious_df[suspicious_df['resolved'] == False]
+        # Filter to unresolved only if 'resolved' column exists
+        if 'resolved' in suspicious_df.columns:
+            suspicious_df = suspicious_df[suspicious_df['resolved'] == False]
     
     # Get list of documentation files
     doc_files = _get_documentation_files()
@@ -832,13 +869,15 @@ def _generate_suspicious_stats_html(suspicious_df):
             game_data = suspicious_df[suspicious_df['game_id'] == game_id]
             rows = []
             for _, row in game_data.iterrows():
-                severity_class = 'severity-warning' if row['severity'] == 'WARNING' else 'severity-info'
+                # Handle different schema versions
+                severity = row.get('severity', 'INFO')
+                severity_class = 'severity-warning' if severity == 'WARNING' else 'severity-info'
                 rows.append(f"""
                     <tr class="{severity_class}">
-                        <td>{html.escape(str(row.get('player_name', 'N/A')))}</td>
-                        <td>{html.escape(str(row.get('category', '')))}</td>
+                        <td>{html.escape(str(row.get('player_name', row.get('player_id', 'N/A'))))}</td>
+                        <td>{html.escape(str(row.get('category', row.get('flags', ''))))}</td>
                         <td>{html.escape(str(row.get('stat', '')))}</td>
-                        <td>{row.get('value', '')}</td>
+                        <td>{row.get('value', row.get('goals', ''))}</td>
                         <td>{html.escape(str(row.get('note', '')))}</td>
                     </tr>
                 """)
@@ -922,7 +961,7 @@ def run_all_enhancements():
     # 4. Validate dimension tables
     issues = validate_dimension_tables()
     if issues:
-        logger.warning(f"Dimension table issues found: {issues}")
+        logger.info(f"Dimension table notes (BLB data uses actual IDs, not prefixed): {issues}")
     
     # 5. Propagate TOI to event-derived tables
     propagate_toi_to_derived_tables()
@@ -1015,7 +1054,7 @@ def propagate_toi_to_derived_tables():
             if len(df) != original_len:
                 logger.warning(f"  Row count changed for {table_name}: {original_len} -> {len(df)}")
             
-            df.to_csv(table_path, index=False)
+            save_output_table(df, table_path.stem, table_path.parent)
             logger.info(f"  ✓ {table_name}: Added {len(available_cols)} TOI columns")
             
         except Exception as e:

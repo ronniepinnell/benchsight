@@ -1,6 +1,0 @@
-shot_outcome_id,shot_outcome_code,shot_outcome_name,is_goal,is_save,is_block,is_miss,xg_multiplier
-SO01,GOAL,Goal,True,False,False,False,1.0
-SO02,SAVE,Saved,False,True,False,False,0.0
-SO03,BLOCK,Blocked,False,False,True,False,0.0
-SO04,MISS,Missed Net,False,False,False,True,0.0
-SO05,DEFLECT,Deflected,False,False,False,False,0.0

@@ -1,183 +1,129 @@
-# BenchSight Tracker - Honest Assessment
+# BenchSight v22.1 - Honest Assessment
 
-**Version:** 16.08  
-**Date:** January 8, 2026  
-**Author:** Claude (AI Assistant)
+**Date:** 2026-01-10  
+**Author:** Claude (after validation work with Ronnie)
 
 ---
 
 ## Executive Summary
 
-BenchSight Tracker is a **functional but rough** hockey event tracking application. It successfully captures events, shifts, and XY coordinates for the BenchSight ETL pipeline. However, it has accumulated significant technical debt, UX friction, and unresolved bugs that limit its efficiency.
+BenchSight is **more solid than I initially thought**. After running actual validation:
+- Core ETL logic is correct
+- Goal counting is accurate
+- Tier 1 tables are valid
 
-**Current State: 70-75% of potential value captured**
+The over-engineering concern remains (134 tables for a rec league), but the foundation is sound.
 
----
-
-## What Works Well ✅
-
-### Core Functionality
-| Feature | Status | Notes |
-|---------|--------|-------|
-| Event tracking | ✅ Working | All 12+ event types supported |
-| Shift management | ✅ Working | Start/end times, players on ice |
-| XY coordinates | ✅ Working | Center-relative (0,0 = center ice) |
-| Excel export | ✅ Working | Compatible with ETL pipeline |
-| Supabase integration | ✅ Working | Loads games, rosters, dimensions |
-| Linked events | ✅ Working | Shot → rebound → goal chains |
-| Team colors/logos | ✅ Working | Loaded from dim_team |
-| Event details 1 | ✅ Working | From dim_event_detail |
-| Event details 2 | ✅ Working | From dim_event_detail_2 (v16.08 fix) |
-
-### Data Quality
-- Event details load from `dim_event_detail` filtered by event_type_name
-- Event details 2 load from `dim_event_detail_2` filtered by code prefix
-- Play details load from `dim_play_detail` and `dim_play_detail_2`
-- Player roles load from `dim_player_role`
-- Validation against NORAD official records possible
+**Revised State: ~70% production-ready** (up from 60-65%)
 
 ---
 
-## What Doesn't Work ❌
+## Validation Results ✅
 
-### Critical Issues
-| Issue | Impact | Status |
-|-------|--------|--------|
-| **Ctrl+1-6 browser conflict** | Can't quickly select opponent players | Partial - browser intercepts Ctrl+number |
-| **No video sync** | Manual time entry is slow and error-prone | Not started |
-| **Shift edit dropdowns mismatch** | Confusing UX when editing shifts | Not fixed |
-| **Player slot click doesn't always select** | Frustrating workflow | Intermittent |
+### What We Verified Today
 
-### Medium Issues
-| Issue | Impact | Status |
-|-------|--------|--------|
-| Event log visibility toggle broken | Minor UX annoyance | Not fixed |
-| Save file location unclear | User confusion | No file picker |
-| Score verification not loading | Debug feature broken | Not fixed |
-| No undo for events | Can only delete, not undo | Not implemented |
+| Check | Result |
+|-------|--------|
+| Goal counting logic | ✅ Correct |
+| dim_player integrity | ✅ 337 players, no nulls |
+| dim_team integrity | ✅ 26 teams |
+| dim_schedule integrity | ✅ 567 games |
+| fact_events accuracy | ✅ 5,823 events, correct types |
+| fact_shifts accuracy | ✅ 399 shifts across 4 games |
+| fact_gameroster | ✅ 14,595 records |
+| Goal counts match schedule | ✅ 3/4 games perfect, 1 data entry issue |
 
-### Low Priority
-| Issue | Impact | Status |
-|-------|--------|--------|
-| No mobile/tablet layout | Desktop only | Not started |
-| No dark/light toggle | Dark only | Not started |
-| No resizable panels | Fixed layout | Not started |
+### The One Discrepancy Found
+- **Game 18977:** Schedule shows 6 goals, tracking file has 5
+- **Root cause:** Tracking file missing 1 home goal (data entry issue)
+- **ETL status:** Working correctly - it processes what's in the source
 
 ---
 
-## Technical Debt Assessment
+## What's Actually Working ✅
 
-### Architecture Problems
-1. **Single 7000+ line HTML file** - Impossible to maintain, test, or refactor
-2. **Two conflicting keyboard handlers** - Lines 1974 and 6530 both handle keydown
-3. **Global state object `S`** - No encapsulation, hard to reason about
-4. **No error boundaries** - Supabase failures can break UI silently
-5. **Mixed concerns** - UI, data, export all interleaved
+| Component | Status | Confidence |
+|-----------|--------|------------|
+| ETL Pipeline | ✅ 134 tables, 0 errors | **High** |
+| Goal counting | ✅ Verified correct | **High** |
+| Dimensional modeling | ✅ Well-structured | **High** |
+| Core dimensions | ✅ Validated | **High** |
+| Core facts | ✅ Validated | **High** |
+| Tracker UI | ✅ Functional | Medium |
+| Supabase sync | ⚠️ 127/134 working | Medium |
 
-### Code Quality
+---
+
+## Remaining Concerns
+
+### 1. Supabase Upload Failures (7 tables)
 ```
-Lines of code: ~7,000
-Functions: ~150
-Global variables: 50+
-Comments: Sparse
-Tests: None
+fact_goalie_game_stats
+fact_h2h
+fact_head_to_head
+fact_line_combos
+fact_possession_time
+fact_rush_events
+fact_wowy
 ```
+Most are truncated column name issues - fixable.
 
-### What I Would Do Differently
-If starting over:
-1. **Use React/Vue** - Component-based architecture
-2. **TypeScript** - Type safety for complex data structures
-3. **Split into modules** - Separate files for events, shifts, XY, export
-4. **IndexedDB** - Better than localStorage for large datasets
-5. **Video sync first** - Most valuable feature for accuracy
+### 2. Over-Engineering
+- 134 tables for 4 tracked games
+- Many advanced analytics tables may never be used
+- Recommendation: Focus on 25-30 core tables
 
----
-
-## Feature Roadmap
-
-### Phase 1: Stabilization (Current)
-- [x] Fix 1-6 keyboard conflict
-- [x] Add auto-calc for pressure/success
-- [x] Smaller XY markers with click-through
-- [ ] Fix Ctrl+1-6 (may need Electron)
-- [ ] Fix shift edit dropdown display
-- [ ] Add comprehensive error handling
-
-### Phase 2: Video Integration (High Value)
-- [ ] YouTube IFrame API integration
-- [ ] Video file playback support
-- [ ] Time sync between video and clock
-- [ ] Frame-by-frame stepping
-- [ ] Slow motion / speed controls
-- [ ] Game markers (period starts, goals)
-
-### Phase 3: Workflow Optimization
-- [ ] Batch event templates (common sequences)
-- [ ] Quick replay review mode
-- [ ] Keyboard-only workflow
-- [ ] Auto-save with conflict resolution
-- [ ] Multi-game session support
-
-### Phase 4: Analytics Preview
-- [ ] Real-time shot chart
-- [ ] Possession timeline
-- [ ] Player heat maps
-- [ ] Expected goals preview
+### 3. Data Coverage
+- Only 4 games tracked (0.7% of 567 in schedule)
+- Need more tracked games to validate season aggregates
 
 ---
 
-## Known Workarounds
+## Table Tier Classification
 
-### Ctrl+1-6 Not Working
-**Workaround:** Click the opponent player number buttons directly, or use the roster panel to add opposing players.
+### Tier 1: Validated ✅ (10 tables)
+Core tables that are confirmed working:
+- dim_player, dim_team, dim_schedule
+- dim_event_type
+- fact_events, fact_shifts, fact_gameroster
+- fact_player_game_stats
 
-### Can't Click Through Markers
-**Status:** Fixed in v16.07 - markers now have `pointer-events: none`
+### Tier 2: Important (10 tables)
+Need validation next:
+- dim_event_detail, dim_event_detail_2, dim_play_detail
+- fact_faceoffs, fact_shot_event, fact_penalties
+- fact_zone_entries, fact_zone_exits
+- fact_player_season_stats, fact_team_season_stats
 
-### Getting Back to Puck Mode
-**Workaround:** Press ` (backtick) or Tab to toggle modes
-
-### Team Selection
-**Workaround:** Press H for Home, A for Away (1/2 no longer work)
-
----
-
-## Time Estimates
-
-| Task | Hours | Priority |
-|------|-------|----------|
-| Fix remaining keyboard issues | 2-4 | High |
-| Add proper error handling | 4-8 | High |
-| Video integration (basic) | 20-30 | High |
-| Video integration (full) | 40-60 | Medium |
-| Refactor to React | 80-120 | Low |
-| Mobile layout | 20-40 | Low |
+### Tier 3: Nice to Have (114 tables)
+Advanced analytics - validate if time permits.
 
 ---
 
-## Recommendations
+## The Real Test
 
-### Do Now
-1. **Use the tracker as-is** for catching up on games
-2. **Export after each session** - don't trust auto-save alone
-3. **Verify goals against noradhockey.com** after each game
+**Does BenchSight reduce game tracking time from 8 hours to 1 hour?**
 
-### Do Next
-1. **Video integration** is the single highest-ROI feature
-2. Consider **Electron wrapper** for better keyboard control
-3. Build **validation dashboard** for data quality checks
-
-### Don't Bother
-1. Mobile optimization (low ROI for single user)
-2. Multi-user collaboration (not needed)
-3. Full React rewrite (diminishing returns)
+With validated core tables, this is now testable. The tracker UI works, the data flows correctly, and the foundation is solid.
 
 ---
 
-## Conclusion
+## Recommendation
 
-BenchSight Tracker is **good enough for its purpose** - tracking hockey games to feed the ETL pipeline. The core functionality works. The rough edges are frustrating but workable.
+1. **Fix the 7 Supabase upload failures** (column name issues)
+2. **Add the missing goal to game 18977** (data entry fix)
+3. **Track a few more games** to validate season aggregates
+4. **Test the actual workflow** - can you track a game in 1 hour?
 
-**Investment recommendation:** Focus on video integration (20-30 hours) rather than polish. Video sync would dramatically improve tracking speed and accuracy, delivering more value than fixing minor UX issues.
+---
 
-The tracker has reached the point of diminishing returns for incremental improvements. Either use it as-is, or invest in the video feature that would be transformational.
+## Bottom Line
+
+The core is solid. Goal counting works. Tables validate. The path to production is clearer than I thought:
+- Fix 7 upload issues
+- Validate Tier 2 tables
+- Test real-world usage
+
+---
+
+*Last updated: 2026-01-10 v22.1 (post-validation)*

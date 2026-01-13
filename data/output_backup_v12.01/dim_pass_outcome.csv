@@ -1,5 +1,0 @@
-pass_outcome_id,pass_outcome_code,pass_outcome_name,is_successful
-PO01,COMPLETE,Complete,True
-PO02,INCOMPLETE,Incomplete,False
-PO03,INTERCEPT,Intercepted,False
-PO04,DEFLECT,Deflected,False

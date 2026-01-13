@@ -1,7 +1,0 @@
-comparison_type_id,comparison_type_code,comparison_type_name,description,analysis_scope
-CMP001,WOWY,With Or Without You,Compares player stats when playing with vs without a specific teammate,player
-CMP002,H2H,Head to Head,Compares two players directly in the same games,player
-CMP003,LINE,Line Combination,Compares stats of different line combinations,line
-CMP004,MATCHUP,Defensive Matchup,Stats when defending against a specific opponent,matchup
-CMP005,RATING_ADJ,Rating Adjusted,Stats adjusted for opponent rating difference,rating
-CMP006,SITUATION,Situational,"Stats in specific game situations (score state, period)",situation

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BenchSight - Supabase Connection Test</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: system-ui, -apple-system, sans-serif; background: #0a0e14; color: #e2e8f0; padding: 20px; }
+h1 { color: #00d4aa; margin-bottom: 20px; }
+h2 { color: #00b4d8; margin: 20px 0 10px; font-size: 16px; }
+.card { background: #131920; border: 1px solid #2a3441; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+input, button { font-family: inherit; font-size: 14px; padding: 8px 12px; border-radius: 4px; border: 1px solid #2a3441; }
+input { background: #0d1117; color: #e2e8f0; width: 100%; margin-bottom: 8px; }
+button { background: #00d4aa; color: #000; cursor: pointer; font-weight: 600; }
+button:hover { background: #00b4d8; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+.success { color: #10b981; }
+.error { color: #ef4444; }
+.warning { color: #f59e0b; }
+.muted { color: #64748b; font-size: 12px; }
+pre { background: #0d1117; padding: 12px; border-radius: 4px; overflow-x: auto; font-size: 12px; margin-top: 8px; }
+.test-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #2a3441; }
+.test-row:last-child { border-bottom: none; }
+.test-name { flex: 1; }
+.test-status { font-weight: 600; min-width: 80px; text-align: right; }
+.spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #2a3441; border-top-color: #00d4aa; border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<h1>🔌 BenchSight Supabase Connection Test</h1>
+
+<div class="card">
+  <h2>Step 1: Enter Credentials</h2>
+  <input type="text" id="sbUrl" placeholder="Supabase URL (https://xxx.supabase.co)">
+  <input type="password" id="sbKey" placeholder="Supabase Anon Key (eyJ...)">
+  <button onclick="runTests()">Run Connection Tests</button>
+  <p class="muted" style="margin-top: 8px;">Use your <strong>anon</strong> (public) key, not service_role</p>
+</div>
+
+<div class="card" id="resultsCard" style="display:none;">
+  <h2>Step 2: Test Results</h2>
+  <div id="results"></div>
+</div>
+
+<div class="card" id="detailsCard" style="display:none;">
+  <h2>Details</h2>
+  <pre id="details"></pre>
+</div>
+
+<div class="card">
+  <h2>Troubleshooting</h2>
+  <p><strong>Connection fails:</strong></p>
+  <ul style="margin-left: 20px; margin-top: 8px;">
+    <li>Check URL format: <code>https://xxx.supabase.co</code> (no trailing slash)</li>
+    <li>Use <strong>anon</strong> key from Settings → API → Project API keys</li>
+    <li>Make sure RLS is disabled (see below)</li>
+  </ul>
+  
+  <p style="margin-top: 16px;"><strong>Tables not found / Permission denied:</strong></p>
+  <pre style="font-size: 11px;">-- Run this SQL in Supabase SQL Editor to disable RLS:
+DO $$
+DECLARE r RECORD;
+BEGIN
+  FOR r IN SELECT tablename FROM pg_tables WHERE schemaname = 'public'
+  LOOP
+    EXECUTE 'ALTER TABLE public.' || quote_ident(r.tablename) || ' DISABLE ROW LEVEL SECURITY';
+  END LOOP;
+END $$;</pre>
+  
+  <p style="margin-top: 16px;"><strong>Empty tables:</strong></p>
+  <ul style="margin-left: 20px; margin-top: 8px;">
+    <li>Run: <code>python upload.py --schema</code></li>
+    <li>Paste <code>sql/reset_supabase.sql</code> in Supabase SQL Editor</li>
+    <li>Run: <code>python upload.py</code></li>
+  </ul>
+</div>
+
+<script>
+const REQUIRED_TABLES = [
+  { name: 'dim_schedule', col: 'game_id', desc: 'Game schedule (for dropdown)' },
+  { name: 'fact_gameroster', col: 'player_id', desc: 'Player rosters per game' },
+  { name: 'dim_team', col: 'team_id', desc: 'Team colors/logos' },
+  { name: 'dim_play_detail', col: 'play_detail_id', desc: 'Play details dropdown' },
+  { name: 'dim_play_detail_2', col: 'play_detail_2_id', desc: 'Play details 2 dropdown' },
+  { name: 'dim_event_detail', col: 'event_detail_id', desc: 'Event details dropdown' },
+  { name: 'dim_event_detail_2', col: 'event_detail_2_id', desc: 'Event details 2 dropdown' },
+  { name: 'dim_player_role', col: 'role_id', desc: 'Player roles' },
+];
+
+let sb = null;
+let details = [];
+
+function log(msg) {
+  details.push(msg);
+  document.getElementById('details').textContent = details.join('\n');
+  document.getElementById('detailsCard').style.display = 'block';
+}
+
+function setResult(id, status, message) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.innerHTML = `<span class="${status}">${message}</span>`;
+  }
+}
+
+async function runTests() {
+  const url = document.getElementById('sbUrl').value.trim();
+  const key = document.getElementById('sbKey').value.trim();
+  
+  if (!url || !key) {
+    alert('Please enter both URL and Key');
+    return;
+  }
+  
+  details = [];
+  document.getElementById('resultsCard').style.display = 'block';
+  
+  // Build results HTML
+  let html = `
+    <div class="test-row">
+      <span class="test-name">1. Connection</span>
+      <span class="test-status" id="test-conn"><span class="spinner"></span></span>
+    </div>
+  `;
+  
+  REQUIRED_TABLES.forEach((t, i) => {
+    html += `
+      <div class="test-row">
+        <span class="test-name">${i+2}. ${t.name} <span class="muted">(${t.desc})</span></span>
+        <span class="test-status" id="test-${t.name}">—</span>
+      </div>
+    `;
+  });
+  
+  document.getElementById('results').innerHTML = html;
+  
+  // Test 1: Connection
+  log('Testing connection to: ' + url);
+  try {
+    sb = supabase.createClient(url, key);
+    const { data, error } = await sb.from('dim_schedule').select('game_id').limit(1);
+    
+    if (error) {
+      log('Connection error: ' + JSON.stringify(error));
+      setResult('test-conn', 'error', '❌ FAILED');
+      
+      if (error.message?.includes('permission denied') || error.code === '42501') {
+        log('>>> RLS is blocking queries. Disable RLS in Supabase SQL Editor.');
+      } else if (error.message?.includes('does not exist') || error.code === '42P01') {
+        log('>>> Table does not exist. Run upload.py --schema and upload.py');
+      }
+      return;
+    }
+    
+    log('Connection successful!');
+    setResult('test-conn', 'success', '✓ CONNECTED');
+  } catch (e) {
+    log('Connection exception: ' + e.message);
+    setResult('test-conn', 'error', '❌ ' + e.message);
+    return;
+  }
+  
+  // Test each table
+  for (const t of REQUIRED_TABLES) {
+    log(`\nTesting ${t.name}...`);
+    try {
+      const { data, error, count } = await sb
+        .from(t.name)
+        .select(t.col, { count: 'exact' })
+        .limit(1);
+      
+      if (error) {
+        log(`  Error: ${JSON.stringify(error)}`);
+        setResult(`test-${t.name}`, 'error', '❌ ' + (error.message || error.code));
+      } else {
+        const rowCount = count || data?.length || 0;
+        log(`  OK: ${rowCount} rows`);
+        if (rowCount === 0) {
+          setResult(`test-${t.name}`, 'warning', '⚠ 0 rows');
+        } else {
+          setResult(`test-${t.name}`, 'success', `✓ ${rowCount} rows`);
+        }
+      }
+    } catch (e) {
+      log(`  Exception: ${e.message}`);
+      setResult(`test-${t.name}`, 'error', '❌ ' + e.message);
+    }
+  }
+  
+  log('\n=== Tests complete ===');
+}
+</script>
+
+</body>
+</html>
