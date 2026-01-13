@@ -17,6 +17,8 @@ import {
   TrendingUp,
   ChevronLeft,
   Award,
+  TestTube,
+  Database,
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -72,6 +74,24 @@ const navigation: NavSection[] = [
     items: [
       { name: 'Shift Viewer', href: '/analytics/shifts', icon: <Timer className="w-4 h-4" /> },
       { name: 'Trends', href: '/analytics/trends', icon: <TrendingUp className="w-4 h-4" /> },
+    ],
+  },
+  {
+    name: 'Prototypes',
+    icon: '🧪',
+    items: [
+      { name: 'Example', href: '/prototypes/example', icon: <TestTube className="w-4 h-4" /> },
+      { name: 'Test Connection', href: '/prototypes/test-connection', icon: <Database className="w-4 h-4" /> },
+      { name: 'Design System', href: '/prototypes/design-system', icon: <Target className="w-4 h-4" /> },
+    ],
+  },
+  {
+    name: 'Macro Analytics',
+    icon: '📊',
+    items: [
+      { name: 'League Overview', href: '/prototypes/macro/league-overview', icon: <BarChart3 className="w-4 h-4" /> },
+      { name: 'League Stats', href: '/prototypes/macro/league-stats', icon: <TrendingUp className="w-4 h-4" /> },
+      { name: 'Team Comparison', href: '/prototypes/macro/team-comparison', icon: <Users className="w-4 h-4" /> },
     ],
   },
 ]

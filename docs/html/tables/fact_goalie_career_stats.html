@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fact_goalie_career_stats - BenchSight</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #4a4e69; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>fact_goalie_career_stats</h1>
+        
+        
+        
+        <div class="meta">
+            <strong>Rows:</strong> 5 | 
+            <strong>Columns:</strong> 62 |
+            <strong>Last Updated:</strong> 2026-01-13 11:03:18 |
+            <strong>Version:</strong> 11.04
+        </div>
+        
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>player_id</td><td>object</td><td>5</td><td>0.0%</td></tr><tr><td>saves</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>goals_against</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>shots_against</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>saves_butterfly</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>saves_pad</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>saves_glove</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>saves_blocker</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>saves_chest</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>saves_stick</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>saves_scramble</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>hd_shots_against</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>hd_goals_against</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>hd_saves</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>saves_freeze</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>saves_rebound</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>rebounds_team_recovered</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>rebounds_opp_recovered</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>rebounds_shot_generated</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>rebounds_flurry_generated</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>p1_saves</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>p1_goals_against</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>p2_saves</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>p2_goals_against</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>p3_saves</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>p3_goals_against</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>early_period_saves</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>mid_period_saves</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>late_period_saves</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>final_minute_saves</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>early_period_ga</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>mid_period_ga</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>late_period_ga</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>final_minute_ga</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>rush_saves</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>quick_attack_saves</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>set_play_saves</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>rush_goals_against</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>quick_attack_ga</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>set_play_ga</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>single_shot_saves</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>multi_shot_saves</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>sustained_pressure_saves</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>glove_side_saves</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>blocker_side_saves</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>five_hole_saves</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>rapid_fire_saves</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>is_quality_start</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>is_bad_start</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>season_war</td><td>float64</td><td>5</td><td>0.0%</td></tr><tr><td>career_games</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>seasons_played</td><td>int64</td><td>5</td><td>0.0%</td></tr><tr><td>player_name</td><td>object</td><td>5</td><td>0.0%</td></tr><tr><td>team_name</td><td>object</td><td>5</td><td>0.0%</td></tr><tr><td>goalie_war</td><td>float64</td><td>5</td><td>0.0%</td></tr><tr><td>goalie_game_score</td><td>float64</td><td>5</td><td>0.0%</td></tr><tr><td>overall_game_rating</td><td>float64</td><td>5</td><td>0.0%</td></tr><tr><td>clutch_rating</td><td>float64</td><td>5</td><td>0.0%</td></tr><tr><td>career_save_pct</td><td>float64</td><td>5</td><td>0.0%</td></tr><tr><td>career_gaa</td><td>float64</td><td>5</td><td>0.0%</td></tr><tr><td>goalie_career_key</td><td>object</td><td>5</td><td>0.0%</td></tr><tr><td>_export_timestamp</td><td>object</td><td>5</td><td>0.0%</td></tr>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>player_id</th>
+      <th>saves</th>
+      <th>goals_against</th>
+      <th>shots_against</th>
+      <th>saves_butterfly</th>
+      <th>saves_pad</th>
+      <th>saves_glove</th>
+      <th>saves_blocker</th>
+      <th>saves_chest</th>
+      <th>saves_stick</th>
+      <th>saves_scramble</th>
+      <th>hd_shots_against</th>
+      <th>hd_goals_against</th>
+      <th>hd_saves</th>
+      <th>saves_freeze</th>
+      <th>saves_rebound</th>
+      <th>rebounds_team_recovered</th>
+      <th>rebounds_opp_recovered</th>
+      <th>rebounds_shot_generated</th>
+      <th>rebounds_flurry_generated</th>
+      <th>p1_saves</th>
+      <th>p1_goals_against</th>
+      <th>p2_saves</th>
+      <th>p2_goals_against</th>
+      <th>p3_saves</th>
+      <th>p3_goals_against</th>
+      <th>early_period_saves</th>
+      <th>mid_period_saves</th>
+      <th>late_period_saves</th>
+      <th>final_minute_saves</th>
+      <th>early_period_ga</th>
+      <th>mid_period_ga</th>
+      <th>late_period_ga</th>
+      <th>final_minute_ga</th>
+      <th>rush_saves</th>
+      <th>quick_attack_saves</th>
+      <th>set_play_saves</th>
+      <th>rush_goals_against</th>
+      <th>quick_attack_ga</th>
+      <th>set_play_ga</th>
+      <th>single_shot_saves</th>
+      <th>multi_shot_saves</th>
+      <th>sustained_pressure_saves</th>
+      <th>glove_side_saves</th>
+      <th>blocker_side_saves</th>
+      <th>five_hole_saves</th>
+      <th>rapid_fire_saves</th>
+      <th>is_quality_start</th>
+      <th>is_bad_start</th>
+      <th>season_war</th>
+      <th>career_games</th>
+      <th>seasons_played</th>
+      <th>player_name</th>
+      <th>team_name</th>
+      <th>goalie_war</th>
+      <th>goalie_game_score</th>
+      <th>overall_game_rating</th>
+      <th>clutch_rating</th>
+      <th>career_save_pct</th>
+      <th>career_gaa</th>
+      <th>goalie_career_key</th>
+      <th>_export_timestamp</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>P100009</td>
+      <td>15</td>
+      <td>1</td>
+      <td>16</td>
+      <td>7</td>
+      <td>5</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>7</td>
+      <td>8</td>
+      <td>5</td>
+      <td>2</td>
+      <td>1</td>
+      <td>0</td>
+      <td>5</td>
+      <td>0</td>
+      <td>5</td>
+      <td>0</td>
+      <td>5</td>
+      <td>1</td>
+      <td>1</td>
+      <td>8</td>
+      <td>6</td>
+      <td>2</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>7</td>
+      <td>3</td>
+      <td>5</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>4</td>
+      <td>11</td>
+      <td>3</td>
+      <td>3</td>
+      <td>3</td>
+      <td>7</td>
+      <td>15</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0.39</td>
+      <td>1</td>
+      <td>1</td>
+      <td>Graham Peters</td>
+      <td>Outlaws</td>
+      <td>0.390</td>
+      <td>0.75</td>
+      <td>9.20</td>
+      <td>93.300</td>
+      <td>93.75</td>
+      <td>1.0</td>
+      <td>P100009_career</td>
+      <td>2026-01-12T23:37:17.738987</td>
+    </tr>
+    <tr>
+      <td>P100016</td>
+      <td>140</td>
+      <td>8</td>
+      <td>148</td>
+      <td>27</td>
+      <td>47</td>
+      <td>19</td>
+      <td>7</td>
+      <td>33</td>
+      <td>4</td>
+      <td>2</td>
+      <td>17</td>
+      <td>0</td>
+      <td>17</td>
+      <td>46</td>
+      <td>93</td>
+      <td>78</td>
+      <td>35</td>
+      <td>6</td>
+      <td>3</td>
+      <td>42</td>
+      <td>2</td>
+      <td>50</td>
+      <td>2</td>
+      <td>48</td>
+      <td>4</td>
+      <td>22</td>
+      <td>74</td>
+      <td>44</td>
+      <td>18</td>
+      <td>1</td>
+      <td>3</td>
+      <td>4</td>
+      <td>1</td>
+      <td>76</td>
+      <td>30</td>
+      <td>34</td>
+      <td>5</td>
+      <td>1</td>
+      <td>2</td>
+      <td>64</td>
+      <td>76</td>
+      <td>26</td>
+      <td>36</td>
+      <td>37</td>
+      <td>29</td>
+      <td>140</td>
+      <td>3</td>
+      <td>0</td>
+      <td>3.58</td>
+      <td>4</td>
+      <td>1</td>
+      <td>Wyatt Crandall</td>
+      <td>Velodrome</td>
+      <td>0.895</td>
+      <td>3.35</td>
+      <td>9.85</td>
+      <td>94.125</td>
+      <td>94.59</td>
+      <td>2.0</td>
+      <td>P100016_career</td>
+      <td>2026-01-12T23:37:17.738987</td>
+    </tr>
+    <tr>
+      <td>P100096</td>
+      <td>24</td>
+      <td>3</td>
+      <td>27</td>
+      <td>8</td>
+      <td>8</td>
+      <td>1</td>
+      <td>4</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>4</td>
+      <td>2</td>
+      <td>2</td>
+      <td>6</td>
+      <td>18</td>
+      <td>16</td>
+      <td>7</td>
+      <td>1</td>
+      <td>0</td>
+      <td>6</td>
+      <td>0</td>
+      <td>7</td>
+      <td>2</td>
+      <td>11</td>
+      <td>1</td>
+      <td>0</td>
+      <td>16</td>
+      <td>8</td>
+      <td>3</td>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>1</td>
+      <td>15</td>
+      <td>4</td>
+      <td>5</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>13</td>
+      <td>11</td>
+      <td>5</td>
+      <td>4</td>
+      <td>9</td>
+      <td>8</td>
+      <td>24</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.19</td>
+      <td>1</td>
+      <td>1</td>
+      <td>Jared Wolf</td>
+      <td>HollowBrook</td>
+      <td>0.190</td>
+      <td>0.55</td>
+      <td>8.30</td>
+      <td>83.200</td>
+      <td>88.89</td>
+      <td>3.0</td>
+      <td>P100096_career</td>
+      <td>2026-01-12T23:37:17.738987</td>
+    </tr>
+    <tr>
+      <td>P100138</td>
+      <td>13</td>
+      <td>1</td>
+      <td>14</td>
+      <td>1</td>
+      <td>4</td>
+      <td>1</td>
+      <td>0</td>
+      <td>6</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>4</td>
+      <td>9</td>
+      <td>7</td>
+      <td>2</td>
+      <td>1</td>
+      <td>1</td>
+      <td>4</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>8</td>
+      <td>0</td>
+      <td>3</td>
+      <td>7</td>
+      <td>3</td>
+      <td>2</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>10</td>
+      <td>3</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>7</td>
+      <td>6</td>
+      <td>1</td>
+      <td>3</td>
+      <td>2</td>
+      <td>1</td>
+      <td>13</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0.34</td>
+      <td>1</td>
+      <td>1</td>
+      <td>Thane Gilmore</td>
+      <td>Nelson</td>
+      <td>0.340</td>
+      <td>0.75</td>
+      <td>9.00</td>
+      <td>100.000</td>
+      <td>92.86</td>
+      <td>1.0</td>
+      <td>P100138_career</td>
+      <td>2026-01-12T23:37:17.738987</td>
+    </tr>
+    <tr>
+      <td>P100202</td>
+      <td>21</td>
+      <td>3</td>
+      <td>24</td>
+      <td>10</td>
+      <td>3</td>
+      <td>4</td>
+      <td>0</td>
+      <td>2</td>
+      <td>2</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>7</td>
+      <td>14</td>
+      <td>12</td>
+      <td>4</td>
+      <td>0</td>
+      <td>0</td>
+      <td>3</td>
+      <td>2</td>
+      <td>8</td>
+      <td>0</td>
+      <td>10</td>
+      <td>1</td>
+      <td>5</td>
+      <td>10</td>
+      <td>6</td>
+      <td>3</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>12</td>
+      <td>5</td>
+      <td>4</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+      <td>13</td>
+      <td>8</td>
+      <td>4</td>
+      <td>7</td>
+      <td>0</td>
+      <td>10</td>
+      <td>21</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0.05</td>
+      <td>1</td>
+      <td>1</td>
+      <td>Francis Forte</td>
+      <td>Platinum</td>
+      <td>0.050</td>
+      <td>-0.15</td>
+      <td>7.00</td>
+      <td>92.100</td>
+      <td>87.50</td>
+      <td>3.0</td>
+      <td>P100202_career</td>
+      <td>2026-01-12T23:37:17.738987</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+        </div>
+        
+        <footer>
+            BenchSight v11.04 | Generated 2026-01-13 11:03:18
+        </footer>
+    </div>
+</body>
+</html>

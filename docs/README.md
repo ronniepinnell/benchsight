@@ -4,6 +4,8 @@
 
 Last Updated: 2026-01-13
 
+**Note:** Temporary handoff documents have been moved to `docs/archive/`. See `docs/archive/README.md` for details.
+
 ---
 
 ## 🚀 Getting Started
@@ -43,7 +45,8 @@ Last Updated: 2026-01-13
 
 ### Data Definitions
 - **[DATA_DICTIONARY.md](DATA_DICTIONARY.md)** - Complete table/column reference
-- **[DATA_DICTIONARY_FULL.md](DATA_DICTIONARY_FULL.md)** - Auto-generated full dictionary
+- **[DATA_DICTIONARY_FULL.md](DATA_DICTIONARY_FULL.md)** - Auto-generated full dictionary (enhanced with code extraction)
+- **[SRC_MODULES_GUIDE.md](SRC_MODULES_GUIDE.md)** - Complete guide to all src/ modules, data flow, and where to update code
 - **[TABLE_INVENTORY.md](TABLE_INVENTORY.md)** - Table inventory and counts
 - **[TABLE_MANIFEST.md](TABLE_MANIFEST.md)** - Table manifest and metadata
 
@@ -112,7 +115,8 @@ docs/
 ├── CHANGELOG.md                    # Version history
 ├── TODO.md                         # Current tasks
 ├── validated_tables/               # Validated table docs
-└── html/                           # Generated HTML docs
+├── html/                           # Generated HTML docs
+└── archive/                        # Archived temporary/handoff docs
 ```
 
 ---

@@ -138,7 +138,6 @@ benchsight_v28/
 ├── ui/
 │   └── tracker/        # Game tracking interface
 │
-└── NEXT_PROMPT.md      # ← What to do next
 ```
 
 ---
@@ -224,6 +223,39 @@ Advanced (other tables) = Tracking-derived micro-stats
 ---
 
 ## 🛠️ Development
+
+### Parallel Development
+
+**Yes! You can run multiple dev processes simultaneously.**
+
+```bash
+# Option 1: Use the helper script
+./dev.sh
+
+# Option 2: Run in separate terminals
+# Terminal 1 - Dashboard:
+cd ui/dashboard && npm run dev
+
+# Terminal 2 - ETL (when needed):
+python run_etl.py
+```
+
+See [Development Guide](docs/DEVELOPMENT.md) for details.
+
+### Dashboard Prototyping
+
+**Quick start for prototyping new dashboards:**
+
+```bash
+cd ui/dashboard
+npm install  # First time only
+npm run dev  # Start dev server
+
+# Create a new prototype page
+./scripts/create-dashboard-page.sh my-prototype
+```
+
+See [Dashboard Quick Start](ui/dashboard/QUICK_START.md) and [Prototyping Guide](ui/dashboard/PROTOTYPING.md) for details.
 
 ### Running the ETL
 

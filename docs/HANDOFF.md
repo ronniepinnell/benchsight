@@ -68,7 +68,21 @@ IMPORTANT: Folder name must match zip name!
 
 ---
 
-## Current State (v29.0)
+## Current State (v29.1)
+
+### Completed in v29.1
+- ✅ Calculations module extracted (25+ functions, 24 tests)
+- ✅ Builders module created (events, shifts)
+- ✅ Formula management system (JSON-based, easy updates)
+- ✅ Performance optimizations (vectorized calculations)
+- ✅ base_etl.py updated to use builders
+- ✅ Comprehensive documentation added
+
+### Next Phase (v29.2)
+- [ ] Integrate formula system into create_fact_player_game_stats()
+- [ ] Optimize team ratings calculation
+- [ ] Optimize venue stat mapping
+- [ ] Replace high-impact .iterrows() loops
 
 ### Completed
 - [x] 120-table ETL pipeline (base_etl.py + table modules)
@@ -159,10 +173,14 @@ See `docs/VALIDATION_PLAN.md` for full approach.
 If this chat ends, the next chat should:
 
 1. **Read this handoff doc first**
-2. Check CHANGELOG.md for latest version
-3. Continue with table-by-table validation (start with fact_events)
-4. After validation: build automated sanity checks into ETL
-5. Then proceed to Phase 1 of ROADMAP.md
+2. **Read docs/archive/AGENT_HANDOFF.md** (for v29.1→v29.2 transition, archived)
+3. Check CHANGELOG.md for latest version (currently v29.1)
+4. Review REFACTORING.md for refactoring status
+5. Continue with v29.2 tasks:
+   - Integrate formula system into fact_player_game_stats
+   - Optimize team ratings calculation
+   - Replace high-impact .iterrows() loops
+6. After v29.2: Continue with validation and Phase 1 of ROADMAP.md
 
 ---
 

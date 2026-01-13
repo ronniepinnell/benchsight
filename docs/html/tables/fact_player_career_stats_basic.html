@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fact_player_career_stats_basic - BenchSight</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #4a4e69; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>fact_player_career_stats_basic</h1>
+        
+        
+        
+        <div class="meta">
+            <strong>Rows:</strong> 295 | 
+            <strong>Columns:</strong> 16 |
+            <strong>Last Updated:</strong> 2026-01-13 11:03:18 |
+            <strong>Version:</strong> 11.04
+        </div>
+        
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>player_career_basic_key</td><td>object</td><td>295</td><td>0.0%</td></tr><tr><td>player_id</td><td>object</td><td>295</td><td>0.0%</td></tr><tr><td>player_name</td><td>object</td><td>295</td><td>0.0%</td></tr><tr><td>position</td><td>object</td><td>294</td><td>0.3%</td></tr><tr><td>current_team</td><td>object</td><td>295</td><td>0.0%</td></tr><tr><td>seasons_played</td><td>int64</td><td>295</td><td>0.0%</td></tr><tr><td>career_games</td><td>int64</td><td>295</td><td>0.0%</td></tr><tr><td>career_goals</td><td>float64</td><td>295</td><td>0.0%</td></tr><tr><td>career_assists</td><td>float64</td><td>295</td><td>0.0%</td></tr><tr><td>career_points</td><td>float64</td><td>295</td><td>0.0%</td></tr><tr><td>career_pim</td><td>float64</td><td>295</td><td>0.0%</td></tr><tr><td>goals_per_game</td><td>float64</td><td>295</td><td>0.0%</td></tr><tr><td>assists_per_game</td><td>float64</td><td>295</td><td>0.0%</td></tr><tr><td>points_per_game</td><td>float64</td><td>295</td><td>0.0%</td></tr><tr><td>pim_per_game</td><td>float64</td><td>295</td><td>0.0%</td></tr><tr><td>_export_timestamp</td><td>object</td><td>295</td><td>0.0%</td></tr>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>player_career_basic_key</th>
+      <th>player_id</th>
+      <th>player_name</th>
+      <th>position</th>
+      <th>current_team</th>
+      <th>seasons_played</th>
+      <th>career_games</th>
+      <th>career_goals</th>
+      <th>career_assists</th>
+      <th>career_points</th>
+      <th>career_pim</th>
+      <th>goals_per_game</th>
+      <th>assists_per_game</th>
+      <th>points_per_game</th>
+      <th>pim_per_game</th>
+      <th>_export_timestamp</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>P100001_career</td>
+      <td>P100001</td>
+      <td>Sam Downs</td>
+      <td>Forward</td>
+      <td>Velodrome</td>
+      <td>5</td>
+      <td>125</td>
+      <td>211.0</td>
+      <td>92.0</td>
+      <td>303.0</td>
+      <td>6.0</td>
+      <td>1.69</td>
+      <td>0.74</td>
+      <td>2.42</td>
+      <td>0.05</td>
+      <td>2026-01-12T23:37:17.091178</td>
+    </tr>
+    <tr>
+      <td>P100002_career</td>
+      <td>P100002</td>
+      <td>Kevin White</td>
+      <td>Forward</td>
+      <td>Velodrome</td>
+      <td>2</td>
+      <td>46</td>
+      <td>20.0</td>
+      <td>15.0</td>
+      <td>35.0</td>
+      <td>12.0</td>
+      <td>0.43</td>
+      <td>0.33</td>
+      <td>0.76</td>
+      <td>0.26</td>
+      <td>2026-01-12T23:37:17.091178</td>
+    </tr>
+    <tr>
+      <td>P100004_career</td>
+      <td>P100004</td>
+      <td>Cesar Shinall</td>
+      <td>Forward</td>
+      <td>Outlaws</td>
+      <td>2</td>
+      <td>43</td>
+      <td>13.0</td>
+      <td>9.0</td>
+      <td>22.0</td>
+      <td>9.0</td>
+      <td>0.30</td>
+      <td>0.21</td>
+      <td>0.51</td>
+      <td>0.21</td>
+      <td>2026-01-12T23:37:17.091178</td>
+    </tr>
+    <tr>
+      <td>P100005_career</td>
+      <td>P100005</td>
+      <td>John-Michael Sebben</td>
+      <td>Forward</td>
+      <td>Triple J</td>
+      <td>3</td>
+      <td>70</td>
+      <td>13.0</td>
+      <td>15.0</td>
+      <td>28.0</td>
+      <td>3.0</td>
+      <td>0.19</td>
+      <td>0.21</td>
+      <td>0.40</td>
+      <td>0.04</td>
+      <td>2026-01-12T23:37:17.091178</td>
+    </tr>
+    <tr>
+      <td>P100006_career</td>
+      <td>P100006</td>
+      <td>Bob Colby</td>
+      <td>Forward</td>
+      <td>Triple J</td>
+      <td>5</td>
+      <td>133</td>
+      <td>36.0</td>
+      <td>68.0</td>
+      <td>104.0</td>
+      <td>52.0</td>
+      <td>0.27</td>
+      <td>0.51</td>
+      <td>0.78</td>
+      <td>0.39</td>
+      <td>2026-01-12T23:37:17.091178</td>
+    </tr>
+    <tr>
+      <td>P100007_career</td>
+      <td>P100007</td>
+      <td>Jason Mantaro</td>
+      <td>Defense</td>
+      <td>Triple J</td>
+      <td>4</td>
+      <td>97</td>
+      <td>31.0</td>
+      <td>45.0</td>
+      <td>76.0</td>
+      <td>54.0</td>
+      <td>0.32</td>
+      <td>0.46</td>
+      <td>0.78</td>
+      <td>0.56</td>
+      <td>2026-01-12T23:37:17.091178</td>
+    </tr>
+    <tr>
+      <td>P100008_career</td>
+      <td>P100008</td>
+      <td>Zach DeBlois</td>
+      <td>Forward</td>
+      <td>Triple J</td>
+      <td>4</td>
+      <td>79</td>
+      <td>36.0</td>
+      <td>23.0</td>
+      <td>59.0</td>
+      <td>6.0</td>
+      <td>0.46</td>
+      <td>0.29</td>
+      <td>0.75</td>
+      <td>0.08</td>
+      <td>2026-01-12T23:37:17.091178</td>
+    </tr>
+    <tr>
+      <td>P100009_career</td>
+      <td>P100009</td>
+      <td>Graham Peters</td>
+      <td>NaN</td>
+      <td>Triple J</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>2026-01-12T23:37:17.091178</td>
+    </tr>
+    <tr>
+      <td>P100010_career</td>
+      <td>P100010</td>
+      <td>Jason Judge</td>
+      <td>Defense</td>
+      <td>Triple J</td>
+      <td>4</td>
+      <td>82</td>
+      <td>14.0</td>
+      <td>22.0</td>
+      <td>36.0</td>
+      <td>12.0</td>
+      <td>0.17</td>
+      <td>0.27</td>
+      <td>0.44</td>
+      <td>0.15</td>
+      <td>2026-01-12T23:37:17.091178</td>
+    </tr>
+    <tr>
+      <td>P100011_career</td>
+      <td>P100011</td>
+      <td>Jake Winger</td>
+      <td>Forward</td>
+      <td>Platinum</td>
+      <td>1</td>
+      <td>26</td>
+      <td>13.0</td>
+      <td>14.0</td>
+      <td>27.0</td>
+      <td>9.0</td>
+      <td>0.50</td>
+      <td>0.54</td>
+      <td>1.04</td>
+      <td>0.35</td>
+      <td>2026-01-12T23:37:17.091178</td>
+    </tr>
+    <tr>
+      <td>P100012_career</td>
+      <td>P100012</td>
+      <td>Hal Jordan</td>
+      <td>Defense</td>
+      <td>Triple J</td>
+      <td>5</td>
+      <td>101</td>
+      <td>9.0</td>
+      <td>34.0</td>
+      <td>43.0</td>
+      <td>26.0</td>
+      <td>0.09</td>
+      <td>0.34</td>
+      <td>0.43</td>
+      <td>0.26</td>
+      <td>2026-01-12T23:37:17.091178</td>
+    </tr>
+    <tr>
+      <td>P100013_career</td>
+      <td>P100013</td>
+      <td>Dan Maddock</td>
+      <td>Forward</td>
+      <td>AMOS</td>
+      <td>3</td>
+      <td>41</td>
+      <td>2.0</td>
+      <td>6.0</td>
+      <td>8.0</td>
+      <td>6.0</td>
+      <td>0.05</td>
+      <td>0.15</td>
+      <td>0.20</td>
+      <td>0.15</td>
+      <td>2026-01-12T23:37:17.091178</td>
+    </tr>
+    <tr>
+      <td>P100014_career</td>
+      <td>P100014</td>
+      <td>Jon Schuepbach</td>
+      <td>Forward</td>
+      <td>Triple J</td>
+      <td>5</td>
+      <td>111</td>
+      <td>21.0</td>
+      <td>31.0</td>
+      <td>52.0</td>
+      <td>6.0</td>
+      <td>0.19</td>
+      <td>0.28</td>
+      <td>0.47</td>
+      <td>0.05</td>
+      <td>2026-01-12T23:37:17.091178</td>
+    </tr>
+    <tr>
+      <td>P100015_career</td>
+      <td>P100015</td>
+      <td>Sean Kenyon</td>
+      <td>Forward</td>
+      <td>Ace</td>
+      <td>2</td>
+      <td>55</td>
+      <td>3.0</td>
+      <td>19.0</td>
+      <td>22.0</td>
+      <td>15.0</td>
+      <td>0.05</td>
+      <td>0.35</td>
+      <td>0.40</td>
+      <td>0.27</td>
+      <td>2026-01-12T23:37:17.091178</td>
+    </tr>
+    <tr>
+      <td>P100017_career</td>
+      <td>P100017</td>
+      <td>Owen Kalbfleisch</td>
+      <td>Forward</td>
+      <td>Ace</td>
+      <td>5</td>
+      <td>118</td>
+      <td>50.0</td>
+      <td>55.0</td>
+      <td>105.0</td>
+      <td>27.0</td>
+      <td>0.42</td>
+      <td>0.47</td>
+      <td>0.89</td>
+      <td>0.23</td>
+      <td>2026-01-12T23:37:17.091178</td>
+    </tr>
+    <tr>
+      <td>P100018_career</td>
+      <td>P100018</td>
+      <td>Cody Patterson</td>
+      <td>Defense</td>
+      <td>Platinum</td>
+      <td>3</td>
+      <td>88</td>
+      <td>55.0</td>
+      <td>48.0</td>
+      <td>103.0</td>
+      <td>21.0</td>
+      <td>0.62</td>
+      <td>0.55</td>
+      <td>1.17</td>
+      <td>0.24</td>
+      <td>2026-01-12T23:37:17.091178</td>
+    </tr>
+    <tr>
+      <td>P100019_career</td>
+      <td>P100019</td>
+      <td>Matt Lee</td>
+      <td>Forward</td>
+      <td>Triple J</td>
+      <td>2</td>
+      <td>33</td>
+      <td>14.0</td>
+      <td>13.0</td>
+      <td>27.0</td>
+      <td>9.0</td>
+      <td>0.42</td>
+      <td>0.39</td>
+      <td>0.82</td>
+      <td>0.27</td>
+      <td>2026-01-12T23:37:17.091178</td>
+    </tr>
+    <tr>
+      <td>P100021_career</td>
+      <td>P100021</td>
+      <td>Mike Flood</td>
+      <td>Forward</td>
+      <td>Triple J</td>
+      <td>2</td>
+      <td>39</td>
+      <td>27.0</td>
+      <td>21.0</td>
+      <td>48.0</td>
+      <td>15.0</td>
+      <td>0.69</td>
+      <td>0.54</td>
+      <td>1.23</td>
+      <td>0.38</td>
+      <td>2026-01-12T23:37:17.091178</td>
+    </tr>
+    <tr>
+      <td>P100022_career</td>
+      <td>P100022</td>
+      <td>Chris Dube</td>
+      <td>Forward</td>
+      <td>Platinum</td>
+      <td>2</td>
+      <td>40</td>
+      <td>39.0</td>
+      <td>17.0</td>
+      <td>56.0</td>
+      <td>12.0</td>
+      <td>0.98</td>
+      <td>0.42</td>
+      <td>1.40</td>
+      <td>0.30</td>
+      <td>2026-01-12T23:37:17.091178</td>
+    </tr>
+    <tr>
+      <td>P100023_career</td>
+      <td>P100023</td>
+      <td>Alex Considine</td>
+      <td>Defense</td>
+      <td>Platinum</td>
+      <td>3</td>
+      <td>65</td>
+      <td>22.0</td>
+      <td>45.0</td>
+      <td>67.0</td>
+      <td>27.0</td>
+      <td>0.34</td>
+      <td>0.69</td>
+      <td>1.03</td>
+      <td>0.42</td>
+      <td>2026-01-12T23:37:17.091178</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+        </div>
+        
+        <footer>
+            BenchSight v11.04 | Generated 2026-01-13 11:03:18
+        </footer>
+    </div>
+</body>
+</html>

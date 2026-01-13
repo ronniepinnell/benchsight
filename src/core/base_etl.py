@@ -1028,28 +1028,48 @@ def build_player_lookup(gameroster_df):
     """
     log.section("PHASE 2: BUILD PLAYER LOOKUP")
     
-    lookup = {}
-    conflicts = []
+    # VECTORIZED: Build lookup using vectorized operations
+    # Filter valid rows
+    valid_mask = (
+        gameroster_df['game_id'].notna() & 
+        gameroster_df['player_game_number'].notna() & 
+        gameroster_df['player_id'].notna()
+    )
+    valid_df = gameroster_df[valid_mask].copy()
     
-    for _, row in gameroster_df.iterrows():
-        game_id = str(row.get('game_id', ''))
-        team_name = str(row.get('team_name', '')).strip()
-        player_num = str(row.get('player_game_number', '')).strip()
-        player_id = row.get('player_id')
-        
-        if game_id and player_num and pd.notna(player_id):
-            # Key includes team to handle duplicate numbers
-            key = (game_id, team_name, player_num)
-            
-            if key in lookup and lookup[key] != player_id:
-                conflicts.append(f"Conflict: {key} -> {lookup[key]} vs {player_id}")
-            
+    if len(valid_df) == 0:
+        log.info("No valid roster rows for lookup")
+        return {}
+    
+    # Convert to string types for consistent keys
+    valid_df['game_id_str'] = valid_df['game_id'].astype(str)
+    valid_df['team_name_str'] = valid_df['team_name'].astype(str).str.strip()
+    valid_df['player_num_str'] = valid_df['player_game_number'].astype(str).str.strip()
+    
+    # Build lookup dicts using vectorized operations
+    # Key with team: (game_id, team_name, player_num) -> player_id
+    valid_df['key_with_team'] = list(zip(
+        valid_df['game_id_str'],
+        valid_df['team_name_str'],
+        valid_df['player_num_str']
+    ))
+    lookup = dict(zip(valid_df['key_with_team'], valid_df['player_id']))
+    
+    # Check for conflicts (same key mapping to different player_ids)
+    conflicts = []
+    key_counts = valid_df.groupby('key_with_team')['player_id'].nunique()
+    conflicting_keys = key_counts[key_counts > 1].index
+    if len(conflicting_keys) > 0:
+        for key in conflicting_keys:
+            players = valid_df[valid_df['key_with_team'] == key]['player_id'].unique()
+            conflicts.append(f"Conflict: {key} -> {', '.join(map(str, players))}")
+    
+    # Also create key without team for fallback
+    valid_df['key_simple'] = list(zip(valid_df['game_id_str'], valid_df['player_num_str']))
+    simple_lookup = valid_df.drop_duplicates(subset=['key_simple'], keep='first')
+    for key, player_id in zip(simple_lookup['key_simple'], simple_lookup['player_id']):
+        if key not in lookup:  # Only add if not already in lookup (team key takes precedence)
             lookup[key] = player_id
-            
-            # Also create key without team for fallback
-            simple_key = (game_id, player_num)
-            if simple_key not in lookup:
-                lookup[simple_key] = player_id
     
     log.info(f"Built lookup with {len(lookup)} mappings")
     
@@ -2312,26 +2332,25 @@ def enhance_event_tables():
     log.info("  Adding position_id...")
     # Map position names to IDs
     pos_map = {'Forward': 4, 'Defense': 5, 'Goalie': 6, 'Center': 1, 'Left Wing': 2, 'Right Wing': 3}
-    # Create player+game -> position lookup
-    roster_pos = {}
-    for _, row in roster.iterrows():
-        key = (str(row['player_id']), int(row['game_id']))
-        pos = row.get('player_position')
-        if pd.notna(pos):
-            roster_pos[key] = pos_map.get(pos, 4)  # Default to Forward
+    # VECTORIZED: Create player+game -> position lookup
+    roster_valid = roster[roster['player_position'].notna()].copy()
+    roster_pos = dict(zip(
+        zip(roster_valid['player_id'].astype(str), roster_valid['game_id'].astype(int)),
+        roster_valid['player_position'].map(pos_map).fillna(4)  # Default to Forward if unknown
+    ))
     
     def get_position(row):
         key = (str(row['player_id']), int(row['game_id']))
         return roster_pos.get(key)
     tracking['position_id'] = tracking.apply(get_position, axis=1)
     
-    # 4. shot_type_id
+    # 4. shot_type_id - VECTORIZED
     log.info("  Adding shot_type_id...")
-    shot_map = {}
-    for _, row in shot_type.iterrows():
-        code = row['shot_type_code'].replace('-', '_')
-        shot_map[code] = row['shot_type_id']
-        shot_map[code.lower()] = row['shot_type_id']  # Also lowercase
+    shot_type_copy = shot_type.copy()
+    shot_type_copy['code_normalized'] = shot_type_copy['shot_type_code'].str.replace('-', '_')
+    shot_type_copy['code_lower'] = shot_type_copy['code_normalized'].str.lower()
+    shot_map = dict(zip(shot_type_copy['code_normalized'], shot_type_copy['shot_type_id']))
+    shot_map.update(dict(zip(shot_type_copy['code_lower'], shot_type_copy['shot_type_id'])))
     
     def get_shot_type(row):
         if row['event_type'] not in ['Shot', 'Goal']:
@@ -2346,17 +2365,24 @@ def enhance_event_tables():
     
     tracking['shot_type_id'] = tracking.apply(get_shot_type, axis=1)
     
-    # 5. zone_entry_type_id
+    # 5. zone_entry_type_id - VECTORIZED
     log.info("  Adding zone_entry_type_id...")
-    ze_map = {}
-    for _, row in ze_type.iterrows():
-        code = row['zone_entry_type_code'].replace('-', '_')
-        ze_map[code] = row['zone_entry_type_id']
-        # Add aliases for Rush <-> Carried normalization
-        if 'Rush' in code:
-            ze_map[code.replace('Rush', 'Carried')] = row['zone_entry_type_id']
-        if 'Carried' in code:
-            ze_map[code.replace('Carried', 'Rush')] = row['zone_entry_type_id']
+    ze_type_copy = ze_type.copy()
+    ze_type_copy['code_normalized'] = ze_type_copy['zone_entry_type_code'].str.replace('-', '_')
+    ze_map = dict(zip(ze_type_copy['code_normalized'], ze_type_copy['zone_entry_type_id']))
+    # Add aliases for Rush <-> Carried normalization
+    rush_mask = ze_type_copy['code_normalized'].str.contains('Rush', na=False)
+    carried_mask = ze_type_copy['code_normalized'].str.contains('Carried', na=False)
+    if rush_mask.any():
+        ze_map.update(dict(zip(
+            ze_type_copy.loc[rush_mask, 'code_normalized'].str.replace('Rush', 'Carried'),
+            ze_type_copy.loc[rush_mask, 'zone_entry_type_id']
+        )))
+    if carried_mask.any():
+        ze_map.update(dict(zip(
+            ze_type_copy.loc[carried_mask, 'code_normalized'].str.replace('Carried', 'Rush'),
+            ze_type_copy.loc[carried_mask, 'zone_entry_type_id']
+        )))
     
     def get_ze_type(row):
         if row['event_type'] != 'Zone_Entry_Exit':
@@ -2370,17 +2396,24 @@ def enhance_event_tables():
         return None
     tracking['zone_entry_type_id'] = tracking.apply(get_ze_type, axis=1)
     
-    # 6. zone_exit_type_id (NEW)
+    # 6. zone_exit_type_id (NEW) - VECTORIZED
     log.info("  Adding zone_exit_type_id...")
-    zx_map = {}
-    for _, row in zx_type.iterrows():
-        code = row['zone_exit_type_code'].replace('-', '_')
-        zx_map[code] = row['zone_exit_type_id']
-        # Add aliases for Rush <-> Carried normalization
-        if 'Rush' in code:
-            zx_map[code.replace('Rush', 'Carried')] = row['zone_exit_type_id']
-        if 'Carried' in code:
-            zx_map[code.replace('Carried', 'Rush')] = row['zone_exit_type_id']
+    zx_type_copy = zx_type.copy()
+    zx_type_copy['code_normalized'] = zx_type_copy['zone_exit_type_code'].str.replace('-', '_')
+    zx_map = dict(zip(zx_type_copy['code_normalized'], zx_type_copy['zone_exit_type_id']))
+    # Add aliases for Rush <-> Carried normalization
+    rush_mask = zx_type_copy['code_normalized'].str.contains('Rush', na=False)
+    carried_mask = zx_type_copy['code_normalized'].str.contains('Carried', na=False)
+    if rush_mask.any():
+        zx_map.update(dict(zip(
+            zx_type_copy.loc[rush_mask, 'code_normalized'].str.replace('Rush', 'Carried'),
+            zx_type_copy.loc[rush_mask, 'zone_exit_type_id']
+        )))
+    if carried_mask.any():
+        zx_map.update(dict(zip(
+            zx_type_copy.loc[carried_mask, 'code_normalized'].str.replace('Carried', 'Rush'),
+            zx_type_copy.loc[carried_mask, 'zone_exit_type_id']
+        )))
     
     def get_zx_type(row):
         if row['event_type'] != 'Zone_Entry_Exit':
@@ -2415,13 +2448,13 @@ def enhance_event_tables():
     giveaway_type_path = OUTPUT_DIR / 'dim_giveaway_type.csv'
     if giveaway_type_path.exists():
         giveaway_dim = pd.read_csv(giveaway_type_path)
-        # Build mapping from code to ID (handles variations like / vs _)
-        giveaway_map = {}
-        for _, row in giveaway_dim.iterrows():
-            code = row['giveaway_type_code']
-            giveaway_map[code] = row['giveaway_type_id']
-            # Also map variations (replace / with _)
-            giveaway_map[code.replace('/', '_')] = row['giveaway_type_id']
+        # VECTORIZED: Build mapping from code to ID (handles variations like / vs _)
+        giveaway_map = dict(zip(giveaway_dim['giveaway_type_code'], giveaway_dim['giveaway_type_id']))
+        # Also map variations (replace / with _)
+        giveaway_map.update(dict(zip(
+            giveaway_dim['giveaway_type_code'].str.replace('/', '_'),
+            giveaway_dim['giveaway_type_id']
+        )))
     else:
         giveaway_map = {}
         log.warn("  dim_giveaway_type.csv not found - giveaway_type_id will be None")
@@ -2448,11 +2481,12 @@ def enhance_event_tables():
     takeaway_type_path = OUTPUT_DIR / 'dim_takeaway_type.csv'
     if takeaway_type_path.exists():
         takeaway_dim = pd.read_csv(takeaway_type_path)
-        takeaway_map = {}
-        for _, row in takeaway_dim.iterrows():
-            code = row['takeaway_type_code']
-            takeaway_map[code] = row['takeaway_type_id']
-            takeaway_map[code.replace('/', '_')] = row['takeaway_type_id']
+        # VECTORIZED: Build takeaway map
+        takeaway_map = dict(zip(takeaway_dim['takeaway_type_code'], takeaway_dim['takeaway_type_id']))
+        takeaway_map.update(dict(zip(
+            takeaway_dim['takeaway_type_code'].str.replace('/', '_'),
+            takeaway_dim['takeaway_type_id']
+        )))
     else:
         takeaway_map = {}
         log.warn("  dim_takeaway_type.csv not found - takeaway_type_id will be None")
@@ -2478,12 +2512,13 @@ def enhance_event_tables():
     log.info("  Adding turnover_type_id (placeholder - linked in post-ETL)...")
     tracking['turnover_type_id'] = None  # Will be populated if needed in post-ETL
     
-    # 11. pass_type_id
+    # 11. pass_type_id - VECTORIZED
     log.info("  Adding pass_type_id...")
-    pass_map = {}
-    for _, row in pass_type.iterrows():
-        pass_map[row['pass_type_code']] = row['pass_type_id']
-        pass_map[row['pass_type_code'].lower()] = row['pass_type_id']  # Also lowercase
+    pass_map = dict(zip(pass_type['pass_type_code'], pass_type['pass_type_id']))
+    pass_map.update(dict(zip(
+        pass_type['pass_type_code'].str.lower(),
+        pass_type['pass_type_id']
+    )))
     
     def get_pass_type(row):
         if row['event_type'] != 'Pass':
@@ -3557,7 +3592,10 @@ def create_derived_event_tables():
     # fact_rushes
     rushes = events[events['is_rush'] == 1].copy()
     rushes['rush_key'] = 'RU' + rushes['game_id'].astype(str) + rushes.index.astype(str).str.zfill(4)
-    rushes['rush_outcome'] = rushes.apply(lambda r: 'goal' if r['is_goal'] == 1 else 'shot' if r['is_sog'] == 1 else 'zone_entry' if r['is_zone_entry'] == 1 else 'other', axis=1)
+    # VECTORIZED: Determine rush outcome
+    rushes['rush_outcome'] = np.where(rushes['is_goal'] == 1, 'goal',
+                                      np.where(rushes['is_sog'] == 1, 'shot',
+                                              np.where(rushes['is_zone_entry'] == 1, 'zone_entry', 'other')))
     save_table(rushes, 'fact_rushes')
     log.info(f"  ✓ fact_rushes: {len(rushes)} rows")
     
@@ -3667,25 +3705,23 @@ def enhance_shift_tables():
     # Prep events
     events['event_total_seconds'] = events['event_start_min'] * 60 + events['event_start_sec']
     
-    # Build lookups
-    player_team_map = {}
-    for _, r in roster.sort_values('game_id').iterrows():
-        player_team_map[r['player_id']] = r['team_name']
+    # Build lookups - VECTORIZED
+    # player_team_map: player_id -> team_name (use last occurrence per game_id sort)
+    roster_sorted = roster.sort_values('game_id')
+    player_team_map = dict(zip(roster_sorted['player_id'], roster_sorted['team_name']))
     
-    roster_lookup = {}
-    for _, row in roster.iterrows():
-        jersey_str = str(row['player_game_number'])
-        key = (row['game_id'], row['team_name'], jersey_str)
-        roster_lookup[key] = row['player_id']
+    # roster_lookup: (game_id, team_name, jersey) -> player_id
+    roster_lookup = dict(zip(
+        zip(roster['game_id'], roster['team_name'], roster['player_game_number'].astype(str)),
+        roster['player_id']
+    ))
     
-    # Add event_team to events
-    def get_event_team(row):
-        player_ids = str(row['event_player_ids']).split(',')
-        first_player = player_ids[0].strip() if player_ids else None
-        return player_team_map.get(first_player, None)
-    
-    events['event_team'] = events.apply(get_event_team, axis=1)
-    events['is_home_event'] = events['event_team'] == events['home_team']
+    # VECTORIZED: Add event_team to events
+    if len(events) > 0 and 'event_player_ids' in events.columns:
+        events['first_player'] = events['event_player_ids'].astype(str).str.split(',').str[0].str.strip()
+        events['event_team'] = events['first_player'].map(player_team_map)
+        events['is_home_event'] = events['event_team'] == events['home_team']
+        events.drop(columns=['first_player'], inplace=True, errors='ignore')
     
     # Build shift-events mapping
     def get_shift_events(shift_row, all_events):
@@ -3701,9 +3737,39 @@ def enhance_shift_tables():
                (all_events['event_total_seconds'] >= end_sec)
         return all_events[mask]
     
-    shift_events_map = {}
-    for i, shift in shifts.iterrows():
-        shift_events_map[shift['shift_id']] = get_shift_events(shift, events)
+    # VECTORIZED: Build shift-events mapping more efficiently
+    # Instead of iterating through shifts, merge events with shifts and filter
+    if len(events) > 0 and len(shifts) > 0:
+        # Prepare events and shifts for merge
+        events_for_merge = events[['event_id', 'game_id', 'period', 'event_total_seconds']].copy()
+        shifts_for_merge = shifts[['shift_id', 'game_id', 'period', 'shift_start_total_seconds', 
+                                   'shift_end_total_seconds']].copy()
+        shifts_for_merge = shifts_for_merge[
+            shifts_for_merge['shift_start_total_seconds'].notna() & 
+            shifts_for_merge['shift_end_total_seconds'].notna()
+        ]
+        
+        # Merge on game_id and period
+        events_shifts = events_for_merge.merge(
+            shifts_for_merge,
+            on=['game_id', 'period'],
+            how='inner'
+        )
+        
+        # Filter by time window
+        time_mask = (
+            (events_shifts['event_total_seconds'] <= events_shifts['shift_start_total_seconds']) &
+            (events_shifts['event_total_seconds'] >= events_shifts['shift_end_total_seconds'])
+        )
+        events_in_shifts = events_shifts[time_mask]
+        
+        # Build shift_events_map using groupby (much faster than iterrows)
+        shift_events_map = {}
+        for shift_id, group in events_in_shifts.groupby('shift_id'):
+            event_ids = group['event_id'].tolist()
+            shift_events_map[shift_id] = events[events['event_id'].isin(event_ids)]
+    else:
+        shift_events_map = {}
     
     # 1. Basic FKs
     shifts['period_id'] = 'P' + shifts['period'].fillna(0).astype(int).astype(str).str.zfill(2)
@@ -3786,12 +3852,14 @@ def enhance_shift_tables():
             return 'Stoppage'
         return 'OnTheFly'
     
+    # Use .get() to handle shifts with no events (empty DataFrame default)
+    empty_events_df = pd.DataFrame()
     shifts['shift_start_type_derived'] = [
-        derive_start_type(shift_events_map[sid], shifts.loc[i, 'shift_start_type'])
+        derive_start_type(shift_events_map.get(sid, empty_events_df), shifts.loc[i, 'shift_start_type'])
         for i, sid in enumerate(shifts['shift_id'])
     ]
     shifts['shift_stop_type_derived'] = [
-        derive_stop_type(shift_events_map[sid], shifts.loc[i, 'shift_stop_type'])
+        derive_stop_type(shift_events_map.get(sid, empty_events_df), shifts.loc[i, 'shift_stop_type'])
         for i, sid in enumerate(shifts['shift_id'])
     ]
     
@@ -3803,7 +3871,7 @@ def enhance_shift_tables():
         last_zone = shift_events_df.iloc[0]['event_team_zone']
         return first_zone, last_zone
     
-    zones_data = [get_start_end_zones(shift_events_map[sid]) for sid in shifts['shift_id']]
+    zones_data = [get_start_end_zones(shift_events_map.get(sid, empty_events_df)) for sid in shifts['shift_id']]
     shifts['start_zone'] = [z[0] for z in zones_data]
     shifts['end_zone'] = [z[1] for z in zones_data]
     # Map zone names to zone_id (ZN01=Offensive, ZN02=Defensive, ZN03=Neutral)
@@ -3823,23 +3891,26 @@ def enhance_shift_tables():
         ('away', 'defense_1'), ('away', 'defense_2'), ('away', 'xtra'), ('away', 'goalie'),
     ]
     
+    # VECTORIZED: Map player IDs for all slots at once
     for venue, slot in player_slots:
         col_name = f'{venue}_{slot}'
         id_col = f'{col_name}_id'
-        player_ids = []
-        for i, shift in shifts.iterrows():
-            jersey = shift[col_name]
-            team = shift[f'{venue}_team']
-            game_id = shift['game_id']
-            if pd.isna(jersey) or pd.isna(team):
-                player_ids.append(None)
-            else:
-                jersey_str = str(int(jersey))
-                key = (game_id, team, jersey_str)
-                player_ids.append(roster_lookup.get(key, None))
-        shifts[id_col] = player_ids
+        team_col = f'{venue}_team'
+        
+        # Create lookup keys vectorized
+        shifts['_lookup_key_team'] = list(zip(
+            shifts['game_id'],
+            shifts[team_col].fillna(''),
+            shifts[col_name].fillna('').astype(str)
+        ))
+        
+        # Map using roster_lookup
+        shifts[id_col] = shifts['_lookup_key_team'].map(roster_lookup)
+        
+        # Clean up temporary columns
+        shifts.drop(columns=['_lookup_key_team'], inplace=True, errors='ignore')
     
-    # 4.5 Add team ratings (v19.00 ROOT CAUSE FIX)
+    # 4.5 Add team ratings (v19.00 ROOT CAUSE FIX) - OPTIMIZED v29.2
     # Calculate avg/min/max ratings for home and away teams (excluding goalies)
     log.info("  Adding team ratings (excluding goalies)...")
     
@@ -3851,29 +3922,34 @@ def enhance_shift_tables():
     away_skater_cols = ['away_forward_1_id', 'away_forward_2_id', 'away_forward_3_id',
                         'away_defense_1_id', 'away_defense_2_id']
     
-    def calc_team_ratings(row, cols, rating_map):
-        """Calculate avg, min, max ratings for a set of player columns."""
-        ratings = []
-        for col in cols:
-            pid = row.get(col)
-            if pd.notna(pid) and pid in rating_map:
-                rating = rating_map[pid]
-                if pd.notna(rating):
-                    ratings.append(float(rating))
-        if not ratings:
-            return None, None, None
-        return round(sum(ratings) / len(ratings), 2), min(ratings), max(ratings)
+    # VECTORIZED: Map player IDs to ratings for all columns at once
+    for col in home_skater_cols + away_skater_cols:
+        if col in shifts.columns:
+            shifts[f'{col}_rating'] = shifts[col].map(player_rating_map)
     
-    # Calculate for each shift
-    home_ratings_data = shifts.apply(lambda r: calc_team_ratings(r, home_skater_cols, player_rating_map), axis=1)
-    shifts['home_avg_rating'] = [r[0] for r in home_ratings_data]
-    shifts['home_min_rating'] = [r[1] for r in home_ratings_data]
-    shifts['home_max_rating'] = [r[2] for r in home_ratings_data]
+    # Calculate home team ratings using vectorized operations
+    home_rating_cols = [f'{col}_rating' for col in home_skater_cols]
+    home_ratings_df = shifts[home_rating_cols].copy()
     
-    away_ratings_data = shifts.apply(lambda r: calc_team_ratings(r, away_skater_cols, player_rating_map), axis=1)
-    shifts['away_avg_rating'] = [r[0] for r in away_ratings_data]
-    shifts['away_min_rating'] = [r[1] for r in away_ratings_data]
-    shifts['away_max_rating'] = [r[2] for r in away_ratings_data]
+    # Filter out NaN values and calculate stats
+    shifts['home_avg_rating'] = home_ratings_df.mean(axis=1, skipna=True).round(2)
+    shifts['home_min_rating'] = home_ratings_df.min(axis=1, skipna=True)
+    shifts['home_max_rating'] = home_ratings_df.max(axis=1, skipna=True)
+    
+    # Calculate away team ratings using vectorized operations
+    away_rating_cols = [f'{col}_rating' for col in away_skater_cols]
+    away_ratings_df = shifts[away_rating_cols].copy()
+    
+    # Filter out NaN values and calculate stats
+    shifts['away_avg_rating'] = away_ratings_df.mean(axis=1, skipna=True).round(2)
+    shifts['away_min_rating'] = away_ratings_df.min(axis=1, skipna=True)
+    shifts['away_max_rating'] = away_ratings_df.max(axis=1, skipna=True)
+    
+    # Clean up temporary rating columns to save memory
+    temp_rating_cols = home_rating_cols + away_rating_cols
+    for col in temp_rating_cols:
+        if col in shifts.columns:
+            shifts.drop(columns=[col], inplace=True)
     
     # Calculate rating differential and advantage
     shifts['rating_differential'] = shifts['home_avg_rating'] - shifts['away_avg_rating']
@@ -3887,8 +3963,12 @@ def enhance_shift_tables():
     # 5. Plus/minus
     # CRITICAL: Goals ONLY via event_type='Goal' AND event_detail='Goal_Scored' (per CODE_STANDARDS.md)
     actual_goals = events[(events['event_type'] == 'Goal') & (events['event_detail'] == 'Goal_Scored')].copy()
-    actual_goals['scoring_team'] = actual_goals.apply(lambda r: player_team_map.get(str(r['event_player_ids']).split(',')[0].strip(), None), axis=1)
-    actual_goals['is_home_goal'] = actual_goals['scoring_team'] == actual_goals['home_team']
+    
+    # VECTORIZED: Extract first player ID and map to team
+    if len(actual_goals) > 0:
+        actual_goals['first_player'] = actual_goals['event_player_ids'].astype(str).str.split(',').str[0].str.strip()
+        actual_goals['scoring_team'] = actual_goals['first_player'].map(player_team_map)
+        actual_goals['is_home_goal'] = actual_goals['scoring_team'] == actual_goals['home_team']
     
     pm_types = ['all', 'ev', 'nen', 'pp', 'pk']
     for pm_type in pm_types:
@@ -4041,77 +4121,129 @@ def enhance_shift_tables():
     for col in stat_cols:
         shifts[col] = 0 if col not in ['cf_pct', 'ff_pct', 'fo_pct'] else 0.0
     
-    for i, shift in shifts.iterrows():
-        shift_ev = shift_events_map[shift['shift_id']]
-        if shift_ev.empty:
-            continue
-        shifts.at[i, 'event_count'] = len(shift_ev)
+    # VECTORIZED: Aggregate shift stats using groupby instead of iterrows
+    # Build a combined DataFrame with all events and their shift_ids for efficient aggregation
+    if len(shift_events_map) > 0:
+        all_shift_events = []
+        for shift_id, shift_ev in shift_events_map.items():
+            if not shift_ev.empty:
+                shift_ev_copy = shift_ev.copy()
+                shift_ev_copy['_shift_id'] = shift_id
+                all_shift_events.append(shift_ev_copy)
         
-        sog = shift_ev[shift_ev['is_sog'] == 1]
-        home_sog = sog['is_home_event'].sum()
-        shifts.at[i, 'sf'] = home_sog
-        shifts.at[i, 'sa'] = len(sog) - home_sog
-        shifts.at[i, 'shot_diff'] = shifts.at[i, 'sf'] - shifts.at[i, 'sa']
-        
-        # Corsi = all shot attempts (SOG + blocked + missed) - use is_corsi flag
-        corsi_events = shift_ev[shift_ev['is_corsi'] == 1]
-        home_corsi = corsi_events['is_home_event'].sum()
-        shifts.at[i, 'cf'] = home_corsi
-        shifts.at[i, 'ca'] = len(corsi_events) - home_corsi
-        total_corsi = shifts.at[i, 'cf'] + shifts.at[i, 'ca']
-        shifts.at[i, 'cf_pct'] = (shifts.at[i, 'cf'] / total_corsi * 100) if total_corsi > 0 else 50.0
-        
-        # Fenwick = unblocked shot attempts (SOG + missed) - use is_fenwick flag
-        fenwick_events = shift_ev[shift_ev['is_fenwick'] == 1]
-        home_fenwick = fenwick_events['is_home_event'].sum()
-        shifts.at[i, 'ff'] = home_fenwick
-        shifts.at[i, 'fa'] = len(fenwick_events) - home_fenwick
-        total_fenwick = shifts.at[i, 'ff'] + shifts.at[i, 'fa']
-        shifts.at[i, 'ff_pct'] = (shifts.at[i, 'ff'] / total_fenwick * 100) if total_fenwick > 0 else 50.0
-        
-        sc = shift_ev[shift_ev['is_scoring_chance'] == 1]
-        shifts.at[i, 'scf'] = sc['is_home_event'].sum()
-        shifts.at[i, 'sca'] = len(sc) - shifts.at[i, 'scf']
-        
-        hd = shift_ev[shift_ev['is_high_danger'] == 1]
-        shifts.at[i, 'hdf'] = hd['is_home_event'].sum()
-        shifts.at[i, 'hda'] = len(hd) - shifts.at[i, 'hdf']
-        
-        # Zone entries/exits - team-specific (home vs away)
-        ze = shift_ev[shift_ev['is_zone_entry'] == 1]
-        shifts.at[i, 'home_zone_entries'] = ze['is_home_event'].sum()
-        shifts.at[i, 'away_zone_entries'] = len(ze) - shifts.at[i, 'home_zone_entries']
-        
-        zx = shift_ev[shift_ev['is_zone_exit'] == 1]
-        shifts.at[i, 'home_zone_exits'] = zx['is_home_event'].sum()
-        shifts.at[i, 'away_zone_exits'] = len(zx) - shifts.at[i, 'home_zone_exits']
-        
-        # Giveaways/takeaways - team-specific
-        ga = shift_ev[shift_ev['is_giveaway'] == 1]
-        shifts.at[i, 'home_giveaways'] = ga['is_home_event'].sum()
-        shifts.at[i, 'away_giveaways'] = len(ga) - shifts.at[i, 'home_giveaways']
-        
-        # Bad giveaways - team-specific
-        bad_ga = shift_ev[shift_ev['is_bad_giveaway'] == 1]
-        shifts.at[i, 'home_bad_giveaways'] = bad_ga['is_home_event'].sum()
-        shifts.at[i, 'away_bad_giveaways'] = len(bad_ga) - shifts.at[i, 'home_bad_giveaways']
-        
-        ta = shift_ev[shift_ev['is_takeaway'] == 1]
-        shifts.at[i, 'home_takeaways'] = ta['is_home_event'].sum()
-        shifts.at[i, 'away_takeaways'] = len(ta) - shifts.at[i, 'home_takeaways']
-        
-        faceoffs = shift_ev[shift_ev['is_faceoff'] == 1]
-        # Faceoff winner = event_player_1 (player_team). Compare to home_team.
-        # fo_won = home team won the faceoff (player_team == home_team)
-        # fo_lost = home team lost the faceoff (player_team != home_team)
-        if len(faceoffs) > 0 and 'player_team' in faceoffs.columns and 'home_team' in faceoffs.columns:
-            shifts.at[i, 'fo_won'] = len(faceoffs[faceoffs['player_team'] == faceoffs['home_team']])
-            shifts.at[i, 'fo_lost'] = len(faceoffs[faceoffs['player_team'] != faceoffs['home_team']])
-        else:
-            shifts.at[i, 'fo_won'] = 0
-            shifts.at[i, 'fo_lost'] = 0
-        total_fo = shifts.at[i, 'fo_won'] + shifts.at[i, 'fo_lost']
-        shifts.at[i, 'fo_pct'] = (shifts.at[i, 'fo_won'] / total_fo * 100) if total_fo > 0 else 0.0
+        if all_shift_events:
+            combined_events = pd.concat(all_shift_events, ignore_index=True)
+            
+            # Create aggregation functions for each stat type
+            def agg_shift_stats(events_df, shift_ids):
+                """Aggregate stats for shifts using vectorized operations."""
+                stats = {}
+                
+                # Event count
+                event_counts = events_df.groupby('_shift_id').size()
+                stats['event_count'] = shift_ids.map(event_counts).fillna(0)
+                
+                # SOG stats
+                sog_events = events_df[events_df['is_sog'] == 1] if 'is_sog' in events_df.columns else pd.DataFrame()
+                if len(sog_events) > 0:
+                    home_sog = sog_events[sog_events['is_home_event'] == 1].groupby('_shift_id').size()
+                    stats['sf'] = shift_ids.map(home_sog).fillna(0)
+                    total_sog = sog_events.groupby('_shift_id').size()
+                    stats['sa'] = (shift_ids.map(total_sog).fillna(0) - stats['sf']).fillna(0)
+                    stats['shot_diff'] = stats['sf'] - stats['sa']
+                
+                # Corsi stats
+                corsi_events = events_df[events_df['is_corsi'] == 1] if 'is_corsi' in events_df.columns else pd.DataFrame()
+                if len(corsi_events) > 0:
+                    home_corsi = corsi_events[corsi_events['is_home_event'] == 1].groupby('_shift_id').size()
+                    stats['cf'] = shift_ids.map(home_corsi).fillna(0)
+                    total_corsi = corsi_events.groupby('_shift_id').size()
+                    stats['ca'] = (shift_ids.map(total_corsi).fillna(0) - stats['cf']).fillna(0)
+                    total_corsi_sum = stats['cf'] + stats['ca']
+                    stats['cf_pct'] = (stats['cf'] / total_corsi_sum * 100).where(total_corsi_sum > 0, 50.0)
+                
+                # Fenwick stats
+                fenwick_events = events_df[events_df['is_fenwick'] == 1] if 'is_fenwick' in events_df.columns else pd.DataFrame()
+                if len(fenwick_events) > 0:
+                    home_fenwick = fenwick_events[fenwick_events['is_home_event'] == 1].groupby('_shift_id').size()
+                    stats['ff'] = shift_ids.map(home_fenwick).fillna(0)
+                    total_fenwick = fenwick_events.groupby('_shift_id').size()
+                    stats['fa'] = (shift_ids.map(total_fenwick).fillna(0) - stats['ff']).fillna(0)
+                    total_fenwick_sum = stats['ff'] + stats['fa']
+                    stats['ff_pct'] = (stats['ff'] / total_fenwick_sum * 100).where(total_fenwick_sum > 0, 50.0)
+                
+                # Scoring chances
+                sc_events = events_df[events_df['is_scoring_chance'] == 1] if 'is_scoring_chance' in events_df.columns else pd.DataFrame()
+                if len(sc_events) > 0:
+                    home_sc = sc_events[sc_events['is_home_event'] == 1].groupby('_shift_id').size()
+                    stats['scf'] = shift_ids.map(home_sc).fillna(0)
+                    total_sc = sc_events.groupby('_shift_id').size()
+                    stats['sca'] = (shift_ids.map(total_sc).fillna(0) - stats['scf']).fillna(0)
+                
+                # High danger
+                hd_events = events_df[events_df['is_high_danger'] == 1] if 'is_high_danger' in events_df.columns else pd.DataFrame()
+                if len(hd_events) > 0:
+                    home_hd = hd_events[hd_events['is_home_event'] == 1].groupby('_shift_id').size()
+                    stats['hdf'] = shift_ids.map(home_hd).fillna(0)
+                    total_hd = hd_events.groupby('_shift_id').size()
+                    stats['hda'] = (shift_ids.map(total_hd).fillna(0) - stats['hdf']).fillna(0)
+                
+                # Zone entries/exits
+                ze_events = events_df[events_df['is_zone_entry'] == 1] if 'is_zone_entry' in events_df.columns else pd.DataFrame()
+                if len(ze_events) > 0:
+                    home_ze = ze_events[ze_events['is_home_event'] == 1].groupby('_shift_id').size()
+                    stats['home_zone_entries'] = shift_ids.map(home_ze).fillna(0)
+                    total_ze = ze_events.groupby('_shift_id').size()
+                    stats['away_zone_entries'] = (shift_ids.map(total_ze).fillna(0) - stats['home_zone_entries']).fillna(0)
+                
+                zx_events = events_df[events_df['is_zone_exit'] == 1] if 'is_zone_exit' in events_df.columns else pd.DataFrame()
+                if len(zx_events) > 0:
+                    home_zx = zx_events[zx_events['is_home_event'] == 1].groupby('_shift_id').size()
+                    stats['home_zone_exits'] = shift_ids.map(home_zx).fillna(0)
+                    total_zx = zx_events.groupby('_shift_id').size()
+                    stats['away_zone_exits'] = (shift_ids.map(total_zx).fillna(0) - stats['home_zone_exits']).fillna(0)
+                
+                # Giveaways/takeaways
+                ga_events = events_df[events_df['is_giveaway'] == 1] if 'is_giveaway' in events_df.columns else pd.DataFrame()
+                if len(ga_events) > 0:
+                    home_ga = ga_events[ga_events['is_home_event'] == 1].groupby('_shift_id').size()
+                    stats['home_giveaways'] = shift_ids.map(home_ga).fillna(0)
+                    total_ga = ga_events.groupby('_shift_id').size()
+                    stats['away_giveaways'] = (shift_ids.map(total_ga).fillna(0) - stats['home_giveaways']).fillna(0)
+                
+                bad_ga_events = events_df[events_df['is_bad_giveaway'] == 1] if 'is_bad_giveaway' in events_df.columns else pd.DataFrame()
+                if len(bad_ga_events) > 0:
+                    home_bad_ga = bad_ga_events[bad_ga_events['is_home_event'] == 1].groupby('_shift_id').size()
+                    stats['home_bad_giveaways'] = shift_ids.map(home_bad_ga).fillna(0)
+                    total_bad_ga = bad_ga_events.groupby('_shift_id').size()
+                    stats['away_bad_giveaways'] = (shift_ids.map(total_bad_ga).fillna(0) - stats['home_bad_giveaways']).fillna(0)
+                
+                ta_events = events_df[events_df['is_takeaway'] == 1] if 'is_takeaway' in events_df.columns else pd.DataFrame()
+                if len(ta_events) > 0:
+                    home_ta = ta_events[ta_events['is_home_event'] == 1].groupby('_shift_id').size()
+                    stats['home_takeaways'] = shift_ids.map(home_ta).fillna(0)
+                    total_ta = ta_events.groupby('_shift_id').size()
+                    stats['away_takeaways'] = (shift_ids.map(total_ta).fillna(0) - stats['home_takeaways']).fillna(0)
+                
+                # Faceoffs
+                fo_events = events_df[events_df['is_faceoff'] == 1] if 'is_faceoff' in events_df.columns else pd.DataFrame()
+                if len(fo_events) > 0 and 'player_team' in fo_events.columns and 'home_team' in fo_events.columns:
+                    home_fo_won = fo_events[fo_events['player_team'] == fo_events['home_team']].groupby('_shift_id').size()
+                    stats['fo_won'] = shift_ids.map(home_fo_won).fillna(0)
+                    total_fo = fo_events.groupby('_shift_id').size()
+                    stats['fo_lost'] = (shift_ids.map(total_fo).fillna(0) - stats['fo_won']).fillna(0)
+                    total_fo_sum = stats['fo_won'] + stats['fo_lost']
+                    stats['fo_pct'] = (stats['fo_won'] / total_fo_sum * 100).where(total_fo_sum > 0, 0.0)
+                
+                return stats
+            
+            # Apply aggregations
+            shift_ids = shifts['shift_id']
+            aggregated_stats = agg_shift_stats(combined_events, shift_ids)
+            
+            # Assign to shifts DataFrame
+            for col, values in aggregated_stats.items():
+                shifts[col] = values
     
     # 7. Create dim tables
     start_types = shifts['shift_start_type_derived'].dropna().unique()
@@ -4184,8 +4316,9 @@ def enhance_shift_players():
     # ========================================
     log.info("  Pass 1: Pulling stats from fact_shifts...")
     
-    # Create shift lookup for fast joining
-    shifts_lookup = shifts.set_index('shift_id').to_dict('index')
+    # VECTORIZED: Merge shift data directly instead of using lookup dict
+    # This is much faster than row-by-row lookups
+    shifts_for_merge = shifts.set_index('shift_id')
     
     # Columns to pull from fact_shifts (shift-level data)
     time_cols = ['shift_duration', 'shift_start_total_seconds', 'shift_end_total_seconds', 'stoppage_time']
@@ -4200,6 +4333,12 @@ def enhance_shift_players():
     # flipped for away team players so their "for" = their team's events
     stat_cols_venue = ['cf', 'ca', 'cf_pct', 'ff', 'fa', 'ff_pct', 'sf', 'sa', 'shot_diff',
                        'scf', 'sca', 'hdf', 'hda']
+    # Zone entry/exit and giveaway/takeaway columns (need venue mapping)
+    zone_cols = ['home_zone_entries', 'away_zone_entries', 'home_zone_exits', 'away_zone_exits',
+                 'home_giveaways', 'away_giveaways', 'home_bad_giveaways', 'away_bad_giveaways',
+                 'home_takeaways', 'away_takeaways']
+    # Faceoff columns (need venue mapping)
+    fo_cols = ['fo_won', 'fo_lost', 'fo_pct']
     stat_cols_direct = ['event_count']
     
     # Rating columns from fact_shifts (team-level)
@@ -4218,64 +4357,91 @@ def enhance_shift_players():
                       'away_gf_pp', 'away_ga_pp', 'away_gf_pk', 'away_ga_pk',
                       'away_pm_all', 'away_pm_ev']
     
-    # Pull direct columns
+    # Pull direct columns - include goal and stat columns for venue mapping
     all_pull_cols = time_cols + context_cols + stat_cols_direct + rating_cols_shifts + fk_cols
+    # Also include goal columns and stat columns needed for venue mapping
+    all_pull_cols += goal_cols_home + goal_cols_away + stat_cols_venue + zone_cols + fo_cols
     
-    for col in all_pull_cols:
-        sp[col] = sp['shift_id'].apply(lambda sid: shifts_lookup.get(sid, {}).get(col, None))
+    # VECTORIZED: Merge all columns at once (much faster than row-by-row lookups)
+    sp = sp.merge(shifts_for_merge[all_pull_cols], left_on='shift_id', right_index=True, how='left')
     
-    # Map venue-specific goal columns
-    def get_venue_stat(row, home_col, away_col):
-        shift_data = shifts_lookup.get(row['shift_id'], {})
-        if row['venue'] == 'home':
-            return shift_data.get(home_col, 0)
-        else:
-            return shift_data.get(away_col, 0)
+    # VECTORIZED: Map venue-specific goal columns using np.where
+    # Create masks for home vs away
+    home_mask = sp['venue'] == 'home'
+    away_mask = ~home_mask
     
-    # Goals for/against (mapped by venue)
-    sp['gf'] = sp.apply(lambda r: get_venue_stat(r, 'home_gf_all', 'away_gf_all'), axis=1)
-    sp['ga'] = sp.apply(lambda r: get_venue_stat(r, 'home_ga_all', 'away_ga_all'), axis=1)
+    # Goals for/against (mapped by venue) - VECTORIZED
+    sp['gf'] = np.where(home_mask, 
+                       sp['home_gf_all'].fillna(0), 
+                       sp['away_gf_all'].fillna(0))
+    sp['ga'] = np.where(home_mask,
+                       sp['home_ga_all'].fillna(0),
+                       sp['away_ga_all'].fillna(0))
     sp['pm'] = sp['gf'] - sp['ga']
-    sp['gf_ev'] = sp.apply(lambda r: get_venue_stat(r, 'home_gf_ev', 'away_gf_ev'), axis=1)
-    sp['ga_ev'] = sp.apply(lambda r: get_venue_stat(r, 'home_ga_ev', 'away_ga_ev'), axis=1)
-    sp['gf_pp'] = sp.apply(lambda r: get_venue_stat(r, 'home_gf_pp', 'away_gf_pp'), axis=1)
-    sp['ga_pp'] = sp.apply(lambda r: get_venue_stat(r, 'home_ga_pp', 'away_ga_pp'), axis=1)
-    sp['gf_pk'] = sp.apply(lambda r: get_venue_stat(r, 'home_gf_pk', 'away_gf_pk'), axis=1)
-    sp['ga_pk'] = sp.apply(lambda r: get_venue_stat(r, 'home_ga_pk', 'away_ga_pk'), axis=1)
-    sp['pm_ev'] = sp.apply(lambda r: get_venue_stat(r, 'home_pm_ev', 'away_pm_ev'), axis=1)
+    sp['gf_ev'] = np.where(home_mask,
+                           sp['home_gf_ev'].fillna(0),
+                           sp['away_gf_ev'].fillna(0))
+    sp['ga_ev'] = np.where(home_mask,
+                           sp['home_ga_ev'].fillna(0),
+                           sp['away_ga_ev'].fillna(0))
+    sp['gf_pp'] = np.where(home_mask,
+                           sp['home_gf_pp'].fillna(0),
+                           sp['away_gf_pp'].fillna(0))
+    sp['ga_pp'] = np.where(home_mask,
+                           sp['home_ga_pp'].fillna(0),
+                           sp['away_ga_pp'].fillna(0))
+    sp['gf_pk'] = np.where(home_mask,
+                           sp['home_gf_pk'].fillna(0),
+                           sp['away_gf_pk'].fillna(0))
+    sp['ga_pk'] = np.where(home_mask,
+                           sp['home_ga_pk'].fillna(0),
+                           sp['away_ga_pk'].fillna(0))
+    sp['pm_ev'] = np.where(home_mask,
+                           sp['home_pm_ev'].fillna(0),
+                           sp['away_pm_ev'].fillna(0))
     
-    # Team/opponent ratings (mapped by venue)
-    sp['team_avg_rating'] = sp.apply(lambda r: get_venue_stat(r, 'home_avg_rating', 'away_avg_rating'), axis=1)
-    sp['opp_avg_rating'] = sp.apply(lambda r: get_venue_stat(r, 'away_avg_rating', 'home_avg_rating'), axis=1)
-    sp['team_id'] = sp.apply(lambda r: get_venue_stat(r, 'home_team_id', 'away_team_id'), axis=1)
-    sp['opp_team_id'] = sp.apply(lambda r: get_venue_stat(r, 'away_team_id', 'home_team_id'), axis=1)
+    # Team/opponent ratings (mapped by venue) - VECTORIZED
+    sp['team_avg_rating'] = np.where(home_mask,
+                                    sp['home_avg_rating'].fillna(0),
+                                    sp['away_avg_rating'].fillna(0))
+    sp['opp_avg_rating'] = np.where(home_mask,
+                                    sp['away_avg_rating'].fillna(0),
+                                    sp['home_avg_rating'].fillna(0))
+    sp['team_id'] = np.where(home_mask,
+                            sp['home_team_id'].fillna(''),
+                            sp['away_team_id'].fillna(''))
+    sp['opp_team_id'] = np.where(home_mask,
+                                 sp['away_team_id'].fillna(''),
+                                 sp['home_team_id'].fillna(''))
     
     # Corsi/Fenwick/Shot columns (venue-mapped: "for" = player's team, "against" = opponent)
     # fact_shifts stores from home perspective (cf = home corsi, ca = away corsi)
     # For away players, we swap: their cf = shift's ca, their ca = shift's cf
-    def get_for_stat(row, col):
-        """Get 'for' stat - home players get home value, away players get away value."""
-        shift_data = shifts_lookup.get(row['shift_id'], {})
-        if row['venue'] == 'home':
-            return shift_data.get(col, 0)
-        else:
-            # Swap: away player's "for" = shift's "against" (opponent's perspective)
-            swap_map = {'cf': 'ca', 'ca': 'cf', 'ff': 'fa', 'fa': 'ff', 
-                        'sf': 'sa', 'sa': 'sf', 'scf': 'sca', 'sca': 'scf',
-                        'hdf': 'hda', 'hda': 'hdf'}
-            return shift_data.get(swap_map.get(col, col), 0)
+    # VECTORIZED: Use np.where with swap logic
+    # IMPORTANT: Store original values before swapping to avoid overwriting
+    cf_orig = sp['cf'].fillna(0)
+    ca_orig = sp['ca'].fillna(0)
+    ff_orig = sp['ff'].fillna(0)
+    fa_orig = sp['fa'].fillna(0)
+    sf_orig = sp['sf'].fillna(0)
+    sa_orig = sp['sa'].fillna(0)
+    scf_orig = sp['scf'].fillna(0)
+    sca_orig = sp['sca'].fillna(0)
+    hdf_orig = sp['hdf'].fillna(0)
+    hda_orig = sp['hda'].fillna(0)
     
-    # Map venue-specific corsi/fenwick/shot stats
-    sp['cf'] = sp.apply(lambda r: get_for_stat(r, 'cf'), axis=1)
-    sp['ca'] = sp.apply(lambda r: get_for_stat(r, 'ca'), axis=1)
-    sp['ff'] = sp.apply(lambda r: get_for_stat(r, 'ff'), axis=1)
-    sp['fa'] = sp.apply(lambda r: get_for_stat(r, 'fa'), axis=1)
-    sp['sf'] = sp.apply(lambda r: get_for_stat(r, 'sf'), axis=1)
-    sp['sa'] = sp.apply(lambda r: get_for_stat(r, 'sa'), axis=1)
-    sp['scf'] = sp.apply(lambda r: get_for_stat(r, 'scf'), axis=1)
-    sp['sca'] = sp.apply(lambda r: get_for_stat(r, 'sca'), axis=1)
-    sp['hdf'] = sp.apply(lambda r: get_for_stat(r, 'hdf'), axis=1)
-    sp['hda'] = sp.apply(lambda r: get_for_stat(r, 'hda'), axis=1)
+    # Home players: cf = cf, ca = ca (direct)
+    # Away players: cf = ca, ca = cf (swapped)
+    sp['cf'] = np.where(home_mask, cf_orig, ca_orig)  # Away: cf = shift's ca
+    sp['ca'] = np.where(home_mask, ca_orig, cf_orig)  # Away: ca = shift's cf
+    sp['ff'] = np.where(home_mask, ff_orig, fa_orig)  # Away: ff = shift's fa
+    sp['fa'] = np.where(home_mask, fa_orig, ff_orig)  # Away: fa = shift's ff
+    sp['sf'] = np.where(home_mask, sf_orig, sa_orig)  # Away: sf = shift's sa
+    sp['sa'] = np.where(home_mask, sa_orig, sf_orig)  # Away: sa = shift's sf
+    sp['scf'] = np.where(home_mask, scf_orig, sca_orig)  # Away: scf = shift's sca
+    sp['sca'] = np.where(home_mask, sca_orig, scf_orig)  # Away: sca = shift's scf
+    sp['hdf'] = np.where(home_mask, hdf_orig, hda_orig)  # Away: hdf = shift's hda
+    sp['hda'] = np.where(home_mask, hda_orig, hdf_orig)  # Away: hda = shift's hdf
     sp['shot_diff'] = sp['sf'] - sp['sa']
     
     # Recalculate percentages (v29.1: vectorized for performance)
@@ -4285,17 +4451,34 @@ def enhance_shift_players():
     total_ff = sp['ff'] + sp['fa']
     sp['ff_pct'] = (sp['ff'] / total_ff * 100).where(total_ff > 0, 50.0)
     
-    # Zone entries/exits/giveaways/takeaways - venue mapped
+    # Zone entries/exits/giveaways/takeaways - venue mapped - VECTORIZED
     # Home player gets home team's events, away player gets away team's events
-    sp['zone_entries'] = sp.apply(lambda r: get_venue_stat(r, 'home_zone_entries', 'away_zone_entries'), axis=1)
-    sp['zone_exits'] = sp.apply(lambda r: get_venue_stat(r, 'home_zone_exits', 'away_zone_exits'), axis=1)
-    sp['giveaways'] = sp.apply(lambda r: get_venue_stat(r, 'home_giveaways', 'away_giveaways'), axis=1)
-    sp['bad_giveaways'] = sp.apply(lambda r: get_venue_stat(r, 'home_bad_giveaways', 'away_bad_giveaways'), axis=1)
-    sp['takeaways'] = sp.apply(lambda r: get_venue_stat(r, 'home_takeaways', 'away_takeaways'), axis=1)
-    
-    # Faceoffs - venue mapped (fo_won/fo_lost are from home perspective in fact_shifts)
-    sp['fo_won'] = sp.apply(lambda r: get_venue_stat(r, 'fo_won', 'fo_lost'), axis=1)
-    sp['fo_lost'] = sp.apply(lambda r: get_venue_stat(r, 'fo_lost', 'fo_won'), axis=1)
+    # Reuse home_mask from earlier
+    if 'venue' in sp.columns:
+        home_mask = sp['venue'] == 'home'
+        sp['zone_entries'] = np.where(home_mask, 
+                                      sp['home_zone_entries'].fillna(0), 
+                                      sp['away_zone_entries'].fillna(0))
+        sp['zone_exits'] = np.where(home_mask,
+                                    sp['home_zone_exits'].fillna(0),
+                                    sp['away_zone_exits'].fillna(0))
+        sp['giveaways'] = np.where(home_mask,
+                                  sp['home_giveaways'].fillna(0),
+                                  sp['away_giveaways'].fillna(0))
+        sp['bad_giveaways'] = np.where(home_mask,
+                                      sp['home_bad_giveaways'].fillna(0),
+                                      sp['away_bad_giveaways'].fillna(0))
+        sp['takeaways'] = np.where(home_mask,
+                                  sp['home_takeaways'].fillna(0),
+                                  sp['away_takeaways'].fillna(0))
+        
+        # Faceoffs - venue mapped (fo_won/fo_lost are from home perspective in fact_shifts)
+        sp['fo_won'] = np.where(home_mask,
+                               sp['fo_won'].fillna(0),
+                               sp['fo_lost'].fillna(0))
+        sp['fo_lost'] = np.where(home_mask,
+                                sp['fo_lost'].fillna(0),
+                                sp['fo_won'].fillna(0))
     # Faceoff percentage (v29.1: vectorized for performance)
     total_fo = sp['fo_won'] + sp['fo_lost']
     sp['fo_pct'] = (sp['fo_won'] / total_fo * 100).where(total_fo > 0, 0.0)

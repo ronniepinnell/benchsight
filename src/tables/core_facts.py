@@ -31,6 +31,7 @@ import numpy as np
 from pathlib import Path
 from datetime import datetime
 import math
+from src.formulas.formula_applier import apply_player_stats_formulas
 
 OUTPUT_DIR = Path('data/output')
 
@@ -2177,174 +2178,36 @@ def calculate_goalie_war(stats: dict) -> dict:
 # =============================================================================
 
 def create_fact_player_game_stats() -> pd.DataFrame:
-    """Create fact_player_game_stats - SKATERS ONLY (excludes goalies)."""
-    print("\nBuilding fact_player_game_stats (v26.1 - Phase 3 Expansion, SKATERS ONLY)...")
+    """
+    Create fact_player_game_stats - SKATERS ONLY (excludes goalies).
     
-    event_players = load_table('fact_event_players')
-    events = load_table('fact_events')
-    shifts = load_table('fact_shifts')
-    shift_players = load_table('fact_shift_players')
-    roster = load_table('fact_gameroster')
-    players = load_table('dim_player')
-    schedule = load_table('dim_schedule')
-    zone_entry_types = load_table('dim_zone_entry_type')
-    zone_exit_types = load_table('dim_zone_exit_type')
-    registration = load_table('fact_registration')
-    
-    if len(event_players) == 0:
-        print("  ERROR: fact_event_players not found!")
-        return pd.DataFrame()
-    
-    game_ids = get_game_ids()
-    print(f"  Processing {len(game_ids)} games: {sorted(game_ids)}")
-    
-    all_stats = []
-    
-    for game_id in game_ids:
-        if game_id == 99999: continue
-        
-        # get_players_in_game now excludes goalies
-        player_ids = get_players_in_game(game_id, event_players, roster)
-        
-        for player_id in player_ids:
-            if pd.isna(player_id) or str(player_id) in ['nan', '', 'None']: continue
-            
-            # Get team_id first for key generation
-            team_id = ''
-            team_name = ''
-            position = ''
-            if len(roster) > 0:
-                player_roster = roster[(roster['game_id'] == game_id) & (roster['player_id'] == player_id)]
-                if len(player_roster) > 0:
-                    team_id = player_roster['team_id'].values[0] if 'team_id' in player_roster.columns else ''
-                    team_name = player_roster['team_name'].values[0] if 'team_name' in player_roster.columns else ''
-                    position = player_roster['player_position'].values[0] if 'player_position' in player_roster.columns else ''
-            
-            stats = {
-                'player_game_key': f"p{game_id}{team_id}{player_id}",
-                'player_game_id': f"pg{game_id}{team_id}{player_id}",
-                'game_id': game_id,
-                'player_id': player_id,
-                'team_id': team_id,
-                'team_name': team_name,
-                'position': position,
-                '_export_timestamp': datetime.now().isoformat(),
-            }
-            
-            # Player info
-            if len(players) > 0:
-                player_info = players[players['player_id'] == player_id]
-                stats['player_name'] = player_info['player_full_name'].values[0] if len(player_info) > 0 and 'player_full_name' in player_info.columns else ''
-            else:
-                stats['player_name'] = ''
-            
-            if len(schedule) > 0:
-                game_info = schedule[schedule['game_id'] == game_id]
-                stats['season_id'] = game_info['season_id'].values[0] if len(game_info) > 0 and 'season_id' in game_info.columns else None
-            
-            player_rating = 4.0
-            if len(registration) > 0:
-                reg = registration[registration['player_id'] == player_id]
-                if len(reg) > 0 and 'skill_rating' in reg.columns:
-                    val = reg['skill_rating'].values[0]
-                    if pd.notna(val): player_rating = float(val)
-            
-            # All stat calculations
-            stats.update(calculate_player_event_stats(player_id, game_id, event_players, events))
-            stats.update(calculate_player_shift_stats(player_id, game_id, shifts, shift_players))
-            stats.update(calculate_advanced_shift_stats(player_id, game_id, shift_players))
-            stats.update(calculate_zone_entry_exit_stats(player_id, game_id, event_players, zone_entry_types, zone_exit_types, events))
-            stats.update(calculate_faceoff_zone_stats(player_id, game_id, event_players))
-            stats.update(calculate_period_splits(player_id, game_id, event_players, shift_players))
-            stats.update(calculate_danger_zone_stats(player_id, game_id, event_players, events))
-            stats.update(calculate_rush_stats(player_id, game_id, event_players, events))
-            stats.update(calculate_micro_stats(player_id, game_id, event_players, events))
-            stats.update(calculate_xg_stats(player_id, game_id, event_players, events))
-            
-            # NEW v25.2 stats
-            stats.update(calculate_strength_splits(player_id, game_id, event_players, shift_players, events))
-            stats.update(calculate_shot_type_stats(player_id, game_id, event_players, events))
-            stats.update(calculate_pass_type_stats(player_id, game_id, event_players, events))
-            stats.update(calculate_playmaking_stats(player_id, game_id, event_players, events))
-            stats.update(calculate_pressure_stats(player_id, game_id, event_players, events))
-            stats.update(calculate_competition_tier_stats(player_id, game_id, shift_players))
-            stats.update(calculate_game_state_stats(player_id, game_id, shift_players, events))
-            
-            # Phase 3 stats (v26.1)
-            stats.update(calculate_linemate_stats(player_id, game_id, shift_players))
-            stats.update(calculate_time_bucket_stats(player_id, game_id, event_players, events, shift_players))
-            stats.update(calculate_rebound_stats(player_id, game_id, event_players, events))
-            
-            stats = calculate_rate_stats(stats)
-            stats.update(calculate_game_score(stats))
-            stats.update(calculate_war_stats(stats))
-            stats.update(calculate_performance_vs_rating(stats, player_rating))
-            stats.update(calculate_relative_stats(stats))
-            
-            all_stats.append(stats)
-    
-    df = pd.DataFrame(all_stats)
-    
-    if len(df) > 0:
-        key_cols = ['player_game_key', 'player_game_id', 'game_id', 'season_id', 'player_id', 'player_name', 'team_id', 'team_name', 'position']
-        other_cols = [c for c in df.columns if c not in key_cols]
-        df = df[[c for c in key_cols if c in df.columns] + other_cols]
-    
-    print(f"  Created {len(df)} SKATER records with {len(df.columns)} columns")
-    return df
+    v29.4: Now uses PlayerStatsBuilder for better organization and testability.
+    """
+    from src.builders.player_stats import build_fact_player_game_stats
+    return build_fact_player_game_stats(save=False)  # Save handled by create_all_core_facts
 
 
 def create_fact_team_game_stats() -> pd.DataFrame:
-    """Create fact_team_game_stats."""
-    print("\nBuilding fact_team_game_stats...")
+    """
+    Create fact_team_game_stats.
     
-    pgs = load_table('fact_player_game_stats')
-    schedule = load_table('dim_schedule')
-    
-    if len(pgs) == 0:
-        print("  ERROR: fact_player_game_stats not found!")
-        return pd.DataFrame()
-    
-    all_stats = []
-    
-    for game_id in pgs['game_id'].unique():
-        game_players = pgs[pgs['game_id'] == game_id]
-        for team_id in game_players['team_id'].dropna().unique():
-            team_players = game_players[game_players['team_id'] == team_id]
-            if len(team_players) == 0: continue
-            
-            stats = {'team_game_key': f"{team_id}_{game_id}", 'game_id': game_id, 'team_id': team_id}
-            
-            if len(schedule) > 0:
-                game_info = schedule[schedule['game_id'] == game_id]
-                if len(game_info) > 0 and 'season_id' in game_info.columns:
-                    stats['season_id'] = game_info['season_id'].values[0]
-            
-            if 'team_name' in team_players.columns:
-                stats['team_name'] = team_players['team_name'].values[0]
-            
-            sum_cols = ['goals', 'assists', 'points', 'shots', 'sog', 'giveaways', 'takeaways', 'blocks', 'hits', 'toi_seconds', 'corsi_for', 'corsi_against', 'fenwick_for', 'fenwick_against', 'plus_total', 'minus_total', 'xg_for', 'gar_total', 'war', 'shot_assists', 'goal_creating_actions']
-            
-            for col in sum_cols:
-                stats[col] = team_players[col].sum() if col in team_players.columns else 0
-            
-            stats['shooting_pct'] = round(stats['goals'] / stats['sog'] * 100, 1) if stats['sog'] > 0 else 0.0
-            stats['cf_pct'] = round(stats['corsi_for'] / (stats['corsi_for'] + stats['corsi_against']) * 100, 1) if (stats['corsi_for'] + stats['corsi_against']) > 0 else 50.0
-            stats['plus_minus_total'] = stats['plus_total'] - stats['minus_total']
-            
-            if 'game_score' in team_players.columns:
-                stats['avg_game_score'] = round(team_players['game_score'].mean(), 2)
-            if 'adjusted_rating' in team_players.columns:
-                stats['avg_adjusted_rating'] = round(team_players['adjusted_rating'].mean(), 1)
-            
-            all_stats.append(stats)
-    
-    df = pd.DataFrame(all_stats)
-    print(f"  Created {len(df)} team-game records")
-    return df
+    v29.4: Now uses TeamStatsBuilder for better organization and testability.
+    """
+    from src.builders.team_stats import build_fact_team_game_stats
+    return build_fact_team_game_stats(save=False)  # Save handled by create_all_core_facts
 
 
 def create_fact_goalie_game_stats() -> pd.DataFrame:
+    """
+    Create fact_goalie_game_stats.
+    
+    v29.4: Now uses GoalieStatsBuilder for better organization and testability.
+    """
+    from src.builders.goalie_stats import build_fact_goalie_game_stats
+    return build_fact_goalie_game_stats(save=False)  # Save handled by create_all_core_facts
+
+
+def _create_fact_goalie_game_stats_original() -> pd.DataFrame:
     """Create fact_goalie_game_stats with comprehensive advanced goalie metrics.
     
     v28.1 - EXPANDED with ~90 columns including:

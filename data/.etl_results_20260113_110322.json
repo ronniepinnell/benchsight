@@ -1,0 +1,23 @@
+{
+  "timestamp": "2026-01-13T11:02:42.685132",
+  "version": "v29.2",
+  "phases": {
+    "base_etl": 13.531295776367188,
+    "dimension_tables": 0.00953221321105957,
+    "core_facts": 6.317090034484863,
+    "shift_analytics": 2.2054076194763184,
+    "remaining_facts": 1.5838661193847656,
+    "event_analytics": 1.2973949909210205,
+    "shot_chains": 0.21467804908752441,
+    "foreign_keys": 2.1887869834899902,
+    "extended_tables": 0.09432411193847656,
+    "post_processing": 1.2757289409637451,
+    "event_time_context": 5.497711181640625,
+    "qa_tables": 1.5023601055145264,
+    "v11_enhancements": 1.8123588562011719,
+    "xy_tables": 0.6245031356811523,
+    "macro_stats": 1.0051329135894775
+  },
+  "total_time": 39.160197734832764,
+  "games_processed": 0
+}

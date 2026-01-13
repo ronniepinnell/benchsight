@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fact_goalie_season_stats_basic - BenchSight</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #4a4e69; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>fact_goalie_season_stats_basic</h1>
+        
+        
+        
+        <div class="meta">
+            <strong>Rows:</strong> 195 | 
+            <strong>Columns:</strong> 18 |
+            <strong>Last Updated:</strong> 2026-01-13 11:03:18 |
+            <strong>Version:</strong> 11.04
+        </div>
+        
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>goalie_season_basic_key</td><td>object</td><td>195</td><td>0.0%</td></tr><tr><td>player_id</td><td>object</td><td>195</td><td>0.0%</td></tr><tr><td>season_id</td><td>object</td><td>195</td><td>0.0%</td></tr><tr><td>season</td><td>int64</td><td>195</td><td>0.0%</td></tr><tr><td>game_type</td><td>object</td><td>195</td><td>0.0%</td></tr><tr><td>player_name</td><td>object</td><td>195</td><td>0.0%</td></tr><tr><td>team_id</td><td>object</td><td>195</td><td>0.0%</td></tr><tr><td>team_name</td><td>object</td><td>195</td><td>0.0%</td></tr><tr><td>games_played</td><td>int64</td><td>195</td><td>0.0%</td></tr><tr><td>wins</td><td>int64</td><td>195</td><td>0.0%</td></tr><tr><td>losses</td><td>int64</td><td>195</td><td>0.0%</td></tr><tr><td>ties</td><td>int64</td><td>195</td><td>0.0%</td></tr><tr><td>goals_against</td><td>int64</td><td>195</td><td>0.0%</td></tr><tr><td>gaa</td><td>float64</td><td>195</td><td>0.0%</td></tr><tr><td>shutouts</td><td>int64</td><td>195</td><td>0.0%</td></tr><tr><td>shutout_pct</td><td>float64</td><td>195</td><td>0.0%</td></tr><tr><td>win_pct</td><td>float64</td><td>195</td><td>0.0%</td></tr><tr><td>_export_timestamp</td><td>object</td><td>195</td><td>0.0%</td></tr>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>goalie_season_basic_key</th>
+      <th>player_id</th>
+      <th>season_id</th>
+      <th>season</th>
+      <th>game_type</th>
+      <th>player_name</th>
+      <th>team_id</th>
+      <th>team_name</th>
+      <th>games_played</th>
+      <th>wins</th>
+      <th>losses</th>
+      <th>ties</th>
+      <th>goals_against</th>
+      <th>gaa</th>
+      <th>shutouts</th>
+      <th>shutout_pct</th>
+      <th>win_pct</th>
+      <th>_export_timestamp</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>P100321_N20232024F_Regular</td>
+      <td>P100321</td>
+      <td>N20232024F</td>
+      <td>20232024</td>
+      <td>Regular</td>
+      <td>Zach Adams</td>
+      <td>N10002</td>
+      <td>Ace</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>7</td>
+      <td>7.00</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>2026-01-13T13:58:44.339882</td>
+    </tr>
+    <tr>
+      <td>P100321_N20232024F_All</td>
+      <td>P100321</td>
+      <td>N20232024F</td>
+      <td>20232024</td>
+      <td>All</td>
+      <td>Zach Adams</td>
+      <td>N10002</td>
+      <td>Ace</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>7</td>
+      <td>7.00</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>2026-01-13T13:58:44.340426</td>
+    </tr>
+    <tr>
+      <td>P100020_N20232024F_Regular</td>
+      <td>P100020</td>
+      <td>N20232024F</td>
+      <td>20232024</td>
+      <td>Regular</td>
+      <td>Rick Haenke</td>
+      <td>N10004</td>
+      <td>Nelson</td>
+      <td>15</td>
+      <td>1</td>
+      <td>13</td>
+      <td>1</td>
+      <td>75</td>
+      <td>5.00</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>6.7</td>
+      <td>2026-01-13T13:58:44.342067</td>
+    </tr>
+    <tr>
+      <td>P100020_N20232024F_Playoffs</td>
+      <td>P100020</td>
+      <td>N20232024F</td>
+      <td>20232024</td>
+      <td>Playoffs</td>
+      <td>Rick Haenke</td>
+      <td>N10004</td>
+      <td>Nelson</td>
+      <td>4</td>
+      <td>2</td>
+      <td>2</td>
+      <td>0</td>
+      <td>17</td>
+      <td>4.25</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>50.0</td>
+      <td>2026-01-13T13:58:44.342701</td>
+    </tr>
+    <tr>
+      <td>P100020_N20232024F_All</td>
+      <td>P100020</td>
+      <td>N20232024F</td>
+      <td>20232024</td>
+      <td>All</td>
+      <td>Rick Haenke</td>
+      <td>N10004</td>
+      <td>Nelson</td>
+      <td>19</td>
+      <td>3</td>
+      <td>15</td>
+      <td>1</td>
+      <td>92</td>
+      <td>4.84</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>15.8</td>
+      <td>2026-01-13T13:58:44.343733</td>
+    </tr>
+    <tr>
+      <td>P100067_N20232024F_Regular</td>
+      <td>P100067</td>
+      <td>N20232024F</td>
+      <td>20232024</td>
+      <td>Regular</td>
+      <td>Ian Ward</td>
+      <td>N10008</td>
+      <td>Platinum</td>
+      <td>30</td>
+      <td>19</td>
+      <td>9</td>
+      <td>2</td>
+      <td>107</td>
+      <td>3.57</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>63.3</td>
+      <td>2026-01-13T13:58:44.345880</td>
+    </tr>
+    <tr>
+      <td>P100067_N20232024F_Playoffs</td>
+      <td>P100067</td>
+      <td>N20232024F</td>
+      <td>20232024</td>
+      <td>Playoffs</td>
+      <td>Ian Ward</td>
+      <td>N10008</td>
+      <td>Platinum</td>
+      <td>2</td>
+      <td>0</td>
+      <td>2</td>
+      <td>0</td>
+      <td>10</td>
+      <td>5.00</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>2026-01-13T13:58:44.346482</td>
+    </tr>
+    <tr>
+      <td>P100067_N20232024F_All</td>
+      <td>P100067</td>
+      <td>N20232024F</td>
+      <td>20232024</td>
+      <td>All</td>
+      <td>Ian Ward</td>
+      <td>N10008</td>
+      <td>Platinum</td>
+      <td>32</td>
+      <td>19</td>
+      <td>11</td>
+      <td>2</td>
+      <td>117</td>
+      <td>3.66</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>59.4</td>
+      <td>2026-01-13T13:58:44.347997</td>
+    </tr>
+    <tr>
+      <td>P100133_N20232024F_Regular</td>
+      <td>P100133</td>
+      <td>N20232024F</td>
+      <td>20232024</td>
+      <td>Regular</td>
+      <td>Ian Gustafson</td>
+      <td>N10002</td>
+      <td>Ace</td>
+      <td>26</td>
+      <td>8</td>
+      <td>14</td>
+      <td>4</td>
+      <td>155</td>
+      <td>5.96</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>30.8</td>
+      <td>2026-01-13T13:58:44.349999</td>
+    </tr>
+    <tr>
+      <td>P100133_N20232024F_Playoffs</td>
+      <td>P100133</td>
+      <td>N20232024F</td>
+      <td>20232024</td>
+      <td>Playoffs</td>
+      <td>Ian Gustafson</td>
+      <td>N10002</td>
+      <td>Ace</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>5</td>
+      <td>5.00</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>2026-01-13T13:58:44.350522</td>
+    </tr>
+    <tr>
+      <td>P100133_N20232024F_All</td>
+      <td>P100133</td>
+      <td>N20232024F</td>
+      <td>20232024</td>
+      <td>All</td>
+      <td>Ian Gustafson</td>
+      <td>N10002</td>
+      <td>Ace</td>
+      <td>27</td>
+      <td>8</td>
+      <td>15</td>
+      <td>4</td>
+      <td>160</td>
+      <td>5.93</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>29.6</td>
+      <td>2026-01-13T13:58:44.351796</td>
+    </tr>
+    <tr>
+      <td>P100138_N20232024F_Regular</td>
+      <td>P100138</td>
+      <td>N20232024F</td>
+      <td>20232024</td>
+      <td>Regular</td>
+      <td>Thane Gilmore</td>
+      <td>N10009</td>
+      <td>Triple J</td>
+      <td>27</td>
+      <td>11</td>
+      <td>12</td>
+      <td>4</td>
+      <td>120</td>
+      <td>4.44</td>
+      <td>1</td>
+      <td>3.7</td>
+      <td>40.7</td>
+      <td>2026-01-13T13:58:44.353897</td>
+    </tr>
+    <tr>
+      <td>P100138_N20232024F_Playoffs</td>
+      <td>P100138</td>
+      <td>N20232024F</td>
+      <td>20232024</td>
+      <td>Playoffs</td>
+      <td>Thane Gilmore</td>
+      <td>N10009</td>
+      <td>Triple J</td>
+      <td>3</td>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+      <td>13</td>
+      <td>4.33</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>33.3</td>
+      <td>2026-01-13T13:58:44.354489</td>
+    </tr>
+    <tr>
+      <td>P100138_N20232024F_All</td>
+      <td>P100138</td>
+      <td>N20232024F</td>
+      <td>20232024</td>
+      <td>All</td>
+      <td>Thane Gilmore</td>
+      <td>N10009</td>
+      <td>Triple J</td>
+      <td>30</td>
+      <td>12</td>
+      <td>14</td>
+      <td>4</td>
+      <td>133</td>
+      <td>4.43</td>
+      <td>1</td>
+      <td>3.3</td>
+      <td>40.0</td>
+      <td>2026-01-13T13:58:44.355902</td>
+    </tr>
+    <tr>
+      <td>P100015_N20212022F_Regular</td>
+      <td>P100015</td>
+      <td>N20212022F</td>
+      <td>20212022</td>
+      <td>Regular</td>
+      <td>Sean Kenyon</td>
+      <td>N10012</td>
+      <td>Canada</td>
+      <td>9</td>
+      <td>3</td>
+      <td>5</td>
+      <td>0</td>
+      <td>60</td>
+      <td>6.67</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>33.3</td>
+      <td>2026-01-13T13:58:44.357233</td>
+    </tr>
+    <tr>
+      <td>P100015_N20212022F_All</td>
+      <td>P100015</td>
+      <td>N20212022F</td>
+      <td>20212022</td>
+      <td>All</td>
+      <td>Sean Kenyon</td>
+      <td>N10012</td>
+      <td>Canada</td>
+      <td>9</td>
+      <td>3</td>
+      <td>5</td>
+      <td>0</td>
+      <td>60</td>
+      <td>6.67</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>33.3</td>
+      <td>2026-01-13T13:58:44.358081</td>
+    </tr>
+    <tr>
+      <td>P100133_N20212022F_Regular</td>
+      <td>P100133</td>
+      <td>N20212022F</td>
+      <td>20212022</td>
+      <td>Regular</td>
+      <td>Ian Gustafson</td>
+      <td>N10001</td>
+      <td>AMOS</td>
+      <td>19</td>
+      <td>11</td>
+      <td>6</td>
+      <td>2</td>
+      <td>88</td>
+      <td>4.63</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>57.9</td>
+      <td>2026-01-13T13:58:44.359784</td>
+    </tr>
+    <tr>
+      <td>P100133_N20212022F_Playoffs</td>
+      <td>P100133</td>
+      <td>N20212022F</td>
+      <td>20212022</td>
+      <td>Playoffs</td>
+      <td>Ian Gustafson</td>
+      <td>N10001</td>
+      <td>AMOS</td>
+      <td>4</td>
+      <td>1</td>
+      <td>3</td>
+      <td>0</td>
+      <td>22</td>
+      <td>5.50</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>25.0</td>
+      <td>2026-01-13T13:58:44.360399</td>
+    </tr>
+    <tr>
+      <td>P100133_N20212022F_All</td>
+      <td>P100133</td>
+      <td>N20212022F</td>
+      <td>20212022</td>
+      <td>All</td>
+      <td>Ian Gustafson</td>
+      <td>N10001</td>
+      <td>AMOS</td>
+      <td>23</td>
+      <td>12</td>
+      <td>9</td>
+      <td>2</td>
+      <td>110</td>
+      <td>4.78</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>52.2</td>
+      <td>2026-01-13T13:58:44.361441</td>
+    </tr>
+    <tr>
+      <td>P100244_N20212022F_Regular</td>
+      <td>P100244</td>
+      <td>N20212022F</td>
+      <td>20212022</td>
+      <td>Regular</td>
+      <td>Jeff Schmidt</td>
+      <td>N10009</td>
+      <td>Triple J</td>
+      <td>16</td>
+      <td>6</td>
+      <td>8</td>
+      <td>2</td>
+      <td>93</td>
+      <td>5.81</td>
+      <td>0</td>
+      <td>0.0</td>
+      <td>37.5</td>
+      <td>2026-01-13T13:58:44.362978</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+        </div>
+        
+        <footer>
+            BenchSight v11.04 | Generated 2026-01-13 11:03:18
+        </footer>
+    </div>
+</body>
+</html>

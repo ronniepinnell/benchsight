@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fact_goalie_career_stats_basic - BenchSight</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #1a1a2e; }
+        .back-link { color: #4a4e69; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .meta { background: #e8e8e8; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .alert { padding: 15px 20px; border-radius: 8px; margin: 20px 0; font-weight: bold; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+        .card { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #4a4e69; margin-top: 0; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        th { background: #4a4e69; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .data-table { overflow-x: auto; display: block; }
+        .columns-table { max-width: 600px; }
+        footer { margin-top: 40px; padding: 20px; text-align: center; color: #888; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p><a href="../index.html" class="back-link">← Back to Index</a></p>
+        <h1>fact_goalie_career_stats_basic</h1>
+        
+        
+        
+        <div class="meta">
+            <strong>Rows:</strong> 33 | 
+            <strong>Columns:</strong> 14 |
+            <strong>Last Updated:</strong> 2026-01-13 11:03:18 |
+            <strong>Version:</strong> 11.04
+        </div>
+        
+        
+        
+        <div class="card">
+            <h2>Column Schema</h2>
+            <table class="columns-table">
+                <tr><th>Column</th><th>Type</th><th>Non-Null</th><th>Null %</th></tr>
+                <tr><td>player_id</td><td>object</td><td>33</td><td>0.0%</td></tr><tr><td>career_games</td><td>int64</td><td>33</td><td>0.0%</td></tr><tr><td>seasons_played</td><td>int64</td><td>33</td><td>0.0%</td></tr><tr><td>career_wins</td><td>int64</td><td>33</td><td>0.0%</td></tr><tr><td>career_losses</td><td>int64</td><td>33</td><td>0.0%</td></tr><tr><td>career_goals_against</td><td>float64</td><td>33</td><td>0.0%</td></tr><tr><td>career_shutouts</td><td>float64</td><td>33</td><td>0.0%</td></tr><tr><td>player_name</td><td>object</td><td>33</td><td>0.0%</td></tr><tr><td>current_team</td><td>object</td><td>33</td><td>0.0%</td></tr><tr><td>career_gaa</td><td>float64</td><td>33</td><td>0.0%</td></tr><tr><td>career_win_pct</td><td>float64</td><td>33</td><td>0.0%</td></tr><tr><td>career_shutout_pct</td><td>float64</td><td>33</td><td>0.0%</td></tr><tr><td>goalie_career_basic_key</td><td>object</td><td>33</td><td>0.0%</td></tr><tr><td>_export_timestamp</td><td>object</td><td>33</td><td>0.0%</td></tr>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h2>Data Preview (First 20 Rows)</h2>
+            <div style="overflow-x: auto;">
+                <table border="1" class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>player_id</th>
+      <th>career_games</th>
+      <th>seasons_played</th>
+      <th>career_wins</th>
+      <th>career_losses</th>
+      <th>career_goals_against</th>
+      <th>career_shutouts</th>
+      <th>player_name</th>
+      <th>current_team</th>
+      <th>career_gaa</th>
+      <th>career_win_pct</th>
+      <th>career_shutout_pct</th>
+      <th>goalie_career_basic_key</th>
+      <th>_export_timestamp</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>P100003</td>
+      <td>78</td>
+      <td>3</td>
+      <td>42</td>
+      <td>36</td>
+      <td>257.0</td>
+      <td>4.0</td>
+      <td>Scott Purdy</td>
+      <td>HollowBrook</td>
+      <td>3.29</td>
+      <td>53.8</td>
+      <td>5.1</td>
+      <td>P100003_career</td>
+      <td>2026-01-12T23:37:17.465880</td>
+    </tr>
+    <tr>
+      <td>P100009</td>
+      <td>54</td>
+      <td>3</td>
+      <td>24</td>
+      <td>30</td>
+      <td>212.0</td>
+      <td>2.0</td>
+      <td>Graham Peters</td>
+      <td>Outlaws</td>
+      <td>3.93</td>
+      <td>44.4</td>
+      <td>3.7</td>
+      <td>P100009_career</td>
+      <td>2026-01-12T23:37:17.465880</td>
+    </tr>
+    <tr>
+      <td>P100015</td>
+      <td>15</td>
+      <td>2</td>
+      <td>5</td>
+      <td>9</td>
+      <td>105.0</td>
+      <td>0.0</td>
+      <td>Sean Kenyon</td>
+      <td>Orphans</td>
+      <td>7.00</td>
+      <td>33.3</td>
+      <td>0.0</td>
+      <td>P100015_career</td>
+      <td>2026-01-12T23:37:17.465880</td>
+    </tr>
+    <tr>
+      <td>P100016</td>
+      <td>116</td>
+      <td>5</td>
+      <td>63</td>
+      <td>53</td>
+      <td>417.0</td>
+      <td>2.0</td>
+      <td>Wyatt Crandall</td>
+      <td>Velodrome</td>
+      <td>3.59</td>
+      <td>54.3</td>
+      <td>1.7</td>
+      <td>P100016_career</td>
+      <td>2026-01-12T23:37:17.465880</td>
+    </tr>
+    <tr>
+      <td>P100020</td>
+      <td>61</td>
+      <td>3</td>
+      <td>20</td>
+      <td>41</td>
+      <td>253.0</td>
+      <td>0.0</td>
+      <td>Rick Haenke</td>
+      <td>Triple J</td>
+      <td>4.15</td>
+      <td>32.8</td>
+      <td>0.0</td>
+      <td>P100020_career</td>
+      <td>2026-01-12T23:37:17.465880</td>
+    </tr>
+    <tr>
+      <td>P100025</td>
+      <td>44</td>
+      <td>2</td>
+      <td>28</td>
+      <td>16</td>
+      <td>174.0</td>
+      <td>0.0</td>
+      <td>Andrew Marshall</td>
+      <td>Orphans</td>
+      <td>3.95</td>
+      <td>63.6</td>
+      <td>0.0</td>
+      <td>P100025_career</td>
+      <td>2026-01-12T23:37:17.465880</td>
+    </tr>
+    <tr>
+      <td>P100067</td>
+      <td>94</td>
+      <td>5</td>
+      <td>50</td>
+      <td>44</td>
+      <td>354.0</td>
+      <td>2.0</td>
+      <td>Ian Ward</td>
+      <td>Platinum</td>
+      <td>3.77</td>
+      <td>53.2</td>
+      <td>2.1</td>
+      <td>P100067_career</td>
+      <td>2026-01-12T23:37:17.465880</td>
+    </tr>
+    <tr>
+      <td>P100085</td>
+      <td>27</td>
+      <td>2</td>
+      <td>8</td>
+      <td>19</td>
+      <td>111.0</td>
+      <td>1.0</td>
+      <td>Sebastian Rivera</td>
+      <td>AMOS</td>
+      <td>4.11</td>
+      <td>29.6</td>
+      <td>3.7</td>
+      <td>P100085_career</td>
+      <td>2026-01-12T23:37:17.465880</td>
+    </tr>
+    <tr>
+      <td>P100096</td>
+      <td>81</td>
+      <td>4</td>
+      <td>55</td>
+      <td>26</td>
+      <td>253.0</td>
+      <td>10.0</td>
+      <td>Jared Wolf</td>
+      <td>OS Offices</td>
+      <td>3.12</td>
+      <td>67.9</td>
+      <td>12.3</td>
+      <td>P100096_career</td>
+      <td>2026-01-12T23:37:17.465880</td>
+    </tr>
+    <tr>
+      <td>P100100</td>
+      <td>35</td>
+      <td>4</td>
+      <td>22</td>
+      <td>13</td>
+      <td>155.0</td>
+      <td>0.0</td>
+      <td>Nate Flint</td>
+      <td>HollowBrook</td>
+      <td>4.43</td>
+      <td>62.9</td>
+      <td>0.0</td>
+      <td>P100100_career</td>
+      <td>2026-01-12T23:37:17.465880</td>
+    </tr>
+    <tr>
+      <td>P100118</td>
+      <td>71</td>
+      <td>4</td>
+      <td>33</td>
+      <td>36</td>
+      <td>281.0</td>
+      <td>0.0</td>
+      <td>Michael Gipson</td>
+      <td>Orphans</td>
+      <td>3.96</td>
+      <td>46.5</td>
+      <td>0.0</td>
+      <td>P100118_career</td>
+      <td>2026-01-12T23:37:17.465880</td>
+    </tr>
+    <tr>
+      <td>P100133</td>
+      <td>114</td>
+      <td>5</td>
+      <td>38</td>
+      <td>76</td>
+      <td>635.0</td>
+      <td>0.0</td>
+      <td>Ian Gustafson</td>
+      <td>Ace</td>
+      <td>5.57</td>
+      <td>33.3</td>
+      <td>0.0</td>
+      <td>P100133_career</td>
+      <td>2026-01-12T23:37:17.465880</td>
+    </tr>
+    <tr>
+      <td>P100138</td>
+      <td>122</td>
+      <td>5</td>
+      <td>56</td>
+      <td>66</td>
+      <td>593.0</td>
+      <td>3.0</td>
+      <td>Thane Gilmore</td>
+      <td>Nelson</td>
+      <td>4.86</td>
+      <td>45.9</td>
+      <td>2.5</td>
+      <td>P100138_career</td>
+      <td>2026-01-12T23:37:17.465880</td>
+    </tr>
+    <tr>
+      <td>P100146</td>
+      <td>6</td>
+      <td>1</td>
+      <td>3</td>
+      <td>3</td>
+      <td>23.0</td>
+      <td>1.0</td>
+      <td>James Terry</td>
+      <td>Orphans</td>
+      <td>3.83</td>
+      <td>50.0</td>
+      <td>16.7</td>
+      <td>P100146_career</td>
+      <td>2026-01-12T23:37:17.465880</td>
+    </tr>
+    <tr>
+      <td>P100150</td>
+      <td>16</td>
+      <td>2</td>
+      <td>3</td>
+      <td>13</td>
+      <td>99.0</td>
+      <td>0.0</td>
+      <td>Justin Bell</td>
+      <td>AMOS</td>
+      <td>6.19</td>
+      <td>18.8</td>
+      <td>0.0</td>
+      <td>P100150_career</td>
+      <td>2026-01-12T23:37:17.465880</td>
+    </tr>
+    <tr>
+      <td>P100151</td>
+      <td>18</td>
+      <td>2</td>
+      <td>9</td>
+      <td>9</td>
+      <td>105.0</td>
+      <td>0.0</td>
+      <td>Casey Lang</td>
+      <td>OS Offices</td>
+      <td>5.83</td>
+      <td>50.0</td>
+      <td>0.0</td>
+      <td>P100151_career</td>
+      <td>2026-01-12T23:37:17.465880</td>
+    </tr>
+    <tr>
+      <td>P100152</td>
+      <td>3</td>
+      <td>1</td>
+      <td>2</td>
+      <td>1</td>
+      <td>7.0</td>
+      <td>0.0</td>
+      <td>Cameron McDonald</td>
+      <td>Triple J</td>
+      <td>2.33</td>
+      <td>66.7</td>
+      <td>0.0</td>
+      <td>P100152_career</td>
+      <td>2026-01-12T23:37:17.465880</td>
+    </tr>
+    <tr>
+      <td>P100158</td>
+      <td>55</td>
+      <td>4</td>
+      <td>10</td>
+      <td>45</td>
+      <td>352.0</td>
+      <td>0.0</td>
+      <td>Charlie Holland</td>
+      <td>Triple J</td>
+      <td>6.40</td>
+      <td>18.2</td>
+      <td>0.0</td>
+      <td>P100158_career</td>
+      <td>2026-01-12T23:37:17.465880</td>
+    </tr>
+    <tr>
+      <td>P100165</td>
+      <td>23</td>
+      <td>3</td>
+      <td>8</td>
+      <td>15</td>
+      <td>137.0</td>
+      <td>0.0</td>
+      <td>Tommy Hutchinson</td>
+      <td>OS Offices</td>
+      <td>5.96</td>
+      <td>34.8</td>
+      <td>0.0</td>
+      <td>P100165_career</td>
+      <td>2026-01-12T23:37:17.465880</td>
+    </tr>
+    <tr>
+      <td>P100202</td>
+      <td>9</td>
+      <td>1</td>
+      <td>6</td>
+      <td>3</td>
+      <td>31.0</td>
+      <td>1.0</td>
+      <td>Francis Forte</td>
+      <td>Platinum</td>
+      <td>3.44</td>
+      <td>66.7</td>
+      <td>11.1</td>
+      <td>P100202_career</td>
+      <td>2026-01-12T23:37:17.465880</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+        </div>
+        
+        <footer>
+            BenchSight v11.04 | Generated 2026-01-13 11:03:18
+        </footer>
+    </div>
+</body>
+</html>
