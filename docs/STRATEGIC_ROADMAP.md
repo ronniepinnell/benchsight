@@ -503,6 +503,16 @@ ui/tracker/
 - **CDN:** Cloudflare
 - **Monitoring:** Sentry, Vercel Analytics
 
+### ML/CV Architecture (Hybrid - Phase 3+)
+- **Frontend:** Vercel (Next.js dashboard) ✅ Current
+- **ML/CV Service:** Separate platform (Replicate/RunPod/AWS)
+  - **Replicate API:** Best for quick ML integration, pay-per-use
+  - **RunPod/Vast.ai:** GPU instances for custom models, ~$0.20-2/hour
+  - **AWS SageMaker:** Enterprise ML platform, full pipeline
+- **Video Storage:** Cloudflare R2 (no egress fees) or AWS S3
+- **Architecture Pattern:** API Gateway → ML Service (separate deployment)
+- **Note:** Vercel cannot host ML/CV workloads (no GPU, time limits). Use hybrid approach.
+
 ---
 
 ## Risk Mitigation

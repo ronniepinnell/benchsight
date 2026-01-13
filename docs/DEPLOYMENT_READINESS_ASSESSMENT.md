@@ -396,6 +396,21 @@ The only blocker is the backend API, which is a new development (not a migration
 
 ---
 
+## ⚠️ Future ML/CV Considerations
+
+**Note:** Vercel deployment is perfect for current needs. For future ML/CV integration (Phase 3), plan for **hybrid architecture**:
+
+- **Frontend:** Vercel (✅ Current deployment - keep this)
+- **ML/CV Service:** Separate platform (Replicate/RunPod/AWS)
+- **Video Storage:** Cloudflare R2
+- **Pattern:** API Gateway → ML Service (separate deployment)
+
+**Why:** Vercel cannot host ML/CV workloads (no GPU, time limits, no video processing)
+
+**See:** `docs/ML_CV_ARCHITECTURE_PLAN.md` for detailed planning
+
+---
+
 ## Next Steps
 
 1. **Today:** Deploy Dashboard and Tracker (20 minutes)

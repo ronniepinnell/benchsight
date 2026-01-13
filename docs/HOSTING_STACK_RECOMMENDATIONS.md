@@ -530,6 +530,30 @@ API_KEY=xxx
 
 ---
 
+## ⚠️ Important: ML/CV Architecture (Future)
+
+**Vercel cannot host ML/CV workloads.** For future ML/CV integration (Phase 3), use **hybrid architecture**:
+
+### Hybrid ML/CV Stack (Phase 3+)
+
+| Component | Platform | Why |
+|-----------|----------|-----|
+| **Frontend** | **Vercel** | ✅ Current - Keep this |
+| **ML/CV Service** | **Replicate** (MVP) or **RunPod** (Custom) | GPU access, video processing |
+| **Video Storage** | **Cloudflare R2** | No egress fees, S3-compatible |
+| **API Gateway** | **Railway** | Routes requests to ML service |
+
+**Architecture Pattern:**
+```
+Frontend (Vercel) → API Gateway (Railway) → ML Service (Replicate/RunPod) → Video Storage (R2)
+```
+
+**See:** `docs/ML_CV_ARCHITECTURE_PLAN.md` for detailed planning
+
+**Cost (with ML):** $5/month (base) + $0-200/month (ML service)
+
+---
+
 ## Next Steps
 
 1. **Choose your stack** based on budget and needs

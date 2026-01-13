@@ -1,100 +1,40 @@
 {
   "pages": {
-    "/(dashboard)/analytics/overview/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/analytics/overview/page.js"
-    ],
-    "/(dashboard)/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/layout.js"
-    ],
     "/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/(dashboard)/games/page": [
+    "/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/games/page.js"
-    ],
-    "/(dashboard)/games/[gameId]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/games/[gameId]/page.js"
+      "static/chunks/app/page.js"
     ],
     "/(dashboard)/standings/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(dashboard)/standings/page.js"
     ],
-    "/(dashboard)/players/[playerId]/page": [
+    "/(dashboard)/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/players/[playerId]/page.js"
-    ],
-    "/(dashboard)/goalies/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/goalies/page.js"
-    ],
-    "/(dashboard)/leaders/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/leaders/page.js"
+      "static/chunks/app/(dashboard)/layout.js"
     ],
     "/(dashboard)/teams/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(dashboard)/teams/page.js"
     ],
-    "/(dashboard)/prototypes/example/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/prototypes/example/page.js"
-    ],
-    "/(dashboard)/players/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/players/page.js"
-    ],
-    "/(dashboard)/players/compare/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/players/compare/page.js"
-    ],
-    "/(dashboard)/schedule/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/schedule/page.js"
-    ],
-    "/(dashboard)/teams/[teamId]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/teams/[teamId]/page.js"
-    ],
     "/(dashboard)/team/[teamName]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(dashboard)/team/[teamName]/page.js"
     ],
-    "/(dashboard)/analytics/teams/page": [
+    "/(dashboard)/players/[playerId]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/analytics/teams/page.js"
-    ],
-    "/(dashboard)/analytics/statistics/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/analytics/statistics/page.js"
-    ],
-    "/_not-found/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/_not-found/page.js"
+      "static/chunks/app/(dashboard)/players/[playerId]/page.js"
     ]
   }
 }

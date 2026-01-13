@@ -1,7 +1,7 @@
 // src/app/(dashboard)/games/[gameId]/page.tsx
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getGameById, getGameBoxScore, getGameGoals } from '@/lib/supabase/queries/games'
+import { getGameById, getGameBoxScore, getGameGoals, getGameGoalieStats } from '@/lib/supabase/queries/games'
 import { getTeamById } from '@/lib/supabase/queries/teams'
 import { getPlayers } from '@/lib/supabase/queries/players'
 import { ArrowLeft, Target, User } from 'lucide-react'
@@ -31,11 +31,12 @@ export default async function GameDetailPage({
     notFound()
   }
   
-  const [game, boxScore, goals, players] = await Promise.all([
+  const [game, boxScoreResult, goals, players, goalieStats] = await Promise.all([
     getGameById(gameIdNum),
-    getGameBoxScore(gameIdNum),
-    getGameGoals(gameIdNum),
-    getPlayers()
+    getGameBoxScore(gameIdNum).catch(() => ({ homeStats: [], awayStats: [] })),
+    getGameGoals(gameIdNum).catch(() => []),
+    getPlayers().catch(() => []),
+    getGameGoalieStats(gameIdNum).catch(() => [])
   ])
   
   if (!game) {
@@ -46,17 +47,19 @@ export default async function GameDetailPage({
   const homeTeamId = game.home_team_id
   const awayTeamId = game.away_team_id
   const [homeTeam, awayTeam] = await Promise.all([
-    homeTeamId ? getTeamById(parseInt(String(homeTeamId))) : Promise.resolve(null),
-    awayTeamId ? getTeamById(parseInt(String(awayTeamId))) : Promise.resolve(null)
+    homeTeamId ? getTeamById(parseInt(String(homeTeamId))).catch(() => null) : Promise.resolve(null),
+    awayTeamId ? getTeamById(parseInt(String(awayTeamId))).catch(() => null) : Promise.resolve(null)
   ])
   
   // Create players map for photos
   const playersMap = new Map(players.map(p => [String(p.player_id), p]))
   
-  // Separate players by team
-  const playersList = boxScore?.players || []
-  const homePlayers = playersList.filter(p => String(p.team_id) === String(homeTeamId))
-  const awayPlayers = playersList.filter(p => String(p.team_id) === String(awayTeamId))
+  // Get player stats from box score
+  const homePlayers = boxScoreResult?.homeStats || []
+  const awayPlayers = boxScoreResult?.awayStats || []
+  
+  // Combine all players for easier access
+  const playersList = [...homePlayers, ...awayPlayers]
   
   const homeGoals = (game as any).home_total_goals ?? 0
   const awayGoals = (game as any).away_total_goals ?? 0
@@ -325,7 +328,7 @@ export default async function GameDetailPage({
       </div>
       
       {/* Goalie Stats */}
-      {boxScore.goalies.length > 0 && (
+      {goalieStats.length > 0 && (
         <div className="bg-card rounded-xl border border-border overflow-hidden">
           <div className="px-4 py-3 bg-accent border-b border-border">
             <h2 className="font-display text-sm font-semibold uppercase tracking-wider">Goaltending</h2>
@@ -343,7 +346,7 @@ export default async function GameDetailPage({
                 </tr>
               </thead>
               <tbody>
-                {boxScore.goalies.map((goalie) => {
+                {goalieStats.map((goalie) => {
                   const goalieInfo = playersMap.get(String(goalie.player_id))
                   const goalieTeam = String(goalie.team_id) === String(homeTeamId) ? homeTeam : awayTeam
                   return (

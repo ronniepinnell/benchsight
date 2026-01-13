@@ -22,10 +22,14 @@ data/.etl_*.json
 # Node modules
 node_modules/
 ui/**/node_modules/
-ui/**/.next/
-ui/**/dist/
-ui/**/build/
+**/.next/
+**/dist/
+**/build/
 *.log
+
+# Next.js build files
+.next/
+.next/**
 
 # IDE
 .vscode/

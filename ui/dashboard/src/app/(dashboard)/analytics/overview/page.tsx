@@ -343,6 +343,7 @@ export default async function LeagueOverviewPage() {
           <div className="space-y-2">
             {topGoalies.length > 0 ? topGoalies.map((goalie, idx) => {
               const playerInfo = playersMap.get(String(goalie.player_id))
+              const teamInfo = playerInfo?.team_id ? teamsMap.get(String(playerInfo.team_id)) : null
               if (!goalie.player_id) return null
               return (
                 <Link
@@ -357,7 +358,7 @@ export default async function LeagueOverviewPage() {
                     <PlayerPhoto
                       src={playerInfo?.player_image || null}
                       name={goalie.player_name || ''}
-                      primaryColor={playerInfo?.primary_color}
+                      primaryColor={teamInfo?.primary_color}
                       size="sm"
                     />
                     <span className="text-sm hover:text-primary transition-colors">

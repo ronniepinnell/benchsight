@@ -4,11 +4,12 @@ import { notFound } from 'next/navigation'
 import { getPlayerById, getPlayerCareerSummary, getPlayerGameLog } from '@/lib/supabase/queries/players'
 import { getTeamById } from '@/lib/supabase/queries/teams'
 import { createClient } from '@/lib/supabase/server'
-import { ArrowLeft, Target, Sparkles, TrendingUp, Calendar, Activity, Zap, Shield, BarChart3 } from 'lucide-react'
+import { ArrowLeft, Target, Sparkles, TrendingUp, Calendar, Activity, Zap, Shield, BarChart3, Info } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { PlayerPhoto } from '@/components/players/player-photo'
 import { TeamLogo } from '@/components/teams/team-logo'
 import { SeasonSelector } from '@/components/teams/season-selector'
+import { StatCard, StatRow } from '@/components/players/stat-card'
 
 export const revalidate = 300
 
@@ -31,48 +32,87 @@ async function PlayerAdvancedStatsSection({
   seasonId: string
   gameType: string
 }) {
-  const supabase = await createClient()
-  
-  // First, get all schedule data for filtering
-  const { data: allScheduleData } = await supabase
-    .from('dim_schedule')
-    .select('game_id, season_id, game_type')
-  
-  // Filter schedule by season and game type
-  const filteredSchedule = allScheduleData?.filter(s => {
-    const seasonMatch = s.season_id === seasonId
-    const gameTypeMatch = gameType === 'All' || s.game_type === gameType
-    return seasonMatch && gameTypeMatch
-  }) || []
-  
-  const gameIds = filteredSchedule.map(g => g.game_id)
-  
-  // If no games found, try to get any games for this player anyway (fallback)
-  if (gameIds.length === 0) {
-    // Still try to fetch stats - maybe season_id is in fact_player_game_stats directly
-    const { data: directStats } = await supabase
-      .from('fact_player_game_stats')
-      .select('game_id, season_id')
-      .eq('player_id', playerId)
-      .limit(1)
+  try {
+    const supabase = await createClient()
     
-    if (!directStats || directStats.length === 0) {
-      return (
-        <div className="bg-card rounded-xl border border-border overflow-hidden">
-          <div className="px-4 py-3 bg-accent border-b border-border">
-            <h2 className="font-display text-sm font-semibold uppercase tracking-wider flex items-center gap-2">
-              <TrendingUp className="w-4 h-4" />
-              Advanced Statistics
-            </h2>
-          </div>
-          <div className="p-6">
-            <p className="text-sm text-muted-foreground text-center">
-              No game data available for this player.
-            </p>
-          </div>
-        </div>
-      )
+    // First, get all schedule data for filtering
+    const { data: allScheduleData, error: scheduleError } = await supabase
+      .from('dim_schedule')
+      .select('game_id, season_id, game_type')
+    
+    if (scheduleError) {
+      console.error('Error fetching schedule:', scheduleError)
     }
+    
+    // Filter schedule by season and game type
+    const filteredSchedule = allScheduleData?.filter(s => {
+      const seasonMatch = s.season_id === seasonId
+      const gameTypeMatch = gameType === 'All' || s.game_type === gameType
+      return seasonMatch && gameTypeMatch
+    }) || []
+    
+    const gameIds = filteredSchedule.map(g => g.game_id)
+    
+    // If no games found, try to get any games for this player anyway (fallback)
+    if (gameIds.length === 0) {
+      // Still try to fetch stats - maybe season_id is in fact_player_game_stats directly
+      const { data: directStats, error: directError } = await supabase
+        .from('fact_player_game_stats')
+        .select('game_id, season_id')
+        .eq('player_id', playerId)
+        .limit(1)
+      
+      if (directError) {
+        console.error('Error checking for player stats:', directError)
+      }
+      
+      if (!directStats || directStats.length === 0) {
+        return (
+          <div className="bg-card rounded-xl border border-border overflow-hidden">
+            <div className="px-4 py-3 bg-accent border-b border-border">
+              <h2 className="font-display text-sm font-semibold uppercase tracking-wider flex items-center gap-2">
+                <TrendingUp className="w-4 h-4" />
+                Advanced Statistics
+              </h2>
+            </div>
+            <div className="p-6">
+              <p className="text-sm text-muted-foreground text-center">
+                No game data available for this player.
+              </p>
+            </div>
+          </div>
+        )
+      }
+    }
+  
+  // First, let's get a sample to see what columns we actually have
+  const { data: sampleData, error: sampleError } = await supabase
+    .from('fact_player_game_stats')
+    .select('*')
+    .eq('player_id', playerId)
+    .limit(1)
+  
+  if (sampleError) {
+    console.error('Error fetching sample data:', sampleError)
+  }
+  
+  console.log('[PlayerAdvancedStats] Player ID:', playerId)
+  console.log('[PlayerAdvancedStats] Season ID:', seasonId)
+  console.log('[PlayerAdvancedStats] Game Type:', gameType)
+  console.log('[PlayerAdvancedStats] Game IDs count:', gameIds.length)
+  console.log('[PlayerAdvancedStats] Sample data exists:', !!sampleData)
+  console.log('[PlayerAdvancedStats] Sample data length:', sampleData?.length || 0)
+  
+  if (sampleData && sampleData.length > 0) {
+    const sampleRow = sampleData[0]
+    console.log('[PlayerAdvancedStats] Sample columns:', Object.keys(sampleRow))
+    console.log('[PlayerAdvancedStats] Sample corsi_for:', sampleRow.corsi_for)
+    console.log('[PlayerAdvancedStats] Sample cf:', sampleRow.cf)
+    console.log('[PlayerAdvancedStats] Sample hits:', sampleRow.hits)
+    console.log('[PlayerAdvancedStats] Sample blocks:', sampleRow.blocks)
+    console.log('[PlayerAdvancedStats] Sample zone_entries:', sampleRow.zone_entries)
+  } else {
+    console.log('[PlayerAdvancedStats] No sample data found for player:', playerId)
   }
   
   // Fetch all advanced stats in parallel
@@ -85,52 +125,68 @@ async function PlayerAdvancedStatsSection({
     shootingStats,
     per60Stats
   ] = await Promise.all([
-    // Possession stats - try both column name formats
-    (gameIds.length > 0
-      ? supabase.from('fact_player_game_stats').select('cf, ca, ff, fa, xg, g, corsi_for, corsi_against, fenwick_for, fenwick_against, xg_for, goals, game_id, season_id').eq('player_id', playerId).in('game_id', gameIds)
-      : supabase.from('fact_player_game_stats').select('cf, ca, ff, fa, xg, g, corsi_for, corsi_against, fenwick_for, fenwick_against, xg_for, goals, game_id, season_id').eq('player_id', playerId)
-    )
+    // Possession stats - query all columns first, then extract what we need
+    supabase
+      .from('fact_player_game_stats')
+      .select('*')
+      .eq('player_id', playerId)
       .then(({ data, error }) => {
         if (error) {
           console.error('Error fetching possession stats:', error)
           return null
         }
-        if (!data || data.length === 0) return null
+        console.log('Total possession stats rows:', data?.length || 0)
+        if (!data || data.length === 0) {
+          console.log('No possession stats data found')
+          return null
+        }
         
-        // Filter by season_id if it exists in the data, and by game_id if we have filtered gameIds
+        // Filter by game_id if we have filtered gameIds
         let filteredData = data
         if (gameIds.length > 0) {
           filteredData = data.filter(stat => gameIds.includes(stat.game_id))
+          console.log('After game_id filter:', filteredData.length)
         }
-        if (filteredData.length === 0) return null
+        if (filteredData.length === 0) {
+          console.log('No data after filtering')
+          return null
+        }
         
         const totals = filteredData.reduce((acc, stat) => {
-          // Handle both column name formats
-          const cf = stat.corsi_for || stat.cf || 0
-          const ca = stat.corsi_against || stat.ca || 0
-          const ff = stat.fenwick_for || stat.ff || 0
-          const fa = stat.fenwick_against || stat.fa || 0
-          const xg = stat.xg_for || stat.xg || 0
-          const goals = stat.goals || stat.g || 0
+          // Handle both column name formats - check what actually exists
+          const cf = stat.corsi_for ?? stat.cf ?? 0
+          const ca = stat.corsi_against ?? stat.ca ?? 0
+          const ff = stat.fenwick_for ?? stat.ff ?? 0
+          const fa = stat.fenwick_against ?? stat.fa ?? 0
+          const xg = stat.xg_for ?? stat.xg ?? stat.expected_goals ?? 0
+          const goals = stat.goals ?? stat.g ?? 0
+          
+          console.log('Processing stat row:', { cf, ca, ff, fa, xg, goals, hasCorsiFor: 'corsi_for' in stat, hasCf: 'cf' in stat })
+          
           return {
-            cf: (acc.cf || 0) + (parseFloat(String(cf)) || 0),
-            ca: (acc.ca || 0) + (parseFloat(String(ca)) || 0),
-            ff: (acc.ff || 0) + (parseFloat(String(ff)) || 0),
-            fa: (acc.fa || 0) + (parseFloat(String(fa)) || 0),
-            xg: (acc.xg || 0) + (parseFloat(String(xg)) || 0),
-            goals: (acc.goals || 0) + (parseFloat(String(goals)) || 0),
+            cf: (acc.cf || 0) + (Number(cf) || 0),
+            ca: (acc.ca || 0) + (Number(ca) || 0),
+            ff: (acc.ff || 0) + (Number(ff) || 0),
+            fa: (acc.fa || 0) + (Number(fa) || 0),
+            xg: (acc.xg || 0) + (Number(xg) || 0),
+            goals: (acc.goals || 0) + (Number(goals) || 0),
           }
         }, { cf: 0, ca: 0, ff: 0, fa: 0, xg: 0, goals: 0 })
+        
+        console.log('Possession totals:', totals)
         const cfPct = totals.cf + totals.ca > 0 ? (totals.cf / (totals.cf + totals.ca)) * 100 : 0
         const ffPct = totals.ff + totals.fa > 0 ? (totals.ff / (totals.ff + totals.fa)) * 100 : 0
         return { ...totals, cfPct, ffPct, xgDiff: totals.goals - totals.xg }
+      }).catch((error) => {
+        console.error('Error in possession stats query:', error)
+        return null
       }),
     
-    // Zone stats
-    (gameIds.length > 0
-      ? supabase.from('fact_player_game_stats').select('zone_entry, zone_entry_controlled, zone_exit, zone_exit_controlled, zone_entries, zone_entries_successful, zone_exits, zone_exits_successful, game_id').eq('player_id', playerId).in('game_id', gameIds)
-      : supabase.from('fact_player_game_stats').select('zone_entry, zone_entry_controlled, zone_exit, zone_exit_controlled, zone_entries, zone_entries_successful, zone_exits, zone_exits_successful, game_id').eq('player_id', playerId)
-    )
+    // Zone stats - query all columns
+    supabase
+      .from('fact_player_game_stats')
+      .select('*')
+      .eq('player_id', playerId)
       .then(({ data, error }) => {
         if (error) {
           console.error('Error fetching zone stats:', error)
@@ -146,27 +202,30 @@ async function PlayerAdvancedStatsSection({
         
         const totals = filteredData.reduce((acc, stat) => {
           // Handle both column name formats
-          const ze = stat.zone_entries || stat.zone_entry || 0
-          const zeSuccess = stat.zone_entries_successful || stat.zone_entry_controlled || 0
-          const zx = stat.zone_exits || stat.zone_exit || 0
-          const zxSuccess = stat.zone_exits_successful || stat.zone_exit_controlled || 0
+          const ze = stat.zone_entries ?? stat.zone_entry ?? 0
+          const zeSuccess = stat.zone_entries_successful ?? stat.zone_entry_controlled ?? 0
+          const zx = stat.zone_exits ?? stat.zone_exit ?? 0
+          const zxSuccess = stat.zone_exits_successful ?? stat.zone_exit_controlled ?? 0
           return {
-            ze: (acc.ze || 0) + (parseFloat(String(ze)) || 0),
-            zeSuccess: (acc.zeSuccess || 0) + (parseFloat(String(zeSuccess)) || 0),
-            zx: (acc.zx || 0) + (parseFloat(String(zx)) || 0),
-            zxSuccess: (acc.zxSuccess || 0) + (parseFloat(String(zxSuccess)) || 0),
+            ze: (acc.ze || 0) + (Number(ze) || 0),
+            zeSuccess: (acc.zeSuccess || 0) + (Number(zeSuccess) || 0),
+            zx: (acc.zx || 0) + (Number(zx) || 0),
+            zxSuccess: (acc.zxSuccess || 0) + (Number(zxSuccess) || 0),
           }
         }, { ze: 0, zeSuccess: 0, zx: 0, zxSuccess: 0 })
         const zePct = totals.ze > 0 ? (totals.zeSuccess / totals.ze) * 100 : 0
         const zxPct = totals.zx > 0 ? (totals.zxSuccess / totals.zx) * 100 : 0
         return { ...totals, zePct, zxPct }
+      }).catch((error) => {
+        console.error('Error in zone stats query:', error)
+        return null
       }),
     
-    // WAR/GAR
-    (gameIds.length > 0
-      ? supabase.from('fact_player_game_stats').select('gar, war, game_score, player_rating, game_id').eq('player_id', playerId).in('game_id', gameIds)
-      : supabase.from('fact_player_game_stats').select('gar, war, game_score, player_rating, game_id').eq('player_id', playerId)
-    )
+    // WAR/GAR - query all columns
+    supabase
+      .from('fact_player_game_stats')
+      .select('*')
+      .eq('player_id', playerId)
       .then(({ data, error }) => {
         if (error) {
           console.error('Error fetching WAR stats:', error)
@@ -181,10 +240,10 @@ async function PlayerAdvancedStatsSection({
         if (filteredData.length === 0) return null
         
         const totals = filteredData.reduce((acc, stat) => ({
-          gar: (acc.gar || 0) + (parseFloat(String(stat.gar)) || 0),
-          war: (acc.war || 0) + (parseFloat(String(stat.war)) || 0),
-          gameScore: (acc.gameScore || 0) + (parseFloat(String(stat.game_score)) || 0),
-          rating: (acc.rating || 0) + (parseFloat(String(stat.player_rating)) || 0),
+          gar: (acc.gar || 0) + (Number(stat.gar) || 0),
+          war: (acc.war || 0) + (Number(stat.war) || 0),
+          gameScore: (acc.gameScore || 0) + (Number(stat.game_score) || 0),
+          rating: (acc.rating || 0) + (Number(stat.player_rating) || 0),
           games: acc.games + 1,
         }), { gar: 0, war: 0, gameScore: 0, rating: 0, games: 0 })
         return {
@@ -193,13 +252,16 @@ async function PlayerAdvancedStatsSection({
           avgGameScore: totals.games > 0 ? (totals.gameScore / totals.games).toFixed(2) : '0.00',
           avgRating: totals.games > 0 ? (totals.rating / totals.games).toFixed(1) : '0.0',
         }
+      }).catch((error) => {
+        console.error('Error in WAR stats query:', error)
+        return null
       }),
     
-    // Physical stats
-    (gameIds.length > 0
-      ? supabase.from('fact_player_game_stats').select('hit, blk, give, take, hits, blocks, giveaways, takeaways, game_id').eq('player_id', playerId).in('game_id', gameIds)
-      : supabase.from('fact_player_game_stats').select('hit, blk, give, take, hits, blocks, giveaways, takeaways, game_id').eq('player_id', playerId)
-    )
+    // Physical stats - query all columns
+    supabase
+      .from('fact_player_game_stats')
+      .select('*')
+      .eq('player_id', playerId)
       .then(({ data, error }) => {
         if (error) {
           console.error('Error fetching physical stats:', error)
@@ -215,15 +277,15 @@ async function PlayerAdvancedStatsSection({
         
         const totals = filteredData.reduce((acc, stat) => {
           // Handle both column name formats
-          const hits = stat.hits || stat.hit || 0
-          const blocks = stat.blocks || stat.blk || 0
-          const giveaways = stat.giveaways || stat.give || 0
-          const takeaways = stat.takeaways || stat.take || 0
+          const hits = stat.hits ?? stat.hit ?? 0
+          const blocks = stat.blocks ?? stat.blk ?? 0
+          const giveaways = stat.giveaways ?? stat.give ?? 0
+          const takeaways = stat.takeaways ?? stat.take ?? 0
           return {
-            hits: (acc.hits || 0) + (parseFloat(String(hits)) || 0),
-            blocks: (acc.blocks || 0) + (parseFloat(String(blocks)) || 0),
-            giveaways: (acc.giveaways || 0) + (parseFloat(String(giveaways)) || 0),
-            takeaways: (acc.takeaways || 0) + (parseFloat(String(takeaways)) || 0),
+            hits: (acc.hits || 0) + (Number(hits) || 0),
+            blocks: (acc.blocks || 0) + (Number(blocks) || 0),
+            giveaways: (acc.giveaways || 0) + (Number(giveaways) || 0),
+            takeaways: (acc.takeaways || 0) + (Number(takeaways) || 0),
             games: acc.games + 1,
           }
         }, { hits: 0, blocks: 0, giveaways: 0, takeaways: 0, games: 0 })
@@ -233,13 +295,16 @@ async function PlayerAdvancedStatsSection({
           hitsPerGame: totals.games > 0 ? (totals.hits / totals.games).toFixed(1) : '0.0',
           blocksPerGame: totals.games > 0 ? (totals.blocks / totals.games).toFixed(1) : '0.0',
         }
+      }).catch((error) => {
+        console.error('Error in physical stats query:', error)
+        return null
       }),
     
-    // Shooting stats
-    (gameIds.length > 0
-      ? supabase.from('fact_player_game_stats').select('sog, sh_pct, g, shots, shooting_pct, goals, game_id').eq('player_id', playerId).in('game_id', gameIds)
-      : supabase.from('fact_player_game_stats').select('sog, sh_pct, g, shots, shooting_pct, goals, game_id').eq('player_id', playerId)
-    )
+    // Shooting stats - query all columns
+    supabase
+      .from('fact_player_game_stats')
+      .select('*')
+      .eq('player_id', playerId)
       .then(({ data, error }) => {
         if (error) {
           console.error('Error fetching shooting stats:', error)
@@ -255,13 +320,13 @@ async function PlayerAdvancedStatsSection({
         
         const totals = filteredData.reduce((acc, stat) => {
           // Handle both column name formats
-          const shots = stat.shots || 0
-          const sog = stat.sog || 0
-          const goals = stat.goals || stat.g || 0
+          const shots = stat.shots ?? 0
+          const sog = stat.sog ?? stat.shots_on_goal ?? 0
+          const goals = stat.goals ?? stat.g ?? 0
           return {
-            shots: (acc.shots || 0) + (parseFloat(String(shots)) || 0),
-            sog: (acc.sog || 0) + (parseFloat(String(sog)) || 0),
-            goals: (acc.goals || 0) + (parseFloat(String(goals)) || 0),
+            shots: (acc.shots || 0) + (Number(shots) || 0),
+            sog: (acc.sog || 0) + (Number(sog) || 0),
+            goals: (acc.goals || 0) + (Number(goals) || 0),
             games: acc.games + 1,
           }
         }, { shots: 0, sog: 0, goals: 0, games: 0 })
@@ -274,13 +339,16 @@ async function PlayerAdvancedStatsSection({
           shotsPerGame: totals.games > 0 ? (totals.shots / totals.games).toFixed(1) : '0.0',
           sogPerGame: totals.games > 0 ? (totals.sog / totals.games).toFixed(1) : '0.0',
         }
+      }).catch((error) => {
+        console.error('Error in shooting stats query:', error)
+        return null
       }),
     
-    // Per-60 rates
-    (gameIds.length > 0
-      ? supabase.from('fact_player_game_stats').select('g_60, sog_60, pts_60, toi_seconds, goals_per_60, assists_per_60, points_per_60, game_id').eq('player_id', playerId).in('game_id', gameIds)
-      : supabase.from('fact_player_game_stats').select('g_60, sog_60, pts_60, toi_seconds, goals_per_60, assists_per_60, points_per_60, game_id').eq('player_id', playerId)
-    )
+    // Per-60 rates - query all columns
+    supabase
+      .from('fact_player_game_stats')
+      .select('*')
+      .eq('player_id', playerId)
       .then(({ data, error }) => {
         if (error) {
           console.error('Error fetching per-60 stats:', error)
@@ -296,13 +364,13 @@ async function PlayerAdvancedStatsSection({
         
         const totals = filteredData.reduce((acc, stat) => {
           // Handle both column name formats
-          const g60 = stat.goals_per_60 || stat.g_60 || 0
-          const p60 = stat.points_per_60 || stat.pts_60 || 0
-          const toi = stat.toi_seconds || 0
+          const g60 = stat.goals_per_60 ?? stat.g_60 ?? 0
+          const p60 = stat.points_per_60 ?? stat.pts_60 ?? 0
+          const toi = stat.toi_seconds ?? 0
           return {
-            g60: (acc.g60 || 0) + (parseFloat(String(g60)) || 0),
-            p60: (acc.p60 || 0) + (parseFloat(String(p60)) || 0),
-            toi: (acc.toi || 0) + (parseFloat(String(toi)) || 0),
+            g60: (acc.g60 || 0) + (Number(g60) || 0),
+            p60: (acc.p60 || 0) + (Number(p60) || 0),
+            toi: (acc.toi || 0) + (Number(toi) || 0),
             games: acc.games + 1,
           }
         }, { g60: 0, p60: 0, toi: 0, games: 0 })
@@ -314,28 +382,51 @@ async function PlayerAdvancedStatsSection({
           pointsPer60: totals.games > 0 ? (totals.p60 / totals.games).toFixed(2) : '0.00',
           avgTOI: totals.games > 0 ? (totals.toi / totals.games / 60).toFixed(1) : '0.0',
         }
+      }).catch((error) => {
+        console.error('Error in per-60 stats query:', error)
+        return null
       }),
   ])
   
-  const hasAnyStats = possessionStats || zoneStats || warStats || physicalStats || shootingStats || per60Stats
-  
-  if (!hasAnyStats) {
-    return (
-      <div className="bg-card rounded-xl border border-border overflow-hidden">
-        <div className="px-4 py-3 bg-accent border-b border-border">
-          <h2 className="font-display text-sm font-semibold uppercase tracking-wider flex items-center gap-2">
-            <TrendingUp className="w-4 h-4" />
-            Advanced Statistics
-          </h2>
+    const hasAnyStats = possessionStats || zoneStats || warStats || physicalStats || shootingStats || per60Stats
+    
+    // Debug: Show what we got
+    const debugInfo = {
+      possessionStats: !!possessionStats,
+      zoneStats: !!zoneStats,
+      warStats: !!warStats,
+      physicalStats: !!physicalStats,
+      shootingStats: !!shootingStats,
+      per60Stats: !!per60Stats,
+      gameIdsCount: gameIds.length,
+      seasonId,
+      gameType
+    }
+    
+    if (!hasAnyStats) {
+      return (
+        <div className="bg-card rounded-xl border border-border overflow-hidden">
+          <div className="px-4 py-3 bg-accent border-b border-border">
+            <h2 className="font-display text-sm font-semibold uppercase tracking-wider flex items-center gap-2">
+              <TrendingUp className="w-4 h-4" />
+              Advanced Statistics
+            </h2>
+          </div>
+          <div className="p-6">
+            <p className="text-sm text-muted-foreground text-center mb-4">
+              Advanced statistics will appear here once game data is available.
+            </p>
+            {/* Debug info - remove this later */}
+            <details className="text-xs text-muted-foreground">
+              <summary className="cursor-pointer">Debug Info</summary>
+              <pre className="mt-2 p-2 bg-muted rounded text-xs overflow-auto">
+                {JSON.stringify(debugInfo, null, 2)}
+              </pre>
+            </details>
+          </div>
         </div>
-        <div className="p-6">
-          <p className="text-sm text-muted-foreground text-center">
-            Advanced statistics will appear here once game data is available.
-          </p>
-        </div>
-      </div>
-    )
-  }
+      )
+    }
   
   return (
     <div className="bg-card rounded-xl border border-border overflow-hidden">
@@ -563,7 +654,25 @@ async function PlayerAdvancedStatsSection({
         </div>
       </div>
     </div>
-  )
+    )
+  } catch (error) {
+    console.error('Error in PlayerAdvancedStatsSection:', error)
+    return (
+      <div className="bg-card rounded-xl border border-border overflow-hidden">
+        <div className="px-4 py-3 bg-accent border-b border-border">
+          <h2 className="font-display text-sm font-semibold uppercase tracking-wider flex items-center gap-2">
+            <TrendingUp className="w-4 h-4" />
+            Advanced Statistics
+          </h2>
+        </div>
+        <div className="p-6">
+          <p className="text-sm text-muted-foreground text-center">
+            Error loading advanced statistics. Please try refreshing the page.
+          </p>
+        </div>
+      </div>
+    )
+  }
 }
 
 export default async function PlayerDetailPage({ 
@@ -573,23 +682,24 @@ export default async function PlayerDetailPage({
   params: Promise<{ playerId: string }>
   searchParams: Promise<{ season?: string; gameType?: string }>
 }) {
-  const { playerId } = await params
-  const { season: selectedSeason, gameType: selectedGameType } = await searchParams
-  
-  if (!playerId) {
-    notFound()
-  }
-  
-  const supabase = await createClient()
-  
-  const [player, career] = await Promise.all([
-    getPlayerById(playerId),
-    getPlayerCareerSummary(playerId).catch(() => null)
-  ])
-  
-  if (!player) {
-    notFound()
-  }
+  try {
+    const { playerId } = await params
+    const { season: selectedSeason, gameType: selectedGameType } = await searchParams
+    
+    if (!playerId) {
+      notFound()
+    }
+    
+    const supabase = await createClient()
+    
+    const [player, career] = await Promise.all([
+      getPlayerById(playerId).catch(() => null),
+      getPlayerCareerSummary(playerId).catch(() => null)
+    ])
+    
+    if (!player) {
+      notFound()
+    }
   
   // Get available seasons for this player
   const { data: seasonsData } = await supabase
@@ -608,10 +718,14 @@ export default async function PlayerDetailPage({
   const gameType = selectedGameType || 'All' // 'All', 'Regular', 'Playoffs'
   
   // Get game IDs from schedule first (needed for filtering)
-  const { data: scheduleForGames } = await supabase
+  // Only filter by season_id if we have one
+  const scheduleQuery = supabase
     .from('dim_schedule')
     .select('game_id, season_id, game_type, date')
-    .eq('season_id', seasonId)
+  
+  const { data: scheduleForGames } = seasonId 
+    ? await scheduleQuery.eq('season_id', seasonId)
+    : await scheduleQuery
   
   // Filter by game_type if not 'All'
   const filteredSchedule = gameType === 'All' 
@@ -865,13 +979,11 @@ export default async function PlayerDetailPage({
       )}
       
       {/* Advanced Stats Section */}
-      {seasonId && (
-        <PlayerAdvancedStatsSection 
-          playerId={playerId}
-          seasonId={seasonId}
-          gameType={gameType}
-        />
-      )}
+      <PlayerAdvancedStatsSection 
+        playerId={playerId}
+        seasonId={seasonId || ''}
+        gameType={gameType}
+      />
       
       {/* Additional Stats */}
       {playerStats && (
@@ -1025,5 +1137,25 @@ export default async function PlayerDetailPage({
         </Link>
       </div>
     </div>
-  )
+    )
+  } catch (error) {
+    console.error('Error in PlayerDetailPage:', error)
+    return (
+      <div className="space-y-6 p-6">
+        <div className="bg-card rounded-xl border border-border p-6">
+          <h1 className="font-display text-2xl font-bold text-foreground mb-4">Error Loading Player</h1>
+          <p className="text-muted-foreground">
+            There was an error loading this player's data. Please try refreshing the page.
+          </p>
+          <Link 
+            href="/players" 
+            className="inline-flex items-center gap-2 mt-4 text-sm text-primary hover:underline"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Players
+          </Link>
+        </div>
+      </div>
+    )
+  }
 }
