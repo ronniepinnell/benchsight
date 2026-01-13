@@ -1,0 +1,25 @@
+{
+  "timestamp": "2026-01-13T12:23:43.472588",
+  "tables_analyzed": 139,
+  "tables_optimized": 0,
+  "tables_empty": 4,
+  "tables_errors": 0,
+  "total_original_memory_mb": 113.58061790466309,
+  "total_optimized_memory_mb": 25.98823356628418,
+  "total_savings_mb": 87.5923843383789,
+  "table_results": [
+    {
+      "table_name": "dim_assist_type",
+      "status": "success",
+      "rows": 5,
+      "columns": 5,
+      "original_memory_mb": 0.0013170242309570312,
+      "optimized_memory_mb": 0.0019588470458984375,
+      "savings_mb": -0.0006418228149414062,
+      "savings_pct": -48.73280231716148,
+      "optimization_count": 1,
+      "suggestions": {
+        "points_value": {
+          "current_type": "int64",
+          "unique_count": 1,
+          "null_count": 

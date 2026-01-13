@@ -176,11 +176,15 @@ If this chat ends, the next chat should:
 2. **Read docs/archive/AGENT_HANDOFF.md** (for v29.1→v29.2 transition, archived)
 3. Check CHANGELOG.md for latest version (currently v29.1)
 4. Review REFACTORING.md for refactoring status
-5. Continue with v29.2 tasks:
+5. **If working on Phase 1 (ETL API):**
+   - Read `docs/PHASE1_QUICK_START.md` first
+   - Follow `docs/PHASE1_ETL_API_PLAN.md` day-by-day
+   - Track progress with checkboxes
+6. Continue with v29.2 tasks:
    - Integrate formula system into fact_player_game_stats
    - Optimize team ratings calculation
    - Replace high-impact .iterrows() loops
-6. After v29.2: Continue with validation and Phase 1 of ROADMAP.md
+7. After v29.2: Continue with validation and Phase 1 of ROADMAP.md
 
 ---
 

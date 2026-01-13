@@ -1,9 +1,0 @@
-pass_type_id,pass_type_code,pass_type_name,description
-PT0001,Forehand,Forehand,Standard forehand pass
-PT0002,Backhand,Backhand,Backhand pass
-PT0003,Saucer,Saucer,Saucer pass (airborne)
-PT0004,Bank,Bank,Bank pass off boards
-PT0005,Drop,Drop,Drop pass
-PT0006,OneTouch,OneTouch,One-touch pass
-PT0007,CrossIce,CrossIce,Cross-ice pass
-PT0008,Stretch,Stretch,Long stretch pass

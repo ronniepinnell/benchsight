@@ -1,67 +1,63 @@
 """
-BenchSight Calculations Module
+Calculation Functions Module
 
-Extracted calculation functions for testability and reusability.
+Centralized location for all calculation functions used in ETL.
+Organized by domain (goalie, player, team, etc.)
 
-This module contains pure calculation functions extracted from base_etl.py
-to make them testable and reusable across the codebase.
+Version: 29.7
+
+Note: Goalie calculations module will be added in future refactoring.
+For now, goalie calculations remain in src/tables/core_facts.py
 """
 
+# Import existing calculation functions
 from src.calculations.corsi import (
-    calculate_corsi_for_player,
-    calculate_fenwick_for_player,
     calculate_cf_pct,
     calculate_ff_pct,
-    is_corsi_event,
-    is_fenwick_event,
-    is_sog_event
+    calculate_corsi_for_player,
+    calculate_fenwick_for_player,
 )
 
-from src.calculations.goals import (
-    is_goal_scored,
-    filter_goals,
-    count_goals_for_player,
-    get_goal_filter
+from src.calculations.time import (
+    calculate_per_60_rate,
+    calculate_toi_seconds,
+    calculate_toi_minutes,
+    calculate_shift_duration,
+    calculate_per_60_from_seconds,
 )
 
 from src.calculations.ratings import (
     calculate_team_ratings,
     calculate_rating_differential,
-    get_competition_tier,
     calculate_expected_cf_pct,
-    calculate_cf_pct_vs_expected
+    calculate_cf_pct_vs_expected,
+    calculate_opponent_multiplier,
 )
 
-from src.calculations.time import (
-    calculate_toi_seconds,
-    calculate_toi_minutes,
-    calculate_shift_duration,
-    calculate_per_60_rate
+from src.calculations.goals import (
+    get_goal_filter,
+    is_goal_scored,
 )
 
 __all__ = [
-    # Corsi
-    'calculate_corsi_for_player',
-    'calculate_fenwick_for_player',
+    # Corsi/Fenwick
     'calculate_cf_pct',
     'calculate_ff_pct',
-    'is_corsi_event',
-    'is_fenwick_event',
-    'is_sog_event',
-    # Goals
-    'is_goal_scored',
-    'filter_goals',
-    'count_goals_for_player',
-    'get_goal_filter',
-    # Ratings
-    'calculate_team_ratings',
-    'calculate_rating_differential',
-    'get_competition_tier',
-    'calculate_expected_cf_pct',
-    'calculate_cf_pct_vs_expected',
-    # Time
+    'calculate_corsi_for_player',
+    'calculate_fenwick_for_player',
+    # Time/TOI
+    'calculate_per_60_rate',
     'calculate_toi_seconds',
     'calculate_toi_minutes',
     'calculate_shift_duration',
-    'calculate_per_60_rate',
+    'calculate_per_60_from_seconds',
+    # Ratings
+    'calculate_team_ratings',
+    'calculate_rating_differential',
+    'calculate_expected_cf_pct',
+    'calculate_cf_pct_vs_expected',
+    'calculate_opponent_multiplier',
+    # Goals
+    'get_goal_filter',
+    'is_goal_scored',
 ]

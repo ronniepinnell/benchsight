@@ -1,4 +1,0 @@
-save_outcome_id,save_outcome_code,save_outcome_name,causes_stoppage
-SO01,rebound,Rebound,False
-SO02,freeze,Freeze,True
-SO03,deflect,Deflect,False

@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+*.egg
+
+# Data files (too large for git)
+data/output/*.csv
+data/output/*.json
+data/raw/games/**/*.xlsx
+data/raw/**/*.xlsx
+data/raw/**/*.csv
+data/.dtype_optimization_results.json
+data/.etl_*.json
+
+# Node modules
+node_modules/
+ui/**/node_modules/
+ui/**/.next/
+ui/**/dist/
+ui/**/build/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Environment
+.env
+.env.local
+venv/
+env/

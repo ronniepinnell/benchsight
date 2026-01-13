@@ -1,4 +1,6 @@
 // src/components/players/player-photo.tsx
+'use client'
+
 import Image from 'next/image'
 import { cn, getInitials } from '@/lib/utils'
 

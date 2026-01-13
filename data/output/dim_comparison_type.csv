@@ -1,7 +1,0 @@
-comparison_type_id,comparison_type_code,comparison_type_name,description,analysis_scope
-CT01,h2h,Head to Head,Direct player matchup statistics,game
-CT02,wowy,With or Without You,Impact when playing together vs apart,game
-CT03,vs_team,Vs Team,Performance against specific teams,season
-CT04,vs_position,Vs Position,Performance against position groups,season
-CT05,vs_rating,Vs Rating Tier,Performance vs rating-matched opponents,game
-CT06,career,Career Comparison,Career trajectory analysis,career

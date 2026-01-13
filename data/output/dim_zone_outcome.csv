@@ -1,7 +1,0 @@
-zone_outcome_id,zone_outcome_code,zone_outcome_name,is_controlled,zone_type
-ZO01,controlled_entry,Controlled Entry,True,entry
-ZO02,dump_entry,Dump & Chase,False,entry
-ZO03,failed_entry,Failed Entry,False,entry
-ZO04,controlled_exit,Controlled Exit,True,exit
-ZO05,clear_exit,Clear,False,exit
-ZO06,failed_exit,Failed Exit,False,exit

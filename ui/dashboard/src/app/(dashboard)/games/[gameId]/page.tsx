@@ -39,8 +39,9 @@ export default async function GameDetailPage({
   
   // Separate players by team
   const homeTeamId = game.home_team_id
-  const homePlayers = boxScore.players.filter(p => p.team_id === homeTeamId)
-  const awayPlayers = boxScore.players.filter(p => p.team_id !== homeTeamId)
+  const players = boxScore?.players || []
+  const homePlayers = players.filter(p => p.team_id === homeTeamId)
+  const awayPlayers = players.filter(p => p.team_id !== homeTeamId)
   
   const homeGoals = (game as any).home_total_goals ?? 0
   const awayGoals = (game as any).away_total_goals ?? 0

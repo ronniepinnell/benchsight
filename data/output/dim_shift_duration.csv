@@ -1,6 +1,0 @@
-shift_duration_id,duration_bucket,min_seconds,max_seconds,description,fatigue_level,typical_scenario
-SD01,Very Short,0,30,Quick line change or partial shift,Fresh,Line change during play
-SD02,Short,30,45,Quick but complete shift,Fresh,"Fast pace, quick changes"
-SD03,Normal,45,60,Standard shift duration,Moderate,Typical game flow
-SD04,Long,60,90,Extended shift,Tired,"Extended zone time, PP/PK"
-SD05,Very Long,90,9999,Double shift or exhausted,Exhausted,"Caught on ice, PP/PK"

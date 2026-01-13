@@ -160,7 +160,7 @@ def _upload_df_to_supabase(df: pd.DataFrame, table_name: str) -> Tuple[int, List
     return uploaded, errors
 
 
-def save_output_table(df: pd.DataFrame, table_name: str, output_dir: Optional[Path] = None) -> Tuple[int, int]:
+def save_output_table(df: pd.DataFrame, table_name: str, output_dir: Optional[Path] = None, optimize_dtypes: bool = True) -> Tuple[int, int]:
     """
     Save a table to CSV and optionally upload to Supabase.
     
@@ -170,6 +170,7 @@ def save_output_table(df: pd.DataFrame, table_name: str, output_dir: Optional[Pa
         df: DataFrame to save
         table_name: Name of the table (without .csv extension)
         output_dir: Optional output directory (default: data/output)
+        optimize_dtypes: Whether to optimize data types before saving (default: True)
     
     Returns:
         Tuple of (row_count, column_count)
@@ -179,6 +180,15 @@ def save_output_table(df: pd.DataFrame, table_name: str, output_dir: Optional[Pa
     
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Optimize data types (v29.6)
+    if optimize_dtypes and len(df) > 0:
+        try:
+            from src.utils.data_type_optimizer import optimize_dataframe_dtypes
+            df = optimize_dataframe_dtypes(df, categorical_threshold=10, optimize_floats=True)
+        except Exception as e:
+            # Don't fail if optimization fails - just log and continue
+            log.debug(f"  Data type optimization skipped for {table_name}: {e}")
     
     # Upload to Supabase FIRST (if enabled)
     if _supabase_enabled and _supabase_client is not None:

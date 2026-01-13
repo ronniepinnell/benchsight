@@ -1,9 +1,0 @@
-stat_id,stat_name,stat_category,stat_level,computable_now,description
-STY01,count,counting,game,True,Raw count of events
-STY02,rate_60,rate,game,True,Per 60 minutes rate
-STY03,percentage,rate,game,True,Success rate %
-STY04,differential,delta,game,True,For minus against
-STY05,cumulative,counting,season,True,Season total
-STY06,average,rate,season,True,Per game average
-STY07,xg_based,advanced,game,False,Requires XY data
-STY08,rating,composite,game,True,Calculated rating

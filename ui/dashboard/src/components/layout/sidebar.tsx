@@ -72,6 +72,9 @@ const navigation: NavSection[] = [
     name: 'Analytics',
     icon: '🔬',
     items: [
+      { name: 'League Overview', href: '/analytics/overview', icon: <BarChart3 className="w-4 h-4" /> },
+      { name: 'League Statistics', href: '/analytics/statistics', icon: <TrendingUp className="w-4 h-4" /> },
+      { name: 'Team Comparison', href: '/analytics/teams', icon: <Users className="w-4 h-4" /> },
       { name: 'Shift Viewer', href: '/analytics/shifts', icon: <Timer className="w-4 h-4" /> },
       { name: 'Trends', href: '/analytics/trends', icon: <TrendingUp className="w-4 h-4" /> },
     ],
@@ -83,15 +86,6 @@ const navigation: NavSection[] = [
       { name: 'Example', href: '/prototypes/example', icon: <TestTube className="w-4 h-4" /> },
       { name: 'Test Connection', href: '/prototypes/test-connection', icon: <Database className="w-4 h-4" /> },
       { name: 'Design System', href: '/prototypes/design-system', icon: <Target className="w-4 h-4" /> },
-    ],
-  },
-  {
-    name: 'Macro Analytics',
-    icon: '📊',
-    items: [
-      { name: 'League Overview', href: '/prototypes/macro/league-overview', icon: <BarChart3 className="w-4 h-4" /> },
-      { name: 'League Stats', href: '/prototypes/macro/league-stats', icon: <TrendingUp className="w-4 h-4" /> },
-      { name: 'Team Comparison', href: '/prototypes/macro/team-comparison', icon: <Users className="w-4 h-4" /> },
     ],
   },
 ]

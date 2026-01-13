@@ -1,6 +1,0 @@
-tier_id,tier_code,tier_name,score_min,score_max,description
-SQ01,elite,Elite Shift,80,100,Outstanding performance
-SQ02,good,Good Shift,60,79,Above average
-SQ03,average,Average Shift,40,59,Neutral impact
-SQ04,poor,Poor Shift,20,39,Below average
-SQ05,bad,Bad Shift,0,19,Negative impact

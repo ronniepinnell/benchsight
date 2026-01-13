@@ -67,3 +67,48 @@ For up-to-date information, see:
 ---
 
 *Last updated: 2026-01-13 11:19*
+
+### Archived 2026-01-13
+- **AGENT_HANDOFF_V29.5.md** - Archived 2026-01-13
+- **AGENT_HANDOFF_V29.6.md** - Archived 2026-01-13
+
+## Why Archived?
+
+These files were created for specific development sessions or as temporary summaries. The information they contain has been:
+- Consolidated into main documentation files (e.g., `docs/REFACTORING.md`, `docs/HANDOFF.md`)
+- Superseded by more comprehensive guides
+- No longer actively referenced
+
+## Current Documentation
+
+For up-to-date information, see:
+- **Main docs:** `docs/README.md` - Complete documentation index
+- **Refactoring:** `docs/REFACTORING.md` - Current refactoring guide
+- **Handoff:** `docs/HANDOFF.md` - Current handoff document
+- **Supabase:** `docs/SUPABASE_RESET_GAMEPLAN.md` - Comprehensive Supabase guide
+
+---
+
+*Last updated: 2026-01-13 12:25*
+
+### Archived 2026-01-13
+- **AGENT_HANDOFF_V29.7.md** - Archived 2026-01-13
+
+## Why Archived?
+
+These files were created for specific development sessions or as temporary summaries. The information they contain has been:
+- Consolidated into main documentation files (e.g., `docs/REFACTORING.md`, `docs/HANDOFF.md`)
+- Superseded by more comprehensive guides
+- No longer actively referenced
+
+## Current Documentation
+
+For up-to-date information, see:
+- **Main docs:** `docs/README.md` - Complete documentation index
+- **Refactoring:** `docs/REFACTORING.md` - Current refactoring guide
+- **Handoff:** `docs/HANDOFF.md` - Current handoff document
+- **Supabase:** `docs/SUPABASE_RESET_GAMEPLAN.md` - Comprehensive Supabase guide
+
+---
+
+*Last updated: 2026-01-13 14:28*

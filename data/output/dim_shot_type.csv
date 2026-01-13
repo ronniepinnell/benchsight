@@ -1,7 +1,0 @@
-shot_type_id,shot_type_code,shot_type_name,description
-ST0001,Wrist,Wrist Shot,Quick release from wrist
-ST0002,Slap,Slap Shot,Wind-up power shot
-ST0003,Snap,Snap Shot,Quick snap release
-ST0004,Backhand,Backhand Shot,Shot from backhand
-ST0005,Tip,Tip/Deflection,Redirected shot
-ST0006,Wrap,Wraparound,Wraparound attempt

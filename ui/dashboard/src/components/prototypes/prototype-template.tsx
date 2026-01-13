@@ -92,9 +92,18 @@ export function PrototypeTable<T extends Record<string, any>>({
   columns: Array<{
     key: keyof T
     label: string
+    align?: 'left' | 'center' | 'right'
     render?: (value: any, row: T) => React.ReactNode
   }>
 }) {
+  if (!data || data.length === 0) {
+    return (
+      <div className="bg-card rounded-xl border border-border p-12 text-center">
+        <p className="text-muted-foreground">No data available</p>
+      </div>
+    )
+  }
+
   return (
     <div className="bg-card rounded-xl border border-border overflow-hidden">
       <div className="overflow-x-auto">
@@ -104,7 +113,10 @@ export function PrototypeTable<T extends Record<string, any>>({
               {columns.map((col) => (
                 <th
                   key={String(col.key)}
-                  className="px-4 py-3 text-left font-display text-xs font-semibold text-muted-foreground uppercase"
+                  className={cn(
+                    'px-4 py-3 font-display text-xs font-semibold text-muted-foreground uppercase tracking-wider',
+                    col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'
+                  )}
                 >
                   {col.label}
                 </th>
@@ -121,7 +133,13 @@ export function PrototypeTable<T extends Record<string, any>>({
                 )}
               >
                 {columns.map((col) => (
-                  <td key={String(col.key)} className="px-4 py-3 text-sm">
+                  <td 
+                    key={String(col.key)} 
+                    className={cn(
+                      'px-4 py-3 text-sm',
+                      col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'
+                    )}
+                  >
                     {col.render ? col.render(row[col.key], row) : String(row[col.key] ?? '')}
                   </td>
                 ))}

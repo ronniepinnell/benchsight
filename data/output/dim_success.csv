@@ -1,4 +1,0 @@
-success_id,success_code,success_name,is_successful
-SC01,s,Successful,True
-SC02,u,Unsuccessful,False
-SC03,n,Not Applicable,

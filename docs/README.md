@@ -39,6 +39,12 @@ Last Updated: 2026-01-13
 - **[NEXTJS_DASHBOARD_GUIDE.md](NEXTJS_DASHBOARD_GUIDE.md)** - Next.js 14 dashboard implementation
 - **[DASHBOARD_INTEGRATION.md](DASHBOARD_INTEGRATION.md)** - Dashboard integration guide
 
+### Phase 1 Implementation
+- **[PHASE1_QUICK_START.md](PHASE1_QUICK_START.md)** - 🚀 **START HERE** - How to use Phase 1 plans
+- **[PHASE1_PROGRESS.md](PHASE1_PROGRESS.md)** - 📊 Track your implementation progress
+- **[PHASE1_ETL_API_PLAN.md](PHASE1_ETL_API_PLAN.md)** - ⭐ Detailed ETL API implementation plan
+- **[ADMIN_PORTAL_SPEC.md](ADMIN_PORTAL_SPEC.md)** - ⭐ Admin portal backend specification
+
 ---
 
 ## 📊 Data Documentation
@@ -80,6 +86,8 @@ Last Updated: 2026-01-13
 - **[CHANGELOG.md](CHANGELOG.md)** - Version history and changes
 - **[TODO.md](TODO.md)** - Current tasks and priorities
 - **[ROADMAP.md](ROADMAP.md)** - Future development roadmap
+- **[STRATEGIC_ASSESSMENT.md](STRATEGIC_ASSESSMENT.md)** - ⭐ Current state vs. end goal analysis
+- **[STRATEGIC_ROADMAP.md](STRATEGIC_ROADMAP.md)** - ⭐ 16-week path to commercial product
 - **[HONEST_ASSESSMENT.md](HONEST_ASSESSMENT.md)** - Project assessment
 - **[HONEST_OPINIONS.md](HONEST_OPINIONS.md)** - Development opinions
 

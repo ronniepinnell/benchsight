@@ -1,7 +1,0 @@
-position_id,position_code,position_name,position_type
-POS01,C,Center,forward
-POS02,LW,Left Wing,forward
-POS03,RW,Right Wing,forward
-POS04,F,Forward,forward
-POS05,D,Defense,defense
-POS06,G,Goalie,goalie

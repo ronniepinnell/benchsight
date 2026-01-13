@@ -1,8 +1,12 @@
 // src/app/(dashboard)/leaders/page.tsx
 import Link from 'next/link'
-import { getPointsLeaders, getGoalsLeaders, getAssistsLeaders } from '@/lib/supabase/queries/players'
-import { Trophy, Target, Sparkles, TrendingUp } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { createClient } from '@/lib/supabase/server'
+import { getCurrentSeason, getAllSeasons } from '@/lib/supabase/queries/league'
+import { getPlayers } from '@/lib/supabase/queries/players'
+import { Award } from 'lucide-react'
+import { SortableLeadersTable } from '@/components/leaders/sortable-leaders-table'
+import { SortableGoaliesTable } from '@/components/leaders/sortable-goalies-table'
+import { SeasonFilter } from '@/components/leaders/season-filter'
 
 export const revalidate = 300
 
@@ -14,35 +18,50 @@ export const metadata = {
 export default async function LeadersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string }>
+  searchParams: Promise<{ tab?: string; season?: string }>
 }) {
   const params = await searchParams
-  const activeTab = params.tab || 'points'
+  const activeTab = params.tab || 'skaters'
+  const selectedSeason = params.season || null
   
-  const [pointsLeaders, goalsLeaders, assistsLeaders] = await Promise.all([
-    getPointsLeaders(20),
-    getGoalsLeaders(20),
-    getAssistsLeaders(20)
+  const supabase = await createClient()
+  const currentSeason = await getCurrentSeason()
+  const allSeasons = await getAllSeasons()
+  const seasonId = selectedSeason || currentSeason || allSeasons[0] || null
+  
+  // Fetch all leaderboard data with season filter and player data for photos
+  const [pointsLeaders, goalieWins, goalieGAA, players] = await Promise.all([
+    seasonId
+      ? supabase.from('v_leaderboard_points').select('*').eq('season_id', seasonId).order('season_rank', { ascending: true }).limit(100)
+      : supabase.from('v_leaderboard_points').select('*').order('season_rank', { ascending: true }).limit(100),
+    seasonId
+      ? supabase.from('v_leaderboard_goalie_wins').select('*').eq('season_id', seasonId).order('wins', { ascending: false }).limit(100)
+      : supabase.from('v_leaderboard_goalie_wins').select('*').order('wins', { ascending: false }).limit(100),
+    seasonId
+      ? supabase.from('v_leaderboard_goalie_gaa').select('*').eq('season_id', seasonId).order('gaa', { ascending: true }).limit(100)
+      : supabase.from('v_leaderboard_goalie_gaa').select('*').order('gaa', { ascending: true }).limit(100),
+    getPlayers(),
   ])
 
+  const pointsData = pointsLeaders.data || []
+  const goaliesWinsData = goalieWins.data || []
+  const goaliesGAAData = goalieGAA.data || []
+  const playersList = players || []
+  const playersMap = new Map(playersList.map(p => [String(p.player_id), p]))
+
+  // Merge goalie wins and GAA data
+  const gaaMap = new Map(goaliesGAAData.map(g => [String(g.player_id), g]))
+  const goaliesData = goaliesWinsData.map(goalie => ({
+    ...goalie,
+    gaa: (goalie as any).gaa || gaaMap.get(String(goalie.player_id))?.gaa,
+    save_pct: gaaMap.get(String(goalie.player_id))?.save_pct,
+    shots_against: gaaMap.get(String(goalie.player_id))?.shots_against,
+  }))
+
   const tabs = [
-    { id: 'points', label: 'Points', icon: TrendingUp, color: 'text-primary' },
-    { id: 'goals', label: 'Goals', icon: Target, color: 'text-goal' },
-    { id: 'assists', label: 'Assists', icon: Sparkles, color: 'text-assist' },
+    { id: 'skaters', label: 'Skaters' },
+    { id: 'goalies', label: 'Goalies' },
   ]
-
-  const getActiveLeaders = () => {
-    switch (activeTab) {
-      case 'goals':
-        return goalsLeaders
-      case 'assists':
-        return assistsLeaders
-      default:
-        return pointsLeaders
-    }
-  }
-
-  const leaders = getActiveLeaders()
 
   return (
     <div className="space-y-6">
@@ -50,34 +69,35 @@ export default async function LeadersPage({
       <div>
         <h1 className="font-display text-2xl font-bold tracking-wider uppercase flex items-center gap-3">
           <span className="w-1 h-6 bg-assist rounded" />
-          Scoring Leaders
+          League Leaders
         </h1>
         <p className="text-sm text-muted-foreground mt-2 ml-4">
-          Top scorers in the current season
+          Top performers by season - sort by any column
         </p>
       </div>
+
+      {/* Season Filter */}
+      <SeasonFilter 
+        seasons={allSeasons} 
+        currentSeason={currentSeason} 
+        selectedSeason={seasonId} 
+      />
 
       {/* Tabs */}
       <div className="flex gap-2 border-b border-border pb-2">
         {tabs.map((tab) => {
-          const Icon = tab.icon
           const isActive = activeTab === tab.id
           return (
             <Link
               key={tab.id}
-              href={`/leaders?tab=${tab.id}`}
-              className={cn(
-                'flex items-center gap-2 px-4 py-2 rounded-t-lg transition-all',
+              href={`/leaders?tab=${tab.id}${seasonId && seasonId !== currentSeason ? `&season=${seasonId}` : ''}`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-t-lg transition-all ${
                 isActive
-                  ? 'bg-card border border-b-0 border-border -mb-[1px]'
-                  : 'hover:bg-muted/50'
-              )}
+                  ? 'bg-card border border-b-0 border-border -mb-[1px] text-foreground font-semibold'
+                  : 'hover:bg-muted/50 text-muted-foreground'
+              }`}
             >
-              <Icon className={cn('w-4 h-4', isActive ? tab.color : 'text-muted-foreground')} />
-              <span className={cn(
-                'font-display text-sm',
-                isActive ? 'text-foreground font-semibold' : 'text-muted-foreground'
-              )}>
+              <span className="font-display text-sm">
                 {tab.label}
               </span>
             </Link>
@@ -86,107 +106,17 @@ export default async function LeadersPage({
       </div>
 
       {/* Leaders Table */}
-      <div className="bg-card rounded-xl border border-border overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-accent border-b-2 border-border">
-                <th className="px-4 py-3 text-center font-display text-xs font-semibold text-muted-foreground uppercase tracking-wider w-16">
-                  Rank
-                </th>
-                <th className="px-4 py-3 text-left font-display text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Player
-                </th>
-                <th className="px-4 py-3 text-left font-display text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Team
-                </th>
-                <th className="px-4 py-3 text-center font-display text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  GP
-                </th>
-                <th className="px-4 py-3 text-center font-display text-xs font-semibold text-goal uppercase tracking-wider">
-                  G
-                </th>
-                <th className="px-4 py-3 text-center font-display text-xs font-semibold text-assist uppercase tracking-wider">
-                  A
-                </th>
-                <th className="px-4 py-3 text-center font-display text-xs font-semibold text-primary uppercase tracking-wider">
-                  P
-                </th>
-                <th className="px-4 py-3 text-center font-display text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Per Game
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {leaders.map((player, index) => {
-                const rank = index + 1
-                const isTop3 = rank <= 3
-                const gp = player.games_played || 1
-                const mainStat = activeTab === 'goals' 
-                  ? player.goals 
-                  : activeTab === 'assists' 
-                    ? player.assists 
-                    : player.points
-                const perGame = (mainStat / gp).toFixed(2)
-
-                return (
-                  <tr
-                    key={player.player_id}
-                    className={cn(
-                      'border-b border-border transition-colors hover:bg-muted/50',
-                      rank % 2 === 0 && 'bg-accent/30'
-                    )}
-                  >
-                    <td className="px-4 py-3 text-center">
-                      <span className={cn(
-                        'font-display font-bold',
-                        isTop3 ? 'text-lg text-assist' : 'text-muted-foreground'
-                      )}>
-                        {rank}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Link
-                        href={`/players/${player.player_id}`}
-                        className="font-display text-sm text-foreground hover:text-primary transition-colors"
-                      >
-                        {player.player_name}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">
-                      {player.team_name}
-                    </td>
-                    <td className="px-4 py-3 text-center font-mono text-sm text-muted-foreground">
-                      {player.games_played}
-                    </td>
-                    <td className={cn(
-                      'px-4 py-3 text-center font-mono text-sm font-semibold',
-                      activeTab === 'goals' ? 'text-xl text-goal' : 'text-goal'
-                    )}>
-                      {player.goals}
-                    </td>
-                    <td className={cn(
-                      'px-4 py-3 text-center font-mono text-sm',
-                      activeTab === 'assists' ? 'text-xl font-semibold text-assist' : 'text-assist'
-                    )}>
-                      {player.assists}
-                    </td>
-                    <td className={cn(
-                      'px-4 py-3 text-center font-mono font-bold',
-                      activeTab === 'points' ? 'text-xl text-primary' : 'text-sm text-primary'
-                    )}>
-                      {player.points}
-                    </td>
-                    <td className="px-4 py-3 text-center font-mono text-sm text-muted-foreground">
-                      {perGame}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      {activeTab === 'goalies' ? (
+        <SortableGoaliesTable 
+          goalies={goaliesData} 
+          playersMap={playersMap}
+        />
+      ) : (
+        <SortableLeadersTable 
+          leaders={pointsData} 
+          playersMap={playersMap}
+        />
+      )}
     </div>
   )
 }

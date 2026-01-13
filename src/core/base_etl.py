@@ -1084,7 +1084,7 @@ def build_player_lookup(gameroster_df):
 # PHASE 3: LOAD TRACKING DATA
 # ============================================================
 
-def load_tracking_data(player_lookup):
+def load_tracking_data(player_lookup, use_parallel: bool = True):
     log.section("PHASE 3: LOAD TRACKING DATA")
     log.info(f"Valid games: {VALID_TRACKING_GAMES}")
     log.info(f"Excluded games: {EXCLUDED_GAMES}")
@@ -1098,67 +1098,99 @@ def load_tracking_data(player_lookup):
     all_events = []
     all_shifts = []
     
-    for game_id in VALID_TRACKING_GAMES:
-        game_dir = GAMES_DIR / game_id
-        if not game_dir.exists():
-            log.error(f"Game directory not found: {game_dir}")
-            continue
-        
-        # Find tracking file
-        tracking_files = list(game_dir.glob("*_tracking.xlsx"))
-        tracking_files = [f for f in tracking_files if 'bkup' not in str(f).lower()]
-        
-        if not tracking_files:
-            log.error(f"No tracking file for game {game_id}")
-            continue
-        
-        xlsx_path = tracking_files[0]
-        log.info(f"\nLoading game {game_id} from {xlsx_path.name}...")
-        
+    # Use parallel loading if enabled and we have multiple games
+    if use_parallel and len(VALID_TRACKING_GAMES) > 2:
         try:
-            xl = pd.ExcelFile(xlsx_path)
+            from src.utils.parallel_processing import load_games_parallel
+            log.info(f"Using parallel game loading ({len(VALID_TRACKING_GAMES)} games)...")
             
-            # Load events
-            if 'events' in xl.sheet_names:
-                df = pd.read_excel(xlsx_path, sheet_name='events', dtype=str)
-                df['game_id'] = game_id
-                
-                # Drop underscore columns
-                df, dropped = drop_underscore_columns(df)
-                log.info(f"  events: {len(df)} raw rows, dropped {len(dropped)} underscore cols")
-                
-                # Filter valid rows - accept either tracking_event_index or event_index
-                index_col = 'tracking_event_index' if 'tracking_event_index' in df.columns else 'event_index'
-                if index_col in df.columns:
-                    df = df[df[index_col].apply(
-                        lambda x: pd.notna(x) and str(x).replace('.', '').replace('-', '').isdigit()
-                    )]
-                    log.info(f"  events: {len(df)} valid rows (by {index_col})")
-                
-                # VENUE SWAP CORRECTION: Use BLB schedule as authoritative source
-                df = correct_venue_from_schedule(df, game_id, schedule_df, log)
-                
-                all_events.append(df)
+            # Load games in parallel (threading for I/O-bound Excel reads)
+            events_list, shifts_list, errors = load_games_parallel(
+                VALID_TRACKING_GAMES,
+                GAMES_DIR,
+                player_lookup,
+                schedule_df,
+                use_threading=True  # Threading better for I/O-bound Excel reads
+            )
             
-            # Load shifts
-            if 'shifts' in xl.sheet_names:
-                df = pd.read_excel(xlsx_path, sheet_name='shifts', dtype=str)
-                df['game_id'] = game_id
-                
-                df, dropped = drop_underscore_columns(df)
-                log.info(f"  shifts: {len(df)} raw rows, dropped {len(dropped)} underscore cols")
-                
-                # Filter valid rows
-                if 'shift_index' in df.columns:
-                    df = df[df['shift_index'].apply(
-                        lambda x: pd.notna(x) and str(x).replace('.', '').isdigit()
-                    )]
-                    log.info(f"  shifts: {len(df)} valid rows (by shift_index)")
-                
-                all_shifts.append(df)
-                
+            all_events = events_list
+            all_shifts = shifts_list
+            
+            if errors:
+                for error in errors:
+                    log.warning(f"  {error}")
+            
+            log.info(f"  Parallel loading complete: {len(all_events)} event sets, {len(all_shifts)} shift sets")
+            
         except Exception as e:
-            log.error(f"Error loading game {game_id}: {e}")
+            log.warning(f"Parallel loading failed, falling back to sequential: {e}")
+            import traceback
+            traceback.print_exc()
+            use_parallel = False
+    
+    # Sequential loading (fallback or if parallel disabled)
+    if not use_parallel or len(VALID_TRACKING_GAMES) <= 2:
+        for game_id in VALID_TRACKING_GAMES:
+            game_dir = GAMES_DIR / game_id
+            if not game_dir.exists():
+                log.error(f"Game directory not found: {game_dir}")
+                continue
+            
+            # Find tracking file
+            tracking_files = list(game_dir.glob("*_tracking.xlsx"))
+            tracking_files = [f for f in tracking_files if 'bkup' not in str(f).lower()]
+            
+            if not tracking_files:
+                log.error(f"No tracking file for game {game_id}")
+                continue
+            
+            xlsx_path = tracking_files[0]
+            log.info(f"\nLoading game {game_id} from {xlsx_path.name}...")
+            
+            try:
+                xl = pd.ExcelFile(xlsx_path)
+                
+                # Load events
+                if 'events' in xl.sheet_names:
+                    df = pd.read_excel(xlsx_path, sheet_name='events', dtype=str)
+                    df['game_id'] = game_id
+                    
+                    # Drop underscore columns
+                    df, dropped = drop_underscore_columns(df)
+                    log.info(f"  events: {len(df)} raw rows, dropped {len(dropped)} underscore cols")
+                    
+                    # Filter valid rows - accept either tracking_event_index or event_index
+                    index_col = 'tracking_event_index' if 'tracking_event_index' in df.columns else 'event_index'
+                    if index_col in df.columns:
+                        df = df[df[index_col].apply(
+                            lambda x: pd.notna(x) and str(x).replace('.', '').replace('-', '').isdigit()
+                        )]
+                        log.info(f"  events: {len(df)} valid rows (by {index_col})")
+                    
+                    # VENUE SWAP CORRECTION: Use BLB schedule as authoritative source
+                    df = correct_venue_from_schedule(df, game_id, schedule_df, log)
+                    
+                    all_events.append(df)
+                
+                # Load shifts
+                if 'shifts' in xl.sheet_names:
+                    df = pd.read_excel(xlsx_path, sheet_name='shifts', dtype=str)
+                    df['game_id'] = game_id
+                    
+                    df, dropped = drop_underscore_columns(df)
+                    log.info(f"  shifts: {len(df)} raw rows, dropped {len(dropped)} underscore cols")
+                    
+                    # Filter valid rows
+                    if 'shift_index' in df.columns:
+                        df = df[df['shift_index'].apply(
+                            lambda x: pd.notna(x) and str(x).replace('.', '').isdigit()
+                        )]
+                        log.info(f"  shifts: {len(df)} valid rows (by shift_index)")
+                    
+                    all_shifts.append(df)
+                    
+            except Exception as e:
+                log.error(f"Error loading game {game_id}: {e}")
     
     results = {}
     

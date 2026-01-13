@@ -1,5 +1,0 @@
-danger_zone_id,danger_zone_code,danger_zone_name,xg_base,description
-DZ01,high,High Danger,0.25,Inner slot (within 10ft of crease)
-DZ02,medium,Medium Danger,0.1,Slot area (between faceoff dots)
-DZ03,low,Low Danger,0.05,Outside slot but offensive zone
-DZ04,perimeter,Perimeter,0.02,Blue line and beyond

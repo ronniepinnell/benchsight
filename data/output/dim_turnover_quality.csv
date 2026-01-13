@@ -1,4 +1,0 @@
-turnover_quality_id,turnover_quality_code,turnover_quality_name,description,counts_against
-TQ01,good,Good Turnover,"Defensive zone, low danger",False
-TQ02,neutral,Neutral Turnover,Neutral zone or forced error,True
-TQ03,bad,Bad Turnover,Offensive zone or high danger area,True
