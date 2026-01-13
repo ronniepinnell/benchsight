@@ -110,11 +110,13 @@ export default async function LeadersPage({
         <SortableGoaliesTable 
           goalies={goaliesData} 
           playersMap={playersMap}
+          isCurrentSeason={seasonId === currentSeason}
         />
       ) : (
         <SortableLeadersTable 
           leaders={pointsData} 
           playersMap={playersMap}
+          isCurrentSeason={seasonId === currentSeason}
         />
       )}
     </div>

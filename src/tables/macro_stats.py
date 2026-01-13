@@ -381,8 +381,9 @@ def create_fact_team_season_stats_basic() -> pd.DataFrame:
                 'wins': record['wins'],
                 'losses': record['losses'],
                 'ties': record['ties'],
-                'win_pct': round(record['wins'] / record['games_played'] * 100, 1),
                 'points': record['points'],
+                # Win percentage = points / (games_played * 2) * 100
+                'win_pct': round(record['points'] / (record['games_played'] * 2) * 100, 1) if record['games_played'] > 0 else 0.0,
                 'goals_for': record['goals_for'],
                 'goals_against': record['goals_against'],
                 'goal_diff': record['goals_for'] - record['goals_against'],

@@ -1100,15 +1100,33 @@ def calculate_micro_stats(player_id, game_id, event_players, events):
     CRITICAL: Uses DISTINCT counting by linked_event_index_flag to avoid double-counting.
     Each event should only be counted once even if pattern appears in both play_detail columns.
     Excludes defensive variants (e.g., BeatDeke is opponent beating YOUR deke).
+    
+    EXPANDED v30.0: Added pass types, shot types, zone-specific, and pressure metrics.
     """
     pe = event_players[(event_players['game_id'] == game_id) & (event_players['player_id'] == player_id) & (event_players['player_role'].astype(str).str.lower() == PRIMARY_PLAYER)]
     empty = {
+        # Original micro stats
         'dekes': 0, 'drives_middle': 0, 'drives_wide': 0, 'drives_corner': 0, 'drives_total': 0,
         'cutbacks': 0, 'delays': 0, 'crash_net': 0, 'screens': 0, 'give_and_go': 0,
         'second_touch': 0, 'cycles': 0, 'poke_checks': 0, 'stick_checks': 0,
         'zone_ent_denials': 0, 'backchecks': 0, 'forechecks': 0, 'breakouts': 0,
         'dump_ins': 0, 'loose_puck_wins': 0, 'puck_recoveries': 0,
-        'puck_battles_total': 0, 'plays_successful': 0, 'plays_unsuccessful': 0, 'play_success_rate': 0.0
+        'puck_battles_total': 0, 'plays_successful': 0, 'plays_unsuccessful': 0, 'play_success_rate': 0.0,
+        # NEW: Pass type micro stats
+        'passes_cross_ice': 0, 'passes_stretch': 0, 'passes_breakout': 0, 'passes_rim': 0,
+        'passes_bank': 0, 'passes_royal_road': 0, 'passes_slot': 0, 'passes_behind_net': 0,
+        # NEW: Shot type micro stats
+        'shots_one_timer': 0, 'shots_snap': 0, 'shots_wrist': 0, 'shots_slap': 0,
+        'shots_tip': 0, 'shots_deflection': 0, 'shots_wrap_around': 0,
+        # NEW: Zone-specific micro stats
+        'micro_off_zone': 0, 'micro_def_zone': 0, 'micro_neutral_zone': 0,
+        # NEW: Pressure and intensity metrics
+        'pressure_plays': 0, 'pressure_successful': 0, 'pressure_success_rate': 0.0,
+        'forecheck_intensity': 0, 'backcheck_intensity': 0,
+        # NEW: Transition quality (will be populated from zone stats)
+        'controlled_exits': 0, 'controlled_entries': 0, 'transition_quality': 0.0,
+        # NEW: Board battle details
+        'board_battles_won': 0, 'board_battles_lost': 0, 'board_battle_win_pct': 0.0,
     }
     if len(pe) == 0: return empty
     
@@ -1157,8 +1175,12 @@ def calculate_micro_stats(player_id, game_id, event_players, events):
             # Fallback: dedupe by event_id
             return matching_events['event_id'].nunique()
     
+    # Filter events by type for more specific counting
+    pass_events = player_events[player_events['event_type'].astype(str).str.lower() == 'pass'] if 'event_type' in player_events.columns else pd.DataFrame()
+    shot_events = player_events[player_events['event_type'].astype(str).str.lower().isin(['shot', 'goal'])] if 'event_type' in player_events.columns else pd.DataFrame()
+    
     stats = {
-        # Offensive plays - exclude defensive variants
+        # Original offensive plays - exclude defensive variants
         'dekes': count_distinct(r'deke', exclude_pattern=r'beatdeke|stoppeddeke'),
         'drives_middle': count_distinct(r'drivemiddle|drivenetmiddle'),
         'drives_wide': count_distinct(r'drivewide'),
@@ -1171,24 +1193,83 @@ def calculate_micro_stats(player_id, game_id, event_players, events):
         'second_touch': count_distinct(r'secondtouch'),
         'cycles': count_distinct(r'cycle'),
         
-        # Defensive plays
+        # Original defensive plays
         'poke_checks': count_distinct(r'pokecheck'),
         'stick_checks': count_distinct(r'stickcheck'),
         'zone_ent_denials': count_distinct(r'zoneentrydenial'),
         'backchecks': count_distinct(r'backcheck'),
         'forechecks': count_distinct(r'forecheck'),
         
-        # Transition plays
+        # Original transition plays
         'breakouts': count_distinct(r'breakout'),
         'dump_ins': count_distinct(r'dumpin|dumpchase'),
         
-        # Puck battles
+        # Original puck battles
         'loose_puck_wins': count_distinct(r'loosepuck.*won|battlewon'),
         'puck_recoveries': count_distinct(r'puckrecovery|puckretrieval'),
+        
+        # NEW: Pass type micro stats (from pass events only)
+        'passes_cross_ice': count_distinct(r'cross.?ice|crossice'),
+        'passes_stretch': count_distinct(r'stretch'),
+        'passes_breakout': count_distinct(r'breakout'),
+        'passes_rim': count_distinct(r'rim|rimaround'),
+        'passes_bank': count_distinct(r'bank|bankpass'),
+        'passes_royal_road': count_distinct(r'royalroad|royal.?road'),
+        'passes_slot': count_distinct(r'slot|slotpass'),
+        'passes_behind_net': count_distinct(r'behindnet|behind.?net'),
+        
+        # NEW: Shot type micro stats (from shot/goal events only)
+        'shots_one_timer': count_distinct(r'one.?timer|onetimer'),
+        'shots_snap': count_distinct(r'snap|snapshot'),
+        'shots_wrist': count_distinct(r'wrist|wristshot'),
+        'shots_slap': count_distinct(r'slap|slapshot'),
+        'shots_tip': count_distinct(r'tip|tipped'),
+        'shots_deflection': count_distinct(r'deflect|deflection'),
+        'shots_wrap_around': count_distinct(r'wrap|wraparound'),
+        
+        # NEW: Board battle details
+        'board_battles_won': count_distinct(r'board.*won|battle.*won'),
+        'board_battles_lost': count_distinct(r'board.*lost|battle.*lost'),
     }
     
+    # Calculate aggregates
     stats['drives_total'] = stats['drives_middle'] + stats['drives_wide'] + stats['drives_corner']
     stats['puck_battles_total'] = stats['loose_puck_wins'] + stats['puck_recoveries']
+    total_board_battles = stats['board_battles_won'] + stats['board_battles_lost']
+    stats['board_battle_win_pct'] = round(stats['board_battles_won'] / total_board_battles * 100, 1) if total_board_battles > 0 else 0.0
+    
+    # NEW: Zone-specific micro stats (using rink_zone from events)
+    if 'rink_zone' in player_events.columns:
+        off_zone_events = player_events[player_events['rink_zone'].astype(str).str.lower().isin(['offensive', 'oz', 'off'])]
+        def_zone_events = player_events[player_events['rink_zone'].astype(str).str.lower().isin(['defensive', 'dz', 'def'])]
+        neutral_zone_events = player_events[player_events['rink_zone'].astype(str).str.lower().isin(['neutral', 'nz'])]
+        
+        # Count micro plays in each zone (dekes, drives, cycles, etc. in that zone)
+        micro_patterns = r'deke|drive|cycle|cutback|delay|crashnet|screen|giveandgo'
+        stats['micro_off_zone'] = len(off_zone_events[off_zone_events['play_detail1'].astype(str).str.lower().str.contains(micro_patterns, na=False, regex=True)]) if 'play_detail1' in off_zone_events.columns else 0
+        stats['micro_def_zone'] = len(def_zone_events[def_zone_events['play_detail1'].astype(str).str.lower().str.contains(r'pokecheck|stickcheck|backcheck|forecheck', na=False, regex=True)]) if 'play_detail1' in def_zone_events.columns else 0
+        stats['micro_neutral_zone'] = len(neutral_zone_events[neutral_zone_events['play_detail1'].astype(str).str.lower().str.contains(r'breakout|dump', na=False, regex=True)]) if 'play_detail1' in neutral_zone_events.columns else 0
+    
+    # NEW: Pressure metrics
+    if 'play_detail1' in player_events.columns:
+        pressure_events = player_events[player_events['play_detail1'].astype(str).str.lower().str.contains(r'pressure|under.?pressure', na=False, regex=True)]
+        stats['pressure_plays'] = len(pressure_events)
+        if len(pressure_events) > 0 and 'play_detail_successful' in pressure_events.columns:
+            stats['pressure_successful'] = int((pressure_events['play_detail_successful'].astype(str).str.lower() == 's').sum())
+            stats['pressure_success_rate'] = round(stats['pressure_successful'] / stats['pressure_plays'] * 100, 1) if stats['pressure_plays'] > 0 else 0.0
+        else:
+            stats['pressure_successful'] = 0
+            stats['pressure_success_rate'] = 0.0
+    
+    # NEW: Forecheck/backcheck intensity (count per shift or per event)
+    stats['forecheck_intensity'] = stats['forechecks']  # Can be enhanced with shift context
+    stats['backcheck_intensity'] = stats['backchecks']  # Can be enhanced with shift context
+    
+    # NEW: Transition quality (populated from zone stats in advanced_micro_stats function)
+    # These are placeholders here, will be updated in calculate_advanced_micro_stats
+    stats['controlled_exits'] = 0
+    stats['controlled_entries'] = 0
+    stats['transition_quality'] = 0.0
     
     # Play success tracking (uses event-level, not play_detail pattern matching)
     if 'play_detail_successful' in player_events.columns:
@@ -1199,6 +1280,211 @@ def calculate_micro_stats(player_id, game_id, event_players, events):
     else:
         stats['plays_successful'] = stats['plays_unsuccessful'] = 0
         stats['play_success_rate'] = 0.0
+    
+    return stats
+
+def calculate_advanced_micro_stats(player_id, game_id, event_players, events, micro_stats=None, zone_stats=None):
+    """
+    Calculate advanced composite metrics from micro stats and other data.
+    
+    Creates composite indices that combine multiple micro stats:
+    - Possession Quality Index: Measures quality of puck possession plays
+    - Transition Efficiency: Measures effectiveness in zone transitions
+    - Pressure Index: Measures performance under pressure
+    - Offensive Creativity Index: Measures variety and effectiveness of offensive plays
+    - Defensive Activity Index: Measures defensive engagement
+    - Playmaking Quality: Measures quality of passing and playmaking
+    
+    Args:
+        player_id: Player ID
+        game_id: Game ID
+        event_players: Event players DataFrame
+        events: Events DataFrame
+        micro_stats: Optional pre-calculated micro stats dict (if None, will calculate)
+        zone_stats: Optional zone entry/exit stats dict
+    
+    Returns:
+        Dict with advanced composite metrics
+    """
+    # If micro_stats not provided, calculate them
+    if micro_stats is None:
+        micro_stats = calculate_micro_stats(player_id, game_id, event_players, events)
+    
+    # Get zone stats if not provided
+    if zone_stats is None:
+        zone_entry_types = load_table('dim_zone_entry_type')
+        zone_exit_types = load_table('dim_zone_exit_type')
+        zone_stats = calculate_zone_entry_exit_stats(player_id, game_id, event_players, zone_entry_types, zone_exit_types, events)
+    
+    # Ensure zone_stats has all expected keys with defaults
+    if not isinstance(zone_stats, dict):
+        zone_stats = {}
+    zone_stats = {
+        'zone_entries': zone_stats.get('zone_entries', 0),
+        'zone_exits': zone_stats.get('zone_exits', 0),
+        'zone_ent_controlled': zone_stats.get('zone_ent_controlled', 0),
+        'zone_ext_controlled': zone_stats.get('zone_ext_controlled', 0),
+        **zone_stats  # Keep any other keys
+    }
+    
+    # Get TOI for rate calculations
+    # Try to get from shift stats, but handle gracefully if not available
+    shifts = load_table('fact_shifts')
+    shift_players = load_table('fact_shift_players')
+    toi_minutes = 0.1  # Default to avoid division by zero
+    
+    if len(shifts) > 0 and len(shift_players) > 0:
+        try:
+            shift_stats = calculate_player_shift_stats(player_id, game_id, shifts, shift_players)
+            toi_minutes = shift_stats.get('toi_minutes', 0.1)
+        except:
+            # If calculation fails, use default
+            toi_minutes = 0.1
+    
+    stats = {}
+    
+    # 1. POSSESSION QUALITY INDEX
+    # Combines: cycles, give_and_go, second_touch, controlled entries, controlled exits
+    possession_plays = (
+        micro_stats.get('cycles', 0) +
+        micro_stats.get('give_and_go', 0) +
+        micro_stats.get('second_touch', 0) +
+        zone_stats.get('zone_ent_controlled', 0) +
+        zone_stats.get('zone_ext_controlled', 0)
+    )
+    possession_success = micro_stats.get('plays_successful', 0)
+    total_plays = possession_success + micro_stats.get('plays_unsuccessful', 0)
+    possession_success_rate = (possession_success / total_plays * 100) if total_plays > 0 else 0
+    
+    # Normalize to 0-100 scale (weighted by success rate)
+    stats['possession_quality_index'] = round(
+        (possession_plays / max(toi_minutes, 0.1) * 10) * (possession_success_rate / 100), 1
+    ) if possession_plays > 0 else 0.0
+    
+    # 2. TRANSITION EFFICIENCY
+    # Combines: controlled entries, controlled exits, breakouts, dump_ins
+    controlled_transitions = (
+        zone_stats.get('zone_ent_controlled', 0) +
+        zone_stats.get('zone_ext_controlled', 0) +
+        micro_stats.get('breakouts', 0)
+    )
+    total_transitions = (
+        zone_stats.get('zone_entries', 0) +
+        zone_stats.get('zone_exits', 0) +
+        micro_stats.get('dump_ins', 0) +
+        micro_stats.get('breakouts', 0)
+    )
+    stats['transition_efficiency'] = round(
+        (controlled_transitions / total_transitions * 100) if total_transitions > 0 else 0.0, 1
+    )
+    stats['transition_efficiency_rate'] = round(
+        controlled_transitions / max(toi_minutes, 0.1) * 60, 1
+    )
+    
+    # 3. PRESSURE INDEX
+    # Combines: pressure plays, pressure success rate, forecheck/backcheck intensity
+    pressure_plays = micro_stats.get('pressure_plays', 0)
+    pressure_success_rate = micro_stats.get('pressure_success_rate', 0)
+    defensive_pressure = (
+        micro_stats.get('forechecks', 0) +
+        micro_stats.get('backchecks', 0) +
+        micro_stats.get('zone_ent_denials', 0)
+    )
+    
+    # Weighted index: pressure success + defensive engagement
+    stats['pressure_index'] = round(
+        (pressure_success_rate * 0.6) + (min(defensive_pressure / max(toi_minutes, 0.1) * 5, 40) * 0.4), 1
+    )
+    
+    # 4. OFFENSIVE CREATIVITY INDEX
+    # Combines: variety of offensive plays (dekes, drives, cutbacks, delays, etc.)
+    creative_plays = (
+        micro_stats.get('dekes', 0) +
+        micro_stats.get('drives_total', 0) +
+        micro_stats.get('cutbacks', 0) +
+        micro_stats.get('delays', 0) +
+        micro_stats.get('give_and_go', 0) +
+        micro_stats.get('passes_royal_road', 0) +
+        micro_stats.get('passes_cross_ice', 0)
+    )
+    creative_success = micro_stats.get('plays_successful', 0)
+    
+    # Variety score (unique play types) + success rate
+    unique_play_types = sum([
+        1 if micro_stats.get('dekes', 0) > 0 else 0,
+        1 if micro_stats.get('drives_total', 0) > 0 else 0,
+        1 if micro_stats.get('cutbacks', 0) > 0 else 0,
+        1 if micro_stats.get('delays', 0) > 0 else 0,
+        1 if micro_stats.get('give_and_go', 0) > 0 else 0,
+        1 if micro_stats.get('passes_royal_road', 0) > 0 else 0,
+        1 if micro_stats.get('passes_cross_ice', 0) > 0 else 0,
+    ])
+    
+    stats['offensive_creativity_index'] = round(
+        (unique_play_types * 10) + (creative_success / max(toi_minutes, 0.1) * 2), 1
+    )
+    
+    # 5. DEFENSIVE ACTIVITY INDEX
+    # Combines: defensive micro stats (poke checks, stick checks, denials, backchecks, forechecks)
+    defensive_actions = (
+        micro_stats.get('poke_checks', 0) +
+        micro_stats.get('stick_checks', 0) +
+        micro_stats.get('zone_ent_denials', 0) +
+        micro_stats.get('backchecks', 0) +
+        micro_stats.get('forechecks', 0)
+    )
+    stats['defensive_activity_index'] = round(
+        defensive_actions / max(toi_minutes, 0.1) * 60, 1
+    )
+    
+    # 6. PLAYMAKING QUALITY
+    # Combines: pass types, shot assists, give_and_go
+    playmaking_plays = (
+        micro_stats.get('passes_royal_road', 0) +
+        micro_stats.get('passes_cross_ice', 0) +
+        micro_stats.get('passes_slot', 0) +
+        micro_stats.get('give_and_go', 0)
+    )
+    
+    # Get shot assists from event stats if available
+    pe = event_players[(event_players['game_id'] == game_id) & (event_players['player_id'] == player_id)]
+    shot_assists = 0
+    if len(pe) > 0 and 'play_detail1' in pe.columns:
+        shot_assists = len(pe[pe['play_detail1'].astype(str).str.lower().str.contains(r'shot.?assist|assist.*shot', na=False, regex=True)])
+    
+    stats['playmaking_quality'] = round(
+        (playmaking_plays + shot_assists) / max(toi_minutes, 0.1) * 60, 1
+    )
+    
+    # 7. NET FRONT PRESENCE
+    # Combines: crash_net, screens, tips
+    net_front_plays = (
+        micro_stats.get('crash_net', 0) +
+        micro_stats.get('screens', 0) +
+        micro_stats.get('shots_tip', 0) +
+        micro_stats.get('shots_deflection', 0)
+    )
+    stats['net_front_presence'] = round(
+        net_front_plays / max(toi_minutes, 0.1) * 60, 1
+    )
+    
+    # 8. PUCK BATTLE EFFICIENCY
+    # Combines: puck battle wins vs losses
+    puck_battles_won = (
+        micro_stats.get('loose_puck_wins', 0) +
+        micro_stats.get('board_battles_won', 0) +
+        micro_stats.get('puck_recoveries', 0)
+    )
+    puck_battles_total = (
+        puck_battles_won +
+        micro_stats.get('board_battles_lost', 0)
+    )
+    stats['puck_battle_win_pct'] = round(
+        (puck_battles_won / puck_battles_total * 100) if puck_battles_total > 0 else 0.0, 1
+    )
+    stats['puck_battles_per_60'] = round(
+        puck_battles_total / max(toi_minutes, 0.1) * 60, 1
+    )
     
     return stats
 

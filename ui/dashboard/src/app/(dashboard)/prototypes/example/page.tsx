@@ -29,7 +29,10 @@ export default async function ExamplePrototypePage() {
   const avgWinPct = standings?.length 
     ? standings.reduce((sum, team) => {
         const gp = team.games_played || 1
-        return sum + ((team.wins || 0) / gp) * 100
+        const ties = team.ties || 0
+        const points = team.points || (team.wins * 2 + ties)
+        // Win percentage = points / (games_played * 2) * 100
+        return sum + (points / (gp * 2)) * 100
       }, 0) / standings.length 
     : 0
 

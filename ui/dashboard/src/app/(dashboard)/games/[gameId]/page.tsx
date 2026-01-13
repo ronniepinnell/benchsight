@@ -2,8 +2,12 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getGameById, getGameBoxScore, getGameGoals } from '@/lib/supabase/queries/games'
+import { getTeamById } from '@/lib/supabase/queries/teams'
+import { getPlayers } from '@/lib/supabase/queries/players'
 import { ArrowLeft, Target, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { TeamLogo } from '@/components/teams/team-logo'
+import { PlayerPhoto } from '@/components/players/player-photo'
 
 export const revalidate = 300
 
@@ -27,21 +31,32 @@ export default async function GameDetailPage({
     notFound()
   }
   
-  const [game, boxScore, goals] = await Promise.all([
+  const [game, boxScore, goals, players] = await Promise.all([
     getGameById(gameIdNum),
     getGameBoxScore(gameIdNum),
-    getGameGoals(gameIdNum)
+    getGameGoals(gameIdNum),
+    getPlayers()
   ])
   
   if (!game) {
     notFound()
   }
   
-  // Separate players by team
+  // Get team info for logos
   const homeTeamId = game.home_team_id
-  const players = boxScore?.players || []
-  const homePlayers = players.filter(p => p.team_id === homeTeamId)
-  const awayPlayers = players.filter(p => p.team_id !== homeTeamId)
+  const awayTeamId = game.away_team_id
+  const [homeTeam, awayTeam] = await Promise.all([
+    homeTeamId ? getTeamById(parseInt(String(homeTeamId))) : Promise.resolve(null),
+    awayTeamId ? getTeamById(parseInt(String(awayTeamId))) : Promise.resolve(null)
+  ])
+  
+  // Create players map for photos
+  const playersMap = new Map(players.map(p => [String(p.player_id), p]))
+  
+  // Separate players by team
+  const playersList = boxScore?.players || []
+  const homePlayers = playersList.filter(p => String(p.team_id) === String(homeTeamId))
+  const awayPlayers = playersList.filter(p => String(p.team_id) === String(awayTeamId))
   
   const homeGoals = (game as any).home_total_goals ?? 0
   const awayGoals = (game as any).away_total_goals ?? 0
@@ -64,8 +79,23 @@ export default async function GameDetailPage({
             {/* Away Team */}
             <div className="flex-1 text-center">
               <div className="text-xs font-mono text-muted-foreground uppercase mb-2">Away</div>
-              <div className="font-display text-lg font-semibold text-foreground mb-2">
-                {(game as any).away_team_name ?? 'Away Team'}
+              <div className="flex items-center justify-center gap-3 mb-3">
+                {awayTeam && (
+                  <TeamLogo
+                    src={awayTeam.team_logo || null}
+                    name={awayTeam.team_name || (game as any).away_team_name || ''}
+                    abbrev={awayTeam.team_cd}
+                    primaryColor={awayTeam.primary_color || awayTeam.team_color1}
+                    secondaryColor={awayTeam.team_color2}
+                    size="lg"
+                  />
+                )}
+                <Link 
+                  href={awayTeam ? `/team/${(awayTeam.team_name || '').replace(/\s+/g, '_')}` : '#'}
+                  className="font-display text-lg font-semibold text-foreground hover:text-primary transition-colors"
+                >
+                  {(game as any).away_team_name ?? 'Away Team'}
+                </Link>
               </div>
               <div className={cn(
                 'font-display text-5xl font-bold',
@@ -82,8 +112,23 @@ export default async function GameDetailPage({
             {/* Home Team */}
             <div className="flex-1 text-center">
               <div className="text-xs font-mono text-muted-foreground uppercase mb-2">Home</div>
-              <div className="font-display text-lg font-semibold text-foreground mb-2">
-                {(game as any).home_team_name ?? 'Home Team'}
+              <div className="flex items-center justify-center gap-3 mb-3">
+                {homeTeam && (
+                  <TeamLogo
+                    src={homeTeam.team_logo || null}
+                    name={homeTeam.team_name || (game as any).home_team_name || ''}
+                    abbrev={homeTeam.team_cd}
+                    primaryColor={homeTeam.primary_color || homeTeam.team_color1}
+                    secondaryColor={homeTeam.team_color2}
+                    size="lg"
+                  />
+                )}
+                <Link 
+                  href={homeTeam ? `/team/${(homeTeam.team_name || '').replace(/\s+/g, '_')}` : '#'}
+                  className="font-display text-lg font-semibold text-foreground hover:text-primary transition-colors"
+                >
+                  {(game as any).home_team_name ?? 'Home Team'}
+                </Link>
               </div>
               <div className={cn(
                 'font-display text-5xl font-bold',
@@ -96,6 +141,14 @@ export default async function GameDetailPage({
         </div>
         
         <div className="px-6 py-3 bg-accent/50 border-t border-border text-center">
+          <div className="text-xs font-mono text-muted-foreground uppercase mb-1">
+            {game.date ? new Date(game.date).toLocaleDateString('en-US', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            }) : 'Game Date'}
+          </div>
           <span className="text-xs font-mono text-muted-foreground uppercase">Final</span>
         </div>
       </div>
@@ -116,12 +169,27 @@ export default async function GameDetailPage({
               const seconds = (goal.time_seconds ?? 0) % 60
               const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`
               
+              // Determine which team scored
+              const scoringTeamId = String(goal.team_id)
+              const scoringTeam = scoringTeamId === String(homeTeamId) ? homeTeam : 
+                                 scoringTeamId === String(awayTeamId) ? awayTeam : null
+              
               return (
                 <div key={index} className="p-4 flex items-center gap-4">
                   <div className="w-16 text-center">
                     <span className="text-xs font-mono text-muted-foreground uppercase">P{period}</span>
                     <div className="font-mono text-sm text-foreground">{timeStr}</div>
                   </div>
+                  {scoringTeam && (
+                    <TeamLogo
+                      src={scoringTeam.team_logo || null}
+                      name={scoringTeam.team_name || ''}
+                      abbrev={scoringTeam.team_cd}
+                      primaryColor={scoringTeam.primary_color || scoringTeam.team_color1}
+                      secondaryColor={scoringTeam.team_color2}
+                      size="xs"
+                    />
+                  )}
                   <div className="flex-1">
                     <div className="font-display text-sm font-semibold text-foreground">
                       {goal.event_player_1 ?? 'Unknown'}
@@ -130,7 +198,6 @@ export default async function GameDetailPage({
                       <div className="text-xs text-muted-foreground">Assist: {goal.event_player_2}</div>
                     )}
                   </div>
-                  <div className="text-xs font-mono text-muted-foreground">{goal.team_id}</div>
                 </div>
               )
             })}
@@ -161,26 +228,38 @@ export default async function GameDetailPage({
                 </tr>
               </thead>
               <tbody>
-                {awayPlayers.slice(0, 15).map((player) => (
-                  <tr key={player.player_game_key} className="border-b border-border hover:bg-muted/50">
-                    <td className="px-3 py-2">
-                      <Link href={`/players/${player.player_id}`} className="text-foreground hover:text-primary">
-                        {player.player_name}
-                      </Link>
-                    </td>
-                    <td className="px-2 py-2 text-center font-mono text-goal">{player.goals}</td>
-                    <td className="px-2 py-2 text-center font-mono text-assist">{player.assists}</td>
-                    <td className="px-2 py-2 text-center font-mono font-semibold">{player.points}</td>
-                    <td className="px-2 py-2 text-center font-mono text-muted-foreground">{player.shots}</td>
-                    <td className={cn(
-                      'px-2 py-2 text-center font-mono',
-                      player.plus_minus_total > 0 && 'text-save',
-                      player.plus_minus_total < 0 && 'text-goal'
-                    )}>
-                      {player.plus_minus_total > 0 ? '+' : ''}{player.plus_minus_total}
-                    </td>
-                  </tr>
-                ))}
+                {awayPlayers.slice(0, 15).map((player) => {
+                  const playerInfo = playersMap.get(String(player.player_id))
+                  return (
+                    <tr key={player.player_game_key} className="border-b border-border hover:bg-muted/50">
+                      <td className="px-3 py-2">
+                        <Link 
+                          href={`/players/${player.player_id}`} 
+                          className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
+                        >
+                          <PlayerPhoto
+                            src={playerInfo?.player_image || null}
+                            name={player.player_name || ''}
+                            primaryColor={awayTeam?.primary_color || awayTeam?.team_color1}
+                            size="sm"
+                          />
+                          <span>{player.player_name}</span>
+                        </Link>
+                      </td>
+                      <td className="px-2 py-2 text-center font-mono text-goal">{player.goals}</td>
+                      <td className="px-2 py-2 text-center font-mono text-assist">{player.assists}</td>
+                      <td className="px-2 py-2 text-center font-mono font-semibold">{player.points}</td>
+                      <td className="px-2 py-2 text-center font-mono text-muted-foreground">{player.shots}</td>
+                      <td className={cn(
+                        'px-2 py-2 text-center font-mono',
+                        (player.plus_minus_total ?? 0) > 0 && 'text-save',
+                        (player.plus_minus_total ?? 0) < 0 && 'text-goal'
+                      )}>
+                        {(player.plus_minus_total ?? 0) > 0 ? '+' : ''}{player.plus_minus_total ?? 0}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
@@ -207,26 +286,38 @@ export default async function GameDetailPage({
                 </tr>
               </thead>
               <tbody>
-                {homePlayers.slice(0, 15).map((player) => (
-                  <tr key={player.player_game_key} className="border-b border-border hover:bg-muted/50">
-                    <td className="px-3 py-2">
-                      <Link href={`/players/${player.player_id}`} className="text-foreground hover:text-primary">
-                        {player.player_name}
-                      </Link>
-                    </td>
-                    <td className="px-2 py-2 text-center font-mono text-goal">{player.goals}</td>
-                    <td className="px-2 py-2 text-center font-mono text-assist">{player.assists}</td>
-                    <td className="px-2 py-2 text-center font-mono font-semibold">{player.points}</td>
-                    <td className="px-2 py-2 text-center font-mono text-muted-foreground">{player.shots}</td>
-                    <td className={cn(
-                      'px-2 py-2 text-center font-mono',
-                      player.plus_minus_total > 0 && 'text-save',
-                      player.plus_minus_total < 0 && 'text-goal'
-                    )}>
-                      {player.plus_minus_total > 0 ? '+' : ''}{player.plus_minus_total}
-                    </td>
-                  </tr>
-                ))}
+                {homePlayers.slice(0, 15).map((player) => {
+                  const playerInfo = playersMap.get(String(player.player_id))
+                  return (
+                    <tr key={player.player_game_key} className="border-b border-border hover:bg-muted/50">
+                      <td className="px-3 py-2">
+                        <Link 
+                          href={`/players/${player.player_id}`} 
+                          className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
+                        >
+                          <PlayerPhoto
+                            src={playerInfo?.player_image || null}
+                            name={player.player_name || ''}
+                            primaryColor={homeTeam?.primary_color || homeTeam?.team_color1}
+                            size="sm"
+                          />
+                          <span>{player.player_name}</span>
+                        </Link>
+                      </td>
+                      <td className="px-2 py-2 text-center font-mono text-goal">{player.goals}</td>
+                      <td className="px-2 py-2 text-center font-mono text-assist">{player.assists}</td>
+                      <td className="px-2 py-2 text-center font-mono font-semibold">{player.points}</td>
+                      <td className="px-2 py-2 text-center font-mono text-muted-foreground">{player.shots}</td>
+                      <td className={cn(
+                        'px-2 py-2 text-center font-mono',
+                        (player.plus_minus_total ?? 0) > 0 && 'text-save',
+                        (player.plus_minus_total ?? 0) < 0 && 'text-goal'
+                      )}>
+                        {(player.plus_minus_total ?? 0) > 0 ? '+' : ''}{player.plus_minus_total ?? 0}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
@@ -252,22 +343,53 @@ export default async function GameDetailPage({
                 </tr>
               </thead>
               <tbody>
-                {boxScore.goalies.map((goalie) => (
-                  <tr key={goalie.goalie_game_key} className="border-b border-border hover:bg-muted/50">
-                    <td className="px-3 py-2">
-                      <Link href={`/players/${goalie.player_id}`} className="text-foreground hover:text-primary">
-                        {goalie.player_name}
-                      </Link>
-                    </td>
-                    <td className="px-3 py-2 text-muted-foreground">{goalie.team_name}</td>
-                    <td className="px-2 py-2 text-center font-mono text-save font-semibold">{goalie.saves}</td>
-                    <td className="px-2 py-2 text-center font-mono text-goal">{goalie.goals_against}</td>
-                    <td className="px-2 py-2 text-center font-mono text-muted-foreground">{goalie.shots_against}</td>
-                    <td className="px-2 py-2 text-center font-mono text-primary font-semibold">
-                      {goalie.save_pct ? (goalie.save_pct * 100).toFixed(1) + '%' : '-'}
-                    </td>
-                  </tr>
-                ))}
+                {boxScore.goalies.map((goalie) => {
+                  const goalieInfo = playersMap.get(String(goalie.player_id))
+                  const goalieTeam = String(goalie.team_id) === String(homeTeamId) ? homeTeam : awayTeam
+                  return (
+                    <tr key={goalie.goalie_game_key} className="border-b border-border hover:bg-muted/50">
+                      <td className="px-3 py-2">
+                        <Link 
+                          href={`/players/${goalie.player_id}`} 
+                          className="flex items-center gap-2 text-foreground hover:text-primary transition-colors"
+                        >
+                          <PlayerPhoto
+                            src={goalieInfo?.player_image || null}
+                            name={goalie.player_name || ''}
+                            primaryColor={goalieTeam?.primary_color || goalieTeam?.team_color1}
+                            size="sm"
+                          />
+                          <span>{goalie.player_name}</span>
+                        </Link>
+                      </td>
+                      <td className="px-3 py-2">
+                        {goalieTeam && (
+                          <Link 
+                            href={`/team/${(goalieTeam.team_name || '').replace(/\s+/g, '_')}`}
+                            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            <TeamLogo
+                              src={goalieTeam.team_logo || null}
+                              name={goalieTeam.team_name || ''}
+                              abbrev={goalieTeam.team_cd}
+                              primaryColor={goalieTeam.primary_color || goalieTeam.team_color1}
+                              secondaryColor={goalieTeam.team_color2}
+                              size="xs"
+                            />
+                            <span>{goalie.team_name}</span>
+                          </Link>
+                        )}
+                        {!goalieTeam && <span className="text-muted-foreground">{goalie.team_name}</span>}
+                      </td>
+                      <td className="px-2 py-2 text-center font-mono text-save font-semibold">{goalie.saves}</td>
+                      <td className="px-2 py-2 text-center font-mono text-goal">{goalie.goals_against}</td>
+                      <td className="px-2 py-2 text-center font-mono text-muted-foreground">{goalie.shots_against}</td>
+                      <td className="px-2 py-2 text-center font-mono text-primary font-semibold">
+                        {goalie.save_pct ? (goalie.save_pct * 100).toFixed(1) + '%' : '-'}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>

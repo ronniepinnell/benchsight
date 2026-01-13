@@ -14,9 +14,10 @@ type SortDirection = 'asc' | 'desc'
 interface SortableGoaliesTableProps {
   goalies: VLeaderboardGoalieWins[]
   playersMap?: Map<string, any>
+  isCurrentSeason?: boolean
 }
 
-export function SortableGoaliesTable({ goalies, playersMap }: SortableGoaliesTableProps) {
+export function SortableGoaliesTable({ goalies, playersMap, isCurrentSeason = false }: SortableGoaliesTableProps) {
   const [sortField, setSortField] = useState<SortField>('rank')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
 
@@ -34,11 +35,22 @@ export function SortableGoaliesTable({ goalies, playersMap }: SortableGoaliesTab
         ? (goalsAgainst / goalie.games_played) * 60 
         : 0)
       
+      // For current season: use current team from dim_players
+      // For past seasons: use team_name from leaderboard (the team they played for that season)
+      let displayTeam = goalie.team_name // Default to leaderboard team_name
+      
+      if (isCurrentSeason) {
+        // Use current team from dim_players for current season
+        const playerData = playersMap?.get(String(goalie.player_id))
+        displayTeam = playerData?.player_norad_current_team || playerData?.team_name || goalie.team_name
+      }
+      
       return {
         ...goalie,
         rank: goalie.wins_rank || 0,
         gaa: calculatedGAA,
         savePct,
+        displayTeam, // Team to display (current team for current season, season team for past seasons)
       }
     })
 
@@ -56,8 +68,9 @@ export function SortableGoaliesTable({ goalies, playersMap }: SortableGoaliesTab
           bValue = b.player_name?.toLowerCase() || ''
           break
         case 'team':
-          aValue = a.team_name?.toLowerCase() || ''
-          bValue = b.team_name?.toLowerCase() || ''
+          // Use displayTeam which is already set correctly based on current vs past season
+          aValue = (a.displayTeam || '').toLowerCase()
+          bValue = (b.displayTeam || '').toLowerCase()
           break
         case 'gp':
           aValue = a.games_played || 0
@@ -99,7 +112,7 @@ export function SortableGoaliesTable({ goalies, playersMap }: SortableGoaliesTab
     })
 
     return sorted
-  }, [goalies, sortField, sortDirection])
+  }, [goalies, sortField, sortDirection, isCurrentSeason, playersMap])
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -220,22 +233,35 @@ export function SortableGoaliesTable({ goalies, playersMap }: SortableGoaliesTab
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <Link
-                      href={`/players/${goalie.player_id}`}
-                      className="flex items-center gap-2 hover:text-primary transition-colors"
-                    >
-                      <PlayerPhoto
-                        src={playersMap?.get(String(goalie.player_id))?.player_image || null}
-                        name={goalie.player_name || ''}
-                        size="sm"
-                      />
-                      <span className="font-display text-sm text-foreground">
-                        {goalie.player_name}
-                      </span>
-                    </Link>
+                    {goalie.player_id ? (
+                      <Link
+                        href={`/players/${goalie.player_id}`}
+                        className="flex items-center gap-2 hover:text-primary transition-colors"
+                      >
+                        <PlayerPhoto
+                          src={playersMap?.get(String(goalie.player_id))?.player_image || null}
+                          name={goalie.player_name || ''}
+                          size="sm"
+                        />
+                        <span className="font-display text-sm text-foreground">
+                          {goalie.player_name}
+                        </span>
+                      </Link>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <PlayerPhoto
+                          src={playersMap?.get(String(goalie.player_id))?.player_image || null}
+                          name={goalie.player_name || ''}
+                          size="sm"
+                        />
+                        <span className="font-display text-sm text-foreground">
+                          {goalie.player_name}
+                        </span>
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-sm text-muted-foreground">
-                    {goalie.team_name}
+                    {goalie.displayTeam || '-'}
                   </td>
                   <td className="px-4 py-3 text-center font-mono text-sm text-muted-foreground">
                     {goalie.games_played}

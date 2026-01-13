@@ -1,6 +1,8 @@
 {
+  "/_not-found/page": "app/_not-found/page.js",
+  "/(dashboard)/team/[teamName]/page": "app/(dashboard)/team/[teamName]/page.js",
+  "/(dashboard)/teams/page": "app/(dashboard)/teams/page.js",
   "/(dashboard)/analytics/overview/page": "app/(dashboard)/analytics/overview/page.js",
-  "/(dashboard)/standings/page": "app/(dashboard)/standings/page.js",
-  "/(dashboard)/goalies/page": "app/(dashboard)/goalies/page.js",
-  "/(dashboard)/leaders/page": "app/(dashboard)/leaders/page.js"
+  "/(dashboard)/players/page": "app/(dashboard)/players/page.js",
+  "/(dashboard)/players/[playerId]/page": "app/(dashboard)/players/[playerId]/page.js"
 }

@@ -423,42 +423,67 @@ def create_fact_league_leaders_snapshot() -> pd.DataFrame:
 # =============================================================================
 
 def create_fact_player_micro_stats() -> pd.DataFrame:
-    """Create micro-level player stats."""
-    event_players = load_table('fact_event_players')
+    """
+    Create micro-level player stats.
     
-    if len(event_players) == 0:
+    NOTE: This table is now primarily for backward compatibility.
+    The full micro stats are now included in fact_player_game_stats.
+    This table extracts key micro stats for easy querying.
+    """
+    # Load from fact_player_game_stats which has all micro stats
+    player_game_stats = load_table('fact_player_game_stats')
+    
+    if len(player_game_stats) == 0:
         return pd.DataFrame()
     
-    records = []
+    # Select micro stats columns
+    micro_stat_cols = [
+        'game_id', 'player_id',
+        # Original micro stats
+        'dekes', 'drives_middle', 'drives_wide', 'drives_corner', 'drives_total',
+        'cutbacks', 'delays', 'crash_net', 'screens', 'give_and_go',
+        'second_touch', 'cycles', 'poke_checks', 'stick_checks',
+        'zone_ent_denials', 'backchecks', 'forechecks', 'breakouts',
+        'dump_ins', 'loose_puck_wins', 'puck_recoveries',
+        'puck_battles_total', 'plays_successful', 'plays_unsuccessful', 'play_success_rate',
+        # New pass type micro stats
+        'passes_cross_ice', 'passes_stretch', 'passes_breakout', 'passes_rim',
+        'passes_bank', 'passes_royal_road', 'passes_slot', 'passes_behind_net',
+        # New shot type micro stats
+        'shots_one_timer', 'shots_snap', 'shots_wrist', 'shots_slap',
+        'shots_tip', 'shots_deflection', 'shots_wrap_around',
+        # Zone-specific
+        'micro_off_zone', 'micro_def_zone', 'micro_neutral_zone',
+        # Pressure metrics
+        'pressure_plays', 'pressure_successful', 'pressure_success_rate',
+        'forecheck_intensity', 'backcheck_intensity',
+        # Board battles
+        'board_battles_won', 'board_battles_lost', 'board_battle_win_pct',
+        # Advanced composite metrics
+        'possession_quality_index', 'transition_efficiency', 'pressure_index',
+        'offensive_creativity_index', 'defensive_activity_index',
+        'playmaking_quality', 'net_front_presence', 'puck_battle_win_pct', 'puck_battles_per_60'
+    ]
     
-    for game_id in event_players['game_id'].dropna().unique():
-        game_events = event_players[event_players['game_id'] == game_id]
-        
-        for player_id in game_events['player_id'].dropna().unique():
-            if pd.isna(player_id) or str(player_id) in ['', 'None', 'nan']:
-                continue
-            
-            pe = game_events[game_events['player_id'] == player_id]
-            
-            # Count micro stats from event_detail_2
-            ed2 = pe['event_detail_2'].astype(str).str.lower() if 'event_detail_2' in pe.columns else pd.Series([])
-            
-            records.append({
-                'micro_stats_key': f"{player_id}_{game_id}",
-                'game_id': game_id,
-                'player_id': player_id,
-                'screens': ed2.str.contains('screen', na=False).sum(),
-                'tips': ed2.str.contains('tip', na=False).sum(),
-                'one_timers': ed2.str.contains('one_time|onetimer', na=False).sum(),
-                'dekes': ed2.str.contains('deke', na=False).sum(),
-                'rebounds': ed2.str.contains('rebound', na=False).sum(),
-                'backchecks': ed2.str.contains('backcheck', na=False).sum(),
-                'forechecks': ed2.str.contains('forecheck', na=False).sum(),
-                'board_battles': ed2.str.contains('board', na=False).sum(),
-                '_export_timestamp': datetime.now().isoformat()
-            })
+    # Filter to columns that exist
+    available_cols = [c for c in micro_stat_cols if c in player_game_stats.columns]
     
-    return pd.DataFrame(records)
+    if len(available_cols) == 0:
+        return pd.DataFrame()
+    
+    # Create micro stats table
+    micro_stats = player_game_stats[available_cols].copy()
+    
+    # Add key and timestamp
+    micro_stats['micro_stats_key'] = micro_stats['player_id'].astype(str) + '_' + micro_stats['game_id'].astype(str)
+    micro_stats['_export_timestamp'] = datetime.now().isoformat()
+    
+    # Reorder columns
+    key_cols = ['micro_stats_key', 'game_id', 'player_id']
+    other_cols = [c for c in micro_stats.columns if c not in key_cols + ['_export_timestamp']]
+    micro_stats = micro_stats[key_cols + other_cols + ['_export_timestamp']]
+    
+    return micro_stats
 
 
 def create_fact_player_qoc_summary() -> pd.DataFrame:

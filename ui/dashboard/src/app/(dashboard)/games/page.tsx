@@ -30,6 +30,8 @@ export default async function GamesPage() {
       {/* Games List */}
       <div className="space-y-3">
         {games.map((game) => {
+          if (!game.game_id) return null
+          
           const homeWon = (game.home_total_goals ?? 0) > (game.away_total_goals ?? 0)
           const awayWon = (game.away_total_goals ?? 0) > (game.home_total_goals ?? 0)
           const gameDate = game.date ? new Date(game.date).toLocaleDateString('en-US', {

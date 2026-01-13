@@ -188,7 +188,14 @@ export default async function LeagueStatisticsPage() {
                 key: 'win_pct', 
                 label: 'WIN%',
                 align: 'center',
-                render: (value) => <span className="font-mono text-sm text-foreground">{(value * 100).toFixed(1)}%</span>
+                render: (value, row) => {
+                  // Calculate win percentage correctly: points / (games_played * 2) * 100
+                  const ties = row.ties || 0
+                  const points = row.points || (row.wins * 2 + ties)
+                  const gamesPlayed = row.games_played || 0
+                  const winPct = gamesPlayed > 0 ? (points / (gamesPlayed * 2)) * 100 : 0
+                  return <span className="font-mono text-sm text-foreground">{winPct.toFixed(1)}%</span>
+                }
               },
               { 
                 key: 'goals_for', 

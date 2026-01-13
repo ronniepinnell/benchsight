@@ -39,6 +39,21 @@ from src.calculations.goals import (
     is_goal_scored,
 )
 
+# Goalie calculations (v29.7)
+from src.calculations.goalie_calculations import (
+    calculate_goalie_core_stats,
+    calculate_goalie_save_types,
+    calculate_goalie_high_danger,
+    calculate_goalie_rebound_control,
+    calculate_goalie_period_splits,
+    calculate_goalie_time_buckets,
+    calculate_goalie_shot_context,
+    calculate_goalie_pressure_handling,
+    calculate_goalie_quality_indicators,
+    calculate_goalie_composites,
+    calculate_goalie_war,
+)
+
 __all__ = [
     # Corsi/Fenwick
     'calculate_cf_pct',
@@ -60,4 +75,16 @@ __all__ = [
     # Goals
     'get_goal_filter',
     'is_goal_scored',
+    # Goalie calculations (v29.7)
+    'calculate_goalie_core_stats',
+    'calculate_goalie_save_types',
+    'calculate_goalie_high_danger',
+    'calculate_goalie_rebound_control',
+    'calculate_goalie_period_splits',
+    'calculate_goalie_time_buckets',
+    'calculate_goalie_shot_context',
+    'calculate_goalie_pressure_handling',
+    'calculate_goalie_quality_indicators',
+    'calculate_goalie_composites',
+    'calculate_goalie_war',
 ]

@@ -1,27 +1,42 @@
 // src/app/(dashboard)/teams/page.tsx
 import Link from 'next/link'
-import { getTeams, getStandings } from '@/lib/supabase/queries/teams'
+import { getStandings } from '@/lib/supabase/queries/teams'
+import { getTeamById } from '@/lib/supabase/queries/teams'
+import { getCurrentSeason } from '@/lib/supabase/queries/league'
 import { Users, Trophy, Target, Shield } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { TeamLogo } from '@/components/teams/team-logo'
 
 export const revalidate = 300
 
 export const metadata = {
   title: 'Teams | BenchSight',
-  description: 'NORAD Hockey League teams',
+  description: 'NORAD Hockey League teams - current season',
 }
 
 export default async function TeamsPage() {
-  const [teams, standings] = await Promise.all([
-    getTeams(),
-    getStandings()
+  const [standings, currentSeason] = await Promise.all([
+    getStandings(),
+    getCurrentSeason()
   ])
   
-  // Merge standings data with teams
-  const teamsWithStats = teams.map(team => {
-    const standing = standings.find(s => s.team_id === team.team_id)
-    return { ...team, ...standing }
-  })
+  // Only show teams from current standings (current season)
+  // Fetch team details for each team in standings
+  const teamsWithStats = await Promise.all(
+    standings.map(async (standing) => {
+      const team = await getTeamById(standing.team_id)
+      return {
+        ...team,
+        ...standing,
+        standing: standing.standing
+      }
+    })
+  )
+  
+  // Filter out any null teams and sort by standing
+  const validTeams = teamsWithStats
+    .filter((t): t is NonNullable<typeof t> => t !== null && t.team_id !== undefined)
+    .sort((a, b) => a.standing - b.standing)
   
   return (
     <div className="space-y-6">
@@ -38,7 +53,7 @@ export default async function TeamsPage() {
       
       {/* Teams Grid */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {teamsWithStats.map((team) => {
+        {validTeams.map((team) => {
           const wins = team.wins ?? 0
           const losses = team.losses ?? 0
           const ties = team.ties ?? 0
@@ -49,44 +64,64 @@ export default async function TeamsPage() {
           return (
             <Link
               key={team.team_id}
-              href={`/teams/${team.team_id}`}
+              href={`/team/${(team.team_name || '').replace(/\s+/g, '_')}`}
               className="bg-card rounded-xl border border-border hover:border-primary/50 transition-all hover:shadow-lg group overflow-hidden"
             >
               {/* Team Header with Color Bar */}
               <div 
                 className="h-2"
-                style={{ backgroundColor: team.team_color ?? '#3b82f6' }}
+                style={{ backgroundColor: team.primary_color || team.team_color1 || '#3b82f6' }}
               />
               
               <div className="p-4">
                 {/* Team Name */}
                 <div className="flex items-center gap-3 mb-4">
-                  <div 
-                    className="w-12 h-12 rounded-lg flex items-center justify-center text-white font-display font-bold text-lg"
-                    style={{ backgroundColor: team.team_color ?? '#3b82f6' }}
-                  >
-                    {team.team_name?.substring(0, 2).toUpperCase() ?? 'TM'}
-                  </div>
-                  <div>
+                  <TeamLogo
+                    src={team.team_logo || null}
+                    name={team.team_name || ''}
+                    abbrev={team.team_cd}
+                    primaryColor={team.primary_color || team.team_color1}
+                    secondaryColor={team.team_color2}
+                    size="lg"
+                  />
+                  <div className="flex-1">
                     <div className="font-display text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
                       {team.team_name}
                     </div>
-                    {team.standing_rank && (
-                      <div className="text-xs font-mono text-muted-foreground">
-                        #{team.standing_rank} in standings
+                    {team.standing && (
+                      <div className="flex items-center gap-2 mt-1">
+                        <Trophy className="w-3 h-3 text-assist" />
+                        <span className="text-xs font-mono text-muted-foreground">
+                          #{team.standing} in standings
+                        </span>
                       </div>
                     )}
                   </div>
                 </div>
                 
                 {/* Stats Grid */}
-                <div className="grid grid-cols-3 gap-3 mb-4">
-                  <div className="text-center">
-                    <div className="text-xs font-mono text-muted-foreground uppercase">Record</div>
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <div className="text-center p-2 bg-accent/30 rounded">
+                    <div className="text-xs font-mono text-muted-foreground uppercase mb-1">Record</div>
                     <div className="font-display font-semibold text-foreground">
                       {wins}-{losses}-{ties}
                     </div>
+                    {team.games_played && (
+                      <div className="text-xs font-mono text-muted-foreground mt-1">
+                        {team.games_played} GP
+                      </div>
+                    )}
                   </div>
+                  <div className="text-center p-2 bg-accent/30 rounded">
+                    <div className="text-xs font-mono text-muted-foreground uppercase mb-1">Win %</div>
+                    <div className="font-mono font-semibold text-primary">
+                      {team.games_played > 0 ? ((team.points || (wins * 2 + ties)) / (team.games_played * 2) * 100).toFixed(1) : '0.0'}%
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Goals Stats */}
+                <div className="grid grid-cols-3 gap-2 mb-4">
                   <div className="text-center">
                     <div className="text-xs font-mono text-muted-foreground uppercase">GF</div>
                     <div className="font-mono font-semibold text-save">
@@ -99,29 +134,37 @@ export default async function TeamsPage() {
                       {goalsAgainst}
                     </div>
                   </div>
+                  <div className="text-center">
+                    <div className="text-xs font-mono text-muted-foreground uppercase">Diff</div>
+                    <span className={cn(
+                      'font-mono font-bold',
+                      differential > 0 && 'text-save',
+                      differential < 0 && 'text-goal',
+                      differential === 0 && 'text-muted-foreground'
+                    )}>
+                      {differential > 0 ? '+' : ''}{differential}
+                    </span>
+                  </div>
                 </div>
                 
-                {/* Differential */}
-                <div className="flex items-center justify-between pt-3 border-t border-border">
-                  <span className="text-xs font-mono text-muted-foreground">Goal Diff</span>
-                  <span className={cn(
-                    'font-mono font-bold text-lg',
-                    differential > 0 && 'text-save',
-                    differential < 0 && 'text-goal',
-                    differential === 0 && 'text-muted-foreground'
-                  )}>
-                    {differential > 0 ? '+' : ''}{differential}
-                  </span>
-                </div>
+                {/* Points */}
+                {team.points !== undefined && (
+                  <div className="flex items-center justify-between pt-3 border-t border-border">
+                    <span className="text-xs font-mono text-muted-foreground">Points</span>
+                    <span className="font-mono font-bold text-lg text-primary">
+                      {team.points}
+                    </span>
+                  </div>
+                )}
               </div>
             </Link>
           )
         })}
       </div>
       
-      {teams.length === 0 && (
+      {validTeams.length === 0 && (
         <div className="bg-card rounded-lg border border-border p-8 text-center">
-          <p className="text-muted-foreground">No teams found.</p>
+          <p className="text-muted-foreground">No teams found for current season.</p>
         </div>
       )}
     </div>

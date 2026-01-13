@@ -22,7 +22,7 @@ from src.tables.core_facts import (
     calculate_advanced_shift_stats, calculate_zone_entry_exit_stats,
     calculate_faceoff_zone_stats, calculate_period_splits,
     calculate_danger_zone_stats, calculate_rush_stats,
-    calculate_micro_stats, calculate_xg_stats,
+    calculate_micro_stats, calculate_advanced_micro_stats, calculate_xg_stats,
     calculate_strength_splits, calculate_shot_type_stats,
     calculate_pass_type_stats, calculate_playmaking_stats,
     calculate_pressure_stats, calculate_competition_tier_stats,
@@ -168,7 +168,20 @@ class PlayerStatsBuilder:
         stats.update(calculate_period_splits(player_id, game_id, event_players, shift_players))
         stats.update(calculate_danger_zone_stats(player_id, game_id, event_players, events))
         stats.update(calculate_rush_stats(player_id, game_id, event_players, events))
-        stats.update(calculate_micro_stats(player_id, game_id, event_players, events))
+        
+        # Calculate micro stats and advanced micro stats
+        micro_stats = calculate_micro_stats(player_id, game_id, event_players, events)
+        stats.update(micro_stats)
+        
+        # Get zone stats for advanced micro stats
+        zone_entry_types = data.get('zone_entry_types', pd.DataFrame())
+        zone_exit_types = data.get('zone_exit_types', pd.DataFrame())
+        zone_stats = calculate_zone_entry_exit_stats(player_id, game_id, event_players, zone_entry_types, zone_exit_types, events)
+        
+        # Calculate advanced composite micro stats
+        advanced_micro = calculate_advanced_micro_stats(player_id, game_id, event_players, events, micro_stats, zone_stats)
+        stats.update(advanced_micro)
+        
         stats.update(calculate_xg_stats(player_id, game_id, event_players, events))
         
         # v25.2 stats

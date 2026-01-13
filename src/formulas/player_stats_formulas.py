@@ -155,6 +155,77 @@ PLAYER_STATS_FORMULAS = {
         'dependencies': ['ca', 'toi_minutes'],
     },
     
+    # Micro stats per-60 rates
+    'dekes_per_60': {
+        'type': 'rate',
+        'function': lambda df: pd.Series([
+            calculate_per_60_rate(d, toi) if pd.notna(toi) else None
+            for d, toi in zip(df.get('dekes', pd.Series([0]*len(df))), df['toi_minutes'])
+        ]),
+        'description': 'Dekes per 60 minutes',
+        'dependencies': ['dekes', 'toi_minutes'],
+    },
+    
+    'forechecks_per_60': {
+        'type': 'rate',
+        'function': lambda df: pd.Series([
+            calculate_per_60_rate(fc, toi) if pd.notna(toi) else None
+            for fc, toi in zip(df.get('forechecks', pd.Series([0]*len(df))), df['toi_minutes'])
+        ]),
+        'description': 'Forechecks per 60 minutes',
+        'dependencies': ['forechecks', 'toi_minutes'],
+    },
+    
+    'backchecks_per_60': {
+        'type': 'rate',
+        'function': lambda df: pd.Series([
+            calculate_per_60_rate(bc, toi) if pd.notna(toi) else None
+            for bc, toi in zip(df.get('backchecks', pd.Series([0]*len(df))), df['toi_minutes'])
+        ]),
+        'description': 'Backchecks per 60 minutes',
+        'dependencies': ['backchecks', 'toi_minutes'],
+    },
+    
+    'puck_battles_per_60': {
+        'type': 'rate',
+        'function': lambda df: pd.Series([
+            calculate_per_60_rate(pb, toi) if pd.notna(toi) else None
+            for pb, toi in zip(df.get('puck_battles_total', pd.Series([0]*len(df))), df['toi_minutes'])
+        ]),
+        'description': 'Puck battles per 60 minutes',
+        'dependencies': ['puck_battles_total', 'toi_minutes'],
+    },
+    
+    'cycles_per_60': {
+        'type': 'rate',
+        'function': lambda df: pd.Series([
+            calculate_per_60_rate(c, toi) if pd.notna(toi) else None
+            for c, toi in zip(df.get('cycles', pd.Series([0]*len(df))), df['toi_minutes'])
+        ]),
+        'description': 'Cycles per 60 minutes',
+        'dependencies': ['cycles', 'toi_minutes'],
+    },
+    
+    'screens_per_60': {
+        'type': 'rate',
+        'function': lambda df: pd.Series([
+            calculate_per_60_rate(s, toi) if pd.notna(toi) else None
+            for s, toi in zip(df.get('screens', pd.Series([0]*len(df))), df['toi_minutes'])
+        ]),
+        'description': 'Screens per 60 minutes',
+        'dependencies': ['screens', 'toi_minutes'],
+    },
+    
+    'poke_checks_per_60': {
+        'type': 'rate',
+        'function': lambda df: pd.Series([
+            calculate_per_60_rate(pc, toi) if pd.notna(toi) else None
+            for pc, toi in zip(df.get('poke_checks', pd.Series([0]*len(df))), df['toi_minutes'])
+        ]),
+        'description': 'Poke checks per 60 minutes',
+        'dependencies': ['poke_checks', 'toi_minutes'],
+    },
+    
     # ========================================================================
     # RATIO FORMULAS
     # ========================================================================
@@ -244,7 +315,9 @@ FORMULA_GROUPS = {
     
     'all_per_60': [
         'goals_per_60', 'assists_per_60', 'points_per_60', 'shots_per_60',
-        'sog_per_60', 'cf_per_60', 'ca_per_60'
+        'sog_per_60', 'cf_per_60', 'ca_per_60',
+        'dekes_per_60', 'forechecks_per_60', 'backchecks_per_60',
+        'puck_battles_per_60', 'cycles_per_60', 'screens_per_60', 'poke_checks_per_60'
     ],
     
     'all_ratios': [

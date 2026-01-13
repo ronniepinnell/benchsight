@@ -9,6 +9,26 @@ interface SeasonFilterProps {
   selectedSeason: string | null
 }
 
+// Format season ID to readable name (e.g., "N20242025F" -> "2024-2025 Fall")
+function formatSeasonName(seasonId: string): string {
+  // Format: N20242025F or N20242025S
+  // Extract: N (prefix), YYYY (start year), YYYY (end year), F/S (Fall/Spring)
+  const match = seasonId.match(/^N?(\d{4})(\d{4})([FS])$/)
+  if (match) {
+    const [, startYear, endYear, session] = match
+    const sessionName = session === 'F' ? 'Fall' : 'Spring'
+    return `${startYear}-${endYear} ${sessionName}`
+  }
+  // Fallback: try to extract just years if format is different
+  const yearMatch = seasonId.match(/(\d{4})(\d{4})/)
+  if (yearMatch) {
+    const [, startYear, endYear] = yearMatch
+    return `${startYear}-${endYear}`
+  }
+  // Final fallback: return as-is
+  return seasonId
+}
+
 export function SeasonFilter({ seasons, currentSeason, selectedSeason }: SeasonFilterProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -36,11 +56,15 @@ export function SeasonFilter({ seasons, currentSeason, selectedSeason }: SeasonF
         onChange={(e) => handleSeasonChange(e.target.value)}
         className="bg-card border border-border rounded-lg px-3 py-2 text-sm font-mono text-foreground hover:border-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
       >
-        {seasons.map((season) => (
-          <option key={season} value={season}>
-            {season}
-          </option>
-        ))}
+        {seasons.map((season) => {
+          const displayName = formatSeasonName(season)
+          const isCurrent = season === currentSeason
+          return (
+            <option key={season} value={season}>
+              {displayName}{isCurrent ? ' (Current)' : ''}
+            </option>
+          )
+        })}
       </select>
       {selectedSeason === currentSeason && (
         <span className="text-xs text-muted-foreground font-mono">(Current)</span>

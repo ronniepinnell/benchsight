@@ -24,7 +24,10 @@ export default async function TeamComparisonPage() {
 
   // Calculate power rankings (weighted by wins, goal diff, recent form)
   const powerRankings = standingsData.map(team => {
-    const winPct = team.games_played > 0 ? (team.wins / team.games_played) : 0
+    const ties = team.ties || 0
+    const points = team.points || (team.wins * 2 + ties)
+    // Win percentage = points / (games_played * 2) * 100
+    const winPct = team.games_played > 0 ? (points / (team.games_played * 2)) : 0
     const goalDiffPerGame = team.games_played > 0 ? (team.goal_diff / team.games_played) : 0
     
     // Simple power ranking formula

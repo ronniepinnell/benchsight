@@ -154,17 +154,27 @@ export default async function PlayersPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <Link
-                        href={`/players/${player.player_id}`}
-                        className="font-display text-sm text-foreground hover:text-primary transition-colors"
-                      >
-                        {player.player_name}
-                      </Link>
+                      {player.player_id ? (
+                        <Link
+                          href={`/players/${player.player_id}`}
+                          className="font-display text-sm text-foreground hover:text-primary transition-colors"
+                        >
+                          {player.player_name}
+                        </Link>
+                      ) : (
+                        <span className="font-display text-sm text-foreground">
+                          {player.player_name}
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-sm text-muted-foreground">
-                      <Link href={`/teams/${player.team_id}`} className="hover:text-foreground transition-colors">
-                        {player.team_name}
-                      </Link>
+                      {player.team_name ? (
+                        <Link href={`/team/${player.team_name.replace(/\s+/g, '_')}`} className="hover:text-foreground transition-colors">
+                          {player.team_name}
+                        </Link>
+                      ) : (
+                        <span>{player.team_name || '-'}</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-center font-mono text-sm text-muted-foreground">
                       {player.games_played}

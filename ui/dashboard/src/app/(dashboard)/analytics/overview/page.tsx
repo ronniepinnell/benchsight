@@ -189,12 +189,18 @@ export default async function LeagueOverviewPage() {
                     secondaryColor={teamInfo?.team_color2}
                     size="sm"
                   />
-                  <Link 
-                    href={`/teams/${encodeURIComponent(team.team_name || '')}`}
-                    className="font-display text-sm hover:text-primary transition-colors"
-                  >
-                    {team.team_name}
-                  </Link>
+                  {team.team_name ? (
+                    <Link 
+                      href={`/team/${team.team_name.replace(/\s+/g, '_')}`}
+                      className="font-display text-sm hover:text-primary transition-colors"
+                    >
+                      {team.team_name}
+                    </Link>
+                  ) : (
+                    <span className="font-display text-sm text-foreground">
+                      {team.team_name || '-'}
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center gap-4 text-sm font-mono">
                   <span className="text-save">{team.wins}W</span>
@@ -235,6 +241,7 @@ export default async function LeagueOverviewPage() {
           <div className="space-y-2">
             {topPoints.length > 0 ? topPoints.map((player, idx) => {
               const playerInfo = playersMap.get(String(player.player_id))
+              if (!player.player_id) return null
               return (
                 <Link
                   key={`points-${player.player_id}`}
@@ -285,6 +292,7 @@ export default async function LeagueOverviewPage() {
           <div className="space-y-2">
             {topGoals.length > 0 ? topGoals.map((player, idx) => {
               const playerInfo = playersMap.get(String(player.player_id))
+              if (!player.player_id) return null
               return (
                 <Link
                   key={`goals-${player.player_id}`}
@@ -335,6 +343,7 @@ export default async function LeagueOverviewPage() {
           <div className="space-y-2">
             {topGoalies.length > 0 ? topGoalies.map((goalie, idx) => {
               const playerInfo = playersMap.get(String(goalie.player_id))
+              if (!goalie.player_id) return null
               return (
                 <Link
                   key={`goalie-${goalie.player_id}`}
@@ -346,7 +355,7 @@ export default async function LeagueOverviewPage() {
                       {idx + 1}
                     </span>
                     <PlayerPhoto
-                      src={playerInfo?.player_photo_url || null}
+                      src={playerInfo?.player_image || null}
                       name={goalie.player_name || ''}
                       primaryColor={playerInfo?.primary_color}
                       size="sm"
@@ -385,12 +394,14 @@ export default async function LeagueOverviewPage() {
             </Link>
           </div>
           <div className="space-y-2">
-            {recent.map((game: any) => (
-              <Link
-                key={game.game_id}
-                href={`/games/${game.game_id}`}
-                className="flex items-center justify-between p-3 rounded border border-border hover:bg-muted/50 transition-colors"
-              >
+            {recent.map((game: any) => {
+              if (!game.game_id) return null
+              return (
+                <Link
+                  key={game.game_id}
+                  href={`/games/${game.game_id}`}
+                  className="flex items-center justify-between p-3 rounded border border-border hover:bg-muted/50 transition-colors"
+                >
                 <div className="flex items-center gap-4 text-sm">
                   <span className="text-muted-foreground font-mono text-xs">
                     {game.date ? new Date(game.date).toLocaleDateString() : 'TBD'}
@@ -413,7 +424,8 @@ export default async function LeagueOverviewPage() {
                   </div>
                 )}
               </Link>
-            ))}
+              )
+            })}
           </div>
         </div>
       )}

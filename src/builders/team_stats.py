@@ -88,11 +88,33 @@ class TeamStatsBuilder:
                     'toi_seconds', 'corsi_for', 'corsi_against', 
                     'fenwick_for', 'fenwick_against', 'plus_total', 
                     'minus_total', 'xg_for', 'gar_total', 'war', 
-                    'shot_assists', 'goal_creating_actions'
+                    'shot_assists', 'goal_creating_actions',
+                    # Micro stats
+                    'dekes', 'drives_total', 'cutbacks', 'delays', 'crash_net', 'screens',
+                    'give_and_go', 'second_touch', 'cycles', 'poke_checks', 'stick_checks',
+                    'zone_ent_denials', 'backchecks', 'forechecks', 'breakouts', 'dump_ins',
+                    'loose_puck_wins', 'puck_recoveries', 'puck_battles_total',
+                    'board_battles_won', 'board_battles_lost',
+                    'passes_cross_ice', 'passes_stretch', 'passes_breakout', 'passes_rim',
+                    'passes_bank', 'passes_royal_road', 'passes_slot', 'passes_behind_net',
+                    'shots_one_timer', 'shots_snap', 'shots_wrist', 'shots_slap',
+                    'shots_tip', 'shots_deflection', 'shots_wrap_around',
+                    'pressure_plays', 'pressure_successful',
+                    # Advanced micro stats
+                    'possession_quality_index', 'transition_efficiency', 'pressure_index',
+                    'offensive_creativity_index', 'defensive_activity_index',
+                    'playmaking_quality', 'net_front_presence', 'puck_battles_per_60'
                 ]
                 
                 for col in sum_cols:
-                    stats[col] = team_players[col].sum() if col in team_players.columns else 0
+                    if col in team_players.columns:
+                        # For rate/index metrics, use mean instead of sum
+                        if col.endswith('_index') or col.endswith('_rate') or col.endswith('_pct') or col.endswith('_efficiency') or col.endswith('_quality') or col.endswith('_per_60'):
+                            stats[col] = round(team_players[col].mean(), 2) if len(team_players) > 0 else 0.0
+                        else:
+                            stats[col] = team_players[col].sum()
+                    else:
+                        stats[col] = 0
                 
                 # Calculated percentages
                 stats['shooting_pct'] = round(

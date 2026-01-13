@@ -26,7 +26,7 @@ export async function getCurrentSeason(): Promise<string | null> {
   return data?.season_id ?? null
 }
 
-// Get all seasons
+// Get all seasons (excluding Spring seasons)
 export async function getAllSeasons(): Promise<string[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
@@ -35,7 +35,8 @@ export async function getAllSeasons(): Promise<string[]> {
   
   if (error) throw error
   
-  // Get unique season IDs
+  // Get unique season IDs and filter out Spring seasons (ending with 'S')
   const seasons = [...new Set((data ?? []).map(d => d.season_id))]
+    .filter(seasonId => !seasonId.endsWith('S'))
   return seasons
 }

@@ -16,20 +16,34 @@ type SortDirection = 'asc' | 'desc'
 interface SortableLeadersTableProps {
   leaders: LeaderData[]
   playersMap?: Map<string, any>
+  isCurrentSeason?: boolean
 }
 
-export function SortableLeadersTable({ leaders, playersMap }: SortableLeadersTableProps) {
+export function SortableLeadersTable({ leaders, playersMap, isCurrentSeason = false }: SortableLeadersTableProps) {
   const [sortField, setSortField] = useState<SortField>('rank')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
 
   const sortedLeaders = useMemo(() => {
-    const sorted = [...leaders].map((player) => ({
-      ...player,
-      rank: player.season_rank || 0,
-      goalsPerGame: player.games_played > 0 ? player.goals / player.games_played : 0,
-      assistsPerGame: player.games_played > 0 ? player.assists / player.games_played : 0,
-      pointsPerGame: player.games_played > 0 ? player.points / player.games_played : 0,
-    }))
+    const sorted = [...leaders].map((player) => {
+      // For current season: use current team from dim_players
+      // For past seasons: use team_name from leaderboard (the team they played for that season)
+      let displayTeam = player.team_name // Default to leaderboard team_name
+      
+      if (isCurrentSeason) {
+        // Use current team from dim_players for current season
+        const playerData = playersMap?.get(String(player.player_id))
+        displayTeam = playerData?.player_norad_current_team || playerData?.team_name || player.team_name
+      }
+      
+      return {
+        ...player,
+        rank: player.season_rank || 0,
+        goalsPerGame: player.games_played > 0 ? player.goals / player.games_played : 0,
+        assistsPerGame: player.games_played > 0 ? player.assists / player.games_played : 0,
+        pointsPerGame: player.games_played > 0 ? player.points / player.games_played : 0,
+        displayTeam, // Team to display (current team for current season, season team for past seasons)
+      }
+    })
 
     sorted.sort((a, b) => {
       let aValue: any
@@ -45,8 +59,9 @@ export function SortableLeadersTable({ leaders, playersMap }: SortableLeadersTab
           bValue = b.player_name?.toLowerCase() || ''
           break
         case 'team':
-          aValue = a.team_name?.toLowerCase() || ''
-          bValue = b.team_name?.toLowerCase() || ''
+          // Use displayTeam which is already set correctly based on current vs past season
+          aValue = (a.displayTeam || '').toLowerCase()
+          bValue = (b.displayTeam || '').toLowerCase()
           break
         case 'gp':
           aValue = a.games_played || 0
@@ -90,7 +105,7 @@ export function SortableLeadersTable({ leaders, playersMap }: SortableLeadersTab
     })
 
     return sorted
-  }, [leaders, sortField, sortDirection])
+  }, [leaders, sortField, sortDirection, isCurrentSeason, playersMap])
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -229,22 +244,35 @@ export function SortableLeadersTable({ leaders, playersMap }: SortableLeadersTab
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <Link
-                      href={`/players/${player.player_id}`}
-                      className="flex items-center gap-2 hover:text-primary transition-colors"
-                    >
-                      <PlayerPhoto
-                        src={playersMap?.get(String(player.player_id))?.player_image || null}
-                        name={player.player_name || ''}
-                        size="sm"
-                      />
-                      <span className="font-display text-sm text-foreground">
-                        {player.player_name}
-                      </span>
-                    </Link>
+                    {player.player_id ? (
+                      <Link
+                        href={`/players/${player.player_id}`}
+                        className="flex items-center gap-2 hover:text-primary transition-colors"
+                      >
+                        <PlayerPhoto
+                          src={playersMap?.get(String(player.player_id))?.player_image || null}
+                          name={player.player_name || ''}
+                          size="sm"
+                        />
+                        <span className="font-display text-sm text-foreground">
+                          {player.player_name}
+                        </span>
+                      </Link>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <PlayerPhoto
+                          src={playersMap?.get(String(player.player_id))?.player_image || null}
+                          name={player.player_name || ''}
+                          size="sm"
+                        />
+                        <span className="font-display text-sm text-foreground">
+                          {player.player_name}
+                        </span>
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-sm text-muted-foreground">
-                    {player.team_name}
+                    {player.displayTeam || '-'}
                   </td>
                   <td className="px-4 py-3 text-center font-mono text-sm text-muted-foreground">
                     {player.games_played}
