@@ -1,7 +1,7 @@
 # BenchSight Maintenance Guide
 
-**Version:** v24.4  
-**Updated:** 2026-01-12
+**Version:** v29.0  
+**Updated:** 2026-01-13
 
 ---
 

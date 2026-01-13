@@ -53,6 +53,10 @@ from src.core.table_writer import (
     is_supabase_enabled
 )
 
+# Import table builders (v29.1)
+from src.builders.events import build_fact_events
+from src.builders.shifts import build_fact_shifts
+
 # ============================================================
 # CONFIGURATION
 # ============================================================
@@ -1328,72 +1332,14 @@ def link_player_ids(df, lookup, player_col, team_col):
 def create_derived_tables(tracking_data, player_lookup):
     log.section("PHASE 4: CREATE DERIVED TABLES")
     
-    # 1. fact_events - one row per event
+    # 1. fact_events - one row per event (v29.1: using builder)
     if 'fact_event_players' in tracking_data:
         log.info("Creating fact_events...")
         tracking = tracking_data['fact_event_players']
         
-        # Sort to prioritize Goal > Shot > other event types when selecting representative row
-        # This ensures Goal_Scored is selected over Shot_Goal when both exist for same event_id
-        event_type_priority = {'Goal': 0, 'Shot': 1, 'Faceoff': 2, 'Pass': 3, 'Possession': 4}
-        tracking = tracking.copy()
-        tracking['_event_type_priority'] = tracking['event_type'].map(event_type_priority).fillna(99)
-        tracking = tracking.sort_values(['event_id', '_event_type_priority', 'player_role'])
+        # Use builder function (extracted for modularity and testability)
+        events = build_fact_events(tracking, OUTPUT_DIR, save=True)
         
-        events = tracking.groupby('event_id', as_index=False).first()
-        events = events.drop(columns=['_event_type_priority'], errors='ignore')
-        
-        # Select meaningful columns - use standardized names
-        # Include all calculated derived columns from calculate_derived_columns
-        keep_cols = ['event_id', 'game_id', 'period',
-                     'event_type', 'event_detail', 'event_detail_2', 'event_successful',
-                     'event_team_zone', 'shift_key', 'linked_event_key',
-                     'sequence_key', 'play_key', 'event_chain_key', 'tracking_event_key',
-                     'home_team', 'away_team', 'duration',
-                     # Time columns (calculated)
-                     'event_start_min', 'event_start_sec', 'event_end_min', 'event_end_sec',
-                     'time_start_total_seconds', 'time_end_total_seconds',
-                     'event_running_start', 'event_running_end',
-                     'running_video_time', 'period_start_total_running_seconds',
-                     'running_intermission_duration',
-                     # Team columns (calculated)
-                     'team_venue', 'team_venue_abv', 'player_team',
-                     'home_team_zone', 'away_team_zone',
-                     # Player columns (calculated)
-                     'player_role', 'side_of_puck', 'role_number', 'role_abrev',
-                     'player_game_number', 'strength',
-                     # Play details
-                     'play_detail1', 'play_detail_2', 'play_detail_successful',
-                     'pressured_pressurer',
-                     # XY data
-                     'puck_x_start', 'puck_y_start', 'puck_x_end', 'puck_y_end',
-                     'player_x', 'player_y',
-                     # Flags
-                     'is_goal', 'is_highlight']
-        events = events[[c for c in keep_cols if c in events.columns]]
-        
-        # Add player ID columns from tracking data
-        from src.core.key_utils import add_player_id_columns
-        events = add_player_id_columns(events, tracking)
-        
-        # Add FK columns
-        events = add_fact_events_fkeys(events, OUTPUT_DIR)
-        
-        # Reorder columns - keys and FKs first
-        priority_cols = ['event_id', 'game_id', 'period', 'period_id',
-                        'event_type', 'event_type_id', 
-                        'event_detail', 'event_detail_id',
-                        'event_detail_2', 'event_detail_2_id',
-                        'event_successful', 'success_id',
-                        'event_team_zone', 'event_zone_id',
-                        'sequence_key', 'play_key', 'event_chain_key', 'tracking_event_key',
-                        'shift_key', 'linked_event_key',
-                        'home_team', 'home_team_id', 'away_team', 'away_team_id',
-                        'duration', 'event_player_ids', 'opp_player_ids']
-        other_cols = [c for c in events.columns if c not in priority_cols]
-        events = events[[c for c in priority_cols if c in events.columns] + other_cols]
-        
-        save_table(events, 'fact_events')
         log.info(f"  fact_events: {len(events):,} rows, {len(events.columns)} cols")
         log.info(f"  FKs: period_id={events['period_id'].notna().sum()}, event_type_id={events['event_type_id'].notna().sum()}, event_detail_id={events['event_detail_id'].notna().sum()}")
     
@@ -1437,34 +1383,14 @@ def create_derived_tables(tracking_data, player_lookup):
         save_table(fact_tracking, 'fact_tracking')
         log.info(f"  fact_tracking: {len(fact_tracking):,} rows, {len(fact_tracking.columns)} cols")
     
-    # 3. fact_shifts - one row per shift
+    # 3. fact_shifts - one row per shift (v29.1: using builder)
     if 'fact_shifts' in tracking_data:
         log.info("Creating fact_shifts...")
         shifts_tracking = tracking_data['fact_shifts']
         
-        shifts = shifts_tracking.drop_duplicates(subset=['shift_id'])
+        # Use builder function (extracted for modularity and testability)
+        shifts = build_fact_shifts(shifts_tracking, OUTPUT_DIR, save=True)
         
-        keep_cols = ['shift_id', 'game_id', 'shift_index', 'Period',
-                     'shift_start_type', 'shift_stop_type',
-                     'shift_start_min', 'shift_start_sec', 'shift_end_min', 'shift_end_sec',
-                     'home_team', 'away_team',
-                     'home_forward_1', 'home_forward_2', 'home_forward_3',
-                     'home_defense_1', 'home_defense_2', 'home_xtra', 'home_goalie',
-                     'away_forward_1', 'away_forward_2', 'away_forward_3',
-                     'away_defense_1', 'away_defense_2', 'away_xtra', 'away_goalie',
-                     # Additional columns needed by enhance_shift_tables
-                     'shift_start_total_seconds', 'shift_end_total_seconds', 'shift_duration',
-                     'home_team_strength', 'away_team_strength', 'home_team_en', 'away_team_en',
-                     'home_team_pk', 'home_team_pp', 'away_team_pp', 'away_team_pk',
-                     'situation', 'strength', 'home_goals', 'away_goals',
-                     'stoppage_time', 'home_ozone_start', 'home_ozone_end',
-                     'home_dzone_start', 'home_dzone_end', 'home_nzone_start', 'home_nzone_end']
-        shifts = shifts[[c for c in keep_cols if c in shifts.columns]]
-        
-        if 'Period' in shifts.columns:
-            shifts = shifts.rename(columns={'Period': 'period'})
-        
-        save_table(shifts, 'fact_shifts')
         log.info(f"  fact_shifts: {len(shifts):,} rows")
     
     # 4. fact_shift_players - one row per player per shift
@@ -4352,9 +4278,12 @@ def enhance_shift_players():
     sp['hda'] = sp.apply(lambda r: get_for_stat(r, 'hda'), axis=1)
     sp['shot_diff'] = sp['sf'] - sp['sa']
     
-    # Recalculate percentages
-    sp['cf_pct'] = sp.apply(lambda r: (r['cf'] / (r['cf'] + r['ca']) * 100) if (r['cf'] + r['ca']) > 0 else 50.0, axis=1)
-    sp['ff_pct'] = sp.apply(lambda r: (r['ff'] / (r['ff'] + r['fa']) * 100) if (r['ff'] + r['fa']) > 0 else 50.0, axis=1)
+    # Recalculate percentages (v29.1: vectorized for performance)
+    total_cf = sp['cf'] + sp['ca']
+    sp['cf_pct'] = (sp['cf'] / total_cf * 100).where(total_cf > 0, 50.0)
+    
+    total_ff = sp['ff'] + sp['fa']
+    sp['ff_pct'] = (sp['ff'] / total_ff * 100).where(total_ff > 0, 50.0)
     
     # Zone entries/exits/giveaways/takeaways - venue mapped
     # Home player gets home team's events, away player gets away team's events
@@ -4367,7 +4296,9 @@ def enhance_shift_players():
     # Faceoffs - venue mapped (fo_won/fo_lost are from home perspective in fact_shifts)
     sp['fo_won'] = sp.apply(lambda r: get_venue_stat(r, 'fo_won', 'fo_lost'), axis=1)
     sp['fo_lost'] = sp.apply(lambda r: get_venue_stat(r, 'fo_lost', 'fo_won'), axis=1)
-    sp['fo_pct'] = sp.apply(lambda r: (r['fo_won'] / (r['fo_won'] + r['fo_lost']) * 100) if (r['fo_won'] + r['fo_lost']) > 0 else 0.0, axis=1)
+    # Faceoff percentage (v29.1: vectorized for performance)
+    total_fo = sp['fo_won'] + sp['fo_lost']
+    sp['fo_pct'] = (sp['fo_won'] / total_fo * 100).where(total_fo > 0, 0.0)
     
     # Calculate playing time
     sp['playing_time'] = sp['shift_duration'].fillna(0) - sp['stoppage_time'].fillna(0)

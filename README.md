@@ -2,8 +2,18 @@
 
 **Hockey Analytics Platform for NORAD Recreational League**
 
-Version: 28.3  
-Updated: 2026-01-12
+Version: 29.0  
+Updated: 2026-01-13
+
+---
+
+## 🚀 Getting Started
+
+**New to BenchSight?** Start here:
+
+1. **[Quick Start Guide](docs/QUICK_START.md)** - Get running in 5 minutes
+2. **[Setup Instructions](docs/SETUP.md)** - Complete installation guide
+3. **[Architecture Overview](docs/ARCHITECTURE.md)** - Understand the system
 
 ---
 
@@ -55,13 +65,16 @@ python upload.py
 
 ---
 
-## What's New in v28.3
+## What's New in v29.0
 
-- **139 ETL tables** (removed 3 redundant aggregation tables)
-- **30 Supabase views** for dashboard consumption
-- **Next.js 14 dashboard guide** with TypeScript, Tailwind, shadcn/ui
-- **Advanced goalie stats** (128 columns including rush/set play SV%, rebound control)
-- **Basic + Advanced stats tiers** (official league data vs tracking-derived)
+- **Game Type Aggregator** - Single source of truth for Regular/Playoffs/All splits
+- **Code Refactoring** - Eliminated duplication across 6 season stats tables
+- **139 ETL tables** - Complete dimensional data warehouse
+- **30 Supabase views** - Pre-aggregated for dashboard consumption
+- **Next.js 14 dashboard guide** - Full implementation guide with TypeScript, Tailwind, shadcn/ui
+- **Advanced goalie stats** - 128 columns including rush/set play SV%, rebound control
+
+See [CHANGELOG.md](docs/CHANGELOG.md) for complete version history.
 
 ---
 
@@ -130,16 +143,36 @@ benchsight_v28/
 
 ---
 
-## Key Documentation
+## 📚 Documentation
 
+### Getting Started
+- **[Quick Start](docs/QUICK_START.md)** - 5-minute guide to get running
+- **[Setup Guide](docs/SETUP.md)** - Complete installation instructions
+- **[Contributing](docs/CONTRIBUTING.md)** - How to contribute
+
+### Core Documentation
 | File | Purpose |
 |------|---------|
-| `NEXT_PROMPT.md` | **Start here** - What to do next |
-| `docs/NEXTJS_DASHBOARD_GUIDE.md` | Full Next.js 14 dashboard implementation |
+| `docs/ARCHITECTURE.md` | System design and data flow |
+| `docs/ETL.md` | ETL pipeline details |
+| `docs/DATA_DICTIONARY.md` | Complete table/column definitions |
+| `docs/CODE_STANDARDS.md` | Coding standards and best practices |
+| `docs/CHANGELOG.md` | Version history and changes |
+
+### Deployment & Integration
+| File | Purpose |
+|------|---------|
+| `docs/NEXTJS_DASHBOARD_GUIDE.md` | Next.js 14 dashboard implementation |
 | `docs/SUPABASE_RESET_GAMEPLAN.md` | Step-by-step Supabase deployment |
-| `sql/views/99_DEPLOY_ALL_VIEWS.sql` | Deploy all views to Supabase |
-| `docs/DATA_DICTIONARY.md` | Table/column definitions |
-| `docs/CHANGELOG.md` | Version history |
+| `docs/DASHBOARD_INTEGRATION.md` | Dashboard integration guide |
+| `sql/views/99_DEPLOY_ALL_VIEWS.sql` | Deploy all 30 views to Supabase |
+
+### Reference
+| File | Purpose |
+|------|---------|
+| `docs/TODO.md` | Current tasks and priorities |
+| `docs/HANDOFF.md` | Continuity between sessions |
+| `docs/MAINTENANCE.md` | Maintenance procedures |
 
 ---
 
@@ -190,14 +223,60 @@ Advanced (other tables) = Tracking-derived micro-stats
 
 ---
 
-## Next Steps
+## 🛠️ Development
 
-See `NEXT_PROMPT.md` for:
-1. Supabase reset commands
-2. Table upload instructions
-3. View deployment
-4. Next.js dashboard setup
+### Running the ETL
+
+```bash
+# Full ETL (all games)
+python run_etl.py
+
+# Clean slate (delete output, then run)
+python run_etl.py --wipe
+
+# Process specific games
+python run_etl.py --games 18969 18977
+
+# Check status
+python run_etl.py --status
+```
+
+### Validation
+
+```bash
+# Quick validation
+python validate.py --quick
+
+# Full validation
+python validate.py
+```
+
+### Contributing
+
+See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for:
+- Code standards
+- Development workflow
+- Pull request process
+- Testing guidelines
 
 ---
 
-*BenchSight v28.3 - NORAD Hockey Analytics*
+## 📋 Next Steps
+
+1. **Set up your environment** - See [SETUP.md](docs/SETUP.md)
+2. **Run your first ETL** - See [QUICK_START.md](docs/QUICK_START.md)
+3. **Explore the data** - Check `data/output/` for generated tables
+4. **Deploy to Supabase** - Follow [SUPABASE_RESET_GAMEPLAN.md](docs/SUPABASE_RESET_GAMEPLAN.md)
+5. **Build dashboard** - Use [NEXTJS_DASHBOARD_GUIDE.md](docs/NEXTJS_DASHBOARD_GUIDE.md)
+
+---
+
+## 📞 Support
+
+- **Documentation**: See `docs/` directory
+- **Issues**: Check existing issues or create new one
+- **Questions**: Review [HANDOFF.md](docs/HANDOFF.md) for known issues
+
+---
+
+*BenchSight v29.0 - NORAD Hockey Analytics*

@@ -1,7 +1,7 @@
 # BenchSight Chat Handoff Document
 
-Last Updated: 2026-01-12
-Version: 24.3
+Last Updated: 2026-01-13
+Version: 29.0
 
 ## Purpose
 
@@ -68,7 +68,7 @@ IMPORTANT: Folder name must match zip name!
 
 ---
 
-## Current State (v24.4)
+## Current State (v29.0)
 
 ### Completed
 - [x] 120-table ETL pipeline (base_etl.py + table modules)
@@ -79,7 +79,7 @@ IMPORTANT: Folder name must match zip name!
 - [x] FK relationships validated (competition_tier_id fixed)
 - [x] Comprehensive documentation (20+ docs)
 
-### v24.4 Key Fixes
+### v29.0 Key Changes
 - [x] fact_shift_players: cf/ca/ff/fa/sf/sa venue-mapped for away players
 - [x] fact_shifts: Team-specific event columns (home_zone_entries, etc.)
 - [x] fact_shifts: Added bad_giveaways columns
@@ -96,7 +96,7 @@ IMPORTANT: Folder name must match zip name!
 ## Key File Locations
 
 ```
-benchsight_v24.4/
+benchsight/
 ├── src/
 │   ├── core/base_etl.py    # Main ETL (52 tables)
 │   └── tables/             # Additional table modules

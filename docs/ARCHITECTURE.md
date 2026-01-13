@@ -150,18 +150,24 @@ fact_player_game_stats
 ```
 src/
 ├── core/               # Core utilities
-│   ├── base_etl.py     # Main ETL class
+│   ├── base_etl.py     # Main ETL orchestrator
 │   ├── table_writer.py # CSV/Supabase output
 │   └── key_utils.py    # Key generation
+│
+├── calculations/       # Calculation functions (v29.1)
+│   ├── goals.py        # Goal counting (single source of truth)
+│   ├── corsi.py        # Corsi/Fenwick calculations
+│   ├── ratings.py      # Player rating calculations
+│   └── time.py         # Time on ice calculations
 │
 ├── tables/             # Table builders
 │   ├── dimension_tables.py
 │   ├── core_facts.py
 │   └── remaining_facts.py
 │
-├── stats/              # Statistics
-│   ├── stats_builder.py
-│   └── calculate_stats.py
+├── utils/              # Utility modules
+│   ├── game_type_aggregator.py  # Game type splits (v29.0)
+│   └── key_parser.py
 │
 ├── supabase/           # Database
 │   └── supabase_manager.py
