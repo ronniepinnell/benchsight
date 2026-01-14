@@ -273,7 +273,7 @@ export default async function GameDetailPage({
   
   // Also create event_id -> player_id map from event_player_ids for goals
   const goalEventPlayerIdsMap = new Map<string, string>()
-  goalsData.forEach((goal: GameEvent) => {
+  goalsData.forEach((goal) => {
     if (goal.event_id && goal.event_player_ids) {
       // event_player_ids is comma-separated, first one is the scorer (event_player_1)
       const playerIds = goal.event_player_ids.split(',').map(id => id.trim()).filter(Boolean)
