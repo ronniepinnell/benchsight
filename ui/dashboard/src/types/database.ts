@@ -73,6 +73,7 @@ export interface VLeaderboardGoalieGAA {
   season_id: string
   games_played: number
   goals_against: number
+  saves?: number
   shots_against?: number
   save_pct?: number
   gaa: number
@@ -135,6 +136,8 @@ export interface VRecentGames {
   away_team_name: string
   home_total_goals: number
   away_total_goals: number
+  official_home_goals?: number
+  official_away_goals?: number
   season_id?: string
 }
 

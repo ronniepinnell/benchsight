@@ -74,7 +74,7 @@ export default async function GamesPage({
   )
   
   const teamData = await Promise.all(
-    teamIds.map(id => getTeamById(id).catch(() => null))
+    teamIds.map(id => (id ? getTeamById(id).catch(() => null) : Promise.resolve(null)))
   )
   const teamsMap = new Map(
     teamData.filter(Boolean).map(t => [String(t!.team_id), t!])
