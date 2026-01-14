@@ -22,10 +22,6 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Likewise, don't fail the build on ESLint errors.
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
 
   // Server Actions are enabled by default in Next.js 14+
 }
