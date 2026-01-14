@@ -66,11 +66,13 @@ interface EnhancedHighlight extends GameEvent {
 // Helper function to calculate team aggregates from player stats
 function calculateTeamAggregates(playerStatsList: (FactPlayerGameStats | Record<string, any>)[]): TeamAggregates {
   return playerStatsList.reduce<TeamAggregates>((acc, stat) => {
+    // Type assertion to access properties that may not be in FactPlayerGameStats
+    const statAny = stat as Record<string, any>
     return {
-      cf: (acc.cf || 0) + (Number(stat.corsi_for ?? stat.cf ?? 0) || 0),
-      ca: (acc.ca || 0) + (Number(stat.corsi_against ?? stat.ca ?? 0) || 0),
-      ff: (acc.ff || 0) + (Number(stat.fenwick_for ?? stat.ff ?? 0) || 0),
-      fa: (acc.fa || 0) + (Number(stat.fenwick_against ?? stat.fa ?? 0) || 0),
+      cf: (acc.cf || 0) + (Number(stat.corsi_for ?? statAny.cf ?? 0) || 0),
+      ca: (acc.ca || 0) + (Number(stat.corsi_against ?? statAny.ca ?? 0) || 0),
+      ff: (acc.ff || 0) + (Number(stat.fenwick_for ?? statAny.ff ?? 0) || 0),
+      fa: (acc.fa || 0) + (Number(stat.fenwick_against ?? statAny.fa ?? 0) || 0),
       goals: (acc.goals || 0) + (Number(stat.goals ?? 0) || 0),
       assists: (acc.assists || 0) + (Number(stat.assists ?? 0) || 0),
       points: (acc.points || 0) + (Number(stat.points ?? 0) || 0),
@@ -78,7 +80,7 @@ function calculateTeamAggregates(playerStatsList: (FactPlayerGameStats | Record<
       hits: (acc.hits || 0) + (Number(stat.hits ?? 0) || 0),
       blocks: (acc.blocks || 0) + (Number(stat.blocks ?? 0) || 0),
       takeaways: (acc.takeaways || 0) + (Number(stat.takeaways ?? 0) || 0),
-      badGiveaways: (acc.badGiveaways || 0) + (Number(stat.bad_giveaways ?? stat.bad_give ?? 0) || 0),
+      badGiveaways: (acc.badGiveaways || 0) + (Number(stat.bad_giveaways ?? statAny.bad_give ?? 0) || 0),
       toi: (acc.toi || 0) + (Number(stat.toi_seconds ?? 0) || 0),
     };
   }, { cf: 0, ca: 0, ff: 0, fa: 0, goals: 0, assists: 0, points: 0, shots: 0, hits: 0, blocks: 0, takeaways: 0, badGiveaways: 0, toi: 0 });
