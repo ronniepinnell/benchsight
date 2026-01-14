@@ -48,22 +48,20 @@ export default async function SchedulePage() {
     if (!team) return null
     
     // Get season stats
-    const { data: seasonStats } = await supabase
+    const { data: seasonStats, error: seasonStatsError } = await supabase
       .from('fact_team_season_stats_basic')
       .select('wins, losses, ties, goals_for, goals_against, games_played')
       .eq('team_id', teamId)
       .order('season', { ascending: false })
       .limit(1)
       .maybeSingle()
-      .catch(() => ({ data: null }))
     
     // Get advanced stats
-    const { data: advancedStats } = await supabase
+    const { data: advancedStats, error: advancedStatsError } = await supabase
       .from('fact_team_game_stats')
       .select('corsi_for, corsi_against, fenwick_for, fenwick_against')
       .eq('team_id', teamId)
       .limit(20)
-      .catch(() => ({ data: [] }))
     
     // Calculate aggregates
     const advStats = advancedStats || []
@@ -78,7 +76,7 @@ export default async function SchedulePage() {
     const cfPct = totals.cf + totals.ca > 0 ? (totals.cf / (totals.cf + totals.ca)) * 100 : null
     const ffPct = totals.ff + totals.fa > 0 ? (totals.ff / (totals.ff + totals.fa)) * 100 : null
     
-    const stats = seasonStats?.data
+    const stats = seasonStats
     const wins = stats?.wins || 0
     const losses = stats?.losses || 0
     const ties = stats?.ties || 0
@@ -111,13 +109,12 @@ export default async function SchedulePage() {
   const h2hPromises = upcoming.map(async (game) => {
     if (!game.home_team_id || !game.away_team_id) return { gameId: game.game_id, h2h: null }
     
-    const { data: h2hGames } = await supabase
+    const { data: h2hGames, error: h2hError } = await supabase
       .from('dim_schedule')
       .select('home_team_id, away_team_id, home_total_goals, away_total_goals')
       .or(`and(home_team_id.eq.${game.home_team_id},away_team_id.eq.${game.away_team_id}),and(home_team_id.eq.${game.away_team_id},away_team_id.eq.${game.home_team_id})`)
       .not('home_total_goals', 'is', null)
       .limit(20)
-      .catch(() => ({ data: [] }))
     
     if (!h2hGames || h2hGames.length === 0) {
       return { gameId: game.game_id, h2h: null }

@@ -65,7 +65,7 @@ interface EnhancedHighlight extends GameEvent {
 
 // Helper function to calculate team aggregates from player stats
 function calculateTeamAggregates(playerStatsList: (FactPlayerGameStats | Record<string, any>)[]): TeamAggregates {
-  return playerStatsList.reduce((acc, stat) => {
+  return playerStatsList.reduce<TeamAggregates>((acc, stat) => {
     return {
       cf: (acc.cf || 0) + (Number(stat.corsi_for ?? stat.cf ?? 0) || 0),
       ca: (acc.ca || 0) + (Number(stat.corsi_against ?? stat.ca ?? 0) || 0),
