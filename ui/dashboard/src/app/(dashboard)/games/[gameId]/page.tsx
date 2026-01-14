@@ -183,7 +183,7 @@ export default async function GameDetailPage({
     : { data: [] }
   
   // Handle game status result
-  let gameStatus = { data: null }
+  let gameStatus: { data: any; error?: any } | null = null
   if (gameStatusResult.status === 'fulfilled') {
     const result = gameStatusResult.value
     if (result.error && result.error.code !== 'PGRST116') {
@@ -228,7 +228,7 @@ export default async function GameDetailPage({
   })
   
   // Get tracking status from fact_game_status
-  const trackingStatus = gameStatus?.data
+  const trackingStatus = gameStatus?.data as { tracking_status?: string; tracking_pct?: number; events_row_count?: number; goal_events?: number } | null
   const hasVideo = trackingStatus?.tracking_status === 'Complete' || trackingStatus?.tracking_status === 'Partial'
   
   // Get team info for logos with error handling
