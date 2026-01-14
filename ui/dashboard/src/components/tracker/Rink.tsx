@@ -9,7 +9,8 @@
 
 import { useRef, useState, useCallback } from 'react'
 import type { XYCoordinate, Period, Team, Zone } from '@/lib/tracker/types'
-import { getZoneFromClick, detectFaceoffDot, smartAutoLinkXY } from '@/lib/tracker/utils/xy'
+import { detectFaceoffDot, smartAutoLinkXY } from '@/lib/tracker/utils/xy'
+import { getZoneFromClick } from '@/lib/tracker/utils/zone'
 import { useTrackerStore } from '@/lib/tracker/state'
 import { toast } from '@/lib/tracker/utils/toast'
 import { cn } from '@/lib/utils'

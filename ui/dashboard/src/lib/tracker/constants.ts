@@ -136,9 +136,7 @@ export const SHIFT_START_TYPES = [
   'OnTheFly'
 ]
 
-export const SHIFT_TYPES = {
-  start: SHIFT_START_TYPES,
-  stop: [
+export const SHIFT_STOP_TYPES = [
   '',
   'OnTheFly',
   'PeriodEnd',
@@ -159,7 +157,11 @@ export const SHIFT_TYPES = {
   'Puck Out of Play',
   'Away Goalie Stopped (after Home SOG)',
   'Home Goalie Stopped (after Away SOG)'
-  ]
+]
+
+export const SHIFT_TYPES = {
+  start: SHIFT_START_TYPES,
+  stop: SHIFT_STOP_TYPES
 }
 
 export const MAIN_EVENT_TYPES: EventType[] = [
