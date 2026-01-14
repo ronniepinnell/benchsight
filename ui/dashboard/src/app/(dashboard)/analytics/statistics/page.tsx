@@ -6,6 +6,7 @@ import { BarChart3, TrendingUp, Target, Users, Activity } from 'lucide-react'
 import { ScorersChart } from '@/components/charts/scorers-chart'
 import { GoalDiffChart } from '@/components/charts/goal-diff-chart'
 import { PrototypeTable } from '@/components/prototypes/prototype-template'
+import { cn } from '@/lib/utils'
 import Link from 'next/link'
 
 export const revalidate = 300
