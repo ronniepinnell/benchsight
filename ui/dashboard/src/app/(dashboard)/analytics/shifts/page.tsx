@@ -15,20 +15,18 @@ export default async function ShiftViewerPage() {
   const supabase = await createClient()
   
   // Get recent games with shift data
-  const { data: recentGames } = await supabase
+  const { data: recentGames, error: gamesError } = await supabase
     .from('dim_schedule')
     .select('game_id, date, home_team_name, away_team_name, home_total_goals, away_total_goals')
     .not('home_total_goals', 'is', null)
     .order('date', { ascending: false })
     .limit(10)
-    .catch(() => ({ data: [] }))
   
   // Get shift data if available
-  const { data: shiftData } = await supabase
+  const { data: shiftData, error: shiftsError } = await supabase
     .from('fact_shifts')
     .select('*')
     .limit(100)
-    .catch(() => ({ data: [] }))
   
   return (
     <div className="space-y-6">

@@ -15,29 +15,26 @@ export default async function TrendsPage() {
   const supabase = await createClient()
   
   // Get season data for trends
-  const { data: seasons } = await supabase
+  const { data: seasons, error: seasonsError } = await supabase
     .from('dim_season')
     .select('*')
     .order('season', { ascending: false })
     .limit(5)
-    .catch(() => ({ data: [] }))
   
   // Get team trends
-  const { data: teamTrends } = await supabase
+  const { data: teamTrends, error: teamTrendsError } = await supabase
     .from('fact_team_season_stats_basic')
     .select('team_name, season, wins, losses, goals_for, goals_against')
     .order('season', { ascending: false })
     .limit(50)
-    .catch(() => ({ data: [] }))
   
   // Get player trends
-  const { data: playerTrends } = await supabase
+  const { data: playerTrends, error: playerTrendsError } = await supabase
     .from('fact_player_season_stats_basic')
     .select('player_name, season, goals, assists, points')
     .order('season', { ascending: false })
     .order('points', { ascending: false })
     .limit(50)
-    .catch(() => ({ data: [] }))
   
   return (
     <div className="space-y-6">
