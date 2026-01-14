@@ -55,7 +55,6 @@ interface GameEvent {
   play_detail1?: string
   play_detail_2?: string
   team_id?: string
-  period_time?: string
   event_time?: string
 }
 
