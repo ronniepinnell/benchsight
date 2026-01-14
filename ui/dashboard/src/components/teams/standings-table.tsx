@@ -1,4 +1,5 @@
 // src/components/teams/standings-table.tsx
+import Link from 'next/link'
 import { TeamLogo } from './team-logo'
 import { cn, formatDiff, formatRecord } from '@/lib/utils'
 import type { Standing } from '@/lib/supabase/queries/teams'
@@ -95,9 +96,18 @@ export function StandingsTable({ standings }: StandingsTableProps) {
                         secondaryColor={team.secondary_color}
                         size="sm"
                       />
-                      <span className="font-display text-sm text-foreground">
-                        {team.team_name}
-                      </span>
+                      {team.team_name ? (
+                        <Link 
+                          href={`/team/${team.team_name.replace(/\s+/g, '_')}`} 
+                          className="font-display text-sm text-foreground hover:text-primary transition-colors"
+                        >
+                          {team.team_name}
+                        </Link>
+                      ) : (
+                        <span className="font-display text-sm text-foreground">
+                          {team.team_name || '-'}
+                        </span>
+                      )}
                     </div>
                   </td>
                   

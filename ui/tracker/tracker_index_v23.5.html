@@ -1120,8 +1120,15 @@ kbd { background: var(--bg); border: 1px solid var(--border); padding: 0 3px; bo
           </select>
           <span id="linkedEvtInfo" style="color:var(--accent);font-size:8px;"></span>
           <label style="display:flex;align-items:center;gap:4px;cursor:pointer;margin-left:auto;">
-            <input type="checkbox" id="isHighlight"> ⭐ Highlight
+            <input type="checkbox" id="isHighlight" onchange="toggleHighlightFields()"> ⭐ Highlight
           </label>
+        </div>
+        <!-- Video URL for highlights (v23.7) -->
+        <div id="highlightVideoUrlRow" style="display:none;margin-top:4px;">
+          <div class="form-group">
+            <label style="font-size:8px;color:var(--muted);">YouTube URL for this highlight:</label>
+            <input type="text" id="evtVideoUrl" placeholder="https://youtube.com/watch?v=..." style="width:100%;font-size:9px;">
+          </div>
         </div>
         <!-- Quick Time Buttons (v5) + Time Nudge (v6) -->
         <div style="display:flex;gap:4px;margin-top:4px;align-items:center;flex-wrap:wrap;">
@@ -1595,6 +1602,58 @@ kbd { background: var(--bg); border: 1px solid var(--border); padding: 0 3px; bo
       </div>
     </div>
     
+    <!-- Video Management (v23.6) -->
+    <div style="background:var(--card);padding:12px;border-radius:4px;margin-bottom:12px;border-top:2px solid var(--accent);">
+      <h4 style="font-size:11px;color:var(--accent);margin-bottom:8px;">📹 Video Management</h4>
+      <p style="font-size:9px;color:var(--muted);margin-bottom:8px;">Store multiple video links for this game</p>
+      <div id="videosList" style="margin-bottom:8px;max-height:200px;overflow-y:auto;"></div>
+      <div class="form-row" style="align-items:flex-end;">
+        <div class="form-group" style="flex:1;">
+          <label>Video URL</label>
+          <input type="text" id="newVideoUrl" placeholder="https://youtube.com/watch?v=...">
+        </div>
+        <div class="form-group" style="flex:0.5;">
+          <label>Type</label>
+          <select id="newVideoType">
+            <option value="youtube">YouTube</option>
+            <option value="local">Local</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <button class="btn-sm btn-success" onclick="addVideo()" style="margin-bottom:4px;">+ Add</button>
+      </div>
+      <div class="form-row">
+        <div class="form-group" style="flex:1;">
+          <label>Title (optional)</label>
+          <input type="text" id="newVideoTitle" placeholder="e.g., Period 1 Highlights">
+        </div>
+        <div class="form-group" style="flex:0.5;">
+          <label>Period</label>
+          <select id="newVideoPeriod">
+            <option value="">All</option>
+            <option value="1">Period 1</option>
+            <option value="2">Period 2</option>
+            <option value="3">Period 3</option>
+            <option value="4">OT</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group" style="flex:1;">
+          <label>Start Time (optional)</label>
+          <input type="text" id="newVideoStartTime" placeholder="00:00">
+        </div>
+        <div class="form-group" style="flex:1;">
+          <label>End Time (optional)</label>
+          <input type="text" id="newVideoEndTime" placeholder="20:00">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description/Notes (optional)</label>
+        <textarea id="newVideoNotes" rows="2" placeholder="Video description or notes"></textarea>
+      </div>
+    </div>
+    
     <!-- Running Time Preview -->
     <div style="background:var(--panel);padding:12px;border-radius:4px;margin-bottom:12px;border:1px solid var(--accent);">
       <h4 style="font-size:11px;color:var(--accent);margin-bottom:8px;">⏱️ Running Time Preview</h4>
@@ -1663,12 +1722,19 @@ kbd { background: var(--bg); border: 1px solid var(--border); padding: 0 3px; bo
     <div class="form-row">
       <div class="form-group">
         <label style="display:flex;align-items:center;gap:4px;">
-          <input type="checkbox" id="editHighlight"> ⭐ Highlight (for video)
+          <input type="checkbox" id="editHighlight" onchange="toggleEditHighlightFields()"> ⭐ Highlight (for video)
         </label>
       </div>
       <div class="form-group">
         <label>Linked Event #</label>
         <input type="number" id="editLinkedIdx" style="width:60px;" placeholder="--" title="Enter event # to link to">
+      </div>
+    </div>
+    <!-- Video URL for highlights (v23.7) -->
+    <div id="editHighlightVideoUrlRow" style="display:none;margin-bottom:8px;">
+      <div class="form-group">
+        <label style="font-size:8px;color:var(--muted);">YouTube URL for this highlight:</label>
+        <input type="text" id="editVideoUrl" placeholder="https://youtube.com/watch?v=..." style="width:100%;font-size:9px;">
       </div>
     </div>
     <div class="form-row" style="background:var(--panel);padding:4px 8px;border-radius:4px;margin-bottom:8px;">
@@ -1962,7 +2028,15 @@ kbd { background: var(--bg); border: 1px solid var(--border); padding: 0 3px; bo
       </div>
       <div class="form-group" style="flex:1;display:flex;align-items:center;padding-top:14px;">
         <label style="display:flex;align-items:center;gap:4px;font-size:9px;">
-          <input type="checkbox" id="confirmHighlight"> ⭐ Highlight
+          <input type="checkbox" id="confirmHighlight" onchange="toggleConfirmHighlightFields()"> ⭐ Highlight
+        </div>
+        <!-- Video URL for highlights (v23.7) -->
+        <div id="confirmHighlightVideoUrlRow" style="display:none;margin-top:4px;">
+          <div class="form-group">
+            <label style="font-size:8px;color:var(--muted);">YouTube URL for this highlight:</label>
+            <input type="text" id="confirmVideoUrl" placeholder="https://youtube.com/watch?v=..." style="width:100%;font-size:9px;">
+          </div>
+        </div>
         </label>
       </div>
     </div>
@@ -2132,8 +2206,10 @@ const S = {
     intermission2: 900,         // Seconds after P2 (default 15 min)
     intermission3: 300,         // Seconds after P3 if OT (default 5 min)
     timeouts: [],               // Array of {period, gameTime, duration} objects
-    youtubeUrl: ''              // Optional YouTube link for this game
+    youtubeUrl: ''              // Optional YouTube link for this game (legacy)
   },
+  // v23.6: Video management - multiple videos per game
+  videos: [],                   // Array of {id, url, type, video_id, title, description, start_time, end_time, period, notes}
   // v15.01: Video player state
   videoPlayer: {
     sources: [],                // Array of {id, name, type:'youtube'|'file', url, hotkey}
@@ -2642,6 +2718,7 @@ function openVideoTimingModal() {
   document.getElementById('vtYoutubeUrl').value = S.videoTiming.youtubeUrl || '';
   
   renderVideoTimeouts();
+  renderVideos(); // v23.6: Render video list
   updateVideoTimingPreview();
   document.getElementById('videoTimingModal').classList.add('show');
 }
@@ -2720,6 +2797,92 @@ function removeVideoTimeout(idx) {
   updateVideoTimingPreview();
 }
 
+// v23.6: Video management functions
+function renderVideos() {
+  const list = document.getElementById('videosList');
+  if (!list) return;
+  
+  if (!S.videos || S.videos.length === 0) {
+    list.innerHTML = '<div style="font-size:9px;color:var(--muted);text-align:center;padding:8px;">No videos added</div>';
+    return;
+  }
+  
+  list.innerHTML = S.videos.map((v, i) => {
+    const videoId = v.video_id || extractYouTubeId(v.url) || 'N/A';
+    const title = v.title || v.url || 'Untitled';
+    const period = v.period ? `P${v.period}` : 'All';
+    const timeRange = (v.start_time || v.end_time) ? `${v.start_time || '--'} - ${v.end_time || '--'}` : '';
+    return `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:6px;background:var(--panel);border-radius:3px;margin:3px 0;font-size:9px;border-left:3px solid var(--accent);">
+        <div style="flex:1;">
+          <div style="font-weight:600;color:var(--accent);margin-bottom:2px;">${title}</div>
+          <div style="color:var(--muted);font-size:8px;">
+            <span>${v.type || 'youtube'}</span>
+            ${videoId !== 'N/A' ? `<span style="margin-left:6px;">ID: ${videoId}</span>` : ''}
+            ${period !== 'All' ? `<span style="margin-left:6px;">${period}</span>` : ''}
+            ${timeRange ? `<span style="margin-left:6px;">${timeRange}</span>` : ''}
+          </div>
+          ${v.notes ? `<div style="color:var(--muted);font-size:8px;margin-top:2px;font-style:italic;">${v.notes}</div>` : ''}
+        </div>
+        <button class="btn-sm" onclick="removeVideo(${i})" style="padding:2px 6px;font-size:8px;margin-left:8px;background:var(--danger);">✕</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function addVideo() {
+  const url = document.getElementById('newVideoUrl').value.trim();
+  if (!url) {
+    toast('Enter a video URL', 'error');
+    return;
+  }
+  
+  const type = document.getElementById('newVideoType').value || 'youtube';
+  const videoId = type === 'youtube' ? extractYouTubeId(url) : null;
+  const title = document.getElementById('newVideoTitle').value.trim() || undefined;
+  const period = document.getElementById('newVideoPeriod').value || undefined;
+  const startTime = document.getElementById('newVideoStartTime').value.trim() || undefined;
+  const endTime = document.getElementById('newVideoEndTime').value.trim() || undefined;
+  const notes = document.getElementById('newVideoNotes').value.trim() || undefined;
+  
+  if (!S.videos) S.videos = [];
+  
+  const newVideo = {
+    id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+    url: url,
+    type: type,
+    video_id: videoId || undefined,
+    title: title,
+    description: undefined, // Not used in UI but kept for compatibility
+    start_time: startTime,
+    end_time: endTime,
+    period: period ? parseInt(period) : undefined,
+    notes: notes
+  };
+  
+  S.videos.push(newVideo);
+  renderVideos();
+  autoSave();
+  
+  // Clear form
+  document.getElementById('newVideoUrl').value = '';
+  document.getElementById('newVideoTitle').value = '';
+  document.getElementById('newVideoPeriod').value = '';
+  document.getElementById('newVideoStartTime').value = '';
+  document.getElementById('newVideoEndTime').value = '';
+  document.getElementById('newVideoNotes').value = '';
+  
+  toast('Video added', 'success');
+}
+
+function removeVideo(idx) {
+  if (!S.videos || idx < 0 || idx >= S.videos.length) return;
+  S.videos.splice(idx, 1);
+  renderVideos();
+  autoSave();
+  toast('Video removed', 'success');
+}
+
 function saveVideoTiming() {
   S.videoTiming.videoStartOffset = parseInt(document.getElementById('vtVideoStartOffset').value) || 0;
   
@@ -2742,6 +2905,8 @@ function saveVideoTiming() {
   updatePeriodLengthIndicator();
   
   saveGameData();
+  
+  // v23.6: Videos are saved automatically when added/removed
   toast('Video timing saved', 'success');
   closeVideoTimingModal();
 }
@@ -5533,6 +5698,7 @@ function autoSave() {
     evtIdx: S.evtIdx, 
     shiftIdx: S.shiftIdx, 
     videoTiming: S.videoTiming,  // Save video timing per game
+    videos: S.videos || [],      // v23.6: Video management
     periodLength: S.periodLength, // Legacy
     periodLengths: S.periodLengths, // v23.5: Period-specific lengths
     homeAttacksRightP1: S.homeAttacksRightP1, // v19: Zone orientation per game
@@ -5631,6 +5797,12 @@ function resumeSession() {
     }
     if (data.videoTiming) {
       S.videoTiming = data.videoTiming;
+    }
+    // v23.6: Restore videos
+    if (data.videos) {
+      S.videos = data.videos;
+    } else {
+      S.videos = [];
     }
     
     // Update zone labels with restored orientation
@@ -6086,6 +6258,12 @@ function loadGameData(gid) {
       if (d.videoTiming) {
         S.videoTiming = { ...S.videoTiming, ...d.videoTiming };
       }
+      // v23.6: Restore videos if saved
+      if (d.videos) {
+        S.videos = d.videos;
+      } else {
+        S.videos = [];
+      }
       if (d.periodLength) {
         S.periodLength = d.periodLength;
       }
@@ -6099,6 +6277,7 @@ function loadGameData(gid) {
         timeouts: [],
         youtubeUrl: ''
       };
+      S.videos = []; // v23.6: Initialize videos array
     }
   } catch(e) { 
     S.events = []; S.shifts = []; S.evtIdx = 0; S.shiftIdx = 0; 
@@ -9001,6 +9180,7 @@ function logEventDirect() {
   const success = document.getElementById('evtSuccess').value || deriveSuccess();
   const strength = document.getElementById('evtStrength').value || deriveStrength();
   const isHighlight = document.getElementById('isHighlight').checked;
+  const videoUrl = isHighlight ? (document.getElementById('evtVideoUrl').value.trim() || '') : '';
   
   // Detect pressure for all event players
   detectPressure();
@@ -9046,6 +9226,7 @@ function logEventDirect() {
     linkedEventIdx: S.linkedEventIdx,
     linkedEventChain,
     isHighlight,
+    videoUrl: isHighlight ? videoUrl : undefined,  // v23.7: Individual highlight video URL
     puckXY: [...S.curr.puckXY],
     netXY: S.curr.netXY,
     players: S.curr.players.map(p => ({...p, xy: [...(p.xy || [])]}))
@@ -9104,6 +9285,8 @@ function showConfirmModal() {
   document.getElementById('confirmStartTime').value = document.getElementById('evtStartTime').value || document.getElementById('clock').value;
   document.getElementById('confirmEndTime').value = document.getElementById('evtEndTime').value || document.getElementById('evtStartTime').value || document.getElementById('clock').value;
   document.getElementById('confirmHighlight').checked = document.getElementById('isHighlight').checked;
+  document.getElementById('confirmVideoUrl').value = document.getElementById('evtVideoUrl').value || '';
+  toggleConfirmHighlightFields();
   document.getElementById('confirmLinked').value = S.linkedEventIdx !== null ? S.linkedEventIdx + 1 : '';
   
   // Show players
@@ -9179,6 +9362,7 @@ function doLogEvent() {
   const startTime = document.getElementById('confirmStartTime').value;
   const endTime = document.getElementById('confirmEndTime').value || startTime;
   const isHighlight = document.getElementById('confirmHighlight').checked;
+  const videoUrl = isHighlight ? (document.getElementById('confirmVideoUrl')?.value.trim() || '') : '';
   const linkedInput = document.getElementById('confirmLinked').value;
   const linkedEventIdx = linkedInput ? parseInt(linkedInput) - 1 : null;
   
@@ -9225,6 +9409,7 @@ function doLogEvent() {
     linkedEventIdx: linkedEventIdx,
     linkedEventChain,
     isHighlight,
+    videoUrl: isHighlight ? videoUrl : undefined,  // v23.7: Individual highlight video URL
     puckXY: [...S.curr.puckXY],
     netXY: S.curr.netXY,
     players: S.curr.players.map(p => ({...p, xy: [...(p.xy || [])]}))
@@ -9387,8 +9572,37 @@ function clearEvent() {
   document.getElementById('evtStartTime').value = preserveStartTime; // Keep for chaining
   document.getElementById('evtEndTime').value = '';
   document.getElementById('isHighlight').checked = false;
+  document.getElementById('evtVideoUrl').value = '';
+  document.getElementById('highlightVideoUrlRow').style.display = 'none';
   document.getElementById('zoneDisplay').innerHTML = '';
   renderQuickAdd(); renderXYSlots(); renderMarkers();
+}
+
+// v23.7: Toggle highlight video URL field visibility
+function toggleHighlightFields() {
+  const isHighlight = document.getElementById('isHighlight').checked;
+  document.getElementById('highlightVideoUrlRow').style.display = isHighlight ? 'block' : 'none';
+  if (!isHighlight) {
+    document.getElementById('evtVideoUrl').value = '';
+  }
+}
+
+// v23.7: Toggle edit highlight video URL field visibility
+function toggleEditHighlightFields() {
+  const isHighlight = document.getElementById('editHighlight').checked;
+  document.getElementById('editHighlightVideoUrlRow').style.display = isHighlight ? 'block' : 'none';
+  if (!isHighlight) {
+    document.getElementById('editVideoUrl').value = '';
+  }
+}
+
+// v23.7: Toggle confirm highlight video URL field visibility
+function toggleConfirmHighlightFields() {
+  const isHighlight = document.getElementById('confirmHighlight').checked;
+  document.getElementById('confirmHighlightVideoUrlRow').style.display = isHighlight ? 'block' : 'none';
+  if (!isHighlight) {
+    document.getElementById('confirmVideoUrl').value = '';
+  }
 }
 
 // ============================================================
@@ -11874,6 +12088,8 @@ function editEvent(idx) {
   document.getElementById('editSuccess').value = evt.success || '';
   document.getElementById('editStrength').value = evt.strength || '5v5';
   document.getElementById('editHighlight').checked = evt.isHighlight || false;
+  document.getElementById('editVideoUrl').value = evt.videoUrl || '';
+  toggleEditHighlightFields(); // v23.7: Show/hide video URL field
   
   // Linked event index (editable)
   const linkedIdxEl = document.getElementById('editLinkedIdx');
@@ -13703,6 +13919,7 @@ function saveEditEvent() {
   evt.detail1 = document.getElementById('editD1').value;
   evt.detail2 = document.getElementById('editD2').value;
   evt.isHighlight = document.getElementById('editHighlight').checked;
+  evt.videoUrl = evt.isHighlight ? (document.getElementById('editVideoUrl').value.trim() || undefined) : undefined;  // v23.7: Individual highlight video URL
   
   // Save linked event index (convert from 1-based to 0-based)
   const linkedIdxEl = document.getElementById('editLinkedIdx');
@@ -14276,6 +14493,7 @@ function buildExportWorkbook() {
       'zone_change_index': zoneChangeIdx,
       'shift_index': evt.shiftIdx || '',
       'is_highlight': evt.isHighlight ? 1 : 0,
+      'video_url': evt.isHighlight && evt.videoUrl ? evt.videoUrl : '',  // v23.7: Individual highlight video URL
       'Type': evt.type  // Legacy uppercase column
     };
     
@@ -14334,7 +14552,7 @@ function buildExportWorkbook() {
   // Create workbook
   const wb = XLSX.utils.book_new();
   
-  // Metadata sheet (v19: includes zone orientation)
+  // Metadata sheet (v19: includes zone orientation, v23.6: includes video count)
   const metadata = [{
     game_id: S.gameId,
     home_team: S.homeTeam,
@@ -14342,7 +14560,8 @@ function buildExportWorkbook() {
     period_length_minutes: S.periodLength,
     home_attacks_right_p1: S.homeAttacksRightP1 ? 1 : 0,
     export_timestamp: new Date().toISOString(),
-    tracker_version: 'v23.3'
+    tracker_version: 'v23.6',
+    total_videos: (S.videos && S.videos.length) || 0
   }];
   const wsMeta = XLSX.utils.json_to_sheet(metadata);
   XLSX.utils.book_append_sheet(wb, wsMeta, 'metadata');
@@ -14501,6 +14720,23 @@ function buildExportWorkbook() {
     XLSX.utils.book_append_sheet(wb, ws2, 'shifts');
   }
   
+  // Videos sheet (v23.6: Video management)
+  if (S.videos && S.videos.length > 0) {
+    const videoRows = S.videos.map(v => ({
+      video_url: v.url || '',
+      video_type: v.type || 'youtube',
+      video_id: v.video_id || '',
+      title: v.title || '',
+      description: v.description || '',
+      start_time: v.start_time || '',
+      end_time: v.end_time || '',
+      period: v.period || '',
+      notes: v.notes || ''
+    }));
+    const wsVideos = XLSX.utils.json_to_sheet(videoRows);
+    XLSX.utils.book_append_sheet(wb, wsVideos, 'videos');
+  }
+  
   return wb;
 }
 
@@ -14532,6 +14768,27 @@ async function importExcel(file) {
     if (!hasEvents && !hasShifts) {
       toast('No events or shifts sheet found', 'error');
       return;
+    }
+    
+    // Read videos sheet if present (v23.6)
+    const hasVideos = wb.SheetNames.includes('videos');
+    if (hasVideos) {
+      const videosSheet = XLSX.utils.sheet_to_json(wb.Sheets['videos']);
+      if (videosSheet && videosSheet.length > 0) {
+        S.videos = videosSheet.map(v => ({
+          id: Date.now().toString() + Math.random(),
+          url: v.video_url || '',
+          type: v.video_type || 'youtube',
+          video_id: v.video_id || '',
+          title: v.title || undefined,
+          description: v.description || undefined,
+          start_time: v.start_time || undefined,
+          end_time: v.end_time || undefined,
+          period: v.period ? parseInt(v.period) : undefined,
+          notes: v.notes || undefined
+        }));
+        toast(`Loaded ${S.videos.length} video(s)`, 'success');
+      }
     }
     
     // Read metadata sheet if present (v19: includes zone orientation)
@@ -14603,7 +14860,9 @@ async function importExcel(file) {
             strength: row.strength || '5v5',
             linkedEventIdx: row.linked_event_index_ || row['linked_event_index_'] || row.linked_event_index || null,
             sequenceIdx: row.sequence_index_ || row['sequence_index_'] || row.sequence_index || null,
-            playIdx: row.play_index_ || row['play_index_'] || row.play_index || null
+            playIdx: row.play_index_ || row['play_index_'] || row.play_index || null,
+            isHighlight: row.is_highlight === 1 || row.is_highlight === true || false,  // v23.7: Import highlight flag
+            videoUrl: row.video_url || ''  // v23.7: Import individual highlight video URL
           };
         }
         eventGroups[eventIdx].rows.push(row);
@@ -14630,7 +14889,8 @@ async function importExcel(file) {
           players: [],
           puckXY: [],
           netXY: null,  // v23.5: Import net target location
-          isHighlight: false
+          isHighlight: group.isHighlight || false,  // v23.7: Import highlight flag
+          videoUrl: group.isHighlight && group.videoUrl ? group.videoUrl : undefined  // v23.7: Import individual highlight video URL
         };
         
         // Add players from rows

@@ -38,6 +38,9 @@ Last Updated: 2026-01-13
 - **[SUPABASE_UPDATE.md](SUPABASE_UPDATE.md)** - Supabase update procedures
 - **[NEXTJS_DASHBOARD_GUIDE.md](NEXTJS_DASHBOARD_GUIDE.md)** - Next.js 14 dashboard implementation
 - **[DASHBOARD_INTEGRATION.md](DASHBOARD_INTEGRATION.md)** - Dashboard integration guide
+- **[deployment/](deployment/)** - Deployment guides and procedures (see [deployment/README.md](deployment/README.md))
+- **[deployment/](deployment/)** - Deployment guides and instructions (see [deployment/README.md](deployment/README.md))
+- **[troubleshooting/](troubleshooting/)** - Troubleshooting guides and quick fixes (see [troubleshooting/README.md](troubleshooting/README.md))
 
 ### Phase 1 Implementation
 - **[PHASE1_QUICK_START.md](PHASE1_QUICK_START.md)** - 🚀 **START HERE** - How to use Phase 1 plans
@@ -122,6 +125,8 @@ docs/
 ├── CONTRIBUTING.md                 # Contribution guide
 ├── CHANGELOG.md                    # Version history
 ├── TODO.md                         # Current tasks
+├── deployment/                     # Deployment guides and instructions
+├── troubleshooting/                # Troubleshooting guides and fixes
 ├── validated_tables/               # Validated table docs
 ├── html/                           # Generated HTML docs
 └── archive/                        # Archived temporary/handoff docs
@@ -137,8 +142,10 @@ docs/
 - **Understand the architecture?** → [ARCHITECTURE.md](ARCHITECTURE.md)
 - **Find table definitions?** → [DATA_DICTIONARY.md](DATA_DICTIONARY.md)
 - **Contribute code?** → [CONTRIBUTING.md](CONTRIBUTING.md)
-- **Deploy to Supabase?** → [SUPABASE_RESET_GAMEPLAN.md](SUPABASE_RESET_GAMEPLAN.md)
+- **Deploy to Supabase?** → [SUPABASE_RESET_GAMEPLAN.md](SUPABASE_RESET_GAMEPLAN.md) or [deployment/](deployment/)
 - **Build the dashboard?** → [NEXTJS_DASHBOARD_GUIDE.md](NEXTJS_DASHBOARD_GUIDE.md)
+- **Fix deployment issues?** → [deployment/](deployment/)
+- **Troubleshoot Git/GitHub issues?** → [troubleshooting/](troubleshooting/)
 
 ### "What is..."
 - **A rush event?** → [RUSH_DEFINITIONS.md](RUSH_DEFINITIONS.md)
@@ -151,6 +158,8 @@ docs/
 - **Add a feature** → [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_STANDARDS.md](CODE_STANDARDS.md)
 - **Validate data** → [VALIDATION.md](VALIDATION.md)
 - **Update documentation** → [CONTRIBUTING.md](CONTRIBUTING.md) (Documentation section)
+- **Deploy the project** → [deployment/README.md](deployment/README.md)
+- **Troubleshoot issues** → [troubleshooting/README.md](troubleshooting/README.md)
 
 ---
 

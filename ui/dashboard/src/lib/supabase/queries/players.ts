@@ -96,10 +96,20 @@ export async function getCurrentRankings(limit: number = 50): Promise<VRankingsP
     .from('v_rankings_players_current')
     .select('*')
     .order('points_rank', { ascending: true })
-    .limit(limit)
+    .limit(limit * 2) // Get more to account for deduplication
   
   if (error) throw error
-  return data ?? []
+  
+  // Deduplicate by player_id (in case of multiple game_type entries)
+  const seen = new Set<string>()
+  const unique = (data || []).filter(player => {
+    const key = String(player.player_id)
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  }).slice(0, limit)
+  
+  return unique
 }
 
 // Get player comparison data

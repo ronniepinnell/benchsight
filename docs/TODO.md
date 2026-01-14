@@ -23,6 +23,11 @@
 - [ ] Add TOI columns (needs shift join)
 - [ ] Fix home_gf_all=0 bug
 - [ ] Game tracker workflow improvements
+- [ ] **Enhance DATA_DICTIONARY_FULL.md with calculation formulas** (See `docs/DATA_DICTIONARY_ENHANCEMENT_TODO.md`)
+- [ ] **Add flexible ETL workflow options** (See `docs/ETL_WORKFLOW_FLEXIBLE_OPTIONS.md`)
+  - Separate ETL, Schema Generation, Schema Loading, and Sync operations
+  - Add flexible options for what to run ETL on (games, tables, source selection)
+  - Add flexible options for what to sync (tables, modes, patterns)
 
 ## Future
 - [ ] Commercial SaaS deployment

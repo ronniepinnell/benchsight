@@ -94,6 +94,8 @@ Examples:
                         help='Verify upload by checking row counts')
     parser.add_argument('--dry-run', action='store_true',
                         help='Show what would be uploaded without uploading')
+    parser.add_argument('--clean', action='store_true',
+                        help='Delete CSV files after successful upload')
     
     # Other options
     parser.add_argument('--verbose', '-v', action='store_true',
@@ -222,6 +224,24 @@ Examples:
         print("=" * 60)
         # TODO: Query Supabase for row counts and compare
         print("Verification not yet implemented")
+    
+    # Cleanup: Delete CSV files after successful upload
+    if args.clean and results['tables_failed'] == 0:
+        print()
+        print("=" * 60)
+        print("CLEANUP")
+        print("=" * 60)
+        data_dir = mgr.data_dir
+        deleted_count = 0
+        for table_name in tables:
+            csv_path = data_dir / f'{table_name}.csv'
+            if csv_path.exists():
+                try:
+                    csv_path.unlink()
+                    deleted_count += 1
+                except Exception as e:
+                    print(f"  WARNING: Failed to delete {csv_path}: {e}")
+        print(f"Deleted {deleted_count} CSV files")
     
     print()
     if results['tables_failed'] == 0:

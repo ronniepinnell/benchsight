@@ -1110,13 +1110,431 @@ def create_fact_shot_xy() -> pd.DataFrame:
     ])
 
 
+def create_fact_highlights() -> pd.DataFrame:
+    """
+    Create fact_highlights table from highlighted events.
+    
+    Links fact_events (where is_highlight = 1) to fact_video via game_id.
+    Each highlight has:
+    - Primary key: highlight_key (H{game_id}{event_id})
+    - Foreign keys: event_id (→ fact_events), video_key (→ fact_video), game_id
+    - Video timing: start_time, end_time in video
+    - Description: auto-generated from event details
+    """
+    events = load_table('fact_events')
+    videos = load_table('fact_video')
+    
+    if len(events) == 0:
+        return pd.DataFrame(columns=[
+            'highlight_key', 'event_id', 'game_id', 'video_key', 'video_url', 'highlight_category_id',
+            'period', 'event_type', 'event_detail',
+            'video_start_time', 'video_end_time', 'duration_seconds',
+            'event_time_display', 'description',
+            'event_player_1', 'event_player_2', 'team_id',
+            '_export_timestamp'
+        ])
+    
+    # Filter for highlights
+    highlights = events[events.get('is_highlight', pd.Series([0] * len(events))) == 1].copy()
+    
+    if len(highlights) == 0:
+        return pd.DataFrame(columns=[
+            'highlight_key', 'event_id', 'game_id', 'video_key', 'video_url', 'highlight_category_id',
+            'period', 'event_type', 'event_detail',
+            'video_start_time', 'video_end_time', 'duration_seconds',
+            'event_time_display', 'description',
+            'event_player_1', 'event_player_2', 'team_id',
+            '_export_timestamp'
+        ])
+    
+    # Merge with video data to get video_key
+    if len(videos) > 0:
+        # Get primary video for each game (prefer Full_Ice, then first available)
+        videos['is_primary'] = videos.get('video_type', '').str.contains('Full_Ice', case=False, na=False)
+        primary_videos = videos.sort_values('is_primary', ascending=False).drop_duplicates('game_id', keep='first')
+        video_lookup = dict(zip(primary_videos['game_id'].astype(str), primary_videos['video_key']))
+    else:
+        video_lookup = {}
+    
+    records = []
+    
+    for idx, row in highlights.iterrows():
+        game_id = str(row.get('game_id', ''))
+        event_id = str(row.get('event_id', ''))
+        
+        if not game_id or not event_id:
+            continue
+        
+        # Generate highlight_key (primary key)
+        highlight_key = f"H{game_id}{event_id.replace('EV', '').replace('E', '')}"
+        
+        # Get video_key (foreign key to fact_video)
+        video_key = video_lookup.get(game_id, '')
+        
+        # Extract video timing
+        video_start_time = row.get('running_video_time', '')
+        duration = row.get('duration', 0)
+        try:
+            duration_seconds = int(float(str(duration))) if pd.notna(duration) else 10  # Default 10 sec for highlights
+        except:
+            duration_seconds = 10
+        
+        video_end_time = ''
+        if pd.notna(video_start_time) and video_start_time != '':
+            try:
+                start_sec = int(float(str(video_start_time)))
+                video_end_time = str(start_sec + duration_seconds)
+            except:
+                pass
+        
+        # Event details
+        period = row.get('period', '')
+        event_type = str(row.get('event_type', ''))
+        event_detail = str(row.get('event_detail', ''))
+        
+        # Create description
+        event_time_min = row.get('event_start_min', '')
+        event_time_sec = row.get('event_start_sec', '')
+        if pd.notna(event_time_min) and pd.notna(event_time_sec):
+            event_time_display = f"P{period} {int(event_time_min)}:{int(event_time_sec):02d}"
+        else:
+            event_time_display = f"P{period}"
+        
+        # Determine highlight category based on event type
+        highlight_category_id = None
+        try:
+            dim_highlight_category = load_table('dim_highlight_category')
+            if len(dim_highlight_category) > 0:
+                # Map event types to highlight categories
+                event_to_category = {
+                    'Goal': 'Goal',
+                    'Save': 'Save',
+                    'Hit': 'Hit',
+                    'Fight': 'Fight',
+                    'Breakaway': 'Breakaway',
+                    'Penalty_Shot': 'Penalty_Shot',
+                }
+                category_code = event_to_category.get(event_type, 'Other')
+                match = dim_highlight_category[
+                    dim_highlight_category['highlight_category_code'] == category_code
+                ]
+                if len(match) > 0:
+                    highlight_category_id = match.iloc[0]['highlight_category_id']
+        except:
+            pass
+        
+        # If no match, default to Other
+        if not highlight_category_id:
+            highlight_category_id = 'HC0010'  # Other
+        
+        # Build description from event details
+        description_parts = []
+        if event_type:
+            description_parts.append(event_type)
+        if event_detail and event_detail.lower() not in ['nan', 'none', '']:
+            description_parts.append(event_detail)
+        
+        # Add player info if available
+        player_1 = row.get('event_player_1', '')
+        player_2 = row.get('event_player_2', '')
+        
+        if pd.notna(player_1) and str(player_1).strip():
+            description_parts.append(f"by {str(player_1).strip()}")
+        if pd.notna(player_2) and str(player_2).strip():
+            description_parts.append(f"assist {str(player_2).strip()}")
+        
+        description = ' - '.join(description_parts) if description_parts else f"{event_type} highlight"
+        
+        # Team info
+        team_id = row.get('team_id', '')
+        if pd.isna(team_id) or str(team_id).strip() == '':
+            team_id = row.get('event_team_id', '')
+        
+        # Extract video URL from event (each highlight has its own YouTube link)
+        video_url = None
+        url_columns = ['video_url', 'highlight_video_url', 'youtube_url', 'video_link', 'url']
+        for col in url_columns:
+            if col in row.index:
+                val = row.get(col)
+                if pd.notna(val) and str(val).strip():
+                    video_url = str(val).strip()
+                    break
+        
+        records.append({
+            'highlight_key': highlight_key,
+            'event_id': event_id,  # FK to fact_events
+            'game_id': game_id,  # FK to dim_schedule
+            'video_key': video_key if video_key else '',  # FK to fact_video (optional, for full game videos)
+            'video_url': video_url if video_url else '',  # Direct YouTube link for this highlight
+            'highlight_category_id': highlight_category_id,  # FK to dim_highlight_category
+            'period': str(period) if pd.notna(period) else '',
+            'event_type': event_type,
+            'event_detail': event_detail,
+            'video_start_time': str(video_start_time) if pd.notna(video_start_time) else '',
+            'video_end_time': video_end_time,
+            'duration_seconds': str(duration_seconds),
+            'event_time_display': event_time_display,
+            'description': description,
+            'event_player_1': str(player_1) if pd.notna(player_1) else '',
+            'event_player_2': str(player_2) if pd.notna(player_2) else '',
+            'team_id': str(team_id) if pd.notna(team_id) else '',
+            '_export_timestamp': datetime.now().isoformat()
+        })
+    
+    if records:
+        df_result = pd.DataFrame(records)
+        print(f"Created fact_highlights: {len(df_result)} highlights from {len(highlights)} highlighted events")
+        return df_result
+    else:
+        return pd.DataFrame(columns=[
+            'highlight_key', 'event_id', 'game_id', 'video_key', 'video_url', 'highlight_category_id',
+            'period', 'event_type', 'event_detail',
+            'video_start_time', 'video_end_time', 'duration_seconds',
+            'event_time_display', 'description',
+            'event_player_1', 'event_player_2', 'team_id',
+            '_export_timestamp'
+        ])
+
+
 def create_fact_video() -> pd.DataFrame:
-    """Placeholder for video metadata."""
-    return pd.DataFrame(columns=[
-        'video_key', 'game_id', 'video_url', 'duration_seconds',
-        'period_1_start', 'period_2_start', 'period_3_start',
-        '_export_timestamp'
-    ])
+    """
+    Create fact_video table from video Excel files in game directories.
+    
+    Scans data/raw/games/{game_id}/ for video Excel files and extracts:
+    - Video URLs
+    - Period start times (P1, P2, P3)
+    - Video duration
+    - Other video metadata
+    """
+    GAMES_DIR = Path(__file__).parent.parent.parent / 'data' / 'raw' / 'games'
+    
+    if not GAMES_DIR.exists():
+        return pd.DataFrame(columns=[
+            'video_key', 'game_id', 'video_type_id', 'video_type', 'video_description',
+            'video_url', 'duration_seconds',
+            'period_1_start', 'period_2_start', 'period_3_start',
+            '_export_timestamp'
+        ])
+    
+    records = []
+    games_processed = 0
+    games_with_video = 0
+    
+    # Discover all game directories
+    for game_dir in sorted(GAMES_DIR.iterdir()):
+        if not game_dir.is_dir() or not game_dir.name.isdigit():
+            continue
+        
+        game_id = game_dir.name
+        games_processed += 1
+        
+        # Look for video Excel files
+        # Common patterns: *_video.xlsx, video.xlsx, video_times.xlsx
+        video_files = []
+        for pattern in ['*_video.xlsx', 'video.xlsx', 'video_times.xlsx', '*video*.xlsx']:
+            video_files.extend(list(game_dir.glob(pattern)))
+        
+        # Also check if tracking file has a video sheet
+        tracking_files = list(game_dir.glob("*_tracking.xlsx"))
+        for tracking_file in tracking_files:
+            if 'bkup' in str(tracking_file).lower():
+                continue
+            try:
+                xl = pd.ExcelFile(tracking_file)
+                if 'video' in xl.sheet_names or 'video_times' in xl.sheet_names:
+                    video_files.append(tracking_file)
+            except:
+                pass
+        
+        if not video_files:
+            continue
+        
+        games_with_video += 1
+        
+        # Process each video file
+        for video_file in video_files:
+            try:
+                xl = pd.ExcelFile(video_file)
+                
+                # Try common sheet names
+                video_sheet = None
+                for sheet_name in ['video', 'video_times', 'Video', 'Video_Times', 'VIDEO']:
+                    if sheet_name in xl.sheet_names:
+                        video_sheet = sheet_name
+                        break
+                
+                # If no video sheet, try first sheet
+                if not video_sheet and len(xl.sheet_names) > 0:
+                    video_sheet = xl.sheet_names[0]
+                
+                if not video_sheet:
+                    continue
+                
+                # Read video data
+                df = pd.read_excel(video_file, sheet_name=video_sheet, dtype=str)
+                
+                # Normalize column names (case-insensitive, handle spaces/underscores)
+                df.columns = df.columns.str.strip().str.lower().str.replace(' ', '_').str.replace('-', '_')
+                
+                # Try to find game_id in data if not already set
+                if 'game_id' in df.columns:
+                    game_ids = df['game_id'].dropna().unique()
+                    if len(game_ids) > 0:
+                        # Use first non-null game_id, or keep directory game_id
+                        game_id_from_data = str(game_ids[0]).strip()
+                        if game_id_from_data and game_id_from_data.isdigit():
+                            game_id = game_id_from_data
+                
+                # Extract video data - handle multiple rows (one per video type or single row)
+                for idx, row in df.iterrows():
+                    # Generate video_key and extract video type
+                    video_type = None
+                    video_type_id = None
+                    if 'video_type' in df.columns:
+                        video_type = str(row.get('video_type', '')).strip()
+                    if not video_type or video_type.lower() in ['nan', 'none', '']:
+                        video_type = 'Full_Ice'  # Default
+                    
+                    # Map video_type to video_type_id (lookup from dim_video_type)
+                    # Try to load dim_video_type if available
+                    try:
+                        dim_video_type = load_table('dim_video_type')
+                        if len(dim_video_type) > 0:
+                            # Match by code (case-insensitive)
+                            match = dim_video_type[
+                                dim_video_type['video_type_code'].str.upper() == video_type.upper()
+                            ]
+                            if len(match) > 0:
+                                video_type_id = match.iloc[0]['video_type_id']
+                    except:
+                        pass
+                    
+                    # If no match found, default to Full_Ice (VT0001)
+                    if not video_type_id:
+                        video_type_id = 'VT0001'  # Default to Full_Ice
+                    
+                    # Extract video description
+                    video_description = None
+                    desc_cols = ['description', 'video_description', 'desc', 'notes', 'comment']
+                    for col in desc_cols:
+                        if col in df.columns:
+                            val = row.get(col)
+                            if pd.notna(val) and str(val).strip():
+                                video_description = str(val).strip()
+                                break
+                    
+                    # If no description, create one from video type
+                    if not video_description:
+                        video_type_descriptions = {
+                            'Full_Ice': 'Full ice camera view of entire game',
+                            'Broadcast': 'Broadcast/television feed of the game',
+                            'Highlights': 'Compilation of game highlights',
+                            'Goalie': 'Goalie camera view',
+                            'Overhead': 'Overhead camera view',
+                            'Other': 'Other video type'
+                        }
+                        video_description = video_type_descriptions.get(video_type, f'{video_type} video')
+                    
+                    video_key = f"V{game_id}{video_type[:4].upper()}"
+                    
+                    # Extract video URL - try multiple column variations
+                    video_url = None
+                    url_columns = ['url_1', 'url', 'video_url', 'youtube_url', 'url1', 'video_link']
+                    for col in url_columns:
+                        if col in df.columns:
+                            val = row.get(col)
+                            if pd.notna(val) and str(val).strip():
+                                video_url = str(val).strip()
+                                break
+                    
+                    # Extract duration
+                    duration_seconds = None
+                    duration_cols = ['duration_seconds', 'duration', 'video_duration', 'total_duration', 'length_seconds']
+                    for col in duration_cols:
+                        if col in df.columns:
+                            val = row.get(col)
+                            if pd.notna(val):
+                                try:
+                                    duration_seconds = str(int(float(str(val))))
+                                except:
+                                    duration_seconds = str(val).strip()
+                                break
+                    
+                    # Extract period start times
+                    period_1_start = None
+                    period_2_start = None
+                    period_3_start = None
+                    
+                    # Try various column name patterns
+                    p1_cols = ['period_1_start', 'p1_start', 'period1_start', 'period_1', 'p1', 'period1']
+                    p2_cols = ['period_2_start', 'p2_start', 'period2_start', 'period_2', 'p2', 'period2']
+                    p3_cols = ['period_3_start', 'p3_start', 'period3_start', 'period_3', 'p3', 'period3']
+                    
+                    for col in p1_cols:
+                        if col in df.columns:
+                            val = row.get(col)
+                            if pd.notna(val):
+                                try:
+                                    period_1_start = str(int(float(str(val))))
+                                except:
+                                    period_1_start = str(val).strip()
+                                break
+                    
+                    for col in p2_cols:
+                        if col in df.columns:
+                            val = row.get(col)
+                            if pd.notna(val):
+                                try:
+                                    period_2_start = str(int(float(str(val))))
+                                except:
+                                    period_2_start = str(val).strip()
+                                break
+                    
+                    for col in p3_cols:
+                        if col in df.columns:
+                            val = row.get(col)
+                            if pd.notna(val):
+                                try:
+                                    period_3_start = str(int(float(str(val))))
+                                except:
+                                    period_3_start = str(val).strip()
+                                break
+                    
+                    # Only create record if we have at least a video URL or period start times
+                    if video_url or period_1_start or period_2_start or period_3_start:
+                        records.append({
+                            'video_key': video_key,
+                            'game_id': str(game_id),
+                            'video_type_id': video_type_id,  # FK to dim_video_type
+                            'video_type': video_type,  # Keep for backward compatibility
+                            'video_description': video_description,
+                            'video_url': video_url if video_url else '',
+                            'duration_seconds': duration_seconds if duration_seconds else '',
+                            'period_1_start': period_1_start if period_1_start else '',
+                            'period_2_start': period_2_start if period_2_start else '',
+                            'period_3_start': period_3_start if period_3_start else '',
+                            '_export_timestamp': datetime.now().isoformat()
+                        })
+            
+            except Exception as e:
+                # Log error but continue processing other files
+                print(f"Warning: Error processing video file {video_file} for game {game_id}: {e}")
+                continue
+    
+    if records:
+        df_result = pd.DataFrame(records)
+        # Deduplicate by video_key (keep first occurrence)
+        df_result = df_result.drop_duplicates(subset=['video_key'], keep='first')
+        print(f"Created fact_video: {len(df_result)} records from {games_with_video} games (out of {games_processed} total games)")
+        return df_result
+    else:
+        print(f"No video data found in {games_processed} games")
+        return pd.DataFrame(columns=[
+            'video_key', 'game_id', 'video_type', 'video_description',
+            'video_url', 'duration_seconds',
+            'period_1_start', 'period_2_start', 'period_3_start',
+            '_export_timestamp'
+        ])
 
 
 # =============================================================================
@@ -1307,6 +1725,7 @@ def build_remaining_tables(verbose: bool = True) -> dict:
         ('fact_puck_xy_wide', create_fact_puck_xy_wide),
         ('fact_shot_xy', create_fact_shot_xy),
         ('fact_video', create_fact_video),
+        ('fact_highlights', create_fact_highlights),
         
         # QA
         ('qa_scorer_comparison', create_qa_scorer_comparison),

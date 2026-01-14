@@ -55,6 +55,8 @@ ASSIST_SECONDARY_DETAIL = 'assistsecondary'
 # xG Model
 XG_BASE_RATES = {'high_danger': 0.25, 'medium_danger': 0.08, 'low_danger': 0.03, 'default': 0.06}
 XG_MODIFIERS = {'rush': 1.3, 'rebound': 1.5, 'one_timer': 1.4, 'breakaway': 2.5, 'screened': 1.2, 'deflection': 1.3}
+# Shot type modifiers (for xG calculation)
+SHOT_TYPE_XG_MODIFIERS = {'wrist': 1.0, 'slap': 0.95, 'snap': 1.05, 'backhand': 0.9, 'tip': 1.15, 'deflection': 1.1}
 
 # WAR/GAR Weights
 GAR_WEIGHTS = {
@@ -886,6 +888,7 @@ def calculate_rush_stats(player_id, game_id, event_players, events):
     empty = {
         # Rush involvement - is_rush is now NHL definition (controlled entry + shot ≤7s)
         'rush_shots': 0, 'rush_goals': 0, 'rush_assists': 0, 'rush_points': 0, 'rush_shot_pct': 0.0,
+        'breakaway_goals': 0, 'odd_man_rushes': 0, 'rush_xg': 0.0,
         'rush_primary': 0, 'rush_support': 0, 'rush_involvement': 0, 'rush_involvement_pct': 0.0,
         'rush_primary_def': 0, 'rush_def_support': 0, 'rush_def_involvement': 0, 'rush_def_involvement_pct': 0.0,
         # Offensive success metrics (combined)
@@ -950,6 +953,44 @@ def calculate_rush_stats(player_id, game_id, event_players, events):
     stats['rush_assists'] = len(pe_with_assist)
     stats['rush_points'] = stats['rush_goals'] + stats['rush_assists']
     stats['rush_shot_pct'] = round(stats['rush_goals'] / stats['rush_shots'] * 100, 1) if stats['rush_shots'] > 0 else 0.0
+    
+    # Breakaway goals: rush goals where event_detail_2 contains 'breakaway'
+    if len(player_rush_events) > 0 and 'event_detail_2' in player_rush_events.columns:
+        event_detail_2_lower = player_rush_events['event_detail_2'].astype(str).str.lower()
+        breakaway_mask = event_detail_2_lower.str.contains('breakaway', na=False)
+        goal_mask = (player_rush_events['next_sog_result'].astype(str).str.lower() == 'goal') if 'next_sog_result' in player_rush_events.columns else pd.Series([False] * len(player_rush_events))
+        stats['breakaway_goals'] = int((breakaway_mask & goal_mask).sum())
+    else:
+        stats['breakaway_goals'] = 0
+    
+    # Odd-man rushes: count rush events where event_detail_2 contains 'oddman' or 'odd_man'
+    if len(player_rush_events) > 0 and 'event_detail_2' in player_rush_events.columns:
+        event_detail_2_lower = player_rush_events['event_detail_2'].astype(str).str.lower()
+        odd_man_mask = event_detail_2_lower.str.contains('oddman|odd_man', na=False, regex=True)
+        stats['odd_man_rushes'] = int(odd_man_mask.sum())
+    else:
+        stats['odd_man_rushes'] = 0
+    
+    # Rush xG: Calculate xG for rush entries that led to shots
+    # Use simplified approach: calculate xG based on rush entry context (entry is already rush, so use rush modifier)
+    rush_xg_total = 0.0
+    if len(player_rush_events) > 0 and 'time_to_next_sog' in player_rush_events.columns:
+        # Get rush entries that led to shots
+        rush_with_shots = player_rush_events[player_rush_events['time_to_next_sog'].notna()]
+        if len(rush_with_shots) > 0:
+            for _, rush_entry in rush_with_shots.iterrows():
+                # Use default danger level for rush entries (medium danger typical for rushes)
+                danger = str(rush_entry.get('danger_level', 'default')).lower()
+                base_xg = XG_BASE_RATES.get(danger, XG_BASE_RATES['default'])
+                xg = base_xg * XG_MODIFIERS['rush']  # Rush modifier (1.3x)
+                
+                # Apply breakaway modifier if present
+                event_detail_2 = str(rush_entry.get('event_detail_2', '')).lower()
+                if 'breakaway' in event_detail_2:
+                    xg = xg * XG_MODIFIERS['breakaway']  # Breakaway modifier (2.5x)
+                
+                rush_xg_total += min(xg, 0.95)
+    stats['rush_xg'] = round(rush_xg_total, 2)
     
     # Rush involvement breakdown
     stats['rush_primary'] = len(pe_rush_primary)
@@ -1488,9 +1529,74 @@ def calculate_advanced_micro_stats(player_id, game_id, event_players, events, mi
     
     return stats
 
+def apply_flurry_adjustment_to_shots(shot_data: list) -> dict:
+    """
+    Apply probabilistic flurry adjustment to xG values.
+    
+    Groups shots into sequences (within 3 seconds) and applies
+    the formula: P(AtLeastOneGoal) = 1 - ∏(1 - xG_i)
+    
+    Args:
+        shot_data: List of dicts with keys: 'time', 'xg_value'
+    
+    Returns:
+        Dict with: xg_raw, xg_flurry_adjusted, xg_flurry_adjustment, shot_sequences_count
+    """
+    if len(shot_data) == 0:
+        return {'xg_raw': 0.0, 'xg_flurry_adjusted': 0.0, 'xg_flurry_adjustment': 0.0, 'shot_sequences_count': 0}
+    
+    # Sort by time
+    shot_data = sorted(shot_data, key=lambda x: x.get('time', 0))
+    
+    # Group into sequences (shots within 3 seconds)
+    sequences = []
+    current_sequence = []
+    
+    for shot in shot_data:
+        if len(current_sequence) == 0:
+            current_sequence.append(shot)
+        else:
+            last_shot_time = current_sequence[-1].get('time', 0)
+            time_diff = shot.get('time', 0) - last_shot_time
+            
+            # Within 3 seconds = same sequence
+            if time_diff <= 3.0:
+                current_sequence.append(shot)
+            else:
+                # Start new sequence
+                sequences.append(current_sequence)
+                current_sequence = [shot]
+    
+    if len(current_sequence) > 0:
+        sequences.append(current_sequence)
+    
+    # Calculate adjusted xG for each sequence
+    xg_raw = sum(s.get('xg_value', 0) for s in shot_data)
+    xg_adjusted = 0.0
+    
+    for sequence in sequences:
+        if len(sequence) == 1:
+            # Single shot: no adjustment needed
+            xg_adjusted += sequence[0].get('xg_value', 0)
+        else:
+            # Multiple shots: apply flurry adjustment
+            xg_values = [s.get('xg_value', 0) for s in sequence]
+            prob_no_goal = 1.0
+            for xg in xg_values:
+                prob_no_goal *= (1.0 - xg)
+            xg_flurry = 1.0 - prob_no_goal
+            xg_adjusted += min(xg_flurry, 0.99)
+    
+    return {
+        'xg_raw': round(xg_raw, 3),
+        'xg_flurry_adjusted': round(xg_adjusted, 3),
+        'xg_flurry_adjustment': round(xg_raw - xg_adjusted, 3),
+        'shot_sequences_count': len(sequences)
+    }
+
 def calculate_xg_stats(player_id, game_id, event_players, events):
     pe = event_players[(event_players['game_id'] == game_id) & (event_players['player_id'] == player_id)]
-    empty = {'xg_for': 0.0, 'goals_actual': 0, 'goals_above_expected': 0.0, 'xg_per_shot': 0.0, 'shots_for_xg': 0, 'finishing_skill': 0.0}
+    empty = {'xg_for': 0.0, 'xg_raw': 0.0, 'xg_flurry_adjustment': 0.0, 'shot_sequences_count': 0, 'goals_actual': 0, 'goals_above_expected': 0.0, 'xg_per_shot': 0.0, 'shots_for_xg': 0, 'finishing_skill': 0.0}
     if len(pe) == 0: return empty
     
     pe_primary = pe[pe['player_role'].astype(str).str.lower() == PRIMARY_PLAYER]
@@ -1499,19 +1605,43 @@ def calculate_xg_stats(player_id, game_id, event_players, events):
     player_shots = game_events[(game_events['event_id'].isin(player_event_ids)) & (game_events['event_type'].astype(str).str.lower().isin(['shot', 'goal']))] if len(player_event_ids) > 0 else pd.DataFrame()
     if len(player_shots) == 0: return empty
     
-    xg_total, goals_total = 0.0, 0
+    # Calculate raw xG for each shot (with shot type modifiers)
+    shot_data = []
+    goals_total = 0
+    
     for _, shot in player_shots.iterrows():
         danger = str(shot.get('danger_level', 'default')).lower()
         base_xg = XG_BASE_RATES.get(danger, XG_BASE_RATES['default'])
         xg = base_xg * (XG_MODIFIERS['rush'] if shot.get('is_rush') == 1 else 1.0)
-        xg_total += min(xg, 0.95)
+        
+        # Apply shot type modifier (from event_detail_2)
+        event_detail_2 = str(shot.get('event_detail_2', '')).lower()
+        shot_type_modifier = 1.0
+        for shot_type, modifier in SHOT_TYPE_XG_MODIFIERS.items():
+            if shot_type in event_detail_2:
+                shot_type_modifier = modifier
+                break
+        xg = xg * shot_type_modifier
+        
+        shot_time = shot.get('time_start_total_seconds', 0) if 'time_start_total_seconds' in shot else 0
+        shot_data.append({'time': shot_time, 'xg_value': min(xg, 0.95)})
+        
         if str(shot.get('event_type', '')).lower() == 'goal' and 'goal_scored' in str(shot.get('event_detail', '')).lower():
             goals_total += 1
     
+    # Apply flurry adjustment
+    flurry_result = apply_flurry_adjustment_to_shots(shot_data)
+    
     return {
-        'xg_for': round(xg_total, 2), 'goals_actual': goals_total, 'goals_above_expected': round(goals_total - xg_total, 2),
-        'xg_per_shot': round(xg_total / len(player_shots), 3) if len(player_shots) > 0 else 0.0,
-        'shots_for_xg': len(player_shots), 'finishing_skill': round(goals_total / xg_total, 2) if xg_total > 0 else 0.0,
+        'xg_raw': flurry_result['xg_raw'],
+        'xg_for': flurry_result['xg_flurry_adjusted'],  # Keep existing name (now flurry-adjusted)
+        'xg_flurry_adjustment': flurry_result['xg_flurry_adjustment'],
+        'shot_sequences_count': flurry_result['shot_sequences_count'],
+        'goals_actual': goals_total,
+        'goals_above_expected': round(goals_total - flurry_result['xg_flurry_adjusted'], 2),
+        'xg_per_shot': round(flurry_result['xg_flurry_adjusted'] / len(player_shots), 3) if len(player_shots) > 0 else 0.0,
+        'shots_for_xg': len(player_shots),
+        'finishing_skill': round(goals_total / flurry_result['xg_flurry_adjusted'], 2) if flurry_result['xg_flurry_adjusted'] > 0 else 0.0,
     }
 
 def calculate_war_stats(stats):
@@ -1685,6 +1815,57 @@ def calculate_relative_stats(stats):
     gf, ga = stats.get('plus_total', 0), stats.get('minus_total', 0)
     gf_pct = gf / (gf + ga) * 100 if (gf + ga) > 0 else 50.0
     return {'cf_pct_rel': round(cf - 50, 1), 'ff_pct_rel': round(ff - 50, 1), 'gf_pct': round(gf_pct, 1), 'gf_pct_rel': round(gf_pct - 50, 1)}
+
+def calculate_ratings_adjusted_stats(player_id, game_id, shift_players, stats):
+    """
+    Calculate ratings-adjusted stats (goals_adj, points_adj, xg_adj).
+    
+    Adjusts player production metrics based on quality of competition (opp_avg_rating).
+    Uses opp_multiplier = opp_avg_rating / 4.0 (where 4.0 is league average).
+    
+    FORMULAS:
+    - goals_adj = goals * (4.0 / opp_avg_rating) - normalizes to league average competition
+    - points_adj = points * (4.0 / opp_avg_rating)
+    - xg_adj = xg_for * (4.0 / opp_avg_rating)
+    
+    This answers: "How many goals/points/xG would this player have against average competition?"
+    """
+    ps = shift_players[
+        (shift_players['game_id'] == game_id) & 
+        (shift_players['player_id'] == player_id)
+    ] if len(shift_players) > 0 else pd.DataFrame()
+    
+    empty = {
+        'goals_adj': 0.0, 'points_adj': 0.0, 'xg_adj': 0.0,
+        'avg_opp_rating': 4.0, 'adj_multiplier': 1.0
+    }
+    
+    if len(ps) == 0 or 'opp_avg_rating' not in ps.columns:
+        return empty
+    
+    # Calculate weighted average opp_avg_rating (weighted by shift_duration)
+    if 'shift_duration' in ps.columns:
+        weighted_sum = (ps['opp_avg_rating'].fillna(4.0) * ps['shift_duration'].fillna(0)).sum()
+        total_toi = ps['shift_duration'].fillna(0).sum()
+        avg_opp_rating = weighted_sum / total_toi if total_toi > 0 else 4.0
+    else:
+        avg_opp_rating = ps['opp_avg_rating'].fillna(4.0).mean()
+    
+    # Adjustment multiplier: normalize to league average (4.0)
+    adj_multiplier = 4.0 / avg_opp_rating if avg_opp_rating > 0 else 1.0
+    
+    # Get base stats
+    goals = stats.get('goals', 0)
+    points = stats.get('points', 0)
+    xg_for = stats.get('xg_for', 0.0)
+    
+    return {
+        'goals_adj': round(goals * adj_multiplier, 2),
+        'points_adj': round(points * adj_multiplier, 2),
+        'xg_adj': round(xg_for * adj_multiplier, 2),
+        'avg_opp_rating': round(avg_opp_rating, 2),
+        'adj_multiplier': round(adj_multiplier, 3)
+    }
 
 def calculate_advanced_shift_stats(player_id, game_id, shift_players):
     ps = shift_players[(shift_players['game_id'] == game_id) & (shift_players['player_id'] == player_id)] if len(shift_players) > 0 else pd.DataFrame()
@@ -1867,6 +2048,164 @@ def calculate_zone_entry_exit_stats(player_id, game_id, event_players, zone_entr
     
     return stats
 
+def calculate_possession_time_by_zone(player_id, game_id, event_players, events):
+    """
+    Calculate possession time by zone for a player in a game.
+    
+    Possession is defined as:
+    1. Events where player is event_player_1 AND event_type = 'Possession'
+    2. Events where player is event_player_1 AND event_type = 'Zone_Entry_Exit' 
+       AND event_detail_2 contains 'carried' (case-insensitive)
+    
+    Returns duration (in seconds) by zone (offensive, defensive, neutral).
+    
+    Args:
+        player_id: Player ID
+        game_id: Game ID
+        event_players: Event players DataFrame
+        events: Events DataFrame
+    
+    Returns:
+        Dict with possession time by zone (in seconds)
+    """
+    pe = event_players[(event_players['game_id'] == game_id) & 
+                       (event_players['player_id'] == player_id)]
+    
+    empty = {
+        'possession_time_offensive_zone': 0,
+        'possession_time_defensive_zone': 0,
+        'possession_time_neutral_zone': 0,
+        'possession_time_total': 0,
+        'possession_events_count': 0
+    }
+    
+    if len(pe) == 0:
+        return empty
+    
+    # Filter to event_player_1 (PRIMARY_PLAYER)
+    pe_primary = pe[pe['player_role'].astype(str).str.lower() == PRIMARY_PLAYER]
+    
+    if len(pe_primary) == 0:
+        return empty
+    
+    # Identify possession events
+    # 1. event_type = 'Possession'
+    possession_type = pe_primary[pe_primary['event_type'].astype(str).str.lower() == 'possession']
+    
+    # 2. event_type = 'Zone_Entry_Exit' AND event_detail_2 contains 'carried'
+    zone_events = pe_primary[pe_primary['event_type'].astype(str).str.lower().str.contains('zone', na=False)]
+    zone_carried = pd.DataFrame()
+    if len(zone_events) > 0 and 'event_detail_2' in zone_events.columns:
+        zone_carried = zone_events[
+            zone_events['event_detail_2'].astype(str).str.lower().str.contains('carried', na=False)
+        ]
+    
+    # Combine both types
+    possession_event_ids = []
+    if len(possession_type) > 0 and 'event_id' in possession_type.columns:
+        possession_event_ids.extend(possession_type['event_id'].dropna().unique().tolist())
+    if len(zone_carried) > 0 and 'event_id' in zone_carried.columns:
+        possession_event_ids.extend(zone_carried['event_id'].dropna().unique().tolist())
+    
+    possession_event_ids = list(set([e for e in possession_event_ids if pd.notna(e)]))  # Deduplicate and remove NaN
+    
+    if len(possession_event_ids) == 0:
+        return empty
+    
+    # Get events data for duration and zone
+    game_events = events[(events['game_id'] == game_id)] if events is not None and len(events) > 0 else pd.DataFrame()
+    
+    if len(game_events) == 0:
+        return empty
+    
+    # Match event_id (use same pattern as other functions)
+    possession_events = game_events[game_events['event_id'].isin(possession_event_ids)]
+    
+    if len(possession_events) == 0:
+        return empty
+    
+    # Calculate duration (prefer duration column, fallback to calculated)
+    if 'duration' in possession_events.columns:
+        possession_events['event_duration'] = possession_events['duration'].fillna(0).astype(float)
+    elif 'time_start_total_seconds' in possession_events.columns and 'time_end_total_seconds' in possession_events.columns:
+        possession_events['event_duration'] = (
+            possession_events['time_start_total_seconds'].fillna(0) - 
+            possession_events['time_end_total_seconds'].fillna(0)
+        ).clip(lower=0).astype(float)
+    else:
+        # No duration available - return count only
+        return {
+            'possession_time_offensive_zone': 0,
+            'possession_time_defensive_zone': 0,
+            'possession_time_neutral_zone': 0,
+            'possession_time_total': 0,
+            'possession_events_count': len(possession_events)
+        }
+    
+    # Get zone column
+    zone_col = 'event_team_zone' if 'event_team_zone' in possession_events.columns else None
+    
+    if zone_col is None:
+        # No zone information - return totals only
+        total_duration = int(possession_events['event_duration'].sum())
+        return {
+            'possession_time_offensive_zone': 0,
+            'possession_time_defensive_zone': 0,
+            'possession_time_neutral_zone': 0,
+            'possession_time_total': total_duration,
+            'possession_events_count': len(possession_events)
+        }
+    
+    # Group by zone and sum duration
+    zone_stats = {}
+    for zone, key in [('Offensive', 'offensive'), ('Defensive', 'defensive'), ('Neutral', 'neutral')]:
+        zone_mask = possession_events[zone_col].astype(str).str.lower().str.contains(
+            zone.lower(), na=False
+        )
+        zone_duration = int(possession_events[zone_mask]['event_duration'].sum())
+        zone_stats[f'possession_time_{key}_zone'] = zone_duration
+    
+    # Total
+    total_duration = int(possession_events['event_duration'].sum())
+    zone_stats['possession_time_total'] = total_duration
+    zone_stats['possession_events_count'] = len(possession_events)
+    
+    # Additional metrics: averages and ratios
+    if zone_stats['possession_events_count'] > 0:
+        zone_stats['avg_possession_duration'] = round(total_duration / zone_stats['possession_events_count'], 2)
+    else:
+        zone_stats['avg_possession_duration'] = 0.0
+    
+    # Zone ratios (OZ/DZ ratio)
+    if zone_stats['possession_time_defensive_zone'] > 0:
+        zone_stats['possession_oz_dz_ratio'] = round(
+            zone_stats['possession_time_offensive_zone'] / zone_stats['possession_time_defensive_zone'], 
+            2
+        )
+    else:
+        zone_stats['possession_oz_dz_ratio'] = 0.0
+    
+    # Zone time percentages (what % of possession time is in each zone)
+    if total_duration > 0:
+        zone_stats['possession_time_offensive_zone_pct'] = round(
+            zone_stats['possession_time_offensive_zone'] / total_duration * 100, 
+            1
+        )
+        zone_stats['possession_time_defensive_zone_pct'] = round(
+            zone_stats['possession_time_defensive_zone'] / total_duration * 100, 
+            1
+        )
+        zone_stats['possession_time_neutral_zone_pct'] = round(
+            zone_stats['possession_time_neutral_zone'] / total_duration * 100, 
+            1
+        )
+    else:
+        zone_stats['possession_time_offensive_zone_pct'] = 0.0
+        zone_stats['possession_time_defensive_zone_pct'] = 0.0
+        zone_stats['possession_time_neutral_zone_pct'] = 0.0
+    
+    return zone_stats
+
 def calculate_faceoff_zone_stats(player_id, game_id, event_players):
     pe = event_players[(event_players['game_id'] == game_id) & (event_players['player_id'] == player_id)]
     empty = {'fo_wins_oz': 0, 'fo_wins_nz': 0, 'fo_wins_dz': 0, 'fo_losses_oz': 0, 'fo_losses_nz': 0, 'fo_losses_dz': 0, 'fo_pct_oz': 0.0, 'fo_pct_nz': 0.0, 'fo_pct_dz': 0.0}
@@ -1892,6 +2231,100 @@ def calculate_faceoff_zone_stats(player_id, game_id, event_players):
             stats[f'fo_wins_{abbr}'] = stats[f'fo_losses_{abbr}'] = 0
             stats[f'fo_pct_{abbr}'] = 0.0
     return stats
+
+def calculate_wdbe_faceoffs(player_id, game_id, event_players, events):
+    """
+    Calculate Win Direction Based Events (WDBE) for faceoffs.
+    
+    Values faceoffs by where puck goes (direction) and win type (clean vs scrum).
+    
+    Returns:
+        Dict with WDBE metrics
+    """
+    pe = event_players[(event_players['game_id'] == game_id) & 
+                       (event_players['player_id'] == player_id)]
+    
+    empty = {
+        'faceoffs_clean_wins': 0,
+        'faceoffs_scrum_wins': 0,
+        'faceoffs_wdbe_value': 0.0,
+        'faceoff_wdbe_rate': 0.0
+    }
+    
+    if len(pe) == 0:
+        return empty
+    
+    # Get faceoff events where player is event_player_1 (winner)
+    pe_primary = pe[pe['player_role'].astype(str).str.lower() == PRIMARY_PLAYER]
+    faceoff_wins = pe_primary[pe_primary['event_type'].astype(str).str.lower() == 'faceoff']
+    
+    if len(faceoff_wins) == 0:
+        return empty
+    
+    # WDBE weights (to be calibrated with historical data)
+    WDBE_WEIGHTS = {
+        'clean_forward': 0.12,   # Clean win, forward direction
+        'clean_back': 0.15,      # Clean win, back direction (more valuable)
+        'clean_neutral': 0.08,   # Clean win, neutral
+        'scrum_forward': 0.06,   # Scrum win, forward
+        'scrum_back': 0.08,      # Scrum win, back
+        'scrum_neutral': 0.04,   # Scrum win, neutral
+    }
+    
+    clean_wins = 0
+    scrum_wins = 0
+    wdbe_total = 0.0
+    
+    # Get faceoff events for context
+    faceoff_event_ids = faceoff_wins['event_id'].unique() if 'event_id' in faceoff_wins.columns else []
+    if len(faceoff_event_ids) == 0 or events is None or len(events) == 0:
+        return empty
+    
+    faceoff_events = events[(events['game_id'] == game_id) & 
+                           (events['event_id'].isin(faceoff_event_ids))]
+    
+    for _, faceoff in faceoff_wins.iterrows():
+        event_id = faceoff['event_id']
+        faceoff_event = faceoff_events[faceoff_events['event_id'] == event_id]
+        
+        if len(faceoff_event) == 0:
+            continue
+        
+        event_row = faceoff_event.iloc[0]
+        
+        # Classify win type
+        play_detail1 = str(event_row.get('play_detail1', '')).lower()
+        play_detail_2 = str(event_row.get('play_detail_2', '')).lower()
+        play_detail = f"{play_detail1} {play_detail_2}"
+        is_clean = any(term in play_detail for term in 
+                      ['clean', 'direct', 'straight', 'won clean'])
+        
+        # Classify direction (simplified - can be enhanced with XY)
+        direction = 'neutral'  # Default
+        event_detail = str(event_row.get('event_detail', '')).lower()
+        if 'forward' in event_detail or 'ahead' in event_detail:
+            direction = 'forward'
+        elif 'back' in event_detail or 'behind' in event_detail:
+            direction = 'back'
+        
+        # Count wins
+        if is_clean:
+            clean_wins += 1
+            wdbe_key = f'clean_{direction}'
+        else:
+            scrum_wins += 1
+            wdbe_key = f'scrum_{direction}'
+        
+        # Add WDBE value
+        wdbe_total += WDBE_WEIGHTS.get(wdbe_key, 0.06)
+    
+    total_wins = clean_wins + scrum_wins
+    return {
+        'faceoffs_clean_wins': clean_wins,
+        'faceoffs_scrum_wins': scrum_wins,
+        'faceoffs_wdbe_value': round(wdbe_total, 2),
+        'faceoff_wdbe_rate': round(wdbe_total / total_wins, 3) if total_wins > 0 else 0.0
+    }
 
 def calculate_player_event_stats(player_id, game_id, event_players, events=None):
     pe = event_players[(event_players['game_id'] == game_id) & (event_players['player_id'] == player_id)]

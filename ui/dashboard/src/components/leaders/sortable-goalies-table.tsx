@@ -261,7 +261,16 @@ export function SortableGoaliesTable({ goalies, playersMap, isCurrentSeason = fa
                     )}
                   </td>
                   <td className="px-4 py-3 text-sm text-muted-foreground">
-                    {goalie.displayTeam || '-'}
+                    {goalie.displayTeam ? (
+                      <Link 
+                        href={`/team/${goalie.displayTeam.replace(/\s+/g, '_')}`}
+                        className="hover:text-foreground transition-colors"
+                      >
+                        {goalie.displayTeam}
+                      </Link>
+                    ) : (
+                      <span>-</span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-center font-mono text-sm text-muted-foreground">
                     {goalie.games_played}

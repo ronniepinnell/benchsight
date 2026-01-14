@@ -1,0 +1,12 @@
+# BenchSight ETL API Requirements
+# Install with: pip install -r api/requirements.txt
+
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+python-dotenv==1.0.0
+httpx==0.25.2
+
+# For production (optional - can use FastAPI background tasks for MVP)
+# celery==5.3.4
+# redis==5.0.1

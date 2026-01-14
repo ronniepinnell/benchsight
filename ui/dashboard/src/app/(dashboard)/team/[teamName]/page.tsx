@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils'
 import { TeamLogo } from '@/components/teams/team-logo'
 import { PlayerPhoto } from '@/components/players/player-photo'
 import { SeasonSelector } from '@/components/teams/season-selector'
+import { StatCard, StatRow } from '@/components/players/stat-card'
 
 // Team Advanced Stats Section Component
 async function TeamAdvancedStatsSection({ 
@@ -134,13 +135,14 @@ async function TeamAdvancedStatsSection({
         const totals = data.reduce((acc, stat) => ({
           hits: (acc.hits || 0) + (stat.hits || 0),
           blocks: (acc.blocks || 0) + (stat.blocks || 0),
-          giveaways: (acc.giveaways || 0) + (stat.giveaways || 0),
+          badGiveaways: (acc.badGiveaways || 0) + (Number(stat.bad_giveaways ?? stat.bad_give ?? 0) || 0),
           takeaways: (acc.takeaways || 0) + (stat.takeaways || 0),
           games: acc.games + 1,
-        }), { hits: 0, blocks: 0, giveaways: 0, takeaways: 0, games: 0 })
+        }), { hits: 0, blocks: 0, badGiveaways: 0, takeaways: 0, games: 0 })
         return {
           ...totals,
-          toDiff: totals.takeaways - totals.giveaways,
+          toDiff: totals.takeaways - totals.badGiveaways,
+          giveaways: totals.badGiveaways, // For display
           hitsPerGame: totals.games > 0 ? (totals.hits / totals.games).toFixed(1) : '0.0',
           blocksPerGame: totals.games > 0 ? (totals.blocks / totals.games).toFixed(1) : '0.0',
         }
@@ -204,221 +206,311 @@ async function TeamAdvancedStatsSection({
         </h2>
       </div>
       <div className="p-6">
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Possession Stats */}
           {possessionStats && (
-            <div className="space-y-3">
-              <h3 className="font-display text-sm font-semibold text-foreground uppercase tracking-wider border-b border-border pb-2">
-                Possession
-              </h3>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">CF%</span>
-                  <span className="font-mono font-semibold text-foreground">{possessionStats.cfPct.toFixed(1)}%</span>
+            <StatCard 
+              title="Possession" 
+              icon={<Activity className="w-4 h-4" />}
+              defaultExpanded={true}
+            >
+              <div className="space-y-1">
+                <StatRow 
+                  label="CF%" 
+                  value={`${possessionStats.cfPct.toFixed(1)}%`}
+                  highlight
+                  color="primary"
+                  description="Corsi For Percentage - Shot attempts for vs against"
+                />
+                <StatRow 
+                  label="FF%" 
+                  value={`${possessionStats.ffPct.toFixed(1)}%`}
+                  highlight
+                  color="primary"
+                  description="Fenwick For Percentage - Unblocked shot attempts for vs against"
+                />
+                <div className="border-t border-border pt-2 mt-2">
+                  <StatRow 
+                    label="Corsi For" 
+                    value={possessionStats.cf}
+                    description="Total shot attempts (shots + blocks + misses) for"
+                  />
+                  <StatRow 
+                    label="Corsi Against" 
+                    value={possessionStats.ca}
+                    description="Total shot attempts against"
+                  />
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">FF%</span>
-                  <span className="font-mono font-semibold text-foreground">{possessionStats.ffPct.toFixed(1)}%</span>
+                <div className="border-t border-border pt-2 mt-2">
+                  <StatRow 
+                    label="Fenwick For" 
+                    value={possessionStats.ff}
+                    description="Unblocked shot attempts for"
+                  />
+                  <StatRow 
+                    label="Fenwick Against" 
+                    value={possessionStats.fa}
+                    description="Unblocked shot attempts against"
+                  />
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Corsi For</span>
-                  <span className="font-mono text-foreground">{possessionStats.cf}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Corsi Against</span>
-                  <span className="font-mono text-foreground">{possessionStats.ca}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">xG</span>
-                  <span className="font-mono text-foreground">{possessionStats.xg.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Goals - xG</span>
-                  <span className={cn(
-                    'font-mono font-semibold',
-                    possessionStats.xgDiff > 0 ? 'text-save' : 'text-goal'
-                  )}>
-                    {possessionStats.xgDiff > 0 ? '+' : ''}{possessionStats.xgDiff.toFixed(2)}
-                  </span>
+                <div className="border-t border-border pt-2 mt-2">
+                  <StatRow 
+                    label="Expected Goals" 
+                    value={possessionStats.xg.toFixed(2)}
+                    description="Expected goals based on shot quality and location"
+                  />
+                  <StatRow 
+                    label="Goals - xG" 
+                    value={`${possessionStats.xgDiff > 0 ? '+' : ''}${possessionStats.xgDiff.toFixed(2)}`}
+                    highlight
+                    color={possessionStats.xgDiff > 0 ? 'save' : 'goal'}
+                    description="Difference between actual goals and expected goals"
+                  />
                 </div>
               </div>
-            </div>
+            </StatCard>
           )}
           
           {/* Special Teams */}
           {specialTeamsStats && (
-            <div className="space-y-3">
-              <h3 className="font-display text-sm font-semibold text-foreground uppercase tracking-wider border-b border-border pb-2">
-                Special Teams
-              </h3>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">PP%</span>
-                  <span className="font-mono font-semibold text-primary">{specialTeamsStats.ppPct.toFixed(1)}%</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">PP Goals</span>
-                  <span className="font-mono text-foreground">{specialTeamsStats.ppGoals}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">PP Opportunities</span>
-                  <span className="font-mono text-foreground">{specialTeamsStats.ppOpps}</span>
-                </div>
-                <div className="flex justify-between items-center border-t border-border pt-2 mt-2">
-                  <span className="text-xs text-muted-foreground">PK%</span>
-                  <span className="font-mono font-semibold text-save">{specialTeamsStats.pkPct.toFixed(1)}%</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">PK Goals Against</span>
-                  <span className="font-mono text-goal">{specialTeamsStats.pkGoalsAgainst}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">PK Opportunities</span>
-                  <span className="font-mono text-foreground">{specialTeamsStats.pkOpps}</span>
+            <StatCard 
+              title="Special Teams" 
+              icon={<Zap className="w-4 h-4" />}
+              defaultExpanded={true}
+            >
+              <div className="space-y-1">
+                <StatRow 
+                  label="PP%" 
+                  value={`${specialTeamsStats.ppPct.toFixed(1)}%`}
+                  highlight
+                  color="primary"
+                  description="Power play percentage - Goals scored on power play"
+                />
+                <StatRow 
+                  label="PP Goals" 
+                  value={specialTeamsStats.ppGoals}
+                  color="goal"
+                  description="Goals scored on power play"
+                />
+                <StatRow 
+                  label="PP Opportunities" 
+                  value={specialTeamsStats.ppOpps}
+                  description="Power play opportunities"
+                />
+                <div className="border-t border-border pt-2 mt-2">
+                  <StatRow 
+                    label="PK%" 
+                    value={`${specialTeamsStats.pkPct.toFixed(1)}%`}
+                    highlight
+                    color="save"
+                    description="Penalty kill percentage - Success rate on penalty kill"
+                  />
+                  <StatRow 
+                    label="PK Goals Against" 
+                    value={specialTeamsStats.pkGoalsAgainst}
+                    color="goal"
+                    description="Goals allowed while shorthanded"
+                  />
+                  <StatRow 
+                    label="PK Opportunities" 
+                    value={specialTeamsStats.pkOpps}
+                    description="Penalty kill opportunities"
+                  />
                 </div>
               </div>
-            </div>
+            </StatCard>
           )}
           
           {/* Zone Play */}
           {zoneStats && (
-            <div className="space-y-3">
-              <h3 className="font-display text-sm font-semibold text-foreground uppercase tracking-wider border-b border-border pb-2">
-                Zone Play
-              </h3>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Zone Entry %</span>
-                  <span className="font-mono font-semibold text-foreground">{zoneStats.zePct.toFixed(1)}%</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Zone Entries</span>
-                  <span className="font-mono text-foreground">{zoneStats.ze}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Successful Entries</span>
-                  <span className="font-mono text-save">{zoneStats.zeSuccess}</span>
-                </div>
-                <div className="flex justify-between items-center border-t border-border pt-2 mt-2">
-                  <span className="text-xs text-muted-foreground">Zone Exit %</span>
-                  <span className="font-mono font-semibold text-foreground">{zoneStats.zxPct.toFixed(1)}%</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Zone Exits</span>
-                  <span className="font-mono text-foreground">{zoneStats.zx}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Successful Exits</span>
-                  <span className="font-mono text-save">{zoneStats.zxSuccess}</span>
+            <StatCard 
+              title="Zone Play" 
+              icon={<Zap className="w-4 h-4" />}
+              defaultExpanded={true}
+            >
+              <div className="space-y-1">
+                <StatRow 
+                  label="Zone Entry %" 
+                  value={`${zoneStats.zePct.toFixed(1)}%`}
+                  highlight
+                  color="primary"
+                  description="Percentage of successful zone entries"
+                />
+                <StatRow 
+                  label="Zone Entries" 
+                  value={zoneStats.ze}
+                  description="Total zone entry attempts"
+                />
+                <StatRow 
+                  label="Successful Entries" 
+                  value={zoneStats.zeSuccess}
+                  color="save"
+                  description="Zone entries that resulted in possession"
+                />
+                <div className="border-t border-border pt-2 mt-2">
+                  <StatRow 
+                    label="Zone Exit %" 
+                    value={`${zoneStats.zxPct.toFixed(1)}%`}
+                    highlight
+                    color="primary"
+                    description="Percentage of successful zone exits"
+                  />
+                  <StatRow 
+                    label="Zone Exits" 
+                    value={zoneStats.zx}
+                    description="Total zone exit attempts"
+                  />
+                  <StatRow 
+                    label="Successful Exits" 
+                    value={zoneStats.zxSuccess}
+                    color="save"
+                    description="Zone exits that maintained possession"
+                  />
                 </div>
               </div>
-            </div>
+            </StatCard>
           )}
           
           {/* WAR/GAR */}
           {warStats && (
-            <div className="space-y-3">
-              <h3 className="font-display text-sm font-semibold text-foreground uppercase tracking-wider border-b border-border pb-2">
-                WAR/GAR
-              </h3>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Total WAR</span>
-                  <span className="font-mono font-semibold text-primary">{warStats.totalWAR}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Total GAR</span>
-                  <span className="font-mono text-foreground">{warStats.totalGAR}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Avg Game Score</span>
-                  <span className="font-mono text-foreground">{warStats.avgGameScore}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Avg Rating</span>
-                  <span className="font-mono text-foreground">{warStats.avgRating}</span>
+            <StatCard 
+              title="WAR/GAR" 
+              icon={<TrendingUp className="w-4 h-4" />}
+              defaultExpanded={true}
+            >
+              <div className="space-y-1">
+                <StatRow 
+                  label="Total WAR" 
+                  value={warStats.totalWAR}
+                  highlight
+                  color="primary"
+                  description="Wins Above Replacement - Total value added in wins"
+                />
+                <StatRow 
+                  label="Total GAR" 
+                  value={warStats.totalGAR}
+                  highlight
+                  color="primary"
+                  description="Goals Above Replacement - Total value added in goals"
+                />
+                <div className="border-t border-border pt-2 mt-2">
+                  <StatRow 
+                    label="Avg Game Score" 
+                    value={warStats.avgGameScore}
+                    description="Average game score across all games"
+                  />
+                  <StatRow 
+                    label="Avg Rating" 
+                    value={warStats.avgRating}
+                    description="Average player rating per game"
+                  />
                 </div>
               </div>
-            </div>
+            </StatCard>
           )}
           
           {/* Physical */}
           {physicalStats && (
-            <div className="space-y-3">
-              <h3 className="font-display text-sm font-semibold text-foreground uppercase tracking-wider border-b border-border pb-2">
-                Physical
-              </h3>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Hits</span>
-                  <span className="font-mono font-semibold text-foreground">{physicalStats.hits}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Hits/Game</span>
-                  <span className="font-mono text-foreground">{physicalStats.hitsPerGame}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Blocks</span>
-                  <span className="font-mono font-semibold text-save">{physicalStats.blocks}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Blocks/Game</span>
-                  <span className="font-mono text-foreground">{physicalStats.blocksPerGame}</span>
-                </div>
-                <div className="flex justify-between items-center border-t border-border pt-2 mt-2">
-                  <span className="text-xs text-muted-foreground">Takeaways</span>
-                  <span className="font-mono text-save">{physicalStats.takeaways}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Giveaways</span>
-                  <span className="font-mono text-goal">{physicalStats.giveaways}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">TO Differential</span>
-                  <span className={cn(
-                    'font-mono font-semibold',
-                    physicalStats.toDiff > 0 ? 'text-save' : physicalStats.toDiff < 0 ? 'text-goal' : 'text-muted-foreground'
-                  )}>
-                    {physicalStats.toDiff > 0 ? '+' : ''}{physicalStats.toDiff}
-                  </span>
+            <StatCard 
+              title="Physical" 
+              icon={<Shield className="w-4 h-4" />}
+              defaultExpanded={true}
+            >
+              <div className="space-y-1">
+                <StatRow 
+                  label="Hits" 
+                  value={physicalStats.hits}
+                  highlight
+                  description="Total hits delivered"
+                />
+                <StatRow 
+                  label="Hits/Game" 
+                  value={physicalStats.hitsPerGame}
+                  description="Average hits per game"
+                />
+                <StatRow 
+                  label="Blocks" 
+                  value={physicalStats.blocks}
+                  highlight
+                  color="save"
+                  description="Total shots blocked"
+                />
+                <StatRow 
+                  label="Blocks/Game" 
+                  value={physicalStats.blocksPerGame}
+                  description="Average blocks per game"
+                />
+                <div className="border-t border-border pt-2 mt-2">
+                  <StatRow 
+                    label="Takeaways" 
+                    value={physicalStats.takeaways}
+                    color="save"
+                    description="Puck takeaways"
+                  />
+                  <StatRow 
+                    label="Bad Giveaways" 
+                    value={physicalStats.giveaways}
+                    color="goal"
+                    description="Bad puck giveaways (turnovers)"
+                  />
+                  <StatRow 
+                    label="TO Differential" 
+                    value={`${physicalStats.toDiff > 0 ? '+' : ''}${physicalStats.toDiff}`}
+                    highlight
+                    color={physicalStats.toDiff > 0 ? 'save' : physicalStats.toDiff < 0 ? 'goal' : 'muted'}
+                    description="Takeaway minus bad giveaway differential"
+                  />
                 </div>
               </div>
-            </div>
+            </StatCard>
           )}
           
           {/* Shooting */}
           {shootingStats && (
-            <div className="space-y-3">
-              <h3 className="font-display text-sm font-semibold text-foreground uppercase tracking-wider border-b border-border pb-2">
-                Shooting
-              </h3>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Shooting %</span>
-                  <span className="font-mono font-semibold text-primary">{shootingStats.shootingPct}%</span>
+            <StatCard 
+              title="Shooting" 
+              icon={<BarChart3 className="w-4 h-4" />}
+              defaultExpanded={true}
+            >
+              <div className="space-y-1">
+                <StatRow 
+                  label="Shooting %" 
+                  value={`${shootingStats.shootingPct}%`}
+                  highlight
+                  color="primary"
+                  description="Goals per shot on goal"
+                />
+                <StatRow 
+                  label="Shot Accuracy" 
+                  value={`${shootingStats.shotAccuracy}%`}
+                  description="Shots on goal per total shot attempts"
+                />
+                <div className="border-t border-border pt-2 mt-2">
+                  <StatRow 
+                    label="Total Shots" 
+                    value={shootingStats.shots}
+                    description="Total shot attempts"
+                  />
+                  <StatRow 
+                    label="Shots on Goal" 
+                    value={shootingStats.sog}
+                    description="Shots that reached the net"
+                  />
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Shot Accuracy</span>
-                  <span className="font-mono text-foreground">{shootingStats.shotAccuracy}%</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Total Shots</span>
-                  <span className="font-mono text-foreground">{shootingStats.shots}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Shots on Goal</span>
-                  <span className="font-mono text-foreground">{shootingStats.sog}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Shots/Game</span>
-                  <span className="font-mono text-foreground">{shootingStats.shotsPerGame}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">SOG/Game</span>
-                  <span className="font-mono text-foreground">{shootingStats.sogPerGame}</span>
+                <div className="border-t border-border pt-2 mt-2">
+                  <StatRow 
+                    label="Shots/Game" 
+                    value={shootingStats.shotsPerGame}
+                    description="Average shot attempts per game"
+                  />
+                  <StatRow 
+                    label="SOG/Game" 
+                    value={shootingStats.sogPerGame}
+                    description="Average shots on goal per game"
+                  />
                 </div>
               </div>
-            </div>
+            </StatCard>
           )}
         </div>
       </div>
@@ -512,13 +604,24 @@ export default async function TeamDetailPage({
   }
   
   // Get team's recent completed games directly from dim_schedule
-  const { data: teamGamesData } = await supabase
+  let teamGamesQuery = supabase
     .from('dim_schedule')
     .select('*')
     .or(`home_team_name.eq.${team.team_name},away_team_name.eq.${team.team_name},home_team_id.eq.${team.team_id},away_team_id.eq.${team.team_id}`)
     .not('home_total_goals', 'is', null) // Only completed games
+  
+  // Filter by season if specified and not empty
+  if (seasonId && seasonId.trim() !== '') {
+    teamGamesQuery = teamGamesQuery.eq('season_id', seasonId)
+  }
+  
+  const { data: teamGamesData, error: teamGamesError } = await teamGamesQuery
     .order('date', { ascending: false })
-    .limit(10)
+    .limit(20) // Get more games to show
+  
+  if (teamGamesError) {
+    console.error('Error fetching team games:', teamGamesError)
+  }
   
   const teamGames = (teamGamesData || []).filter((g: any) => g.home_total_goals !== null && g.away_total_goals !== null)
   
@@ -602,6 +705,16 @@ export default async function TeamDetailPage({
   let roster: any[] = []
   let goalies: any[] = []
   
+  // Get game IDs for filtering advanced stats
+  const { data: scheduleForRoster } = seasonId 
+    ? await supabase
+        .from('dim_schedule')
+        .select('game_id')
+        .eq('season_id', seasonId)
+    : { data: null }
+  
+  const gameIdsForRoster = scheduleForRoster?.map(g => g.game_id) || []
+  
   if (seasonId && seasonId !== currentSeason) {
     // Historical season - fetch from fact_player_season_stats_basic
     const { data: historicalRoster } = await supabase
@@ -622,6 +735,47 @@ export default async function TeamDetailPage({
       }
     })
     roster = Array.from(rosterMap.values()).sort((a, b) => (b.points || 0) - (a.points || 0))
+    
+    // Fetch advanced stats for roster players
+    if (roster.length > 0 && gameIdsForRoster.length > 0) {
+      const playerIds = roster.map(p => String(p.player_id))
+      const { data: playerAdvancedStats } = await supabase
+        .from('fact_player_game_stats')
+        .select('player_id, corsi_for, corsi_against, cf_pct, toi_seconds, plus_minus_total, plus_minus')
+        .in('player_id', playerIds)
+        .in('game_id', gameIdsForRoster)
+        .eq('team_id', team.team_id)
+      
+      // Aggregate by player
+      const advancedStatsMap = new Map<string, any>()
+      ;(playerAdvancedStats || []).forEach((stat: any) => {
+        const playerId = String(stat.player_id)
+        const existing = advancedStatsMap.get(playerId) || { cf: 0, ca: 0, toi: 0, plusMinus: 0, games: 0 }
+        advancedStatsMap.set(playerId, {
+          cf: existing.cf + (Number(stat.corsi_for) || 0),
+          ca: existing.ca + (Number(stat.corsi_against) || 0),
+          toi: existing.toi + (Number(stat.toi_seconds) || 0),
+          plusMinus: existing.plusMinus + (Number(stat.plus_minus_total ?? stat.plus_minus) || 0),
+          games: existing.games + 1,
+        })
+      })
+      
+      // Merge advanced stats into roster
+      roster = roster.map(player => {
+        const stats = advancedStatsMap.get(String(player.player_id))
+        if (stats) {
+          const cfPct = stats.cf + stats.ca > 0 ? (stats.cf / (stats.cf + stats.ca)) * 100 : 0
+          const avgTOI = stats.games > 0 ? stats.toi / stats.games / 60 : 0
+          return {
+            ...player,
+            cf_pct: cfPct,
+            toi_per_game: avgTOI,
+            plus_minus: stats.plusMinus,
+          }
+        }
+        return player
+      })
+    }
     
     // Historical goalies
     const { data: historicalGoalies } = await supabase
@@ -660,6 +814,46 @@ export default async function TeamDetailPage({
       }
     })
     roster = Array.from(rosterMap.values()).sort((a, b) => (b.points || 0) - (a.points || 0))
+    
+    // Fetch advanced stats for current roster
+    if (roster.length > 0) {
+      const playerIds = roster.map(p => String(p.player_id))
+      const { data: playerAdvancedStats } = await supabase
+        .from('fact_player_game_stats')
+        .select('player_id, corsi_for, corsi_against, cf_pct, toi_seconds, plus_minus_total, plus_minus')
+        .in('player_id', playerIds)
+        .eq('team_id', team.team_id)
+      
+      // Aggregate by player
+      const advancedStatsMap = new Map<string, any>()
+      ;(playerAdvancedStats || []).forEach((stat: any) => {
+        const playerId = String(stat.player_id)
+        const existing = advancedStatsMap.get(playerId) || { cf: 0, ca: 0, toi: 0, plusMinus: 0, games: 0 }
+        advancedStatsMap.set(playerId, {
+          cf: existing.cf + (Number(stat.corsi_for) || 0),
+          ca: existing.ca + (Number(stat.corsi_against) || 0),
+          toi: existing.toi + (Number(stat.toi_seconds) || 0),
+          plusMinus: existing.plusMinus + (Number(stat.plus_minus_total ?? stat.plus_minus) || 0),
+          games: existing.games + 1,
+        })
+      })
+      
+      // Merge advanced stats into roster
+      roster = roster.map(player => {
+        const stats = advancedStatsMap.get(String(player.player_id))
+        if (stats) {
+          const cfPct = stats.cf + stats.ca > 0 ? (stats.cf / (stats.cf + stats.ca)) * 100 : 0
+          const avgTOI = stats.games > 0 ? stats.toi / stats.games / 60 : 0
+          return {
+            ...player,
+            cf_pct: cfPct,
+            toi_per_game: avgTOI,
+            plus_minus: stats.plusMinus,
+          }
+        }
+        return player
+      })
+    }
     
     const { data: currentGoalies } = await supabase
       .from('v_leaderboard_goalie_gaa')
@@ -888,6 +1082,9 @@ export default async function TeamDetailPage({
                   <th className="px-2 py-2 text-center font-display text-xs text-assist">A</th>
                   <th className="px-2 py-2 text-center font-display text-xs text-primary">P</th>
                   <th className="px-2 py-2 text-center font-display text-xs text-muted-foreground">P/G</th>
+                  <th className="px-2 py-2 text-center font-display text-xs text-muted-foreground">+/-</th>
+                  <th className="px-2 py-2 text-center font-display text-xs text-muted-foreground">CF%</th>
+                  <th className="px-2 py-2 text-center font-display text-xs text-muted-foreground">TOI/G</th>
                 </tr>
               </thead>
               <tbody>
@@ -915,6 +1112,19 @@ export default async function TeamDetailPage({
                       <td className="px-2 py-2 text-center font-mono text-primary font-semibold">{player.points}</td>
                       <td className="px-2 py-2 text-center font-mono text-muted-foreground">
                         {player.points_per_game?.toFixed(2) ?? '-'}
+                      </td>
+                      <td className={cn(
+                        'px-2 py-2 text-center font-mono text-xs',
+                        (player.plus_minus ?? 0) > 0 && 'text-save',
+                        (player.plus_minus ?? 0) < 0 && 'text-goal'
+                      )}>
+                        {(player.plus_minus ?? 0) > 0 ? '+' : ''}{player.plus_minus ?? 0}
+                      </td>
+                      <td className="px-2 py-2 text-center font-mono text-xs text-muted-foreground">
+                        {player.cf_pct ? (typeof player.cf_pct === 'number' ? player.cf_pct.toFixed(1) : parseFloat(String(player.cf_pct)).toFixed(1)) + '%' : '-'}
+                      </td>
+                      <td className="px-2 py-2 text-center font-mono text-xs text-muted-foreground">
+                        {player.toi_per_game ? (typeof player.toi_per_game === 'number' ? player.toi_per_game.toFixed(1) : parseFloat(String(player.toi_per_game)).toFixed(1)) : '-'}
                       </td>
                     </tr>
                   )
@@ -1047,6 +1257,16 @@ export default async function TeamDetailPage({
                 </div>
               )}
             </div>
+            {teamGames && teamGames.length > 0 && (
+              <div className="px-4 py-3 bg-accent/50 border-t border-border">
+                <Link 
+                  href={`/games?team=${team.team_id}${seasonId ? `&season=${seasonId}` : ''}`}
+                  className="text-xs font-mono text-primary hover:underline"
+                >
+                  View all games →
+                </Link>
+              </div>
+            )}
           </div>
           
           {/* Upcoming Games - Always show */}
@@ -1103,9 +1323,12 @@ export default async function TeamDetailPage({
                             <div className="text-xs font-mono text-muted-foreground">
                               {gameDate} • {gameTime} • {isHome ? 'vs' : '@'}
                             </div>
-                            <div className="font-display text-sm text-foreground">
+                            <Link 
+                              href={opponentTeam ? `/team/${(opponentTeam.team_name || opponentName).replace(/\s+/g, '_')}` : '#'}
+                              className="font-display text-sm text-foreground hover:text-primary transition-colors"
+                            >
                               {opponentName}
-                            </div>
+                            </Link>
                           </div>
                         </div>
                         <div className="text-right">

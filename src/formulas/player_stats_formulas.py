@@ -226,6 +226,57 @@ PLAYER_STATS_FORMULAS = {
         'dependencies': ['poke_checks', 'toi_minutes'],
     },
     
+    'faceoffs_wdbe_per_60': {
+        'type': 'rate',
+        'function': lambda df: pd.Series([
+            calculate_per_60_rate(wdbe, toi) if pd.notna(toi) else None
+            for wdbe, toi in zip(df.get('faceoffs_wdbe_value', pd.Series([0.0]*len(df))), df['toi_minutes'])
+        ]),
+        'description': 'WDBE faceoff value per 60 minutes',
+        'dependencies': ['faceoffs_wdbe_value', 'toi_minutes'],
+    },
+    
+    # Possession time per-60 rates (convert seconds to minutes, then calculate per-60)
+    'possession_time_offensive_zone_per_60': {
+        'type': 'rate',
+        'function': lambda df: pd.Series([
+            (po / 60.0 / toi * 60.0) if pd.notna(toi) and toi > 0 else 0.0
+            for po, toi in zip(df.get('possession_time_offensive_zone', pd.Series([0]*len(df))), df['toi_minutes'])
+        ]),
+        'description': 'Possession time in offensive zone per 60 minutes (minutes)',
+        'dependencies': ['possession_time_offensive_zone', 'toi_minutes'],
+    },
+    
+    'possession_time_defensive_zone_per_60': {
+        'type': 'rate',
+        'function': lambda df: pd.Series([
+            (pd / 60.0 / toi * 60.0) if pd.notna(toi) and toi > 0 else 0.0
+            for pd, toi in zip(df.get('possession_time_defensive_zone', pd.Series([0]*len(df))), df['toi_minutes'])
+        ]),
+        'description': 'Possession time in defensive zone per 60 minutes (minutes)',
+        'dependencies': ['possession_time_defensive_zone', 'toi_minutes'],
+    },
+    
+    'possession_time_neutral_zone_per_60': {
+        'type': 'rate',
+        'function': lambda df: pd.Series([
+            (pn / 60.0 / toi * 60.0) if pd.notna(toi) and toi > 0 else 0.0
+            for pn, toi in zip(df.get('possession_time_neutral_zone', pd.Series([0]*len(df))), df['toi_minutes'])
+        ]),
+        'description': 'Possession time in neutral zone per 60 minutes (minutes)',
+        'dependencies': ['possession_time_neutral_zone', 'toi_minutes'],
+    },
+    
+    'possession_time_total_per_60': {
+        'type': 'rate',
+        'function': lambda df: pd.Series([
+            (pt / 60.0 / toi * 60.0) if pd.notna(toi) and toi > 0 else 0.0
+            for pt, toi in zip(df.get('possession_time_total', pd.Series([0]*len(df))), df['toi_minutes'])
+        ]),
+        'description': 'Total possession time per 60 minutes (minutes)',
+        'dependencies': ['possession_time_total', 'toi_minutes'],
+    },
+    
     # ========================================================================
     # RATIO FORMULAS
     # ========================================================================
@@ -317,7 +368,10 @@ FORMULA_GROUPS = {
         'goals_per_60', 'assists_per_60', 'points_per_60', 'shots_per_60',
         'sog_per_60', 'cf_per_60', 'ca_per_60',
         'dekes_per_60', 'forechecks_per_60', 'backchecks_per_60',
-        'puck_battles_per_60', 'cycles_per_60', 'screens_per_60', 'poke_checks_per_60'
+        'puck_battles_per_60', 'cycles_per_60', 'screens_per_60', 'poke_checks_per_60',
+        'possession_time_offensive_zone_per_60', 'possession_time_defensive_zone_per_60',
+        'possession_time_neutral_zone_per_60', 'possession_time_total_per_60',
+        'faceoffs_wdbe_per_60'
     ],
     
     'all_ratios': [

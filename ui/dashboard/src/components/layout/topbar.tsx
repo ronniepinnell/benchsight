@@ -1,4 +1,6 @@
 // src/components/layout/topbar.tsx
+import { UserMenu } from '@/components/auth/user-menu'
+
 export function Topbar() {
   return (
     <header className="fixed top-0 left-60 right-0 h-14 bg-card border-b border-border flex items-center justify-between px-6 z-40">
@@ -21,6 +23,7 @@ export function Topbar() {
         <span className="text-xs font-mono text-muted-foreground">
           NORAD HOCKEY ANALYTICS
         </span>
+        <UserMenu />
       </div>
     </header>
   )

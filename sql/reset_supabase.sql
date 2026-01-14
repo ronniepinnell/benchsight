@@ -6013,14 +6013,57 @@ CREATE TABLE IF NOT EXISTS public."fact_turnovers_detailed" (
     "turnover_zone_multiplier" TEXT,
     "turnover_category" TEXT
 );
+CREATE TABLE IF NOT EXISTS public."dim_video_type" (
+    "video_type_id" TEXT PRIMARY KEY,
+    "video_type_code" TEXT,
+    "video_type_name" TEXT,
+    "description" TEXT,
+    "is_primary" BOOLEAN,
+    "sort_order" INTEGER,
+    "use_for_highlights" BOOLEAN
+);
+
+CREATE TABLE IF NOT EXISTS public."dim_highlight_category" (
+    "highlight_category_id" TEXT PRIMARY KEY,
+    "highlight_category_code" TEXT,
+    "highlight_category_name" TEXT,
+    "description" TEXT,
+    "priority" INTEGER,
+    "icon" TEXT
+);
+
 CREATE TABLE IF NOT EXISTS public."fact_video" (
-    "video_key" TEXT,
+    "video_key" TEXT PRIMARY KEY,
     "game_id" TEXT,
+    "video_type_id" TEXT,
+    "video_type" TEXT,
+    "video_description" TEXT,
     "video_url" TEXT,
     "duration_seconds" TEXT,
     "period_1_start" TEXT,
     "period_2_start" TEXT,
     "period_3_start" TEXT,
+    "_export_timestamp" TEXT
+);
+
+CREATE TABLE IF NOT EXISTS public."fact_highlights" (
+    "highlight_key" TEXT PRIMARY KEY,
+    "event_id" TEXT,
+    "game_id" TEXT,
+    "video_key" TEXT,
+    "video_url" TEXT,
+    "highlight_category_id" TEXT,
+    "period" TEXT,
+    "event_type" TEXT,
+    "event_detail" TEXT,
+    "video_start_time" TEXT,
+    "video_end_time" TEXT,
+    "duration_seconds" TEXT,
+    "event_time_display" TEXT,
+    "description" TEXT,
+    "event_player_1" TEXT,
+    "event_player_2" TEXT,
+    "team_id" TEXT,
     "_export_timestamp" TEXT
 );
 CREATE TABLE IF NOT EXISTS public."fact_wowy" (

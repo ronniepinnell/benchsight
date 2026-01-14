@@ -34,6 +34,25 @@ function isValidImageUrl(url: string | null | undefined): boolean {
   if (!url || typeof url !== 'string' || url.trim() === '') {
     return false
   }
+  
+  const trimmedUrl = url.trim().toLowerCase()
+  
+  // Filter out placeholder text
+  const placeholderTexts = [
+    'image coming soon',
+    'coming soon',
+    'placeholder',
+    'no image',
+    'image not available',
+    'tbd',
+    'n/a',
+    'na'
+  ]
+  
+  if (placeholderTexts.some(text => trimmedUrl.includes(text))) {
+    return false
+  }
+  
   // Check if it's a valid URL format
   try {
     const urlObj = new URL(url)

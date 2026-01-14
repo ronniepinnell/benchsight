@@ -92,6 +92,8 @@ tr:hover { background: rgba(0, 212, 255, 0.05); }
 <div class="nav">
   <div class="nav-item active" onclick="showSection('dashboard')">📊 Dashboard</div>
   <div class="nav-item" onclick="showSection('etl')">⚙️ ETL Pipeline</div>
+  <div class="nav-item" onclick="showSection('schema')">🗄️ Schema Management</div>
+  <div class="nav-item" onclick="showSection('sync')">🔄 Data Sync</div>
   <div class="nav-item" onclick="showSection('games')">🎮 Games</div>
   <div class="nav-item" onclick="showSection('data')">📁 Data Browser</div>
   <div class="nav-item" onclick="showSection('settings')">🔧 Settings</div>
@@ -158,8 +160,26 @@ tr:hover { background: rgba(0, 212, 255, 0.05); }
           </select>
         </div>
         <div class="form-group" id="gameIdGroup" style="display:none;">
-          <label>Game ID</label>
-          <input type="text" id="etlGameId" placeholder="e.g., 19032">
+          <label>Game ID(s) - Comma-separated for multiple</label>
+          <input type="text" id="etlGameId" placeholder="e.g., 19032 or 18969, 18977, 18981">
+        </div>
+        <div class="form-group">
+          <label>Data Source</label>
+          <select id="etlSource">
+            <option value="excel">Excel Files (Local)</option>
+            <option value="supabase">Supabase Staging Tables</option>
+          </select>
+          <p style="font-size:10px;color:var(--muted);margin-top:4px;">
+            Excel: Read from local files in data/raw/<br>
+            Supabase: Read from staging tables (stage_dim_*, stage_events_tracking, etc.)
+          </p>
+        </div>
+        <div class="form-group">
+          <label>Exclude Game IDs (optional)</label>
+          <input type="text" id="etlExcludeGames" placeholder="e.g., 99999, 88888">
+          <p style="font-size:10px;color:var(--muted);margin-top:4px;">
+            Comma-separated list of game IDs to exclude from processing
+          </p>
         </div>
         <div class="form-group">
           <label>Options</label>
@@ -168,12 +188,13 @@ tr:hover { background: rgba(0, 212, 255, 0.05); }
               <input type="checkbox" id="etlClean" checked> Clean Output
             </label>
             <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
-              <input type="checkbox" id="etlSync"> Sync to Supabase
-            </label>
-            <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
               <input type="checkbox" id="etlVerify" checked> Verify Goals
             </label>
           </div>
+          <p style="font-size:10px;color:var(--muted);margin-top:8px;">
+            <strong>Note:</strong> Schema generation and data sync are now separate operations. 
+            See "Schema Management" and "Data Sync" sections.
+          </p>
         </div>
         <div style="display:flex;gap:10px;margin-top:15px;">
           <button class="btn btn-primary" onclick="runETL()">▶ Run ETL</button>
@@ -210,6 +231,117 @@ tr:hover { background: rgba(0, 212, 255, 0.05); }
     </div>
   </div>
   
+  <!-- Schema Management Section -->
+  <div class="section" id="schemaSection">
+    <div class="grid">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Schema Generation</span>
+        </div>
+        <p style="font-size:11px;color:var(--muted);margin-bottom:15px;">
+          Generate SQL schema file from ETL output tables. Creates/updates <code>sql/reset_supabase.sql</code> with DROP and CREATE TABLE statements.
+        </p>
+        <button class="btn btn-primary" onclick="generateSchema()">🔧 Generate Schema</button>
+        <div class="progress-bar" id="schemaProgress" style="display:none;margin-top:10px;">
+          <div class="progress-fill" id="schemaProgressFill" style="width:0%"></div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Schema Status</span>
+          <span class="badge badge-success" id="schemaStatusBadge">READY</span>
+        </div>
+        <div class="stat-grid">
+          <div class="stat"><div class="stat-value" id="schemaTablesGenerated">--</div><div class="stat-label">Tables</div></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Schema Loading Instructions</span>
+      </div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.6;">
+        <p><strong>After generating the schema:</strong></p>
+        <ol style="margin-left:20px;margin-top:10px;">
+          <li>Open Supabase Dashboard → SQL Editor</li>
+          <li>Copy contents of <code>sql/reset_supabase.sql</code></li>
+          <li>Paste into SQL Editor and execute</li>
+          <li>This will drop all existing tables and recreate the schema</li>
+        </ol>
+        <p style="margin-top:15px;color:var(--warn);">
+          <strong>⚠️ Warning:</strong> This will delete all existing data. Make sure to backup if needed.
+        </p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Data Sync Section -->
+  <div class="section" id="syncSection">
+    <div class="grid">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Sync to Supabase</span>
+        </div>
+        <div class="form-group">
+          <label>Sync Mode</label>
+          <select id="syncMode">
+            <option value="all">All Tables</option>
+            <option value="dims">Dimension Tables Only (dim_*)</option>
+            <option value="facts">Fact Tables Only (fact_*)</option>
+            <option value="qa">QA/Lookup Tables (qa_*, lookup_*)</option>
+            <option value="basic">Basic Stats Tables (*_basic)</option>
+            <option value="tracking">Tracking Tables</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Specific Tables (optional, comma-separated)</label>
+          <input type="text" id="syncTables" placeholder="e.g., dim_player, fact_events">
+          <p style="font-size:10px;color:var(--muted);margin-top:4px;">
+            Leave empty to use mode selection above
+          </p>
+        </div>
+        <div class="form-group">
+          <label>Options</label>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
+              <input type="checkbox" id="syncClean"> Clean CSV files after upload
+            </label>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:15px;">
+          <button class="btn btn-primary" onclick="syncToSupabase()">🔄 Sync to Supabase</button>
+          <button class="btn btn-danger" onclick="stopSync()" disabled id="stopSyncBtn">⏹ Stop</button>
+        </div>
+        <div class="progress-bar" id="syncProgress" style="display:none;margin-top:10px;">
+          <div class="progress-fill" id="syncProgressFill" style="width:0%"></div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Sync Status</span>
+          <span class="badge badge-success" id="syncStatusBadge">IDLE</span>
+        </div>
+        <div class="stat-grid">
+          <div class="stat"><div class="stat-value" id="syncTablesProcessed">0</div><div class="stat-label">Tables</div></div>
+          <div class="stat"><div class="stat-value" id="syncErrors">0</div><div class="stat-label">Errors</div></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Sync Log</span>
+        <button class="btn btn-outline" onclick="clearSyncLog()">Clear</button>
+      </div>
+      <div class="log-area" id="syncLog">
+        <div class="log-line info">[INFO] Data sync ready</div>
+      </div>
+    </div>
+  </div>
+  
   <!-- Games Section -->
   <div class="section" id="gamesSection">
     <div class="card">
@@ -219,7 +351,7 @@ tr:hover { background: rgba(0, 212, 255, 0.05); }
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Game ID</th><th>Date</th><th>Home</th><th>Away</th><th>Score</th><th>Events</th><th>Status</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Game ID</th><th>Date</th><th>Home</th><th>Away</th><th>Score</th><th>Tracking Log</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody id="gamesTable">
             <tr><td colspan="8" style="text-align:center;color:var(--muted);">Loading...</td></tr>
           </tbody>
@@ -296,16 +428,29 @@ tr:hover { background: rgba(0, 212, 255, 0.05); }
   </div>
 </div>
 
+<!-- API Client Scripts -->
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/etl.js"></script>
+<script src="js/schema.js"></script>
+<script src="js/sync.js"></script>
+<script src="tables.js"></script>
+
 <script>
 let sb = null;
-let etlRunning = false;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
   loadSettings();
   await tryConnect();
   document.getElementById('etlMode').addEventListener('change', function() {
-    document.getElementById('gameIdGroup').style.display = this.value === 'single' ? 'block' : 'none';
+    const isSingle = this.value === 'single';
+    document.getElementById('gameIdGroup').style.display = isSingle ? 'block' : 'none';
+    // Update placeholder based on mode
+    const gameIdInput = document.getElementById('etlGameId');
+    gameIdInput.placeholder = isSingle 
+      ? 'e.g., 19032' 
+      : 'e.g., 18969, 18977, 18981 (optional - leave empty for all games)';
   });
 });
 
@@ -374,7 +519,9 @@ async function loadStats() {
     const { count: goals } = await sb.from('fact_events').select('*', { count: 'exact', head: true }).eq('event_type', 'Goal').eq('event_detail', 'Goal_Scored');
     const { count: players } = await sb.from('dim_player').select('*', { count: 'exact', head: true });
     
-    document.getElementById('statTables').textContent = '59';
+    // Table count - hardcoded to 137 (total from SUPABASE_TABLES_INVENTORY.md)
+    // Cannot query information_schema directly from JS client
+    document.getElementById('statTables').textContent = '137';
     document.getElementById('statGames').textContent = games || 0;
     document.getElementById('statGoals').textContent = goals || 0;
     document.getElementById('statPlayers').textContent = players || 0;
@@ -387,42 +534,181 @@ async function loadGames() {
   if (!sb) return;
   
   try {
-    const { data } = await sb.from('dim_schedule')
+    // Load all games (removed limit to show all games)
+    const { data: games } = await sb.from('dim_schedule')
       .select('game_id,date,home_team_name,away_team_name,home_total_goals,away_total_goals')
-      .order('date', { ascending: false })
-      .limit(50);
+      .order('date', { ascending: false });
+    
+    if (!games || games.length === 0) {
+      document.getElementById('gamesTable').innerHTML = '<tr><td colspan="8">No games found</td></tr>';
+      return;
+    }
+    
+    const gameIds = games.map(g => String(g.game_id));
+    
+    // Get events data for time ranges
+    const { data: events } = await sb.from('fact_events')
+      .select('game_id,period,event_start_min,event_start_sec')
+      .in('game_id', gameIds);
+    
+    // Get shift counts
+    const { data: shifts } = await sb.from('fact_shifts')
+      .select('game_id')
+      .in('game_id', gameIds);
+    
+    // Check for XY data (check if any XY tables have data for these games)
+    const { data: xyData } = await sb.from('fact_puck_xy_wide')
+      .select('game_id')
+      .in('game_id', gameIds)
+      .limit(1);
+    const hasXYTable = xyData && xyData.length > 0;
+    
+    // Process events data - group by game and period
+    const gameTracking = {};
+    if (events) {
+      events.forEach(e => {
+        const gid = String(e.game_id);
+        if (!gameTracking[gid]) {
+          gameTracking[gid] = {
+            events: 0,
+            periods: {},
+            shifts: 0,
+            hasXY: false
+          };
+        }
+        gameTracking[gid].events++;
+        
+        const period = String(e.period || '1');
+        if (!gameTracking[gid].periods[period]) {
+          gameTracking[gid].periods[period] = {
+            min: null,
+            max: null,
+            times: []
+          };
+        }
+        
+        if (e.event_start_min !== null && e.event_start_min !== undefined && 
+            e.event_start_sec !== null && e.event_start_sec !== undefined) {
+          const min = parseInt(e.event_start_min) || 0;
+          const sec = parseInt(e.event_start_sec) || 0;
+          const timeStr = `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+          gameTracking[gid].periods[period].times.push(timeStr);
+        }
+      });
+    }
+    
+    // Process shift counts
+    if (shifts) {
+      shifts.forEach(s => {
+        const gid = String(s.game_id);
+        if (gameTracking[gid]) {
+          gameTracking[gid].shifts++;
+        }
+      });
+    }
+    
+    // Check XY data per game (simplified - just check if table exists and has any data)
+    // For now, we'll mark all games as having/not having XY based on table existence
+    // This could be enhanced to check per-game XY data
+    
+    // Build tracking log strings
+    const buildTrackingLog = (gameId) => {
+      const tracking = gameTracking[gameId] || { events: 0, periods: {}, shifts: 0, hasXY: false };
+      
+      if (tracking.events === 0) {
+        return '<span style="color:var(--muted);">No tracking data</span>';
+      }
+      
+      // Build time ranges per period
+      const periodRanges = [];
+      const sortedPeriods = Object.keys(tracking.periods).sort((a, b) => {
+        // Handle numeric and OT periods
+        if (a === 'OT' || a === '4') return 4;
+        if (b === 'OT' || b === '4') return 4;
+        return parseInt(a) - parseInt(b);
+      });
+      
+      for (const period of sortedPeriods) {
+        const times = tracking.periods[period].times.filter(t => t);
+        if (times.length > 0) {
+          times.sort(); // Sort times
+          const first = times[0];
+          const last = times[times.length - 1];
+          periodRanges.push(`${first} P${period} - ${last} P${period}`);
+        }
+      }
+      
+      // Build summary
+      const parts = [];
+      if (periodRanges.length > 0) {
+        parts.push(periodRanges.join(', '));
+      }
+      
+      const dataParts = [];
+      if (tracking.events > 0) {
+        dataParts.push(`${tracking.events.toLocaleString()} Events`);
+      }
+      if (tracking.shifts > 0) {
+        dataParts.push(`${tracking.shifts} Shifts`);
+      }
+      if (dataParts.length > 0) {
+        parts.push(dataParts.join('/'));
+      }
+      
+      // Check XY (simplified - would need per-game check)
+      const xyStatus = hasXYTable ? '' : ' (no XY)';
+      if (!hasXYTable && tracking.events > 0) {
+        parts.push('no XY');
+      }
+      
+      return parts.join(' | ') || 'Tracking data available';
+    };
     
     const tbody = document.getElementById('gamesTable');
-    tbody.innerHTML = (data || []).map(g => `
-      <tr>
+    tbody.innerHTML = games.map(g => {
+      const gameId = String(g.game_id);
+      const tracking = gameTracking[gameId] || { events: 0, shifts: 0 };
+      const eventCount = tracking.events || 0;
+      const isTracked = eventCount > 0;
+      const statusBadge = isTracked 
+        ? '<span class="badge badge-success">Tracked</span>'
+        : '<span class="badge badge-warn">Not Tracked</span>';
+      
+      const trackingLog = buildTrackingLog(gameId);
+      
+      return `<tr>
         <td>${g.game_id}</td>
         <td>${g.date?.split('T')[0] || '-'}</td>
         <td>${g.home_team_name}</td>
         <td>${g.away_team_name}</td>
         <td>${g.home_total_goals || 0} - ${g.away_total_goals || 0}</td>
-        <td>--</td>
-        <td><span class="badge badge-success">Tracked</span></td>
+        <td style="font-size:11px;color:var(--muted);max-width:400px;">${trackingLog}</td>
+        <td>${statusBadge}</td>
         <td>
           <button class="btn btn-outline" style="padding:4px 8px;font-size:10px;" onclick="openInTracker(${g.game_id})">Edit</button>
           <button class="btn btn-outline" style="padding:4px 8px;font-size:10px;" onclick="viewGame(${g.game_id})">View</button>
         </td>
-      </tr>
-    `).join('') || '<tr><td colspan="8">No games found</td></tr>';
+      </tr>`;
+    }).join('');
   } catch(e) {
     console.error('Failed to load games:', e);
+    document.getElementById('gamesTable').innerHTML = '<tr><td colspan="8">Error loading games</td></tr>';
   }
 }
 
 async function loadTables() {
   if (!sb) return;
   
-  const tables = ['dim_schedule','dim_team','dim_player','fact_events','fact_event_players','fact_gameroster','fact_shifts'];
+  // Use complete table list from tables.js (137 tables total)
+  // Sort tables for easier browsing
+  const sortedTables = ALL_TABLES.sort();
   
-  document.getElementById('tableList').innerHTML = tables.map(t => `
-    <div style="padding:8px;border-bottom:1px solid var(--border);cursor:pointer;" onclick="previewTable('${t}')" class="table-item">
-      📊 ${t}
-    </div>
-  `).join('');
+  document.getElementById('tableList').innerHTML = sortedTables.map(t => {
+    const prefix = t.startsWith('dim_') ? '📦' : t.startsWith('fact_') ? '📊' : t.startsWith('v_') ? '👁' : '🔍';
+    return `<div style="padding:8px;border-bottom:1px solid var(--border);cursor:pointer;" onclick="previewTable('${t}')" class="table-item">
+      ${prefix} ${t}
+    </div>`;
+  }).join('');
 }
 
 async function previewTable(name) {
@@ -461,62 +747,8 @@ function clearLog() {
   document.getElementById('etlLog').innerHTML = '<div class="log-line info">[INFO] Log cleared</div>';
 }
 
-async function runETL() {
-  const mode = document.getElementById('etlMode').value;
-  const clean = document.getElementById('etlClean').checked;
-  const sync = document.getElementById('etlSync').checked;
-  const verify = document.getElementById('etlVerify').checked;
-  
-  log('Starting ETL pipeline...', 'info');
-  log(`Mode: ${mode}, Clean: ${clean}, Sync: ${sync}, Verify: ${verify}`);
-  
-  document.getElementById('etlStatusBadge').textContent = 'RUNNING';
-  document.getElementById('etlStatusBadge').className = 'badge badge-warn';
-  document.getElementById('etlProgress').style.display = 'block';
-  document.getElementById('stopBtn').disabled = false;
-  etlRunning = true;
-  
-  // Simulate ETL progress (in real implementation, this would call Python backend)
-  const steps = [
-    { name: 'Loading tracking files', pct: 10 },
-    { name: 'Processing events', pct: 30 },
-    { name: 'Building dimensions', pct: 50 },
-    { name: 'Building facts', pct: 70 },
-    { name: 'Running QA checks', pct: 85 },
-    { name: 'Syncing to Supabase', pct: 95 },
-    { name: 'Complete', pct: 100 }
-  ];
-  
-  for (const step of steps) {
-    if (!etlRunning) break;
-    log(step.name + '...');
-    document.getElementById('etlProgressFill').style.width = step.pct + '%';
-    await new Promise(r => setTimeout(r, 500));
-  }
-  
-  if (etlRunning) {
-    log('ETL pipeline completed successfully!', 'info');
-    document.getElementById('etlStatusBadge').textContent = 'COMPLETE';
-    document.getElementById('etlStatusBadge').className = 'badge badge-success';
-    
-    if (mode === 'test') {
-      log('Test mode: Validated export format for game 99999', 'info');
-      log('Events: 8 rows, Shifts: 2 rows processed');
-    }
-  } else {
-    log('ETL pipeline stopped', 'warn');
-    document.getElementById('etlStatusBadge').textContent = 'STOPPED';
-    document.getElementById('etlStatusBadge').className = 'badge badge-danger';
-  }
-  
-  document.getElementById('stopBtn').disabled = true;
-  etlRunning = false;
-}
-
-function stopETL() {
-  etlRunning = false;
-  log('Stopping ETL...', 'warn');
-}
+// runETL() and stopETL() are now in js/etl.js
+// Using the real API implementation
 
 function openInTracker(gameId) {
   window.open(`../tracker/?game=${gameId}`, '_blank');

@@ -20,7 +20,7 @@ from src.tables.core_facts import (
     get_game_ids, get_players_in_game,
     calculate_player_event_stats, calculate_player_shift_stats,
     calculate_advanced_shift_stats, calculate_zone_entry_exit_stats,
-    calculate_faceoff_zone_stats, calculate_period_splits,
+    calculate_possession_time_by_zone, calculate_faceoff_zone_stats, calculate_wdbe_faceoffs, calculate_period_splits,
     calculate_danger_zone_stats, calculate_rush_stats,
     calculate_micro_stats, calculate_advanced_micro_stats, calculate_xg_stats,
     calculate_strength_splits, calculate_shot_type_stats,
@@ -30,6 +30,7 @@ from src.tables.core_facts import (
     calculate_time_bucket_stats, calculate_rebound_stats,
     calculate_game_score, calculate_war_stats,
     calculate_performance_vs_rating, calculate_relative_stats,
+    calculate_ratings_adjusted_stats,
     load_table
 )
 
@@ -164,7 +165,9 @@ class PlayerStatsBuilder:
         stats.update(calculate_player_shift_stats(player_id, game_id, shifts, shift_players))
         stats.update(calculate_advanced_shift_stats(player_id, game_id, shift_players))
         stats.update(calculate_zone_entry_exit_stats(player_id, game_id, event_players, zone_entry_types, zone_exit_types, events))
+        stats.update(calculate_possession_time_by_zone(player_id, game_id, event_players, events))
         stats.update(calculate_faceoff_zone_stats(player_id, game_id, event_players))
+        stats.update(calculate_wdbe_faceoffs(player_id, game_id, event_players, events))
         stats.update(calculate_period_splits(player_id, game_id, event_players, shift_players))
         stats.update(calculate_danger_zone_stats(player_id, game_id, event_players, events))
         stats.update(calculate_rush_stats(player_id, game_id, event_players, events))
@@ -203,6 +206,9 @@ class PlayerStatsBuilder:
         stats.update(calculate_war_stats(stats))
         stats.update(calculate_performance_vs_rating(stats, player_rating))
         stats.update(calculate_relative_stats(stats))
+        
+        # Ratings-adjusted stats (NEW)
+        stats.update(calculate_ratings_adjusted_stats(player_id, game_id, shift_players, stats))
         
         return stats
     

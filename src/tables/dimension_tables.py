@@ -10,6 +10,7 @@ Tables created:
 - dim_competition_tier (4 rows)
 - dim_composite_rating (8 rows)
 - dim_danger_zone (4 rows)
+- dim_highlight_category (10 rows)
 - dim_micro_stat (22 rows)
 - dim_net_location (10 rows)
 - dim_pass_outcome (4 rows)
@@ -26,6 +27,7 @@ Tables created:
 - dim_terminology_mapping (84 rows)
 - dim_turnover_quality (3 rows)
 - dim_turnover_type (21 rows)
+- dim_video_type (9 rows)
 - dim_zone_outcome (6 rows)
 
 Usage:
@@ -543,6 +545,72 @@ def create_dim_turnover_type() -> pd.DataFrame:
     return pd.DataFrame(turnovers, columns=columns)
 
 
+def create_dim_video_type() -> pd.DataFrame:
+    """
+    Video type dimension table.
+    
+    Defines all possible video types (Full_Ice, Broadcast, Highlights, etc.)
+    with descriptions and metadata.
+    """
+    video_types = [
+        # (video_type_id, video_type_code, video_type_name, description, is_primary, sort_order, use_for_highlights)
+        ('VT0001', 'Full_Ice', 'Full Ice', 'Full ice camera view of entire game', True, 1, True),
+        ('VT0002', 'Broadcast', 'Broadcast', 'Television/streaming broadcast feed', True, 2, False),
+        ('VT0003', 'Highlights', 'Highlights', 'Compilation of game highlights', False, 3, False),
+        ('VT0004', 'Goalie', 'Goalie Camera', 'Goalie camera view', False, 4, False),
+        ('VT0005', 'Overhead', 'Overhead', 'Overhead camera view', False, 5, False),
+        ('VT0006', 'Wide', 'Wide Angle', 'Wide angle camera view', False, 6, False),
+        ('VT0007', 'Tight', 'Tight Shot', 'Tight/close-up camera view', False, 7, False),
+        ('VT0008', 'Replay', 'Replay', 'Replay/instant replay footage', False, 8, False),
+        ('VT0009', 'Other', 'Other', 'Other video type', False, 9, False),
+    ]
+    
+    df = pd.DataFrame(video_types, columns=[
+        'video_type_id',
+        'video_type_code',
+        'video_type_name',
+        'description',
+        'is_primary',
+        'sort_order',
+        'use_for_highlights'
+    ])
+    
+    return df
+
+
+def create_dim_highlight_category() -> pd.DataFrame:
+    """
+    Highlight category dimension table.
+    
+    Categorizes highlights by type/importance for filtering and organization.
+    Highlights can be linked to event types, but this provides additional categorization.
+    """
+    categories = [
+        # (highlight_category_id, highlight_category_code, highlight_category_name, description, priority, icon)
+        ('HC0001', 'Goal', 'Goal', 'Goals scored', 1, '🏒'),
+        ('HC0002', 'Save', 'Save', 'Outstanding saves', 2, '🥅'),
+        ('HC0003', 'Hit', 'Hit', 'Big hits/body checks', 3, '💥'),
+        ('HC0004', 'Fight', 'Fight', 'Fights', 4, '👊'),
+        ('HC0005', 'Breakaway', 'Breakaway', 'Breakaway chances', 5, '⚡'),
+        ('HC0006', 'Penalty_Shot', 'Penalty Shot', 'Penalty shots', 6, '🎯'),
+        ('HC0007', 'Sequence', 'Sequence', 'Multi-event sequences', 7, '🔄'),
+        ('HC0008', 'Momentum', 'Momentum Shift', 'Momentum-changing plays', 8, '📈'),
+        ('HC0009', 'Skill', 'Skill Play', 'Exceptional skill displays', 9, '⭐'),
+        ('HC0010', 'Other', 'Other', 'Other highlights', 10, '📹'),
+    ]
+    
+    df = pd.DataFrame(categories, columns=[
+        'highlight_category_id',
+        'highlight_category_code',
+        'highlight_category_name',
+        'description',
+        'priority',
+        'icon'
+    ])
+    
+    return df
+
+
 def create_dim_zone_outcome() -> pd.DataFrame:
     """Zone entry/exit outcome types."""
     return pd.DataFrame({
@@ -590,6 +658,8 @@ def create_all_dimension_tables():
         'dim_terminology_mapping': create_dim_terminology_mapping,
         'dim_turnover_quality': create_dim_turnover_quality,
         'dim_turnover_type': create_dim_turnover_type,
+        'dim_video_type': create_dim_video_type,
+        'dim_highlight_category': create_dim_highlight_category,
         'dim_zone_outcome': create_dim_zone_outcome,
     }
     

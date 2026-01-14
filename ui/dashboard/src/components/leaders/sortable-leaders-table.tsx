@@ -272,7 +272,16 @@ export function SortableLeadersTable({ leaders, playersMap, isCurrentSeason = fa
                     )}
                   </td>
                   <td className="px-4 py-3 text-sm text-muted-foreground">
-                    {player.displayTeam || '-'}
+                    {player.displayTeam ? (
+                      <Link 
+                        href={`/team/${player.displayTeam.replace(/\s+/g, '_')}`}
+                        className="hover:text-foreground transition-colors"
+                      >
+                        {player.displayTeam}
+                      </Link>
+                    ) : (
+                      <span>-</span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-center font-mono text-sm text-muted-foreground">
                     {player.games_played}

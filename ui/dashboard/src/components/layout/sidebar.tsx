@@ -80,6 +80,14 @@ const navigation: NavSection[] = [
     ],
   },
   {
+    name: 'Tools',
+    icon: '🛠️',
+    items: [
+      { name: 'Game Tracker', href: '/tracker', icon: <Timer className="w-4 h-4" /> },
+      { name: 'Admin Portal', href: '/admin', icon: <Database className="w-4 h-4" /> },
+    ],
+  },
+  {
     name: 'Prototypes',
     icon: '🧪',
     items: [

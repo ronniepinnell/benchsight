@@ -16,6 +16,56 @@ export async function getTeams(): Promise<DimTeam[]> {
   return data ?? []
 }
 
+// Get teams for a specific season (from dim_schedule)
+export async function getTeamsBySeason(seasonId: string | null): Promise<DimTeam[]> {
+  if (!seasonId) {
+    return getTeams()
+  }
+  
+  const supabase = await createClient()
+  
+  // Get unique team IDs from games in this season
+  const { data: scheduleData, error: scheduleError } = await supabase
+    .from('dim_schedule')
+    .select('home_team_id, away_team_id')
+    .eq('season_id', seasonId)
+  
+  if (scheduleError) {
+    console.error('Error fetching teams for season:', scheduleError)
+    return []
+  }
+  
+  if (!scheduleData || scheduleData.length === 0) {
+    return []
+  }
+  
+  // Get unique team IDs
+  const teamIds = [...new Set(
+    scheduleData.flatMap(game => [
+      game.home_team_id ? String(game.home_team_id) : null,
+      game.away_team_id ? String(game.away_team_id) : null
+    ]).filter(Boolean)
+  )]
+  
+  if (teamIds.length === 0) {
+    return []
+  }
+  
+  // Fetch team details
+  const { data: teams, error: teamsError } = await supabase
+    .from('dim_team')
+    .select('*')
+    .in('team_id', teamIds)
+    .order('team_name')
+  
+  if (teamsError) {
+    console.error('Error fetching team details:', teamsError)
+    return []
+  }
+  
+  return teams ?? []
+}
+
 // Get team by ID
 export async function getTeamById(teamId: string): Promise<DimTeam | null> {
   const supabase = await createClient()

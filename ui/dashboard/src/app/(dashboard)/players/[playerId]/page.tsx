@@ -4,12 +4,15 @@ import { notFound } from 'next/navigation'
 import { getPlayerById, getPlayerCareerSummary, getPlayerGameLog } from '@/lib/supabase/queries/players'
 import { getTeamById } from '@/lib/supabase/queries/teams'
 import { createClient } from '@/lib/supabase/server'
-import { ArrowLeft, Target, Sparkles, TrendingUp, Calendar, Activity, Zap, Shield, BarChart3, Info } from 'lucide-react'
+import { ArrowLeft, Target, Sparkles, TrendingUp, Calendar, Activity, Zap, Shield, BarChart3, Info, Users, Clock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { PlayerPhoto } from '@/components/players/player-photo'
 import { TeamLogo } from '@/components/teams/team-logo'
 import { SeasonSelector } from '@/components/teams/season-selector'
 import { StatCard, StatRow } from '@/components/players/stat-card'
+import { GameStatDrilldown } from '@/components/stats/game-stat-drilldown'
+import { calculatePercentile } from '@/lib/stats/percentiles'
+import { GameCard } from '@/components/players/game-card'
 
 export const revalidate = 300
 
@@ -26,11 +29,17 @@ export async function generateMetadata({ params }: { params: Promise<{ playerId:
 async function PlayerAdvancedStatsSection({ 
   playerId, 
   seasonId, 
-  gameType 
+  gameType,
+  gameIds = [],
+  playerPosition,
+  playerRating
 }: { 
   playerId: string
   seasonId: string
   gameType: string
+  gameIds?: number[]
+  playerPosition?: string
+  playerRating?: number
 }) {
   try {
     const supabase = await createClient()
@@ -85,36 +94,6 @@ async function PlayerAdvancedStatsSection({
       }
     }
   
-  // First, let's get a sample to see what columns we actually have
-  const { data: sampleData, error: sampleError } = await supabase
-    .from('fact_player_game_stats')
-    .select('*')
-    .eq('player_id', playerId)
-    .limit(1)
-  
-  if (sampleError) {
-    console.error('Error fetching sample data:', sampleError)
-  }
-  
-  console.log('[PlayerAdvancedStats] Player ID:', playerId)
-  console.log('[PlayerAdvancedStats] Season ID:', seasonId)
-  console.log('[PlayerAdvancedStats] Game Type:', gameType)
-  console.log('[PlayerAdvancedStats] Game IDs count:', gameIds.length)
-  console.log('[PlayerAdvancedStats] Sample data exists:', !!sampleData)
-  console.log('[PlayerAdvancedStats] Sample data length:', sampleData?.length || 0)
-  
-  if (sampleData && sampleData.length > 0) {
-    const sampleRow = sampleData[0]
-    console.log('[PlayerAdvancedStats] Sample columns:', Object.keys(sampleRow))
-    console.log('[PlayerAdvancedStats] Sample corsi_for:', sampleRow.corsi_for)
-    console.log('[PlayerAdvancedStats] Sample cf:', sampleRow.cf)
-    console.log('[PlayerAdvancedStats] Sample hits:', sampleRow.hits)
-    console.log('[PlayerAdvancedStats] Sample blocks:', sampleRow.blocks)
-    console.log('[PlayerAdvancedStats] Sample zone_entries:', sampleRow.zone_entries)
-  } else {
-    console.log('[PlayerAdvancedStats] No sample data found for player:', playerId)
-  }
-  
   // Fetch all advanced stats in parallel
   // Query all stats for this player, then filter by game_ids if we have them
   const [
@@ -123,7 +102,12 @@ async function PlayerAdvancedStatsSection({
     warStats,
     physicalStats,
     shootingStats,
-    per60Stats
+    per60Stats,
+    faceoffStats,
+    passingStats,
+    situationalStats,
+    assistBreakdownStats,
+    microStats
   ] = await Promise.all([
     // Possession stats - query all columns first, then extract what we need
     supabase
@@ -135,9 +119,7 @@ async function PlayerAdvancedStatsSection({
           console.error('Error fetching possession stats:', error)
           return null
         }
-        console.log('Total possession stats rows:', data?.length || 0)
         if (!data || data.length === 0) {
-          console.log('No possession stats data found')
           return null
         }
         
@@ -145,10 +127,8 @@ async function PlayerAdvancedStatsSection({
         let filteredData = data
         if (gameIds.length > 0) {
           filteredData = data.filter(stat => gameIds.includes(stat.game_id))
-          console.log('After game_id filter:', filteredData.length)
         }
         if (filteredData.length === 0) {
-          console.log('No data after filtering')
           return null
         }
         
@@ -160,8 +140,13 @@ async function PlayerAdvancedStatsSection({
           const fa = stat.fenwick_against ?? stat.fa ?? 0
           const xg = stat.xg_for ?? stat.xg ?? stat.expected_goals ?? 0
           const goals = stat.goals ?? stat.g ?? 0
-          
-          console.log('Processing stat row:', { cf, ca, ff, fa, xg, goals, hasCorsiFor: 'corsi_for' in stat, hasCf: 'cf' in stat })
+          const goalsFor = stat.goals_for ?? stat.gf ?? 0
+          const goalsAgainst = stat.goals_against ?? stat.ga ?? 0
+          const cfPctRel = stat.cf_pct_rel ?? stat.corsi_pct_rel ?? 0
+          const ffPctRel = stat.ff_pct_rel ?? stat.fenwick_pct_rel ?? 0
+          const plusEv = stat.plus_ev ?? stat.plus_events ?? 0
+          const minusEv = stat.minus_ev ?? stat.minus_events ?? 0
+          const plusMinusEv = stat.plus_minus_ev ?? stat.plus_minus_even_strength ?? 0
           
           return {
             cf: (acc.cf || 0) + (Number(cf) || 0),
@@ -170,13 +155,36 @@ async function PlayerAdvancedStatsSection({
             fa: (acc.fa || 0) + (Number(fa) || 0),
             xg: (acc.xg || 0) + (Number(xg) || 0),
             goals: (acc.goals || 0) + (Number(goals) || 0),
+            goalsFor: (acc.goalsFor || 0) + (Number(goalsFor) || 0),
+            goalsAgainst: (acc.goalsAgainst || 0) + (Number(goalsAgainst) || 0),
+            cfPctRel: (acc.cfPctRel || 0) + (Number(cfPctRel) || 0),
+            ffPctRel: (acc.ffPctRel || 0) + (Number(ffPctRel) || 0),
+            plusEv: (acc.plusEv || 0) + (Number(plusEv) || 0),
+            minusEv: (acc.minusEv || 0) + (Number(minusEv) || 0),
+            plusMinusEv: (acc.plusMinusEv || 0) + (Number(plusMinusEv) || 0),
+            games: acc.games + 1,
           }
-        }, { cf: 0, ca: 0, ff: 0, fa: 0, xg: 0, goals: 0 })
+        }, { cf: 0, ca: 0, ff: 0, fa: 0, xg: 0, goals: 0, goalsFor: 0, goalsAgainst: 0, cfPctRel: 0, ffPctRel: 0, plusEv: 0, minusEv: 0, plusMinusEv: 0, games: 0 })
         
-        console.log('Possession totals:', totals)
+        // Only return if we have meaningful data
+        if (totals.cf === 0 && totals.ca === 0 && totals.ff === 0 && totals.fa === 0) {
+          return null
+        }
         const cfPct = totals.cf + totals.ca > 0 ? (totals.cf / (totals.cf + totals.ca)) * 100 : 0
         const ffPct = totals.ff + totals.fa > 0 ? (totals.ff / (totals.ff + totals.fa)) * 100 : 0
-        return { ...totals, cfPct, ffPct, xgDiff: totals.goals - totals.xg }
+        const gfPct = totals.goalsFor + totals.goalsAgainst > 0 ? (totals.goalsFor / (totals.goalsFor + totals.goalsAgainst)) * 100 : 0
+        const xgDiff = Number(totals.goals) - Number(totals.xg)
+        const avgCfPctRel = totals.games > 0 ? totals.cfPctRel / totals.games : 0
+        const avgFfPctRel = totals.games > 0 ? totals.ffPctRel / totals.games : 0
+        return { 
+          ...totals, 
+          cfPct: Number(cfPct), 
+          ffPct: Number(ffPct), 
+          gfPct: Number(gfPct),
+          xgDiff: Number(xgDiff),
+          cfPctRel: Number(avgCfPctRel),
+          ffPctRel: Number(avgFfPctRel),
+        }
       }).catch((error) => {
         console.error('Error in possession stats query:', error)
         return null
@@ -215,7 +223,13 @@ async function PlayerAdvancedStatsSection({
         }, { ze: 0, zeSuccess: 0, zx: 0, zxSuccess: 0 })
         const zePct = totals.ze > 0 ? (totals.zeSuccess / totals.ze) * 100 : 0
         const zxPct = totals.zx > 0 ? (totals.zxSuccess / totals.zx) * 100 : 0
-        return { ...totals, zePct, zxPct }
+        
+        // Only return if we have meaningful data
+        if (totals.ze === 0 && totals.zx === 0) {
+          return null
+        }
+        
+        return { ...totals, zePct: Number(zePct), zxPct: Number(zxPct) }
       }).catch((error) => {
         console.error('Error in zone stats query:', error)
         return null
@@ -244,13 +258,22 @@ async function PlayerAdvancedStatsSection({
           war: (acc.war || 0) + (Number(stat.war) || 0),
           gameScore: (acc.gameScore || 0) + (Number(stat.game_score) || 0),
           rating: (acc.rating || 0) + (Number(stat.player_rating) || 0),
+          performanceIndex: (acc.performanceIndex || 0) + (Number(stat.performance_index) || 0),
+          adjustedRating: (acc.adjustedRating || 0) + (Number(stat.adjusted_rating) || 0),
           games: acc.games + 1,
-        }), { gar: 0, war: 0, gameScore: 0, rating: 0, games: 0 })
+        }), { gar: 0, war: 0, gameScore: 0, rating: 0, performanceIndex: 0, adjustedRating: 0, games: 0 })
+        // Only return if we have meaningful data
+        if (totals.gar === 0 && totals.war === 0 && totals.gameScore === 0 && totals.rating === 0) {
+          return null
+        }
+        
         return {
-          totalGAR: totals.gar.toFixed(1),
-          totalWAR: totals.war.toFixed(1),
-          avgGameScore: totals.games > 0 ? (totals.gameScore / totals.games).toFixed(2) : '0.00',
-          avgRating: totals.games > 0 ? (totals.rating / totals.games).toFixed(1) : '0.0',
+          totalGAR: Number(totals.gar).toFixed(1),
+          totalWAR: Number(totals.war).toFixed(1),
+          avgGameScore: totals.games > 0 ? Number(totals.gameScore / totals.games).toFixed(2) : '0.00',
+          avgRating: totals.games > 0 ? Number(totals.rating / totals.games).toFixed(1) : '0.0',
+          avgPerformanceIndex: totals.games > 0 && totals.performanceIndex !== 0 ? Number(totals.performanceIndex / totals.games).toFixed(2) : null,
+          avgAdjustedRating: totals.games > 0 && totals.adjustedRating !== 0 ? Number(totals.adjustedRating / totals.games).toFixed(1) : null,
         }
       }).catch((error) => {
         console.error('Error in WAR stats query:', error)
@@ -279,21 +302,27 @@ async function PlayerAdvancedStatsSection({
           // Handle both column name formats
           const hits = stat.hits ?? stat.hit ?? 0
           const blocks = stat.blocks ?? stat.blk ?? 0
-          const giveaways = stat.giveaways ?? stat.give ?? 0
+          const badGiveaways = stat.bad_giveaways ?? stat.bad_give ?? 0
           const takeaways = stat.takeaways ?? stat.take ?? 0
           return {
             hits: (acc.hits || 0) + (Number(hits) || 0),
             blocks: (acc.blocks || 0) + (Number(blocks) || 0),
-            giveaways: (acc.giveaways || 0) + (Number(giveaways) || 0),
+            badGiveaways: (acc.badGiveaways || 0) + (Number(badGiveaways) || 0),
             takeaways: (acc.takeaways || 0) + (Number(takeaways) || 0),
             games: acc.games + 1,
           }
-        }, { hits: 0, blocks: 0, giveaways: 0, takeaways: 0, games: 0 })
+        }, { hits: 0, blocks: 0, badGiveaways: 0, takeaways: 0, games: 0 })
+        // Only return if we have meaningful data
+        if (totals.hits === 0 && totals.blocks === 0 && totals.badGiveaways === 0 && totals.takeaways === 0) {
+          return null
+        }
+        
         return {
           ...totals,
-          toDiff: totals.takeaways - totals.giveaways,
-          hitsPerGame: totals.games > 0 ? (totals.hits / totals.games).toFixed(1) : '0.0',
-          blocksPerGame: totals.games > 0 ? (totals.blocks / totals.games).toFixed(1) : '0.0',
+          giveaways: totals.badGiveaways, // For display, show bad giveaways
+          toDiff: Number(totals.takeaways) - Number(totals.badGiveaways),
+          hitsPerGame: totals.games > 0 ? Number(totals.hits / totals.games).toFixed(1) : '0.0',
+          blocksPerGame: totals.games > 0 ? Number(totals.blocks / totals.games).toFixed(1) : '0.0',
         }
       }).catch((error) => {
         console.error('Error in physical stats query:', error)
@@ -319,25 +348,36 @@ async function PlayerAdvancedStatsSection({
         if (filteredData.length === 0) return null
         
         const totals = filteredData.reduce((acc, stat) => {
-          // Handle both column name formats
-          const shots = stat.shots ?? 0
-          const sog = stat.sog ?? stat.shots_on_goal ?? 0
+          // Handle both column name formats - try multiple column name variations
+          const shots = stat.shots ?? stat.shot ?? stat.shots_total ?? 0
+          const sog = stat.sog ?? stat.shots_on_goal ?? stat.shotsOnGoal ?? stat.shotsOnNet ?? 0
           const goals = stat.goals ?? stat.g ?? 0
+          const shotsBlocked = stat.shots_blocked ?? stat.shotsBlocked ?? stat.blocks ?? stat.blocked_shots ?? 0
+          const shotsMissed = stat.shots_missed ?? stat.shotsMissed ?? stat.missed_shots ?? stat.missedShots ?? 0
           return {
             shots: (acc.shots || 0) + (Number(shots) || 0),
             sog: (acc.sog || 0) + (Number(sog) || 0),
             goals: (acc.goals || 0) + (Number(goals) || 0),
+            shotsBlocked: (acc.shotsBlocked || 0) + (Number(shotsBlocked) || 0),
+            shotsMissed: (acc.shotsMissed || 0) + (Number(shotsMissed) || 0),
             games: acc.games + 1,
           }
-        }, { shots: 0, sog: 0, goals: 0, games: 0 })
+        }, { shots: 0, sog: 0, goals: 0, shotsBlocked: 0, shotsMissed: 0, games: 0 })
+        // Only return if we have meaningful data (allow goals even if shots not tracked)
+        if (totals.shots === 0 && totals.sog === 0 && totals.goals === 0 && totals.shotsBlocked === 0 && totals.shotsMissed === 0) {
+          return null
+        }
+        
         const shootingPct = totals.sog > 0 ? (totals.goals / totals.sog) * 100 : 0
         const shotAccuracy = totals.shots > 0 ? (totals.sog / totals.shots) * 100 : 0
         return {
           ...totals,
-          shootingPct: shootingPct.toFixed(1),
-          shotAccuracy: shotAccuracy.toFixed(1),
-          shotsPerGame: totals.games > 0 ? (totals.shots / totals.games).toFixed(1) : '0.0',
-          sogPerGame: totals.games > 0 ? (totals.sog / totals.games).toFixed(1) : '0.0',
+          shootingPct: Number(shootingPct).toFixed(1),
+          shotAccuracy: Number(shotAccuracy).toFixed(1),
+          shotsPerGame: totals.games > 0 ? Number(totals.shots / totals.games).toFixed(1) : '0.0',
+          sogPerGame: totals.games > 0 ? Number(totals.sog / totals.games).toFixed(1) : '0.0',
+          shotsBlockedPerGame: totals.games > 0 ? Number(totals.shotsBlocked / totals.games).toFixed(1) : '0.0',
+          shotsMissedPerGame: totals.games > 0 ? Number(totals.shotsMissed / totals.games).toFixed(1) : '0.0',
         }
       }).catch((error) => {
         console.error('Error in shooting stats query:', error)
@@ -367,41 +407,313 @@ async function PlayerAdvancedStatsSection({
           const g60 = stat.goals_per_60 ?? stat.g_60 ?? 0
           const p60 = stat.points_per_60 ?? stat.pts_60 ?? 0
           const toi = stat.toi_seconds ?? 0
+          const shifts = stat.shift_count ?? stat.shifts ?? 0
+          const avgShift = stat.avg_shift ?? stat.avg_shift_length ?? 0
           return {
             g60: (acc.g60 || 0) + (Number(g60) || 0),
             p60: (acc.p60 || 0) + (Number(p60) || 0),
             toi: (acc.toi || 0) + (Number(toi) || 0),
+            shifts: (acc.shifts || 0) + (Number(shifts) || 0),
+            avgShift: (acc.avgShift || 0) + (Number(avgShift) || 0),
             games: acc.games + 1,
           }
-        }, { g60: 0, p60: 0, toi: 0, games: 0 })
+        }, { g60: 0, p60: 0, toi: 0, shifts: 0, avgShift: 0, games: 0 })
+        // Only return if we have meaningful data (TOI > 0)
+        if (totals.toi === 0) {
+          return null
+        }
+        
         // Calculate assists/60 from points/60 - goals/60
         const a60 = totals.p60 - totals.g60
         return {
-          goalsPer60: totals.games > 0 ? (totals.g60 / totals.games).toFixed(2) : '0.00',
-          assistsPer60: totals.games > 0 ? (a60 / totals.games).toFixed(2) : '0.00',
-          pointsPer60: totals.games > 0 ? (totals.p60 / totals.games).toFixed(2) : '0.00',
-          avgTOI: totals.games > 0 ? (totals.toi / totals.games / 60).toFixed(1) : '0.0',
+          goalsPer60: totals.games > 0 ? Number(totals.g60 / totals.games).toFixed(2) : '0.00',
+          assistsPer60: totals.games > 0 ? Number(a60 / totals.games).toFixed(2) : '0.00',
+          pointsPer60: totals.games > 0 ? Number(totals.p60 / totals.games).toFixed(2) : '0.00',
+          avgTOI: totals.games > 0 ? Number(totals.toi / totals.games / 60).toFixed(1) : '0.0',
+          totalShifts: totals.shifts,
+          avgShiftsPerGame: totals.games > 0 ? Number(totals.shifts / totals.games).toFixed(1) : '0.0',
+          avgShiftLength: totals.games > 0 ? Number(totals.avgShift / totals.games).toFixed(2) : '0.00',
         }
       }).catch((error) => {
         console.error('Error in per-60 stats query:', error)
         return null
       }),
+    
+    // Faceoff stats - query all columns
+    supabase
+      .from('fact_player_game_stats')
+      .select('*')
+      .eq('player_id', playerId)
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('Error fetching faceoff stats:', error)
+          return null
+        }
+        if (!data || data.length === 0) return null
+        
+        let filteredData = data
+        if (gameIds.length > 0) {
+          filteredData = data.filter(stat => gameIds.includes(stat.game_id))
+        }
+        if (filteredData.length === 0) return null
+        
+        const totals = filteredData.reduce((acc, stat) => {
+          const foWins = stat.fo_wins ?? stat.fow ?? 0
+          const foLosses = stat.fo_losses ?? stat.fol ?? 0
+          const foTotal = stat.fo_total ?? (Number(foWins) + Number(foLosses)) ?? 0
+          return {
+            foWins: (acc.foWins || 0) + (Number(foWins) || 0),
+            foLosses: (acc.foLosses || 0) + (Number(foLosses) || 0),
+            foTotal: (acc.foTotal || 0) + (Number(foTotal) || 0),
+            games: acc.games + 1,
+          }
+        }, { foWins: 0, foLosses: 0, foTotal: 0, games: 0 })
+        
+        // Only return if we have meaningful data
+        if (totals.foTotal === 0) {
+          return null
+        }
+        
+        const foPct = totals.foTotal > 0 ? (totals.foWins / totals.foTotal) * 100 : 0
+        return {
+          ...totals,
+          foPct: Number(foPct).toFixed(1),
+          foWinsPerGame: totals.games > 0 ? Number(totals.foWins / totals.games).toFixed(1) : '0.0',
+        }
+      }).catch((error) => {
+        console.error('Error in faceoff stats query:', error)
+        return null
+      }),
+    
+    // Passing stats - query all columns
+    supabase
+      .from('fact_player_game_stats')
+      .select('*')
+      .eq('player_id', playerId)
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('Error fetching passing stats:', error)
+          return null
+        }
+        if (!data || data.length === 0) return null
+        
+        let filteredData = data
+        if (gameIds.length > 0) {
+          filteredData = data.filter(stat => gameIds.includes(stat.game_id))
+        }
+        if (filteredData.length === 0) return null
+        
+        const totals = filteredData.reduce((acc, stat) => {
+          const passAttempts = stat.pass_attempts ?? stat.pass_att ?? 0
+          const passCompleted = stat.pass_completed ?? stat.pass_comp ?? 0
+          return {
+            passAttempts: (acc.passAttempts || 0) + (Number(passAttempts) || 0),
+            passCompleted: (acc.passCompleted || 0) + (Number(passCompleted) || 0),
+            games: acc.games + 1,
+          }
+        }, { passAttempts: 0, passCompleted: 0, games: 0 })
+        
+        // Only return if we have meaningful data
+        if (totals.passAttempts === 0) {
+          return null
+        }
+        
+        const passPct = totals.passAttempts > 0 ? (totals.passCompleted / totals.passAttempts) * 100 : 0
+        return {
+          ...totals,
+          passPct: Number(passPct).toFixed(1),
+          passAttemptsPerGame: totals.games > 0 ? Number(totals.passAttempts / totals.games).toFixed(1) : '0.0',
+          passCompletedPerGame: totals.games > 0 ? Number(totals.passCompleted / totals.games).toFixed(1) : '0.0',
+        }
+      }).catch((error) => {
+        console.error('Error in passing stats query:', error)
+        return null
+      }),
+    
+    // Situational stats (5v5, PP, PK) - query all columns
+    supabase
+      .from('fact_player_game_stats')
+      .select('*')
+      .eq('player_id', playerId)
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('Error fetching situational stats:', error)
+          return null
+        }
+        if (!data || data.length === 0) return null
+        
+        let filteredData = data
+        if (gameIds.length > 0) {
+          filteredData = data.filter(stat => gameIds.includes(stat.game_id))
+        }
+        if (filteredData.length === 0) return null
+        
+        const totals = filteredData.reduce((acc, stat) => {
+          const toi5v5 = stat.toi_5v5 ?? 0
+          const goals5v5 = stat.goals_5v5 ?? 0
+          const toiPP = stat.toi_pp ?? 0
+          const goalsPP = stat.goals_pp ?? 0
+          const toiPK = stat.toi_pk ?? 0
+          const goalsPK = stat.goals_pk ?? 0
+          return {
+            toi5v5: (acc.toi5v5 || 0) + (Number(toi5v5) || 0),
+            goals5v5: (acc.goals5v5 || 0) + (Number(goals5v5) || 0),
+            toiPP: (acc.toiPP || 0) + (Number(toiPP) || 0),
+            goalsPP: (acc.goalsPP || 0) + (Number(goalsPP) || 0),
+            toiPK: (acc.toiPK || 0) + (Number(toiPK) || 0),
+            goalsPK: (acc.goalsPK || 0) + (Number(goalsPK) || 0),
+            games: acc.games + 1,
+          }
+        }, { toi5v5: 0, goals5v5: 0, toiPP: 0, goalsPP: 0, toiPK: 0, goalsPK: 0, games: 0 })
+        
+        // Only return if we have meaningful data
+        if (totals.toi5v5 === 0 && totals.toiPP === 0 && totals.toiPK === 0) {
+          return null
+        }
+        
+        return {
+          ...totals,
+          toi5v5Minutes: Number(totals.toi5v5 / 60).toFixed(1),
+          toiPPMinutes: Number(totals.toiPP / 60).toFixed(1),
+          toiPKMinutes: Number(totals.toiPK / 60).toFixed(1),
+          goals5v5Per60: totals.toi5v5 > 0 ? Number((totals.goals5v5 / totals.toi5v5) * 3600).toFixed(2) : '0.00',
+          goalsPPPer60: totals.toiPP > 0 ? Number((totals.goalsPP / totals.toiPP) * 3600).toFixed(2) : '0.00',
+        }
+      }).catch((error) => {
+        console.error('Error in situational stats query:', error)
+        return null
+      }),
+    
+    // Assist breakdown (Primary vs Secondary) - query all columns
+    supabase
+      .from('fact_player_game_stats')
+      .select('*')
+      .eq('player_id', playerId)
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('Error fetching assist breakdown stats:', error)
+          return null
+        }
+        if (!data || data.length === 0) return null
+        
+        let filteredData = data
+        if (gameIds.length > 0) {
+          filteredData = data.filter(stat => gameIds.includes(stat.game_id))
+        }
+        if (filteredData.length === 0) return null
+        
+        const totals = filteredData.reduce((acc, stat) => {
+          const primaryAssists = stat.primary_assists ?? stat.primary_assist ?? 0
+          const secondaryAssists = stat.secondary_assists ?? stat.secondary_assist ?? 0
+          const totalAssists = stat.assists ?? stat.a ?? 0
+          return {
+            primaryAssists: (acc.primaryAssists || 0) + (Number(primaryAssists) || 0),
+            secondaryAssists: (acc.secondaryAssists || 0) + (Number(secondaryAssists) || 0),
+            totalAssists: (acc.totalAssists || 0) + (Number(totalAssists) || 0),
+            games: acc.games + 1,
+          }
+        }, { primaryAssists: 0, secondaryAssists: 0, totalAssists: 0, games: 0 })
+        
+        // Only return if we have meaningful data
+        if (totals.totalAssists === 0) {
+          return null
+        }
+        
+        const primaryPct = totals.totalAssists > 0 ? (totals.primaryAssists / totals.totalAssists) * 100 : 0
+        const secondaryPct = totals.totalAssists > 0 ? (totals.secondaryAssists / totals.totalAssists) * 100 : 0
+        return {
+          ...totals,
+          primaryPct: Number(primaryPct).toFixed(1),
+          secondaryPct: Number(secondaryPct).toFixed(1),
+          primaryPerGame: totals.games > 0 ? Number(totals.primaryAssists / totals.games).toFixed(2) : '0.00',
+          secondaryPerGame: totals.games > 0 ? Number(totals.secondaryAssists / totals.games).toFixed(2) : '0.00',
+        }
+      }).catch((error) => {
+        console.error('Error in assist breakdown stats query:', error)
+        return null
+      }),
+    
+    // Micro stats (defensive events, puck battles, etc.) - query all columns
+    supabase
+      .from('fact_player_game_stats')
+      .select('*')
+      .eq('player_id', playerId)
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('Error fetching micro stats:', error)
+          return null
+        }
+        if (!data || data.length === 0) return null
+        
+        let filteredData = data
+        if (gameIds.length > 0) {
+          filteredData = data.filter(stat => gameIds.includes(stat.game_id))
+        }
+        if (filteredData.length === 0) return null
+        
+        const totals = filteredData.reduce((acc, stat) => {
+          const primaryDef = stat.primary_def_events ?? stat.primary_def ?? 0
+          const supportDef = stat.support_def_events ?? stat.support_def ?? 0
+          const defInvolvement = stat.def_involvement ?? 0
+          const dekes = stat.dekes ?? 0
+          const drivesTotal = stat.drives_total ?? ((stat.drives_middle ?? 0) + (stat.drives_wide ?? 0) + (stat.drives_corner ?? 0))
+          const cutbacks = stat.cutbacks ?? 0
+          const forechecks = stat.forechecks ?? stat.forecheck ?? 0
+          const backchecks = stat.backchecks ?? stat.backcheck ?? 0
+          const puckBattles = stat.puck_battles_total ?? stat.puck_battles ?? 0
+          const loosePuckWins = stat.loose_puck_wins ?? stat.puck_recoveries ?? 0
+          const cycles = stat.cycles ?? 0
+          const giveAndGo = stat.give_and_go ?? 0
+          const screens = stat.screens ?? 0
+          const crashNet = stat.crash_net ?? 0
+          
+          return {
+            primaryDef: (acc.primaryDef || 0) + (Number(primaryDef) || 0),
+            supportDef: (acc.supportDef || 0) + (Number(supportDef) || 0),
+            defInvolvement: (acc.defInvolvement || 0) + (Number(defInvolvement) || 0),
+            dekes: (acc.dekes || 0) + (Number(dekes) || 0),
+            drivesTotal: (acc.drivesTotal || 0) + (Number(drivesTotal) || 0),
+            cutbacks: (acc.cutbacks || 0) + (Number(cutbacks) || 0),
+            forechecks: (acc.forechecks || 0) + (Number(forechecks) || 0),
+            backchecks: (acc.backchecks || 0) + (Number(backchecks) || 0),
+            puckBattles: (acc.puckBattles || 0) + (Number(puckBattles) || 0),
+            loosePuckWins: (acc.loosePuckWins || 0) + (Number(loosePuckWins) || 0),
+            cycles: (acc.cycles || 0) + (Number(cycles) || 0),
+            giveAndGo: (acc.giveAndGo || 0) + (Number(giveAndGo) || 0),
+            screens: (acc.screens || 0) + (Number(screens) || 0),
+            crashNet: (acc.crashNet || 0) + (Number(crashNet) || 0),
+            games: acc.games + 1,
+          }
+        }, { 
+          primaryDef: 0, supportDef: 0, defInvolvement: 0, dekes: 0, drivesTotal: 0, 
+          cutbacks: 0, forechecks: 0, backchecks: 0, puckBattles: 0, loosePuckWins: 0,
+          cycles: 0, giveAndGo: 0, screens: 0, crashNet: 0, games: 0
+        })
+        
+        // Only return if we have meaningful data
+        if (totals.primaryDef === 0 && totals.supportDef === 0 && totals.dekes === 0 && 
+            totals.drivesTotal === 0 && totals.forechecks === 0 && totals.backchecks === 0 &&
+            totals.puckBattles === 0) {
+          return null
+        }
+        
+        return {
+          ...totals,
+          primaryDefPerGame: totals.games > 0 ? Number(totals.primaryDef / totals.games).toFixed(1) : '0.0',
+          supportDefPerGame: totals.games > 0 ? Number(totals.supportDef / totals.games).toFixed(1) : '0.0',
+          dekesPerGame: totals.games > 0 ? Number(totals.dekes / totals.games).toFixed(1) : '0.0',
+          drivesPerGame: totals.games > 0 ? Number(totals.drivesTotal / totals.games).toFixed(1) : '0.0',
+          forechecksPerGame: totals.games > 0 ? Number(totals.forechecks / totals.games).toFixed(1) : '0.0',
+          backchecksPerGame: totals.games > 0 ? Number(totals.backchecks / totals.games).toFixed(1) : '0.0',
+          puckBattlesPerGame: totals.games > 0 ? Number(totals.puckBattles / totals.games).toFixed(1) : '0.0',
+        }
+      }).catch((error) => {
+        console.error('Error in micro stats query:', error)
+        return null
+      }),
   ])
   
-    const hasAnyStats = possessionStats || zoneStats || warStats || physicalStats || shootingStats || per60Stats
-    
-    // Debug: Show what we got
-    const debugInfo = {
-      possessionStats: !!possessionStats,
-      zoneStats: !!zoneStats,
-      warStats: !!warStats,
-      physicalStats: !!physicalStats,
-      shootingStats: !!shootingStats,
-      per60Stats: !!per60Stats,
-      gameIdsCount: gameIds.length,
-      seasonId,
-      gameType
-    }
+    const hasAnyStats = possessionStats || zoneStats || warStats || physicalStats || shootingStats || per60Stats || faceoffStats || passingStats || situationalStats || assistBreakdownStats || microStats
     
     if (!hasAnyStats) {
       return (
@@ -413,16 +725,9 @@ async function PlayerAdvancedStatsSection({
             </h2>
           </div>
           <div className="p-6">
-            <p className="text-sm text-muted-foreground text-center mb-4">
+            <p className="text-sm text-muted-foreground text-center">
               Advanced statistics will appear here once game data is available.
             </p>
-            {/* Debug info - remove this later */}
-            <details className="text-xs text-muted-foreground">
-              <summary className="cursor-pointer">Debug Info</summary>
-              <pre className="mt-2 p-2 bg-muted rounded text-xs overflow-auto">
-                {JSON.stringify(debugInfo, null, 2)}
-              </pre>
-            </details>
           </div>
         </div>
       )
@@ -437,219 +742,962 @@ async function PlayerAdvancedStatsSection({
         </h2>
       </div>
       <div className="p-6">
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Possession Stats */}
           {possessionStats && (
-            <div className="space-y-3">
-              <h3 className="font-display text-sm font-semibold text-foreground uppercase tracking-wider border-b border-border pb-2 flex items-center gap-2">
-                <Activity className="w-4 h-4" />
-                Possession
-              </h3>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">CF%</span>
-                  <span className="font-mono font-semibold text-foreground">{possessionStats.cfPct.toFixed(1)}%</span>
+            <StatCard 
+              title="Possession" 
+              icon={<Activity className="w-4 h-4" />}
+              defaultExpanded={true}
+            >
+              <div className="space-y-1">
+                <StatRow 
+                  label="CF%" 
+                  value={`${typeof possessionStats.cfPct === 'number' ? possessionStats.cfPct.toFixed(1) : possessionStats.cfPct || '0.0'}%`}
+                  highlight
+                  color="primary"
+                  description="Corsi For Percentage - Shot attempts for vs against"
+                  expandable={true}
+                  expandedContent={
+                    <GameStatDrilldown
+                      playerId={playerId}
+                      statKey="cf_pct"
+                      statLabel="CF%"
+                      gameIds={gameIds}
+                    />
+                  }
+                  percentiles={possessionStats.percentiles?.cfPct}
+                />
+                <StatRow 
+                  label="FF%" 
+                  value={`${typeof possessionStats.ffPct === 'number' ? possessionStats.ffPct.toFixed(1) : possessionStats.ffPct || '0.0'}%`}
+                  highlight
+                  color="primary"
+                  description="Fenwick For Percentage - Unblocked shot attempts for vs against"
+                  expandable={true}
+                  expandedContent={
+                    <GameStatDrilldown
+                      playerId={playerId}
+                      statKey="ff_pct"
+                      statLabel="FF%"
+                      gameIds={gameIds}
+                    />
+                  }
+                  percentiles={possessionStats.percentiles?.ffPct}
+                />
+                <div className="border-t border-border pt-2 mt-2">
+                  <StatRow 
+                    label="Corsi For" 
+                    value={possessionStats.cf}
+                    description="Total shot attempts (shots + blocks + misses) for"
+                    expandable={true}
+                    expandedContent={
+                      <GameStatDrilldown
+                        playerId={playerId}
+                        statKey="corsi_for"
+                        statLabel="CF"
+                        gameIds={gameIds}
+                      />
+                    }
+                  />
+                  <StatRow 
+                    label="Corsi Against" 
+                    value={possessionStats.ca}
+                    description="Total shot attempts against"
+                    expandable={true}
+                    expandedContent={
+                      <GameStatDrilldown
+                        playerId={playerId}
+                        statKey="corsi_against"
+                        statLabel="CA"
+                        gameIds={gameIds}
+                      />
+                    }
+                  />
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">FF%</span>
-                  <span className="font-mono font-semibold text-foreground">{possessionStats.ffPct.toFixed(1)}%</span>
+                <div className="border-t border-border pt-2 mt-2">
+                  <StatRow 
+                    label="Fenwick For" 
+                    value={possessionStats.ff}
+                    description="Unblocked shot attempts for"
+                    expandable={true}
+                    expandedContent={
+                      <GameStatDrilldown
+                        playerId={playerId}
+                        statKey="fenwick_for"
+                        statLabel="FF"
+                        gameIds={gameIds}
+                      />
+                    }
+                  />
+                  <StatRow 
+                    label="Fenwick Against" 
+                    value={possessionStats.fa}
+                    description="Unblocked shot attempts against"
+                    expandable={true}
+                    expandedContent={
+                      <GameStatDrilldown
+                        playerId={playerId}
+                        statKey="fenwick_against"
+                        statLabel="FA"
+                        gameIds={gameIds}
+                      />
+                    }
+                  />
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Corsi For</span>
-                  <span className="font-mono text-foreground">{possessionStats.cf}</span>
+                <div className="border-t border-border pt-2 mt-2">
+                  <StatRow 
+                    label="Expected Goals" 
+                    value={typeof possessionStats.xg === 'number' ? possessionStats.xg.toFixed(2) : possessionStats.xg || '0.00'}
+                    description="Expected goals based on shot quality and location"
+                    expandable={true}
+                    expandedContent={
+                      <GameStatDrilldown
+                        playerId={playerId}
+                        statKey="xg_for"
+                        statLabel="xG"
+                        gameIds={gameIds}
+                      />
+                    }
+                    percentiles={possessionStats.percentiles?.xg}
+                  />
+                  <StatRow 
+                    label="Goals - xG" 
+                    value={`${possessionStats.xgDiff > 0 ? '+' : ''}${typeof possessionStats.xgDiff === 'number' ? possessionStats.xgDiff.toFixed(2) : possessionStats.xgDiff || '0.00'}`}
+                    highlight
+                    color={possessionStats.xgDiff > 0 ? 'save' : 'goal'}
+                    description="Difference between actual goals and expected goals"
+                  />
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Corsi Against</span>
-                  <span className="font-mono text-foreground">{possessionStats.ca}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">xG</span>
-                  <span className="font-mono text-foreground">{possessionStats.xg.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Goals - xG</span>
-                  <span className={cn(
-                    'font-mono font-semibold',
-                    possessionStats.xgDiff > 0 ? 'text-save' : 'text-goal'
-                  )}>
-                    {possessionStats.xgDiff > 0 ? '+' : ''}{possessionStats.xgDiff.toFixed(2)}
-                  </span>
-                </div>
+                {(possessionStats.cfPctRel !== 0 || possessionStats.ffPctRel !== 0 || possessionStats.gfPct !== 0) && (
+                  <div className="border-t border-border pt-2 mt-2">
+                    <div className="text-xs font-semibold text-muted-foreground uppercase mb-1">Relative Stats</div>
+                    {possessionStats.cfPctRel !== 0 && (
+                      <StatRow 
+                        label="CF% Rel" 
+                        value={`${possessionStats.cfPctRel > 0 ? '+' : ''}${typeof possessionStats.cfPctRel === 'number' ? possessionStats.cfPctRel.toFixed(1) : possessionStats.cfPctRel || '0.0'}%`}
+                        highlight
+                        color={possessionStats.cfPctRel > 0 ? 'save' : possessionStats.cfPctRel < 0 ? 'goal' : 'muted'}
+                        description="Corsi For % relative to team average"
+                      />
+                    )}
+                    {possessionStats.ffPctRel !== 0 && (
+                      <StatRow 
+                        label="FF% Rel" 
+                        value={`${possessionStats.ffPctRel > 0 ? '+' : ''}${typeof possessionStats.ffPctRel === 'number' ? possessionStats.ffPctRel.toFixed(1) : possessionStats.ffPctRel || '0.0'}%`}
+                        highlight
+                        color={possessionStats.ffPctRel > 0 ? 'save' : possessionStats.ffPctRel < 0 ? 'goal' : 'muted'}
+                        description="Fenwick For % relative to team average"
+                      />
+                    )}
+                    {possessionStats.gfPct !== 0 && (
+                      <StatRow 
+                        label="GF%" 
+                        value={`${typeof possessionStats.gfPct === 'number' ? possessionStats.gfPct.toFixed(1) : possessionStats.gfPct || '0.0'}%`}
+                        highlight
+                        color="primary"
+                        description="Goals For % - Goals for vs goals against when on ice"
+                      />
+                    )}
+                  </div>
+                )}
+                {(possessionStats.plusEv !== 0 || possessionStats.minusEv !== 0 || possessionStats.plusMinusEv !== 0) && (
+                  <div className="border-t border-border pt-2 mt-2">
+                    <div className="text-xs font-semibold text-muted-foreground uppercase mb-1">Even Strength +/-</div>
+                    <StatRow 
+                      label="+/- (EV)" 
+                      value={`${possessionStats.plusMinusEv > 0 ? '+' : ''}${possessionStats.plusMinusEv || 0}`}
+                      highlight
+                      color={possessionStats.plusMinusEv > 0 ? 'save' : possessionStats.plusMinusEv < 0 ? 'goal' : 'muted'}
+                      description="Plus/minus at even strength only"
+                    />
+                    <StatRow 
+                      label="Plus Events" 
+                      value={possessionStats.plusEv || 0}
+                      color="save"
+                      description="Goals for while on ice at even strength"
+                    />
+                    <StatRow 
+                      label="Minus Events" 
+                      value={possessionStats.minusEv || 0}
+                      color="goal"
+                      description="Goals against while on ice at even strength"
+                    />
+                  </div>
+                )}
               </div>
-            </div>
+            </StatCard>
           )}
           
           {/* Zone Play */}
           {zoneStats && (
-            <div className="space-y-3">
-              <h3 className="font-display text-sm font-semibold text-foreground uppercase tracking-wider border-b border-border pb-2 flex items-center gap-2">
-                <Zap className="w-4 h-4" />
-                Zone Play
-              </h3>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Zone Entry %</span>
-                  <span className="font-mono font-semibold text-foreground">{zoneStats.zePct.toFixed(1)}%</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Zone Entries</span>
-                  <span className="font-mono text-foreground">{zoneStats.ze}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Successful Entries</span>
-                  <span className="font-mono text-save">{zoneStats.zeSuccess}</span>
-                </div>
-                <div className="flex justify-between items-center border-t border-border pt-2 mt-2">
-                  <span className="text-xs text-muted-foreground">Zone Exit %</span>
-                  <span className="font-mono font-semibold text-foreground">{zoneStats.zxPct.toFixed(1)}%</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Zone Exits</span>
-                  <span className="font-mono text-foreground">{zoneStats.zx}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Successful Exits</span>
-                  <span className="font-mono text-save">{zoneStats.zxSuccess}</span>
+            <StatCard 
+              title="Zone Play" 
+              icon={<Zap className="w-4 h-4" />}
+              defaultExpanded={true}
+            >
+              <div className="space-y-1">
+                <StatRow 
+                  label="Zone Entry %" 
+                  value={`${typeof zoneStats.zePct === 'number' ? zoneStats.zePct.toFixed(1) : zoneStats.zePct || '0.0'}%`}
+                  highlight
+                  color="primary"
+                  description="Percentage of successful zone entries"
+                  expandable={true}
+                  expandedContent={
+                    <GameStatDrilldown
+                      playerId={playerId}
+                      statKey="zone_entry_pct"
+                      statLabel="Zone Entry %"
+                      gameIds={gameIds}
+                    />
+                  }
+                />
+                <StatRow 
+                  label="Zone Entries" 
+                  value={zoneStats.ze}
+                  description="Total zone entry attempts"
+                />
+                <StatRow 
+                  label="Successful Entries" 
+                  value={zoneStats.zeSuccess}
+                  color="save"
+                  description="Zone entries that resulted in possession"
+                />
+                <div className="border-t border-border pt-2 mt-2">
+                  <StatRow 
+                    label="Zone Exit %" 
+                    value={`${typeof zoneStats.zxPct === 'number' ? zoneStats.zxPct.toFixed(1) : zoneStats.zxPct || '0.0'}%`}
+                    highlight
+                    color="primary"
+                    description="Percentage of successful zone exits"
+                    expandable={true}
+                    expandedContent={
+                      <GameStatDrilldown
+                        playerId={playerId}
+                        statKey="zone_exit_pct"
+                        statLabel="Zone Exit %"
+                        gameIds={gameIds}
+                      />
+                    }
+                  />
+                  <StatRow 
+                    label="Zone Exits" 
+                    value={zoneStats.zx}
+                    description="Total zone exit attempts"
+                  />
+                  <StatRow 
+                    label="Successful Exits" 
+                    value={zoneStats.zxSuccess}
+                    color="save"
+                    description="Zone exits that maintained possession"
+                  />
                 </div>
               </div>
-            </div>
+            </StatCard>
           )}
           
           {/* WAR/GAR */}
           {warStats && (
-            <div className="space-y-3">
-              <h3 className="font-display text-sm font-semibold text-foreground uppercase tracking-wider border-b border-border pb-2 flex items-center gap-2">
-                <TrendingUp className="w-4 h-4" />
-                WAR/GAR
-              </h3>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Total WAR</span>
-                  <span className="font-mono font-semibold text-primary">{warStats.totalWAR}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Total GAR</span>
-                  <span className="font-mono text-foreground">{warStats.totalGAR}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Avg Game Score</span>
-                  <span className="font-mono text-foreground">{warStats.avgGameScore}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Avg Rating</span>
-                  <span className="font-mono text-foreground">{warStats.avgRating}</span>
+            <StatCard 
+              title="WAR/GAR" 
+              icon={<TrendingUp className="w-4 h-4" />}
+              defaultExpanded={true}
+            >
+              <div className="space-y-1">
+                <StatRow 
+                  label="Total WAR" 
+                  value={warStats.totalWAR}
+                  highlight
+                  color="primary"
+                  description="Wins Above Replacement - Total value added in wins"
+                  expandable={true}
+                  expandedContent={
+                    <GameStatDrilldown
+                      playerId={playerId}
+                      statKey="war"
+                      statLabel="WAR"
+                      gameIds={gameIds}
+                    />
+                  }
+                  percentiles={warStats.percentiles?.war}
+                />
+                <StatRow 
+                  label="Total GAR" 
+                  value={warStats.totalGAR}
+                  highlight
+                  color="primary"
+                  description="Goals Above Replacement - Total value added in goals"
+                />
+                <div className="border-t border-border pt-2 mt-2">
+                  <StatRow 
+                    label="Avg Game Score" 
+                    value={warStats.avgGameScore}
+                    description="Average game score across all games"
+                  />
+                  <StatRow 
+                    label="Avg Rating" 
+                    value={warStats.avgRating}
+                    description="Average player rating per game"
+                  />
+                  {warStats.avgPerformanceIndex !== null && warStats.avgPerformanceIndex !== undefined && warStats.avgPerformanceIndex !== '0.00' && (
+                    <StatRow 
+                      label="Performance Index" 
+                      value={warStats.avgPerformanceIndex}
+                      highlight
+                      description="Average performance index - overall impact metric"
+                    />
+                  )}
+                  {warStats.avgAdjustedRating !== null && warStats.avgAdjustedRating !== undefined && warStats.avgAdjustedRating !== '0.0' && (
+                    <StatRow 
+                      label="Adjusted Rating" 
+                      value={warStats.avgAdjustedRating}
+                      description="Average adjusted rating accounting for competition"
+                    />
+                  )}
                 </div>
               </div>
-            </div>
+            </StatCard>
           )}
           
           {/* Physical */}
           {physicalStats && (
-            <div className="space-y-3">
-              <h3 className="font-display text-sm font-semibold text-foreground uppercase tracking-wider border-b border-border pb-2 flex items-center gap-2">
-                <Shield className="w-4 h-4" />
-                Physical
-              </h3>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Hits</span>
-                  <span className="font-mono font-semibold text-foreground">{physicalStats.hits}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Hits/Game</span>
-                  <span className="font-mono text-foreground">{physicalStats.hitsPerGame}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Blocks</span>
-                  <span className="font-mono font-semibold text-save">{physicalStats.blocks}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Blocks/Game</span>
-                  <span className="font-mono text-foreground">{physicalStats.blocksPerGame}</span>
-                </div>
-                <div className="flex justify-between items-center border-t border-border pt-2 mt-2">
-                  <span className="text-xs text-muted-foreground">Takeaways</span>
-                  <span className="font-mono text-save">{physicalStats.takeaways}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Giveaways</span>
-                  <span className="font-mono text-goal">{physicalStats.giveaways}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">TO Differential</span>
-                  <span className={cn(
-                    'font-mono font-semibold',
-                    physicalStats.toDiff > 0 ? 'text-save' : physicalStats.toDiff < 0 ? 'text-goal' : 'text-muted-foreground'
-                  )}>
-                    {physicalStats.toDiff > 0 ? '+' : ''}{physicalStats.toDiff}
-                  </span>
+            <StatCard 
+              title="Physical" 
+              icon={<Shield className="w-4 h-4" />}
+              defaultExpanded={true}
+            >
+              <div className="space-y-1">
+                <StatRow 
+                  label="Hits" 
+                  value={physicalStats.hits}
+                  highlight
+                  description="Total hits delivered"
+                  expandable={true}
+                  expandedContent={
+                    <GameStatDrilldown
+                      playerId={playerId}
+                      statKey="hits"
+                      statLabel="Hits"
+                      gameIds={gameIds}
+                    />
+                  }
+                />
+                <StatRow 
+                  label="Hits/Game" 
+                  value={physicalStats.hitsPerGame}
+                  description="Average hits per game"
+                />
+                <StatRow 
+                  label="Blocks" 
+                  value={physicalStats.blocks}
+                  highlight
+                  color="save"
+                  description="Total shots blocked"
+                  expandable={true}
+                  expandedContent={
+                    <GameStatDrilldown
+                      playerId={playerId}
+                      statKey="blocks"
+                      statLabel="Blocks"
+                      gameIds={gameIds}
+                    />
+                  }
+                />
+                <StatRow 
+                  label="Blocks/Game" 
+                  value={physicalStats.blocksPerGame}
+                  description="Average blocks per game"
+                />
+                <div className="border-t border-border pt-2 mt-2">
+                  <StatRow 
+                    label="Takeaways" 
+                    value={physicalStats.takeaways}
+                    color="save"
+                    description="Puck takeaways"
+                    expandable={true}
+                    expandedContent={
+                      <GameStatDrilldown
+                        playerId={playerId}
+                        statKey="takeaways"
+                        statLabel="Takeaways"
+                        gameIds={gameIds}
+                      />
+                    }
+                  />
+                  <StatRow 
+                    label="Bad Giveaways" 
+                    value={physicalStats.giveaways}
+                    color="goal"
+                    description="Bad puck giveaways (turnovers)"
+                    expandable={true}
+                    expandedContent={
+                      <GameStatDrilldown
+                        playerId={playerId}
+                        statKey="bad_giveaways"
+                        statLabel="Bad Giveaways"
+                        gameIds={gameIds}
+                      />
+                    }
+                  />
+                  <StatRow 
+                    label="TO Differential" 
+                    value={`${physicalStats.toDiff > 0 ? '+' : ''}${physicalStats.toDiff}`}
+                    highlight
+                    color={physicalStats.toDiff > 0 ? 'save' : physicalStats.toDiff < 0 ? 'goal' : 'muted'}
+                    description="Takeaway minus bad giveaway differential"
+                  />
                 </div>
               </div>
-            </div>
+            </StatCard>
           )}
           
           {/* Shooting */}
           {shootingStats && (
-            <div className="space-y-3">
-              <h3 className="font-display text-sm font-semibold text-foreground uppercase tracking-wider border-b border-border pb-2 flex items-center gap-2">
-                <BarChart3 className="w-4 h-4" />
-                Shooting
-              </h3>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Shooting %</span>
-                  <span className="font-mono font-semibold text-primary">{shootingStats.shootingPct}%</span>
+            <StatCard 
+              title="Shooting" 
+              icon={<BarChart3 className="w-4 h-4" />}
+              defaultExpanded={true}
+            >
+              <div className="space-y-1">
+                <StatRow 
+                  label="Shooting %" 
+                  value={`${shootingStats.shootingPct}%`}
+                  highlight
+                  color="primary"
+                  description="Goals per shot on goal"
+                  expandable={true}
+                  expandedContent={
+                    <GameStatDrilldown
+                      playerId={playerId}
+                      statKey="shooting_pct"
+                      statLabel="Shooting %"
+                      gameIds={gameIds}
+                    />
+                  }
+                />
+                <StatRow 
+                  label="Shot Accuracy" 
+                  value={`${shootingStats.shotAccuracy}%`}
+                  description="Shots on goal per total shot attempts"
+                />
+                <div className="border-t border-border pt-2 mt-2">
+                  <StatRow 
+                    label="Total Shots" 
+                    value={shootingStats.shots}
+                    description="Total shot attempts"
+                    expandable={true}
+                    expandedContent={
+                      <GameStatDrilldown
+                        playerId={playerId}
+                        statKey="shots"
+                        statLabel="Shots"
+                        gameIds={gameIds}
+                      />
+                    }
+                  />
+                  <StatRow 
+                    label="Shots on Goal" 
+                    value={shootingStats.sog}
+                    description="Shots that reached the net"
+                    expandable={true}
+                    expandedContent={
+                      <GameStatDrilldown
+                        playerId={playerId}
+                        statKey="sog"
+                        statLabel="SOG"
+                        gameIds={gameIds}
+                      />
+                    }
+                  />
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Shot Accuracy</span>
-                  <span className="font-mono text-foreground">{shootingStats.shotAccuracy}%</span>
+                <div className="border-t border-border pt-2 mt-2">
+                  <StatRow 
+                    label="Shots/Game" 
+                    value={shootingStats.shotsPerGame}
+                    description="Average shot attempts per game"
+                  />
+                  <StatRow 
+                    label="SOG/Game" 
+                    value={shootingStats.sogPerGame}
+                    description="Average shots on goal per game"
+                  />
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Total Shots</span>
-                  <span className="font-mono text-foreground">{shootingStats.shots}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Shots on Goal</span>
-                  <span className="font-mono text-foreground">{shootingStats.sog}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Shots/Game</span>
-                  <span className="font-mono text-foreground">{shootingStats.shotsPerGame}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">SOG/Game</span>
-                  <span className="font-mono text-foreground">{shootingStats.sogPerGame}</span>
-                </div>
+                {(shootingStats.shotsBlocked > 0 || shootingStats.shotsMissed > 0) && (
+                  <div className="border-t border-border pt-2 mt-2">
+                    <div className="text-xs font-semibold text-muted-foreground uppercase mb-1">Shot Breakdown</div>
+                    {shootingStats.shotsBlocked > 0 && (
+                      <StatRow 
+                        label="Shots Blocked" 
+                        value={shootingStats.shotsBlocked}
+                        description="Total shots blocked by opponents"
+                      />
+                    )}
+                    {shootingStats.shotsMissed > 0 && (
+                      <StatRow 
+                        label="Shots Missed" 
+                        value={shootingStats.shotsMissed}
+                        description="Total shots that missed the net"
+                      />
+                    )}
+                    {shootingStats.shotsBlockedPerGame && shootingStats.shotsBlockedPerGame !== '0.0' && (
+                      <StatRow 
+                        label="Blocked/Game" 
+                        value={shootingStats.shotsBlockedPerGame}
+                        description="Average shots blocked per game"
+                      />
+                    )}
+                    {shootingStats.shotsMissedPerGame && shootingStats.shotsMissedPerGame !== '0.0' && (
+                      <StatRow 
+                        label="Missed/Game" 
+                        value={shootingStats.shotsMissedPerGame}
+                        description="Average shots missed per game"
+                      />
+                    )}
+                  </div>
+                )}
               </div>
-            </div>
+            </StatCard>
           )}
           
           {/* Per-60 Rates */}
           {per60Stats && (
-            <div className="space-y-3">
-              <h3 className="font-display text-sm font-semibold text-foreground uppercase tracking-wider border-b border-border pb-2 flex items-center gap-2">
-                <Target className="w-4 h-4" />
-                Per 60 Rates
-              </h3>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Goals/60</span>
-                  <span className="font-mono font-semibold text-goal">{per60Stats.goalsPer60}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Assists/60</span>
-                  <span className="font-mono font-semibold text-assist">{per60Stats.assistsPer60}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">Points/60</span>
-                  <span className="font-mono font-semibold text-primary">{per60Stats.pointsPer60}</span>
-                </div>
-                <div className="flex justify-between items-center border-t border-border pt-2 mt-2">
-                  <span className="text-xs text-muted-foreground">Avg TOI</span>
-                  <span className="font-mono text-foreground">{per60Stats.avgTOI} min</span>
+            <StatCard 
+              title="Per 60 Rates" 
+              icon={<Target className="w-4 h-4" />}
+              defaultExpanded={true}
+            >
+              <div className="space-y-1">
+                <StatRow 
+                  label="Goals/60" 
+                  value={per60Stats.goalsPer60}
+                  highlight
+                  color="goal"
+                  description="Goals per 60 minutes of ice time"
+                  expandable={true}
+                  expandedContent={
+                    <GameStatDrilldown
+                      playerId={playerId}
+                      statKey="goals_per_60"
+                      statLabel="Goals/60"
+                      gameIds={gameIds}
+                    />
+                  }
+                />
+                <StatRow 
+                  label="Assists/60" 
+                  value={per60Stats.assistsPer60}
+                  highlight
+                  color="assist"
+                  description="Assists per 60 minutes of ice time"
+                  expandable={true}
+                  expandedContent={
+                    <GameStatDrilldown
+                      playerId={playerId}
+                      statKey="assists_per_60"
+                      statLabel="Assists/60"
+                      gameIds={gameIds}
+                    />
+                  }
+                />
+                <StatRow 
+                  label="Points/60" 
+                  value={per60Stats.pointsPer60}
+                  highlight
+                  color="primary"
+                  description="Points per 60 minutes of ice time"
+                  expandable={true}
+                  expandedContent={
+                    <GameStatDrilldown
+                      playerId={playerId}
+                      statKey="points_per_60"
+                      statLabel="Points/60"
+                      gameIds={gameIds}
+                    />
+                  }
+                />
+                <div className="border-t border-border pt-2 mt-2">
+                  <StatRow 
+                    label="Avg TOI" 
+                    value={`${per60Stats.avgTOI} min`}
+                    description="Average time on ice per game"
+                  />
+                  {per60Stats.totalShifts > 0 && (
+                    <>
+                      <StatRow 
+                        label="Total Shifts" 
+                        value={per60Stats.totalShifts}
+                        description="Total number of shifts taken"
+                      />
+                      {per60Stats.avgShiftsPerGame && per60Stats.avgShiftsPerGame !== '0.0' && (
+                        <StatRow 
+                          label="Shifts/Game" 
+                          value={per60Stats.avgShiftsPerGame}
+                          description="Average shifts per game"
+                        />
+                      )}
+                      {per60Stats.avgShiftLength && per60Stats.avgShiftLength !== '0.00' && (
+                        <StatRow 
+                          label="Avg Shift Length" 
+                          value={`${per60Stats.avgShiftLength} min`}
+                          description="Average length of each shift"
+                        />
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
-            </div>
+            </StatCard>
+          )}
+          
+          {/* Faceoffs */}
+          {faceoffStats && (
+            <StatCard 
+              title="Faceoffs" 
+              icon={<Users className="w-4 h-4" />}
+              defaultExpanded={true}
+            >
+              <div className="space-y-1">
+                <StatRow 
+                  label="Faceoff %" 
+                  value={`${faceoffStats.foPct}%`}
+                  highlight
+                  color="primary"
+                  description="Faceoff win percentage"
+                  expandable={true}
+                  expandedContent={
+                    <GameStatDrilldown
+                      playerId={playerId}
+                      statKey="fo_pct"
+                      statLabel="Faceoff %"
+                      gameIds={gameIds}
+                    />
+                  }
+                />
+                <StatRow 
+                  label="Faceoff Wins" 
+                  value={faceoffStats.foWins}
+                  highlight
+                  color="save"
+                  description="Total faceoffs won"
+                />
+                <StatRow 
+                  label="Faceoff Losses" 
+                  value={faceoffStats.foLosses}
+                  color="goal"
+                  description="Total faceoffs lost"
+                />
+                <div className="border-t border-border pt-2 mt-2">
+                  <StatRow 
+                    label="Total Faceoffs" 
+                    value={faceoffStats.foTotal}
+                    description="Total faceoffs taken"
+                  />
+                  <StatRow 
+                    label="Wins/Game" 
+                    value={faceoffStats.foWinsPerGame}
+                    description="Average faceoff wins per game"
+                  />
+                </div>
+              </div>
+            </StatCard>
+          )}
+          
+          {/* Passing */}
+          {passingStats && (
+            <StatCard 
+              title="Passing" 
+              icon={<Zap className="w-4 h-4" />}
+              defaultExpanded={true}
+            >
+              <div className="space-y-1">
+                <StatRow 
+                  label="Pass %" 
+                  value={`${passingStats.passPct}%`}
+                  highlight
+                  color="primary"
+                  description="Pass completion percentage"
+                  expandable={true}
+                  expandedContent={
+                    <GameStatDrilldown
+                      playerId={playerId}
+                      statKey="pass_pct"
+                      statLabel="Pass %"
+                      gameIds={gameIds}
+                    />
+                  }
+                />
+                <StatRow 
+                  label="Pass Attempts" 
+                  value={passingStats.passAttempts}
+                  description="Total pass attempts"
+                />
+                <StatRow 
+                  label="Passes Completed" 
+                  value={passingStats.passCompleted}
+                  highlight
+                  color="save"
+                  description="Successful passes"
+                />
+                <div className="border-t border-border pt-2 mt-2">
+                  <StatRow 
+                    label="Attempts/Game" 
+                    value={passingStats.passAttemptsPerGame}
+                    description="Average pass attempts per game"
+                  />
+                  <StatRow 
+                    label="Completed/Game" 
+                    value={passingStats.passCompletedPerGame}
+                    description="Average completed passes per game"
+                  />
+                </div>
+              </div>
+            </StatCard>
+          )}
+          
+          {/* Assist Breakdown */}
+          {assistBreakdownStats && (
+            <StatCard 
+              title="Assist Breakdown" 
+              icon={<Sparkles className="w-4 h-4" />}
+              defaultExpanded={true}
+            >
+              <div className="space-y-1">
+                <StatRow 
+                  label="Primary Assists" 
+                  value={assistBreakdownStats.primaryAssists}
+                  highlight
+                  color="assist"
+                  description="First assist on a goal"
+                />
+                <StatRow 
+                  label="Secondary Assists" 
+                  value={assistBreakdownStats.secondaryAssists}
+                  color="assist"
+                  description="Second assist on a goal"
+                />
+                <div className="border-t border-border pt-2 mt-2">
+                  <StatRow 
+                    label="Primary %" 
+                    value={`${assistBreakdownStats.primaryPct}%`}
+                    highlight
+                    description="Percentage of assists that are primary"
+                  />
+                  <StatRow 
+                    label="Secondary %" 
+                    value={`${assistBreakdownStats.secondaryPct}%`}
+                    description="Percentage of assists that are secondary"
+                  />
+                </div>
+                <div className="border-t border-border pt-2 mt-2">
+                  <StatRow 
+                    label="Primary/Game" 
+                    value={assistBreakdownStats.primaryPerGame}
+                    description="Average primary assists per game"
+                  />
+                  <StatRow 
+                    label="Secondary/Game" 
+                    value={assistBreakdownStats.secondaryPerGame}
+                    description="Average secondary assists per game"
+                  />
+                </div>
+              </div>
+            </StatCard>
+          )}
+          
+          {/* Micro Stats */}
+          {microStats && (
+            <StatCard 
+              title="Micro Stats" 
+              icon={<Activity className="w-4 h-4" />}
+              defaultExpanded={true}
+            >
+              <div className="space-y-1">
+                <div className="text-xs font-semibold text-muted-foreground uppercase mb-2">Offensive</div>
+                {microStats.dekes > 0 && (
+                  <StatRow 
+                    label="Dekes" 
+                    value={microStats.dekes}
+                    description="Total dekes attempted"
+                  />
+                )}
+                {microStats.drivesTotal > 0 && (
+                  <StatRow 
+                    label="Drives" 
+                    value={microStats.drivesTotal}
+                    description="Total drives to the net"
+                  />
+                )}
+                {microStats.cutbacks > 0 && (
+                  <StatRow 
+                    label="Cutbacks" 
+                    value={microStats.cutbacks}
+                    description="Cutback moves"
+                  />
+                )}
+                {microStats.cycles > 0 && (
+                  <StatRow 
+                    label="Cycles" 
+                    value={microStats.cycles}
+                    description="Cycling plays"
+                  />
+                )}
+                {microStats.giveAndGo > 0 && (
+                  <StatRow 
+                    label="Give & Go" 
+                    value={microStats.giveAndGo}
+                    description="Give and go plays"
+                  />
+                )}
+                {microStats.screens > 0 && (
+                  <StatRow 
+                    label="Screens" 
+                    value={microStats.screens}
+                    description="Screens set"
+                  />
+                )}
+                {microStats.crashNet > 0 && (
+                  <StatRow 
+                    label="Crash Net" 
+                    value={microStats.crashNet}
+                    description="Net crashes"
+                  />
+                )}
+                
+                {(microStats.forechecks > 0 || microStats.backchecks > 0) && (
+                  <div className="border-t border-border pt-2 mt-2">
+                    <div className="text-xs font-semibold text-muted-foreground uppercase mb-2">Defensive</div>
+                    {microStats.forechecks > 0 && (
+                      <StatRow 
+                        label="Forechecks" 
+                        value={microStats.forechecks}
+                        color="save"
+                        description="Forechecking plays"
+                      />
+                    )}
+                    {microStats.backchecks > 0 && (
+                      <StatRow 
+                        label="Backchecks" 
+                        value={microStats.backchecks}
+                        color="save"
+                        description="Backchecking plays"
+                      />
+                    )}
+                    {microStats.primaryDef > 0 && (
+                      <StatRow 
+                        label="Primary Def Events" 
+                        value={microStats.primaryDef}
+                        highlight
+                        color="save"
+                        description="Primary defensive involvement"
+                      />
+                    )}
+                    {microStats.supportDef > 0 && (
+                      <StatRow 
+                        label="Support Def Events" 
+                        value={microStats.supportDef}
+                        color="save"
+                        description="Support defensive plays"
+                      />
+                    )}
+                    {microStats.defInvolvement > 0 && (
+                      <StatRow 
+                        label="Def Involvement" 
+                        value={microStats.defInvolvement}
+                        highlight
+                        color="save"
+                        description="Total defensive involvement"
+                      />
+                    )}
+                  </div>
+                )}
+                
+                {microStats.puckBattles > 0 && (
+                  <div className="border-t border-border pt-2 mt-2">
+                    <div className="text-xs font-semibold text-muted-foreground uppercase mb-2">Puck Battles</div>
+                    <StatRow 
+                      label="Puck Battles" 
+                      value={microStats.puckBattles}
+                      highlight
+                      description="Total puck battles"
+                    />
+                    {microStats.loosePuckWins > 0 && (
+                      <StatRow 
+                        label="Loose Puck Wins" 
+                        value={microStats.loosePuckWins}
+                        color="save"
+                        description="Loose puck recoveries"
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
+            </StatCard>
+          )}
+          
+          {/* Situational */}
+          {situationalStats && (
+            <StatCard 
+              title="Situational" 
+              icon={<Clock className="w-4 h-4" />}
+              defaultExpanded={true}
+            >
+              <div className="space-y-1">
+                <div className="text-xs font-semibold text-muted-foreground uppercase mb-2">5v5</div>
+                <StatRow 
+                  label="TOI (5v5)" 
+                  value={`${situationalStats.toi5v5Minutes} min`}
+                  description="Total time on ice at 5v5"
+                />
+                <StatRow 
+                  label="Goals (5v5)" 
+                  value={situationalStats.goals5v5}
+                  highlight
+                  color="goal"
+                  description="Goals scored at 5v5"
+                />
+                <StatRow 
+                  label="Goals/60 (5v5)" 
+                  value={situationalStats.goals5v5Per60}
+                  description="Goals per 60 minutes at 5v5"
+                />
+                <div className="border-t border-border pt-2 mt-2">
+                  <div className="text-xs font-semibold text-muted-foreground uppercase mb-2">Power Play</div>
+                  <StatRow 
+                    label="TOI (PP)" 
+                    value={`${situationalStats.toiPPMinutes} min`}
+                    description="Total time on ice on power play"
+                  />
+                  <StatRow 
+                    label="Goals (PP)" 
+                    value={situationalStats.goalsPP}
+                    highlight
+                    color="goal"
+                    description="Goals scored on power play"
+                  />
+                  <StatRow 
+                    label="Goals/60 (PP)" 
+                    value={situationalStats.goalsPPPer60}
+                    description="Goals per 60 minutes on power play"
+                  />
+                </div>
+                <div className="border-t border-border pt-2 mt-2">
+                  <div className="text-xs font-semibold text-muted-foreground uppercase mb-2">Penalty Kill</div>
+                  <StatRow 
+                    label="TOI (PK)" 
+                    value={`${situationalStats.toiPKMinutes} min`}
+                    description="Total time on ice on penalty kill"
+                  />
+                  <StatRow 
+                    label="Goals (PK)" 
+                    value={situationalStats.goalsPK}
+                    highlight
+                    color="goal"
+                    description="Goals scored while shorthanded"
+                  />
+                </div>
+              </div>
+            </StatCard>
           )}
         </div>
       </div>
@@ -789,8 +1837,11 @@ export default async function PlayerDetailPage({
   }
   
   // Get game log for selected season/game type
+  // Priority: fact_player_game_stats > fact_gameroster + dim_schedule
   let gameLog: any[] = []
+  
   if (gameIdsForLog.length > 0) {
+    // Try advanced stats first
     const { data: gameLogData, error: gameLogError } = await supabase
       .from('fact_player_game_stats')
       .select('*')
@@ -799,41 +1850,148 @@ export default async function PlayerDetailPage({
       .order('game_id', { ascending: false })
       .limit(20)
     
-    if (gameLogError) {
-      console.error('Error fetching game log:', gameLogError)
-    }
-    
-    // Merge with schedule data to get dates
-    gameLog = (gameLogData || []).map(game => {
-      const scheduleInfo = filteredSchedule?.find(s => s.game_id === game.game_id)
-      return {
-        ...game,
-        date: scheduleInfo?.date || game.date,
+    if (gameLogData && gameLogData.length > 0) {
+      // Merge with schedule data to get dates
+      gameLog = gameLogData.map(game => {
+        const scheduleInfo = filteredSchedule?.find(s => s.game_id === game.game_id)
+        return {
+          ...game,
+          date: scheduleInfo?.date || game.date,
+        }
+      }).sort((a, b) => {
+        const dateA = a.date ? new Date(a.date).getTime() : 0
+        const dateB = b.date ? new Date(b.date).getTime() : 0
+        return dateB - dateA
+      })
+    } else {
+      // Fallback to fact_gameroster + dim_schedule
+      const { data: rosterData } = await supabase
+        .from('fact_gameroster')
+        .select('*')
+        .eq('player_id', playerId)
+        .in('game_id', gameIdsForLog)
+        .order('game_id', { ascending: false })
+        .limit(20)
+      
+      if (rosterData && rosterData.length > 0) {
+        const rosterGameIds = rosterData.map(r => r.game_id)
+        const { data: scheduleForRoster } = await supabase
+          .from('dim_schedule')
+          .select('*')
+          .in('game_id', rosterGameIds)
+        
+        const scheduleMap = new Map((scheduleForRoster || []).map(s => [s.game_id, s]))
+        
+        gameLog = rosterData.map(roster => {
+          const schedule = scheduleMap.get(roster.game_id)
+          const goals = Number(roster.goals ?? 0)
+          const assists = Number(roster.assist ?? 0)
+          const points = goals + assists
+          
+          return {
+            game_id: roster.game_id,
+            player_id: roster.player_id,
+            player_name: roster.player_full_name || roster.player_name,
+            team_name: roster.team_name,
+            opponent_team_name: roster.opp_team_name,
+            date: schedule?.date || roster.date,
+            goals: goals,
+            assists: assists,
+            points: points,
+            shots: null, // Not in gameroster
+            sog: null,
+            plus_minus: null,
+            toi_seconds: null,
+            cf_pct: null,
+            // Mark as basic stats
+            _source: 'gameroster'
+          }
+        }).sort((a, b) => {
+          const dateA = a.date ? new Date(a.date).getTime() : 0
+          const dateB = b.date ? new Date(b.date).getTime() : 0
+          return dateB - dateA
+        })
       }
-    }).sort((a, b) => {
-      const dateA = a.date ? new Date(a.date).getTime() : 0
-      const dateB = b.date ? new Date(b.date).getTime() : 0
-      return dateB - dateA
-    })
+    }
   } else {
     // Fallback: try to get any game stats for this player (no season/game type filter)
-    const { data: gameLogData, error: gameLogError } = await supabase
+    // Try advanced stats first
+    const { data: gameLogData } = await supabase
       .from('fact_player_game_stats')
       .select('*')
       .eq('player_id', playerId)
       .order('game_id', { ascending: false })
       .limit(20)
     
-    if (gameLogError) {
-      console.error('Error fetching game log (fallback):', gameLogError)
+    if (gameLogData && gameLogData.length > 0) {
+      gameLog = gameLogData
+    } else {
+      // Fallback to gameroster
+      const { data: rosterData } = await supabase
+        .from('fact_gameroster')
+        .select('*')
+        .eq('player_id', playerId)
+        .order('game_id', { ascending: false })
+        .limit(20)
+      
+      if (rosterData && rosterData.length > 0) {
+        const rosterGameIds = rosterData.map(r => r.game_id)
+        const { data: scheduleForRoster } = await supabase
+          .from('dim_schedule')
+          .select('*')
+          .in('game_id', rosterGameIds)
+        
+        const scheduleMap = new Map((scheduleForRoster || []).map(s => [s.game_id, s]))
+        
+        gameLog = rosterData.map(roster => {
+          const schedule = scheduleMap.get(roster.game_id)
+          const goals = Number(roster.goals ?? 0)
+          const assists = Number(roster.assist ?? 0)
+          const points = goals + assists
+          
+          return {
+            game_id: roster.game_id,
+            player_id: roster.player_id,
+            player_name: roster.player_full_name || roster.player_name,
+            team_name: roster.team_name,
+            opponent_team_name: roster.opp_team_name,
+            date: schedule?.date || roster.date,
+            goals: goals,
+            assists: assists,
+            points: points,
+            shots: null,
+            sog: null,
+            plus_minus: null,
+            toi_seconds: null,
+            cf_pct: null,
+            _source: 'gameroster'
+          }
+        })
+      }
     }
-    
-    gameLog = gameLogData || []
   }
   
   // Get current team info (use player_norad_current_team_id if available, otherwise team_id)
   const currentTeamId = player.player_norad_current_team_id || player.team_id || playerStats?.team_id
   const teamInfo = currentTeamId ? await getTeamById(String(currentTeamId)).catch(() => null) : null
+  
+  // Get opponent teams for game cards
+  const opponentNames = [...new Set(gameLog.slice(0, 6).map((g: any) => g.opponent_team_name || g.team_name).filter(Boolean))]
+  const opponentTeams = await Promise.all(
+    opponentNames.map(name => {
+      const teamName = String(name).replace(/\s+/g, ' ')
+      return supabase
+        .from('dim_team')
+        .select('*')
+        .eq('team_name', teamName)
+        .maybeSingle()
+        .then(({ data }) => data)
+        .catch(() => null)
+    })
+  )
+  const opponentTeamsMap = new Map(
+    opponentTeams.filter(Boolean).map(t => [t!.team_name, t!])
+  )
   
   return (
     <div className="space-y-6">
@@ -972,7 +2130,13 @@ export default async function PlayerDetailPage({
           <div className="bg-card rounded-lg p-4 border border-border text-center">
             <div className="text-xs font-mono text-muted-foreground uppercase mb-1">P/G</div>
             <div className="font-mono text-2xl font-bold text-foreground">
-              {playerStats.points_per_game?.toFixed(2) ?? (playerStats.games_played > 0 ? ((playerStats.points || 0) / playerStats.games_played).toFixed(2) : '-')}
+              {playerStats.points_per_game 
+                ? (typeof playerStats.points_per_game === 'number' 
+                    ? playerStats.points_per_game.toFixed(2) 
+                    : playerStats.points_per_game)
+                : (playerStats.games_played > 0 
+                    ? Number((playerStats.points || 0) / playerStats.games_played).toFixed(2) 
+                    : '-')}
             </div>
           </div>
         </div>
@@ -983,6 +2147,9 @@ export default async function PlayerDetailPage({
         playerId={playerId}
         seasonId={seasonId || ''}
         gameType={gameType}
+        gameIds={gameIdsForLog}
+        playerPosition={player.player_primary_position || playerStats?.position}
+        playerRating={playerStats?.skill_rating ? (typeof playerStats.skill_rating === 'number' ? playerStats.skill_rating : parseFloat(String(playerStats.skill_rating))) : undefined}
       />
       
       {/* Additional Stats */}
@@ -1003,7 +2170,11 @@ export default async function PlayerDetailPage({
               <div className="text-center">
                 <div className="text-xs font-mono text-muted-foreground uppercase">SH%</div>
                 <div className="font-mono text-xl font-bold text-foreground">
-                  {playerStats.shooting_pct ? (playerStats.shooting_pct * 100).toFixed(1) + '%' : '-'}
+                  {playerStats.shooting_pct 
+                    ? (typeof playerStats.shooting_pct === 'number' 
+                        ? Number(playerStats.shooting_pct * 100).toFixed(1) + '%' 
+                        : String(playerStats.shooting_pct))
+                    : '-'}
                 </div>
               </div>
               <div className="text-center">
@@ -1080,10 +2251,10 @@ export default async function PlayerDetailPage({
                   const toiDisplay = toiMinutes > 0 ? `${toiMinutes}:${toiSeconds.toString().padStart(2, '0')}` : '-'
                   
                   return (
-                    <tr key={game.player_game_key || `game-${game.game_id}`} className="border-b border-border hover:bg-muted/50">
+                    <tr key={game.player_game_key || `game-${game.game_id}`} className="border-b border-border hover:bg-muted/50 transition-colors">
                       <td className="px-4 py-2 font-mono text-xs text-muted-foreground">
                         {game.game_id ? (
-                          <Link href={`/games/${game.game_id}`} className="hover:text-primary">
+                          <Link href={`/games/${game.game_id}`} className="hover:text-primary transition-colors">
                             {gameDate}
                           </Link>
                         ) : (
@@ -1091,7 +2262,16 @@ export default async function PlayerDetailPage({
                         )}
                       </td>
                       <td className="px-4 py-2 text-foreground">
-                        {game.opponent_team_name ?? game.team_name ?? '-'}
+                        {game.opponent_team_name || game.team_name ? (
+                          <Link 
+                            href={`/team/${(game.opponent_team_name || game.team_name || '').replace(/\s+/g, '_')}`}
+                            className="hover:text-primary transition-colors"
+                          >
+                            {game.opponent_team_name ?? game.team_name ?? '-'}
+                          </Link>
+                        ) : (
+                          <span>-</span>
+                        )}
                       </td>
                       <td className="px-2 py-2 text-center font-mono text-goal font-semibold">
                         {game.goals || 0}
@@ -1116,13 +2296,48 @@ export default async function PlayerDetailPage({
                         {toiDisplay}
                       </td>
                       <td className="px-2 py-2 text-center font-mono text-xs text-muted-foreground">
-                        {game.cf_pct ? game.cf_pct.toFixed(1) + '%' : '-'}
+                        {game.cf_pct 
+                          ? (typeof game.cf_pct === 'number' 
+                              ? Number(game.cf_pct).toFixed(1) + '%' 
+                              : String(game.cf_pct))
+                          : '-'}
                       </td>
                     </tr>
                   )
                 })}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+      
+      {/* Game Cards */}
+      {gameLog.length > 0 && (
+        <div className="bg-card rounded-xl border border-border overflow-hidden">
+          <div className="px-4 py-3 bg-accent border-b border-border">
+            <h2 className="font-display text-sm font-semibold uppercase tracking-wider flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              Recent Games
+            </h2>
+          </div>
+          <div className="p-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {gameLog.slice(0, 6).map((game: any) => {
+                const opponentName = game.opponent_team_name || game.team_name || 'Opponent'
+                const opponentTeam = opponentTeamsMap.get(opponentName) || null
+                const isHome = game.team_venue === 'Home' || (game.team_name === teamInfo?.team_name)
+                
+                return (
+                  <GameCard
+                    key={game.game_id || game.player_game_key}
+                    game={game}
+                    isHome={isHome}
+                    teamInfo={teamInfo || undefined}
+                    opponentTeamInfo={opponentTeam || undefined}
+                  />
+                )
+              })}
+            </div>
           </div>
         </div>
       )}

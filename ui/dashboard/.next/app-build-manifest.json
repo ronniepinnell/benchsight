@@ -6,35 +6,30 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/page": [
+    "/(dashboard)/analytics/overview/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
-    ],
-    "/(dashboard)/standings/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/standings/page.js"
+      "static/chunks/app/(dashboard)/analytics/overview/page.js"
     ],
     "/(dashboard)/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(dashboard)/layout.js"
     ],
-    "/(dashboard)/teams/page": [
+    "/(dashboard)/schedule/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/teams/page.js"
+      "static/chunks/app/(dashboard)/schedule/page.js"
     ],
-    "/(dashboard)/team/[teamName]/page": [
+    "/(dashboard)/games/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/team/[teamName]/page.js"
+      "static/chunks/app/(dashboard)/games/page.js"
     ],
-    "/(dashboard)/players/[playerId]/page": [
+    "/_not-found/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/players/[playerId]/page.js"
+      "static/chunks/app/_not-found/page.js"
     ]
   }
 }
