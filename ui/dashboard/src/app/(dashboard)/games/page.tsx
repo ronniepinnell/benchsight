@@ -62,12 +62,16 @@ export default async function GamesPage({
   const { games, hasMore } = gamesResult
   
   // Get unique team IDs for logos
-  const teamIds = [...new Set(
-    games.flatMap(g => [
-      g.home_team_id ? String(g.home_team_id) : null,
-      g.away_team_id ? String(g.away_team_id) : null
-    ]).filter(Boolean)
-  )]
+  const teamIds = Array.from(
+    new Set(
+      games
+        .flatMap(g => [
+          g.home_team_id ? String(g.home_team_id) : null,
+          g.away_team_id ? String(g.away_team_id) : null,
+        ])
+        .filter(Boolean)
+    )
+  )
   
   const teamData = await Promise.all(
     teamIds.map(id => getTeamById(id).catch(() => null))
