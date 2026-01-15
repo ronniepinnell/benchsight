@@ -130,7 +130,7 @@ export function GameSummary({
             )}
             <div className="flex-1">
               <Link
-                href={awayTeam ? `/team/${(awayTeam.team_name || game.away_team_name || '').replace(/\s+/g, '_')}` : '#'}
+                href={awayTeam ? `/norad/team/${(awayTeam.team_name || game.away_team_name || '').replace(/\s+/g, '_')}` : '#'}
                 className={cn(
                   'font-display text-lg font-bold hover:text-primary transition-colors block',
                   awayWon ? 'text-save' : 'text-foreground'
@@ -162,7 +162,7 @@ export function GameSummary({
             </div>
             <div className="flex-1 text-right">
               <Link
-                href={homeTeam ? `/team/${(homeTeam.team_name || game.home_team_name || '').replace(/\s+/g, '_')}` : '#'}
+                href={homeTeam ? `/norad/team/${(homeTeam.team_name || game.home_team_name || '').replace(/\s+/g, '_')}` : '#'}
                 className={cn(
                   'font-display text-lg font-bold hover:text-primary transition-colors block',
                   homeWon ? 'text-save' : 'text-foreground'
@@ -459,7 +459,7 @@ export function GameSummary({
                         abbrev={homeTeam.team_cd}
                         primaryColor={homeTeam.primary_color || homeTeam.team_color1}
                         secondaryColor={homeTeam.team_color2}
-                        size="xs"
+                        size="sm"
                       />
                     )}
                     {homeTeam?.team_name || game.home_team_name}
@@ -468,7 +468,7 @@ export function GameSummary({
                     {topPerformers.home.slice(0, 5).map((player, idx) => (
                       <Link
                         key={player.player_id}
-                        href={`/players/${player.player_id}`}
+                        href={`/norad/players/${player.player_id}`}
                         className="flex items-center gap-3 p-2 bg-muted/20 rounded hover:bg-muted/40 transition-colors group"
                       >
                         <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-[10px] font-mono font-bold text-primary">
@@ -505,7 +505,7 @@ export function GameSummary({
                         abbrev={awayTeam.team_cd}
                         primaryColor={awayTeam.primary_color || awayTeam.team_color1}
                         secondaryColor={awayTeam.team_color2}
-                        size="xs"
+                        size="sm"
                       />
                     )}
                     {awayTeam?.team_name || game.away_team_name}
@@ -514,7 +514,7 @@ export function GameSummary({
                     {topPerformers.away.slice(0, 5).map((player, idx) => (
                       <Link
                         key={player.player_id}
-                        href={`/players/${player.player_id}`}
+                        href={`/norad/players/${player.player_id}`}
                         className="flex items-center gap-3 p-2 bg-muted/20 rounded hover:bg-muted/40 transition-colors group"
                       >
                         <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-[10px] font-mono font-bold text-primary">

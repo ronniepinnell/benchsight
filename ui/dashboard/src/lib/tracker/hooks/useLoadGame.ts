@@ -7,6 +7,7 @@ import { useTrackerStore } from '../state'
 import { loadGameRoster, loadGameData, loadTrackingData } from '../supabase'
 import { loadEventsFromSupabase, loadShiftsFromSupabase } from '../sync'
 import { toast } from '../utils/toast'
+import { processAllGoalsForAssists } from '../utils/assists'
 
 export function useLoadGame(gameId: string | number | null) {
   const { setGame, setRosters } = useTrackerStore()
@@ -67,8 +68,16 @@ export function useLoadGame(gameId: string | number | null) {
           const state = useTrackerStore.getState()
           
           if (cloudEvents.length > 0) {
+            // v23.8: Process all goals to detect and link assists after loading
+            // Note: processAllGoalsForAssists modifies events in-place
+            const autoLinked = processAllGoalsForAssists(cloudEvents, true)
+            
             useTrackerStore.setState({ events: cloudEvents })
             toast(`Loaded ${cloudEvents.length} events from cloud`, 'success')
+            
+            if (autoLinked > 0) {
+              toast(`Auto-linked ${autoLinked} assist(s) for goals`, 'success')
+            }
           }
           
           if (cloudShifts.length > 0) {
@@ -82,11 +91,21 @@ export function useLoadGame(gameId: string | number | null) {
             try {
               const gameState = JSON.parse(saved)
               if (gameState.events?.length > 0 || gameState.shifts?.length > 0) {
+                const loadedEvents = gameState.events || []
+                
+                // v23.8: Process all goals to detect and link assists after loading
+                // Note: processAllGoalsForAssists modifies events in-place
+                const autoLinked = processAllGoalsForAssists(loadedEvents, true)
+                
                 useTrackerStore.setState({
-                  events: gameState.events || [],
+                  events: loadedEvents,
                   shifts: gameState.shifts || []
                 })
                 toast('Loaded from local storage', 'info')
+                
+                if (autoLinked > 0) {
+                  toast(`Auto-linked ${autoLinked} assist(s) for goals`, 'success')
+                }
               }
             } catch (error) {
               console.error('Error loading from localStorage:', error)

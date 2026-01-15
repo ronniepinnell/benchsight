@@ -235,7 +235,7 @@ export function SortableGoaliesTable({ goalies, playersMap, isCurrentSeason = fa
                   <td className="px-4 py-3">
                     {goalie.player_id ? (
                       <Link
-                        href={`/players/${goalie.player_id}`}
+                        href={`/norad/players/${goalie.player_id}`}
                         className="flex items-center gap-2 hover:text-primary transition-colors"
                       >
                         <PlayerPhoto
@@ -263,7 +263,7 @@ export function SortableGoaliesTable({ goalies, playersMap, isCurrentSeason = fa
                   <td className="px-4 py-3 text-sm text-muted-foreground">
                     {goalie.displayTeam ? (
                       <Link 
-                        href={`/team/${goalie.displayTeam.replace(/\s+/g, '_')}`}
+                        href={`/norad/team/${goalie.displayTeam.replace(/\s+/g, '_')}`}
                         className="hover:text-foreground transition-colors"
                       >
                         {goalie.displayTeam}

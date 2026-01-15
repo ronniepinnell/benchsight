@@ -418,19 +418,25 @@ export interface FactEvents {
   time_start_total_seconds: number
   running_video_time: number
   team_id?: string
+  event_team_id?: string
   team_venue: string
   player_team: string
   player_role: string
   player_name: string
-  strength: string
+  strength?: string
   play_detail1: string
-  play_detail_2: string
+  play_detail_2?: string
   is_goal: number
   is_highlight: number
   is_rebound: number
   is_rush: number
   is_save: number
   season_id: string
+  // Event linking columns
+  event_chain_key?: string
+  linked_event_key?: string
+  sequence_key?: string
+  play_key?: string
 }
 
 export interface FactShotXY {

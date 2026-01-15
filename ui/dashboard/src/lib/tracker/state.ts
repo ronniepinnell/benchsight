@@ -184,12 +184,26 @@ export const useTrackerStore = create<TrackerState>((set, get) => ({
     })
     // Reindex after sort
     newEvents.forEach((e, i) => { e.idx = i })
+    
+    // Find the goal event after sorting (idx may have changed)
+    const goalEvent = newEvents.find(e => e === event)
+    
+    // v23.8: Auto-detect assists for Goals
+    if (goalEvent && goalEvent.type === 'Goal') {
+      const result = detectAndLinkAssists(goalEvent, newEvents, false) // false = show prompts
+      if (result.autoLinked > 0) {
+        // Events are already updated in-place by detectAndLinkAssists
+        toast(`Auto-linked ${result.autoLinked} assist(s) to goal`, 'success')
+      }
+      // TODO: Show modal for passesNeedingReview if any
+    }
+    
     set({ 
       events: newEvents, 
       evtIdx: evtIdx + 1,
       lastEndTime: eventData.end_time || eventData.start_time
     })
-    return event
+    return goalEvent || event
   },
   
   updateEvent: (idx, updates) => {
@@ -265,12 +279,25 @@ export const useTrackerStore = create<TrackerState>((set, get) => ({
   },
   
   addCurrentPlayer: (player) => {
-    set(state => ({
-      curr: {
-        ...state.curr,
-        players: [...state.curr.players, player]
+    set(state => {
+      // Ensure player has required properties
+      const playerWithDefaults: Player = {
+        ...player,
+        xy: player.xy || [], // Initialize xy array if missing
+        playD1: player.playD1 || '',
+        playD2: player.playD2 || '',
+        playSuccess: player.playSuccess || '',
+        pressure: player.pressure || '',
+        sideOfPuck: player.sideOfPuck || ''
       }
-    }))
+      
+      return {
+        curr: {
+          ...state.curr,
+          players: [...state.curr.players, playerWithDefaults]
+        }
+      }
+    })
   },
   
   removeCurrentPlayer: (player) => {

@@ -7,6 +7,7 @@
 import { createClient } from '@/lib/supabase/client'
 import type { Event, Shift, GameState } from './types'
 import { toast } from './utils/toast'
+import { processAllGoalsForAssists } from './utils/assists'
 
 /**
  * Transform event to Supabase format

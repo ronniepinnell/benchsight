@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Calendar } from 'lucide-react'
+import { SearchableSelect, SearchableSelectOption } from '@/components/common/searchable-select'
 
 interface SeasonSelectorProps {
   seasons: Array<{ season_id: string; season: string }>
@@ -12,8 +13,7 @@ export function SeasonSelector({ seasons, currentSeason }: SeasonSelectorProps) 
   const router = useRouter()
   const searchParams = useSearchParams()
   
-  const handleSeasonChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const seasonId = e.target.value
+  const handleSeasonChange = (seasonId: string) => {
     const params = new URLSearchParams(searchParams.toString())
     if (seasonId === currentSeason || !seasonId) {
       params.delete('season')
@@ -22,21 +22,23 @@ export function SeasonSelector({ seasons, currentSeason }: SeasonSelectorProps) 
     }
     router.push(`?${params.toString()}`)
   }
+
+  const options: SearchableSelectOption[] = seasons.map((s) => ({
+    value: s.season_id,
+    label: s.season,
+    searchText: s.season,
+  }))
   
   return (
     <div className="flex items-center gap-2">
       <Calendar className="w-4 h-4 text-muted-foreground" />
-      <select
+      <SearchableSelect
+        options={options}
         value={currentSeason}
         onChange={handleSeasonChange}
-        className="bg-card border border-border rounded-lg px-3 py-2 text-sm font-mono text-foreground hover:border-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
-      >
-        {seasons.map((s) => (
-          <option key={s.season_id} value={s.season_id}>
-            {s.season}
-          </option>
-        ))}
-      </select>
+        placeholder="Select season..."
+        className="min-w-[200px]"
+      />
     </div>
   )
 }

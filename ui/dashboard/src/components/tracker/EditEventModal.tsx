@@ -11,9 +11,10 @@ import { useTrackerStore } from '@/lib/tracker/state'
 import { EVENT_DETAILS, EVENT_TYPES } from '@/lib/tracker/constants'
 import { Button } from '@/components/ui/button'
 import { PlayerChip } from './PlayerChip'
-import { PlayerRoster } from './PlayerRoster'
+import { PlayerSelectDropdown } from './PlayerSelectDropdown'
 import { toast } from '@/lib/tracker/utils/toast'
 import { cn } from '@/lib/utils'
+import { SearchableSelect, SearchableSelectOption } from '@/components/common/searchable-select'
 import type { Event, EventType, Zone, Player } from '@/lib/tracker/types'
 
 interface EditEventModalProps {
@@ -149,18 +150,19 @@ export function EditEventModal({ isOpen, onClose }: EditEventModalProps) {
           {/* Event Type */}
           <div>
             <label className="text-xs text-muted-foreground uppercase mb-2 block">Event Type</label>
-            <select
+            <SearchableSelect
+              options={[
+                { value: '', label: '--', searchText: '' },
+                ...EVENT_TYPES.map((type) => ({
+                  value: type,
+                  label: type,
+                  searchText: type,
+                })),
+              ]}
               value={eventType}
-              onChange={(e) => setEventType(e.target.value as EventType)}
-              className="w-full px-2 py-1 text-sm bg-input border border-border rounded"
-            >
-              <option value="">--</option>
-              {EVENT_TYPES.map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setEventType(val as EventType)}
+              placeholder="--"
+            />
           </div>
 
           {/* Team */}
@@ -213,18 +215,19 @@ export function EditEventModal({ isOpen, onClose }: EditEventModalProps) {
               {detail1Options.length > 0 && (
                 <div>
                   <label className="text-xs text-muted-foreground block mb-1">Detail 1</label>
-                  <select
+                  <SearchableSelect
+                    options={[
+                      { value: '', label: '--', searchText: '' },
+                      ...detail1Options.map((opt) => ({
+                        value: opt,
+                        label: opt,
+                        searchText: opt,
+                      })),
+                    ]}
                     value={detail1}
-                    onChange={(e) => setDetail1(e.target.value)}
-                    className="w-full px-2 py-1 text-sm bg-input border border-border rounded"
-                  >
-                    <option value="">--</option>
-                    {detail1Options.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {opt}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setDetail1}
+                    placeholder="--"
+                  />
                 </div>
               )}
 
@@ -252,16 +255,17 @@ export function EditEventModal({ isOpen, onClose }: EditEventModalProps) {
           <div className="grid grid-cols-3 gap-2">
             <div>
               <label className="text-xs text-muted-foreground block mb-1">Zone</label>
-              <select
+              <SearchableSelect
+                options={[
+                  { value: '', label: '--', searchText: '' },
+                  { value: 'o', label: 'Offensive', searchText: 'offensive' },
+                  { value: 'n', label: 'Neutral', searchText: 'neutral' },
+                  { value: 'd', label: 'Defensive', searchText: 'defensive' },
+                ]}
                 value={zone}
-                onChange={(e) => setZone(e.target.value as Zone)}
-                className="w-full px-2 py-1 text-sm bg-input border border-border rounded"
-              >
-                <option value="">--</option>
-                <option value="o">Offensive</option>
-                <option value="n">Neutral</option>
-                <option value="d">Defensive</option>
-              </select>
+                onChange={(val) => setZone(val as Zone)}
+                placeholder="--"
+              />
             </div>
             <div>
               <label className="text-xs text-muted-foreground block mb-1">Success</label>
@@ -337,8 +341,13 @@ export function EditEventModal({ isOpen, onClose }: EditEventModalProps) {
                 ))
               )}
             </div>
-            <div className="max-h-48 overflow-y-auto">
-              <PlayerRoster team={team} onPlayerSelect={handleAddPlayer} />
+            <div>
+              <PlayerSelectDropdown 
+                team={team} 
+                currentPlayers={players}
+                onPlayerSelect={handleAddPlayer}
+                evtTeam={team}
+              />
             </div>
           </div>
         </div>

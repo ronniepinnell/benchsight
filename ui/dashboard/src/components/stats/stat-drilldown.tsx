@@ -98,7 +98,7 @@ export function StatDrilldown({
           return (
             <Link
               key={game.game_id || idx}
-              href={`/games/${game.game_id}`}
+              href={`/norad/games/${game.game_id}`}
               className="flex items-center justify-between py-1.5 px-2 rounded hover:bg-muted/50 transition-colors group"
             >
               <div className="flex items-center gap-2 flex-1 min-w-0">

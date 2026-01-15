@@ -1,1 +1,391 @@
-{"pages":{},"app":{"/Users/ronniepinnell/Documents/Documents - Ronnie’s MacBook Pro - 1/Programming_HD/Hockey/Benchsight/git/benchsight/ui/dashboard/src/app/layout":["static/media/e4af272ccee01ff0-s.p.woff2","static/media/bb3ef058b751a6ad-s.p.woff2","static/media/ab2e3a11646b0499-s.p.woff2","static/media/4b657decd6407698-s.p.woff2","static/media/3d26d2f3aa81a833-s.p.woff2","static/media/6e1768769e6f59a2-s.p.woff2"]},"appUsingSizeAdjust":true,"pagesUsingSizeAdjust":false}
+{
+  "app": {
+    "[project]/src/app/(dashboard)/players/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/_not-found/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/login/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/admin/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/analytics/faceoffs/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/analytics/lines/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/analytics/micro-stats/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/analytics/overview/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/analytics/rushes/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/analytics/shifts/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/analytics/shot-chains/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/analytics/statistics/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/analytics/teams/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/analytics/trends/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/analytics/war/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/analytics/xg/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/analytics/zone/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/games/[gameId]/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/games/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/games/shots/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/goalies/[goalieId]/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/goalies/compare/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/goalies/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/leaders/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/players/[playerId]/games/[gameId]/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/players/[playerId]/games/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/players/[playerId]/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/players/[playerId]/trends/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/players/compare/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/players/matchups/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/players/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/prototypes/design-system/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/prototypes/example/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/prototypes/macro/league-overview/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/prototypes/macro/league-stats/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/prototypes/macro/team-comparison/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/prototypes/test-connection/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/schedule/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/standings/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/team/[teamName]/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/teams/[teamId]/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/teams/compare/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/teams/free-agents/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/teams/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/tracker/[gameId]/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/tracker/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/norad/(dashboard)/tracker/videos/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/src/app/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/278cbb97e75e04e2-s.p.2ce9a157.woff2",
+      "static/media/a079e02bba5bf7ab-s.p.7367eab7.woff2",
+      "static/media/d23f31b94ad01e54-s.p.4b0b0c7e.woff2",
+      "static/media/3206eb66b875a5b3-s.p.e2b99870.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ]
+  },
+  "appUsingSizeAdjust": true,
+  "pages": {},
+  "pagesUsingSizeAdjust": false
+}

@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { toast } from '@/lib/tracker/utils/toast'
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
@@ -14,8 +14,10 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isSignUp, setIsSignUp] = useState(false)
 
-  const redirect = searchParams.get('redirect') || '/standings'
+  const redirect = searchParams.get('redirect') || '/norad/standings'
 
+  // TEMPORARILY DISABLED TO DEBUG REFRESH LOOP
+  /*
   useEffect(() => {
     // Check if already logged in
     const checkAuth = async () => {
@@ -24,11 +26,14 @@ export default function LoginPage() {
         data: { user },
       } = await supabase.auth.getUser()
       if (user) {
-        router.push(redirect)
+        const redirectPath = searchParams.get('redirect') || '/norad/standings'
+        router.push(redirectPath)
       }
     }
     checkAuth()
-  }, [router, redirect])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Only run once on mount
+  */
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -64,7 +69,7 @@ export default function LoginPage() {
         if (data.user) {
           toast('Logged in successfully', 'success')
           router.push(redirect)
-          router.refresh()
+          // Don't call router.refresh() as it can cause refresh loops
         }
       }
     } catch (error: any) {
@@ -151,5 +156,22 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <div className="w-full max-w-md space-y-8">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold">BenchSight</h1>
+            <p className="text-muted-foreground mt-2">Loading...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   )
 }

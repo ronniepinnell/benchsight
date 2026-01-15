@@ -98,7 +98,7 @@ export function StandingsTable({ standings }: StandingsTableProps) {
                       />
                       {team.team_name ? (
                         <Link 
-                          href={`/team/${team.team_name.replace(/\s+/g, '_')}`} 
+                          href={`/norad/team/${team.team_name.replace(/\s+/g, '_')}`} 
                           className="font-display text-sm text-foreground hover:text-primary transition-colors"
                         >
                           {team.team_name}

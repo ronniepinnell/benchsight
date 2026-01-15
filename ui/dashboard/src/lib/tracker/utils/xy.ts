@@ -16,23 +16,36 @@ export function calculateDistance(p1: XYCoordinate, p2: XYCoordinate): number {
 }
 
 /**
- * Convert SVG coordinates (0-200, 0-85) to relative coordinates
- * NHL rink: 200ft wide, 85ft deep
+ * Convert SVG coordinates (0-200, 0-85) to center-relative coordinates
+ * Center ice in SVG: (100, 42.5)
+ * Center-relative: (0, 0) = center ice, X: -100 to +100, Y: -42.5 to +42.5
  */
 export function svgToRelative(svgX: number, svgY: number): XYCoordinate {
   return {
-    x: svgX,  // Already in relative coords (0-200)
-    y: svgY   // Already in relative coords (0-85)
+    x: svgX - 100,  // Convert to center-relative (center ice = 0)
+    y: svgY - 42.5  // Convert to center-relative (center ice = 0)
   }
 }
 
 /**
- * Convert relative coordinates to SVG coordinates
+ * Convert center-relative coordinates to SVG coordinates
+ * Center-relative: (0, 0) = center ice, X: -100 to +100, Y: -42.5 to +42.5
+ * SVG: (100, 42.5) = center ice, X: 0-200, Y: 0-85
  */
 export function relativeToSvg(relative: XYCoordinate): { x: number; y: number } {
+  // Check if coordinates are already in SVG format (0-200, 0-85)
+  // If x is between 0-200 and y is between 0-85, assume they're already SVG coords
+  if (relative.x >= 0 && relative.x <= 200 && relative.y >= 0 && relative.y <= 85) {
+    return {
+      x: relative.x,
+      y: relative.y
+    }
+  }
+  
+  // Otherwise, convert from center-relative to SVG
   return {
-    x: relative.x,
-    y: relative.y
+    x: relative.x + 100,
+    y: relative.y + 42.5
   }
 }
 

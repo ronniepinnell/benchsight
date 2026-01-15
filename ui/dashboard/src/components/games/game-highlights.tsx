@@ -187,7 +187,7 @@ export function GameHighlights({
                     abbrev={eventTeam.team_cd}
                     primaryColor={eventTeam.primary_color || eventTeam.team_color1}
                     secondaryColor={eventTeam.team_color2}
-                    size="xs"
+                    size="sm"
                   />
                 )}
                 

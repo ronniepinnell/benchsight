@@ -12,11 +12,12 @@ import { createEvent } from '@/lib/tracker/events'
 import { EventTypeGrid } from './EventTypeGrid'
 import { Button } from '@/components/ui/button'
 // Input/Select components defined inline below
+import { SearchableSelect, SearchableSelectOption } from '@/components/common/searchable-select'
 import { EVENT_DETAILS } from '@/lib/tracker/constants'
 // Zone label utility available but not used in this component
 import { cn } from '@/lib/utils'
 import { toast } from '@/lib/tracker/utils/toast'
-import { PlayerRoster } from './PlayerRoster'
+import { PlayerSelectDropdown } from './PlayerSelectDropdown'
 import { PlayerChip } from './PlayerChip'
 import type { EventType, Zone, Team, Player } from '@/lib/tracker/types'
 
@@ -30,16 +31,7 @@ const SimpleInput = ({ value, onChange, ...props }: any) => (
   />
 )
 
-const SimpleSelect = ({ value, onChange, children, ...props }: any) => (
-  <select
-    className="w-full px-2 py-1 text-sm bg-input border border-border rounded"
-    value={value || ''}
-    onChange={(e) => onChange(e.target.value)}
-    {...props}
-  >
-    {children}
-  </select>
-)
+// SimpleSelect replaced with SearchableSelect - see usage below
 
 export function EventForm() {
   const {
@@ -235,14 +227,19 @@ export function EventForm() {
               <label className="text-xs text-muted-foreground block mb-1">
                 Detail 1
               </label>
-              <SimpleSelect value={detail1} onChange={setDetail1}>
-                <option value="">--</option>
-                {detail1Options.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </SimpleSelect>
+              <SearchableSelect
+                options={[
+                  { value: '', label: '--', searchText: '' },
+                  ...detail1Options.map((opt) => ({
+                    value: opt,
+                    label: opt,
+                    searchText: opt,
+                  })),
+                ]}
+                value={detail1}
+                onChange={setDetail1}
+                placeholder="--"
+              />
             </div>
           )}
 
@@ -251,14 +248,19 @@ export function EventForm() {
               <label className="text-xs text-muted-foreground block mb-1">
                 Detail 2
               </label>
-              <SimpleSelect value={detail2} onChange={setDetail2}>
-                <option value="">--</option>
-                {detail2Options.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </SimpleSelect>
+              <SearchableSelect
+                options={[
+                  { value: '', label: '--', searchText: '' },
+                  ...detail2Options.map((opt) => ({
+                    value: opt,
+                    label: opt,
+                    searchText: opt,
+                  })),
+                ]}
+                value={detail2}
+                onChange={setDetail2}
+                placeholder="--"
+              />
             </div>
           )}
         </>
@@ -277,11 +279,16 @@ export function EventForm() {
         </div>
         <div>
           <label className="text-xs text-muted-foreground block mb-1">Success</label>
-          <SimpleSelect value={success} onChange={setSuccess}>
-            <option value="">--</option>
-            <option value="s">Success</option>
-            <option value="u">Unsuccess</option>
-          </SimpleSelect>
+          <SearchableSelect
+            options={[
+              { value: '', label: '--', searchText: '' },
+              { value: 's', label: 'Success', searchText: 'success' },
+              { value: 'u', label: 'Unsuccess', searchText: 'unsuccess' },
+            ]}
+            value={success}
+            onChange={setSuccess}
+            placeholder="--"
+          />
         </div>
         <div>
           <label className="text-xs text-muted-foreground block mb-1">Strength</label>
@@ -346,12 +353,12 @@ export function EventForm() {
         </div>
       )}
 
-      {/* Player Roster */}
-      <div className="space-y-2 max-h-64 overflow-y-auto">
+      {/* Player Selection Dropdown */}
+      <div className="space-y-2">
         <label className="text-xs text-muted-foreground uppercase mb-2 block">
-          Add Players ({evtTeam === 'home' ? homeTeam : awayTeam})
+          Add Player ({evtTeam === 'home' ? homeTeam : awayTeam})
         </label>
-        <PlayerRoster team={evtTeam} />
+        <PlayerSelectDropdown team={evtTeam} />
       </div>
 
       {/* XY Mode Toggle */}

@@ -134,3 +134,27 @@ export function getInitials(name: string): string {
     .toUpperCase()
     .slice(0, 2)
 }
+
+/**
+ * Format season value (number or string) to "xxxx-xxxx" format
+ * Handles both numeric (20242025) and string formats (N20242025F, 20242025)
+ */
+export function formatSeason(season: string | number | null | undefined): string {
+  if (!season) return ''
+  
+  if (typeof season === 'number') {
+    const year = Math.floor(season / 10000)
+    const nextYear = season % 10000
+    return `${year}-${nextYear}`
+  }
+  
+  const seasonStr = String(season)
+  // Try to match patterns like "20242025" or "N20242025F"
+  const match = seasonStr.match(/(\d{4})(\d{4})/)
+  if (match) {
+    const [, startYear, endYear] = match
+    return `${startYear}-${endYear}`
+  }
+  
+  return seasonStr
+}

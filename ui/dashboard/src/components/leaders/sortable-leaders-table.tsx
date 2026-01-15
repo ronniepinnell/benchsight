@@ -246,7 +246,7 @@ export function SortableLeadersTable({ leaders, playersMap, isCurrentSeason = fa
                   <td className="px-4 py-3">
                     {player.player_id ? (
                       <Link
-                        href={`/players/${player.player_id}`}
+                        href={`/norad/players/${player.player_id}`}
                         className="flex items-center gap-2 hover:text-primary transition-colors"
                       >
                         <PlayerPhoto
@@ -274,7 +274,7 @@ export function SortableLeadersTable({ leaders, playersMap, isCurrentSeason = fa
                   <td className="px-4 py-3 text-sm text-muted-foreground">
                     {player.displayTeam ? (
                       <Link 
-                        href={`/team/${player.displayTeam.replace(/\s+/g, '_')}`}
+                        href={`/norad/team/${player.displayTeam.replace(/\s+/g, '_')}`}
                         className="hover:text-foreground transition-colors"
                       >
                         {player.displayTeam}

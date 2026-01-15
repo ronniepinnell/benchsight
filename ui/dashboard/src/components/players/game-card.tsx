@@ -26,6 +26,7 @@ interface GameCardProps {
     cf_pct?: number
     player_rating?: number
     game_score?: number
+    game_type?: string
   }
   isHome?: boolean
   teamInfo?: {
@@ -69,7 +70,7 @@ export function GameCard({ game, isHome, teamInfo, opponentTeamInfo }: GameCardP
 
   return (
     <Link
-      href={`/games/${game.game_id}`}
+      href={`/norad/games/${game.game_id}`}
       className="block bg-card rounded-lg border border-border hover:border-primary/50 transition-all hover:shadow-lg group"
     >
       <div className="p-4">
@@ -80,6 +81,11 @@ export function GameCard({ game, isHome, teamInfo, opponentTeamInfo }: GameCardP
             <span className="text-xs font-mono text-muted-foreground uppercase">
               {gameDate}
             </span>
+            {game.game_type && (game.game_type === 'Playoffs' || game.game_type === 'playoffs' || game.game_type === 'Playoff') && (
+              <span className="text-xs font-mono uppercase px-1.5 py-0.5 rounded bg-primary/20 text-primary">
+                Playoff
+              </span>
+            )}
           </div>
           <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
         </div>

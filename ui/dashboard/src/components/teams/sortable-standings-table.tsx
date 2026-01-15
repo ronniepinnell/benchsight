@@ -3,12 +3,12 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
+import { ArrowUpDown, ArrowUp, ArrowDown, Award } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { TeamLogo } from '@/components/teams/team-logo'
 import type { VStandingsCurrent } from '@/types/database'
 
-type SortField = 'standing' | 'team' | 'gp' | 'wins' | 'losses' | 'ties' | 'points' | 'winPct' | 'gf' | 'ga' | 'gfPerGame' | 'gaPerGame' | 'diff' | 'l10' | 'streak'
+type SortField = 'standing' | 'team' | 'gp' | 'wins' | 'losses' | 'ties' | 'points' | 'winPct' | 'gf' | 'ga' | 'gfPerGame' | 'gaPerGame' | 'gfGaDiff' | 'diff' | 'l10' | 'streak'
 type SortDirection = 'asc' | 'desc'
 
 interface StandingsRow extends VStandingsCurrent {
@@ -16,13 +16,16 @@ interface StandingsRow extends VStandingsCurrent {
   last_10?: string
   streak?: string
   ties?: number
+  isChampion?: boolean
+  isRunnerUp?: boolean
 }
 
 interface SortableStandingsTableProps {
   standings: StandingsRow[]
+  seasonId?: string
 }
 
-export function SortableStandingsTable({ standings }: SortableStandingsTableProps) {
+export function SortableStandingsTable({ standings, seasonId }: SortableStandingsTableProps) {
   const [sortField, setSortField] = useState<SortField>('standing')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
 
@@ -32,11 +35,14 @@ export function SortableStandingsTable({ standings }: SortableStandingsTableProp
         const points = team.points || (team.wins * 2 + ties) // Calculate points: W*2 + T
         // Win percentage = points / (games_played * 2) * 100
         const winPct = team.games_played > 0 ? (points / (team.games_played * 2)) * 100 : 0
+        const gfPerGame = team.goals_for_per_game || (team.games_played > 0 ? team.goals_for / team.games_played : 0)
+        const gaPerGame = team.goals_against_per_game || (team.games_played > 0 ? team.goals_against / team.games_played : 0)
         return {
           ...team,
           winPct,
-          gfPerGame: team.goals_for_per_game || (team.games_played > 0 ? team.goals_for / team.games_played : 0),
-          gaPerGame: team.goals_against_per_game || (team.games_played > 0 ? team.goals_against / team.games_played : 0),
+          gfPerGame,
+          gaPerGame,
+          gfGaDiff: gfPerGame - gaPerGame,
           ties,
           points,
         }
@@ -94,6 +100,10 @@ export function SortableStandingsTable({ standings }: SortableStandingsTableProp
         case 'gaPerGame':
           aValue = a.gaPerGame
           bValue = b.gaPerGame
+          break
+        case 'gfGaDiff':
+          aValue = a.gfGaDiff
+          bValue = b.gfGaDiff
           break
         case 'diff':
           aValue = a.goal_diff
@@ -274,6 +284,15 @@ export function SortableStandingsTable({ standings }: SortableStandingsTableProp
                 </div>
               </th>
               <th 
+                className="px-4 py-3 text-center font-display text-xs font-semibold text-muted-foreground uppercase cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => handleSort('gfGaDiff')}
+              >
+                <div className="flex items-center justify-center gap-1">
+                  GF/GA Diff
+                  <SortIcon field="gfGaDiff" />
+                </div>
+              </th>
+              <th 
                 className="px-4 py-3 text-center font-display text-xs font-semibold text-primary uppercase cursor-pointer hover:bg-muted/50 transition-colors"
                 onClick={() => handleSort('diff')}
               >
@@ -308,6 +327,7 @@ export function SortableStandingsTable({ standings }: SortableStandingsTableProp
               const isPlayoffSpot = team.standing <= 4
               const gfPerGame = team.gfPerGame.toFixed(2)
               const gaPerGame = team.gaPerGame.toFixed(2)
+              const gfGaDiff = team.gfGaDiff.toFixed(2)
               
               return (
                 <tr key={team.team_id} className={cn(
@@ -331,12 +351,30 @@ export function SortableStandingsTable({ standings }: SortableStandingsTableProp
                         size="sm"
                       />
                       {team.team_name ? (
-                        <Link href={`/team/${team.team_name.replace(/\s+/g, '_')}`} className="font-display text-sm text-foreground hover:text-primary transition-colors">
+                        <Link 
+                          href={seasonId 
+                            ? `/norad/team/${team.team_name.replace(/\s+/g, '_')}?season=${seasonId}`
+                            : `/norad/team/${team.team_name.replace(/\s+/g, '_')}`
+                          } 
+                          className="font-display text-sm text-foreground hover:text-primary transition-colors flex items-center gap-2"
+                        >
                           {team.team_name}
+                          {team.isChampion && (
+                            <Award className="w-4 h-4 text-yellow-500 fill-yellow-500" title="Champion" />
+                          )}
+                          {team.isRunnerUp && (
+                            <Award className="w-4 h-4 text-gray-400 fill-gray-400" title="Runner Up" />
+                          )}
                         </Link>
                       ) : (
-                        <span className="font-display text-sm text-foreground">
+                        <span className="font-display text-sm text-foreground flex items-center gap-2">
                           {team.team_name || '-'}
+                          {team.isChampion && (
+                            <Award className="w-4 h-4 text-yellow-500 fill-yellow-500" title="Champion" />
+                          )}
+                          {team.isRunnerUp && (
+                            <Award className="w-4 h-4 text-gray-400 fill-gray-400" title="Runner Up" />
+                          )}
                         </span>
                       )}
                     </div>
@@ -351,6 +389,11 @@ export function SortableStandingsTable({ standings }: SortableStandingsTableProp
                   <td className="px-4 py-3 text-center font-mono text-sm text-muted-foreground">{team.goals_against}</td>
                   <td className="px-4 py-3 text-center font-mono text-sm text-muted-foreground">{gfPerGame}</td>
                   <td className="px-4 py-3 text-center font-mono text-sm text-muted-foreground">{gaPerGame}</td>
+                  <td className={cn('px-4 py-3 text-center font-mono text-sm',
+                    team.gfGaDiff > 0 ? 'text-save' : team.gfGaDiff < 0 ? 'text-goal' : 'text-muted-foreground'
+                  )}>
+                    {team.gfGaDiff > 0 ? '+' : ''}{gfGaDiff}
+                  </td>
                   <td className={cn('px-4 py-3 text-center font-mono text-sm font-bold',
                     team.goal_diff > 0 ? 'text-save' : team.goal_diff < 0 ? 'text-goal' : 'text-muted-foreground'
                   )}>

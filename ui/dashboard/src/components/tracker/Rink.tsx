@@ -9,7 +9,7 @@
 
 import { useRef, useState, useCallback } from 'react'
 import type { XYCoordinate, Period, Team, Zone } from '@/lib/tracker/types'
-import { detectFaceoffDot, smartAutoLinkXY } from '@/lib/tracker/utils/xy'
+import { detectFaceoffDot, smartAutoLinkXY, relativeToSvg, svgToRelative } from '@/lib/tracker/utils/xy'
 import { getZoneFromClick } from '@/lib/tracker/utils/zone'
 import { useTrackerStore } from '@/lib/tracker/state'
 import { toast } from '@/lib/tracker/utils/toast'
@@ -56,7 +56,9 @@ export function Rink({ onXYPlace, className }: RinkProps) {
     const faceoffDot = detectFaceoffDot(svgX, svgY, 5)
     if (faceoffDot && curr.type === 'Faceoff') {
       // Auto-assign E1 and O1 positions for faceoffs
-      const xy: XYCoordinate = { x: svgX, y: svgY }
+      // Convert SVG coordinates to center-relative for storage
+    const relativeXY = svgToRelative(svgX, svgY)
+    const xy: XYCoordinate = { x: relativeXY.x, y: relativeXY.y }
       
       // Add to puck XY (faceoff location)
       const newPuckXY = [...(curr.puckXY || []), xy]
@@ -72,7 +74,9 @@ export function Rink({ onXYPlace, className }: RinkProps) {
       return
     }
 
-    const xy: XYCoordinate = { x: svgX, y: svgY }
+    // Convert SVG coordinates to center-relative for storage
+    const relativeXY = svgToRelative(svgX, svgY)
+    const xy: XYCoordinate = { x: relativeXY.x, y: relativeXY.y }
 
     // Place XY based on mode
     if (xyMode === 'puck') {
@@ -277,45 +281,54 @@ export function Rink({ onXYPlace, className }: RinkProps) {
         </text>
 
         {/* Markers for current event */}
-        {curr.puckXY?.map((xy, i) => (
-          <circle
-            key={`puck-${i}`}
-            cx={xy.x}
-            cy={xy.y}
-            r="2"
-            fill="#000"
-            stroke="#fff"
-            strokeWidth="0.5"
-          />
-        ))}
-
-        {/* Player markers */}
-        {curr.players?.map((player, i) =>
-          player.xy?.map((xy, j) => (
+        {curr.puckXY?.map((xy, i) => {
+          const svgCoords = relativeToSvg(xy)
+          return (
             <circle
-              key={`player-${i}-${j}`}
-              cx={xy.x}
-              cy={xy.y}
+              key={`puck-${i}`}
+              cx={svgCoords.x}
+              cy={svgCoords.y}
               r="2"
-              fill={player.team === 'home' ? '#3b82f6' : '#ef4444'}
+              fill="#000"
               stroke="#fff"
               strokeWidth="0.5"
             />
-          ))
+          )
+        })}
+
+        {/* Player markers */}
+        {curr.players?.map((player, i) =>
+          player.xy?.map((xy, j) => {
+            const svgCoords = relativeToSvg(xy)
+            return (
+              <circle
+                key={`player-${i}-${j}`}
+                cx={svgCoords.x}
+                cy={svgCoords.y}
+                r="2"
+                fill={player.team === 'home' ? '#3b82f6' : '#ef4444'}
+                stroke="#fff"
+                strokeWidth="0.5"
+              />
+            )
+          })
         )}
 
         {/* Net marker */}
-        {curr.netXY && (
-          <rect
-            x={curr.netXY.x - 2}
-            y={curr.netXY.y - 3.5}
-            width="4"
-            height="7"
-            fill="#222"
-            stroke="#fff"
-            strokeWidth="0.3"
-          />
-        )}
+        {curr.netXY && (() => {
+          const svgCoords = relativeToSvg(curr.netXY)
+          return (
+            <rect
+              x={svgCoords.x - 2}
+              y={svgCoords.y - 3.5}
+              width="4"
+              height="7"
+              fill="#222"
+              stroke="#fff"
+              strokeWidth="0.3"
+            />
+          )
+        })()}
       </svg>
     </div>
   )

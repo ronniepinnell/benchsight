@@ -103,18 +103,34 @@ export async function GET(request: NextRequest) {
     // Build schedule URL - try to get current season schedule
     const scheduleUrl = `https://www.noradhockey.com/schedule/list/league_id/${leagueId}`
     
-    // Fetch the schedule page
-    const response = await fetch(scheduleUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
-      },
-      next: { revalidate: 300 } // Cache for 5 minutes
-    })
+    // Fetch the schedule page - return empty array immediately if it fails
+    // This prevents blocking the page load
+    let response: Response
+    try {
+      response = await fetch(scheduleUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.5',
+        },
+        next: { revalidate: 300 } // Cache for 5 minutes
+      })
+    } catch (fetchError: any) {
+      // Handle network errors gracefully - return empty games array
+      console.warn(`NORAD schedule fetch error: ${fetchError.message || fetchError}`)
+      return NextResponse.json({ games: [] })
+    }
 
+    // Handle 404 or other errors gracefully - return empty games array instead of throwing
     if (!response.ok) {
-      throw new Error(`Failed to fetch schedule: ${response.statusText}`)
+      if (response.status === 404) {
+        // Schedule page not found - return empty games array (not an error)
+        console.warn(`NORAD schedule page not found (404): ${scheduleUrl}`)
+        return NextResponse.json({ games: [] })
+      }
+      // For other errors, log but still return empty array
+      console.warn(`NORAD API returned error: ${response.status} ${response.statusText}`)
+      return NextResponse.json({ games: [] })
     }
 
     const html = await response.text()
@@ -124,11 +140,11 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json({ games })
   } catch (error: any) {
-    console.error('Error fetching NORAD schedule:', error)
-    return NextResponse.json(
-      { error: error.message || 'Failed to fetch schedule from noradhockey.com', games: [] },
-      { status: 500 }
-    )
+    // Log error but return empty games array instead of 500 error
+    console.warn('Error fetching NORAD schedule:', error.message || error)
+    // Return 200 with empty games array - this is not a critical error
+    // The team page will fall back to database query
+    return NextResponse.json({ games: [] })
   }
 }
 

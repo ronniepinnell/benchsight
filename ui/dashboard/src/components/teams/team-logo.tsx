@@ -1,5 +1,6 @@
 // src/components/teams/team-logo.tsx
-import Image from 'next/image'
+'use client'
+
 import { cn, teamGradient, getInitials } from '@/lib/utils'
 
 interface TeamLogoProps {
@@ -44,22 +45,25 @@ export function TeamLogo({
   return (
     <div
       className={cn(
-        'rounded-lg flex items-center justify-center p-1 shrink-0',
+        'rounded-lg flex items-center justify-center p-[2px] shrink-0 overflow-hidden',
         sizeClasses[size],
         className
       )}
       style={{
         background: showGradient ? gradient : 'transparent',
       }}
+      suppressHydrationWarning
     >
       {src ? (
-        <Image
+        <img
           src={src}
           alt={name}
           width={imageSizes[size]}
           height={imageSizes[size]}
-          className="object-contain"
-          unoptimized // For external URLs
+          className="object-contain w-full h-full block"
+          loading="lazy"
+          decoding="async"
+          suppressHydrationWarning
         />
       ) : (
         <span 

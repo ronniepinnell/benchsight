@@ -21,7 +21,9 @@ export function UserMenu() {
       setUser(user)
       setIsLoading(false)
 
+      // TEMPORARILY DISABLED TO DEBUG REFRESH LOOP
       // Listen for auth changes
+      /*
       const {
         data: { subscription },
       } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -29,6 +31,7 @@ export function UserMenu() {
       })
 
       return () => subscription.unsubscribe()
+      */
     }
 
     checkUser()
@@ -38,7 +41,7 @@ export function UserMenu() {
     const supabase = createClient()
     await supabase.auth.signOut()
     router.push('/login')
-    router.refresh()
+    // Don't call router.refresh() as it can cause refresh loops
   }
 
   if (isLoading) {

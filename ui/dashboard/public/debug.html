@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Debug Page - No Refresh</title>
+  <style>
+    body {
+      font-family: monospace;
+      padding: 2rem;
+      background: #000;
+      color: #0f0;
+    }
+    .error {
+      color: #f00;
+      background: #200;
+      padding: 1rem;
+      margin: 1rem 0;
+      border: 1px solid #f00;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔒 DEBUG MODE - NO REFRESH</h1>
+  <p>This is a static HTML page that won't refresh.</p>
+  <p>Check your terminal/server logs for errors instead of browser console.</p>
+  <div id="errors"></div>
+  
+  <script>
+    // This page will never refresh
+    console.log('Debug page loaded - no refresh possible');
+  </script>
+</body>
+</html>

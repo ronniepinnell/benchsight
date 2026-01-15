@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Search } from 'lucide-react'
+import { SearchableSelect, SearchableSelectOption } from '@/components/common/searchable-select'
 
 interface GamesFiltersProps {
   seasons: string[]
@@ -12,6 +13,7 @@ interface GamesFiltersProps {
   gameType: string
   search: string | null
   seasonId?: string | null
+  trackingFilter?: string | null
 }
 
 // Format season ID to readable name (e.g., "N20242025F" -> "2024-2025 Fall")
@@ -38,6 +40,7 @@ export function GamesFilters({
   selectedTeam,
   gameType,
   search,
+  trackingFilter,
 }: GamesFiltersProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -57,7 +60,7 @@ export function GamesFilters({
     // Reset offset when filters change
     params.delete('offset')
     
-    router.push(`/games?${params.toString()}`)
+    router.push(`/norad/games?${params.toString()}`)
   }
 
   const handleSeasonChange = (season: string) => {
@@ -70,6 +73,10 @@ export function GamesFilters({
 
   const handleGameTypeChange = (type: string) => {
     updateParams({ gameType: type })
+  }
+
+  const handleTrackingFilterChange = (filter: string) => {
+    updateParams({ tracking: filter === 'All' ? null : filter })
   }
 
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -88,21 +95,21 @@ export function GamesFilters({
           <label className="text-sm font-mono text-muted-foreground uppercase whitespace-nowrap">
             Season:
           </label>
-          <select
-            value={selectedSeason || currentSeason || ''}
-            onChange={(e) => handleSeasonChange(e.target.value)}
-            className="bg-card border border-border rounded-lg px-3 py-2 text-sm font-mono text-foreground hover:border-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
-          >
-            {seasons.map((season) => {
+          <SearchableSelect
+            options={seasons.map((season) => {
               const displayName = formatSeasonName(season)
               const isCurrent = season === currentSeason
-              return (
-                <option key={season} value={season}>
-                  {displayName}{isCurrent ? ' (Current)' : ''}
-                </option>
-              )
+              return {
+                value: season,
+                label: `${displayName}${isCurrent ? ' (Current)' : ''}`,
+                searchText: displayName,
+              }
             })}
-          </select>
+            value={selectedSeason || currentSeason || ''}
+            onChange={handleSeasonChange}
+            placeholder="Select season..."
+            className="min-w-[200px]"
+          />
         </div>
 
         {/* Team Filter */}
@@ -110,18 +117,20 @@ export function GamesFilters({
           <label className="text-sm font-mono text-muted-foreground uppercase whitespace-nowrap">
             Team:
           </label>
-          <select
+          <SearchableSelect
+            options={[
+              { value: '', label: 'All Teams', searchText: 'all teams' },
+              ...teams.map((team) => ({
+                value: team.team_id,
+                label: team.team_name,
+                searchText: team.team_name,
+              })),
+            ]}
             value={selectedTeam || ''}
-            onChange={(e) => handleTeamChange(e.target.value)}
-            className="bg-card border border-border rounded-lg px-3 py-2 text-sm font-mono text-foreground hover:border-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary min-w-[150px]"
-          >
-            <option value="">All Teams</option>
-            {teams.map((team) => (
-              <option key={team.team_id} value={team.team_id}>
-                {team.team_name}
-              </option>
-            ))}
-          </select>
+            onChange={handleTeamChange}
+            placeholder="All Teams"
+            className="min-w-[150px]"
+          />
         </div>
 
         {/* Game Type Tabs */}
@@ -149,6 +158,27 @@ export function GamesFilters({
               </button>
             )
           })}
+        </div>
+
+        {/* Tracking Filter */}
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-mono text-muted-foreground uppercase whitespace-nowrap">
+            Tracking:
+          </label>
+          <SearchableSelect
+            options={[
+              { value: 'All', label: 'All Games', searchText: 'all games' },
+              { value: 'tracked', label: 'Tracked Only', searchText: 'tracked only' },
+              { value: 'non-tracked', label: 'Non-Tracked Only', searchText: 'non tracked only' },
+              { value: 'full', label: 'Full Tracking', searchText: 'full tracking' },
+              { value: 'partial', label: 'Partial Tracking', searchText: 'partial tracking' },
+              { value: 'non-full', label: 'Non-Full Game', searchText: 'non full game' },
+            ]}
+            value={trackingFilter || 'All'}
+            onChange={handleTrackingFilterChange}
+            placeholder="All Games"
+            className="min-w-[150px]"
+          />
         </div>
       </div>
 

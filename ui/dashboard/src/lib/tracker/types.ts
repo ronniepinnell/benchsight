@@ -98,7 +98,8 @@ export interface Event {
   // Metadata
   isHighlight?: boolean
   videoUrl?: string // v23.7: Individual YouTube link for this highlight
-  linkedEventIdx?: number // Linked event index (for sequences)
+  linkedEventIdx?: number // Linked event index (for sequences like Shot->Save)
+  assistToGoalIdx?: number // v23.8: Assist to goal index (for Pass->Goal assists, separate from linked events)
   notes?: string
   
   // Video sync

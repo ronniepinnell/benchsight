@@ -167,6 +167,8 @@ export function buildEventExportRows(
       detail2: evt.detail2,
       is_highlight: evt.isHighlight ? 1 : 0,
       video_url: evt.isHighlight && evt.videoUrl ? evt.videoUrl : '', // v23.7: Individual highlight video URL
+      linked_event_index: evt.linkedEventIdx !== null && evt.linkedEventIdx !== undefined ? 1000 + evt.linkedEventIdx : '', // For sequences like Shot->Save
+      assist_to_goal_index: evt.assistToGoalIdx !== null && evt.assistToGoalIdx !== undefined ? 1000 + evt.assistToGoalIdx : '', // v23.8: Separate column for Pass->Goal assists
       shift_index: (evt as any).shiftIdx
     }
     

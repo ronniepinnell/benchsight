@@ -9,7 +9,7 @@ interface PlayerPhotoProps {
   src: string | null
   name: string
   primaryColor?: string | null
-  size?: 'sm' | 'md' | 'lg' | 'xl'
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl'
   className?: string
 }
 
@@ -18,6 +18,7 @@ const sizeClasses = {
   md: 'w-10 h-10',
   lg: 'w-16 h-16',
   xl: 'w-32 h-32',
+  '2xl': 'w-48 h-48',
 }
 
 const imageSizes = {
@@ -25,6 +26,7 @@ const imageSizes = {
   md: 40,
   lg: 64,
   xl: 128,
+  '2xl': 192,
 }
 
 const placeholderUrl = 'https://www.noradhockey.com/wp-content/uploads/2022/08/Place-Holder.jpg'
@@ -37,19 +39,18 @@ function isValidImageUrl(url: string | null | undefined): boolean {
   
   const trimmedUrl = url.trim().toLowerCase()
   
-  // Filter out placeholder text
-  const placeholderTexts = [
-    'image coming soon',
-    'coming soon',
-    'placeholder',
-    'no image',
-    'image not available',
-    'tbd',
-    'n/a',
-    'na'
-  ]
+  // Filter out placeholder text - only check for actual placeholder phrases
+  // Removed "na" check entirely to avoid false positives with names like "Nathan"
+  const isPlaceholder = 
+    trimmedUrl.includes('image coming soon') ||
+    (trimmedUrl.includes('coming soon') && !trimmedUrl.includes('uploads')) ||
+    (trimmedUrl.includes('placeholder') && !trimmedUrl.includes('uploads')) ||
+    trimmedUrl.includes('no image') ||
+    trimmedUrl.includes('image not available') ||
+    trimmedUrl === 'tbd' || trimmedUrl.endsWith('/tbd') ||
+    trimmedUrl === 'n/a' || trimmedUrl.endsWith('/n/a')
   
-  if (placeholderTexts.some(text => trimmedUrl.includes(text))) {
+  if (isPlaceholder) {
     return false
   }
   
@@ -57,7 +58,7 @@ function isValidImageUrl(url: string | null | undefined): boolean {
   try {
     const urlObj = new URL(url)
     return urlObj.protocol === 'http:' || urlObj.protocol === 'https:'
-  } catch {
+  } catch (e) {
     // If URL parsing fails, check if it starts with http/https
     return url.startsWith('http://') || url.startsWith('https://')
   }
@@ -83,7 +84,8 @@ export function PlayerPhoto({
       setCurrentSrc(null)
       return
     }
-    const validSrc = isValidImageUrl(src) ? src : null
+    const isValid = isValidImageUrl(src)
+    const validSrc = isValid ? src : null
     setCurrentSrc(validSrc)
   }, [src])
   
@@ -106,7 +108,7 @@ export function PlayerPhoto({
   return (
     <div
       className={cn(
-        'rounded-full overflow-hidden shrink-0',
+        'rounded-full overflow-hidden shrink-0 relative',
         sizeClasses[size],
         className
       )}
@@ -118,9 +120,8 @@ export function PlayerPhoto({
         <Image
           src={displaySrc}
           alt={name}
-          width={imageSizes[size]}
-          height={imageSizes[size]}
-          className="object-cover w-full h-full"
+          fill
+          className="object-cover"
           unoptimized
           onError={handleImageError}
         />

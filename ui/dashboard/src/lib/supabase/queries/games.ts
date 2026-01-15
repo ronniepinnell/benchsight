@@ -375,7 +375,8 @@ export async function getGameShots(gameId: number): Promise<FactShotXY[]> {
     .from('fact_shot_xy')
     .select('*')
     .eq('game_id', gameId)
-    .order('time_seconds', { ascending: true })
+    // Remove ordering by time_seconds if column doesn't exist - order by shot_id or event_id instead
+    .order('shot_id', { ascending: true })
   
   if (error) throw error
   return data ?? []
@@ -428,14 +429,50 @@ export async function getTeamSchedule(teamName: string, limit: number = 20) {
 // Get game roster from fact_gameroster
 export async function getGameRoster(gameId: number) {
   const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('fact_gameroster')
-    .select('*')
-    .eq('game_id', gameId)
-    .order('goals', { ascending: false })
   
-  if (error) throw error
-  return data ?? []
+  try {
+    // Try with number first (most common case)
+    let { data, error } = await supabase
+      .from('fact_gameroster')
+      .select('*, sub, player_game_number')
+      .eq('game_id', gameId)
+      .order('goals', { ascending: false })
+    
+    // If no data and no error, try with string format (some tables store game_id as text)
+    if ((!data || data.length === 0) && !error) {
+      const { data: dataStr, error: errorStr } = await supabase
+        .from('fact_gameroster')
+        .select('*, sub, player_game_number')
+        .eq('game_id', String(gameId))
+        .order('goals', { ascending: false })
+      
+      if (dataStr && dataStr.length > 0) {
+        data = dataStr
+      }
+      if (errorStr) {
+        error = errorStr
+      }
+    }
+    
+    if (error) {
+      // Log detailed error information
+      const errorInfo = {
+        message: error?.message || 'Unknown error',
+        details: error?.details || null,
+        hint: error?.hint || null,
+        code: error?.code || null,
+        error: error
+      }
+      console.error(`Error fetching roster for game ${gameId}:`, JSON.stringify(errorInfo, null, 2))
+      return []
+    }
+    
+    return data ?? []
+  } catch (err) {
+    // Catch any unexpected errors
+    console.error(`Unexpected error fetching roster for game ${gameId}:`, err)
+    return []
+  }
 }
 
 // Get game from dim_schedule
