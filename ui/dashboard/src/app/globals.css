@@ -80,6 +80,15 @@
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-foreground;
   }
+
+  /* Mobile-friendly table wrapper */
+  .table-wrapper {
+    @apply overflow-x-auto -mx-4 lg:mx-0;
+  }
+
+  .table-wrapper > * {
+    @apply min-w-full;
+  }
   
   /* Pulse animation for status indicators */
   @keyframes pulse-glow {

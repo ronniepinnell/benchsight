@@ -19,8 +19,9 @@ import {
   Award,
   TestTube,
   Database,
+  X,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface NavItem {
   name: string
@@ -98,17 +99,41 @@ const navigation: NavSection[] = [
   },
 ]
 
-export function Sidebar() {
+interface SidebarProps {
+  isMobileOpen?: boolean
+  onMobileClose?: () => void
+}
+
+export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
   const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(false)
 
+  // Close mobile menu when route changes
+  useEffect(() => {
+    if (isMobileOpen && onMobileClose) {
+      onMobileClose()
+    }
+  }, [pathname, isMobileOpen, onMobileClose])
+
   return (
-    <aside
-      className={cn(
-        'fixed top-0 left-0 h-screen bg-card border-r border-border flex flex-col transition-all duration-200 z-50',
-        collapsed ? 'w-16' : 'w-60'
+    <>
+      {/* Mobile overlay */}
+      {isMobileOpen && (
+        <div
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 lg:hidden"
+          onClick={onMobileClose}
+        />
       )}
-    >
+
+      <aside
+        className={cn(
+          'fixed top-0 left-0 h-screen bg-card border-r border-border flex flex-col transition-all duration-200 z-50',
+          collapsed ? 'w-16' : 'w-60',
+          // Mobile: slide in/out
+          'lg:translate-x-0',
+          isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        )}
+      >
       {/* Logo */}
       <div className={cn(
         'border-b border-border flex items-center gap-3',
@@ -126,6 +151,13 @@ export function Sidebar() {
             BENCHSIGHT
           </span>
         )}
+        {/* Mobile close button */}
+        <button
+          onClick={onMobileClose}
+          className="ml-auto lg:hidden p-1 text-muted-foreground hover:text-foreground"
+        >
+          <X className="w-5 h-5" />
+        </button>
       </div>
 
       {/* Navigation */}
@@ -164,10 +196,10 @@ export function Sidebar() {
         ))}
       </nav>
 
-      {/* Collapse toggle */}
+      {/* Collapse toggle - hidden on mobile */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="p-3 border-t border-border text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center gap-2 text-xs font-mono"
+        className="hidden lg:flex p-3 border-t border-border text-muted-foreground hover:text-foreground transition-colors items-center justify-center gap-2 text-xs font-mono"
       >
         <ChevronLeft className={cn(
           'w-4 h-4 transition-transform',
@@ -176,5 +208,6 @@ export function Sidebar() {
         {!collapsed && <span>Collapse</span>}
       </button>
     </aside>
+    </>
   )
 }

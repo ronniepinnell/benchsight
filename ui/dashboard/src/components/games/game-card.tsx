@@ -42,7 +42,7 @@ export function GameCard({ game, teamsMap, trackingStatus, isChampionship = fals
       onClick={handleCardClick}
       className="block bg-card rounded-lg border border-border hover:border-primary/50 transition-all hover:shadow-lg group cursor-pointer"
     >
-      <div className="p-4">
+      <div className="p-3 sm:p-4">
         {/* Date & Game Type */}
         <div className="flex items-center gap-2 mb-3 flex-wrap">
           <Calendar className="w-4 h-4 text-muted-foreground" />
@@ -72,8 +72,8 @@ export function GameCard({ game, teamsMap, trackingStatus, isChampionship = fals
         </div>
         
         {/* Matchup */}
-        <div className="flex items-center justify-between">
-          <div className="flex-1 space-y-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
+          <div className="flex-1 space-y-2 w-full sm:w-auto">
             {/* Away Team */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
