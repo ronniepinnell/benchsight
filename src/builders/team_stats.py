@@ -1,15 +1,18 @@
 """
 Team Stats Builder
 
-Builds fact_team_game_stats table by aggregating player stats.
+Builds fact_team_game_stats table by aggregating player stats AND calculating
+directly from events for accuracy (shots, giveaways, takeaways, blocks).
+
 Extracted from core_facts.py for better organization and testability.
 
-Version: 29.4
+Version: 29.5 - Fixed team stats to calculate from events directly
 """
 
 import pandas as pd
+import numpy as np
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict
 from src.core.table_writer import save_output_table
 
 # Import utility functions from core_facts
@@ -22,7 +25,17 @@ class TeamStatsBuilder:
     """
     Builder for fact_team_game_stats table.
     
-    Aggregates player game stats to create team-level statistics.
+    Calculates team-level statistics by:
+    1. Computing critical stats directly from events (shots, giveaways, takeaways, blocks, hits, goals)
+       - This ensures accuracy because summing player stats can miss events where players
+         aren't the primary actor (event_player_1)
+    2. Aggregating other stats from player game stats where summing is accurate
+       (assists, TOI, advanced metrics, etc.)
+    
+    Version 29.5 Fix:
+    - Previous version summed ALL stats from player_game_stats, causing inaccuracies
+    - Shots/Blocks/Giveaways/Takeaways now calculated from events directly
+    - Goals now from events (was already mostly accurate but ensures consistency)
     """
     
     def __init__(self, output_dir: Path = None):
@@ -33,6 +46,215 @@ class TeamStatsBuilder:
             output_dir: Path to output directory (default: data/output)
         """
         self.output_dir = output_dir or OUTPUT_DIR
+    
+    def calculate_team_stats_from_events(self, game_id: int, team_id: str, 
+                                         events: pd.DataFrame, 
+                                         event_players: pd.DataFrame,
+                                         schedule: pd.DataFrame) -> Dict:
+        """
+        Calculate team stats directly from events for accuracy.
+        
+        This is critical because summing player stats can miss events where
+        players aren't the primary actor (event_player_1).
+        
+        Args:
+            game_id: Game ID
+            team_id: Team ID
+            events: fact_events DataFrame
+            event_players: fact_event_players DataFrame
+            schedule: dim_schedule DataFrame (for home/away identification)
+            
+        Returns:
+            Dict with team stats calculated from events
+        """
+        stats = {}
+        
+        # Get game events
+        game_events = events[events['game_id'] == game_id] if len(events) > 0 else pd.DataFrame()
+        if len(game_events) == 0:
+            return stats
+        
+        # Determine if team is home or away
+        is_home = False
+        if len(schedule) > 0:
+            game_info = schedule[schedule['game_id'] == game_id]
+            if len(game_info) > 0:
+                home_team_id = game_info['home_team_id'].values[0] if 'home_team_id' in game_info.columns else None
+                away_team_id = game_info['away_team_id'].values[0] if 'away_team_id' in game_info.columns else None
+                is_home = (home_team_id == team_id) if home_team_id is not None else False
+        
+        # Identify team events - events "owned" by this team
+        # An event is owned by a team if any player from that team is event_player_1
+        team_event_mask = pd.Series([False] * len(game_events), index=game_events.index)
+        
+        # Method 1: Use event_players to find events where team has event_player_1
+        if len(event_players) > 0:
+            team_primary_player_events = event_players[
+                (event_players['game_id'] == game_id) & 
+                (event_players['team_id'] == team_id) &
+                (event_players['player_role'].astype(str).str.lower() == 'event_player_1')
+            ]
+            team_event_ids = team_primary_player_events['event_id'].unique()
+            team_event_mask = game_events['event_id'].isin(team_event_ids)
+        # Method 2: Fallback - use event_team_id if available
+        elif 'event_team_id' in game_events.columns:
+            team_event_mask = game_events['event_team_id'] == team_id
+        # Method 3: Fallback - use team_venue if available
+        elif 'team_venue' in game_events.columns:
+            venue_filter = 'Home' if is_home else 'Away'
+            team_event_mask = game_events['team_venue'] == venue_filter
+        
+        team_events = game_events[team_event_mask]
+        
+        if len(team_events) == 0:
+            return stats
+        
+        # Ensure period column exists
+        if 'period' not in team_events.columns:
+            # Try to get period from event_players
+            if len(event_players) > 0:
+                team_event_ids = team_events['event_id'].unique()
+                period_map = event_players[
+                    event_players['event_id'].isin(team_event_ids)
+                ].drop_duplicates(subset='event_id')[['event_id', 'period']].set_index('event_id')['period'].to_dict()
+                team_events['period'] = team_events['event_id'].map(period_map)
+            else:
+                team_events['period'] = None
+        
+        # ========================================
+        # SHOTS - Count ALL shot attempts (excluding goals to avoid double-counting)
+        # Goals are tracked separately, Shot_Goal events count as shots AND goals
+        # ========================================
+        # Count shot events (including Shot_Goal which is a shot that scored)
+        shot_events = team_events[team_events['event_type'].astype(str).str.lower() == 'shot']
+        stats['shots'] = len(shot_events)
+        
+        # Shots on goal: event_detail contains 'onnet' or 'saved', plus goals from Shot_Goal
+        sog_mask = shot_events['event_detail'].astype(str).str.lower().str.contains('onnet|saved|goal', na=False, regex=True)
+        stats['sog'] = int(sog_mask.sum())
+        
+        # ========================================
+        # GOALS - Count all goals by the team
+        # Goals are either from Goal_Scored events or Shot_Goal events
+        # ========================================
+        goal_events = team_events[
+            ((team_events['event_type'].astype(str).str.lower() == 'goal') &
+             (team_events['event_detail'].astype(str).str.lower().str.contains('goal_scored', na=False))) |
+            ((team_events['event_type'].astype(str).str.lower() == 'shot') &
+             (team_events['event_detail'].astype(str).str.lower().str.contains('shot_goal', na=False)))
+        ]
+        # Deduplicate by event_id to avoid counting same goal twice
+        stats['goals'] = goal_events['event_id'].nunique() if len(goal_events) > 0 else 0
+        
+        # ========================================
+        # GIVEAWAYS/TAKEAWAYS - Count all turnovers
+        # ========================================
+        turnovers = team_events[team_events['event_type'].astype(str).str.lower() == 'turnover']
+        stats['giveaways'] = int(turnovers[turnovers['event_detail'].astype(str).str.lower().str.contains('giveaway', na=False)].shape[0])
+        stats['takeaways'] = int(turnovers[turnovers['event_detail'].astype(str).str.lower().str.contains('takeaway', na=False)].shape[0])
+        
+        # ========================================
+        # BLOCKS - Count all blocks by team players
+        # ========================================
+        # Blocks are tracked in event_players via play_detail1='BlockedShot'
+        # Count all events where any team player has BlockedShot
+        if len(event_players) > 0:
+            team_event_players = event_players[
+                (event_players['game_id'] == game_id) & 
+                (event_players['team_id'] == team_id)
+            ]
+            if 'play_detail1' in team_event_players.columns:
+                blocks_df = team_event_players[
+                    team_event_players['play_detail1'].astype(str).str.lower().str.contains('blockedshot', na=False)
+                ]
+                if len(blocks_df) > 0:
+                    # Avoid double-counting linked events
+                    if 'linked_event_index_flag' in blocks_df.columns:
+                        linked = blocks_df[blocks_df['linked_event_index_flag'].notna()]
+                        unlinked = blocks_df[blocks_df['linked_event_index_flag'].isna()]
+                        stats['blocks'] = linked['linked_event_index_flag'].nunique() + len(unlinked)
+                    else:
+                        # Deduplicate by event_id
+                        stats['blocks'] = blocks_df['event_id'].nunique()
+                else:
+                    stats['blocks'] = 0
+            else:
+                stats['blocks'] = 0
+        else:
+            stats['blocks'] = 0
+        
+        # ========================================
+        # HITS - Count all hits by the team
+        # ========================================
+        hits = team_events[team_events['event_type'].astype(str).str.lower() == 'hit']
+        stats['hits'] = len(hits)
+        
+        # ========================================
+        # PERIOD BREAKDOWNS - Add period-specific stats
+        # ========================================
+        for period in [1, 2, 3]:
+            period_events = team_events[team_events['period'] == period] if 'period' in team_events.columns else pd.DataFrame()
+            
+            if len(period_events) == 0:
+                # Initialize all period stats to 0
+                stats[f'p{period}_shots'] = 0
+                stats[f'p{period}_sog'] = 0
+                stats[f'p{period}_goals'] = 0
+                stats[f'p{period}_giveaways'] = 0
+                stats[f'p{period}_takeaways'] = 0
+                stats[f'p{period}_blocks'] = 0
+                stats[f'p{period}_hits'] = 0
+                continue
+            
+            # Period shots
+            period_shots = period_events[period_events['event_type'].astype(str).str.lower() == 'shot']
+            stats[f'p{period}_shots'] = len(period_shots)
+            
+            # Period SOG
+            period_sog_mask = period_shots['event_detail'].astype(str).str.lower().str.contains('onnet|saved|goal', na=False, regex=True)
+            stats[f'p{period}_sog'] = int(period_sog_mask.sum())
+            
+            # Period goals
+            period_goals = period_events[
+                ((period_events['event_type'].astype(str).str.lower() == 'goal') &
+                 (period_events['event_detail'].astype(str).str.lower().str.contains('goal_scored', na=False))) |
+                ((period_events['event_type'].astype(str).str.lower() == 'shot') &
+                 (period_events['event_detail'].astype(str).str.lower().str.contains('shot_goal', na=False)))
+            ]
+            stats[f'p{period}_goals'] = period_goals['event_id'].nunique() if len(period_goals) > 0 else 0
+            
+            # Period giveaways/takeaways
+            period_turnovers = period_events[period_events['event_type'].astype(str).str.lower() == 'turnover']
+            stats[f'p{period}_giveaways'] = int(period_turnovers[period_turnovers['event_detail'].astype(str).str.lower().str.contains('giveaway', na=False)].shape[0])
+            stats[f'p{period}_takeaways'] = int(period_turnovers[period_turnovers['event_detail'].astype(str).str.lower().str.contains('takeaway', na=False)].shape[0])
+            
+            # Period blocks (from event_players)
+            if len(event_players) > 0:
+                period_event_ids = period_events['event_id'].unique()
+                period_team_event_players = event_players[
+                    (event_players['game_id'] == game_id) & 
+                    (event_players['team_id'] == team_id) &
+                    (event_players['event_id'].isin(period_event_ids))
+                ]
+                if 'play_detail1' in period_team_event_players.columns:
+                    period_blocks_df = period_team_event_players[
+                        period_team_event_players['play_detail1'].astype(str).str.lower().str.contains('blockedshot', na=False)
+                    ]
+                    if len(period_blocks_df) > 0:
+                        # Deduplicate by event_id
+                        stats[f'p{period}_blocks'] = period_blocks_df['event_id'].nunique()
+                    else:
+                        stats[f'p{period}_blocks'] = 0
+                else:
+                    stats[f'p{period}_blocks'] = 0
+            else:
+                stats[f'p{period}_blocks'] = 0
+            
+            # Period hits
+            period_hits = period_events[period_events['event_type'].astype(str).str.lower() == 'hit']
+            stats[f'p{period}_hits'] = len(period_hits)
+        
+        return stats
     
     def build(self, save: bool = True) -> pd.DataFrame:
         """
@@ -48,6 +270,8 @@ class TeamStatsBuilder:
         
         pgs = load_table('fact_player_game_stats')
         schedule = load_table('dim_schedule')
+        events = load_table('fact_events')
+        event_players = load_table('fact_event_players')
         
         if len(pgs) == 0:
             print("  ERROR: fact_player_game_stats not found!")
@@ -81,10 +305,28 @@ class TeamStatsBuilder:
                 if 'team_name' in team_players.columns:
                     stats['team_name'] = team_players['team_name'].values[0]
                 
-                # Sum columns (aggregate from players)
+                # ========================================
+                # CRITICAL: Calculate stats from events directly
+                # This fixes accuracy issues with shots, giveaways, takeaways, blocks
+                # ========================================
+                event_stats = self.calculate_team_stats_from_events(
+                    game_id, team_id, events, event_players, schedule
+                )
+                
+                # Override shots, giveaways, takeaways, blocks with event-based calculations
+                stats['shots'] = event_stats.get('shots', 0)
+                stats['sog'] = event_stats.get('sog', 0)
+                stats['goals'] = event_stats.get('goals', 0)
+                stats['giveaways'] = event_stats.get('giveaways', 0)
+                stats['takeaways'] = event_stats.get('takeaways', 0)
+                stats['blocks'] = event_stats.get('blocks', 0)
+                stats['hits'] = event_stats.get('hits', 0)
+                
+                # Sum other columns (aggregate from players) - these are accurate when summed
+                # NOTE: shots, sog, goals, giveaways, takeaways, blocks, hits already set from events above
                 sum_cols = [
-                    'goals', 'assists', 'points', 'shots', 'sog', 
-                    'giveaways', 'takeaways', 'blocks', 'hits', 
+                    'assists', 'points',  # goals/shots/sog already from events
+                    # 'giveaways', 'takeaways', 'blocks', 'hits',  # Already from events
                     'toi_seconds', 'corsi_for', 'corsi_against', 
                     'fenwick_for', 'fenwick_against', 'plus_total', 
                     'minus_total', 'xg_for', 'gar_total', 'war', 
@@ -115,6 +357,9 @@ class TeamStatsBuilder:
                             stats[col] = team_players[col].sum()
                     else:
                         stats[col] = 0
+                
+                # Recalculate points based on event-based goals + summed assists
+                stats['points'] = stats.get('goals', 0) + stats.get('assists', 0)
                 
                 # Calculated percentages
                 stats['shooting_pct'] = round(

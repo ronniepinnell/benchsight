@@ -14,7 +14,7 @@ PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from api.config import API_VERSION, API_TITLE, API_DESCRIPTION, CORS_ORIGINS
-from api.routes import health_router, etl_router, upload_router, staging_router
+from api.routes import health_router, etl_router, upload_router, staging_router, ml_router, ml_router
 from api.utils.logger import setup_logger
 
 logger = setup_logger(__name__)
@@ -42,6 +42,8 @@ app.include_router(health_router)
 app.include_router(etl_router)
 app.include_router(upload_router)
 app.include_router(staging_router)
+app.include_router(ml_router)  # ML predictions
+app.include_router(ml_router)  # ML prediction endpoints
 
 
 @app.exception_handler(Exception)

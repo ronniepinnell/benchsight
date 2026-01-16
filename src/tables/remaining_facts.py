@@ -13,6 +13,14 @@ from src.utils.game_type_aggregator import (
     add_game_type_to_df
 )
 
+# Import utility to add names to tables
+try:
+    from src.tables.core_facts import add_names_to_table
+except ImportError:
+    # Fallback if import fails
+    def add_names_to_table(df):
+        return df
+
 OUTPUT_DIR = Path(__file__).parent.parent.parent / 'data' / 'output'
 
 
@@ -25,7 +33,17 @@ def load_table(name: str) -> pd.DataFrame:
 
 
 def save_table(df: pd.DataFrame, name: str) -> int:
-    """Save a table to output directory."""
+    """
+    Save a table to output directory.
+    Automatically adds player_name and team_name columns if player_id/team_id exist.
+    Automatically removes 100% null columns (except coordinate/danger/xy columns).
+    """
+    if df is not None and len(df) > 0:
+        df = add_names_to_table(df)
+        from src.core.base_etl import drop_all_null_columns
+        df, removed_cols = drop_all_null_columns(df)
+        if removed_cols:
+            print(f"  {name}: Removed {len(removed_cols)} all-null columns")
     path = OUTPUT_DIR / f'{name}.csv'
     df.to_csv(path, index=False)
     return len(df)
@@ -36,18 +54,33 @@ def save_table(df: pd.DataFrame, name: str) -> int:
 # =============================================================================
 
 def create_fact_player_period_stats() -> pd.DataFrame:
-    """Create player stats broken down by period."""
+    """
+    Create player stats broken down by period.
+    
+    CRITICAL: Only counts events where player is event_player_1 (PRIMARY_PLAYER).
+    This ensures proper attribution - only the primary actor gets credit for the event.
+    """
+    PRIMARY_PLAYER = 'event_player_1'
+    
     event_players = load_table('fact_event_players')
     shift_players = load_table('fact_shift_players')
     
     if len(event_players) == 0:
         return pd.DataFrame()
     
+    # Filter to only primary player events (event_player_1)
+    primary_events = event_players[
+        event_players['player_role'].astype(str).str.lower() == PRIMARY_PLAYER.lower()
+    ].copy()
+    
+    if len(primary_events) == 0:
+        return pd.DataFrame()
+    
     records = []
     
-    # Get unique game-player-period combinations
-    for game_id in event_players['game_id'].dropna().unique():
-        game_events = event_players[event_players['game_id'] == game_id]
+    # Get unique game-player-period combinations from primary events only
+    for game_id in primary_events['game_id'].dropna().unique():
+        game_events = primary_events[primary_events['game_id'] == game_id]
         
         for player_id in game_events['player_id'].dropna().unique():
             if pd.isna(player_id) or str(player_id) in ['', 'None', 'nan']:
@@ -58,7 +91,7 @@ def create_fact_player_period_stats() -> pd.DataFrame:
             for period in player_events['period'].dropna().unique():
                 period_events = player_events[player_events['period'] == period]
                 
-                # Count stats
+                # Count stats (all events here are already filtered to event_player_1)
                 goals = len(period_events[
                     (period_events['event_type'].astype(str).str.lower() == 'goal') &
                     (period_events['event_detail'].astype(str).str.lower().str.contains('goal_scored', na=False))
@@ -66,6 +99,9 @@ def create_fact_player_period_stats() -> pd.DataFrame:
                 
                 shots = len(period_events[period_events['event_type'].astype(str).str.lower() == 'shot'])
                 passes = len(period_events[period_events['event_type'].astype(str).str.lower() == 'pass'])
+                
+                # Count other stats (where player is event_player_1)
+                events_count = len(period_events)
                 
                 # Get TOI from shifts if available
                 toi = 0
@@ -83,6 +119,7 @@ def create_fact_player_period_stats() -> pd.DataFrame:
                     'game_id': game_id,
                     'player_id': player_id,
                     'period': int(period),
+                    'events': events_count,
                     'goals': goals,
                     'shots': shots,
                     'passes': passes,
@@ -94,46 +131,524 @@ def create_fact_player_period_stats() -> pd.DataFrame:
 
 
 def create_fact_period_momentum() -> pd.DataFrame:
-    """Create period-level momentum metrics per team."""
+    """
+    Create period-level momentum metrics per team.
+    
+    Each team gets a row for each period with comprehensive stats.
+    Only event_player_1 gets credit for event counts (passes, shots, etc.).
+    
+    Stats included:
+    - Goals, shots, passes (only event_player_1)
+    - Zone entries, exits (only event_player_1)
+    - Time in o/d/n zone (sum of event durations)
+    - Possession time by zone (from possession/zone_entry_exit events with rush/carry)
+    - Corsi, Fenwick (only event_player_1)
+    - Turnovers by zone (only event_player_1)
+    - Giveaways, takeaways, bad giveaways (only event_player_1)
+    - Momentum percentage (calculated from weighted metrics)
+    """
     events = load_table('fact_events')
+    event_players = load_table('fact_event_players')
+    schedule = load_table('dim_schedule')
     
     if len(events) == 0:
         return pd.DataFrame()
     
+    # Get event_player_1_id -> team_id mapping from event_players
+    player_team_map = {}
+    if len(event_players) > 0:
+        # Filter to event_player_1 only (they get credit)
+        ep1 = event_players[event_players['player_role'].astype(str).str.lower().str.contains('event_player_1', na=False)]
+        if 'player_id' in ep1.columns and 'team_id' in ep1.columns:
+            player_team_map = dict(zip(ep1['event_id'], ep1['team_id']))
+    
     records = []
     
     for game_id in events['game_id'].dropna().unique():
-        game_events = events[events['game_id'] == game_id]
+        game_events = events[events['game_id'] == game_id].copy()
+        
+        # Get team IDs for this game
+        home_team_id = None
+        away_team_id = None
+        if 'home_team_id' in game_events.columns:
+            home_team_id = game_events['home_team_id'].iloc[0] if len(game_events) > 0 else None
+        if 'away_team_id' in game_events.columns:
+            away_team_id = game_events['away_team_id'].iloc[0] if len(game_events) > 0 else None
+        
+        # Get season_id
+        season_id = None
+        if len(schedule) > 0:
+            game_info = schedule[schedule['game_id'] == game_id]
+            if len(game_info) > 0 and 'season_id' in game_info.columns:
+                season_id = game_info['season_id'].values[0]
         
         for period in game_events['period'].dropna().unique():
-            period_events = game_events[game_events['period'] == period]
+            period_events = game_events[game_events['period'] == period].copy()
             
-            # Count events by team
-            for team_col in ['home_team', 'away_team']:
-                if team_col not in period_events.columns:
+            if len(period_events) == 0:
+                continue
+            
+            # Get events where we can identify the team via event_player_1
+            # Add team_id from mapping
+            period_events['_event_team_id'] = period_events['event_id'].map(player_team_map)
+            
+            # Also try event_team_id column if it exists
+            if 'event_team_id' in period_events.columns:
+                period_events['_event_team_id'] = period_events['_event_team_id'].fillna(period_events['event_team_id'])
+            
+            # Process each team
+            for team_id, venue in [(home_team_id, 'home'), (away_team_id, 'away')]:
+                if team_id is None:
                     continue
-                    
-                team_id = period_events[team_col.replace('_team', '_team_id')].iloc[0] if f"{team_col.replace('_team', '_team_id')}" in period_events.columns else None
                 
-                shots = len(period_events[period_events['event_type'].astype(str).str.lower() == 'shot'])
-                goals = len(period_events[
-                    (period_events['event_type'].astype(str).str.lower() == 'goal') &
-                    (period_events['event_detail'].astype(str).str.lower().str.contains('goal_scored', na=False))
-                ])
+                # Filter to events for this team (only count event_player_1 events)
+                team_events = period_events[period_events['_event_team_id'] == team_id].copy()
                 
-                records.append({
-                    'momentum_key': f"{game_id}_{int(period)}_{team_col}",
+                if len(team_events) == 0:
+                    continue
+                
+                # Initialize stats
+                stats = {
+                    'momentum_key': f"MOM_{game_id}_P{int(period)}_{team_id}",
                     'game_id': game_id,
+                    'season_id': season_id,
                     'period': int(period),
-                    'venue': 'home' if 'home' in team_col else 'away',
-                    'shots': shots // 2,  # Approximate per team
-                    'goals': goals // 2,
-                    'corsi_events': shots,
-                    'momentum_score': 0.5,  # Placeholder
-                    '_export_timestamp': datetime.now().isoformat()
-                })
+                    'team_id': team_id,
+                    'venue': venue,
+                    'team_name': team_events[f'{venue}_team'].iloc[0] if f'{venue}_team' in team_events.columns else None,
+                }
+                
+                # Event counts (only event_player_1 gets credit)
+                stats['events_count'] = len(team_events)
+                
+                # Goals (only event_player_1)
+                if 'is_goal' in team_events.columns:
+                    stats['goals'] = int(team_events['is_goal'].sum())
+                else:
+                    stats['goals'] = len(team_events[
+                        (team_events['event_type'].astype(str).str.lower() == 'goal') &
+                        (team_events['event_detail'].astype(str).str.lower().str.contains('goal_scored', na=False))
+                    ])
+                
+                # Shots (only event_player_1, event_type='Shot')
+                stats['shots'] = len(team_events[team_events['event_type'].astype(str).str.lower() == 'shot'])
+                
+                # Passes (only event_player_1, event_type='Pass')
+                stats['passes'] = len(team_events[team_events['event_type'].astype(str).str.lower() == 'pass'])
+                
+                # Zone entries (only event_player_1)
+                if 'is_zone_entry' in team_events.columns:
+                    stats['zone_entries'] = int(team_events['is_zone_entry'].sum())
+                else:
+                    stats['zone_entries'] = len(team_events[
+                        team_events['event_detail'].astype(str).str.lower().str.contains('zone_entry', na=False)
+                    ])
+                
+                # Zone exits (only event_player_1)
+                if 'is_zone_exit' in team_events.columns:
+                    stats['zone_exits'] = int(team_events['is_zone_exit'].sum())
+                else:
+                    stats['zone_exits'] = len(team_events[
+                        team_events['event_detail'].astype(str).str.lower().str.contains('zone_exit', na=False)
+                    ])
+                
+                # Corsi (only event_player_1)
+                if 'is_corsi' in team_events.columns:
+                    stats['corsi_for'] = int(team_events['is_corsi'].sum())
+                else:
+                    # Fallback: shots + blocked shots + missed shots
+                    shots = len(team_events[team_events['event_type'].astype(str).str.lower() == 'shot'])
+                    blocked = len(team_events[team_events['event_detail'].astype(str).str.contains('Blocked', na=False)])
+                    missed = len(team_events[team_events['event_detail'].astype(str).str.contains('Missed', na=False)])
+                    stats['corsi_for'] = shots + blocked + missed
+                
+                # Fenwick (only event_player_1)
+                if 'is_fenwick' in team_events.columns:
+                    stats['fenwick_for'] = int(team_events['is_fenwick'].sum())
+                else:
+                    # Fallback: shots + missed shots (excludes blocked)
+                    stats['fenwick_for'] = stats['shots'] + len(team_events[
+                        team_events['event_detail'].astype(str).str.contains('Missed', na=False)
+                    ])
+                
+                # Turnovers (only event_player_1)
+                if 'is_turnover' in team_events.columns:
+                    stats['turnovers'] = int(team_events['is_turnover'].sum())
+                else:
+                    stats['turnovers'] = len(team_events[
+                        team_events['event_type'].astype(str).str.lower() == 'turnover'
+                    ])
+                
+                # Turnovers by zone (only event_player_1)
+                if 'event_team_zone' in team_events.columns and 'is_turnover' in team_events.columns:
+                    turnover_events = team_events[team_events['is_turnover'] == 1]
+                    zone_str = turnover_events['event_team_zone'].astype(str).str.lower()
+                    stats['turnovers_o_zone'] = len(turnover_events[zone_str.str.startswith('o', na=False)])
+                    stats['turnovers_d_zone'] = len(turnover_events[zone_str.str.startswith('d', na=False)])
+                    stats['turnovers_n_zone'] = len(turnover_events[zone_str.str.startswith('n', na=False)])
+                else:
+                    stats['turnovers_o_zone'] = 0
+                    stats['turnovers_d_zone'] = 0
+                    stats['turnovers_n_zone'] = 0
+                
+                # Giveaways (only event_player_1)
+                if 'is_giveaway' in team_events.columns:
+                    stats['giveaways'] = int(team_events['is_giveaway'].sum())
+                else:
+                    stats['giveaways'] = 0
+                
+                # Takeaways (only event_player_1)
+                if 'is_takeaway' in team_events.columns:
+                    stats['takeaways'] = int(team_events['is_takeaway'].sum())
+                else:
+                    stats['takeaways'] = 0
+                
+                # Bad giveaways (only event_player_1)
+                if 'is_bad_giveaway' in team_events.columns:
+                    stats['bad_giveaways'] = int(team_events['is_bad_giveaway'].sum())
+                else:
+                    stats['bad_giveaways'] = 0
+                
+                # Time in zones (sum of event durations)
+                if 'duration' in team_events.columns and 'event_team_zone' in team_events.columns:
+                    duration = team_events['duration'].fillna(0)
+                    zone_str = team_events['event_team_zone'].astype(str).str.lower()
+                    
+                    # Time in offensive zone
+                    o_zone_mask = zone_str.str.startswith('o', na=False) | zone_str.str.contains('offensive', na=False)
+                    stats['time_in_o_zone'] = int(duration[o_zone_mask].sum())
+                    
+                    # Time in defensive zone
+                    d_zone_mask = zone_str.str.startswith('d', na=False) | zone_str.str.contains('defensive', na=False)
+                    stats['time_in_d_zone'] = int(duration[d_zone_mask].sum())
+                    
+                    # Time in neutral zone
+                    n_zone_mask = zone_str.str.startswith('n', na=False) | zone_str.str.contains('neutral', na=False)
+                    stats['time_in_n_zone'] = int(duration[n_zone_mask].sum())
+                else:
+                    stats['time_in_o_zone'] = 0
+                    stats['time_in_d_zone'] = 0
+                    stats['time_in_n_zone'] = 0
+                
+                # Possession time by zone (from possession/zone_entry_exit events with rush/carry)
+                # Only count events where event_player_1 is the primary actor
+                possession_events = team_events[
+                    (team_events['event_type'].astype(str).str.lower().isin(['possession', 'zone_entry_exit'])) &
+                    (team_events['event_detail'].astype(str).str.lower().str.contains('rush|carry', na=False, regex=True))
+                ]
+                
+                if 'duration' in possession_events.columns and 'event_team_zone' in possession_events.columns:
+                    poss_duration = possession_events['duration'].fillna(0)
+                    poss_zone_str = possession_events['event_team_zone'].astype(str).str.lower()
+                    
+                    poss_o_mask = poss_zone_str.str.startswith('o', na=False) | poss_zone_str.str.contains('offensive', na=False)
+                    poss_d_mask = poss_zone_str.str.startswith('d', na=False) | poss_zone_str.str.contains('defensive', na=False)
+                    poss_n_mask = poss_zone_str.str.startswith('n', na=False) | poss_zone_str.str.contains('neutral', na=False)
+                    
+                    stats['possession_time_o_zone'] = int(poss_duration[poss_o_mask].sum())
+                    stats['possession_time_d_zone'] = int(poss_duration[poss_d_mask].sum())
+                    stats['possession_time_n_zone'] = int(poss_duration[poss_n_mask].sum())
+                else:
+                    stats['possession_time_o_zone'] = 0
+                    stats['possession_time_d_zone'] = 0
+                    stats['possession_time_n_zone'] = 0
+                
+                records.append(stats)
+            
+            # Calculate momentum percentages after both teams are processed
+            # Get the two team records for this period
+            period_records = [r for r in records if r.get('game_id') == game_id and r.get('period') == period]
+            
+            if len(period_records) == 2:
+                team1, team2 = period_records
+                
+                # Calculate momentum score for each team based on weighted metrics
+                # Weighted components: goals (30%), corsi (20%), zone time (15%), zone entries (10%), 
+                # passes (10%), possession time (10%), turnovers ratio (5%)
+                
+                def calc_momentum_score(team_stats, opp_stats):
+                    """Calculate momentum score (0-100) based on multiple weighted factors."""
+                    # Goals advantage
+                    total_goals = team_stats.get('goals', 0) + opp_stats.get('goals', 0)
+                    goal_pct = (team_stats.get('goals', 0) / total_goals * 100) if total_goals > 0 else 50.0
+                    
+                    # Corsi advantage
+                    total_corsi = team_stats.get('corsi_for', 0) + opp_stats.get('corsi_for', 0)
+                    corsi_pct = (team_stats.get('corsi_for', 0) / total_corsi * 100) if total_corsi > 0 else 50.0
+                    
+                    # Zone time advantage (o-zone time)
+                    total_ozone = team_stats.get('time_in_o_zone', 0) + opp_stats.get('time_in_o_zone', 0)
+                    ozone_pct = (team_stats.get('time_in_o_zone', 0) / total_ozone * 100) if total_ozone > 0 else 50.0
+                    
+                    # Zone entries advantage
+                    total_entries = team_stats.get('zone_entries', 0) + opp_stats.get('zone_entries', 0)
+                    entries_pct = (team_stats.get('zone_entries', 0) / total_entries * 100) if total_entries > 0 else 50.0
+                    
+                    # Passes advantage
+                    total_passes = team_stats.get('passes', 0) + opp_stats.get('passes', 0)
+                    passes_pct = (team_stats.get('passes', 0) / total_passes * 100) if total_passes > 0 else 50.0
+                    
+                    # Possession time advantage (o-zone)
+                    total_poss_o = team_stats.get('possession_time_o_zone', 0) + opp_stats.get('possession_time_o_zone', 0)
+                    poss_pct = (team_stats.get('possession_time_o_zone', 0) / total_poss_o * 100) if total_poss_o > 0 else 50.0
+                    
+                    # Turnover ratio (lower is better, so invert)
+                    team_tos = team_stats.get('turnovers', 0)
+                    opp_tos = opp_stats.get('turnovers', 0)
+                    total_tos = team_tos + opp_tos
+                    to_pct = ((opp_tos - team_tos) / total_tos * 50 + 50) if total_tos > 0 else 50.0  # Normalize to 0-100
+                    
+                    # Weighted average
+                    momentum = (
+                        goal_pct * 0.30 +
+                        corsi_pct * 0.20 +
+                        ozone_pct * 0.15 +
+                        entries_pct * 0.10 +
+                        passes_pct * 0.10 +
+                        poss_pct * 0.10 +
+                        to_pct * 0.05
+                    )
+                    
+                    return round(momentum, 2)
+                
+                # Calculate momentum for both teams
+                team1_momentum = calc_momentum_score(team1, team2)
+                team2_momentum = calc_momentum_score(team2, team1)
+                
+                # Normalize so they sum to 100%
+                total_momentum = team1_momentum + team2_momentum
+                if total_momentum > 0:
+                    team1_momentum = round(team1_momentum / total_momentum * 100, 2)
+                    team2_momentum = round(team2_momentum / total_momentum * 100, 2)
+                
+                # Update records
+                for r in records:
+                    if r.get('game_id') == game_id and r.get('period') == period and r.get('team_id') == team1.get('team_id'):
+                        r['momentum_pct'] = team1_momentum
+                    elif r.get('game_id') == game_id and r.get('period') == period and r.get('team_id') == team2.get('team_id'):
+                        r['momentum_pct'] = team2_momentum
     
-    return pd.DataFrame(records)
+    df = pd.DataFrame(records)
+    df['_export_timestamp'] = datetime.now().isoformat()
+    
+    # Reorder columns
+    priority_cols = ['momentum_key', 'game_id', 'season_id', 'period', 'team_id', 'team_name', 'venue',
+                    'events_count', 'goals', 'shots', 'passes',
+                    'zone_entries', 'zone_exits',
+                    'time_in_o_zone', 'time_in_d_zone', 'time_in_n_zone',
+                    'possession_time_o_zone', 'possession_time_d_zone', 'possession_time_n_zone',
+                    'corsi_for', 'fenwick_for',
+                    'turnovers', 'turnovers_o_zone', 'turnovers_d_zone', 'turnovers_n_zone',
+                    'giveaways', 'takeaways', 'bad_giveaways',
+                    'momentum_pct', '_export_timestamp']
+    other_cols = [c for c in df.columns if c not in priority_cols]
+    df = df[[c for c in priority_cols if c in df.columns] + other_cols]
+    
+    return df
+
+
+def create_fact_time_period_momentum() -> pd.DataFrame:
+    """
+    Create granular time-period momentum (2-3 minute windows) with momentum predictor.
+    
+    Each team gets a row for each time window (e.g., 0-3min, 3-6min, etc.) with:
+    - Same stats as period momentum
+    - Current score at window start
+    - Momentum percentage predictor based on score + metrics
+    """
+    events = load_table('fact_events')
+    event_players = load_table('fact_event_players')
+    schedule = load_table('dim_schedule')
+    
+    if len(events) == 0:
+        return pd.DataFrame()
+    
+    # Get event_player_1_id -> team_id mapping
+    player_team_map = {}
+    if len(event_players) > 0:
+        ep1 = event_players[event_players['player_role'].astype(str).str.lower().str.contains('event_player_1', na=False)]
+        if 'player_id' in ep1.columns and 'team_id' in ep1.columns:
+            player_team_map = dict(zip(ep1['event_id'], ep1['team_id']))
+    
+    # Time window size in seconds (3 minutes = 180 seconds)
+    WINDOW_SIZE = 180
+    
+    records = []
+    
+    for game_id in events['game_id'].dropna().unique():
+        game_events = events[events['game_id'] == game_id].copy()
+        
+        # Get team IDs
+        home_team_id = None
+        away_team_id = None
+        if 'home_team_id' in game_events.columns:
+            home_team_id = game_events['home_team_id'].iloc[0] if len(game_events) > 0 else None
+        if 'away_team_id' in game_events.columns:
+            away_team_id = game_events['away_team_id'].iloc[0] if len(game_events) > 0 else None
+        
+        season_id = None
+        if len(schedule) > 0:
+            game_info = schedule[schedule['game_id'] == game_id]
+            if len(game_info) > 0 and 'season_id' in game_info.columns:
+                season_id = game_info['season_id'].values[0]
+        
+        for period in game_events['period'].dropna().unique():
+            period_events = game_events[game_events['period'] == period].copy()
+            
+            if len(period_events) == 0:
+                continue
+            
+            # Add team_id from mapping
+            period_events['_event_team_id'] = period_events['event_id'].map(player_team_map)
+            if 'event_team_id' in period_events.columns:
+                period_events['_event_team_id'] = period_events['_event_team_id'].fillna(period_events['event_team_id'])
+            
+            # Get time column (use time_start_total_seconds or calculate from period time)
+            if 'time_start_total_seconds' in period_events.columns:
+                time_col = 'time_start_total_seconds'
+            elif 'event_start_seconds' in period_events.columns:
+                time_col = 'event_start_seconds'
+            else:
+                # Skip if no time column
+                continue
+            
+            period_events[time_col] = period_events[time_col].fillna(0)
+            
+            # Calculate time windows (0-180, 180-360, 360-540, etc. within period)
+            period_start = 0
+            period_end = period_events[time_col].max() if len(period_events) > 0 else WINDOW_SIZE * 10
+            
+            # Create time windows
+            windows = []
+            window_start = period_start
+            while window_start < period_end:
+                window_end = min(window_start + WINDOW_SIZE, period_end)
+                windows.append((window_start, window_end))
+                window_start = window_end
+            
+            # Process each time window
+            for window_num, (win_start, win_end) in enumerate(windows):
+                window_events = period_events[
+                    (period_events[time_col] >= win_start) & 
+                    (period_events[time_col] < win_end)
+                ].copy()
+                
+                if len(window_events) == 0:
+                    continue
+                
+                # Calculate score at window start (cumulative goals up to this point)
+                events_before_window = period_events[period_events[time_col] < win_start]
+                
+                # Process each team in this window
+                for team_id, venue in [(home_team_id, 'home'), (away_team_id, 'away')]:
+                    if team_id is None:
+                        continue
+                    
+                    # Filter to events for this team
+                    team_events = window_events[window_events['_event_team_id'] == team_id].copy()
+                    
+                    # Calculate current score at window start
+                    team_goals_before = 0
+                    if 'is_goal' in events_before_window.columns:
+                        team_events_before = events_before_window[events_before_window['_event_team_id'] == team_id]
+                        team_goals_before = int(team_events_before['is_goal'].sum()) if len(team_events_before) > 0 else 0
+                    
+                    if len(team_events) == 0:
+                        continue
+                    
+                    # Calculate same stats as period momentum (simplified - reuse logic)
+                    stats = {
+                        'time_window_key': f"TW_{game_id}_P{int(period)}_W{window_num}_{team_id}",
+                        'game_id': game_id,
+                        'season_id': season_id,
+                        'period': int(period),
+                        'time_window_num': window_num,
+                        'time_window_start': win_start,
+                        'time_window_end': win_end,
+                        'time_window_label': f"{int(win_start//60)}:{int(win_start%60):02d}-{int(win_end//60)}:{int(win_end%60):02d}",
+                        'team_id': team_id,
+                        'venue': venue,
+                        'team_name': team_events[f'{venue}_team'].iloc[0] if f'{venue}_team' in team_events.columns else None,
+                        'score_at_window_start': team_goals_before,
+                    }
+                    
+                    # Quick stats calculation (same as period momentum)
+                    stats['goals'] = int(team_events['is_goal'].sum()) if 'is_goal' in team_events.columns else 0
+                    stats['shots'] = len(team_events[team_events['event_type'].astype(str).str.lower() == 'shot'])
+                    stats['passes'] = len(team_events[team_events['event_type'].astype(str).str.lower() == 'pass'])
+                    stats['zone_entries'] = int(team_events['is_zone_entry'].sum()) if 'is_zone_entry' in team_events.columns else 0
+                    stats['corsi_for'] = int(team_events['is_corsi'].sum()) if 'is_corsi' in team_events.columns else stats['shots']
+                    
+                    if 'duration' in team_events.columns and 'event_team_zone' in team_events.columns:
+                        duration = team_events['duration'].fillna(0)
+                        zone_str = team_events['event_team_zone'].astype(str).str.lower()
+                        o_zone_mask = zone_str.str.startswith('o', na=False) | zone_str.str.contains('offensive', na=False)
+                        stats['time_in_o_zone'] = int(duration[o_zone_mask].sum())
+                    else:
+                        stats['time_in_o_zone'] = 0
+                    
+                    records.append(stats)
+                
+                # Calculate momentum for this window (same logic as period)
+                window_records = [r for r in records if (
+                    r.get('game_id') == game_id and 
+                    r.get('period') == period and 
+                    r.get('time_window_num') == window_num
+                )]
+                
+                if len(window_records) == 2:
+                    team1, team2 = window_records
+                    
+                    # Calculate momentum score (same formula as period)
+                    def calc_momentum_score(team_stats, opp_stats):
+                        total_goals = team_stats.get('goals', 0) + opp_stats.get('goals', 0)
+                        goal_pct = (team_stats.get('goals', 0) / total_goals * 100) if total_goals > 0 else 50.0
+                        total_corsi = team_stats.get('corsi_for', 0) + opp_stats.get('corsi_for', 0)
+                        corsi_pct = (team_stats.get('corsi_for', 0) / total_corsi * 100) if total_corsi > 0 else 50.0
+                        total_ozone = team_stats.get('time_in_o_zone', 0) + opp_stats.get('time_in_o_zone', 0)
+                        ozone_pct = (team_stats.get('time_in_o_zone', 0) / total_ozone * 100) if total_ozone > 0 else 50.0
+                        total_entries = team_stats.get('zone_entries', 0) + opp_stats.get('zone_entries', 0)
+                        entries_pct = (team_stats.get('zone_entries', 0) / total_entries * 100) if total_entries > 0 else 50.0
+                        total_passes = team_stats.get('passes', 0) + opp_stats.get('passes', 0)
+                        passes_pct = (team_stats.get('passes', 0) / total_passes * 100) if total_passes > 0 else 50.0
+                        
+                        momentum = (
+                            goal_pct * 0.30 + corsi_pct * 0.25 + ozone_pct * 0.20 +
+                            entries_pct * 0.15 + passes_pct * 0.10
+                        )
+                        return round(momentum, 2)
+                    
+                    team1_momentum = calc_momentum_score(team1, team2)
+                    team2_momentum = calc_momentum_score(team2, team1)
+                    
+                    # Add score differential factor (teams leading tend to have momentum)
+                    score_diff_team1 = team1.get('score_at_window_start', 0) - team2.get('score_at_window_start', 0)
+                    if score_diff_team1 > 0:
+                        team1_momentum += 5  # Bonus for leading
+                    elif score_diff_team1 < 0:
+                        team2_momentum += 5
+                    
+                    # Normalize
+                    total_momentum = team1_momentum + team2_momentum
+                    if total_momentum > 0:
+                        team1_momentum = round(team1_momentum / total_momentum * 100, 2)
+                        team2_momentum = round(team2_momentum / total_momentum * 100, 2)
+                    
+                    # Update records
+                    for r in records:
+                        if (r.get('game_id') == game_id and r.get('period') == period and 
+                            r.get('time_window_num') == window_num and r.get('team_id') == team1.get('team_id')):
+                            r['momentum_pct'] = team1_momentum
+                            r['momentum_predictor'] = team1_momentum  # Predictor = current momentum
+                        elif (r.get('game_id') == game_id and r.get('period') == period and 
+                              r.get('time_window_num') == window_num and r.get('team_id') == team2.get('team_id')):
+                            r['momentum_pct'] = team2_momentum
+                            r['momentum_predictor'] = team2_momentum
+    
+    df = pd.DataFrame(records)
+    df['_export_timestamp'] = datetime.now().isoformat()
+    
+    return df
 
 
 # =============================================================================
@@ -217,35 +732,142 @@ def create_fact_player_season_stats() -> pd.DataFrame:
 
 
 def create_fact_player_career_stats() -> pd.DataFrame:
-    """Aggregate player stats to career level."""
+    """
+    Aggregate player stats to career level.
+    
+    Grain: player_id + season_id + game_type (Regular/Playoffs/All)
+    """
+    from src.utils.game_type_aggregator import GAME_TYPE_SPLITS, add_game_type_to_df
+    
     player_season_stats = load_table('fact_player_season_stats')
     
     if len(player_season_stats) == 0:
         # Try from game stats
         player_game_stats = load_table('fact_player_game_stats')
+        schedule = load_table('dim_schedule')
+        
         if len(player_game_stats) == 0:
             return pd.DataFrame()
         
-        numeric_cols = player_game_stats.select_dtypes(include=['number']).columns.tolist()
-        numeric_cols = [c for c in numeric_cols if c not in ['game_id', 'season_id']]
+        # Add game_type if not present
+        if 'game_type' not in player_game_stats.columns:
+            player_game_stats = add_game_type_to_df(player_game_stats, schedule)
         
-        agg_dict = {col: 'sum' for col in numeric_cols if col in player_game_stats.columns}
-        agg_dict['game_id'] = 'count'
+        all_results = []
         
-        grouped = player_game_stats.groupby('player_id').agg(agg_dict).reset_index()
-        grouped = grouped.rename(columns={'game_id': 'career_games'})
+        # Get unique player-season combinations
+        player_seasons = player_game_stats[['player_id', 'season_id']].drop_duplicates()
+        
+        for _, ps in player_seasons.iterrows():
+            player_id = ps['player_id']
+            season_id = ps['season_id']
+            
+            player_games = player_game_stats[
+                (player_game_stats['player_id'] == player_id) & 
+                (player_game_stats['season_id'] == season_id)
+            ]
+            
+            # Split by game_type
+            for game_type in GAME_TYPE_SPLITS:
+                if game_type == 'All':
+                    games = player_games
+                else:
+                    games = player_games[player_games['game_type'] == game_type]
+                
+                if len(games) == 0:
+                    continue
+                
+                numeric_cols = games.select_dtypes(include=['number']).columns.tolist()
+                numeric_cols = [c for c in numeric_cols if c not in ['game_id', 'season_id']]
+                
+                agg_dict = {col: 'sum' for col in numeric_cols if col in games.columns}
+                agg_dict['game_id'] = 'count'
+                if 'player_name' in games.columns:
+                    agg_dict['player_name'] = 'first'
+                if 'team_name' in games.columns:
+                    agg_dict['team_name'] = 'last'
+                
+                grouped_type = games.agg(agg_dict).to_dict()
+                
+                result = {
+                    'player_career_key': f"{player_id}_{season_id}_{game_type}",
+                    'player_id': player_id,
+                    'season_id': season_id,
+                    'game_type': game_type,
+                    'career_games': grouped_type.get('game_id', 0),
+                    '_export_timestamp': datetime.now().isoformat(),
+                }
+                
+                # Add aggregated numeric columns
+                for col in numeric_cols:
+                    if col in grouped_type:
+                        result[col] = grouped_type[col]
+                
+                # Add player/team info
+                if 'player_name' in grouped_type:
+                    result['player_name'] = grouped_type['player_name']
+                if 'team_name' in grouped_type:
+                    result['team_name'] = grouped_type['team_name']
+                
+                all_results.append(result)
+        
+        grouped = pd.DataFrame(all_results)
     else:
-        numeric_cols = player_season_stats.select_dtypes(include=['number']).columns.tolist()
-        numeric_cols = [c for c in numeric_cols if c not in ['season_id']]
+        # Aggregate from season stats, preserving season_id and game_type
+        all_results = []
         
-        agg_dict = {col: 'sum' for col in numeric_cols if col in player_season_stats.columns}
-        agg_dict['season_id'] = 'nunique'
+        # Get unique player-season combinations
+        player_seasons = player_season_stats[['player_id', 'season_id']].drop_duplicates()
         
-        grouped = player_season_stats.groupby('player_id').agg(agg_dict).reset_index()
-        grouped = grouped.rename(columns={'season_id': 'seasons_played'})
-    
-    grouped['player_career_key'] = grouped['player_id'].astype(str) + '_career'
-    grouped['_export_timestamp'] = datetime.now().isoformat()
+        for _, ps in player_seasons.iterrows():
+            player_id = ps['player_id']
+            season_id = ps['season_id']
+            
+            player_season_data = player_season_stats[
+                (player_season_stats['player_id'] == player_id) & 
+                (player_season_stats['season_id'] == season_id)
+            ]
+            
+            # Split by game_type
+            for game_type in GAME_TYPE_SPLITS:
+                type_data = player_season_data[player_season_data['game_type'] == game_type]
+                
+                if len(type_data) == 0:
+                    continue
+                
+                numeric_cols = type_data.select_dtypes(include=['number']).columns.tolist()
+                numeric_cols = [c for c in numeric_cols if c not in ['season_id']]
+                
+                agg_dict = {col: 'sum' for col in numeric_cols if col in type_data.columns}
+                if 'player_name' in type_data.columns:
+                    agg_dict['player_name'] = 'first'
+                if 'team_name' in type_data.columns:
+                    agg_dict['team_name'] = 'last'
+                
+                grouped_type = type_data.agg(agg_dict).to_dict()
+                
+                result = {
+                    'player_career_key': f"{player_id}_{season_id}_{game_type}",
+                    'player_id': player_id,
+                    'season_id': season_id,
+                    'game_type': game_type,
+                    '_export_timestamp': datetime.now().isoformat(),
+                }
+                
+                # Add aggregated columns
+                for col in numeric_cols:
+                    if col in grouped_type:
+                        result[col] = grouped_type[col]
+                
+                # Add player/team info
+                if 'player_name' in grouped_type:
+                    result['player_name'] = grouped_type['player_name']
+                if 'team_name' in grouped_type:
+                    result['team_name'] = grouped_type['team_name']
+                
+                all_results.append(result)
+        
+        grouped = pd.DataFrame(all_results)
     
     return grouped
 
@@ -644,25 +1266,50 @@ def create_fact_player_stats_long() -> pd.DataFrame:
 
 
 def create_fact_player_stats_by_competition_tier() -> pd.DataFrame:
-    """Create player stats split by competition tier."""
-    player_game_stats = load_table('fact_player_game_stats')
+    """
+    Create player stats split by competition tier.
+    
+    CRITICAL: Only counts events where player is event_player_1 (PRIMARY_PLAYER).
+    This ensures proper attribution - only the primary actor gets credit for stats.
+    """
+    PRIMARY_PLAYER = 'event_player_1'
+    
+    event_players = load_table('fact_event_players')
+    events = load_table('fact_events')
     shift_players = load_table('fact_shift_players')
     
-    if len(player_game_stats) == 0:
+    if len(event_players) == 0:
         return pd.DataFrame()
     
-    # Get avg opponent rating per game
-    if len(shift_players) > 0 and 'opp_rating' in shift_players.columns:
-        opp_ratings = shift_players.groupby(['game_id', 'player_id'])['opp_rating'].mean().reset_index()
-        opp_ratings = opp_ratings.rename(columns={'opp_rating': 'avg_opp_rating'})
-        
-        merged = player_game_stats.merge(opp_ratings, on=['game_id', 'player_id'], how='left')
-    else:
-        merged = player_game_stats.copy()
-        merged['avg_opp_rating'] = 4.0  # Default
+    # Filter to only primary player events (event_player_1)
+    primary_events = event_players[
+        event_players['player_role'].astype(str).str.lower() == PRIMARY_PLAYER.lower()
+    ].copy()
     
-    # Assign tiers
-    def get_tier(rating):
+    if len(primary_events) == 0:
+        return pd.DataFrame()
+    
+    # Merge with events to get competition tier and other context
+    if len(events) > 0:
+        primary_events = primary_events.merge(
+            events[['event_id', 'game_id', 'competition_tier_id', 'opp_team_rating_avg']], 
+            on=['event_id', 'game_id'], 
+            how='left'
+        )
+    
+    # Get avg opponent rating per game from shift_players
+    if len(shift_players) > 0 and 'opp_avg_rating' in shift_players.columns:
+        opp_ratings = shift_players.groupby(['game_id', 'player_id'])['opp_avg_rating'].mean().reset_index()
+        opp_ratings = opp_ratings.rename(columns={'opp_avg_rating': 'avg_opp_rating'})
+        primary_events = primary_events.merge(opp_ratings, on=['game_id', 'player_id'], how='left')
+    elif 'opp_team_rating_avg' in primary_events.columns:
+        primary_events['avg_opp_rating'] = primary_events['opp_team_rating_avg']
+    else:
+        primary_events['avg_opp_rating'] = 4.0  # Default
+    
+    # Assign tiers based on competition_tier_id or avg_opp_rating
+    def get_tier_from_rating(rating):
+        """Helper function for rating-based tier assignment."""
         if pd.isna(rating):
             return 'Unknown'
         if rating >= 5.0:
@@ -674,37 +1321,244 @@ def create_fact_player_stats_by_competition_tier() -> pd.DataFrame:
         else:
             return 'Below Average'
     
-    merged['competition_tier'] = merged['avg_opp_rating'].apply(get_tier)
+    def get_tier_from_row(row):
+        # First try competition_tier_id
+        if 'competition_tier_id' in primary_events.columns and 'competition_tier_id' in row.index and pd.notna(row['competition_tier_id']):
+            tier_id = str(row['competition_tier_id']).upper()
+            tier_map = {
+                'TI01': 'Elite', 'CT01': 'Elite',
+                'TI02': 'Above Average', 'CT02': 'Above Average',
+                'TI03': 'Average', 'CT03': 'Average',
+                'TI04': 'Below Average', 'CT04': 'Below Average'
+            }
+            if tier_id in tier_map:
+                return tier_map[tier_id]
+        
+        # Fallback to rating-based tier
+        rating = row['avg_opp_rating'] if 'avg_opp_rating' in row.index and pd.notna(row['avg_opp_rating']) else 4.0
+        return get_tier_from_rating(rating)
     
-    # Group by player and tier
-    numeric_cols = merged.select_dtypes(include=['number']).columns.tolist()
-    numeric_cols = [c for c in numeric_cols if c not in ['game_id', 'avg_opp_rating']]
+    # Apply tier assignment
+    primary_events['competition_tier'] = primary_events.apply(get_tier_from_row, axis=1)
     
-    agg_dict = {col: 'sum' for col in numeric_cols if col in merged.columns}
-    agg_dict['game_id'] = 'count'
+    # Calculate stats per player per tier (only counting event_player_1 events)
+    records = []
     
-    grouped = merged.groupby(['player_id', 'competition_tier']).agg(agg_dict).reset_index()
-    grouped = grouped.rename(columns={'game_id': 'games_vs_tier'})
+    for (player_id, tier), group in primary_events.groupby(['player_id', 'competition_tier']):
+        if pd.isna(player_id) or str(player_id) in ['', 'None', 'nan']:
+            continue
+        
+        # Count events where player is event_player_1
+        goals = len(group[
+            (group['event_type'].astype(str).str.lower() == 'goal') &
+            (group['event_detail'].astype(str).str.lower().str.contains('goal_scored', na=False))
+        ])
+        
+        shots = len(group[group['event_type'].astype(str).str.lower() == 'shot'])
+        passes = len(group[group['event_type'].astype(str).str.lower() == 'pass'])
+        
+        # Get games played (count unique game_ids)
+        games_played = group['game_id'].nunique()
+        
+        # Get TOI from shift_players for this player/tier combination
+        toi_seconds = 0
+        if len(shift_players) > 0:
+            player_shifts = shift_players[
+                (shift_players['player_id'] == player_id) &
+                (shift_players['game_id'].isin(group['game_id'].unique()))
+            ]
+            if len(player_shifts) > 0:
+                # Match tier from avg_opp_rating
+                tier_shifts = player_shifts[
+                    player_shifts['opp_avg_rating'].apply(lambda r: get_tier_from_rating(r) == tier)
+                ]
+                if 'toi_seconds' in tier_shifts.columns:
+                    toi_seconds = int(tier_shifts['toi_seconds'].sum())
+        
+        records.append({
+            'player_id': player_id,
+            'competition_tier': tier,
+            'games_vs_tier': games_played,
+            'goals': goals,
+            'shots': shots,
+            'passes': passes,
+            'toi_seconds': toi_seconds,
+            'tier_key': f"{player_id}_{tier}",
+            '_export_timestamp': datetime.now().isoformat()
+        })
     
-    grouped['tier_key'] = grouped['player_id'].astype(str) + '_' + grouped['competition_tier']
-    grouped['_export_timestamp'] = datetime.now().isoformat()
+    df = pd.DataFrame(records)
     
-    return grouped
+    if len(df) == 0:
+        return pd.DataFrame()
+    
+    return df
 
 
 def create_fact_player_pair_stats() -> pd.DataFrame:
-    """Create stats for player pairs (similar to H2H but with more detail)."""
-    h2h = load_table('fact_h2h')
+    """
+    Create stats for player pairs using logical shifts.
     
-    if len(h2h) == 0:
+    Similar to H2H but builds directly from fact_shift_players to ensure
+    logical shift counting and accurate stat aggregation.
+    """
+    from itertools import combinations
+    
+    shift_players = load_table('fact_shift_players')
+    schedule = load_table('fact_schedule')
+    players = load_table('dim_player')
+    
+    if len(shift_players) == 0:
         return pd.DataFrame()
     
-    # Rename columns to match expected schema
-    h2h = h2h.copy()
-    h2h['pair_key'] = h2h.get('h2h_key', h2h.index.astype(str))
-    h2h['_export_timestamp'] = datetime.now().isoformat()
+    # Check for logical_shift_number
+    if 'logical_shift_number' not in shift_players.columns:
+        print("  ⚠️ logical_shift_number not found in fact_shift_players - using shift_index")
+        shift_players['logical_shift_number'] = shift_players.get('shift_index', shift_players.index)
     
-    return h2h
+    all_pairs = []
+    
+    # Process each game
+    for game_id in shift_players['game_id'].dropna().unique():
+        if pd.isna(game_id) or game_id == 99999:  # Skip test game
+            continue
+        
+        game_sp = shift_players[shift_players['game_id'] == game_id].copy()
+        
+        # Get season_id
+        season_id = None
+        if len(schedule) > 0:
+            game_info = schedule[schedule['game_id'] == game_id]
+            if len(game_info) > 0 and 'season_id' in game_info.columns:
+                season_id = game_info['season_id'].values[0]
+        
+        # Process each venue (home, away)
+        for venue in ['home', 'away']:
+            venue_sp = game_sp[game_sp['venue'] == venue.lower()].copy()
+            
+            if len(venue_sp) == 0:
+                continue
+            
+            # Group by logical_shift_number to find players on ice together
+            logical_shifts = venue_sp.groupby('logical_shift_number')
+            
+            # Build player pairs: (p1, p2) -> dict of stats
+            player_pairs = {}
+            
+            for logical_shift_num, shift_group in logical_shifts:
+                if pd.isna(logical_shift_num):
+                    continue
+                
+                # Get unique players on this logical shift
+                players_on_shift = shift_group['player_id'].dropna().unique().tolist()
+                
+                if len(players_on_shift) < 2:
+                    continue
+                
+                # Get stats for this logical shift (use first row - stats should be same for all players on same shift)
+                shift_row = shift_group.iloc[0]
+                
+                # Use logical_shift_duration if available, else sum shift_duration
+                if 'logical_shift_duration' in shift_group.columns and pd.notna(shift_row.get('logical_shift_duration')):
+                    shift_duration = shift_row['logical_shift_duration']
+                else:
+                    # Sum all segments' duration for this logical shift (first segment only to avoid double counting)
+                    first_segments = shift_group[shift_group.get('is_first_segment', pd.Series([True] * len(shift_group))) == True]
+                    shift_duration = first_segments['shift_duration'].sum() if 'shift_duration' in first_segments.columns else 0
+                
+                # Get stats from shift_group (sum across all players, but each stat is per-shift so just use one row)
+                shift_gf = int(shift_row.get('gf', 0)) if pd.notna(shift_row.get('gf')) else 0
+                shift_ga = int(shift_row.get('ga', 0)) if pd.notna(shift_row.get('ga')) else 0
+                shift_cf = int(shift_row.get('cf', 0)) if pd.notna(shift_row.get('cf')) else 0
+                shift_ca = int(shift_row.get('ca', 0)) if pd.notna(shift_row.get('ca')) else 0
+                shift_ff = int(shift_row.get('ff', 0)) if pd.notna(shift_row.get('ff')) else 0
+                shift_fa = int(shift_row.get('fa', 0)) if pd.notna(shift_row.get('fa')) else 0
+                
+                # Create all pairs of players on this logical shift
+                for p1, p2 in combinations(sorted(players_on_shift), 2):
+                    # Ensure player IDs are strings for consistency
+                    p1_str = str(p1)
+                    p2_str = str(p2)
+                    key = (p1_str, p2_str)
+                    
+                    if key not in player_pairs:
+                        player_pairs[key] = {
+                            'logical_shifts': set(),
+                            'toi_together': 0,
+                            'goals_for': 0,
+                            'goals_against': 0,
+                            'corsi_for': 0,
+                            'corsi_against': 0,
+                            'fenwick_for': 0,
+                            'fenwick_against': 0,
+                        }
+                    
+                    # Add this logical shift (avoid double counting same shift)
+                    player_pairs[key]['logical_shifts'].add(logical_shift_num)
+                    player_pairs[key]['toi_together'] += shift_duration
+                    player_pairs[key]['goals_for'] += shift_gf
+                    player_pairs[key]['goals_against'] += shift_ga
+                    player_pairs[key]['corsi_for'] += shift_cf
+                    player_pairs[key]['corsi_against'] += shift_ca
+                    player_pairs[key]['fenwick_for'] += shift_ff
+                    player_pairs[key]['fenwick_against'] += shift_fa
+            
+            # Create pair records from aggregated pairs
+            for (p1, p2), stats in player_pairs.items():
+                shifts_together = len(stats['logical_shifts'])
+                
+                # Calculate percentages
+                total_corsi = stats['corsi_for'] + stats['corsi_against']
+                cf_pct = round(stats['corsi_for'] / total_corsi * 100, 2) if total_corsi > 0 else 50.0
+                
+                pair_record = {
+                    'h2h_key': f"H2H_{game_id}_{p1}_{p2}",
+                    'game_id': game_id,
+                    'season_id': season_id,
+                    'player_1_id': p1,
+                    'player_2_id': p2,
+                    'venue': venue,
+                    'shifts_together': shifts_together,
+                    'toi_together': round(stats['toi_together'], 1),
+                    'goals_for': stats['goals_for'],
+                    'goals_against': stats['goals_against'],
+                    'plus_minus': stats['goals_for'] - stats['goals_against'],
+                    'corsi_for': stats['corsi_for'],
+                    'corsi_against': stats['corsi_against'],
+                    'cf_pct': cf_pct,
+                    'pair_key': f"PAIR_{game_id}_{p1}_{p2}",
+                }
+                
+                # Add player names if available
+                if len(players) > 0:
+                    p1_info = players[players['player_id'] == p1]
+                    p2_info = players[players['player_id'] == p2]
+                    if len(p1_info) > 0 and 'player_full_name' in p1_info.columns:
+                        pair_record['player_1_name'] = p1_info['player_full_name'].values[0]
+                    if len(p2_info) > 0 and 'player_full_name' in p2_info.columns:
+                        pair_record['player_2_name'] = p2_info['player_full_name'].values[0]
+                
+                all_pairs.append(pair_record)
+    
+    df = pd.DataFrame(all_pairs)
+    
+    if len(df) == 0:
+        return pd.DataFrame()
+    
+    # Add export timestamp
+    df['_export_timestamp'] = datetime.now().isoformat()
+    
+    # Reorder columns for consistency
+    priority_cols = ['h2h_key', 'pair_key', 'game_id', 'season_id', 'player_1_id', 'player_1_name',
+                    'player_2_id', 'player_2_name', 'venue',
+                    'shifts_together', 'toi_together',
+                    'goals_for', 'goals_against', 'plus_minus',
+                    'corsi_for', 'corsi_against', 'cf_pct', '_export_timestamp']
+    other_cols = [c for c in df.columns if c not in priority_cols]
+    df = df[[c for c in priority_cols if c in df.columns] + other_cols]
+    
+    print(f"  Created {len(df)} player pair records using logical shifts")
+    return df
 
 
 def create_fact_player_boxscore_all() -> pd.DataFrame:
@@ -964,13 +1818,20 @@ def create_fact_team_zone_time() -> pd.DataFrame:
 # =============================================================================
 
 def create_fact_matchup_summary() -> pd.DataFrame:
-    """Create matchup summary stats."""
+    """
+    Create matchup summary stats.
+    
+    Uses fact_h2h as base which already includes:
+    - Logical shift counting (not raw shift rows)
+    - Real statistics (gf, ga, cf, ca, cf_pct, ff_pct) from fact_shift_players
+    - Proper player_id usage (not jersey numbers)
+    """
     h2h = load_table('fact_h2h')
     
     if len(h2h) == 0:
         return pd.DataFrame()
     
-    # Aggregate H2H to matchup level
+    # Copy H2H data (which uses logical shifts and real stats)
     h2h = h2h.copy()
     h2h['matchup_key'] = h2h.get('h2h_key', h2h.index.astype(str))
     h2h['_export_timestamp'] = datetime.now().isoformat()
@@ -1681,6 +2542,7 @@ def build_remaining_tables(verbose: bool = True) -> dict:
         # Period-level
         ('fact_player_period_stats', create_fact_player_period_stats),
         ('fact_period_momentum', create_fact_period_momentum),
+        ('fact_time_period_momentum', create_fact_time_period_momentum),
         
         # Aggregation/rollup
         ('fact_player_season_stats', create_fact_player_season_stats),

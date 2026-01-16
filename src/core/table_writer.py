@@ -190,6 +190,16 @@ def save_output_table(df: pd.DataFrame, table_name: str, output_dir: Optional[Pa
             # Don't fail if optimization fails - just log and continue
             log.debug(f"  Data type optimization skipped for {table_name}: {e}")
     
+    # Drop 100% null columns (except coordinate/danger/xy columns) for fact tables
+    if table_name.startswith('fact_') and len(df) > 0:
+        try:
+            from src.core.base_etl import drop_all_null_columns
+            df, removed_cols = drop_all_null_columns(df)
+            if removed_cols:
+                log.info(f"  {table_name}: Removed {len(removed_cols)} all-null columns")
+        except Exception as e:
+            log.debug(f"  Null column removal skipped for {table_name}: {e}")
+    
     # Upload to Supabase FIRST (if enabled)
     if _supabase_enabled and _supabase_client is not None:
         rows_uploaded, errors = _upload_df_to_supabase(df, table_name)

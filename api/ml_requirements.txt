@@ -1,0 +1,25 @@
+# BenchSight ML/Analytics Requirements
+# Install with: pip install -r api/ml_requirements.txt
+
+# Core ML Libraries
+scikit-learn>=1.3.0        # Classification, regression, clustering
+scipy>=1.11.0              # Statistical functions
+numpy>=1.24.0              # Numerical computing (likely already via pandas)
+
+# Gradient Boosting (best for tabular data like hockey stats)
+xgboost>=2.0.0             # Best for predictions, fast, handles missing data well
+lightgbm>=4.0.0            # Alternative to XGBoost, often faster, memory efficient
+
+# Time Series Forecasting
+prophet>=1.1.4             # Facebook's time series forecasting (easy to use)
+pmdarima>=2.0.4            # Auto ARIMA for time series
+
+# Model Management
+joblib>=1.3.0              # Model serialization (saving/loading models)
+mlflow>=2.8.0              # Experiment tracking, model versioning (optional but recommended)
+
+# Statistical Modeling
+statsmodels>=0.14.0        # Statistical modeling, time series analysis
+
+# Feature Engineering
+feature-engine>=1.6.0      # Data preprocessing, feature selection

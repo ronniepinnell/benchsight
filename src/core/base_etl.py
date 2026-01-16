@@ -242,6 +242,64 @@ def drop_index_and_unnamed(df):
     drop_cols.extend([c for c in df.columns if 'Unnamed' in str(c)])
     return df.drop(columns=drop_cols, errors='ignore')
 
+def drop_all_null_columns(df):
+    """
+    Drop columns that are 100% null (all values are null/NaN/None).
+    EXCEPTS: coordinate, danger, and XY type columns (these may legitimately be null).
+    
+    Args:
+        df: DataFrame to clean
+        
+    Returns:
+        Tuple of (DataFrame with all-null columns removed, list of removed column names)
+    """
+    if len(df) == 0:
+        return df, []
+    
+    import re
+    
+    # Columns to preserve even if 100% null (coordinate, danger, XY type columns)
+    preserve_patterns = [
+        r'x$', r'_x$', r'^x_',  # x coordinates
+        r'y$', r'_y$', r'^y_',  # y coordinates
+        r'coord',  # coordinate
+        r'danger',  # danger zone/danger type
+        r'xy',  # XY type columns
+        r'target_x', r'target_y',  # target coordinates
+        r'shot_x', r'shot_y',  # shot coordinates
+        r'net_target',  # net target coordinates
+        r'location_id$',  # location IDs (coordinate-related)
+        r'zone_coord',  # zone coordinates
+        r'rink_coord',  # rink coordinates
+    ]
+    
+    # Find columns where all values are null
+    null_cols = []
+    for col in df.columns:
+        # Skip if column matches preserve patterns
+        should_preserve = any(re.search(pattern, col, re.IGNORECASE) for pattern in preserve_patterns)
+        if should_preserve:
+            continue
+        
+        # Check if all values are null/NaN/None/empty string
+        if df[col].isna().all():
+            null_cols.append(col)
+        elif df[col].dtype == 'object':
+            # For object columns, also check for empty strings and 'None'/'nan' strings
+            non_null = df[col].dropna()
+            if len(non_null) == 0:
+                null_cols.append(col)
+            elif len(non_null) > 0:
+                # Check if all non-null values are empty-like
+                all_empty = non_null.astype(str).str.strip().isin(['', 'None', 'nan', 'null', 'NaT']).all()
+                if all_empty:
+                    null_cols.append(col)
+    
+    if null_cols:
+        df = df.drop(columns=null_cols)
+    
+    return df, null_cols
+
 def clean_numeric_index(val):
     """Convert '1000.0' to '1000'"""
     if pd.isna(val) or val == '' or str(val).lower() in ['nan', 'x', 'none']:
@@ -2794,9 +2852,14 @@ def _build_cycle_events(tracking, events, output_dir, log):
         cycles_df['period'] = cycles_df['start_event_id'].map(event_periods)
         cycles_df['period_id'] = cycles_df['period'].apply(lambda x: f'P{int(x):02d}' if pd.notna(x) else None)
         
+        # Remove columns that are 100% null
+        cycles_df, removed_cols = drop_all_null_columns(cycles_df)
+        if removed_cols:
+            log.info(f"  Removed {len(removed_cols)} all-null columns from fact_cycle_events: {removed_cols[:10]}{'...' if len(removed_cols) > 10 else ''}")
+        
         # Save fact_cycle_events
         save_output_table(cycles_df, 'fact_cycle_events', output_dir)
-        log.info(f"  ✓ fact_cycle_events: {len(cycles_df)} rows")
+        log.info(f"  ✓ fact_cycle_events: {len(cycles_df)} rows, {len(cycles_df.columns)} columns")
         
         # Build event_id -> cycle_key mapping
         event_to_cycle = {}
@@ -3268,6 +3331,102 @@ def enhance_events_with_flags():
     events['is_faceoff'] = (events['event_type'] == 'Faceoff').astype(int)
     events['is_penalty'] = (events['event_type'] == 'Penalty').astype(int)
     events['is_blocked_shot'] = events['event_detail'].str.contains('Blocked', na=False).astype(int)
+    
+    # Add shooter, shot_blocker, and goalie columns for shot events
+    log.info("  Adding shooter, shot_blocker, and goalie columns for shot events...")
+    
+    # Filter to shot events (Shot or Goal event_type)
+    shot_mask = events['event_type'].isin(['Shot', 'Goal'])
+    
+    # Initialize columns
+    events['shooter_player_id'] = None
+    events['shooter_name'] = None
+    events['shooter_rating'] = None
+    events['shot_blocker_player_id'] = None
+    events['shot_blocker_name'] = None
+    events['shot_blocker_rating'] = None
+    events['goalie_player_id'] = None
+    events['goalie_name'] = None
+    events['goalie_rating'] = None
+    
+    if shot_mask.any():
+        # Get event_player_1 data for shots (shooter)
+        shot_event_ids = events[shot_mask]['event_id'].tolist()
+        shooter_data = tracking[
+            (tracking['event_id'].isin(shot_event_ids)) &
+            (tracking['player_role'].astype(str).str.lower() == 'event_player_1')
+        ].drop_duplicates(subset='event_id', keep='first')
+        
+        # Map shooter info (always from event_player_1 for shots)
+        shooter_map_id = dict(zip(shooter_data['event_id'], shooter_data['player_id']))
+        shooter_map_name = dict(zip(shooter_data['event_id'], shooter_data.get('player_name', shooter_data.get('player_full_name', None))))
+        shooter_map_rating = dict(zip(shooter_data['event_id'], shooter_data.get('player_rating', None)))
+        
+        events.loc[shot_mask, 'shooter_player_id'] = events.loc[shot_mask, 'event_id'].map(shooter_map_id)
+        events.loc[shot_mask, 'shooter_name'] = events.loc[shot_mask, 'event_id'].map(shooter_map_name)
+        events.loc[shot_mask, 'shooter_rating'] = events.loc[shot_mask, 'event_id'].map(shooter_map_rating)
+        
+        # Get shot blocker info (opp_player_1 for blocked shots)
+        blocked_mask = shot_mask & (events['is_blocked_shot'] == 1)
+        if blocked_mask.any():
+            blocked_event_ids = events[blocked_mask]['event_id'].tolist()
+            blocker_data = tracking[
+                (tracking['event_id'].isin(blocked_event_ids)) &
+                (tracking['player_role'].astype(str).str.lower() == 'opp_player_1')
+            ].drop_duplicates(subset='event_id', keep='first')
+            
+            blocker_map_id = dict(zip(blocker_data['event_id'], blocker_data['player_id']))
+            blocker_map_name = dict(zip(blocker_data['event_id'], blocker_data.get('player_name', blocker_data.get('player_full_name', None))))
+            blocker_map_rating = dict(zip(blocker_data['event_id'], blocker_data.get('player_rating', None)))
+            
+            events.loc[blocked_mask, 'shot_blocker_player_id'] = events.loc[blocked_mask, 'event_id'].map(blocker_map_id)
+            events.loc[blocked_mask, 'shot_blocker_name'] = events.loc[blocked_mask, 'event_id'].map(blocker_map_name)
+            events.loc[blocked_mask, 'shot_blocker_rating'] = events.loc[blocked_mask, 'event_id'].map(blocker_map_rating)
+        
+        # Get goalie info for shots that resulted in saves or goals
+        # For shots that were saved (Shot_OnNetSaved): need to find the corresponding Save event
+        # For shots that were goals (Shot_Goal): opp_player_1 is the goalie who allowed the goal
+        # For actual Save events (event_type='Save'): event_player_1 is the goalie
+        
+        # Shots that were saved (is_sog but not goal) - goalie is on defending team (opp_player_1)
+        saved_shot_mask = shot_mask & (events['is_sog'] == 1) & (events['is_goal'] == 0)
+        if saved_shot_mask.any():
+            saved_shot_event_ids = events[saved_shot_mask]['event_id'].tolist()
+            goalie_saved_data = tracking[
+                (tracking['event_id'].isin(saved_shot_event_ids)) &
+                (tracking['player_role'].astype(str).str.lower() == 'opp_player_1')
+            ].drop_duplicates(subset='event_id', keep='first')
+            
+            goalie_saved_map_id = dict(zip(goalie_saved_data['event_id'], goalie_saved_data['player_id']))
+            goalie_saved_map_name = dict(zip(goalie_saved_data['event_id'], goalie_saved_data.get('player_name', goalie_saved_data.get('player_full_name', None))))
+            goalie_saved_map_rating = dict(zip(goalie_saved_data['event_id'], goalie_saved_data.get('player_rating', None)))
+            
+            events.loc[saved_shot_mask, 'goalie_player_id'] = events.loc[saved_shot_mask, 'event_id'].map(goalie_saved_map_id)
+            events.loc[saved_shot_mask, 'goalie_name'] = events.loc[saved_shot_mask, 'event_id'].map(goalie_saved_map_name)
+            events.loc[saved_shot_mask, 'goalie_rating'] = events.loc[saved_shot_mask, 'event_id'].map(goalie_saved_map_rating)
+        
+        # Goals: opp_player_1 is the goalie who allowed the goal
+        goal_mask = shot_mask & (events['is_goal'] == 1)
+        if goal_mask.any():
+            goal_event_ids = events[goal_mask]['event_id'].tolist()
+            goalie_goal_data = tracking[
+                (tracking['event_id'].isin(goal_event_ids)) &
+                (tracking['player_role'].astype(str).str.lower() == 'opp_player_1')
+            ].drop_duplicates(subset='event_id', keep='first')
+            
+            goalie_goal_map_id = dict(zip(goalie_goal_data['event_id'], goalie_goal_data['player_id']))
+            goalie_goal_map_name = dict(zip(goalie_goal_data['event_id'], goalie_goal_data.get('player_name', goalie_goal_data.get('player_full_name', None))))
+            goalie_goal_map_rating = dict(zip(goalie_goal_data['event_id'], goalie_goal_data.get('player_rating', None)))
+            
+            events.loc[goal_mask, 'goalie_player_id'] = events.loc[goal_mask, 'event_id'].map(goalie_goal_map_id)
+            events.loc[goal_mask, 'goalie_name'] = events.loc[goal_mask, 'event_id'].map(goalie_goal_map_name)
+            events.loc[goal_mask, 'goalie_rating'] = events.loc[goal_mask, 'event_id'].map(goalie_goal_map_rating)
+        
+        shot_count = shot_mask.sum()
+        blocked_count = blocked_mask.sum() if blocked_mask.any() else 0
+        saved_count = saved_shot_mask.sum() if saved_shot_mask.any() else 0
+        goal_count = goal_mask.sum() if goal_mask.any() else 0
+        log.info(f"    Added shooter/goalie/blocker info: {shot_count} shots ({blocked_count} blocked, {saved_count} saved, {goal_count} goals)")
     events['is_missed_shot'] = events['event_detail'].isin(['Shot_Missed', 'Shot_MissedPost']).astype(int)
     events['is_deflected'] = (events['event_detail'] == 'Shot_Deflected').astype(int)
     # Tipped shots (from event_detail_2)
@@ -3517,15 +3676,55 @@ def enhance_events_with_flags():
             # Time/events to next SOG
             if next_sog_idx is not None and pd.notna(curr_time) and pd.notna(next_sog_time):
                 events.at[idx, 'time_to_next_sog'] = curr_time - next_sog_time
-                events.at[idx, 'events_to_next_sog'] = game_idx.index(next_sog_idx) - i
+                events_to_sog = game_idx.index(next_sog_idx) - i
+                events.at[idx, 'events_to_next_sog'] = events_to_sog
                 events.at[idx, 'next_sog_result'] = 'goal' if 'Goal' in str(next_sog_detail) else 'save'
-                # Events within same sequence that led to SOG
-                if row.get('sequence_key') == events.loc[next_sog_idx].get('sequence_key'):
+                
+                # Check if event led to SOG within same play (same team possession)
+                curr_play_key = row.get('play_key')
+                next_sog_play_key = events.loc[next_sog_idx].get('play_key')
+                same_play = (pd.notna(curr_play_key) and curr_play_key == next_sog_play_key)
+                
+                if same_play:
                     events.at[idx, 'led_to_sog'] = 1
-                    if game_idx.index(next_sog_idx) - i <= 3:
+                    
+                    # Count passes between current event and shot (within same play)
+                    # Check if current event is a pass
+                    is_pass = row.get('event_type') == 'Pass'
+                    
+                    # Count how many passes are between this event and the shot
+                    pass_count = 0
+                    if is_pass and events_to_sog > 0:
+                        # Count passes in the events between current and shot
+                        for j in range(i + 1, game_idx.index(next_sog_idx)):
+                            if j < len(game_idx):
+                                intermediate_idx = game_idx[j]
+                                intermediate_event = events.loc[intermediate_idx]
+                                # Only count if same play
+                                if intermediate_event.get('play_key') == curr_play_key:
+                                    if intermediate_event.get('event_type') == 'Pass':
+                                        pass_count += 1
+                    
+                    # is_pre_shot_event: Any event within 3 events before shot in same play
+                    if events_to_sog <= 3:
                         events.at[idx, 'is_pre_shot_event'] = 1
-                    if game_idx.index(next_sog_idx) - i == 1:
-                        events.at[idx, 'is_shot_assist'] = 1
+                    
+                    # is_shot_assist: Pass event within same play, in offensive zone,
+                    # with up to 3 passes before shot on goal
+                    if is_pass:
+                        # Check if in offensive zone (O, Offensive, oz, etc.)
+                        event_zone = str(row.get('event_team_zone', '')).lower()
+                        is_offensive_zone = (
+                            event_zone.startswith('o') or 
+                            'offensive' in event_zone or 
+                            event_zone == 'oz'
+                        )
+                        
+                        # Shot assist: pass in offensive zone, same play, 
+                        # with <= 3 passes (including self) before shot on goal
+                        total_passes_to_shot = pass_count + 1  # +1 for current pass
+                        if is_offensive_zone and total_passes_to_shot <= 3:
+                            events.at[idx, 'is_shot_assist'] = 1
             
             # Time/events to next goal
             if next_goal_idx is not None and pd.notna(curr_time) and pd.notna(next_goal_time):
@@ -3600,6 +3799,83 @@ def enhance_events_with_flags():
     
     log.info(f"    Context columns added: {len(context_cols)}")
     
+    # Add segment numbers for events that are part of plays, sequences, chains, etc.
+    log.info("  Adding segment numbers for plays, sequences, chains, and linked events...")
+    
+    # Initialize segment number columns
+    events['play_segment_number'] = None
+    events['sequence_segment_number'] = None
+    events['event_chain_segment_number'] = None
+    events['linked_event_segment_number'] = None
+    
+    # Sort events by game and time to ensure proper ordering
+    events = events.sort_values(['game_id', 'time_start_total_seconds', 'event_id'])
+    
+    # Use event_id as key for mapping (more reliable than DataFrame index)
+    if 'event_id' not in events.columns:
+        log.warning("    event_id column not found, skipping segment number calculation")
+    else:
+        # 1. Play segment number (position within play_key)
+        if 'play_key' in events.columns:
+            play_segments = {}
+            for play_key, grp in events.groupby('play_key'):
+                if pd.notna(play_key):
+                    grp_sorted = grp.sort_values(['time_start_total_seconds', 'event_id'])
+                    for i, event_id in enumerate(grp_sorted['event_id'], 1):
+                        play_segments[event_id] = i
+            events['play_segment_number'] = events['event_id'].map(play_segments)
+            play_count = events['play_segment_number'].notna().sum()
+            log.info(f"    play_segment_number: {play_count} events have positions")
+        
+        # 2. Sequence segment number (position within sequence_key)
+        if 'sequence_key' in events.columns:
+            sequence_segments = {}
+            for seq_key, grp in events.groupby('sequence_key'):
+                if pd.notna(seq_key):
+                    grp_sorted = grp.sort_values(['time_start_total_seconds', 'event_id'])
+                    for i, event_id in enumerate(grp_sorted['event_id'], 1):
+                        sequence_segments[event_id] = i
+            events['sequence_segment_number'] = events['event_id'].map(sequence_segments)
+            seq_count = events['sequence_segment_number'].notna().sum()
+            log.info(f"    sequence_segment_number: {seq_count} events have positions")
+        
+        # 3. Event chain segment number (position within event_chain_key)
+        if 'event_chain_key' in events.columns:
+            chain_segments = {}
+            for chain_key, grp in events.groupby('event_chain_key'):
+                if pd.notna(chain_key):
+                    grp_sorted = grp.sort_values(['time_start_total_seconds', 'event_id'])
+                    for i, event_id in enumerate(grp_sorted['event_id'], 1):
+                        chain_segments[event_id] = i
+            events['event_chain_segment_number'] = events['event_id'].map(chain_segments)
+            chain_count = events['event_chain_segment_number'].notna().sum()
+            log.info(f"    event_chain_segment_number: {chain_count} events have positions")
+        
+        # 4. Linked event segment number (position within linked_event_key)
+        # Check for linked_event_key or linked_event_index
+        linked_key_col = None
+        if 'linked_event_key' in events.columns:
+            linked_key_col = 'linked_event_key'
+        elif 'linked_event_index' in events.columns:
+            # Generate linked_event_key from linked_event_index if needed
+            events['linked_event_key'] = events.apply(
+                lambda row: f"LK{int(row['game_id']):05d}{int(row['linked_event_index']):05d}" 
+                if pd.notna(row.get('linked_event_index')) and pd.notna(row.get('game_id')) 
+                else None, axis=1
+            )
+            linked_key_col = 'linked_event_key'
+        
+        if linked_key_col:
+            linked_segments = {}
+            for linked_key, grp in events.groupby(linked_key_col):
+                if pd.notna(linked_key):
+                    grp_sorted = grp.sort_values(['time_start_total_seconds', 'event_id'])
+                    for i, event_id in enumerate(grp_sorted['event_id'], 1):
+                        linked_segments[event_id] = i
+            events['linked_event_segment_number'] = events['event_id'].map(linked_segments)
+            linked_count = events['linked_event_segment_number'].notna().sum()
+            log.info(f"    linked_event_segment_number: {linked_count} events have positions")
+    
     save_table(events, 'fact_events')
     log.info(f"  ✓ fact_events: {len(events)} rows, {len(events.columns)} cols")
     log.info(f"    Flags: rush={events['is_rush'].sum()}, controlled_entry={events['is_controlled_entry'].sum()}, carried_entry={events['is_carried_entry'].sum()}, sog={events['is_sog'].sum()}")
@@ -3628,6 +3904,170 @@ def create_derived_event_tables():
     rushes['rush_outcome'] = np.where(rushes['is_goal'] == 1, 'goal',
                                       np.where(rushes['is_sog'] == 1, 'shot',
                                               np.where(rushes['is_zone_entry'] == 1, 'zone_entry', 'other')))
+    
+    # Add event_player_ids and opp_player_ids lists, plus supporting players and opp_player_1 details
+    # Load fact_event_players to get all players for each rush event
+    event_players_path = OUTPUT_DIR / 'fact_event_players.csv'
+    
+    # Load dim_player for name/rating lookups (fallback)
+    dim_player_path = OUTPUT_DIR / 'dim_player.csv'
+    player_name_map = {}
+    player_rating_map = {}
+    if dim_player_path.exists():
+        try:
+            dim_player_df = pd.read_csv(dim_player_path, low_memory=False)
+            if 'player_id' in dim_player_df.columns:
+                if 'player_full_name' in dim_player_df.columns:
+                    player_name_map = dict(zip(dim_player_df['player_id'], dim_player_df['player_full_name']))
+                elif 'player_name' in dim_player_df.columns:
+                    player_name_map = dict(zip(dim_player_df['player_id'], dim_player_df['player_name']))
+                if 'player_rating' in dim_player_df.columns:
+                    player_rating_map = dict(zip(dim_player_df['player_id'], dim_player_df['player_rating']))
+        except Exception as e:
+            log.warning(f"  Could not load dim_player for name/rating lookup: {e}")
+    
+    if event_players_path.exists():
+        event_players_df = pd.read_csv(event_players_path, low_memory=False)
+        
+        # Build lookup: event_id -> lists of player IDs and individual opp_player_1 fields
+        event_player_lists = {}
+        event_supporting_lists = {}  # event_player_2-6
+        opp_player_lists = {}
+        opp_supporting_lists = {}  # opp_player_2-6
+        opp_player_1_ids = {}
+        opp_player_1_names = {}
+        opp_player_1_ratings = {}
+        
+        # Get unique event_ids from rushes
+        rush_event_ids = set(rushes['event_id'].dropna().unique())
+        
+        # Process each rush event
+        for event_id in rush_event_ids:
+            # Get all players for this event
+            ep_for_event = event_players_df[event_players_df['event_id'] == event_id]
+            
+            if len(ep_for_event) == 0:
+                event_player_lists[event_id] = None
+                event_supporting_lists[event_id] = None
+                opp_player_lists[event_id] = None
+                opp_supporting_lists[event_id] = None
+                opp_player_1_ids[event_id] = None
+                opp_player_1_names[event_id] = None
+                opp_player_1_ratings[event_id] = None
+                continue
+            
+            # Separate event players and opponent players by role
+            ep_roles = ep_for_event[
+                ep_for_event['player_role'].astype(str).str.lower().str.startswith('event_player')
+            ]
+            opp_roles = ep_for_event[
+                ep_for_event['player_role'].astype(str).str.lower().str.startswith('opp_player')
+            ]
+            
+            # Build event player list (event_player_1 first, then others)
+            event_player_ids = []
+            event_supporting_ids = []  # event_player_2 through event_player_6
+            
+            # Get event_player_1 first
+            ep1 = ep_roles[ep_roles['player_role'].astype(str).str.lower() == 'event_player_1']
+            if len(ep1) > 0 and pd.notna(ep1.iloc[0].get('player_id')):
+                ep1_id = str(ep1.iloc[0]['player_id'])
+                if ep1_id not in ['nan', 'None', '']:
+                    event_player_ids.append(ep1_id)
+            
+            # Get other event players (2-6) - these are supporting players
+            for role_num in range(2, 7):
+                ep_role = ep_roles[ep_roles['player_role'].astype(str).str.lower() == f'event_player_{role_num}']
+                if len(ep_role) > 0 and pd.notna(ep_role.iloc[0].get('player_id')):
+                    pid = str(ep_role.iloc[0]['player_id'])
+                    if pid not in ['nan', 'None', '']:
+                        if pid not in event_player_ids:
+                            event_player_ids.append(pid)
+                        if pid not in event_supporting_ids:
+                            event_supporting_ids.append(pid)
+            
+            # Build opponent player list (opp_player_1 first, then others)
+            opp_player_ids = []
+            opp_supporting_ids = []  # opp_player_2 through opp_player_6
+            
+            # Get opp_player_1 first (store separately for individual columns)
+            op1 = opp_roles[opp_roles['player_role'].astype(str).str.lower() == 'opp_player_1']
+            op1_id = None
+            op1_name = None
+            op1_rating = None
+            
+            if len(op1) > 0 and pd.notna(op1.iloc[0].get('player_id')):
+                op1_id = str(op1.iloc[0]['player_id'])
+                if op1_id not in ['nan', 'None', '']:
+                    opp_player_ids.append(op1_id)
+                    # Get name and rating if available (from event_players or dim_player)
+                    op1_row = op1.iloc[0]
+                    
+                    # Try to get name from event_players first
+                    if 'player_name' in op1_row.index and pd.notna(op1_row.get('player_name')):
+                        op1_name = str(op1_row['player_name'])
+                    elif 'player_full_name' in op1_row.index and pd.notna(op1_row.get('player_full_name')):
+                        op1_name = str(op1_row['player_full_name'])
+                    else:
+                        # Fallback to dim_player lookup
+                        op1_name = player_name_map.get(op1_id, None)
+                    
+                    # Try to get rating from event_players first
+                    if 'player_rating' in op1_row.index and pd.notna(op1_row.get('player_rating')):
+                        rating_val = op1_row['player_rating']
+                        try:
+                            op1_rating = float(rating_val)
+                        except (ValueError, TypeError):
+                            op1_rating = None
+                    else:
+                        # Fallback to dim_player lookup
+                        op1_rating = player_rating_map.get(op1_id, None)
+                        if op1_rating is not None:
+                            try:
+                                op1_rating = float(op1_rating)
+                            except (ValueError, TypeError):
+                                op1_rating = None
+            
+            # Get other opponent players (2-6) - these are supporting players
+            for role_num in range(2, 7):
+                opp_role = opp_roles[opp_roles['player_role'].astype(str).str.lower() == f'opp_player_{role_num}']
+                if len(opp_role) > 0 and pd.notna(opp_role.iloc[0].get('player_id')):
+                    pid = str(opp_role.iloc[0]['player_id'])
+                    if pid not in ['nan', 'None', '']:
+                        if pid not in opp_player_ids:
+                            opp_player_ids.append(pid)
+                        if pid not in opp_supporting_ids:
+                            opp_supporting_ids.append(pid)
+            
+            # Store as comma-separated strings
+            event_player_lists[event_id] = ','.join(event_player_ids) if event_player_ids else None
+            event_supporting_lists[event_id] = ','.join(event_supporting_ids) if event_supporting_ids else None
+            opp_player_lists[event_id] = ','.join(opp_player_ids) if opp_player_ids else None
+            opp_supporting_lists[event_id] = ','.join(opp_supporting_ids) if opp_supporting_ids else None
+            
+            # Store opp_player_1 individual fields
+            opp_player_1_ids[event_id] = op1_id
+            opp_player_1_names[event_id] = op1_name
+            opp_player_1_ratings[event_id] = op1_rating
+        
+        # Map to rushes DataFrame
+        rushes['event_player_ids'] = rushes['event_id'].map(event_player_lists)
+        rushes['event_supporting_player_ids'] = rushes['event_id'].map(event_supporting_lists)
+        rushes['opp_player_ids'] = rushes['event_id'].map(opp_player_lists)
+        rushes['opp_supporting_player_ids'] = rushes['event_id'].map(opp_supporting_lists)
+        rushes['opp_player_1_id'] = rushes['event_id'].map(opp_player_1_ids)
+        rushes['opp_player_1_name'] = rushes['event_id'].map(opp_player_1_names)
+        rushes['opp_player_1_rating'] = rushes['event_id'].map(opp_player_1_ratings)
+    else:
+        log.warning("  fact_event_players.csv not found - cannot build player ID lists")
+        rushes['event_player_ids'] = None
+        rushes['event_supporting_player_ids'] = None
+        rushes['opp_player_ids'] = None
+        rushes['opp_supporting_player_ids'] = None
+        rushes['opp_player_1_id'] = None
+        rushes['opp_player_1_name'] = None
+        rushes['opp_player_1_rating'] = None
+    
     save_table(rushes, 'fact_rushes')
     log.info(f"  ✓ fact_rushes: {len(rushes)} rows")
     
@@ -3650,8 +4090,13 @@ def create_derived_event_tables():
         lambda x: True if x == 's' else (False if x == 'u' else None)
     )
     
+    # Remove columns that are 100% null
+    breakouts, removed_cols = drop_all_null_columns(breakouts)
+    if removed_cols:
+        log.info(f"  Removed {len(removed_cols)} all-null columns from fact_breakouts: {removed_cols[:10]}{'...' if len(removed_cols) > 10 else ''}")
+    
     save_table(breakouts, 'fact_breakouts')
-    log.info(f"  ✓ fact_breakouts: {len(breakouts)} rows")
+    log.info(f"  ✓ fact_breakouts: {len(breakouts)} rows, {len(breakouts.columns)} columns")
     
     # fact_zone_entries
     zone_entries = events[events['is_zone_entry'] == 1].copy()
@@ -3681,6 +4126,228 @@ def create_derived_event_tables():
     # fact_saves
     saves = events[events['is_save'] == 1].copy()
     saves['save_key'] = 'SV' + saves['game_id'].astype(str) + saves.index.astype(str).str.zfill(4)
+    
+    # Add goalie (event_player_1) and shooter (opp_player_1) columns
+    # Load fact_event_players to get player information
+    event_players_path = OUTPUT_DIR / 'fact_event_players.csv'
+    
+    # Load dim_player for name/rating lookups (fallback)
+    dim_player_path = OUTPUT_DIR / 'dim_player.csv'
+    player_name_map = {}
+    player_rating_map = {}
+    if dim_player_path.exists():
+        try:
+            dim_player_df = pd.read_csv(dim_player_path, low_memory=False)
+            if 'player_id' in dim_player_df.columns:
+                if 'player_full_name' in dim_player_df.columns:
+                    player_name_map = dict(zip(dim_player_df['player_id'], dim_player_df['player_full_name']))
+                elif 'player_name' in dim_player_df.columns:
+                    player_name_map = dict(zip(dim_player_df['player_id'], dim_player_df['player_name']))
+                if 'player_rating' in dim_player_df.columns:
+                    player_rating_map = dict(zip(dim_player_df['player_id'], dim_player_df['player_rating']))
+        except Exception as e:
+            log.warning(f"  Could not load dim_player for name/rating lookup: {e}")
+    
+    if event_players_path.exists():
+        event_players_df = pd.read_csv(event_players_path, low_memory=False)
+        
+        # Build lookup: event_id -> goalie and shooter info
+        goalie_ids = {}
+        goalie_names = {}
+        goalie_ratings = {}
+        shooter_ids = {}
+        shooter_names = {}
+        shooter_ratings = {}
+        
+        # Get unique event_ids from saves
+        save_event_ids = set(saves['event_id'].dropna().unique())
+        
+        # Process each save event
+        for event_id in save_event_ids:
+            # Get all players for this event
+            ep_for_event = event_players_df[event_players_df['event_id'] == event_id]
+            
+            if len(ep_for_event) == 0:
+                goalie_ids[event_id] = None
+                goalie_names[event_id] = None
+                goalie_ratings[event_id] = None
+                shooter_ids[event_id] = None
+                shooter_names[event_id] = None
+                shooter_ratings[event_id] = None
+                continue
+            
+            # Get event_player_1 (goalie)
+            ep1 = ep_for_event[ep_for_event['player_role'].astype(str).str.lower() == 'event_player_1']
+            goalie_id = None
+            goalie_name = None
+            goalie_rating = None
+            
+            if len(ep1) > 0 and pd.notna(ep1.iloc[0].get('player_id')):
+                goalie_id = str(ep1.iloc[0]['player_id'])
+                if goalie_id not in ['nan', 'None', '']:
+                    # Get name and rating if available
+                    ep1_row = ep1.iloc[0]
+                    
+                    # Try to get name from event_players first
+                    if 'player_name' in ep1_row.index and pd.notna(ep1_row.get('player_name')):
+                        goalie_name = str(ep1_row['player_name'])
+                    elif 'player_full_name' in ep1_row.index and pd.notna(ep1_row.get('player_full_name')):
+                        goalie_name = str(ep1_row['player_full_name'])
+                    else:
+                        # Fallback to dim_player lookup
+                        goalie_name = player_name_map.get(goalie_id, None)
+                    
+                    # Try to get rating from event_players first
+                    if 'player_rating' in ep1_row.index and pd.notna(ep1_row.get('player_rating')):
+                        rating_val = ep1_row['player_rating']
+                        try:
+                            goalie_rating = float(rating_val)
+                        except (ValueError, TypeError):
+                            goalie_rating = None
+                    else:
+                        # Fallback to dim_player lookup
+                        goalie_rating = player_rating_map.get(goalie_id, None)
+                        if goalie_rating is not None:
+                            try:
+                                goalie_rating = float(goalie_rating)
+                            except (ValueError, TypeError):
+                                goalie_rating = None
+            
+            # Get opp_player_1 (shooter)
+            op1 = ep_for_event[ep_for_event['player_role'].astype(str).str.lower() == 'opp_player_1']
+            shooter_id = None
+            shooter_name = None
+            shooter_rating = None
+            
+            if len(op1) > 0 and pd.notna(op1.iloc[0].get('player_id')):
+                shooter_id = str(op1.iloc[0]['player_id'])
+                if shooter_id not in ['nan', 'None', '']:
+                    # Get name and rating if available
+                    op1_row = op1.iloc[0]
+                    
+                    # Try to get name from event_players first
+                    if 'player_name' in op1_row.index and pd.notna(op1_row.get('player_name')):
+                        shooter_name = str(op1_row['player_name'])
+                    elif 'player_full_name' in op1_row.index and pd.notna(op1_row.get('player_full_name')):
+                        shooter_name = str(op1_row['player_full_name'])
+                    else:
+                        # Fallback to dim_player lookup
+                        shooter_name = player_name_map.get(shooter_id, None)
+                    
+                    # Try to get rating from event_players first
+                    if 'player_rating' in op1_row.index and pd.notna(op1_row.get('player_rating')):
+                        rating_val = op1_row['player_rating']
+                        try:
+                            shooter_rating = float(rating_val)
+                        except (ValueError, TypeError):
+                            shooter_rating = None
+                    else:
+                        # Fallback to dim_player lookup
+                        shooter_rating = player_rating_map.get(shooter_id, None)
+                        if shooter_rating is not None:
+                            try:
+                                shooter_rating = float(shooter_rating)
+                            except (ValueError, TypeError):
+                                shooter_rating = None
+            
+            # Store values
+            goalie_ids[event_id] = goalie_id
+            goalie_names[event_id] = goalie_name
+            goalie_ratings[event_id] = goalie_rating
+            shooter_ids[event_id] = shooter_id
+            shooter_names[event_id] = shooter_name
+            shooter_ratings[event_id] = shooter_rating
+        
+        # Map to saves DataFrame
+        saves['goalie_player_id'] = saves['event_id'].map(goalie_ids)
+        saves['goalie_name'] = saves['event_id'].map(goalie_names)
+        saves['goalie_rating'] = saves['event_id'].map(goalie_ratings)
+        saves['shooter_player_id'] = saves['event_id'].map(shooter_ids)
+        saves['shooter_name'] = saves['event_id'].map(shooter_names)
+        saves['shooter_rating'] = saves['event_id'].map(shooter_ratings)
+    else:
+        log.warning("  fact_event_players.csv not found - cannot build goalie/shooter columns")
+        saves['goalie_player_id'] = None
+        saves['goalie_name'] = None
+        saves['goalie_rating'] = None
+        saves['shooter_player_id'] = None
+        saves['shooter_name'] = None
+        saves['shooter_rating'] = None
+    
+    # Add context columns: cycle, rush, zone entry timing, etc.
+    # Most context columns should already be in saves (from events), but ensure they're present
+    context_cols = [
+        'is_cycle', 'cycle_key', 'is_rush', 'is_rush_calculated',
+        'is_rebound', 'is_controlled_entry', 'is_carried_entry',
+        'is_zone_entry', 'is_zone_exit', 'zone_entry_type_id',
+        'time_to_next_sog', 'time_since_last_sog',
+        'events_to_next_sog', 'events_since_last_sog',
+        'is_pre_shot_event', 'is_shot_assist',
+        'play_key', 'sequence_key', 'event_chain_key'
+    ]
+    
+    # Ensure context columns exist (they should already be in saves from events)
+    for col in context_cols:
+        if col not in saves.columns:
+            saves[col] = None
+    
+    # Calculate time_from_zone_entry for saves (time from most recent zone entry to this save/shot)
+    # This is the time from when the offensive team entered the zone to when the shot was saved
+    log.info("  Calculating time_from_zone_entry for saves...")
+    saves['time_from_zone_entry'] = None
+    
+    # Reload events if needed for looking back at zone entries
+    events_for_lookup = events.copy() if 'events' in locals() else pd.read_csv(OUTPUT_DIR / 'fact_events.csv', low_memory=False)
+    
+    # Group by game to look back for zone entries
+    for game_id in saves['game_id'].dropna().unique():
+        game_events = events_for_lookup[events_for_lookup['game_id'] == game_id].copy()
+        game_save_indices = saves[saves['game_id'] == game_id].index
+        
+        if len(game_events) == 0 or len(game_save_indices) == 0:
+            continue
+        
+        # Sort events by time
+        game_events = game_events.sort_values('time_start_total_seconds')
+        game_events['time_start_total_seconds'] = pd.to_numeric(game_events['time_start_total_seconds'], errors='coerce')
+        
+        # Find zone entries in this game
+        zone_entries = game_events[game_events['is_zone_entry'] == 1].copy()
+        
+        # Process each save in this game
+        for save_idx in game_save_indices:
+            save_row = saves.loc[save_idx]
+            save_event_id = save_row['event_id']
+            save_time = pd.to_numeric(save_row.get('time_start_total_seconds'), errors='coerce')
+            
+            if pd.isna(save_time) or pd.isna(save_event_id):
+                continue
+            
+            # For saves, we want to find the zone entry by the team that took the shot
+            # The save event's team_venue is the goalie's team (defending team)
+            # So the shooting team is the opposite team
+            goalie_team_venue = str(save_row.get('team_venue', '')).lower()
+            
+            # Get zone entries before this save, sorted descending (most recent first)
+            prev_entries = zone_entries[
+                (zone_entries['time_start_total_seconds'] < save_time) &
+                (zone_entries['time_start_total_seconds'] >= save_time - 60)  # Within 60 seconds
+            ].sort_values('time_start_total_seconds', ascending=False)
+            
+            if len(prev_entries) > 0:
+                # Find entry by the shooting team (opposite of goalie's team)
+                for _, entry_row in prev_entries.iterrows():
+                    entry_team_venue = str(entry_row.get('team_venue', '')).lower()
+                    
+                    # If entry team is different from goalie team, this is the shooting team's entry
+                    if entry_team_venue != goalie_team_venue and entry_team_venue in ['home', 'away']:
+                        entry_time = pd.to_numeric(entry_row.get('time_start_total_seconds'), errors='coerce')
+                        if pd.notna(entry_time):
+                            time_diff = save_time - entry_time
+                            if time_diff >= 0:  # Sanity check
+                                saves.at[save_idx, 'time_from_zone_entry'] = time_diff
+                                break  # Use most recent zone entry
+    
     save_table(saves, 'fact_saves')
     log.info(f"  ✓ fact_saves: {len(saves)} rows")
     
@@ -3694,8 +4361,37 @@ def create_derived_event_tables():
     faceoffs = events[events['is_faceoff'] == 1].copy()
     faceoffs['faceoff_key'] = 'FO' + faceoffs['game_id'].astype(str) + faceoffs.index.astype(str).str.zfill(4)
     faceoffs['faceoff_type'] = faceoffs['event_detail'].apply(lambda x: 'after_goal' if pd.notna(x) and 'AfterGoal' in str(x) else 'after_stoppage' if pd.notna(x) and 'AfterStoppage' in str(x) else 'other')
+    
+    # Rename player columns for clarity:
+    # event_player_1 -> faceoff_winner (id, name, rating)
+    # opp_player_1 -> faceoff_loser (id, name, rating)
+    rename_map = {}
+    
+    if 'event_player_1_id' in faceoffs.columns:
+        rename_map['event_player_1_id'] = 'faceoff_winner_id'
+    if 'event_player_1_name' in faceoffs.columns:
+        rename_map['event_player_1_name'] = 'faceoff_winner_name'
+    if 'event_player_1_rating' in faceoffs.columns:
+        rename_map['event_player_1_rating'] = 'faceoff_winner_rating'
+    
+    if 'opp_player_1_id' in faceoffs.columns:
+        rename_map['opp_player_1_id'] = 'faceoff_loser_id'
+    if 'opp_player_1_name' in faceoffs.columns:
+        rename_map['opp_player_1_name'] = 'faceoff_loser_name'
+    if 'opp_player_1_rating' in faceoffs.columns:
+        rename_map['opp_player_1_rating'] = 'faceoff_loser_rating'
+    
+    if rename_map:
+        faceoffs = faceoffs.rename(columns=rename_map)
+        log.info(f"  Renamed {len(rename_map)} player columns for faceoffs")
+    
+    # Remove columns that are 100% null
+    faceoffs, removed_cols = drop_all_null_columns(faceoffs)
+    if removed_cols:
+        log.info(f"  Removed {len(removed_cols)} all-null columns from fact_faceoffs: {removed_cols[:10]}{'...' if len(removed_cols) > 10 else ''}")
+    
     save_table(faceoffs, 'fact_faceoffs')
-    log.info(f"  ✓ fact_faceoffs: {len(faceoffs)} rows")
+    log.info(f"  ✓ fact_faceoffs: {len(faceoffs)} rows, {len(faceoffs.columns)} columns")
     
     # fact_penalties
     penalties = events[events['is_penalty'] == 1].copy()
@@ -4767,17 +5463,26 @@ def update_roster_positions_from_shifts():
         'X': 'Forward',  # Extra skater is usually a forward
     }
     
-    # Build position stats per player-game
+    # Ensure logical_shift_number exists
+    if 'logical_shift_number' not in shift_players.columns:
+        log.warn("logical_shift_number not found in fact_shift_players - using shift_index")
+        shift_players['logical_shift_number'] = shift_players.get('shift_index', shift_players.index)
+    
+    # Build position stats per player-game using LOGICAL SHIFTS
     position_stats = []
     for (game_id, player_id), group in shift_players.groupby(['game_id', 'player_id']):
         if pd.isna(player_id):
             continue
         
-        total_shifts = len(group)
+        # Count distinct logical shifts (not raw shift rows)
+        total_shifts = group['logical_shift_number'].nunique() if 'logical_shift_number' in group.columns else len(group)
         position_counts = {}
         
-        for _, row in group.iterrows():
-            pos_code = str(row.get('position', ''))
+        # Count position by logical shift (group by logical_shift_number to avoid double-counting segments)
+        for logical_shift_num, shift_group in group.groupby('logical_shift_number'):
+            # Get position from first segment of this logical shift
+            first_row = shift_group.iloc[0]
+            pos_code = str(first_row.get('position', ''))
             pos_name = pos_to_name.get(pos_code, 'Unknown')
             position_counts[pos_name] = position_counts.get(pos_name, 0) + 1
         

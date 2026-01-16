@@ -91,6 +91,21 @@ RATING_GAME_SCORE_MAP = {
 # =============================================================================
 
 def save_table(df: pd.DataFrame, name: str) -> int:
+    """
+    Save table to CSV, automatically adding player_name and team_name columns.
+    Also removes 100% null columns (except coordinate/danger/xy type columns).
+    
+    This ensures all tables with player_id or team_id also have corresponding name columns.
+    """
+    if df is not None and len(df) > 0:
+        df = add_names_to_table(df)
+        
+        # Drop 100% null columns (except coordinate/danger/xy columns)
+        from src.core.base_etl import drop_all_null_columns
+        df, removed_cols = drop_all_null_columns(df)
+        if removed_cols:
+            print(f"  {name}: Removed {len(removed_cols)} all-null columns: {', '.join(removed_cols[:5])}{'...' if len(removed_cols) > 5 else ''}")
+    
     path = OUTPUT_DIR / f"{name}.csv"
     df.to_csv(path, index=False)
     return len(df)
@@ -98,6 +113,137 @@ def save_table(df: pd.DataFrame, name: str) -> int:
 def load_table(name: str) -> pd.DataFrame:
     path = OUTPUT_DIR / f"{name}.csv"
     return pd.read_csv(path, low_memory=False) if path.exists() else pd.DataFrame()
+
+def add_names_to_table(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Add player_name and team_name columns to any table that has player_id or team_id.
+    
+    This utility function ensures all fact tables with IDs also have corresponding name columns
+    for easier reporting and analysis.
+    
+    Args:
+        df: DataFrame that may contain player_id, team_id, or related columns
+        
+    Returns:
+        DataFrame with name columns added where applicable
+    """
+    if df is None or len(df) == 0:
+        return df
+    
+    df = df.copy()
+    dim_player = None
+    dim_team = None
+    
+    # Load dimension tables if needed
+    has_player_cols = any(col in df.columns for col in ['player_id', 'player_1_id', 'player_2_id', 'event_player_1_id', 'event_player_2_id', 'opp_player_1_id', 'faceoff_winner_id', 'faceoff_loser_id'])
+    has_team_cols = any(col in df.columns for col in ['team_id', 'home_team_id', 'away_team_id', 'event_team_id', 'player_team_id', 'opp_team_id'])
+    
+    if has_player_cols:
+        dim_player = load_table('dim_player')
+    
+    if has_team_cols:
+        dim_team = load_table('dim_team')
+    
+    # Add player names
+    if dim_player is not None and len(dim_player) > 0:
+        # Standard player_id -> player_name
+        if 'player_id' in df.columns and 'player_name' not in df.columns:
+            player_map = dim_player.set_index('player_id')['player_full_name'].to_dict()
+            df['player_name'] = df['player_id'].map(player_map)
+            # Fallback to player_name column if player_full_name doesn't exist
+            if df['player_name'].isna().all() and 'player_name' in dim_player.columns:
+                player_map = dim_player.set_index('player_id')['player_name'].to_dict()
+                df['player_name'] = df['player_id'].map(player_map)
+        
+        # player_1_id -> player_1_name
+        if 'player_1_id' in df.columns and 'player_1_name' not in df.columns:
+            player_map = dim_player.set_index('player_id')['player_full_name'].to_dict()
+            df['player_1_name'] = df['player_1_id'].map(player_map)
+            if df['player_1_name'].isna().all() and 'player_name' in dim_player.columns:
+                player_map = dim_player.set_index('player_id')['player_name'].to_dict()
+                df['player_1_name'] = df['player_1_id'].map(player_map)
+        
+        # player_2_id -> player_2_name
+        if 'player_2_id' in df.columns and 'player_2_name' not in df.columns:
+            player_map = dim_player.set_index('player_id')['player_full_name'].to_dict()
+            df['player_2_name'] = df['player_2_id'].map(player_map)
+            if df['player_2_name'].isna().all() and 'player_name' in dim_player.columns:
+                player_map = dim_player.set_index('player_id')['player_name'].to_dict()
+                df['player_2_name'] = df['player_2_id'].map(player_map)
+        
+        # event_player_1_id -> event_player_1_name
+        if 'event_player_1_id' in df.columns and 'event_player_1_name' not in df.columns:
+            player_map = dim_player.set_index('player_id')['player_full_name'].to_dict()
+            df['event_player_1_name'] = df['event_player_1_id'].map(player_map)
+            if df['event_player_1_name'].isna().all() and 'player_name' in dim_player.columns:
+                player_map = dim_player.set_index('player_id')['player_name'].to_dict()
+                df['event_player_1_name'] = df['event_player_1_id'].map(player_map)
+        
+        # event_player_2_id -> event_player_2_name
+        if 'event_player_2_id' in df.columns and 'event_player_2_name' not in df.columns:
+            player_map = dim_player.set_index('player_id')['player_full_name'].to_dict()
+            df['event_player_2_name'] = df['event_player_2_id'].map(player_map)
+            if df['event_player_2_name'].isna().all() and 'player_name' in dim_player.columns:
+                player_map = dim_player.set_index('player_id')['player_name'].to_dict()
+                df['event_player_2_name'] = df['event_player_2_id'].map(player_map)
+        
+        # opp_player_1_id -> opp_player_1_name
+        if 'opp_player_1_id' in df.columns and 'opp_player_1_name' not in df.columns:
+            player_map = dim_player.set_index('player_id')['player_full_name'].to_dict()
+            df['opp_player_1_name'] = df['opp_player_1_id'].map(player_map)
+            if df['opp_player_1_name'].isna().all() and 'player_name' in dim_player.columns:
+                player_map = dim_player.set_index('player_id')['player_name'].to_dict()
+                df['opp_player_1_name'] = df['opp_player_1_id'].map(player_map)
+        
+        # faceoff_winner_id -> faceoff_winner_name
+        if 'faceoff_winner_id' in df.columns and 'faceoff_winner_name' not in df.columns:
+            player_map = dim_player.set_index('player_id')['player_full_name'].to_dict()
+            df['faceoff_winner_name'] = df['faceoff_winner_id'].map(player_map)
+            if df['faceoff_winner_name'].isna().all() and 'player_name' in dim_player.columns:
+                player_map = dim_player.set_index('player_id')['player_name'].to_dict()
+                df['faceoff_winner_name'] = df['faceoff_winner_id'].map(player_map)
+        
+        # faceoff_loser_id -> faceoff_loser_name
+        if 'faceoff_loser_id' in df.columns and 'faceoff_loser_name' not in df.columns:
+            player_map = dim_player.set_index('player_id')['player_full_name'].to_dict()
+            df['faceoff_loser_name'] = df['faceoff_loser_id'].map(player_map)
+            if df['faceoff_loser_name'].isna().all() and 'player_name' in dim_player.columns:
+                player_map = dim_player.set_index('player_id')['player_name'].to_dict()
+                df['faceoff_loser_name'] = df['faceoff_loser_id'].map(player_map)
+    
+    # Add team names
+    if dim_team is not None and len(dim_team) > 0:
+        # Standard team_id -> team_name
+        if 'team_id' in df.columns and 'team_name' not in df.columns:
+            team_map = dim_team.set_index('team_id')['team_name'].to_dict()
+            df['team_name'] = df['team_id'].map(team_map)
+        
+        # home_team_id -> home_team_name
+        if 'home_team_id' in df.columns and 'home_team_name' not in df.columns:
+            team_map = dim_team.set_index('team_id')['team_name'].to_dict()
+            df['home_team_name'] = df['home_team_id'].map(team_map)
+        
+        # away_team_id -> away_team_name
+        if 'away_team_id' in df.columns and 'away_team_name' not in df.columns:
+            team_map = dim_team.set_index('team_id')['team_name'].to_dict()
+            df['away_team_name'] = df['away_team_id'].map(team_map)
+        
+        # event_team_id -> event_team_name
+        if 'event_team_id' in df.columns and 'event_team_name' not in df.columns:
+            team_map = dim_team.set_index('team_id')['team_name'].to_dict()
+            df['event_team_name'] = df['event_team_id'].map(team_map)
+        
+        # player_team_id -> player_team_name
+        if 'player_team_id' in df.columns and 'player_team_name' not in df.columns:
+            team_map = dim_team.set_index('team_id')['team_name'].to_dict()
+            df['player_team_name'] = df['player_team_id'].map(team_map)
+        
+        # opp_team_id -> opp_team_name
+        if 'opp_team_id' in df.columns and 'opp_team_name' not in df.columns:
+            team_map = dim_team.set_index('team_id')['team_name'].to_dict()
+            df['opp_team_name'] = df['opp_team_id'].map(team_map)
+    
+    return df
 
 def get_game_ids() -> list:
     events = load_table('fact_events')
@@ -165,14 +311,26 @@ def calculate_adjusted_rating(game_score: float) -> float:
 
 def calculate_strength_splits(player_id, game_id, event_players: pd.DataFrame,
                               shift_players: pd.DataFrame, events: pd.DataFrame) -> dict:
-    """Calculate stats by game situation (EV, PP, PK, EN)."""
+    """Calculate stats by game situation (EV, PP, PK, EN) with period breakdowns."""
     stats = {}
     
-    # Get player's shifts by strength
+    # Get player's shifts by strength (use logical shifts to avoid double-counting)
     ps = shift_players[
         (shift_players['game_id'] == game_id) & 
         (shift_players['player_id'] == player_id)
     ] if len(shift_players) > 0 else pd.DataFrame()
+    
+    # If logical_shift_number exists, group by it to avoid double-counting
+    if len(ps) > 0 and 'logical_shift_number' in ps.columns:
+        # Aggregate by logical shift to get unique shifts
+        logical_shifts = ps.groupby(['logical_shift_number', 'strength', 'period']).agg({
+            'shift_duration': 'first',  # Duration should be same for all rows in logical shift
+            'cf': 'first',  # CF/CA should be same for all rows in logical shift
+            'ca': 'first',
+            'gf': 'first',
+            'ga': 'first',
+        }).reset_index()
+        ps = logical_shifts
     
     # Get player's events
     pe = event_players[
@@ -196,10 +354,19 @@ def calculate_strength_splits(player_id, game_id, event_players: pd.DataFrame,
             sit_shifts = ps[ps['strength'].isin(strengths)]
             stats[f'{prefix}toi_seconds'] = int(sit_shifts['shift_duration'].sum()) if 'shift_duration' in sit_shifts.columns else 0
             
-            # Corsi by situation
+            # Corsi by situation - use logical shifts to avoid double-counting
+            # CF/CA should be per logical shift, not per row
             if 'cf' in sit_shifts.columns and 'ca' in sit_shifts.columns:
-                cf = sit_shifts['cf'].sum()
-                ca = sit_shifts['ca'].sum()
+                # Sum CF/CA from unique logical shifts only
+                if 'logical_shift_number' in sit_shifts.columns:
+                    # Already grouped by logical shift above
+                    cf = sit_shifts['cf'].sum()
+                    ca = sit_shifts['ca'].sum()
+                else:
+                    # Fallback: use first value per shift if grouping didn't work
+                    cf = sit_shifts['cf'].sum()
+                    ca = sit_shifts['ca'].sum()
+                
                 stats[f'{prefix}cf'] = int(cf)
                 stats[f'{prefix}ca'] = int(ca)
                 stats[f'{prefix}cf_pct'] = round(cf / (cf + ca) * 100, 1) if (cf + ca) > 0 else 50.0
@@ -215,6 +382,43 @@ def calculate_strength_splits(player_id, game_id, event_players: pd.DataFrame,
             else:
                 stats[f'{prefix}gf'] = int(sit_shifts['gf'].sum()) if 'gf' in sit_shifts.columns else 0
                 stats[f'{prefix}ga'] = int(sit_shifts['ga'].sum()) if 'ga' in sit_shifts.columns else 0
+            
+            # Period breakdowns for special teams (PP and PK)
+            if sit in ['pp', 'pk'] and 'period' in sit_shifts.columns:
+                for period in [1, 2, 3]:
+                    period_shifts = sit_shifts[sit_shifts['period'] == period]
+                    period_prefix = f'{prefix}p{period}_'
+                    
+                    stats[f'{period_prefix}toi_seconds'] = int(period_shifts['shift_duration'].sum()) if 'shift_duration' in period_shifts.columns else 0
+                    
+                    if 'cf' in period_shifts.columns and 'ca' in period_shifts.columns:
+                        period_cf = period_shifts['cf'].sum()
+                        period_ca = period_shifts['ca'].sum()
+                        stats[f'{period_prefix}cf'] = int(period_cf)
+                        stats[f'{period_prefix}ca'] = int(period_ca)
+                        stats[f'{period_prefix}cf_pct'] = round(period_cf / (period_cf + period_ca) * 100, 1) if (period_cf + period_ca) > 0 else 50.0
+                    else:
+                        stats[f'{period_prefix}cf'] = 0
+                        stats[f'{period_prefix}ca'] = 0
+                        stats[f'{period_prefix}cf_pct'] = 50.0
+                    
+                    if 'gf' in period_shifts.columns:
+                        stats[f'{period_prefix}gf'] = int(period_shifts['gf'].sum())
+                        stats[f'{period_prefix}ga'] = int(period_shifts['ga'].sum())
+                    else:
+                        stats[f'{period_prefix}gf'] = 0
+                        stats[f'{period_prefix}ga'] = 0
+            else:
+                # Initialize period columns to 0 if not PP/PK
+                if sit in ['pp', 'pk']:
+                    for period in [1, 2, 3]:
+                        period_prefix = f'{prefix}p{period}_'
+                        stats[f'{period_prefix}toi_seconds'] = 0
+                        stats[f'{period_prefix}cf'] = 0
+                        stats[f'{period_prefix}ca'] = 0
+                        stats[f'{period_prefix}cf_pct'] = 50.0
+                        stats[f'{period_prefix}gf'] = 0
+                        stats[f'{period_prefix}ga'] = 0
         else:
             stats[f'{prefix}toi_seconds'] = 0
             stats[f'{prefix}cf'] = 0
@@ -222,6 +426,16 @@ def calculate_strength_splits(player_id, game_id, event_players: pd.DataFrame,
             stats[f'{prefix}cf_pct'] = 50.0
             stats[f'{prefix}gf'] = 0
             stats[f'{prefix}ga'] = 0
+            # Initialize period columns
+            if sit in ['pp', 'pk']:
+                for period in [1, 2, 3]:
+                    period_prefix = f'{prefix}p{period}_'
+                    stats[f'{period_prefix}toi_seconds'] = 0
+                    stats[f'{period_prefix}cf'] = 0
+                    stats[f'{period_prefix}ca'] = 0
+                    stats[f'{period_prefix}cf_pct'] = 50.0
+                    stats[f'{period_prefix}gf'] = 0
+                    stats[f'{period_prefix}ga'] = 0
         
         # Individual scoring by situation (from events)
         if len(pe) > 0 and 'strength' in pe.columns:
@@ -1134,56 +1348,100 @@ def calculate_rush_stats(player_id, game_id, event_players, events):
     
     return stats
 
+def _get_empty_micro_stats():
+    """Return empty dict with all micro stat keys (including s/u variants)."""
+    empty = {}
+    
+    # List of all base micro stat names
+    base_stats = [
+        # Offensive
+        'dekes', 'drives_middle', 'drives_wide', 'drives_corner', 'drives_net', 'drives_total',
+        'cutbacks', 'delays', 'fakes', 'open_ice_dekes',
+        'crash_net', 'screens', 'net_front', 'box_out',
+        'give_and_go', 'second_touch', 'cycles', 'regroup', 'reverse', 'wheel', 'surf', 'quick_up', 'chip',
+        'passes_cross_ice', 'passes_stretch', 'passes_breakout', 'passes_rim', 'passes_bank',
+        'passes_royal_road', 'passes_slot', 'passes_behind_net', 'passes_for_tip',
+        'passes_deflected', 'passes_intercepted', 'passes_missed',
+        'shots_one_timer', 'shots_snap', 'shots_wrist', 'shots_slap', 'shots_tip',
+        'shots_deflection', 'shots_wrap_around', 'shots_point', 'shots_attempted',
+        'rushes', 'breakaways', 'odd_man_rushes',
+        'controlled_entries', 'dump_ins', 'failed_entries', 'keep_ins', 'failed_keep_ins',
+        # Defensive
+        'poke_checks', 'stick_checks', 'zone_ent_denials', 'zone_exit_denials',
+        'backchecks', 'forechecks', 'contain', 'gap_control', 'man_on_man',
+        'force_wide', 'forced_dumpins', 'forced_turnovers', 'forced_missed_pass',
+        'forced_missed_shot', 'forced_lost_possession', 'in_shot_pass_lane',
+        'clearing_attempts', 'penalty_kill_clears',
+        # Transition
+        'breakouts', 'zone_exits', 'failed_exits', 'attempted_breakouts', 'attempted_clear',
+        # Puck battles
+        'loose_puck_wins', 'loose_puck_losses', 'puck_recoveries', 'puck_retrieval_attempts',
+        'board_battles_won', 'board_battles_lost', 'puck_battles', 'puck_battles_total', 'puck_battles_lost_total',
+        # Pressure
+        'pressure', 'separate_from_puck', 'lost_puck', 'misplayed_puck',
+        # Aggregates
+        'micro_off_zone', 'micro_def_zone', 'micro_neutral_zone',
+        'forecheck_intensity', 'backcheck_intensity',
+        'controlled_exits', 'controlled_entries', 'transition_quality',
+        'plays_successful', 'plays_unsuccessful', 'play_success_rate',
+    ]
+    
+    # Initialize all stats with 0 or 0.0
+    for stat in base_stats:
+        empty[stat] = 0
+        empty[f'{stat}_successful'] = 0
+        empty[f'{stat}_unsuccessful'] = 0
+        empty[f'{stat}_success_rate'] = 0.0
+    
+    # Additional calculated stats
+    empty['board_battle_win_pct'] = 0.0
+    empty['puck_battle_win_pct'] = 0.0
+    empty['drives_total_success_rate'] = 0.0
+    
+    return empty
+
+
 def calculate_micro_stats(player_id, game_id, event_players, events):
     """
-    Calculate micro stats from play_detail1 and play_detail_2.
+    Calculate comprehensive micro stats from play_detail1/2 AND event_detail/event_detail_2.
+    
+    EXPANDED v31.0:
+    - Checks BOTH play_detail columns (play_detail1, play_detail_2) AND event_detail columns (event_detail, event_detail_2)
+    - Only counts events where player is event_player_1
+    - Adds successful/unsuccessful variants for each stat
+    - Significantly expanded list of microstats
     
     CRITICAL: Uses DISTINCT counting by linked_event_index_flag to avoid double-counting.
-    Each event should only be counted once even if pattern appears in both play_detail columns.
-    Excludes defensive variants (e.g., BeatDeke is opponent beating YOUR deke).
-    
-    EXPANDED v30.0: Added pass types, shot types, zone-specific, and pressure metrics.
+    Each event should only be counted once even if pattern appears in multiple columns.
     """
     pe = event_players[(event_players['game_id'] == game_id) & (event_players['player_id'] == player_id) & (event_players['player_role'].astype(str).str.lower() == PRIMARY_PLAYER)]
-    empty = {
-        # Original micro stats
-        'dekes': 0, 'drives_middle': 0, 'drives_wide': 0, 'drives_corner': 0, 'drives_total': 0,
-        'cutbacks': 0, 'delays': 0, 'crash_net': 0, 'screens': 0, 'give_and_go': 0,
-        'second_touch': 0, 'cycles': 0, 'poke_checks': 0, 'stick_checks': 0,
-        'zone_ent_denials': 0, 'backchecks': 0, 'forechecks': 0, 'breakouts': 0,
-        'dump_ins': 0, 'loose_puck_wins': 0, 'puck_recoveries': 0,
-        'puck_battles_total': 0, 'plays_successful': 0, 'plays_unsuccessful': 0, 'play_success_rate': 0.0,
-        # NEW: Pass type micro stats
-        'passes_cross_ice': 0, 'passes_stretch': 0, 'passes_breakout': 0, 'passes_rim': 0,
-        'passes_bank': 0, 'passes_royal_road': 0, 'passes_slot': 0, 'passes_behind_net': 0,
-        # NEW: Shot type micro stats
-        'shots_one_timer': 0, 'shots_snap': 0, 'shots_wrist': 0, 'shots_slap': 0,
-        'shots_tip': 0, 'shots_deflection': 0, 'shots_wrap_around': 0,
-        # NEW: Zone-specific micro stats
-        'micro_off_zone': 0, 'micro_def_zone': 0, 'micro_neutral_zone': 0,
-        # NEW: Pressure and intensity metrics
-        'pressure_plays': 0, 'pressure_successful': 0, 'pressure_success_rate': 0.0,
-        'forecheck_intensity': 0, 'backcheck_intensity': 0,
-        # NEW: Transition quality (will be populated from zone stats)
-        'controlled_exits': 0, 'controlled_entries': 0, 'transition_quality': 0.0,
-        # NEW: Board battle details
-        'board_battles_won': 0, 'board_battles_lost': 0, 'board_battle_win_pct': 0.0,
-    }
-    if len(pe) == 0: return empty
+    
+    # Initialize empty dict with all possible micro stats (including s/u variants)
+    empty = {}
+    # Will populate this below with all stats
+    
+    if len(pe) == 0: 
+        # Return empty dict with all required keys
+        return _get_empty_micro_stats()
     
     player_event_ids = pe['event_id'].unique() if 'event_id' in pe.columns else []
     game_events = events[events['game_id'] == game_id]
     player_events = game_events[game_events['event_id'].isin(player_event_ids)] if len(player_event_ids) > 0 else pd.DataFrame()
-    if len(player_events) == 0: return empty
+    if len(player_events) == 0: 
+        return _get_empty_micro_stats()
     
-    def count_distinct(pattern, exclude_pattern=None):
+    def count_distinct_with_success(pattern, exclude_pattern=None):
         """
-        Count DISTINCT events matching pattern in play_detail1 OR play_detail_2.
+        Count DISTINCT events matching pattern in play_detail1, play_detail_2, event_detail, OR event_detail_2.
+        Returns: (total_count, successful_count, unsuccessful_count)
         Uses linked_event_index_flag for deduplication if available.
         """
         matching_events = pd.DataFrame()
         
-        for col in ['play_detail1', 'play_detail_2']:
+        # Check all 4 columns: play_detail1, play_detail_2, event_detail, event_detail_2
+        detail_cols = ['play_detail1', 'play_detail_2', 'event_detail', 'event_detail_2']
+        
+        for col in detail_cols:
             if col not in player_events.columns:
                 continue
             
@@ -1200,7 +1458,7 @@ def calculate_micro_stats(player_id, game_id, event_players, events):
                 matching_events = pd.concat([matching_events, matches])
         
         if len(matching_events) == 0:
-            return 0
+            return (0, 0, 0)
         
         # Deduplicate: use linked_event_index_flag if available, otherwise event_id
         if 'linked_event_index_flag' in matching_events.columns:
@@ -1208,114 +1466,243 @@ def calculate_micro_stats(player_id, game_id, event_players, events):
             linked = matching_events[matching_events['linked_event_index_flag'].notna()]
             unlinked = matching_events[matching_events['linked_event_index_flag'].isna()]
             
-            # Count distinct linked events + all unlinked events (dedupe by event_id)
-            distinct_linked = linked['linked_event_index_flag'].nunique() if len(linked) > 0 else 0
-            distinct_unlinked = unlinked['event_id'].nunique() if len(unlinked) > 0 else 0
-            return distinct_linked + distinct_unlinked
+            # Get distinct linked events (by linked_event_index_flag) and unlinked (by event_id)
+            distinct_linked_flags = []
+            distinct_unlinked_ids = []
+            
+            if len(linked) > 0:
+                distinct_linked_flags = linked['linked_event_index_flag'].unique().tolist()
+                linked_events = linked[linked['linked_event_index_flag'].isin(distinct_linked_flags)].drop_duplicates(subset='linked_event_index_flag')
+            else:
+                linked_events = pd.DataFrame()
+            
+            if len(unlinked) > 0:
+                distinct_unlinked_ids = unlinked['event_id'].unique().tolist()
+                unlinked_events = unlinked[unlinked['event_id'].isin(distinct_unlinked_ids)].drop_duplicates(subset='event_id')
+            else:
+                unlinked_events = pd.DataFrame()
+            
+            # Combine for success counting
+            all_distinct = pd.concat([linked_events, unlinked_events]) if len(linked_events) > 0 or len(unlinked_events) > 0 else pd.DataFrame()
+            distinct_count = len(distinct_linked_flags) + len(distinct_unlinked_ids)
         else:
             # Fallback: dedupe by event_id
-            return matching_events['event_id'].nunique()
-    
-    # Filter events by type for more specific counting
-    pass_events = player_events[player_events['event_type'].astype(str).str.lower() == 'pass'] if 'event_type' in player_events.columns else pd.DataFrame()
-    shot_events = player_events[player_events['event_type'].astype(str).str.lower().isin(['shot', 'goal'])] if 'event_type' in player_events.columns else pd.DataFrame()
-    
-    stats = {
-        # Original offensive plays - exclude defensive variants
-        'dekes': count_distinct(r'deke', exclude_pattern=r'beatdeke|stoppeddeke'),
-        'drives_middle': count_distinct(r'drivemiddle|drivenetmiddle'),
-        'drives_wide': count_distinct(r'drivewide'),
-        'drives_corner': count_distinct(r'drivecorner'),
-        'cutbacks': count_distinct(r'cutback'),
-        'delays': count_distinct(r'delay'),
-        'crash_net': count_distinct(r'crashnet'),
-        'screens': count_distinct(r'screen'),
-        'give_and_go': count_distinct(r'giveandgo'),
-        'second_touch': count_distinct(r'secondtouch'),
-        'cycles': count_distinct(r'cycle'),
+            all_distinct = matching_events.drop_duplicates(subset='event_id')
+            distinct_count = all_distinct['event_id'].nunique() if len(all_distinct) > 0 else 0
         
-        # Original defensive plays
-        'poke_checks': count_distinct(r'pokecheck'),
-        'stick_checks': count_distinct(r'stickcheck'),
-        'zone_ent_denials': count_distinct(r'zoneentrydenial'),
-        'backchecks': count_distinct(r'backcheck'),
-        'forechecks': count_distinct(r'forecheck'),
-        
-        # Original transition plays
-        'breakouts': count_distinct(r'breakout'),
-        'dump_ins': count_distinct(r'dumpin|dumpchase'),
-        
-        # Original puck battles
-        'loose_puck_wins': count_distinct(r'loosepuck.*won|battlewon'),
-        'puck_recoveries': count_distinct(r'puckrecovery|puckretrieval'),
-        
-        # NEW: Pass type micro stats (from pass events only)
-        'passes_cross_ice': count_distinct(r'cross.?ice|crossice'),
-        'passes_stretch': count_distinct(r'stretch'),
-        'passes_breakout': count_distinct(r'breakout'),
-        'passes_rim': count_distinct(r'rim|rimaround'),
-        'passes_bank': count_distinct(r'bank|bankpass'),
-        'passes_royal_road': count_distinct(r'royalroad|royal.?road'),
-        'passes_slot': count_distinct(r'slot|slotpass'),
-        'passes_behind_net': count_distinct(r'behindnet|behind.?net'),
-        
-        # NEW: Shot type micro stats (from shot/goal events only)
-        'shots_one_timer': count_distinct(r'one.?timer|onetimer'),
-        'shots_snap': count_distinct(r'snap|snapshot'),
-        'shots_wrist': count_distinct(r'wrist|wristshot'),
-        'shots_slap': count_distinct(r'slap|slapshot'),
-        'shots_tip': count_distinct(r'tip|tipped'),
-        'shots_deflection': count_distinct(r'deflect|deflection'),
-        'shots_wrap_around': count_distinct(r'wrap|wraparound'),
-        
-        # NEW: Board battle details
-        'board_battles_won': count_distinct(r'board.*won|battle.*won'),
-        'board_battles_lost': count_distinct(r'board.*lost|battle.*lost'),
-    }
-    
-    # Calculate aggregates
-    stats['drives_total'] = stats['drives_middle'] + stats['drives_wide'] + stats['drives_corner']
-    stats['puck_battles_total'] = stats['loose_puck_wins'] + stats['puck_recoveries']
-    total_board_battles = stats['board_battles_won'] + stats['board_battles_lost']
-    stats['board_battle_win_pct'] = round(stats['board_battles_won'] / total_board_battles * 100, 1) if total_board_battles > 0 else 0.0
-    
-    # NEW: Zone-specific micro stats (using rink_zone from events)
-    if 'rink_zone' in player_events.columns:
-        off_zone_events = player_events[player_events['rink_zone'].astype(str).str.lower().isin(['offensive', 'oz', 'off'])]
-        def_zone_events = player_events[player_events['rink_zone'].astype(str).str.lower().isin(['defensive', 'dz', 'def'])]
-        neutral_zone_events = player_events[player_events['rink_zone'].astype(str).str.lower().isin(['neutral', 'nz'])]
-        
-        # Count micro plays in each zone (dekes, drives, cycles, etc. in that zone)
-        micro_patterns = r'deke|drive|cycle|cutback|delay|crashnet|screen|giveandgo'
-        stats['micro_off_zone'] = len(off_zone_events[off_zone_events['play_detail1'].astype(str).str.lower().str.contains(micro_patterns, na=False, regex=True)]) if 'play_detail1' in off_zone_events.columns else 0
-        stats['micro_def_zone'] = len(def_zone_events[def_zone_events['play_detail1'].astype(str).str.lower().str.contains(r'pokecheck|stickcheck|backcheck|forecheck', na=False, regex=True)]) if 'play_detail1' in def_zone_events.columns else 0
-        stats['micro_neutral_zone'] = len(neutral_zone_events[neutral_zone_events['play_detail1'].astype(str).str.lower().str.contains(r'breakout|dump', na=False, regex=True)]) if 'play_detail1' in neutral_zone_events.columns else 0
-    
-    # NEW: Pressure metrics
-    if 'play_detail1' in player_events.columns:
-        pressure_events = player_events[player_events['play_detail1'].astype(str).str.lower().str.contains(r'pressure|under.?pressure', na=False, regex=True)]
-        stats['pressure_plays'] = len(pressure_events)
-        if len(pressure_events) > 0 and 'play_detail_successful' in pressure_events.columns:
-            stats['pressure_successful'] = int((pressure_events['play_detail_successful'].astype(str).str.lower() == 's').sum())
-            stats['pressure_success_rate'] = round(stats['pressure_successful'] / stats['pressure_plays'] * 100, 1) if stats['pressure_plays'] > 0 else 0.0
+        # Count successful/unsuccessful
+        if len(all_distinct) > 0 and 'play_detail_successful' in all_distinct.columns:
+            successful = int((all_distinct['play_detail_successful'].astype(str).str.lower() == 's').sum())
+            unsuccessful = int((all_distinct['play_detail_successful'].astype(str).str.lower() == 'u').sum())
+        elif len(all_distinct) > 0 and 'event_successful' in all_distinct.columns:
+            # Fallback to event_successful if play_detail_successful not available
+            successful = int((all_distinct['event_successful'].astype(str).str.lower().isin(['s', '1', 'true', 'yes'])).sum())
+            unsuccessful = int((all_distinct['event_successful'].astype(str).str.lower().isin(['u', '0', 'false', 'no'])).sum())
         else:
-            stats['pressure_successful'] = 0
-            stats['pressure_success_rate'] = 0.0
+            successful = 0
+            unsuccessful = 0
+        
+        return (distinct_count, successful, unsuccessful)
     
-    # NEW: Forecheck/backcheck intensity (count per shift or per event)
-    stats['forecheck_intensity'] = stats['forechecks']  # Can be enhanced with shift context
-    stats['backcheck_intensity'] = stats['backchecks']  # Can be enhanced with shift context
+    # Helper to add stat with s/u breakdown
+    def add_stat_with_success(base_name, pattern, exclude_pattern=None):
+        """Add a stat with total, successful, and unsuccessful counts."""
+        total, successful, unsuccessful = count_distinct_with_success(pattern, exclude_pattern)
+        stats[f'{base_name}'] = total
+        stats[f'{base_name}_successful'] = successful
+        stats[f'{base_name}_unsuccessful'] = unsuccessful
+        if total > 0:
+            stats[f'{base_name}_success_rate'] = round(successful / total * 100, 1)
+        else:
+            stats[f'{base_name}_success_rate'] = 0.0
     
-    # NEW: Transition quality (populated from zone stats in advanced_micro_stats function)
-    # These are placeholders here, will be updated in calculate_advanced_micro_stats
-    stats['controlled_exits'] = 0
-    stats['controlled_entries'] = 0
-    stats['transition_quality'] = 0.0
+    stats = {}
     
-    # Play success tracking (uses event-level, not play_detail pattern matching)
-    if 'play_detail_successful' in player_events.columns:
-        stats['plays_successful'] = int((player_events['play_detail_successful'].astype(str).str.lower() == 's').sum())
-        stats['plays_unsuccessful'] = int((player_events['play_detail_successful'].astype(str).str.lower() == 'u').sum())
+    # ============================================================================
+    # OFFENSIVE MICRO STATS (with s/u breakdown)
+    # ============================================================================
+    
+    # Puck skills
+    add_stat_with_success('dekes', r'deke', exclude_pattern=r'beatdeke|stoppeddeke')
+    add_stat_with_success('drives_middle', r'drivemiddle|drivenetmiddle')
+    add_stat_with_success('drives_wide', r'drivewide')
+    add_stat_with_success('drives_corner', r'drivecorner')
+    add_stat_with_success('drives_net', r'drivenet')
+    add_stat_with_success('cutbacks', r'cutback')
+    add_stat_with_success('delays', r'delay')
+    add_stat_with_success('fakes', r'fake|fakeshot')
+    add_stat_with_success('open_ice_dekes', r'openicedeke|open.?ice.?deke')
+    
+    # Net presence
+    add_stat_with_success('crash_net', r'crashnet|crash.?net')
+    add_stat_with_success('screens', r'screen')
+    add_stat_with_success('net_front', r'netfront|front.?net')
+    add_stat_with_success('box_out', r'boxout|box.?out')
+    
+    # Passing plays
+    add_stat_with_success('give_and_go', r'giveandgo|give.?and.?go')
+    add_stat_with_success('second_touch', r'secondtouch|second.?touch')
+    add_stat_with_success('cycles', r'cycle')
+    add_stat_with_success('regroup', r'regroup')
+    add_stat_with_success('reverse', r'reverse')
+    add_stat_with_success('wheel', r'wheel')
+    add_stat_with_success('surf', r'surf')
+    add_stat_with_success('quick_up', r'quickup|quick.?up')
+    add_stat_with_success('chip', r'chip')
+    
+    # Pass types
+    add_stat_with_success('passes_cross_ice', r'cross.?ice|crossice')
+    add_stat_with_success('passes_stretch', r'stretch')
+    add_stat_with_success('passes_breakout', r'breakout')
+    add_stat_with_success('passes_rim', r'rim|rimaround|rim.?around')
+    add_stat_with_success('passes_bank', r'bank|bankpass')
+    add_stat_with_success('passes_royal_road', r'royalroad|royal.?road')
+    add_stat_with_success('passes_slot', r'slot|slotpass')
+    add_stat_with_success('passes_behind_net', r'behindnet|behind.?net')
+    add_stat_with_success('passes_for_tip', r'passfortip|pass.?for.?tip')
+    add_stat_with_success('passes_deflected', r'passdeflected|pass.?deflected')
+    add_stat_with_success('passes_intercepted', r'passintercepted|pass.?intercepted')
+    add_stat_with_success('passes_missed', r'passmissed|receiver.?missed')
+    
+    # Shot types
+    add_stat_with_success('shots_one_timer', r'one.?timer|onetimer|one.?time')
+    add_stat_with_success('shots_snap', r'snap|snapshot')
+    add_stat_with_success('shots_wrist', r'wrist|wristshot')
+    add_stat_with_success('shots_slap', r'slap|slapshot')
+    add_stat_with_success('shots_tip', r'tip|tipped|shot.?tip')
+    add_stat_with_success('shots_deflection', r'deflect|deflection|deflectedshot')
+    add_stat_with_success('shots_wrap_around', r'wrap|wraparound')
+    add_stat_with_success('shots_point', r'pointshot|point.?shot')
+    add_stat_with_success('shots_attempted', r'attemptedshot')
+    
+    # Rush plays
+    add_stat_with_success('rushes', r'rush|endtoendrush')
+    add_stat_with_success('breakaways', r'breakaway')
+    add_stat_with_success('odd_man_rushes', r'oddman|odd.?man')
+    
+    # Zone entries
+    add_stat_with_success('controlled_entries', r'controlledentry|entry.*controlled|carry.*entry')
+    add_stat_with_success('dump_ins', r'dumpin|dumpchase|dump.?and.?chase')
+    add_stat_with_success('failed_entries', r'entry.*fail|failedentry|entryfailed')
+    add_stat_with_success('keep_ins', r'keepin|zone.?keepin|zonekeepin')
+    add_stat_with_success('failed_keep_ins', r'keepin.*fail|keepinfailed')
+    
+    # ============================================================================
+    # DEFENSIVE MICRO STATS (with s/u breakdown)
+    # ============================================================================
+    
+    add_stat_with_success('poke_checks', r'pokecheck|poke.?check')
+    add_stat_with_success('stick_checks', r'stickcheck|stick.?check')
+    add_stat_with_success('zone_ent_denials', r'zoneentrydenial|zone.?entry.?denial|cededzoneentry')
+    add_stat_with_success('zone_exit_denials', r'zoneexitdenial|zone.?exit.?denial|cededzoneexit')
+    add_stat_with_success('backchecks', r'backcheck|back.?check')
+    add_stat_with_success('forechecks', r'forecheck|fore.?check')
+    add_stat_with_success('contain', r'contain')
+    add_stat_with_success('gap_control', r'gapcontrol|gap.?control')
+    add_stat_with_success('man_on_man', r'manonman|man.?on.?man')
+    add_stat_with_success('force_wide', r'forcewide|force.?wide')
+    add_stat_with_success('forced_dumpins', r'forceddumpin|forced.?dumpin')
+    add_stat_with_success('forced_turnovers', r'forcedturnover|forced.?turnover')
+    add_stat_with_success('forced_missed_pass', r'forcedmissedpass|forced.?missed.?pass')
+    add_stat_with_success('forced_missed_shot', r'forcedmissedshot|forced.?missed.?shot')
+    add_stat_with_success('forced_lost_possession', r'forcedlostpossession|forced.?lost.?possession')
+    add_stat_with_success('in_shot_pass_lane', r'inshotpasslane|in.?shot.?pass.?lane')
+    add_stat_with_success('clearing_attempts', r'clearingattempt|clearing.?attempt')
+    add_stat_with_success('penalty_kill_clears', r'penaltykillclear|penalty.?kill.?clear')
+    
+    # ============================================================================
+    # TRANSITION MICRO STATS (with s/u breakdown)
+    # ============================================================================
+    
+    add_stat_with_success('breakouts', r'breakout')
+    add_stat_with_success('zone_exits', r'zoneexit')
+    add_stat_with_success('failed_exits', r'exit.*fail|failedexit|exitfailed')
+    add_stat_with_success('attempted_breakouts', r'attemptedbreakout|attempted.?breakout')
+    add_stat_with_success('attempted_clear', r'attemptedbreakoutclear|attempted.?clear')
+    
+    # ============================================================================
+    # PUCK BATTLE MICRO STATS (with s/u breakdown)
+    # ============================================================================
+    
+    add_stat_with_success('loose_puck_wins', r'loosepuck.*won|battlewon|loosepuckbattlewon')
+    add_stat_with_success('loose_puck_losses', r'loosepuck.*lost|battlelost|loosepuckbattlelost')
+    add_stat_with_success('puck_recoveries', r'puckrecovery|puckretrieval|puck.?recovery')
+    add_stat_with_success('puck_retrieval_attempts', r'puckrecoveryretreivalattemptedclear|retrieval.*attempt')
+    add_stat_with_success('board_battles_won', r'board.*won|battle.*won')
+    add_stat_with_success('board_battles_lost', r'board.*lost|battle.*lost')
+    add_stat_with_success('puck_battles', r'loosepuckbattle|boardbattle')
+    
+    # ============================================================================
+    # PRESSURE/INTENSITY MICRO STATS (with s/u breakdown)
+    # ============================================================================
+    
+    add_stat_with_success('pressure', r'pressure|under.?pressure')
+    add_stat_with_success('separate_from_puck', r'separatefrompuck|seperatefrompuck')
+    add_stat_with_success('lost_puck', r'lostpuck')
+    add_stat_with_success('misplayed_puck', r'misplayedpuck|misplay')
+    
+    # ============================================================================
+    # AGGREGATES AND CALCULATED STATS
+    # ============================================================================
+    
+    stats['drives_total'] = stats.get('drives_middle', 0) + stats.get('drives_wide', 0) + stats.get('drives_corner', 0) + stats.get('drives_net', 0)
+    stats['drives_total_successful'] = stats.get('drives_middle_successful', 0) + stats.get('drives_wide_successful', 0) + stats.get('drives_corner_successful', 0) + stats.get('drives_net_successful', 0)
+    stats['drives_total_unsuccessful'] = stats.get('drives_middle_unsuccessful', 0) + stats.get('drives_wide_unsuccessful', 0) + stats.get('drives_corner_unsuccessful', 0) + stats.get('drives_net_unsuccessful', 0)
+    if stats['drives_total'] > 0:
+        stats['drives_total_success_rate'] = round(stats['drives_total_successful'] / stats['drives_total'] * 100, 1)
+    else:
+        stats['drives_total_success_rate'] = 0.0
+    
+    stats['puck_battles_total'] = stats.get('loose_puck_wins', 0) + stats.get('puck_recoveries', 0) + stats.get('board_battles_won', 0)
+    stats['puck_battles_lost_total'] = stats.get('loose_puck_losses', 0) + stats.get('board_battles_lost', 0)
+    total_battles = stats['puck_battles_total'] + stats['puck_battles_lost_total']
+    stats['puck_battle_win_pct'] = round(stats['puck_battles_total'] / total_battles * 100, 1) if total_battles > 0 else 0.0
+    
+    total_board_battles = stats.get('board_battles_won', 0) + stats.get('board_battles_lost', 0)
+    stats['board_battle_win_pct'] = round(stats.get('board_battles_won', 0) / total_board_battles * 100, 1) if total_board_battles > 0 else 0.0
+    
+    # ============================================================================
+    # ZONE-SPECIFIC MICRO STATS (counts from all 4 columns by zone)
+    # ============================================================================
+    if 'rink_zone' in player_events.columns or 'event_team_zone' in player_events.columns:
+        zone_col = 'rink_zone' if 'rink_zone' in player_events.columns else 'event_team_zone'
+        
+        off_zone_events = player_events[player_events[zone_col].astype(str).str.lower().str.contains(r'^o|offensive|oz', na=False, regex=True)]
+        def_zone_events = player_events[player_events[zone_col].astype(str).str.lower().str.contains(r'^d|defensive|dz', na=False, regex=True)]
+        neutral_zone_events = player_events[player_events[zone_col].astype(str).str.lower().str.contains(r'^n|neutral|nz', na=False, regex=True)]
+        
+        # Count micro plays in each zone using all 4 detail columns
+        detail_cols = ['play_detail1', 'play_detail_2', 'event_detail', 'event_detail_2']
+        micro_patterns = r'deke|drive|cycle|cutback|delay|crashnet|screen|giveandgo'
+        
+        for zone_name, zone_df in [('micro_off_zone', off_zone_events), ('micro_def_zone', def_zone_events), ('micro_neutral_zone', neutral_zone_events)]:
+            count = 0
+            for col in detail_cols:
+                if col in zone_df.columns:
+                    matches = zone_df[zone_df[col].astype(str).str.lower().str.contains(micro_patterns, na=False, regex=True)]
+                    count += matches['event_id'].nunique()
+            stats[zone_name] = count
+    
+    # ============================================================================
+    # INTENSITY METRICS
+    # ============================================================================
+    stats['forecheck_intensity'] = stats.get('forechecks', 0)
+    stats['backcheck_intensity'] = stats.get('backchecks', 0)
+    
+    # ============================================================================
+    # TRANSITION QUALITY (will be populated from zone stats in advanced_micro_stats)
+    # ============================================================================
+    stats['controlled_exits'] = stats.get('controlled_exits', 0)  # Will be updated from zone_stats
+    stats['controlled_entries'] = stats.get('controlled_entries', 0)  # Will be updated from zone_stats
+    stats['transition_quality'] = 0.0  # Calculated in advanced_micro_stats
+    
+    # ============================================================================
+    # OVERALL PLAY SUCCESS TRACKING
+    # ============================================================================
+    if 'play_detail_successful' in player_events.columns or 'event_successful' in player_events.columns:
+        success_col = 'play_detail_successful' if 'play_detail_successful' in player_events.columns else 'event_successful'
+        stats['plays_successful'] = int((player_events[success_col].astype(str).str.lower().isin(['s', '1', 'true', 'yes'])).sum())
+        stats['plays_unsuccessful'] = int((player_events[success_col].astype(str).str.lower().isin(['u', '0', 'false', 'no'])).sum())
         total = stats['plays_successful'] + stats['plays_unsuccessful']
         stats['play_success_rate'] = round(stats['plays_successful'] / total * 100, 1) if total > 0 else 0.0
     else:
@@ -2053,9 +2440,9 @@ def calculate_possession_time_by_zone(player_id, game_id, event_players, events)
     Calculate possession time by zone for a player in a game.
     
     Possession is defined as:
-    1. Events where player is event_player_1 AND event_type = 'Possession'
-    2. Events where player is event_player_1 AND event_type = 'Zone_Entry_Exit' 
-       AND event_detail_2 contains 'carried' (case-insensitive)
+    Events where player is event_player_1 AND:
+    - event_type = 'Possession' OR event_type = 'Zone_Entry_Exit'
+    - AND event_detail contains 'rush' or 'carry' (case-insensitive)
     
     Returns duration (in seconds) by zone (offensive, defensive, neutral).
     
@@ -2075,6 +2462,9 @@ def calculate_possession_time_by_zone(player_id, game_id, event_players, events)
         'possession_time_offensive_zone': 0,
         'possession_time_defensive_zone': 0,
         'possession_time_neutral_zone': 0,
+        'possession_time_o': 0,
+        'possession_time_d': 0,
+        'possession_time_n': 0,
         'possession_time_total': 0,
         'possession_events_count': 0
     }
@@ -2088,24 +2478,25 @@ def calculate_possession_time_by_zone(player_id, game_id, event_players, events)
     if len(pe_primary) == 0:
         return empty
     
-    # Identify possession events
-    # 1. event_type = 'Possession'
-    possession_type = pe_primary[pe_primary['event_type'].astype(str).str.lower() == 'possession']
+    # Identify possession events based on new requirements:
+    # event_type = 'Possession' OR 'Zone_Entry_Exit'
+    # AND event_detail contains 'rush' or 'carry'
+    event_type_mask = pe_primary['event_type'].astype(str).str.lower().isin(['possession', 'zone_entry_exit'])
     
-    # 2. event_type = 'Zone_Entry_Exit' AND event_detail_2 contains 'carried'
-    zone_events = pe_primary[pe_primary['event_type'].astype(str).str.lower().str.contains('zone', na=False)]
-    zone_carried = pd.DataFrame()
-    if len(zone_events) > 0 and 'event_detail_2' in zone_events.columns:
-        zone_carried = zone_events[
-            zone_events['event_detail_2'].astype(str).str.lower().str.contains('carried', na=False)
-        ]
+    # Check event_detail for rush or carry (case-insensitive)
+    event_detail_mask = pd.Series([False] * len(pe_primary), index=pe_primary.index)
+    if 'event_detail' in pe_primary.columns:
+        event_detail_str = pe_primary['event_detail'].astype(str).str.lower()
+        event_detail_mask = event_detail_str.str.contains('rush', na=False, regex=False) | \
+                           event_detail_str.str.contains('carry', na=False, regex=False)
     
-    # Combine both types
+    # Combine filters: event_type match AND event_detail contains rush/carry
+    possession_events_pe = pe_primary[event_type_mask & event_detail_mask]
+    
+    # Get possession event IDs
     possession_event_ids = []
-    if len(possession_type) > 0 and 'event_id' in possession_type.columns:
-        possession_event_ids.extend(possession_type['event_id'].dropna().unique().tolist())
-    if len(zone_carried) > 0 and 'event_id' in zone_carried.columns:
-        possession_event_ids.extend(zone_carried['event_id'].dropna().unique().tolist())
+    if len(possession_events_pe) > 0 and 'event_id' in possession_events_pe.columns:
+        possession_event_ids = possession_events_pe['event_id'].dropna().unique().tolist()
     
     possession_event_ids = list(set([e for e in possession_event_ids if pd.notna(e)]))  # Deduplicate and remove NaN
     
@@ -2138,6 +2529,9 @@ def calculate_possession_time_by_zone(player_id, game_id, event_players, events)
             'possession_time_offensive_zone': 0,
             'possession_time_defensive_zone': 0,
             'possession_time_neutral_zone': 0,
+            'possession_time_o': 0,
+            'possession_time_d': 0,
+            'possession_time_n': 0,
             'possession_time_total': 0,
             'possession_events_count': len(possession_events)
         }
@@ -2152,18 +2546,46 @@ def calculate_possession_time_by_zone(player_id, game_id, event_players, events)
             'possession_time_offensive_zone': 0,
             'possession_time_defensive_zone': 0,
             'possession_time_neutral_zone': 0,
+            'possession_time_o': 0,
+            'possession_time_d': 0,
+            'possession_time_n': 0,
             'possession_time_total': total_duration,
             'possession_events_count': len(possession_events)
         }
     
     # Group by zone and sum duration
+    # Handle various zone formats: 'offensive'/'oz'/'off'/'o', 'defensive'/'dz'/'def'/'d', 'neutral'/'nz'/'n'
     zone_stats = {}
-    for zone, key in [('Offensive', 'offensive'), ('Defensive', 'defensive'), ('Neutral', 'neutral')]:
-        zone_mask = possession_events[zone_col].astype(str).str.lower().str.contains(
-            zone.lower(), na=False
-        )
+    zone_patterns = {
+        'offensive': ['offensive', 'oz', 'off', 'o'],
+        'defensive': ['defensive', 'dz', 'def', 'd'],
+        'neutral': ['neutral', 'nz', 'n']
+    }
+    
+    for key, patterns in zone_patterns.items():
+        # Create mask for any pattern matching this zone
+        zone_mask = pd.Series([False] * len(possession_events), index=possession_events.index)
+        zone_str = possession_events[zone_col].astype(str).str.lower()
+        for pattern in patterns:
+            # For single letters, check exact match or starts with for longer values
+            # For longer patterns, check if zone starts with or equals the pattern
+            if len(pattern) == 1:
+                # Single letter: exact match OR longer word starting with it
+                pattern_mask = (zone_str == pattern) | (zone_str.str.startswith(pattern, na=False))
+            else:
+                # Multi-character: starts with pattern or equals pattern
+                pattern_mask = (zone_str.str.startswith(pattern, na=False)) | (zone_str == pattern)
+            zone_mask = zone_mask | pattern_mask
+        
         zone_duration = int(possession_events[zone_mask]['event_duration'].sum())
         zone_stats[f'possession_time_{key}_zone'] = zone_duration
+        # Also add shortened column names (o, d, n)
+        if key == 'offensive':
+            zone_stats['possession_time_o'] = zone_duration
+        elif key == 'defensive':
+            zone_stats['possession_time_d'] = zone_duration
+        elif key == 'neutral':
+            zone_stats['possession_time_n'] = zone_duration
     
     # Total
     total_duration = int(possession_events['event_duration'].sum())

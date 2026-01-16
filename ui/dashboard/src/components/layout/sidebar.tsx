@@ -120,14 +120,19 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
       {/* Mobile overlay */}
       {isMobileOpen && (
         <div
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[45] lg:hidden touch-none"
           onClick={onMobileClose}
+          onTouchStart={(e) => {
+            // Prevent scrolling when overlay is visible
+            e.preventDefault()
+          }}
         />
       )}
 
       <aside
         className={cn(
-          'fixed top-0 left-0 h-screen bg-card border-r border-border flex flex-col transition-all duration-200 z-50',
+          'fixed top-0 left-0 h-screen bg-card border-r border-border flex flex-col transition-transform duration-300 ease-in-out z-[50]',
+          'will-change-transform', // Performance optimization
           collapsed ? 'w-16' : 'w-60',
           // Mobile: slide in/out
           'lg:translate-x-0',
@@ -154,7 +159,12 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
         {/* Mobile close button */}
         <button
           onClick={onMobileClose}
-          className="ml-auto lg:hidden p-1 text-muted-foreground hover:text-foreground"
+          onTouchStart={(e) => {
+            // Ensure touch events work properly
+            e.stopPropagation()
+          }}
+          className="ml-auto lg:hidden p-2 -mr-2 text-muted-foreground hover:text-foreground active:bg-muted rounded-md touch-manipulation"
+          aria-label="Close menu"
         >
           <X className="w-5 h-5" />
         </button>
@@ -180,12 +190,22 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
                   href={item.href}
                   className={cn(
                     'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors mb-0.5',
+                    'touch-manipulation', // Better touch handling
+                    'min-h-[44px]', // Minimum touch target size
                     collapsed && 'justify-center',
                     isActive
                       ? 'bg-muted text-foreground border border-border'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground active:bg-muted/80'
                   )}
                   title={collapsed ? item.name : undefined}
+                  onClick={(e) => {
+                    // Ensure clicks work on mobile
+                    e.stopPropagation()
+                    if (onMobileClose) {
+                      // Small delay to allow navigation to start
+                      setTimeout(() => onMobileClose(), 100)
+                    }
+                  }}
                 >
                   {item.icon}
                   {!collapsed && <span>{item.name}</span>}

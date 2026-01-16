@@ -103,7 +103,11 @@ def build_fact_events(
         'sequence_key', 'play_key', 'event_chain_key', 'tracking_event_key',
         'shift_key', 'linked_event_key',
         'home_team', 'home_team_id', 'away_team', 'away_team_id',
-        'duration', 'event_player_ids', 'opp_player_ids'
+        'duration', 'event_player_ids', 'opp_player_ids',
+        # Individual player columns
+        'event_player_1_id', 'event_player_1_name', 'event_player_1_rating',
+        'event_player_2_id', 'event_player_2_name', 'event_player_2_rating',
+        'opp_player_1_id', 'opp_player_1_name', 'opp_player_1_rating'
     ]
     other_cols = [c for c in events.columns if c not in priority_cols]
     events = events[[c for c in priority_cols if c in events.columns] + other_cols]

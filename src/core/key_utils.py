@@ -266,6 +266,8 @@ def build_event_player_lookup(tracking_df: pd.DataFrame) -> Dict[str, Dict[str, 
 def add_player_id_columns(events_df: pd.DataFrame, tracking_df: pd.DataFrame) -> pd.DataFrame:
     """
     Add event_player_ids and opp_player_ids columns to events dataframe.
+    Also adds individual player columns (event_player_1, event_player_2, opp_player_1)
+    with name, player_id, and rating.
     
     Args:
         events_df: fact_events dataframe
@@ -278,6 +280,111 @@ def add_player_id_columns(events_df: pd.DataFrame, tracking_df: pd.DataFrame) ->
     
     events_df['event_player_ids'] = events_df['event_id'].map(lookup.get('event', {}))
     events_df['opp_player_ids'] = events_df['event_id'].map(lookup.get('opp', {}))
+    
+    # Extract individual player columns (name, id, rating) for specific roles
+    events_df = add_individual_player_columns(events_df, tracking_df)
+    
+    return events_df
+
+
+def add_individual_player_columns(events_df: pd.DataFrame, tracking_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Add individual player columns to fact_events:
+    - event_player_1: name, player_id, rating (rename existing player_rating)
+    - event_player_2: name, player_id, rating
+    - opp_player_1: name, player_id, rating
+    
+    Args:
+        events_df: fact_events dataframe
+        tracking_df: fact_event_players dataframe
+    
+    Returns:
+        events_df with individual player columns added
+    """
+    # Initialize new columns (only if they don't exist)
+    new_cols = {
+        'event_player_1_id': None, 'event_player_1_name': None, 'event_player_1_rating': None,
+        'event_player_2_id': None, 'event_player_2_name': None, 'event_player_2_rating': None,
+        'opp_player_1_id': None, 'opp_player_1_name': None, 'opp_player_1_rating': None
+    }
+    for col, default_val in new_cols.items():
+        if col not in events_df.columns:
+            events_df[col] = default_val
+    
+    if len(tracking_df) == 0:
+        # No tracking data - keep empty columns
+        pass
+    else:
+        # Normalize player_role to lowercase for matching
+        tracking_df['_role_lower'] = tracking_df['player_role'].astype(str).str.lower()
+        
+        # Filter for each role using vectorized operations
+        ep1_mask = tracking_df['_role_lower'].str.contains('event_player_1|event_team_player_1', na=False, regex=True)
+        ep2_mask = tracking_df['_role_lower'].str.contains('event_player_2|event_team_player_2', na=False, regex=True)
+        opp1_mask = tracking_df['_role_lower'].str.contains('opp_player_1|opp_team_player_1', na=False, regex=True)
+        
+        # Get first row per event_id for each role (groupby and first)
+        ep1_data = tracking_df[ep1_mask].groupby('event_id').first().reset_index()
+        ep2_data = tracking_df[ep2_mask].groupby('event_id').first().reset_index()
+        opp1_data = tracking_df[opp1_mask].groupby('event_id').first().reset_index()
+        
+        # Merge with events_df using event_id
+        # Event player 1
+        if len(ep1_data) > 0:
+            ep1_cols = {
+                'player_id': 'event_player_1_id',
+                'player_name': 'event_player_1_name',
+            }
+            for old_col, new_col in ep1_cols.items():
+                if old_col in ep1_data.columns:
+                    merge_df = ep1_data[['event_id', old_col]].rename(columns={old_col: new_col})
+                    events_df = events_df.merge(merge_df, on='event_id', how='left')
+            
+            if 'player_rating' in ep1_data.columns:
+                merge_df = ep1_data[['event_id', 'player_rating']].rename(columns={'player_rating': 'event_player_1_rating'})
+                events_df = events_df.merge(merge_df, on='event_id', how='left')
+        
+        # Event player 2
+        if len(ep2_data) > 0:
+            ep2_cols = {
+                'player_id': 'event_player_2_id',
+                'player_name': 'event_player_2_name',
+            }
+            for old_col, new_col in ep2_cols.items():
+                if old_col in ep2_data.columns:
+                    merge_df = ep2_data[['event_id', old_col]].rename(columns={old_col: new_col})
+                    events_df = events_df.merge(merge_df, on='event_id', how='left')
+            
+            if 'player_rating' in ep2_data.columns:
+                merge_df = ep2_data[['event_id', 'player_rating']].rename(columns={'player_rating': 'event_player_2_rating'})
+                events_df = events_df.merge(merge_df, on='event_id', how='left')
+        
+        # Opponent player 1
+        if len(opp1_data) > 0:
+            opp1_cols = {
+                'player_id': 'opp_player_1_id',
+                'player_name': 'opp_player_1_name',
+            }
+            for old_col, new_col in opp1_cols.items():
+                if old_col in opp1_data.columns:
+                    merge_df = opp1_data[['event_id', old_col]].rename(columns={old_col: new_col})
+                    events_df = events_df.merge(merge_df, on='event_id', how='left')
+            
+            if 'player_rating' in opp1_data.columns:
+                merge_df = opp1_data[['event_id', 'player_rating']].rename(columns={'player_rating': 'opp_player_1_rating'})
+                events_df = events_df.merge(merge_df, on='event_id', how='left')
+    
+    # Rename existing player_rating column to event_player_1_rating if it exists
+    # (fallback if not already populated from tracking)
+    if 'player_rating' in events_df.columns:
+        if events_df['event_player_1_rating'].isna().all():
+            # No data from tracking, use existing player_rating
+            events_df['event_player_1_rating'] = events_df['player_rating']
+        else:
+            # Fill in any missing values from player_rating
+            events_df['event_player_1_rating'] = events_df['event_player_1_rating'].fillna(events_df['player_rating'])
+        # Drop the old player_rating column
+        events_df = events_df.drop(columns=['player_rating'])
     
     return events_df
 

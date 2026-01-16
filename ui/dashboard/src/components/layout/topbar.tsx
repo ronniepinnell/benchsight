@@ -12,7 +12,7 @@ interface TopbarProps {
 export function Topbar({ onMobileMenuClick }: TopbarProps) {
   return (
     <header className={cn(
-      'fixed top-0 h-14 bg-card border-b border-border flex items-center justify-between z-40',
+      'fixed top-0 h-14 bg-card border-b border-border flex items-center justify-between z-[46]',
       'left-0 lg:left-60 right-0',
       'px-4 lg:px-6'
     )}>
@@ -20,9 +20,17 @@ export function Topbar({ onMobileMenuClick }: TopbarProps) {
       <div className="flex items-center gap-3 lg:gap-4">
         {/* Mobile menu button */}
         <button
-          onClick={onMobileMenuClick}
-          className="lg:hidden p-2 text-muted-foreground hover:text-foreground transition-colors"
+          onClick={(e) => {
+            e.stopPropagation()
+            onMobileMenuClick?.()
+          }}
+          onTouchStart={(e) => {
+            // Ensure touch events work properly
+            e.stopPropagation()
+          }}
+          className="lg:hidden p-2 text-muted-foreground hover:text-foreground active:text-foreground active:bg-muted rounded-md transition-colors touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
           aria-label="Open menu"
+          type="button"
         >
           <Menu className="w-5 h-5" />
         </button>

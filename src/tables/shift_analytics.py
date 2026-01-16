@@ -19,14 +19,55 @@ Usage:
 
 import pandas as pd
 import numpy as np
+import json
 from pathlib import Path
 from itertools import combinations
 
 OUTPUT_DIR = Path('data/output')
 
 
+def add_names_to_table(df: pd.DataFrame) -> pd.DataFrame:
+    """Add player_name and team_name columns where player_id/team_id exist."""
+    if df is None or len(df) == 0:
+        return df
+    df = df.copy()
+    dim_player = load_table('dim_player') if len(df) > 0 else None
+    dim_team = load_table('dim_team') if len(df) > 0 else None
+    
+    # Add player names
+    if dim_player is not None and len(dim_player) > 0:
+        player_map = dim_player.set_index('player_id')['player_full_name'].to_dict()
+        if 'player_full_name' not in dim_player.columns and 'player_name' in dim_player.columns:
+            player_map = dim_player.set_index('player_id')['player_name'].to_dict()
+        
+        for col_map in [('player_id', 'player_name'), ('player_1_id', 'player_1_name'), 
+                        ('player_2_id', 'player_2_name')]:
+            id_col, name_col = col_map
+            if id_col in df.columns and name_col not in df.columns:
+                df[name_col] = df[id_col].map(player_map)
+    
+    # Add team names
+    if dim_team is not None and len(dim_team) > 0:
+        team_map = dim_team.set_index('team_id')['team_name'].to_dict()
+        for col_map in [('team_id', 'team_name'), ('home_team_id', 'home_team_name'),
+                        ('away_team_id', 'away_team_name')]:
+            id_col, name_col = col_map
+            if id_col in df.columns and name_col not in df.columns:
+                df[name_col] = df[id_col].map(team_map)
+    
+    return df
+
 def save_table(df: pd.DataFrame, name: str) -> int:
-    """Save table to CSV and return row count."""
+    """
+    Save table to CSV and return row count. Automatically adds name columns.
+    Automatically removes 100% null columns (except coordinate/danger/xy columns).
+    """
+    if df is not None and len(df) > 0:
+        df = add_names_to_table(df)
+        from src.core.base_etl import drop_all_null_columns
+        df, removed_cols = drop_all_null_columns(df)
+        if removed_cols:
+            print(f"  {name}: Removed {len(removed_cols)} all-null columns")
     path = OUTPUT_DIR / f"{name}.csv"
     df.to_csv(path, index=False)
     return len(df)
@@ -70,26 +111,36 @@ def create_fact_h2h() -> pd.DataFrame:
     """
     Create head-to-head analysis: players on ice together.
     
-    For each game, analyze which players were on ice together and
-    calculate combined stats.
+    Uses fact_shift_players with logical_shift_number to properly count
+    shifts and aggregate stats when players were on ice together.
+    
+    For each game, analyze which players were on ice together during the same
+    logical shifts and calculate combined stats from shift_players data.
     """
     print("\nBuilding fact_h2h...")
     
-    shifts = load_table('fact_shifts')
     shift_players = load_table('fact_shift_players')
     schedule = load_table('dim_schedule')
+    players = load_table('dim_player')
     
-    if len(shifts) == 0:
-        print("  ERROR: fact_shifts not found!")
+    if len(shift_players) == 0:
+        print("  ERROR: fact_shift_players not found!")
         return pd.DataFrame()
+    
+    # Ensure logical_shift_number exists
+    if 'logical_shift_number' not in shift_players.columns:
+        print("  WARNING: logical_shift_number not found in fact_shift_players!")
+        print("  Falling back to shift_index for shift counting...")
+        shift_players['logical_shift_number'] = shift_players.get('shift_index', shift_players.index)
     
     all_h2h = []
     
-    for game_id in shifts['game_id'].unique():
-        if game_id == 99999:  # Skip test game
+    # Process each game
+    for game_id in shift_players['game_id'].unique():
+        if pd.isna(game_id) or game_id == 99999:  # Skip test game
             continue
         
-        game_shifts = shifts[shifts['game_id'] == game_id]
+        game_sp = shift_players[shift_players['game_id'] == game_id].copy()
         
         # Get season_id
         season_id = None
@@ -100,33 +151,86 @@ def create_fact_h2h() -> pd.DataFrame:
         
         # Process each venue (home, away)
         for venue in ['home', 'away']:
-            # Build player pairs for this venue
-            player_pairs = {}  # (p1, p2) -> list of shift data
+            venue_sp = game_sp[game_sp['venue'] == venue.lower()].copy()
             
-            for _, shift in game_shifts.iterrows():
-                players = get_players_on_shift(shift, venue)
-                
-                if len(players) < 2:
+            if len(venue_sp) == 0:
+                continue
+            
+            # Group by logical_shift_number to find players on ice together
+            # For each logical shift, get all players on that shift
+            logical_shifts = venue_sp.groupby('logical_shift_number')
+            
+            # Build player pairs: (p1, p2) -> list of logical shift numbers they shared
+            player_pairs = {}  # (p1, p2) -> dict of stats
+            
+            for logical_shift_num, shift_group in logical_shifts:
+                if pd.isna(logical_shift_num):
                     continue
                 
-                # Get shift stats
-                shift_data = {
-                    'duration': shift.get('shift_duration', 0),
-                    'gf': 0,  # Would need to calculate from events
-                    'ga': 0,
-                }
+                # Get unique players on this logical shift
+                players_on_shift = shift_group['player_id'].dropna().unique().tolist()
                 
-                # Create all pairs
-                for p1, p2 in combinations(sorted(players), 2):
-                    key = (p1, p2)
+                if len(players_on_shift) < 2:
+                    continue
+                
+                # Get stats for this logical shift (use first row - stats should be same for all players on same shift)
+                shift_row = shift_group.iloc[0]
+                
+                # Use logical_shift_duration if available, else sum shift_duration
+                if 'logical_shift_duration' in shift_group.columns and pd.notna(shift_row.get('logical_shift_duration')):
+                    shift_duration = shift_row['logical_shift_duration']
+                else:
+                    # Sum all segments' duration for this logical shift (first segment only to avoid double counting)
+                    first_segments = shift_group[shift_group.get('is_first_segment', pd.Series([True] * len(shift_group))) == True]
+                    shift_duration = first_segments['shift_duration'].sum() if 'shift_duration' in first_segments.columns else 0
+                
+                # Get stats from shift_group (sum across all players, but each stat is per-shift so just use one row)
+                shift_gf = int(shift_row.get('gf', 0)) if pd.notna(shift_row.get('gf')) else 0
+                shift_ga = int(shift_row.get('ga', 0)) if pd.notna(shift_row.get('ga')) else 0
+                shift_cf = int(shift_row.get('cf', 0)) if pd.notna(shift_row.get('cf')) else 0
+                shift_ca = int(shift_row.get('ca', 0)) if pd.notna(shift_row.get('ca')) else 0
+                shift_ff = int(shift_row.get('ff', 0)) if pd.notna(shift_row.get('ff')) else 0
+                shift_fa = int(shift_row.get('fa', 0)) if pd.notna(shift_row.get('fa')) else 0
+                
+                # Create all pairs of players on this logical shift
+                for p1, p2 in combinations(sorted(players_on_shift), 2):
+                    # Ensure player IDs are strings for consistency
+                    p1_str = str(p1)
+                    p2_str = str(p2)
+                    key = (p1_str, p2_str)
+                    
                     if key not in player_pairs:
-                        player_pairs[key] = []
-                    player_pairs[key].append(shift_data)
+                        player_pairs[key] = {
+                            'logical_shifts': set(),
+                            'toi_together': 0,
+                            'goals_for': 0,
+                            'goals_against': 0,
+                            'corsi_for': 0,
+                            'corsi_against': 0,
+                            'fenwick_for': 0,
+                            'fenwick_against': 0,
+                        }
+                    
+                    # Add this logical shift (avoid double counting same shift)
+                    player_pairs[key]['logical_shifts'].add(logical_shift_num)
+                    player_pairs[key]['toi_together'] += shift_duration
+                    player_pairs[key]['goals_for'] += shift_gf
+                    player_pairs[key]['goals_against'] += shift_ga
+                    player_pairs[key]['corsi_for'] += shift_cf
+                    player_pairs[key]['corsi_against'] += shift_ca
+                    player_pairs[key]['fenwick_for'] += shift_ff
+                    player_pairs[key]['fenwick_against'] += shift_fa
             
-            # Aggregate to H2H records
-            for (p1, p2), shift_list in player_pairs.items():
-                shifts_together = len(shift_list)
-                toi_together = sum(s['duration'] for s in shift_list)
+            # Create H2H records from aggregated pairs
+            for (p1, p2), stats in player_pairs.items():
+                shifts_together = len(stats['logical_shifts'])
+                
+                # Calculate percentages
+                total_corsi = stats['corsi_for'] + stats['corsi_against']
+                cf_pct = round(stats['corsi_for'] / total_corsi * 100, 2) if total_corsi > 0 else 50.0
+                
+                total_fenwick = stats['fenwick_for'] + stats['fenwick_against']
+                ff_pct = round(stats['fenwick_for'] / total_fenwick * 100, 2) if total_fenwick > 0 else 50.0
                 
                 h2h = {
                     'h2h_key': f"H2H_{game_id}_{p1}_{p2}",
@@ -136,22 +240,45 @@ def create_fact_h2h() -> pd.DataFrame:
                     'player_2_id': p2,
                     'venue': venue,
                     'shifts_together': shifts_together,
-                    'toi_together': toi_together,
-                    'goals_for': sum(s['gf'] for s in shift_list),
-                    'goals_against': sum(s['ga'] for s in shift_list),
+                    'toi_together': round(stats['toi_together'], 1),
+                    'goals_for': stats['goals_for'],
+                    'goals_against': stats['goals_against'],
+                    'plus_minus': stats['goals_for'] - stats['goals_against'],
+                    'corsi_for': stats['corsi_for'],
+                    'corsi_against': stats['corsi_against'],
+                    'cf_pct': cf_pct,
+                    'fenwick_for': stats['fenwick_for'],
+                    'fenwick_against': stats['fenwick_against'],
+                    'ff_pct': ff_pct,
                 }
                 
-                h2h['plus_minus'] = h2h['goals_for'] - h2h['goals_against']
+                # Add player names if available
+                if len(players) > 0:
+                    p1_info = players[players['player_id'] == p1]
+                    p2_info = players[players['player_id'] == p2]
+                    if len(p1_info) > 0 and 'player_full_name' in p1_info.columns:
+                        h2h['player_1_name'] = p1_info['player_full_name'].values[0]
+                    if len(p2_info) > 0 and 'player_full_name' in p2_info.columns:
+                        h2h['player_2_name'] = p2_info['player_full_name'].values[0]
                 
-                # Corsi placeholders (would need event-level analysis)
-                h2h['corsi_for'] = 0
-                h2h['corsi_against'] = 0
-                h2h['cf_pct'] = 50.0
+                # Determine if same team (both same venue in same game)
+                h2h['same_team'] = True  # By definition, players from same venue are same team
                 
                 all_h2h.append(h2h)
     
     df = pd.DataFrame(all_h2h)
-    print(f"  Created {len(df)} H2H records")
+    
+    # Reorder columns for consistency
+    priority_cols = ['h2h_key', 'game_id', 'season_id', 'player_1_id', 'player_1_name',
+                    'player_2_id', 'player_2_name', 'same_team', 'venue',
+                    'shifts_together', 'toi_together',
+                    'goals_for', 'goals_against', 'plus_minus',
+                    'corsi_for', 'corsi_against', 'cf_pct',
+                    'fenwick_for', 'fenwick_against', 'ff_pct']
+    other_cols = [c for c in df.columns if c not in priority_cols]
+    df = df[[c for c in priority_cols if c in df.columns] + other_cols]
+    
+    print(f"  Created {len(df)} H2H records using logical shifts")
     return df
 
 
@@ -160,82 +287,161 @@ def create_fact_wowy() -> pd.DataFrame:
     Create WOWY (With Or Without You) analysis.
     
     Compares player performance when together vs apart.
+    Uses fact_shift_players with logical_shift_number for proper shift counting
+    and to calculate real stats when players are apart.
     """
     print("\nBuilding fact_wowy...")
     
-    shifts = load_table('fact_shifts')
-    h2h = load_table('fact_h2h')  # Use H2H as base
+    shift_players = load_table('fact_shift_players')
+    h2h = load_table('fact_h2h')  # Use H2H as base for together stats
     
     if len(h2h) == 0:
         print("  ERROR: fact_h2h not found! Run H2H first.")
         return pd.DataFrame()
     
-    if len(shifts) == 0:
-        print("  ERROR: fact_shifts not found!")
+    if len(shift_players) == 0:
+        print("  ERROR: fact_shift_players not found!")
         return pd.DataFrame()
     
-    all_wowy = []
+    # Ensure logical_shift_number exists
+    if 'logical_shift_number' not in shift_players.columns:
+        print("  WARNING: logical_shift_number not found in fact_shift_players!")
+        print("  Falling back to shift_index for shift counting...")
+        shift_players['logical_shift_number'] = shift_players.get('shift_index', shift_players.index)
     
-    # Build a mapping of player -> shifts for each game/venue
-    def get_player_shifts(game_id, venue, player_cols):
-        """Get all shifts containing a specific player."""
-        game_shifts = shifts[(shifts['game_id'] == game_id)]
-        player_shift_map = {}  # player_id -> set of shift_ids
-        
-        for _, shift in game_shifts.iterrows():
-            for col in player_cols:
-                if col in shift.index:
-                    pid = shift[col]
-                    if pd.notna(pid) and str(pid) not in ['', 'nan', 'None']:
-                        if pid not in player_shift_map:
-                            player_shift_map[pid] = set()
-                        player_shift_map[pid].add(shift.get('shift_id', shift.name))
-        
-        return player_shift_map
+    all_wowy = []
     
     # For each H2H pair, calculate with/without stats
     for _, row in h2h.iterrows():
         game_id = row['game_id']
-        p1 = row['player_1_id']
-        p2 = row['player_2_id']
-        venue = row.get('venue', 'home')
+        p1 = str(row['player_1_id'])
+        p2 = str(row['player_2_id'])
+        venue = row.get('venue', 'home').lower()
         
-        # Get player columns for this venue
-        player_cols = [f'{venue}_forward_1', f'{venue}_forward_2', f'{venue}_forward_3',
-                       f'{venue}_defense_1', f'{venue}_defense_2', f'{venue}_goalie']
+        # Get shift data for this game/venue
+        game_sp = shift_players[
+            (shift_players['game_id'] == game_id) & 
+            (shift_players['venue'] == venue)
+        ].copy()
         
-        # Get shift IDs for each player
-        player_shift_map = get_player_shifts(game_id, venue, player_cols)
+        if len(game_sp) == 0:
+            continue
         
-        p1_shifts = player_shift_map.get(p1, set())
-        p2_shifts = player_shift_map.get(p2, set())
+        # Get logical shifts for each player
+        p1_shifts = set(game_sp[game_sp['player_id'] == p1]['logical_shift_number'].dropna().unique())
+        p2_shifts = set(game_sp[game_sp['player_id'] == p2]['logical_shift_number'].dropna().unique())
         
-        # Shifts together (intersection)
+        # Logical shifts together (intersection)
         together_shifts = p1_shifts & p2_shifts
         
-        # Shifts apart 
+        # Logical shifts apart 
         p1_without_p2 = p1_shifts - p2_shifts
         p2_without_p1 = p2_shifts - p1_shifts
         
-        # Get shift durations
-        game_shifts = shifts[shifts['game_id'] == game_id]
-        duration_col = 'shift_duration' if 'shift_duration' in game_shifts.columns else None
+        # Use H2H stats for "together" (already calculated correctly)
+        toi_together = row.get('toi_together', 0)
+        cf_together = row.get('corsi_for', 0)
+        ca_together = row.get('corsi_against', 0)
+        gf_together = row.get('goals_for', 0)
+        ga_together = row.get('goals_against', 0)
+        cf_pct_together = row.get('cf_pct', 50.0)
         
-        toi_together = 0
+        total_gf_together = gf_together + ga_together
+        gf_pct_together = round(gf_together / total_gf_together * 100, 1) if total_gf_together > 0 else 50.0
+        
+        # Calculate stats for "apart" shifts from shift_players
+        # Aggregate by logical shift (similar to H2H) - stats are shift-level, not player-level
+        # Get all logical shifts where P1 is without P2
+        p1_apart_logical_shifts = game_sp[
+            game_sp['logical_shift_number'].isin(p1_without_p2)
+        ].groupby('logical_shift_number')
+        
+        # Get all logical shifts where P2 is without P1
+        p2_apart_logical_shifts = game_sp[
+            game_sp['logical_shift_number'].isin(p2_without_p1)
+        ].groupby('logical_shift_number')
+        
+        # Aggregate stats from logical shifts (use first row per logical shift for shift-level stats)
+        p1_apart_cf = p1_apart_ca = p1_apart_gf = p1_apart_ga = 0
         toi_p1_without_p2 = 0
+        
+        for logical_shift_num, shift_group in p1_apart_logical_shifts:
+            if pd.isna(logical_shift_num):
+                continue
+            
+            # Get first row for this logical shift (shift-level stats are same for all players)
+            shift_row = shift_group.iloc[0]
+            
+            # Use logical_shift_duration if available, else sum first segments
+            if 'logical_shift_duration' in shift_group.columns and pd.notna(shift_row.get('logical_shift_duration')):
+                shift_duration = shift_row['logical_shift_duration']
+            else:
+                # Sum first segments to avoid double-counting
+                first_segments = shift_group[
+                    shift_group.get('is_first_segment', pd.Series([True] * len(shift_group))) == True
+                ]
+                shift_duration = first_segments['shift_duration'].sum() if 'shift_duration' in first_segments.columns else 0
+            
+            toi_p1_without_p2 += shift_duration
+            
+            # Aggregate shift-level stats (same for all players on shift)
+            if 'cf' in shift_row and pd.notna(shift_row.get('cf')):
+                p1_apart_cf += int(shift_row['cf'])
+            if 'ca' in shift_row and pd.notna(shift_row.get('ca')):
+                p1_apart_ca += int(shift_row['ca'])
+            if 'gf' in shift_row and pd.notna(shift_row.get('gf')):
+                p1_apart_gf += int(shift_row['gf'])
+            if 'ga' in shift_row and pd.notna(shift_row.get('ga')):
+                p1_apart_ga += int(shift_row['ga'])
+        
+        p2_apart_cf = p2_apart_ca = p2_apart_gf = p2_apart_ga = 0
         toi_p2_without_p1 = 0
         
-        if duration_col:
-            for _, shift in game_shifts.iterrows():
-                shift_id = shift.get('shift_id', shift.name)
-                duration = shift.get(duration_col, 0) or 0
-                
-                if shift_id in together_shifts:
-                    toi_together += duration
-                if shift_id in p1_without_p2:
-                    toi_p1_without_p2 += duration
-                if shift_id in p2_without_p1:
-                    toi_p2_without_p1 += duration
+        for logical_shift_num, shift_group in p2_apart_logical_shifts:
+            if pd.isna(logical_shift_num):
+                continue
+            
+            # Get first row for this logical shift (shift-level stats are same for all players)
+            shift_row = shift_group.iloc[0]
+            
+            # Use logical_shift_duration if available, else sum first segments
+            if 'logical_shift_duration' in shift_group.columns and pd.notna(shift_row.get('logical_shift_duration')):
+                shift_duration = shift_row['logical_shift_duration']
+            else:
+                # Sum first segments to avoid double-counting
+                first_segments = shift_group[
+                    shift_group.get('is_first_segment', pd.Series([True] * len(shift_group))) == True
+                ]
+                shift_duration = first_segments['shift_duration'].sum() if 'shift_duration' in first_segments.columns else 0
+            
+            toi_p2_without_p1 += shift_duration
+            
+            # Aggregate shift-level stats (same for all players on shift)
+            if 'cf' in shift_row and pd.notna(shift_row.get('cf')):
+                p2_apart_cf += int(shift_row['cf'])
+            if 'ca' in shift_row and pd.notna(shift_row.get('ca')):
+                p2_apart_ca += int(shift_row['ca'])
+            if 'gf' in shift_row and pd.notna(shift_row.get('gf')):
+                p2_apart_gf += int(shift_row['gf'])
+            if 'ga' in shift_row and pd.notna(shift_row.get('ga')):
+                p2_apart_ga += int(shift_row['ga'])
+        
+        # Total apart stats (sum of both players' apart shifts)
+        cf_apart = p1_apart_cf + p2_apart_cf
+        ca_apart = p1_apart_ca + p2_apart_ca
+        gf_apart = p1_apart_gf + p2_apart_gf
+        ga_apart = p1_apart_ga + p2_apart_ga
+        
+        # Calculate percentages for apart
+        total_corsi_apart = cf_apart + ca_apart
+        cf_pct_apart = round(cf_apart / total_corsi_apart * 100, 2) if total_corsi_apart > 0 else 50.0
+        
+        total_gf_apart = gf_apart + ga_apart
+        gf_pct_apart = round(gf_apart / total_gf_apart * 100, 1) if total_gf_apart > 0 else 50.0
+        
+        # Calculate total logical shifts for each player (for reference)
+        p1_total_shifts = len(p1_shifts)
+        p2_total_shifts = len(p2_shifts)
         
         wowy = {
             'wowy_key': f"WOWY_{game_id}_{p1}_{p2}",
@@ -244,37 +450,39 @@ def create_fact_wowy() -> pd.DataFrame:
             'player_1_id': p1,
             'player_2_id': p2,
             'venue': venue,
-            'shifts_together': len(together_shifts),
+            'shifts_together': len(together_shifts),  # Logical shifts together
+            'p1_total_shifts': p1_total_shifts,  # Total logical shifts for P1
+            'p2_total_shifts': p2_total_shifts,  # Total logical shifts for P2
+            'p1_shifts_without_p2': len(p1_without_p2),  # Logical shifts P1 without P2
+            'p2_shifts_without_p1': len(p2_without_p1),  # Logical shifts P2 without P1
             'toi_together': toi_together,
-            'p1_shifts_without_p2': len(p1_without_p2),
-            'p2_shifts_without_p1': len(p2_without_p1),
-            'toi_apart': toi_p1_without_p2 + toi_p2_without_p1,
-            'toi_p1_without_p2': toi_p1_without_p2,
-            'toi_p2_without_p1': toi_p2_without_p1,
+            'toi_apart': round(toi_p1_without_p2 + toi_p2_without_p1, 1),
+            'toi_p1_without_p2': round(toi_p1_without_p2, 1),
+            'toi_p2_without_p1': round(toi_p2_without_p1, 1),
+            # Together stats (from H2H)
+            'cf_together': cf_together,
+            'ca_together': ca_together,
+            'cf_pct_together': cf_pct_together,
+            'gf_together': gf_together,
+            'ga_together': ga_together,
+            'gf_pct_together': gf_pct_together,
+            # Apart stats (calculated)
+            'cf_apart': cf_apart,
+            'ca_apart': ca_apart,
+            'cf_pct_apart': cf_pct_apart,
+            'gf_apart': gf_apart,
+            'ga_apart': ga_apart,
+            'gf_pct_apart': gf_pct_apart,
+            # Deltas
+            'cf_pct_delta': round(cf_pct_together - cf_pct_apart, 2),
+            'gf_pct_delta': round(gf_pct_together - gf_pct_apart, 2),
+            'relative_corsi': round(cf_pct_together - cf_pct_apart, 2),
         }
-        
-        # CF% together vs apart
-        wowy['cf_pct_together'] = row.get('cf_pct', 50.0)
-        # Calculate CF% apart based on individual performance when not together
-        # For simplicity, use 50% as baseline when apart (neutral performance)
-        wowy['cf_pct_apart'] = 50.0 if wowy['toi_apart'] == 0 else 50.0  # Would need event-level analysis for true value
-        wowy['cf_pct_delta'] = wowy['cf_pct_together'] - wowy['cf_pct_apart']
-        
-        # GF% together vs apart
-        gf = row.get('goals_for', 0)
-        ga = row.get('goals_against', 0)
-        total = gf + ga
-        wowy['gf_pct_together'] = round(gf / total * 100, 1) if total > 0 else 50.0
-        wowy['gf_pct_apart'] = 50.0  # Would need event-level analysis for true value
-        wowy['gf_pct_delta'] = wowy['gf_pct_together'] - wowy['gf_pct_apart']
-        
-        # Relative metrics
-        wowy['relative_corsi'] = wowy['cf_pct_delta']
         
         all_wowy.append(wowy)
     
     df = pd.DataFrame(all_wowy)
-    print(f"  Created {len(df)} WOWY records")
+    print(f"  Created {len(df)} WOWY records using logical shifts")
     return df
 
 
@@ -282,24 +490,38 @@ def create_fact_line_combos() -> pd.DataFrame:
     """
     Create line combination analysis.
     
-    Groups forward trios and defense pairs.
+    Groups forward trios and defense pairs using logical shifts.
+    Uses fact_shift_players with logical_shift_number for proper shift counting
+    and to get actual player_ids (not jersey numbers) and real stats.
     """
     print("\nBuilding fact_line_combos...")
     
-    shifts = load_table('fact_shifts')
+    shift_players = load_table('fact_shift_players')
     schedule = load_table('dim_schedule')
     
-    if len(shifts) == 0:
-        print("  ERROR: fact_shifts not found!")
+    if len(shift_players) == 0:
+        print("  ERROR: fact_shift_players not found!")
+        return pd.DataFrame()
+    
+    # Ensure logical_shift_number exists
+    if 'logical_shift_number' not in shift_players.columns:
+        print("  WARNING: logical_shift_number not found in fact_shift_players!")
+        print("  Falling back to shift_index for shift counting...")
+        shift_players['logical_shift_number'] = shift_players.get('shift_index', shift_players.index)
+    
+    # Ensure position column exists
+    if 'position' not in shift_players.columns:
+        print("  WARNING: position column not found in fact_shift_players!")
         return pd.DataFrame()
     
     all_combos = []
     
-    for game_id in shifts['game_id'].unique():
-        if game_id == 99999:
+    # Process each game
+    for game_id in shift_players['game_id'].unique():
+        if pd.isna(game_id) or game_id == 99999:
             continue
         
-        game_shifts = shifts[shifts['game_id'] == game_id]
+        game_sp = shift_players[shift_players['game_id'] == game_id].copy()
         
         # Get season_id
         season_id = None
@@ -308,85 +530,220 @@ def create_fact_line_combos() -> pd.DataFrame:
             if len(game_info) > 0 and 'season_id' in game_info.columns:
                 season_id = game_info['season_id'].values[0]
         
+        # Process each venue (home, away)
         for venue in ['home', 'away']:
-            # Track unique forward combos and defense pairs
-            forward_combos = {}  # tuple of 3 forwards -> stats
-            defense_combos = {}  # tuple of 2 defense -> stats
+            venue_sp = game_sp[game_sp['venue'] == venue.lower()].copy()
             
-            for _, shift in game_shifts.iterrows():
-                # Get forwards
-                f1 = shift.get(f'{venue}_forward_1')
-                f2 = shift.get(f'{venue}_forward_2')
-                f3 = shift.get(f'{venue}_forward_3')
+            if len(venue_sp) == 0:
+                continue
+            
+            # Group by logical_shift_number to find players on same logical shift
+            logical_shifts = venue_sp.groupby('logical_shift_number')
+            
+            # Track forward combos and defense pairs: (tuple of player_ids) -> stats
+            forward_combos = {}  # tuple of forward player_ids -> stats
+            defense_combos = {}  # tuple of defense player_ids -> stats
+            
+            for logical_shift_num, shift_group in logical_shifts:
+                if pd.isna(logical_shift_num):
+                    continue
                 
-                forwards = tuple(sorted([f for f in [f1, f2, f3] if pd.notna(f) and str(f) != 'nan']))
+                # Get forwards (F, LW, RW, C)
+                forwards_sp = shift_group[
+                    shift_group['position'].astype(str).str.upper().str.contains('F|LW|RW|C', na=False, regex=True)
+                ]
                 
-                if len(forwards) >= 2:  # At least 2 forwards
-                    if forwards not in forward_combos:
-                        forward_combos[forwards] = {'shifts': 0, 'toi': 0}
-                    forward_combos[forwards]['shifts'] += 1
-                    forward_combos[forwards]['toi'] += shift.get('shift_duration', 0)
+                # Get defense (D)
+                defense_sp = shift_group[
+                    shift_group['position'].astype(str).str.upper().str.contains('^D$', na=False, regex=True)
+                ]
                 
-                # Get defense
-                d1 = shift.get(f'{venue}_defense_1')
-                d2 = shift.get(f'{venue}_defense_2')
+                # Get unique player IDs (convert to int for consistency)
+                forward_ids = forwards_sp['player_id'].dropna().unique().tolist()
+                defense_ids = defense_sp['player_id'].dropna().unique().tolist()
                 
-                defense = tuple(sorted([d for d in [d1, d2] if pd.notna(d) and str(d) != 'nan']))
+                # Get jersey numbers (player_game_number) - store as list of ints
+                forward_jerseys = forwards_sp['player_game_number'].dropna().unique().tolist()
+                defense_jerseys = defense_sp['player_game_number'].dropna().unique().tolist()
                 
-                if len(defense) >= 1:
-                    if defense not in defense_combos:
-                        defense_combos[defense] = {'shifts': 0, 'toi': 0}
-                    defense_combos[defense]['shifts'] += 1
-                    defense_combos[defense]['toi'] += shift.get('shift_duration', 0)
+                # Convert to ints (handle any decimals/strings)
+                try:
+                    forward_jerseys = sorted([int(float(j)) for j in forward_jerseys if pd.notna(j)])
+                    defense_jerseys = sorted([int(float(j)) for j in defense_jerseys if pd.notna(j)])
+                except (ValueError, TypeError):
+                    # Skip this shift if conversion fails
+                    continue
+                
+                # Use logical_shift_duration if available, else sum first segments
+                if 'logical_shift_duration' in shift_group.columns and pd.notna(shift_group.iloc[0].get('logical_shift_duration')):
+                    shift_duration = shift_group.iloc[0]['logical_shift_duration']
+                else:
+                    first_segments = shift_group[shift_group.get('is_first_segment', pd.Series([True] * len(shift_group))) == True]
+                    shift_duration = first_segments['shift_duration'].sum() if 'shift_duration' in first_segments.columns else 0
+                
+                # Get stats from shift_group (use first row - stats should be same for all players on same shift)
+                shift_row = shift_group.iloc[0]
+                shift_gf = int(shift_row.get('gf', 0)) if pd.notna(shift_row.get('gf')) else 0
+                shift_ga = int(shift_row.get('ga', 0)) if pd.notna(shift_row.get('ga')) else 0
+                shift_cf = int(shift_row.get('cf', 0)) if pd.notna(shift_row.get('cf')) else 0
+                shift_ca = int(shift_row.get('ca', 0)) if pd.notna(shift_row.get('ca')) else 0
+                shift_ff = int(shift_row.get('ff', 0)) if pd.notna(shift_row.get('ff')) else 0
+                shift_fa = int(shift_row.get('fa', 0)) if pd.notna(shift_row.get('fa')) else 0
+                
+                # Forward combos: need at least 2 forwards
+                if len(forward_ids) >= 2:
+                    # Sort player IDs for consistency
+                    forward_key = tuple(sorted(forward_ids))
+                    
+                    if forward_key not in forward_combos:
+                        forward_combos[forward_key] = {
+                            'logical_shifts': set(),
+                            'toi_together': 0,
+                            'goals_for': 0,
+                            'goals_against': 0,
+                            'corsi_for': 0,
+                            'corsi_against': 0,
+                            'fenwick_for': 0,
+                            'fenwick_against': 0,
+                            'jersey_numbers': forward_jerseys,  # Keep track of jersey numbers
+                        }
+                    
+                    # Add this logical shift (avoid double counting)
+                    forward_combos[forward_key]['logical_shifts'].add(logical_shift_num)
+                    forward_combos[forward_key]['toi_together'] += shift_duration
+                    forward_combos[forward_key]['goals_for'] += shift_gf
+                    forward_combos[forward_key]['goals_against'] += shift_ga
+                    forward_combos[forward_key]['corsi_for'] += shift_cf
+                    forward_combos[forward_key]['corsi_against'] += shift_ca
+                    forward_combos[forward_key]['fenwick_for'] += shift_ff
+                    forward_combos[forward_key]['fenwick_against'] += shift_fa
+                
+                # Defense combos: need at least 1 defenseman
+                if len(defense_ids) >= 1:
+                    # Sort player IDs for consistency
+                    defense_key = tuple(sorted(defense_ids))
+                    
+                    if defense_key not in defense_combos:
+                        defense_combos[defense_key] = {
+                            'logical_shifts': set(),
+                            'toi_together': 0,
+                            'goals_for': 0,
+                            'goals_against': 0,
+                            'corsi_for': 0,
+                            'corsi_against': 0,
+                            'fenwick_for': 0,
+                            'fenwick_against': 0,
+                            'jersey_numbers': defense_jerseys,  # Keep track of jersey numbers
+                        }
+                    
+                    # Add this logical shift (avoid double counting)
+                    defense_combos[defense_key]['logical_shifts'].add(logical_shift_num)
+                    defense_combos[defense_key]['toi_together'] += shift_duration
+                    defense_combos[defense_key]['goals_for'] += shift_gf
+                    defense_combos[defense_key]['goals_against'] += shift_ga
+                    defense_combos[defense_key]['corsi_for'] += shift_cf
+                    defense_combos[defense_key]['corsi_against'] += shift_ca
+                    defense_combos[defense_key]['fenwick_for'] += shift_ff
+                    defense_combos[defense_key]['fenwick_against'] += shift_fa
             
             # Create records for forward combos
-            for forwards, stats in forward_combos.items():
+            for forward_ids_tuple, stats in forward_combos.items():
+                forward_ids_list = sorted([str(pid) for pid in forward_ids_tuple])
+                shifts_together = len(stats['logical_shifts'])
+                
+                # Calculate percentages
+                total_corsi = stats['corsi_for'] + stats['corsi_against']
+                cf_pct = round(stats['corsi_for'] / total_corsi * 100, 2) if total_corsi > 0 else 50.0
+                
+                total_fenwick = stats['fenwick_for'] + stats['fenwick_against']
+                ff_pct = round(stats['fenwick_for'] / total_fenwick * 100, 2) if total_fenwick > 0 else 50.0
+                
                 combo = {
-                    'line_combo_key': f"LC_{game_id}_{venue}_F_{'_'.join(str(f) for f in forwards)}",
+                    'line_combo_key': f"LC_{game_id}_{venue}_F_{'_'.join(forward_ids_list)}",
                     'game_id': game_id,
                     'season_id': season_id,
                     'venue': venue,
                     'combo_type': 'forward',
-                    'forward_combo': ','.join(str(f) for f in forwards),
+                    # Store player IDs as list (JSON array format for storage)
+                    'forward_combo': ','.join(forward_ids_list),  # Comma-separated for display
+                    'forward_combo_ids': forward_ids_list,  # List format
+                    # Store jersey numbers as list of ints
+                    'forward_jersey_numbers': stats['jersey_numbers'],  # List of ints
                     'defense_combo': None,
-                    'shifts': stats['shifts'],
-                    'toi_together': stats['toi'],
-                    # Placeholder stats
-                    'goals_for': 0,
-                    'goals_against': 0,
-                    'corsi_for': 0,
-                    'corsi_against': 0,
+                    'defense_combo_ids': None,
+                    'defense_jersey_numbers': None,
+                    'shifts': shifts_together,  # Logical shifts
+                    'toi_together': round(stats['toi_together'], 1),
+                    'goals_for': stats['goals_for'],
+                    'goals_against': stats['goals_against'],
+                    'plus_minus': stats['goals_for'] - stats['goals_against'],
+                    'corsi_for': stats['corsi_for'],
+                    'corsi_against': stats['corsi_against'],
+                    'cf_pct': cf_pct,
+                    'fenwick_for': stats['fenwick_for'],
+                    'fenwick_against': stats['fenwick_against'],
+                    'ff_pct': ff_pct,
                 }
                 all_combos.append(combo)
             
             # Create records for defense combos
-            for defense, stats in defense_combos.items():
+            for defense_ids_tuple, stats in defense_combos.items():
+                defense_ids_list = sorted([str(pid) for pid in defense_ids_tuple])
+                shifts_together = len(stats['logical_shifts'])
+                
+                # Calculate percentages
+                total_corsi = stats['corsi_for'] + stats['corsi_against']
+                cf_pct = round(stats['corsi_for'] / total_corsi * 100, 2) if total_corsi > 0 else 50.0
+                
+                total_fenwick = stats['fenwick_for'] + stats['fenwick_against']
+                ff_pct = round(stats['fenwick_for'] / total_fenwick * 100, 2) if total_fenwick > 0 else 50.0
+                
                 combo = {
-                    'line_combo_key': f"LC_{game_id}_{venue}_D_{'_'.join(str(d) for d in defense)}",
+                    'line_combo_key': f"LC_{game_id}_{venue}_D_{'_'.join(defense_ids_list)}",
                     'game_id': game_id,
                     'season_id': season_id,
                     'venue': venue,
                     'combo_type': 'defense',
                     'forward_combo': None,
-                    'defense_combo': ','.join(str(d) for d in defense),
-                    'shifts': stats['shifts'],
-                    'toi_together': stats['toi'],
-                    # Placeholder stats
-                    'goals_for': 0,
-                    'goals_against': 0,
-                    'corsi_for': 0,
-                    'corsi_against': 0,
+                    'forward_combo_ids': None,
+                    'forward_jersey_numbers': None,
+                    # Store player IDs as list
+                    'defense_combo': ','.join(defense_ids_list),  # Comma-separated for display
+                    'defense_combo_ids': defense_ids_list,  # List format
+                    # Store jersey numbers as list of ints
+                    'defense_jersey_numbers': stats['jersey_numbers'],  # List of ints
+                    'shifts': shifts_together,  # Logical shifts
+                    'toi_together': round(stats['toi_together'], 1),
+                    'goals_for': stats['goals_for'],
+                    'goals_against': stats['goals_against'],
+                    'plus_minus': stats['goals_for'] - stats['goals_against'],
+                    'corsi_for': stats['corsi_for'],
+                    'corsi_against': stats['corsi_against'],
+                    'cf_pct': cf_pct,
+                    'fenwick_for': stats['fenwick_for'],
+                    'fenwick_against': stats['fenwick_against'],
+                    'ff_pct': ff_pct,
                 }
                 all_combos.append(combo)
     
     df = pd.DataFrame(all_combos)
-    print(f"  Created {len(df)} line combo records")
+    
+    # Convert list columns to JSON strings for CSV storage (they'll be stored as strings)
+    # When loading in other systems, parse these as JSON arrays
+    if len(df) > 0:
+        # For CSV export, store lists as JSON strings
+        for col in ['forward_combo_ids', 'defense_combo_ids', 'forward_jersey_numbers', 'defense_jersey_numbers']:
+            if col in df.columns:
+                df[col] = df[col].apply(lambda x: json.dumps(x) if x is not None else None)
+    
+    print(f"  Created {len(df)} line combo records using logical shifts")
     return df
 
 
 def create_fact_shift_quality() -> pd.DataFrame:
     """
     Create per-shift quality scores.
+    Aggregates on logical shifts (logical_shift_number) rather than shift_index.
     """
     print("\nBuilding fact_shift_quality...")
     
@@ -396,23 +753,35 @@ def create_fact_shift_quality() -> pd.DataFrame:
         print("  ERROR: fact_shift_players not found!")
         return pd.DataFrame()
     
+    # Ensure logical_shift_number exists
+    if 'logical_shift_number' not in shift_players.columns:
+        print("  WARNING: logical_shift_number not found in fact_shift_players!")
+        print("  Falling back to shift_index for shift counting...")
+        shift_players['logical_shift_number'] = shift_players.get('shift_index', shift_players.index)
+    
     all_quality = []
     
-    for _, sp in shift_players.iterrows():
-        game_id = sp.get('game_id')
-        player_id = sp.get('player_id')
-        shift_index = sp.get('shift_index')
-        
-        if pd.isna(player_id):
+    # Group by logical shift to aggregate per logical shift (not per shift_index)
+    # Logical shifts represent actual shift changes where line composition changes
+    for (game_id, player_id, logical_shift_num), group in shift_players.groupby(['game_id', 'player_id', 'logical_shift_number']):
+        if pd.isna(player_id) or pd.isna(logical_shift_num):
             continue
         
+        # Get first row from group (should all have same basic info for the same logical shift)
+        sp = group.iloc[0]
+        
+        # Aggregate shift_duration from all rows in logical shift (sum)
+        shift_duration = group['shift_duration'].sum() if 'shift_duration' in group.columns else 0
+        # For other fields, take from first row
+        period = sp.get('period')
+        
         quality = {
-            'shift_quality_key': f"SQ_{game_id}_{player_id}_{shift_index}",
+            'shift_quality_key': f"SQ_{game_id}_{player_id}_{logical_shift_num}",
             'game_id': game_id,
             'player_id': player_id,
-            'shift_index': shift_index,
-            'shift_duration': sp.get('shift_duration', 0),
-            'period': sp.get('period'),
+            'logical_shift_number': logical_shift_num,
+            'shift_duration': shift_duration,
+            'period': period,
         }
         
         # Calculate quality score based on available metrics
@@ -427,8 +796,8 @@ def create_fact_shift_quality() -> pd.DataFrame:
         else:
             duration_score = 0.4
         
-        # Plus/minus factor
-        pm = sp.get('pm_all', 0) if pd.notna(sp.get('pm_all')) else 0
+        # Plus/minus factor - aggregate across all rows in logical shift
+        pm = group['pm_all'].sum() if 'pm_all' in group.columns else (sp.get('pm_all', 0) if pd.notna(sp.get('pm_all')) else 0)
         pm_score = 0.5 + (pm * 0.25)  # +1 pm = 0.75, -1 pm = 0.25
         pm_score = max(0, min(1, pm_score))
         
@@ -460,6 +829,7 @@ def create_fact_shift_quality() -> pd.DataFrame:
 def create_fact_shift_quality_logical() -> pd.DataFrame:
     """
     Create aggregated shift quality per player per game.
+    Aggregates from fact_shift_quality which now uses logical shifts.
     """
     print("\nBuilding fact_shift_quality_logical...")
     

@@ -70,41 +70,92 @@ def calculate_shift_toi_at_event(events_df: pd.DataFrame, shift_players_df: pd.D
     # Exclude goalies from shift data for aggregates
     sp_skaters = sp[sp['position'] != 'G'].copy()
     
-    # Pre-build lookup: game_id -> list of (player_id, venue, shift_start, shift_end)
-    logger.info("  Building shift lookup by game...")
+    # Pre-build lookup: (game_id, period) -> list of (player_id, venue, shift_start, shift_end)
+    # Include period if available for more accurate matching
+    logger.info("  Building shift lookup by game (and period if available)...")
     shift_lookup = {}
-    for game_id, group in sp_skaters.groupby('game_id'):
-        shift_lookup[game_id] = group[['player_id', 'venue', 'shift_start_total_seconds', 'shift_end_total_seconds']].values.tolist()
+    has_period = 'period' in sp_skaters.columns
+    
+    if has_period:
+        # More precise: group by game_id and period
+        for (game_id, period), group in sp_skaters.groupby(['game_id', 'period']):
+            key = (int(game_id), int(period))
+            shift_lookup[key] = group[['player_id', 'venue', 'shift_start_total_seconds', 'shift_end_total_seconds']].values.tolist()
+    else:
+        # Fallback: group by game_id only
+        for game_id, group in sp_skaters.groupby('game_id'):
+            shift_lookup[int(game_id)] = group[['player_id', 'venue', 'shift_start_total_seconds', 'shift_end_total_seconds']].values.tolist()
     
     # Process each unique game + event_time combination
     logger.info("  Processing events...")
-    unique_events = df[['game_id', 'event_id', 'time_start_total_seconds', 'team_venue']].drop_duplicates()
+    event_group_cols = ['game_id', 'event_id', 'time_start_total_seconds', 'team_venue']
+    if 'period' in df.columns:
+        event_group_cols.append('period')
+    unique_events = df[event_group_cols].drop_duplicates()
     
     event_toi_cache = {}  # (game_id, event_time, team_venue) -> {player_id: toi, team_agg, opp_agg}
     
     for _, evt in unique_events.iterrows():
-        game_id = evt['game_id']
+        game_id = int(evt['game_id'])
         event_time = evt['time_start_total_seconds']
         event_team_venue = evt['team_venue']
+        event_period = int(evt['period']) if 'period' in evt and pd.notna(evt['period']) else None
         
-        if pd.isna(event_time) or game_id not in shift_lookup:
+        if pd.isna(event_time):
             continue
         
-        cache_key = (game_id, event_time, event_team_venue)
+        # Get lookup key based on whether we have period info
+        if has_period and event_period is not None:
+            lookup_key = (game_id, event_period)
+        else:
+            lookup_key = game_id
+        
+        if lookup_key not in shift_lookup:
+            continue
+        
+        cache_key = (game_id, event_time, event_team_venue, event_period) if event_period is not None else (game_id, event_time, event_team_venue)
         if cache_key in event_toi_cache:
             continue
         
         # Find all players on ice at this event time
-        shifts = shift_lookup[game_id]
+        shifts = shift_lookup[lookup_key]
         players_on_ice = {}  # player_id -> {'toi': x, 'venue': v, 'shift_end': e}
         
         for player_id, venue, shift_start, shift_end in shifts:
-            # Countdown clock: shift_start >= event_time >= shift_end
-            if shift_start >= event_time >= shift_end:
-                toi = shift_start - event_time
+            # Determine time format: if shift_start > shift_end, it's countdown; else elapsed
+            # Countdown: shift_start (high, e.g. 1080) >= event_time >= shift_end (low, e.g. 0)
+            # Elapsed: shift_start (low, e.g. 0) <= event_time <= shift_end (high, e.g. 1080)
+            is_countdown = shift_start > shift_end if pd.notna(shift_start) and pd.notna(shift_end) else True
+            
+            player_in_shift = False
+            if is_countdown:
+                # Countdown format: shift_start >= event_time >= shift_end
+                if shift_start >= event_time >= shift_end:
+                    player_in_shift = True
+                    # TOI = time from shift start to event time (shift_start - event_time in countdown)
+                    toi = shift_start - event_time
+            else:
+                # Elapsed format: shift_start <= event_time <= shift_end
+                if shift_start <= event_time <= shift_end:
+                    player_in_shift = True
+                    # TOI = time from shift start to event time (event_time - shift_start in elapsed)
+                    toi = event_time - shift_start
+            
+            if player_in_shift:
                 # If player already found, keep the shift with end closest to event
-                if player_id not in players_on_ice or (event_time - shift_end) < (event_time - players_on_ice[player_id]['shift_end']):
+                if player_id not in players_on_ice:
                     players_on_ice[player_id] = {'toi': toi, 'venue': venue, 'shift_end': shift_end}
+                else:
+                    # Compare which shift end is closer to event time to handle overlapping shifts
+                    if is_countdown:
+                        current_dist = abs(event_time - shift_end)
+                        existing_dist = abs(event_time - players_on_ice[player_id]['shift_end'])
+                    else:
+                        current_dist = abs(event_time - shift_end)
+                        existing_dist = abs(event_time - players_on_ice[player_id]['shift_end'])
+                    
+                    if current_dist < existing_dist:
+                        players_on_ice[player_id] = {'toi': toi, 'venue': venue, 'shift_end': shift_end}
         
         # Split by team vs opp
         team_venue_full = 'away' if event_team_venue == 'a' else 'home'
@@ -129,7 +180,17 @@ def calculate_shift_toi_at_event(events_df: pd.DataFrame, shift_players_df: pd.D
     # Apply to dataframe
     logger.info("  Applying TOI values...")
     for idx, row in df.iterrows():
-        cache_key = (row['game_id'], row['time_start_total_seconds'], row['team_venue'])
+        game_id = int(row['game_id'])
+        event_time = row['time_start_total_seconds']
+        team_venue = row['team_venue']
+        event_period = int(row['period']) if 'period' in row and pd.notna(row.get('period')) else None
+        
+        # Build cache key (same logic as above)
+        if has_period and event_period is not None:
+            cache_key = (game_id, event_time, team_venue, event_period)
+        else:
+            cache_key = (game_id, event_time, team_venue)
+        
         if cache_key not in event_toi_cache:
             continue
         

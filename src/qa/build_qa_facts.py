@@ -188,23 +188,60 @@ def build_game_status():
                 })
                 
             except Exception as e:
+                # Check if game was actually loaded by ETL despite file read error
+                # This handles cases where file might have been fixed or ETL succeeded
+                game_events_count = len(events[events['game_id'] == int(game_id)]) if len(events) > 0 else 0
+                game_shifts_count = len(shifts[shifts['game_id'] == int(game_id)]) if len(shifts) > 0 else 0
+                is_loaded = int(game_id) in loaded_games
+                goals_in_stats = int(pgs[pgs['game_id'] == int(game_id)]['goals'].sum()) if is_loaded else 0
+                goal_match = goals_in_stats == row['official_total_goals'] if is_loaded else None
+                player_count = len(pgs[pgs['game_id'] == int(game_id)]) if is_loaded else 0
+                
+                # Determine status based on whether data exists despite file error
+                if is_loaded and (game_events_count > 0 or game_shifts_count > 0):
+                    # File read failed but ETL successfully processed it
+                    # Try to determine status from loaded data
+                    if game_events_count > 100:  # Reasonable threshold for complete game
+                        status = 'COMPLETE'
+                    elif game_events_count > 20:
+                        status = 'PARTIAL'
+                    else:
+                        status = 'TEMPLATE'
+                    
+                    # Try to get info from loaded data
+                    game_events_df = events[events['game_id'] == int(game_id)] if len(events) > 0 else pd.DataFrame()
+                    if len(game_events_df) > 0 and 'period' in game_events_df.columns:
+                        periods = sorted([int(p) for p in game_events_df['period'].dropna().unique() if pd.notna(p)])
+                        periods_str = ','.join(map(str, periods))
+                    else:
+                        periods_str = ''
+                    
+                    issues = [f'File read error (ETL succeeded): {str(e)[:100]}']
+                    if not goal_match and is_loaded:
+                        issues.append(f'Goal mismatch: {goals_in_stats} vs {row["official_total_goals"]}')
+                else:
+                    # File read failed and no data in output tables
+                    status = 'ERROR'
+                    periods_str = ''
+                    issues = [f'Error reading file: {str(e)[:200]}']
+                
                 row.update({
-                    'tracking_status': 'ERROR',
-                    'tracking_pct': 0.0,
-                    'events_row_count': 0,
-                    'shifts_row_count': 0,
+                    'tracking_status': status,
+                    'tracking_pct': 0.0 if not is_loaded else 100.0,  # If loaded, assume complete
+                    'events_row_count': game_events_count,
+                    'shifts_row_count': game_shifts_count,
                     'player_id_fill_pct': 0.0,
                     'goal_events': 0,
-                    'periods_covered': '',
+                    'periods_covered': periods_str,
                     'tracking_start_period': None,
                     'tracking_start_time': None,
                     'tracking_end_period': None,
                     'tracking_end_time': None,
-                    'is_loaded': False,
-                    'goals_in_stats': 0,
-                    'goal_match': None,
-                    'player_count': 0,
-                    'issues': f'Error reading file: {e}'
+                    'is_loaded': is_loaded,
+                    'goals_in_stats': goals_in_stats,
+                    'goal_match': goal_match,
+                    'player_count': player_count,
+                    'issues': '; '.join(issues) if issues else None
                 })
         
         status_rows.append(row)
@@ -401,18 +438,29 @@ def assign_positions_from_shifts():
         'F': 'Forward', 'D': 'Defense'
     }
     
-    # Calculate position % per player per game
+    # Ensure logical_shift_number exists
+    if 'logical_shift_number' not in shifts.columns:
+        print("  ⚠️ logical_shift_number not found - using shift_index for counting")
+        shifts['logical_shift_number'] = shifts.get('shift_index', shifts.index)
+    
+    # Calculate position % per player per game using LOGICAL SHIFTS
     position_stats = []
     
     for (game_id, player_id), group in shifts.groupby(['game_id', 'player_id']):
         if pd.isna(player_id):
             continue
         
-        total_shifts = len(group)
+        # Count distinct logical shifts (not raw rows)
+        total_shifts = group['logical_shift_number'].nunique() if 'logical_shift_number' in group.columns else len(group)
+        
+        # Count position by logical shift (group by logical_shift_number first, then get position)
         position_counts = {}
         
-        for _, shift in group.iterrows():
-            slot = shift.get(pos_col, '')
+        # Group by logical shift to avoid double-counting segments
+        for logical_shift_num, shift_group in group.groupby('logical_shift_number'):
+            # Get position from first segment of this logical shift
+            first_shift = shift_group.iloc[0]
+            slot = first_shift.get(pos_col, '')
             pos = slot_to_position.get(slot, 'Unknown')
             position_counts[pos] = position_counts.get(pos, 0) + 1
         

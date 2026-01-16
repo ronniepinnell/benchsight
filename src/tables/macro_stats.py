@@ -133,10 +133,14 @@ def create_fact_player_career_stats_basic() -> pd.DataFrame:
     """
     Create basic player career stats from roster data.
     SKATERS ONLY - excludes goalies.
+    
+    Grain: player_id + season_id + game_type (Regular/Playoffs/All)
+    Uses GAME_TYPE_SPLITS from game_type_aggregator (single source of truth)
     """
     print("\nBuilding fact_player_career_stats_basic (SKATERS ONLY)...")
     
     roster = load_table('fact_gameroster')
+    schedule = load_table('dim_schedule')
     
     if len(roster) == 0:
         return pd.DataFrame()
@@ -144,40 +148,77 @@ def create_fact_player_career_stats_basic() -> pd.DataFrame:
     # Filter to skaters
     skaters = roster[~roster['player_position'].astype(str).str.lower().str.contains('goalie', na=False)]
     
-    # Group by player (all seasons)
-    grouped = skaters.groupby('player_id').agg({
-        'game_id': 'nunique',
-        'season_id': 'nunique',
-        'goals': 'sum',
-        'assist': 'sum',
-        'points': 'sum',
-        'pim': 'sum',
-        'player_full_name': 'first',
-        'player_position': 'first',
-        'team_name': 'last',  # Most recent team
-    }).reset_index()
+    # Add game_type from schedule
+    skaters = add_game_type_to_df(skaters, schedule)
     
-    grouped.columns = ['player_id', 'career_games', 'seasons_played', 'career_goals', 
-                       'career_assists', 'career_points', 'career_pim',
-                       'player_name', 'position', 'current_team']
+    all_stats = []
     
-    # Per-game rates
-    grouped['goals_per_game'] = round(grouped['career_goals'] / grouped['career_games'], 2)
-    grouped['assists_per_game'] = round(grouped['career_assists'] / grouped['career_games'], 2)
-    grouped['points_per_game'] = round(grouped['career_points'] / grouped['career_games'], 2)
-    grouped['pim_per_game'] = round(grouped['career_pim'] / grouped['career_games'], 2)
+    # Get unique player-season combinations
+    player_seasons = skaters[['player_id', 'season_id', 'player_full_name', 'player_position', 
+                               'team_name']].drop_duplicates(subset=['player_id', 'season_id'])
     
-    grouped['player_career_basic_key'] = grouped['player_id'] + '_career'
-    grouped['_export_timestamp'] = datetime.now().isoformat()
+    for _, ps in player_seasons.iterrows():
+        player_id = ps['player_id']
+        season_id = ps['season_id']
+        
+        player_games = skaters[(skaters['player_id'] == player_id) & 
+                               (skaters['season_id'] == season_id)]
+        
+        # Split by game_type
+        for game_type in GAME_TYPE_SPLITS:
+            if game_type == 'All':
+                games = player_games
+            else:
+                games = player_games[player_games['game_type'] == game_type]
+            
+            if len(games) == 0:
+                continue
+            
+            # Aggregate stats
+            career_games = games['game_id'].nunique()
+            career_goals = int(games['goals'].sum())
+            career_assists = int(games['assist'].sum())
+            career_points = int(games['points'].sum())
+            career_pim = int(games['pim'].sum())
+            
+            # Per-game rates
+            goals_per_game = round(career_goals / career_games, 2) if career_games > 0 else 0.0
+            assists_per_game = round(career_assists / career_games, 2) if career_games > 0 else 0.0
+            points_per_game = round(career_points / career_games, 2) if career_games > 0 else 0.0
+            pim_per_game = round(career_pim / career_games, 2) if career_games > 0 else 0.0
+            
+            stats = {
+                'player_career_basic_key': f"{player_id}_{season_id}_{game_type}",
+                'player_id': player_id,
+                'season_id': season_id,
+                'game_type': game_type,
+                'player_name': ps['player_full_name'],
+                'position': ps['player_position'],
+                'current_team': ps['team_name'],
+                'career_games': career_games,
+                'career_goals': career_goals,
+                'career_assists': career_assists,
+                'career_points': career_points,
+                'career_pim': career_pim,
+                'goals_per_game': goals_per_game,
+                'assists_per_game': assists_per_game,
+                'points_per_game': points_per_game,
+                'pim_per_game': pim_per_game,
+                '_export_timestamp': datetime.now().isoformat(),
+            }
+            all_stats.append(stats)
     
-    cols = ['player_career_basic_key', 'player_id', 'player_name', 'position', 'current_team',
-            'seasons_played', 'career_games', 'career_goals', 'career_assists', 'career_points', 'career_pim',
+    df = pd.DataFrame(all_stats)
+    
+    cols = ['player_career_basic_key', 'player_id', 'season_id', 'game_type', 
+            'player_name', 'position', 'current_team',
+            'career_games', 'career_goals', 'career_assists', 'career_points', 'career_pim',
             'goals_per_game', 'assists_per_game', 'points_per_game', 'pim_per_game',
             '_export_timestamp']
-    grouped = grouped[[c for c in cols if c in grouped.columns]]
+    df = df[[c for c in cols if c in df.columns]]
     
-    print(f"  Created {len(grouped)} player career records with {len(grouped.columns)} columns")
-    return grouped
+    print(f"  Created {len(df)} player career records (by season+type) with {len(df.columns)} columns")
+    return df
 
 
 def create_fact_goalie_season_stats_basic() -> pd.DataFrame:
@@ -280,57 +321,154 @@ def create_fact_goalie_career_stats_basic() -> pd.DataFrame:
     """
     Create basic goalie career stats from roster data.
     GOALIES ONLY.
+    
+    Grain: player_id + season_id + game_type (Regular/Playoffs/All)
+    Uses GAME_TYPE_SPLITS from game_type_aggregator (single source of truth)
     """
     print("\nBuilding fact_goalie_career_stats_basic (GOALIES ONLY)...")
     
-    # Use the season stats as base
+    # Use the season stats as base (already has season_id and game_type)
     season_stats = load_table('fact_goalie_season_stats_basic')
     
-    if len(season_stats) == 0:
-        # Try to build from roster directly
+    all_stats = []
+    
+    if len(season_stats) > 0:
+        # Aggregate from season stats, preserving season_id and game_type
+        # Get unique player-season combinations
+        player_seasons = season_stats[['player_id', 'season_id', 'player_name', 
+                                       'team_name']].drop_duplicates(subset=['player_id', 'season_id'])
+        
+        for _, ps in player_seasons.iterrows():
+            player_id = ps['player_id']
+            season_id = ps['season_id']
+            
+            player_season_data = season_stats[
+                (season_stats['player_id'] == player_id) & 
+                (season_stats['season_id'] == season_id)
+            ]
+            
+            # Split by game_type
+            for game_type in GAME_TYPE_SPLITS:
+                type_data = player_season_data[player_season_data['game_type'] == game_type]
+                
+                if len(type_data) == 0:
+                    continue
+                
+                # Aggregate stats
+                career_games = int(type_data['games_played'].sum())
+                career_wins = int(type_data['wins'].sum())
+                career_losses = int(type_data['losses'].sum())
+                career_ties = int(type_data.get('ties', pd.Series([0] * len(type_data))).sum())
+                career_goals_against = int(type_data['goals_against'].sum())
+                career_shutouts = int(type_data['shutouts'].sum())
+                
+                # Calculate rates
+                career_gaa = round(career_goals_against / career_games, 2) if career_games > 0 else 0.0
+                career_win_pct = round(career_wins / career_games * 100, 1) if career_games > 0 else 0.0
+                career_shutout_pct = round(career_shutouts / career_games * 100, 1) if career_games > 0 else 0.0
+                
+                stats = {
+                    'goalie_career_basic_key': f"{player_id}_{season_id}_{game_type}",
+                    'player_id': player_id,
+                    'season_id': season_id,
+                    'game_type': game_type,
+                    'player_name': ps['player_name'],
+                    'current_team': ps['team_name'],
+                    'career_games': career_games,
+                    'career_wins': career_wins,
+                    'career_losses': career_losses,
+                    'career_ties': career_ties,
+                    'career_goals_against': career_goals_against,
+                    'career_gaa': career_gaa,
+                    'career_shutouts': career_shutouts,
+                    'career_shutout_pct': career_shutout_pct,
+                    'career_win_pct': career_win_pct,
+                    '_export_timestamp': datetime.now().isoformat(),
+                }
+                all_stats.append(stats)
+    else:
+        # Fallback: build from roster directly
         roster = load_table('fact_gameroster')
+        schedule = load_table('dim_schedule')
         goalies = roster[roster['player_position'].astype(str).str.lower().str.contains('goalie', na=False)]
         
         if len(goalies) == 0:
             return pd.DataFrame()
         
-        grouped = goalies.groupby('player_id').agg({
-            'game_id': 'nunique',
-            'season_id': 'nunique',
-            'goals_against': 'sum',
-            'shutouts': 'sum',
-            'player_full_name': 'first',
-            'team_name': 'last',
-        }).reset_index()
+        # Add game_type
+        goalies = add_game_type_to_df(goalies, schedule)
         
-        grouped.columns = ['player_id', 'career_games', 'seasons_played', 'career_goals_against',
-                           'career_shutouts', 'player_name', 'current_team']
-    else:
-        # Aggregate from season stats
-        grouped = season_stats.groupby('player_id').agg({
-            'games_played': 'sum',
-            'season_id': 'nunique',
-            'wins': 'sum',
-            'losses': 'sum',
-            'goals_against': 'sum',
-            'shutouts': 'sum',
-            'player_name': 'first',
-            'team_name': 'last',
-        }).reset_index()
+        # Get unique player-season combinations
+        player_seasons = goalies[['player_id', 'season_id', 'player_full_name', 
+                                  'team_name']].drop_duplicates(subset=['player_id', 'season_id'])
         
-        grouped.columns = ['player_id', 'career_games', 'seasons_played', 'career_wins',
-                           'career_losses', 'career_goals_against', 'career_shutouts',
-                           'player_name', 'current_team']
+        for _, ps in player_seasons.iterrows():
+            player_id = ps['player_id']
+            season_id = ps['season_id']
+            
+            goalie_games = goalies[(goalies['player_id'] == player_id) & 
+                                   (goalies['season_id'] == season_id)]
+            
+            # Split by game_type
+            for game_type in GAME_TYPE_SPLITS:
+                if game_type == 'All':
+                    games = goalie_games
+                else:
+                    games = goalie_games[goalie_games['game_type'] == game_type]
+                
+                if len(games) == 0:
+                    continue
+                
+                career_games = games['game_id'].nunique()
+                career_goals_against = int(games['goals_against'].sum())
+                career_shutouts = int(games['shutouts'].sum())
+                
+                # Get record using utility function
+                games_with_schedule = games.merge(
+                    schedule[['game_id', 'game_type', 'home_team_name', 'away_team_name', 
+                             'home_total_goals', 'away_total_goals', 'home_team_t', 'away_team_t']],
+                    on='game_id',
+                    how='left'
+                )
+                record = get_goalie_record_from_games(games_with_schedule)
+                
+                # Calculate rates
+                career_gaa = round(career_goals_against / career_games, 2) if career_games > 0 else 0.0
+                career_win_pct = round(record['wins'] / career_games * 100, 1) if career_games > 0 else 0.0
+                career_shutout_pct = round(career_shutouts / career_games * 100, 1) if career_games > 0 else 0.0
+                
+                stats = {
+                    'goalie_career_basic_key': f"{player_id}_{season_id}_{game_type}",
+                    'player_id': player_id,
+                    'season_id': season_id,
+                    'game_type': game_type,
+                    'player_name': ps['player_full_name'],
+                    'current_team': ps['team_name'],
+                    'career_games': career_games,
+                    'career_wins': record['wins'],
+                    'career_losses': record['losses'],
+                    'career_ties': record['ties'],
+                    'career_goals_against': career_goals_against,
+                    'career_gaa': career_gaa,
+                    'career_shutouts': career_shutouts,
+                    'career_shutout_pct': career_shutout_pct,
+                    'career_win_pct': career_win_pct,
+                    '_export_timestamp': datetime.now().isoformat(),
+                }
+                all_stats.append(stats)
     
-    # Calculate career rates
-    grouped['career_gaa'] = round(grouped['career_goals_against'] / grouped['career_games'], 2)
-    grouped['career_win_pct'] = round(grouped.get('career_wins', 0) / grouped['career_games'] * 100, 1) if 'career_wins' in grouped.columns else 0.0
-    grouped['career_shutout_pct'] = round(grouped['career_shutouts'] / grouped['career_games'] * 100, 1)
+    grouped = pd.DataFrame(all_stats)
     
-    grouped['goalie_career_basic_key'] = grouped['player_id'] + '_career'
-    grouped['_export_timestamp'] = datetime.now().isoformat()
+    # Reorder columns
+    priority_cols = ['goalie_career_basic_key', 'player_id', 'season_id', 'game_type',
+                     'player_name', 'current_team', 'career_games',
+                     'career_wins', 'career_losses', 'career_ties',
+                     'career_goals_against', 'career_gaa', 'career_shutouts',
+                     'career_shutout_pct', 'career_win_pct', '_export_timestamp']
+    other_cols = [c for c in grouped.columns if c not in priority_cols]
+    grouped = grouped[[c for c in priority_cols if c in grouped.columns] + other_cols]
     
-    print(f"  Created {len(grouped)} goalie career records with {len(grouped.columns)} columns")
+    print(f"  Created {len(grouped)} goalie career records (by season+type) with {len(grouped.columns)} columns")
     return grouped
 
 
@@ -579,6 +717,9 @@ def create_fact_goalie_career_stats() -> pd.DataFrame:
     """
     Create advanced goalie career stats from tracking data.
     GOALIES ONLY.
+    
+    Grain: player_id + season_id + game_type (Regular/Playoffs/All)
+    Uses GAME_TYPE_SPLITS from game_type_aggregator (single source of truth)
     """
     print("\nBuilding fact_goalie_career_stats (ADVANCED from tracking)...")
     
@@ -588,38 +729,106 @@ def create_fact_goalie_career_stats() -> pd.DataFrame:
         print("  No goalie season stats found")
         return pd.DataFrame()
     
-    # Sum columns
-    sum_cols = [col for col in season_stats.columns if col not in 
-                ['goalie_season_key', 'player_id', 'season_id', 'season', 'player_name',
-                 'team_name', 'team_id', '_export_timestamp', 'games_played',
-                 'save_pct', 'gaa', 'hd_save_pct', 'saves_per_game', 'shots_against_per_game',
-                 'rebound_control_rate', 'rush_sv_pct', 'set_play_sv_pct', 'quality_start_pct',
-                 'goalie_war', 'goalie_game_score', 'overall_game_rating', 'clutch_rating',
-                 'pressure_rating', 'rebound_rating']]
+    # Sum columns (exclude calculated rates and key columns)
+    exclude_cols = ['goalie_season_key', 'player_id', 'season_id', 'season', 'game_type', 'player_name',
+                    'team_name', 'team_id', '_export_timestamp', 'games_played',
+                    'save_pct', 'gaa', 'hd_save_pct', 'saves_per_game', 'shots_against_per_game',
+                    'rebound_control_rate', 'rush_sv_pct', 'set_play_sv_pct', 'quality_start_pct',
+                    'season_war']
     
-    agg_dict = {col: 'sum' for col in sum_cols if col in season_stats.columns}
-    agg_dict['games_played'] = 'sum'
-    agg_dict['season_id'] = 'nunique'
-    agg_dict['player_name'] = 'first'
-    agg_dict['team_name'] = 'last'
+    sum_cols = [col for col in season_stats.columns if col not in exclude_cols]
     
-    # Mean of ratings
-    for col in ['goalie_war', 'goalie_game_score', 'overall_game_rating', 'clutch_rating']:
-        if col in season_stats.columns:
-            agg_dict[col] = 'mean'
+    all_results = []
     
-    grouped = season_stats.groupby('player_id').agg(agg_dict).reset_index()
-    grouped.rename(columns={'season_id': 'seasons_played', 'games_played': 'career_games'}, inplace=True)
+    # Get unique player-season combinations
+    player_seasons = season_stats[['player_id', 'season_id', 'player_name', 'team_name']].drop_duplicates(
+        subset=['player_id', 'season_id']
+    )
     
-    # Calculate career rates
-    grouped['career_save_pct'] = round(grouped['saves'] / grouped['shots_against'] * 100, 2)
-    grouped['career_gaa'] = round(grouped['goals_against'] / grouped['career_games'], 2)
+    for _, ps in player_seasons.iterrows():
+        player_id = ps['player_id']
+        season_id = ps['season_id']
+        
+        player_season_data = season_stats[
+            (season_stats['player_id'] == player_id) & 
+            (season_stats['season_id'] == season_id)
+        ]
+        
+        # Split by game_type
+        for game_type in GAME_TYPE_SPLITS:
+            type_data = player_season_data[player_season_data['game_type'] == game_type]
+            
+            if len(type_data) == 0:
+                continue
+            
+            # Build aggregation dict
+            agg_dict = {}
+            for col in sum_cols:
+                if col in type_data.columns:
+                    agg_dict[col] = 'sum'
+            
+            agg_dict['games_played'] = 'sum'
+            agg_dict['player_name'] = 'first'
+            agg_dict['team_name'] = 'last'
+            agg_dict['team_id'] = 'last'
+            
+            # Mean of ratings
+            for col in ['goalie_war', 'goalie_game_score', 'overall_game_rating', 'clutch_rating', 
+                       'pressure_rating', 'rebound_rating']:
+                if col in type_data.columns:
+                    agg_dict[col] = 'mean'
+            
+            # Aggregate
+            grouped_type = type_data.agg(agg_dict).to_dict()
+            
+            career_games = int(grouped_type.get('games_played', 0))
+            
+            # Calculate career rates
+            if career_games > 0:
+                if 'saves' in grouped_type and 'shots_against' in grouped_type:
+                    career_save_pct = round(grouped_type['saves'] / grouped_type['shots_against'] * 100, 2) if grouped_type['shots_against'] > 0 else 0.0
+                else:
+                    career_save_pct = 0.0
+                
+                if 'goals_against' in grouped_type:
+                    career_gaa = round(grouped_type['goals_against'] / career_games, 2)
+                else:
+                    career_gaa = 0.0
+            else:
+                career_save_pct = 0.0
+                career_gaa = 0.0
+            
+            result = {
+                'goalie_career_key': f"{player_id}_{season_id}_{game_type}",
+                'player_id': player_id,
+                'season_id': season_id,
+                'game_type': game_type,
+                'player_name': grouped_type.get('player_name'),
+                'team_name': grouped_type.get('team_name'),
+                'team_id': grouped_type.get('team_id'),
+                'career_games': career_games,
+                'career_save_pct': career_save_pct,
+                'career_gaa': career_gaa,
+                '_export_timestamp': datetime.now().isoformat(),
+            }
+            
+            # Add all summed columns
+            for col in sum_cols:
+                if col in grouped_type:
+                    result[f'career_{col}'] = grouped_type[col]
+            
+            # Add mean columns with 'career_' prefix
+            for col in ['goalie_war', 'goalie_game_score', 'overall_game_rating', 'clutch_rating',
+                       'pressure_rating', 'rebound_rating']:
+                if col in grouped_type:
+                    result[f'career_{col}'] = round(grouped_type[col], 2) if pd.notna(grouped_type[col]) else 0.0
+            
+            all_results.append(result)
     
-    grouped['goalie_career_key'] = grouped['player_id'] + '_career'
-    grouped['_export_timestamp'] = datetime.now().isoformat()
+    df = pd.DataFrame(all_results)
     
-    print(f"  Created {len(grouped)} goalie career records with {len(grouped.columns)} columns")
-    return grouped
+    print(f"  Created {len(df)} goalie career records (by season+type) with {len(df.columns)} columns")
+    return df
 
 
 def create_fact_player_career_stats_enhanced() -> pd.DataFrame:
@@ -627,6 +836,9 @@ def create_fact_player_career_stats_enhanced() -> pd.DataFrame:
     Create enhanced player career stats from tracking data.
     SKATERS ONLY.
     Expands from basic 16 cols to 50+ with advanced metrics.
+    
+    Grain: player_id + season_id + game_type (Regular/Playoffs/All)
+    Uses GAME_TYPE_SPLITS from game_type_aggregator (single source of truth)
     """
     print("\nBuilding fact_player_career_stats (ENHANCED from tracking)...")
     
@@ -651,69 +863,123 @@ def create_fact_player_career_stats_enhanced() -> pd.DataFrame:
         'pk_toi', 'pp_toi', 'ev_toi', 'toi',
     ]
     
-    agg_dict = {}
-    for col in sum_cols:
-        if col in season_stats.columns:
-            agg_dict[col] = 'sum'
+    all_results = []
     
-    agg_dict['season_id'] = 'nunique'
+    # Get unique player-season combinations
+    player_seasons = season_stats[['player_id', 'season_id', 'player_name']].drop_duplicates(
+        subset=['player_id', 'season_id']
+    )
     
-    # Mean of rates/indices
-    rate_cols = ['war', 'gar', 'game_score', 'offensive_rating', 'defensive_rating']
-    for col in rate_cols:
-        if col in season_stats.columns:
-            agg_dict[col] = 'mean'
+    for _, ps in player_seasons.iterrows():
+        player_id = ps['player_id']
+        season_id = ps['season_id']
+        
+        player_season_data = season_stats[
+            (season_stats['player_id'] == player_id) & 
+            (season_stats['season_id'] == season_id)
+        ]
+        
+        # Split by game_type
+        for game_type in GAME_TYPE_SPLITS:
+            type_data = player_season_data[player_season_data['game_type'] == game_type]
+            
+            if len(type_data) == 0:
+                continue
+            
+            # Build aggregation
+            agg_dict = {}
+            for col in sum_cols:
+                if col in type_data.columns:
+                    agg_dict[col] = 'sum'
+            
+            agg_dict['player_name'] = 'first'
+            agg_dict['team_name'] = 'last'
+            agg_dict['team_id'] = 'last'
+            
+            # Mean of rates/indices
+            rate_cols = ['war', 'gar', 'game_score', 'offensive_rating', 'defensive_rating']
+            for col in rate_cols:
+                if col in type_data.columns:
+                    agg_dict[col] = 'mean'
+            
+            # Aggregate
+            grouped_type = type_data.agg(agg_dict).to_dict()
+            
+            # Get games played from game_stats for this player+season+type
+            game_stats = load_table('fact_player_game_stats')
+            if len(game_stats) > 0 and 'season_id' in game_stats.columns:
+                # Add game_type to game_stats if not present
+                if 'game_type' not in game_stats.columns:
+                    schedule = load_table('dim_schedule')
+                    game_stats = add_game_type_to_df(game_stats, schedule)
+                
+                player_game_stats = game_stats[
+                    (game_stats['player_id'] == player_id) & 
+                    (game_stats['season_id'] == season_id) &
+                    (game_stats['game_type'] == game_type)
+                ]
+                career_games = player_game_stats['game_id'].nunique()
+            else:
+                career_games = 0
+            
+            result = {
+                'player_career_key': f"{player_id}_{season_id}_{game_type}",
+                'player_id': player_id,
+                'season_id': season_id,
+                'game_type': game_type,
+                'player_name': grouped_type.get('player_name'),
+                'current_team': grouped_type.get('team_name'),
+                'team_id': grouped_type.get('team_id'),
+                'career_games': career_games,
+                '_export_timestamp': datetime.now().isoformat(),
+            }
+            
+            # Add all summed columns with 'career_' prefix
+            for col in sum_cols:
+                if col in grouped_type:
+                    result[col] = grouped_type[col]
+            
+            # Add mean columns
+            for col in rate_cols:
+                if col in grouped_type:
+                    result[col] = round(grouped_type[col], 2) if pd.notna(grouped_type[col]) else 0.0
+            
+            # Calculate career rates
+            if career_games > 0:
+                if 'goals' in result:
+                    result['goals_per_game'] = round(result['goals'] / career_games, 2)
+                if 'assists' in result:
+                    result['assists_per_game'] = round(result['assists'] / career_games, 2)
+                if 'points' in result:
+                    result['points_per_game'] = round(result['points'] / career_games, 2)
+            
+            if 'sog' in result and result['sog'] > 0:
+                result['shooting_pct'] = round(result.get('goals', 0) / result['sog'] * 100, 1)
+            
+            if 'pass_attempts' in result and result['pass_attempts'] > 0:
+                result['pass_completion_pct'] = round(result.get('pass_completed', 0) / result['pass_attempts'] * 100, 1)
+            
+            if 'fo_wins' in result and 'fo_losses' in result:
+                total_fo = result['fo_wins'] + result['fo_losses']
+                if total_fo > 0:
+                    result['faceoff_pct'] = round(result['fo_wins'] / total_fo * 100, 1)
+            
+            if 'takeaways' in result and 'giveaways' in result and result['giveaways'] > 0:
+                result['takeaway_giveaway_ratio'] = round(result['takeaways'] / result['giveaways'], 2)
+            
+            all_results.append(result)
     
-    grouped = season_stats.groupby('player_id').agg(agg_dict).reset_index()
-    grouped.rename(columns={'season_id': 'seasons_played'}, inplace=True)
+    df = pd.DataFrame(all_results)
     
-    # Add games played from game_stats
-    game_stats = load_table('fact_player_game_stats')
-    if len(game_stats) > 0:
-        games_by_player = game_stats.groupby('player_id')['game_id'].nunique().reset_index()
-        games_by_player.columns = ['player_id', 'career_games']
-        grouped = grouped.merge(games_by_player, on='player_id', how='left')
-        grouped['career_games'] = grouped['career_games'].fillna(0).astype(int)
-    else:
-        grouped['career_games'] = grouped['seasons_played']
-    
-    # Add player info from dim_player
-    if len(players) > 0:
-        player_info = players[['player_id', 'player_full_name']].drop_duplicates()
-        grouped = grouped.merge(player_info, on='player_id', how='left')
-        grouped.rename(columns={'player_full_name': 'player_name'}, inplace=True)
-    
-    # Add position and team from roster
+    # Add position from roster
     if len(roster) > 0:
         latest_roster = roster.sort_values('game_id').groupby('player_id').last().reset_index()
-        roster_info = latest_roster[['player_id', 'player_position', 'team_name']].copy()
-        roster_info.columns = ['player_id', 'position', 'current_team']
-        grouped = grouped.merge(roster_info, on='player_id', how='left')
+        roster_info = latest_roster[['player_id', 'player_position']].copy()
+        roster_info.columns = ['player_id', 'position']
+        df = df.merge(roster_info, on='player_id', how='left')
     
-    # Calculate career rates
-    if 'goals' in grouped.columns and 'career_games' in grouped.columns:
-        grouped['goals_per_game'] = round(grouped['goals'] / grouped['career_games'].replace(0, 1), 2)
-        grouped['assists_per_game'] = round(grouped['assists'] / grouped['career_games'].replace(0, 1), 2) if 'assists' in grouped.columns else 0.0
-        grouped['points_per_game'] = round(grouped['points'] / grouped['career_games'].replace(0, 1), 2) if 'points' in grouped.columns else 0.0
-    
-    if 'sog' in grouped.columns:
-        grouped['shooting_pct'] = round(grouped['goals'] / grouped['sog'].replace(0, 1) * 100, 1)
-    
-    if 'pass_attempts' in grouped.columns:
-        grouped['pass_completion_pct'] = round(grouped['pass_completed'] / grouped['pass_attempts'].replace(0, 1) * 100, 1)
-    
-    if 'fo_wins' in grouped.columns and 'fo_losses' in grouped.columns:
-        total_fo = grouped['fo_wins'] + grouped['fo_losses']
-        grouped['faceoff_pct'] = round(grouped['fo_wins'] / total_fo.replace(0, 1) * 100, 1)
-    
-    if 'takeaways' in grouped.columns and 'giveaways' in grouped.columns:
-        grouped['takeaway_giveaway_ratio'] = round(grouped['takeaways'] / grouped['giveaways'].replace(0, 1), 2)
-    
-    grouped['player_career_key'] = grouped['player_id'] + '_career'
-    grouped['_export_timestamp'] = datetime.now().isoformat()
-    
-    print(f"  Created {len(grouped)} player career records with {len(grouped.columns)} columns")
-    return grouped
+    print(f"  Created {len(df)} player career records (by season+type) with {len(df.columns)} columns")
+    return df
 
 
 # =============================================================================
