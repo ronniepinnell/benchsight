@@ -1,0 +1,269 @@
+{
+  "exportDate": "2026-01-16T16:52:59.116Z",
+  "version": "23.8",
+  "gameId": 19014,
+  "homeTeam": "Platinum",
+  "awayTeam": "Velodrome",
+  "homeColor": "#919294",
+  "awayColor": "#9C47E4",
+  "homeLogo": "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/04/Hartford-Final-scaled.png?w=2534&ssl=1",
+  "awayLogo": "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/08/2024-25-VEL-Jersey-Logo.png?fit=128%2C128&ssl=1",
+  "rosters": {
+    "home": [
+      {
+        "id": "P100030",
+        "num": "8",
+        "name": "Jesse Chambless",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100027",
+        "num": "12",
+        "name": "Karen Zietlow",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100024",
+        "num": "20",
+        "name": "John Thien",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100067",
+        "num": "29",
+        "name": "Ian Ward",
+        "pos": "G",
+        "rating": null
+      },
+      {
+        "id": "P100022",
+        "num": "34",
+        "name": "Chris Dube",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100117",
+        "num": "45",
+        "name": "Keegan Mantaro",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100210",
+        "num": "47",
+        "name": "Josh Simonds",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100192",
+        "num": "53",
+        "name": "Chris Premo",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100107",
+        "num": "78",
+        "name": "Matt Quinn",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100110",
+        "num": "82",
+        "name": "JoLyn Maly",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100222",
+        "num": "86",
+        "name": "Joshua Blumberg",
+        "pos": "F",
+        "rating": null
+      }
+    ],
+    "away": [
+      {
+        "id": "P100105",
+        "num": "9",
+        "name": "Ronnie Pinnell",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100132",
+        "num": "14",
+        "name": "Nick Ciampoli",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100108",
+        "num": "22",
+        "name": "Robert Mayfield",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100230",
+        "num": "24",
+        "name": "Jennifer Valente",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100016",
+        "num": "39",
+        "name": "Wyatt Crandall",
+        "pos": "G",
+        "rating": null
+      },
+      {
+        "id": "P100064",
+        "num": "55",
+        "name": "James Rynearson",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100224",
+        "num": "61",
+        "name": "Kaitlyn Shain",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100001",
+        "num": "70",
+        "name": "Sam Downs",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100039",
+        "num": "75",
+        "name": "Nicole Downs",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100198",
+        "num": "84",
+        "name": "Maxwell Donaty",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100159",
+        "num": "87",
+        "name": "Josh Cronk",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100002",
+        "num": "91",
+        "name": "Kevin White",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100093",
+        "num": "93",
+        "name": "Pat Major",
+        "pos": "D",
+        "rating": null
+      }
+    ]
+  },
+  "events": [],
+  "shifts": [],
+  "evtIdx": 0,
+  "shiftIdx": 0,
+  "videos": [
+    {
+      "id": "17685822114612uya9vrge",
+      "url": "https://www.youtube.com/watch?v=e3HHMeNmnkI",
+      "type": "Full_Ice",
+      "video_id": "e3HHMeNmnkI"
+    },
+    {
+      "id": "1768582374613y1y1w2g2l",
+      "url": "https://www.youtube.com/watch?v=BbaRi2c4e1s",
+      "type": "Broadcast",
+      "video_id": "BbaRi2c4e1s"
+    }
+  ],
+  "videoTiming": {
+    "videoStartOffset": 3,
+    "intermission1": 79,
+    "intermission2": 72,
+    "timeouts": [],
+    "youtubeUrl": "https://www.youtube.com/watch?v=e3HHMeNmnkI",
+    "intermission3": 300
+  },
+  "periodLengths": {
+    "1": 18,
+    "2": 18,
+    "3": 18,
+    "OT": 5
+  },
+  "penaltyLengths": {
+    "minor": 3,
+    "major": 6,
+    "misconduct": 10
+  },
+  "homeAttacksRightP1": true,
+  "settings": {
+    "sbUrl": "https://uuaowslhpgyiudmbvqze.supabase.co",
+    "sbKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1YW93c2xocGd5aXVkbWJ2cXplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4NTQ5ODcsImV4cCI6MjA4MjQzMDk4N30.9WjZcLzB555vKaiDeby8nYJ3Ce9L-SCkFrYH1Ts4ILU",
+    "autoSaveInt": "30",
+    "pressureDist": "5",
+    "xyHistCnt": "5",
+    "periodLength": "18",
+    "otLength": "5",
+    "penaltyLengthMinor": "3",
+    "penaltyLengthMajor": "6",
+    "penaltyLengthMisconduct": "10"
+  },
+  "customChainPresets": [],
+  "linePresets": {
+    "home_F1": {
+      "name": "F1",
+      "players": [
+        "20",
+        "34",
+        "12"
+      ]
+    }
+  },
+  "currentPeriod": 1,
+  "currentTeam": "home",
+  "slots": {
+    "home": {
+      "F1": null,
+      "F2": null,
+      "F3": null,
+      "D1": null,
+      "D2": null,
+      "G": null,
+      "X": null
+    },
+    "away": {
+      "F1": null,
+      "F2": null,
+      "F3": null,
+      "D1": null,
+      "D2": null,
+      "G": null,
+      "X": null
+    }
+  },
+  "savedAt": "2026-01-16T16:52:59.115Z"
+}

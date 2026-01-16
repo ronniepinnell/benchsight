@@ -1,5 +1,5 @@
 {
-  "exportDate": "2026-01-16T15:15:11.597Z",
+  "exportDate": "2026-01-16T18:38:57.257Z",
   "version": "23.8",
   "gameId": 19038,
   "homeTeam": "Ace",
@@ -11405,12 +11405,22 @@
     "videoStartOffset": 0,
     "intermission1": 2,
     "intermission2": 900,
-    "intermission3": 300,
     "timeouts": [],
-    "youtubeUrl": "https://www.youtube.com/watch?v=T9FCpRBR7bg&feature=youtu.be"
+    "youtubeUrl": "https://www.youtube.com/watch?v=T9FCpRBR7bg&feature=youtu.be",
+    "periodOffsets": {
+      "1": 6,
+      "2": 1171,
+      "3": 2341,
+      "OT": null
+    },
+    "gameStart": {
+      "period": 1,
+      "time": "18:00"
+    },
+    "intermission3": 300
   },
   "periodLengths": {
-    "1": 21,
+    "1": 18,
     "2": 18,
     "3": 18,
     "OT": 5
@@ -11420,14 +11430,14 @@
     "major": 6,
     "misconduct": 10
   },
-  "homeAttacksRightP1": false,
+  "homeAttacksRightP1": true,
   "settings": {
     "sbUrl": "https://uuaowslhpgyiudmbvqze.supabase.co",
     "sbKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1YW93c2xocGd5aXVkbWJ2cXplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4NTQ5ODcsImV4cCI6MjA4MjQzMDk4N30.9WjZcLzB555vKaiDeby8nYJ3Ce9L-SCkFrYH1Ts4ILU",
     "autoSaveInt": "30",
     "pressureDist": "5",
     "xyHistCnt": "5",
-    "periodLength": "21",
+    "periodLength": "18",
     "otLength": "5",
     "penaltyLengthMinor": "3",
     "penaltyLengthMajor": "6",
@@ -11445,74 +11455,26 @@
     }
   },
   "currentPeriod": 1,
-  "currentTeam": "away",
+  "currentTeam": "home",
   "slots": {
     "home": {
-      "F1": {
-        "num": "16",
-        "name": "Joe Diberardinis",
-        "pos": "F"
-      },
-      "F2": {
-        "num": "20",
-        "name": "John Morrow",
-        "pos": "F"
-      },
-      "F3": {
-        "num": "88",
-        "name": "John Liersemann",
-        "pos": "F"
-      },
-      "D1": {
-        "num": "65",
-        "name": "Nick Zellmann",
-        "pos": "D"
-      },
-      "D2": {
-        "num": "81",
-        "name": "Kevin Kalbfleisch",
-        "pos": "D"
-      },
-      "G": {
-        "num": "31",
-        "name": "Ian Gustafson",
-        "pos": "G"
-      },
+      "F1": null,
+      "F2": null,
+      "F3": null,
+      "D1": null,
+      "D2": null,
+      "G": null,
       "X": null
     },
     "away": {
-      "F1": {
-        "num": "70",
-        "name": "Sam Downs",
-        "pos": "F"
-      },
-      "F2": {
-        "num": "24",
-        "name": "Jennifer Valente",
-        "pos": "F"
-      },
-      "F3": {
-        "num": "91",
-        "name": "Kevin White",
-        "pos": "F"
-      },
-      "D1": {
-        "num": "93",
-        "name": "Pat Major",
-        "pos": "D"
-      },
-      "D2": {
-        "num": "22",
-        "name": "Robert Mayfield",
-        "pos": "D"
-      },
-      "G": {
-        "num": "39",
-        "name": "Wyatt Crandall",
-        "pos": "G"
-      },
+      "F1": null,
+      "F2": null,
+      "F3": null,
+      "D1": null,
+      "D2": null,
+      "G": null,
       "X": null
     }
   },
-  "savedAt": "2026-01-16T15:15:11.594Z"
+  "savedAt": "2026-01-16T18:38:57.255Z"
 }

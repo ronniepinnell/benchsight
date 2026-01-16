@@ -1,5 +1,5 @@
 {
-  "exportDate": "2026-01-16T16:17:23.049Z",
+  "exportDate": "2026-01-16T18:39:03.254Z",
   "version": "23.8",
   "gameId": 19038,
   "homeTeam": "Ace",
@@ -11387,30 +11387,27 @@
   ],
   "evtIdx": 55,
   "shiftIdx": 57,
-  "videos": [
-    {
-      "id": "1768528430847r856srfgb",
-      "url": "https://www.youtube.com/watch?v=T9FCpRBR7bg",
-      "type": "Full_Ice",
-      "video_id": "T9FCpRBR7bg"
-    },
-    {
-      "id": "17685284531686glfhly02",
-      "url": "https://www.youtube.com/watch?v=hc_Qx_1fRIo",
-      "type": "Broadcast",
-      "video_id": "hc_Qx_1fRIo"
-    }
-  ],
+  "videos": [],
   "videoTiming": {
     "videoStartOffset": 0,
     "intermission1": 2,
     "intermission2": 900,
-    "intermission3": 300,
     "timeouts": [],
-    "youtubeUrl": "https://www.youtube.com/watch?v=T9FCpRBR7bg&feature=youtu.be"
+    "youtubeUrl": "https://www.youtube.com/watch?v=T9FCpRBR7bg&feature=youtu.be",
+    "periodOffsets": {
+      "1": 6,
+      "2": 1171,
+      "3": 2341,
+      "OT": null
+    },
+    "gameStart": {
+      "period": 1,
+      "time": "18:00"
+    },
+    "intermission3": 300
   },
   "periodLengths": {
-    "1": 21,
+    "1": 18,
     "2": 18,
     "3": 18,
     "OT": 5
@@ -11420,14 +11417,14 @@
     "major": 6,
     "misconduct": 10
   },
-  "homeAttacksRightP1": false,
+  "homeAttacksRightP1": true,
   "settings": {
     "sbUrl": "https://uuaowslhpgyiudmbvqze.supabase.co",
     "sbKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1YW93c2xocGd5aXVkbWJ2cXplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4NTQ5ODcsImV4cCI6MjA4MjQzMDk4N30.9WjZcLzB555vKaiDeby8nYJ3Ce9L-SCkFrYH1Ts4ILU",
     "autoSaveInt": "30",
     "pressureDist": "5",
     "xyHistCnt": "5",
-    "periodLength": "21",
+    "periodLength": "18",
     "otLength": "5",
     "penaltyLengthMinor": "3",
     "penaltyLengthMajor": "6",
@@ -11466,5 +11463,5 @@
       "X": null
     }
   },
-  "savedAt": "2026-01-16T16:17:23.048Z"
+  "savedAt": "2026-01-16T18:39:03.253Z"
 }

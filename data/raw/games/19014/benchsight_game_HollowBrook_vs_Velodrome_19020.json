@@ -1,0 +1,284 @@
+{
+  "exportDate": "2026-01-16T16:51:29.265Z",
+  "version": "23.8",
+  "gameId": 19020,
+  "homeTeam": "HollowBrook",
+  "awayTeam": "Velodrome",
+  "homeColor": "#4D2640",
+  "awayColor": "#9C47E4",
+  "homeLogo": "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2017/01/HBD-Logo.png?resize=128%2C115&ssl=1",
+  "awayLogo": "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/08/2024-25-VEL-Jersey-Logo.png?fit=128%2C128&ssl=1",
+  "rosters": {
+    "home": [
+      {
+        "id": "P100335",
+        "num": "2",
+        "name": "Zach Inman",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100330",
+        "num": "4",
+        "name": "McKay Inman",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100038",
+        "num": "5",
+        "name": "Kevin Moore",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100091",
+        "num": "8",
+        "name": "Bert Loper",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100084",
+        "num": "11",
+        "name": "Ty Smith",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100047",
+        "num": "13",
+        "name": "Nathan Watts",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100096",
+        "num": "17",
+        "name": "Jared Wolf",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100123",
+        "num": "18",
+        "name": "Todd Heffner",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100088",
+        "num": "19",
+        "name": "Hayden Smith",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100100",
+        "num": "26",
+        "name": "Nate Flint",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100086",
+        "num": "27",
+        "name": "Beau Kelly",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100189",
+        "num": "28",
+        "name": "Garret Orth",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100003",
+        "num": "32",
+        "name": "Scott Purdy",
+        "pos": "G",
+        "rating": null
+      },
+      {
+        "id": "P100081",
+        "num": "33",
+        "name": "Lee Smith",
+        "pos": "D",
+        "rating": null
+      }
+    ],
+    "away": [
+      {
+        "id": "P100105",
+        "num": "9",
+        "name": "Ronnie Pinnell",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100132",
+        "num": "14",
+        "name": "Nick Ciampoli",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100108",
+        "num": "22",
+        "name": "Robert Mayfield",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100230",
+        "num": "24",
+        "name": "Jennifer Valente",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100016",
+        "num": "39",
+        "name": "Wyatt Crandall",
+        "pos": "G",
+        "rating": null
+      },
+      {
+        "id": "P100161",
+        "num": "49",
+        "name": "Galen Wood",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100224",
+        "num": "61",
+        "name": "Kaitlyn Shain",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100001",
+        "num": "70",
+        "name": "Sam Downs",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100039",
+        "num": "75",
+        "name": "Nicole Downs",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100198",
+        "num": "84",
+        "name": "Maxwell Donaty",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100159",
+        "num": "87",
+        "name": "Josh Cronk",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100002",
+        "num": "91",
+        "name": "Kevin White",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100093",
+        "num": "93",
+        "name": "Pat Major",
+        "pos": "D",
+        "rating": null
+      }
+    ]
+  },
+  "events": [],
+  "shifts": [],
+  "evtIdx": 0,
+  "shiftIdx": 0,
+  "videos": [
+    {
+      "id": "1768582278177kk9ov3pri",
+      "url": "https://www.youtube.com/watch?v=8DMLd_omUNA",
+      "type": "Broadcast",
+      "video_id": "8DMLd_omUNA"
+    }
+  ],
+  "videoTiming": {
+    "videoStartOffset": 0,
+    "intermission1": 79,
+    "intermission2": 72,
+    "timeouts": [],
+    "youtubeUrl": "https://www.youtube.com/watch?v=8DMLd_omUNA",
+    "intermission3": 300
+  },
+  "periodLengths": {
+    "1": 18,
+    "2": 18,
+    "3": 18,
+    "OT": 5
+  },
+  "penaltyLengths": {
+    "minor": 3,
+    "major": 6,
+    "misconduct": 10
+  },
+  "homeAttacksRightP1": true,
+  "settings": {
+    "sbUrl": "https://uuaowslhpgyiudmbvqze.supabase.co",
+    "sbKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1YW93c2xocGd5aXVkbWJ2cXplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4NTQ5ODcsImV4cCI6MjA4MjQzMDk4N30.9WjZcLzB555vKaiDeby8nYJ3Ce9L-SCkFrYH1Ts4ILU",
+    "autoSaveInt": "30",
+    "pressureDist": "5",
+    "xyHistCnt": "5",
+    "periodLength": "18",
+    "otLength": "5",
+    "penaltyLengthMinor": "3",
+    "penaltyLengthMajor": "6",
+    "penaltyLengthMisconduct": "10"
+  },
+  "customChainPresets": [],
+  "linePresets": {
+    "home_F1": {
+      "name": "F1",
+      "players": [
+        "20",
+        "34",
+        "12"
+      ]
+    }
+  },
+  "currentPeriod": 1,
+  "currentTeam": "home",
+  "slots": {
+    "home": {
+      "F1": null,
+      "F2": null,
+      "F3": null,
+      "D1": null,
+      "D2": null,
+      "G": null,
+      "X": null
+    },
+    "away": {
+      "F1": null,
+      "F2": null,
+      "F3": null,
+      "D1": null,
+      "D2": null,
+      "G": null,
+      "X": null
+    }
+  },
+  "savedAt": "2026-01-16T16:51:29.265Z"
+}

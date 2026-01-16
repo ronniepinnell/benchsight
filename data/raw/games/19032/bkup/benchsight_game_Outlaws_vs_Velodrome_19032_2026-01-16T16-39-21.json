@@ -1,0 +1,248 @@
+{
+  "exportDate": "2026-01-16T16:39:21.944Z",
+  "version": "23.8",
+  "gameId": 19032,
+  "homeTeam": "Outlaws",
+  "awayTeam": "Velodrome",
+  "homeColor": "#02007B",
+  "awayColor": "#9C47E4",
+  "homeLogo": "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2024/08/OUTCAN-Outlaws-Logo.png?resize=128%2C117&ssl=1",
+  "awayLogo": "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/08/2024-25-VEL-Jersey-Logo.png?fit=128%2C128&ssl=1",
+  "rosters": {
+    "home": [
+      {
+        "id": "P100004",
+        "num": "3",
+        "name": "Cesar Shinall",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100032",
+        "num": "4",
+        "name": "Trevor Chavez",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100214",
+        "num": "12",
+        "name": "Ryan Kiehl",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100076",
+        "num": "25",
+        "name": "Andrew Kell",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100009",
+        "num": "30",
+        "name": "Graham Peters",
+        "pos": "G",
+        "rating": null
+      },
+      {
+        "id": "P100185",
+        "num": "77",
+        "name": "Samson Leifer",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100223",
+        "num": "80",
+        "name": "Richie Villanueva",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100232",
+        "num": "91",
+        "name": "Philip Kerchner",
+        "pos": "F",
+        "rating": null
+      }
+    ],
+    "away": [
+      {
+        "id": "P100105",
+        "num": "9",
+        "name": "Ronnie Pinnell",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100108",
+        "num": "22",
+        "name": "Robert Mayfield",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100230",
+        "num": "24",
+        "name": "Jennifer Valente",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100016",
+        "num": "39",
+        "name": "Wyatt Crandall",
+        "pos": "G",
+        "rating": null
+      },
+      {
+        "id": "P100201",
+        "num": "42",
+        "name": "Garrett Ashcroft",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100064",
+        "num": "55",
+        "name": "James Rynearson",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100224",
+        "num": "61",
+        "name": "Kaitlyn Shain",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100001",
+        "num": "70",
+        "name": "Sam Downs",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100039",
+        "num": "75",
+        "name": "Nicole Downs",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100198",
+        "num": "84",
+        "name": "Maxwell Donaty",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100159",
+        "num": "87",
+        "name": "Josh Cronk",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100002",
+        "num": "91",
+        "name": "Kevin White",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100093",
+        "num": "93",
+        "name": "Pat Major",
+        "pos": "D",
+        "rating": null
+      }
+    ]
+  },
+  "events": [],
+  "shifts": [],
+  "evtIdx": 0,
+  "shiftIdx": 0,
+  "videos": [
+    {
+      "id": "1768581322407v4029gvjv",
+      "url": "https://www.youtube.com/watch?v=A2SPUvqhgvQ",
+      "type": "Broadcast",
+      "video_id": "A2SPUvqhgvQ"
+    },
+    {
+      "id": "1768581412304oui559s3w",
+      "url": "https://www.youtube.com/watch?v=Mt-lTEMScK4",
+      "type": "Full_Ice",
+      "video_id": "Mt-lTEMScK4"
+    }
+  ],
+  "videoTiming": {
+    "videoStartOffset": 0,
+    "intermission1": 72,
+    "intermission2": 60,
+    "intermission3": 300,
+    "timeouts": [],
+    "youtubeUrl": ""
+  },
+  "periodLengths": {
+    "1": 18,
+    "2": 18,
+    "3": 18,
+    "OT": 5
+  },
+  "penaltyLengths": {
+    "minor": 3,
+    "major": 6,
+    "misconduct": 10
+  },
+  "homeAttacksRightP1": true,
+  "settings": {
+    "sbUrl": "https://uuaowslhpgyiudmbvqze.supabase.co",
+    "sbKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1YW93c2xocGd5aXVkbWJ2cXplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4NTQ5ODcsImV4cCI6MjA4MjQzMDk4N30.9WjZcLzB555vKaiDeby8nYJ3Ce9L-SCkFrYH1Ts4ILU",
+    "autoSaveInt": "30",
+    "pressureDist": "5",
+    "xyHistCnt": "5",
+    "periodLength": "18",
+    "otLength": "5",
+    "penaltyLengthMinor": "3",
+    "penaltyLengthMajor": "6",
+    "penaltyLengthMisconduct": "10"
+  },
+  "customChainPresets": [],
+  "linePresets": {
+    "home_F1": {
+      "name": "F1",
+      "players": [
+        "20",
+        "34",
+        "12"
+      ]
+    }
+  },
+  "currentPeriod": 1,
+  "currentTeam": "home",
+  "slots": {
+    "home": {
+      "F1": null,
+      "F2": null,
+      "F3": null,
+      "D1": null,
+      "D2": null,
+      "G": null,
+      "X": null
+    },
+    "away": {
+      "F1": null,
+      "F2": null,
+      "F3": null,
+      "D1": null,
+      "D2": null,
+      "G": null,
+      "X": null
+    }
+  },
+  "savedAt": "2026-01-16T16:39:21.939Z"
+}

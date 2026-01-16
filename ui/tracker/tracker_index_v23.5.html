@@ -1344,8 +1344,22 @@ kbd { background: var(--bg); border: 1px solid var(--border); padding: 0 3px; bo
     <!-- Hidden for backward compatibility -->
     <input type="hidden" id="periodLength" value="18">
     <input type="hidden" id="otLength" value="5">
-    <div class="form-group" style="margin-bottom:8px;">
-      <label>Save Location</label>
+      <div class="form-group" style="margin-bottom:8px;">
+      <label>Default Game Folder</label>
+      <div class="save-location-box">
+        <div class="folder-display">
+          <div class="folder-path empty" id="defaultFolderPath">No default folder selected</div>
+          <div class="folder-actions">
+            <button class="btn-sm btn-primary" onclick="promptForDefaultDirectory()" title="Select default folder where game folders will be created">📁 Choose</button>
+            <button class="btn-sm" onclick="clearDefaultFolder()" title="Clear default folder">✕</button>
+          </div>
+        </div>
+        <div class="folder-status" id="defaultFolderStatus">
+          💡 Select a default folder. Game folders (named by game ID) will be created automatically when loading games.
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:8px;margin-top:12px;">
+      <label>Save Location (Auto-saves)</label>
       <div class="save-location-box">
         <div class="folder-display">
           <div class="folder-path empty" id="saveFolderPath">No folder selected - using localStorage only</div>
@@ -1787,6 +1801,27 @@ kbd { background: var(--bg); border: 1px solid var(--border); padding: 0 3px; bo
         <label>Video Start Offset (sec)</label>
         <input type="number" id="vtVideoStartOffset" value="0" min="0" placeholder="Skip warmups etc" oninput="updateVideoTimingPreview()">
       </div>
+      
+      <!-- Game Start Configuration -->
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+        <label style="font-size:10px;color:var(--accent);display:block;margin-bottom:6px;font-weight:bold;">🎬 Game Start (for partial recordings)</label>
+        <p style="font-size:9px;color:var(--muted);margin-bottom:8px;">If video only records part of the game, specify when recording starts</p>
+        <div class="form-row">
+          <div class="form-group" style="flex:1;">
+            <label style="font-size:9px;">Start Period</label>
+            <select id="vtGameStartPeriod" oninput="updateVideoTimingPreview()">
+              <option value="1">Period 1</option>
+              <option value="2">Period 2</option>
+              <option value="3">Period 3</option>
+              <option value="OT">OT</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label style="font-size:9px;">Start Time (MM:SS)</label>
+            <input type="text" id="vtGameStartTime" placeholder="18:00" oninput="autoFormatTime(this); updateVideoTimingPreview();">
+          </div>
+        </div>
+      </div>
       <div style="margin-top:8px;">
         <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:4px;">Period Lengths (minutes) - synced with Settings</label>
         <div style="display:flex;gap:8px;">
@@ -1811,6 +1846,30 @@ kbd { background: var(--bg); border: 1px solid var(--border); padding: 0 3px; bo
       <div class="form-group" style="margin-top:8px;">
         <label>YouTube URL (optional)</label>
         <input type="text" id="vtYoutubeUrl" placeholder="https://youtube.com/watch?v=...">
+      </div>
+    </div>
+    
+    <!-- Period Start Offsets -->
+    <div style="background:var(--card);padding:12px;border-radius:4px;margin-bottom:12px;">
+      <h4 style="font-size:11px;color:var(--accent);margin-bottom:8px;">Period Start Offsets</h4>
+      <p style="font-size:9px;color:var(--muted);margin-bottom:8px;">When each period starts in the video. Enter as seconds (e.g., 120) or time (e.g., 19:02)</p>
+      <div class="form-row">
+        <div class="form-group" style="flex:1;">
+          <label style="font-size:9px;">Period 1 Start</label>
+          <input type="text" id="vtPeriod1Start" placeholder="0 or 0:00" oninput="updateVideoTimingPreview()">
+        </div>
+        <div class="form-group" style="flex:1;">
+          <label style="font-size:9px;">Period 2 Start</label>
+          <input type="text" id="vtPeriod2Start" placeholder="auto or 19:02" oninput="updateVideoTimingPreview()">
+        </div>
+        <div class="form-group" style="flex:1;">
+          <label style="font-size:9px;">Period 3 Start</label>
+          <input type="text" id="vtPeriod3Start" placeholder="auto or 38:04" oninput="updateVideoTimingPreview()">
+        </div>
+        <div class="form-group" style="flex:1;">
+          <label style="font-size:9px;">OT Start</label>
+          <input type="text" id="vtPeriodOTStart" placeholder="auto or 57:06" oninput="updateVideoTimingPreview()">
+        </div>
       </div>
     </div>
     
@@ -1842,18 +1901,31 @@ kbd { background: var(--bg); border: 1px solid var(--border); padding: 0 3px; bo
       <div class="form-row" style="align-items:flex-end;">
         <div class="form-group" style="flex:0.5;">
           <label>Period</label>
-          <select id="vtNewTimeoutPeriod"><option>1</option><option>2</option><option>3</option><option>OT</option></select>
+          <select id="vtNewTimeoutPeriod" onchange="updateTimeoutVideoTimes()"><option>1</option><option>2</option><option>3</option><option>OT</option></select>
         </div>
         <div class="form-group" style="flex:1;">
-          <label>Game Time</label>
-          <input type="text" id="vtNewTimeoutTime" placeholder="15:30">
+          <label style="font-size:9px;">Game Start (MM:SS)</label>
+          <input type="text" id="vtNewTimeoutGameStart" placeholder="15:30" oninput="autoFormatTime(this); updateTimeoutFromGameTimes();">
         </div>
         <div class="form-group" style="flex:1;">
-          <label>Duration (sec)</label>
-          <input type="number" id="vtNewTimeoutDuration" value="60" min="1">
+          <label style="font-size:9px;">Game Stop (MM:SS)</label>
+          <input type="text" id="vtNewTimeoutGameStop" placeholder="14:20" oninput="autoFormatTime(this); updateTimeoutFromGameTimes();">
+        </div>
+        <div class="form-group" style="flex:1;">
+          <label style="font-size:9px;">Video Start (MM:SS)</label>
+          <input type="text" id="vtNewTimeoutVideoStart" placeholder="5:30" oninput="autoFormatTime(this); updateTimeoutFromVideoTimes();">
+        </div>
+        <div class="form-group" style="flex:1;">
+          <label style="font-size:9px;">Video Stop (MM:SS)</label>
+          <input type="text" id="vtNewTimeoutVideoStop" placeholder="6:30" oninput="autoFormatTime(this); updateTimeoutFromVideoTimes();">
+        </div>
+        <div class="form-group" style="flex:0.8;">
+          <label style="font-size:9px;">Duration (sec)</label>
+          <input type="number" id="vtNewTimeoutDuration" value="0" min="0" oninput="updateTimeoutFromDuration();">
         </div>
         <button class="btn-sm btn-success" onclick="addVideoTimeout()" style="margin-bottom:4px;">+ Add</button>
       </div>
+      <p style="font-size:8px;color:var(--muted);margin-top:4px;">Enter either game times OR video times OR duration. The others will auto-calculate.</p>
     </div>
     
     <!-- Video Management (v23.6) -->
@@ -1932,16 +2004,9 @@ kbd { background: var(--bg); border: 1px solid var(--border); padding: 0 3px; bo
     
     <!-- Running Time Preview -->
     <div style="background:var(--panel);padding:12px;border-radius:4px;margin-bottom:12px;border:1px solid var(--accent);">
-      <h4 style="font-size:11px;color:var(--accent);margin-bottom:8px;">⏱️ Running Time Preview</h4>
-      <div style="font-size:10px;display:grid;grid-template-columns:1fr 1fr;gap:4px;">
-        <span>Period 1 Start:</span><span id="vtPreviewP1Start">0:00</span>
-        <span>Period 1 End:</span><span id="vtPreviewP1End">18:00</span>
-        <span>Period 2 Start:</span><span id="vtPreviewP2Start">33:00</span>
-        <span>Period 2 End:</span><span id="vtPreviewP2End">51:00</span>
-        <span>Period 3 Start:</span><span id="vtPreviewP3Start">66:00</span>
-        <span>Period 3 End:</span><span id="vtPreviewP3End">84:00</span>
-        <span>OT Start:</span><span id="vtPreviewOTStart">89:00</span>
-        <span>OT End:</span><span id="vtPreviewOTEnd">94:00</span>
+      <h4 style="font-size:11px;color:var(--accent);margin-bottom:8px;">⏱️ Running Time Preview (Video Times)</h4>
+      <div id="vtPreviewContent" style="font-size:10px;">
+        <!-- Will be populated by updateVideoTimingPreview() -->
       </div>
     </div>
     
@@ -2483,6 +2548,8 @@ kbd { background: var(--bg); border: 1px solid var(--border); padding: 0 3px; bo
 const S = {
   sb: null, connected: false,
   saveDirectoryHandle: null, // v23.8: File System Access API directory handle
+  defaultDirectoryHandle: null, // Default folder where game folders are created
+  gameFolderHandle: null, // Current game's folder handle (created when game is loaded)
   maxBackups: 10, // v23.8: Maximum number of backup files to keep
   gameId: null, games: [], rosters: { home: [], away: [] },
   homeTeam: 'Home', awayTeam: 'Away', homeColor: '#3b82f6', awayColor: '#ef4444',
@@ -2525,6 +2592,16 @@ const S = {
   // Video timing - variable intermissions and stoppages
   videoTiming: {
     videoStartOffset: 0,        // Seconds to skip at video start (pre-game, warmups)
+    periodOffsets: {            // Period start offsets in seconds (can be overridden)
+      1: null,                  // null = auto-calculate, number = explicit offset in seconds
+      2: null,
+      3: null,
+      OT: null
+    },
+    gameStart: {                // For partial recordings - when video recording actually starts
+      period: 1,                // Which period the video starts at
+      time: '18:00'             // Game clock time when video starts (MM:SS format)
+    },
     intermission1: 900,         // Seconds after P1 (default 15 min)
     intermission2: 900,         // Seconds after P2 (default 15 min)
     intermission3: 300,         // Seconds after P3 if OT (default 5 min)
@@ -2776,15 +2853,19 @@ async function init() {
     setupTimeInputs(); // v5: Auto-format time inputs
     
     // v23.8: Load saved directory handle (non-blocking, don't fail if it errors)
-    loadDirectoryHandle().catch(e => {
+    loadDirectoryHandles().catch(e => {
       console.error('Failed to load directory handle:', e);
       // Don't break initialization if this fails
     });
     
     startAutoSave();
     await loadGames();
-    if (S.gameId) await selectGame(S.gameId);
+    if (S.gameId) {
+      await selectGame(S.gameId);
+      await ensureGameFolder(); // Create game folder if default folder is set
+    }
     updateSaveIndicator();
+    updateDefaultFolderDisplay(); // Update default folder display
     updateNextPlaySuggestions();
     updateZoneLabels();
     console.log('Ready:', S.events.length, 'events,', S.shifts.length, 'shifts');
@@ -3091,6 +3172,7 @@ function openSettings() {
   }
   updatePeriodLengthsUI(); // This will also update penalty lengths UI
   updateSaveFolderDisplay(); // v23.8: Update save folder display
+  updateDefaultFolderDisplay(); // Update default folder display
   const modal = document.getElementById('settingsModal');
   if (modal) modal.classList.add('show');
 }
@@ -3167,6 +3249,43 @@ function openUserGuide() {
 // ============================================================
 // VIDEO TIMING FUNCTIONS
 // ============================================================
+/**
+ * Parse time input - accepts seconds (number) or MM:SS format
+ * @param {string} input - Time input (e.g., "120" or "2:00" or "19:02")
+ * @returns {number|null} - Seconds, or null if empty/invalid
+ */
+function parseTimeInput(input) {
+  if (!input || input.trim() === '') return null;
+  const trimmed = input.trim();
+  
+  // Check if it's MM:SS format
+  if (trimmed.includes(':')) {
+    const parts = trimmed.split(':');
+    if (parts.length === 2) {
+      const minutes = parseInt(parts[0]) || 0;
+      const seconds = parseInt(parts[1]) || 0;
+      return minutes * 60 + seconds;
+    }
+  }
+  
+  // Otherwise, treat as seconds
+  const parsed = parseInt(trimmed);
+  return isNaN(parsed) ? null : parsed;
+}
+
+/**
+ * Format seconds as MM:SS or just seconds if < 60
+ * @param {number} seconds - Seconds to format
+ * @returns {string} - Formatted time
+ */
+function formatTimeInput(seconds) {
+  if (seconds === null || seconds === undefined) return '';
+  if (seconds < 60) return String(seconds);
+  const minutes = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${minutes}:${String(secs).padStart(2, '0')}`;
+}
+
 function openVideoTimingModal() {
   // Populate fields from S.videoTiming and S.periodLengths
   document.getElementById('vtVideoStartOffset').value = S.videoTiming.videoStartOffset || 0;
@@ -3176,6 +3295,18 @@ function openVideoTimingModal() {
   document.getElementById('vtPeriodLength2').value = S.periodLengths?.[2] || 18;
   document.getElementById('vtPeriodLength3').value = S.periodLengths?.[3] || 18;
   document.getElementById('vtPeriodLengthOT').value = S.periodLengths?.OT || 5;
+  
+  // Populate period start offsets
+  const offsets = S.videoTiming.periodOffsets || {};
+  document.getElementById('vtPeriod1Start').value = offsets[1] !== null && offsets[1] !== undefined ? formatTimeInput(offsets[1]) : '';
+  document.getElementById('vtPeriod2Start').value = offsets[2] !== null && offsets[2] !== undefined ? formatTimeInput(offsets[2]) : '';
+  document.getElementById('vtPeriod3Start').value = offsets[3] !== null && offsets[3] !== undefined ? formatTimeInput(offsets[3]) : '';
+  document.getElementById('vtPeriodOTStart').value = offsets.OT !== null && offsets.OT !== undefined ? formatTimeInput(offsets.OT) : '';
+  
+  // Populate game start configuration
+  const gameStart = S.videoTiming.gameStart || { period: 1, time: '18:00' };
+  document.getElementById('vtGameStartPeriod').value = gameStart.period || 1;
+  document.getElementById('vtGameStartTime').value = gameStart.time || '18:00';
   
   document.getElementById('vtIntermission1').value = S.videoTiming.intermission1 || 900;
   document.getElementById('vtIntermission2').value = S.videoTiming.intermission2 || 900;
@@ -3215,6 +3346,111 @@ function syncPeriodLengthsFromVT() {
   updatePeriodLengthIndicator();
 }
 
+/**
+ * Parse time string (MM:SS) to total seconds
+ */
+function parseTimeToSeconds(timeStr) {
+  if (!timeStr) return 0;
+  const parts = timeStr.split(':');
+  return parseInt(parts[0] || 0) * 60 + parseInt(parts[1] || 0);
+}
+
+/**
+ * Format seconds to MM:SS
+ */
+function formatSecondsToTime(seconds) {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${String(secs).padStart(2, '0')}`;
+}
+
+/**
+ * Update timeout duration from game times
+ */
+function updateTimeoutFromGameTimes() {
+  const gameStart = document.getElementById('vtNewTimeoutGameStart').value;
+  const gameStop = document.getElementById('vtNewTimeoutGameStop').value;
+  const period = document.getElementById('vtNewTimeoutPeriod').value;
+  const durationEl = document.getElementById('vtNewTimeoutDuration');
+  
+  if (!gameStart || !gameStop) {
+    // Try to calculate from video times if available
+    updateTimeoutFromVideoTimes();
+    return;
+  }
+  
+  // Parse game times (MM:SS format - time remaining on clock)
+  const startSec = parseTimeToSeconds(gameStart);
+  const stopSec = parseTimeToSeconds(gameStop);
+  
+  // Duration = start - stop (since clock counts down, higher time = earlier)
+  const duration = Math.max(0, startSec - stopSec);
+  durationEl.value = duration;
+  
+  // Calculate video times from game times
+  const periodNum = period === 'OT' ? 4 : parseInt(period);
+  const videoStart = calculateRunningVideoTime(periodNum, gameStart);
+  const videoStop = calculateRunningVideoTime(periodNum, gameStop);
+  
+  document.getElementById('vtNewTimeoutVideoStart').value = formatSecondsToTime(videoStart);
+  document.getElementById('vtNewTimeoutVideoStop').value = formatSecondsToTime(videoStop);
+}
+
+/**
+ * Update timeout duration from video times
+ */
+function updateTimeoutFromVideoTimes() {
+  const videoStart = document.getElementById('vtNewTimeoutVideoStart').value;
+  const videoStop = document.getElementById('vtNewTimeoutVideoStop').value;
+  const durationEl = document.getElementById('vtNewTimeoutDuration');
+  
+  if (!videoStart || !videoStop) {
+    durationEl.value = 0;
+    return;
+  }
+  
+  // Parse video times (MM:SS format - absolute video time)
+  const startSec = parseTimeToSeconds(videoStart);
+  const stopSec = parseTimeToSeconds(videoStop);
+  
+  // Duration = stop - start (video time counts up)
+  const duration = Math.max(0, stopSec - startSec);
+  durationEl.value = duration;
+}
+
+/**
+ * Update timeout video times from duration
+ */
+function updateTimeoutFromDuration() {
+  const duration = parseInt(document.getElementById('vtNewTimeoutDuration').value) || 0;
+  const videoStart = document.getElementById('vtNewTimeoutVideoStart').value;
+  const videoStop = document.getElementById('vtNewTimeoutVideoStop').value;
+  
+  if (videoStart && !videoStop) {
+    // Calculate stop from start + duration
+    const startSec = parseTimeToSeconds(videoStart);
+    document.getElementById('vtNewTimeoutVideoStop').value = formatSecondsToTime(startSec + duration);
+  } else if (videoStop && !videoStart) {
+    // Calculate start from stop - duration
+    const stopSec = parseTimeToSeconds(videoStop);
+    document.getElementById('vtNewTimeoutVideoStart').value = formatSecondsToTime(Math.max(0, stopSec - duration));
+  }
+}
+
+/**
+ * Update video times when period changes
+ */
+function updateTimeoutVideoTimes() {
+  const gameStart = document.getElementById('vtNewTimeoutGameStart').value;
+  const gameStop = document.getElementById('vtNewTimeoutGameStop').value;
+  const period = document.getElementById('vtNewTimeoutPeriod').value;
+  
+  if (gameStart && gameStop) {
+    // Recalculate video times for new period
+    updateTimeoutFromGameTimes();
+  }
+}
+
 function renderVideoTimeouts() {
   const list = document.getElementById('vtTimeoutsList');
   if (!S.videoTiming.timeouts || S.videoTiming.timeouts.length === 0) {
@@ -3222,38 +3458,148 @@ function renderVideoTimeouts() {
     return;
   }
   
-  list.innerHTML = S.videoTiming.timeouts.map((t, i) => `
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:4px;background:var(--panel);border-radius:2px;margin:2px 0;font-size:10px;">
-      <span>P${t.period} @ ${t.gameTime} - ${t.duration}s</span>
+  list.innerHTML = S.videoTiming.timeouts.map((t, i) => {
+    // Support both old format (gameTime + duration) and new format (startTime + stopTime)
+    const gameStart = t.gameStart || t.startTime || t.gameTime || '--';
+    const gameStop = t.gameStop || t.stopTime || (t.gameTime && t.duration ? calculateStopTime(t.gameTime, t.duration) : '--');
+    const videoStart = t.videoStart ? formatSecondsToTime(t.videoStart) : '--';
+    const videoStop = t.videoStop ? formatSecondsToTime(t.videoStop) : '--';
+    const duration = t.duration || 0;
+    
+    return `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:4px;background:var(--panel);border-radius:2px;margin:2px 0;font-size:9px;">
+      <div style="flex:1;">
+        <div>P${t.period} Game: ${gameStart} → ${gameStop}</div>
+        <div style="font-size:8px;color:var(--muted);">Video: ${videoStart} → ${videoStop} (${duration}s)</div>
+      </div>
       <button class="btn-sm" onclick="removeVideoTimeout(${i})" style="padding:1px 4px;font-size:8px;">✕</button>
     </div>
-  `).join('');
+  `;
+  }).join('');
+}
+
+/**
+ * Calculate stop time from start time and duration
+ */
+function calculateStopTime(startTime, duration) {
+  const parseGameTime = (timeStr) => {
+    const parts = timeStr.split(':');
+    return parseInt(parts[0] || 0) * 60 + parseInt(parts[1] || 0);
+  };
+  
+  const startSec = parseGameTime(startTime);
+  const stopSec = startSec - duration; // Clock counts down
+  const stopMin = Math.floor(stopSec / 60);
+  const stopSecRem = stopSec % 60;
+  return `${stopMin}:${String(stopSecRem).padStart(2, '0')}`;
+}
+
+/**
+ * Calculate duration from start and stop times
+ */
+function calculateDurationFromTimes(startTime, stopTime) {
+  const parseGameTime = (timeStr) => {
+    const parts = timeStr.split(':');
+    return parseInt(parts[0] || 0) * 60 + parseInt(parts[1] || 0);
+  };
+  
+  const startSec = parseGameTime(startTime);
+  const stopSec = parseGameTime(stopTime);
+  return Math.max(0, startSec - stopSec);
 }
 
 function addVideoTimeout() {
   const period = document.getElementById('vtNewTimeoutPeriod').value;
-  const gameTime = document.getElementById('vtNewTimeoutTime').value;
-  const duration = parseInt(document.getElementById('vtNewTimeoutDuration').value) || 60;
+  const gameStart = document.getElementById('vtNewTimeoutGameStart').value;
+  const gameStop = document.getElementById('vtNewTimeoutGameStop').value;
+  const videoStart = document.getElementById('vtNewTimeoutVideoStart').value;
+  const videoStop = document.getElementById('vtNewTimeoutVideoStop').value;
+  const duration = parseInt(document.getElementById('vtNewTimeoutDuration').value) || 0;
   
-  if (!gameTime) {
-    toast('Enter game time', 'error');
+  // Need at least one set of times or duration
+  const hasGameTimes = gameStart && gameStop;
+  const hasVideoTimes = videoStart && videoStop;
+  
+  if (!hasGameTimes && !hasVideoTimes && duration <= 0) {
+    toast('Enter game times, video times, or duration', 'error');
     return;
   }
   
   if (!S.videoTiming.timeouts) S.videoTiming.timeouts = [];
-  S.videoTiming.timeouts.push({ period, gameTime, duration });
   
-  // Sort by period then time
+  // Calculate missing values
+  let finalGameStart = gameStart;
+  let finalGameStop = gameStop;
+  let finalVideoStart = videoStart ? parseTimeToSeconds(videoStart) : null;
+  let finalVideoStop = videoStop ? parseTimeToSeconds(videoStop) : null;
+  let finalDuration = duration;
+  
+  // If we have game times, calculate video times
+  if (hasGameTimes && (!finalVideoStart || !finalVideoStop)) {
+    const periodNum = period === 'OT' ? 4 : parseInt(period);
+    finalVideoStart = calculateRunningVideoTime(periodNum, gameStart);
+    finalVideoStop = calculateRunningVideoTime(periodNum, gameStop);
+    if (!finalDuration) {
+      finalDuration = Math.max(0, finalVideoStop - finalVideoStart);
+    }
+  }
+  
+  // If we have video times, calculate game times (reverse lookup - approximate)
+  if (hasVideoTimes && (!finalGameStart || !finalGameStop)) {
+    // For now, we'll store video times and calculate game times when needed
+    // This is a simplified approach - full reverse lookup would be more complex
+    if (!finalDuration) {
+      finalDuration = Math.max(0, finalVideoStop - finalVideoStart);
+    }
+  }
+  
+  // If we only have duration, we need at least one time reference
+  if (finalDuration > 0 && !hasGameTimes && !hasVideoTimes) {
+    toast('Enter at least one time (game or video) when using duration', 'error');
+    return;
+  }
+  
+  // Store timeout with all available information
+  const timeout = {
+    period,
+    duration: finalDuration,
+    // Game times
+    gameStart: finalGameStart || null,
+    gameStop: finalGameStop || null,
+    // Video times (in seconds)
+    videoStart: finalVideoStart,
+    videoStop: finalVideoStop,
+    // Legacy support
+    gameTime: finalGameStart,
+    startTime: finalGameStart,
+    stopTime: finalGameStop
+  };
+  
+  S.videoTiming.timeouts.push(timeout);
+  
+  // Sort by period then start time (higher time = earlier in period for game times)
   S.videoTiming.timeouts.sort((a, b) => {
-    if (a.period !== b.period) return a.period - b.period;
-    return b.gameTime.localeCompare(a.gameTime); // Higher time = earlier in period
+    const aPeriod = a.period === 'OT' ? 4 : parseInt(a.period);
+    const bPeriod = b.period === 'OT' ? 4 : parseInt(b.period);
+    if (aPeriod !== bPeriod) return aPeriod - bPeriod;
+    // Sort by video start time if available, otherwise game time
+    const aTime = a.videoStart !== null && a.videoStart !== undefined ? a.videoStart : (a.gameStart || a.gameTime || '');
+    const bTime = b.videoStart !== null && b.videoStart !== undefined ? b.videoStart : (b.gameStart || b.gameTime || '');
+    if (typeof aTime === 'number' && typeof bTime === 'number') {
+      return aTime - bTime;
+    }
+    return String(bTime).localeCompare(String(aTime)); // Higher time = earlier in period for game times
   });
   
   renderVideoTimeouts();
   updateVideoTimingPreview();
   
   // Clear inputs
-  document.getElementById('vtNewTimeoutTime').value = '';
+  document.getElementById('vtNewTimeoutGameStart').value = '';
+  document.getElementById('vtNewTimeoutGameStop').value = '';
+  document.getElementById('vtNewTimeoutVideoStart').value = '';
+  document.getElementById('vtNewTimeoutVideoStop').value = '';
+  document.getElementById('vtNewTimeoutDuration').value = 0;
 }
 
 function removeVideoTimeout(idx) {
@@ -3365,6 +3711,18 @@ function saveVideoTiming() {
   };
   S.periodLength = S.periodLengths[1];
   
+  // Save period start offsets
+  if (!S.videoTiming.periodOffsets) S.videoTiming.periodOffsets = {};
+  S.videoTiming.periodOffsets[1] = parseTimeInput(document.getElementById('vtPeriod1Start').value);
+  S.videoTiming.periodOffsets[2] = parseTimeInput(document.getElementById('vtPeriod2Start').value);
+  S.videoTiming.periodOffsets[3] = parseTimeInput(document.getElementById('vtPeriod3Start').value);
+  S.videoTiming.periodOffsets.OT = parseTimeInput(document.getElementById('vtPeriodOTStart').value);
+  
+  // Save game start configuration
+  if (!S.videoTiming.gameStart) S.videoTiming.gameStart = {};
+  S.videoTiming.gameStart.period = parseInt(document.getElementById('vtGameStartPeriod').value) || 1;
+  S.videoTiming.gameStart.time = document.getElementById('vtGameStartTime').value || '18:00';
+  
   S.videoTiming.intermission1 = parseInt(document.getElementById('vtIntermission1').value) || 900;
   S.videoTiming.intermission2 = parseInt(document.getElementById('vtIntermission2').value) || 900;
   S.videoTiming.intermission3 = parseInt(document.getElementById('vtIntermission3').value) || 300;
@@ -3393,25 +3751,137 @@ function updateVideoTimingPreview() {
   const int3 = parseInt(document.getElementById('vtIntermission3').value) || 0;
   const offset = parseInt(document.getElementById('vtVideoStartOffset').value) || 0;
   
-  const p1Start = offset;
-  const p1End = p1Start + p1Sec;
-  const p2Start = p1End + int1;
-  const p2End = p2Start + p2Sec;
-  const p3Start = p2End + int2;
-  const p3End = p3Start + p3Sec;
-  const otStart = p3End + int3;
-  const otEnd = otStart + otSec;
+  // Get period start offsets (if explicitly set)
+  const p1Offset = parseTimeInput(document.getElementById('vtPeriod1Start')?.value);
+  const p2Offset = parseTimeInput(document.getElementById('vtPeriod2Start')?.value);
+  const p3Offset = parseTimeInput(document.getElementById('vtPeriod3Start')?.value);
+  const otOffset = parseTimeInput(document.getElementById('vtPeriodOTStart')?.value);
+  
+  // Calculate timeout durations per period
+  const timeouts = S.videoTiming.timeouts || [];
+  let p1Timeouts = 0, p2Timeouts = 0, p3Timeouts = 0, otTimeouts = 0;
+  
+  timeouts.forEach(t => {
+    const tPeriod = t.period === 'OT' ? 4 : parseInt(t.period);
+    const duration = t.duration || 0;
+    
+    if (tPeriod === 1) p1Timeouts += duration;
+    else if (tPeriod === 2) p2Timeouts += duration;
+    else if (tPeriod === 3) p3Timeouts += duration;
+    else if (tPeriod === 4) otTimeouts += duration;
+  });
+  
+  // Calculate period starts - explicit offsets ALWAYS override calculated values (including timeouts)
+  // When an explicit offset is set, use it directly - don't calculate based on previous periods
+  let p1Start = p1Offset !== null ? p1Offset : offset;
+  let p1End = p1Start + p1Sec + p1Timeouts; // Add timeouts to period end only
+  
+  // Period 2: If explicit offset is set, use it directly. Otherwise calculate.
+  // When calculating, only use timeouts from Period 1 for Period 2's calculation
+  let p2Start;
+  if (p2Offset !== null) {
+    // Explicit offset - use it directly, ignoring calculated values and previous period timeouts
+    p2Start = p2Offset;
+  } else {
+    // Calculate: p1End already includes p1Timeouts, so we use that
+    p2Start = p1End + int1;
+  }
+  let p2End = p2Start + p2Sec + p2Timeouts; // Add timeouts to period end only
+  
+  // Period 3: If explicit offset is set, use it directly. Otherwise calculate.
+  // When calculating, timeouts from Period 1 and 2 are already accounted for in p2End
+  let p3Start;
+  if (p3Offset !== null) {
+    // Explicit offset - use it directly, ignoring calculated values and previous period timeouts
+    p3Start = p3Offset;
+  } else {
+    // Calculate: p2End already includes p1Timeouts and p2Timeouts
+    p3Start = p2End + int2;
+  }
+  let p3End = p3Start + p3Sec + p3Timeouts; // Add timeouts to period end only
+  
+  // OT: If explicit offset is set, use it directly. Otherwise calculate.
+  let otStart;
+  if (otOffset !== null) {
+    // Explicit offset - use it directly
+    otStart = otOffset;
+  } else {
+    // Calculate: p3End already includes all previous timeouts
+    otStart = p3End + int3;
+  }
+  let otEnd = otStart + otSec + otTimeouts; // Add timeouts to period end only
   
   const fmt = (s) => `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
   
-  document.getElementById('vtPreviewP1Start').textContent = fmt(p1Start);
-  document.getElementById('vtPreviewP1End').textContent = fmt(p1End);
-  document.getElementById('vtPreviewP2Start').textContent = fmt(p2Start);
-  document.getElementById('vtPreviewP2End').textContent = fmt(p2End);
-  document.getElementById('vtPreviewP3Start').textContent = fmt(p3Start);
-  document.getElementById('vtPreviewP3End').textContent = fmt(p3End);
-  document.getElementById('vtPreviewOTStart').textContent = fmt(otStart);
-  document.getElementById('vtPreviewOTEnd').textContent = fmt(otEnd);
+  // Build preview HTML with timeouts inline
+  const buildPeriodPreview = (periodNum, periodName, periodStart, periodEnd, periodTimeouts) => {
+    const periodTimeoutsList = periodTimeouts.filter(t => {
+      const tPeriod = t.period === 'OT' ? 4 : parseInt(t.period);
+      return tPeriod === periodNum;
+    }).sort((a, b) => {
+      // Sort by video start time (ascending)
+      const aStart = a.videoStart !== null && a.videoStart !== undefined ? a.videoStart : 0;
+      const bStart = b.videoStart !== null && b.videoStart !== undefined ? b.videoStart : 0;
+      return aStart - bStart;
+    });
+    
+    if (periodTimeoutsList.length === 0) {
+      // No timeouts - simple display
+      return `
+        <div style="display:grid;grid-template-columns:120px 1fr;gap:4px;padding:4px;border-bottom:1px solid var(--border);">
+          <span style="font-weight:bold;">${periodName} Start:</span>
+          <span>${fmt(periodStart)}</span>
+          <span style="font-weight:bold;">${periodName} End:</span>
+          <span>${fmt(periodEnd)}</span>
+        </div>
+      `;
+    }
+    
+    // Has timeouts - show with timeout rows
+    let html = `
+      <div style="padding:4px;border-bottom:1px solid var(--border);">
+        <div style="display:grid;grid-template-columns:120px 1fr;gap:4px;margin-bottom:2px;">
+          <span style="font-weight:bold;">${periodName} Start:</span>
+          <span>${fmt(periodStart)}</span>
+        </div>
+    `;
+    
+    // Show each timeout with its video times
+    periodTimeoutsList.forEach((t, idx) => {
+      const timeoutStart = t.videoStart !== null && t.videoStart !== undefined ? t.videoStart : (periodStart + (idx * 60));
+      const timeoutEnd = t.videoStop !== null && t.videoStop !== undefined ? t.videoStop : (timeoutStart + (t.duration || 0));
+      
+      html += `
+        <div style="display:grid;grid-template-columns:120px 1fr;gap:4px;margin-left:20px;color:var(--warn);font-size:9px;">
+          <span>Timeout ${idx + 1} Start:</span>
+          <span>${fmt(timeoutStart)}</span>
+          <span>Timeout ${idx + 1} End:</span>
+          <span>${fmt(timeoutEnd)}</span>
+        </div>
+      `;
+    });
+    
+    html += `
+        <div style="display:grid;grid-template-columns:120px 1fr;gap:4px;margin-top:2px;">
+          <span style="font-weight:bold;">${periodName} End:</span>
+          <span>${fmt(periodEnd)}</span>
+        </div>
+      </div>
+    `;
+    
+    return html;
+  };
+  
+  // Build preview content
+  // When explicit offsets are set, period starts/ends are already correct (timeouts included in period ends)
+  // Don't add timeout adjustments when explicit offsets override calculations
+  let previewHTML = '';
+  previewHTML += buildPeriodPreview(1, 'Period 1', p1Start, p1End, timeouts);
+  previewHTML += buildPeriodPreview(2, 'Period 2', p2Start, p2End, timeouts);
+  previewHTML += buildPeriodPreview(3, 'Period 3', p3Start, p3End, timeouts);
+  previewHTML += buildPeriodPreview(4, 'OT', otStart, otEnd, timeouts);
+  
+  document.getElementById('vtPreviewContent').innerHTML = previewHTML;
 }
 
 /**
@@ -3479,6 +3949,18 @@ function calculateRunningVideoTime(period, gameTime) {
   const int3 = S.videoTiming.intermission3 || 0;
   const offset = S.videoTiming.videoStartOffset || 0;
   
+  // Get period offsets (if explicitly set)
+  const periodOffsets = S.videoTiming.periodOffsets || {};
+  const p1Offset = periodOffsets[1];
+  const p2Offset = periodOffsets[2];
+  const p3Offset = periodOffsets[3];
+  const otOffset = periodOffsets.OT;
+  
+  // Get game start configuration (for partial recordings)
+  const gameStart = S.videoTiming.gameStart || { period: 1, time: '18:00' };
+  const gameStartPeriod = gameStart.period === 'OT' ? 4 : parseInt(gameStart.period) || 1;
+  const gameStartTime = gameStart.time || '18:00';
+  
   // Parse game time (MM:SS) - time remaining in period
   let timeRemaining = 0;
   if (gameTime) {
@@ -3489,33 +3971,97 @@ function calculateRunningVideoTime(period, gameTime) {
   // Calculate elapsed time in current period
   const elapsedInPeriod = currentPeriodSec - timeRemaining;
   
-  // Calculate base running time (without timeouts)
-  let runningTime = offset;
+  // Helper to get period start time in video
+  const getPeriodStartInVideo = (p) => {
+    const pNum = p === 'OT' ? 4 : parseInt(p);
+    
+    // If explicit offset is set, use it
+    if (pNum === 1 && p1Offset !== null && p1Offset !== undefined) return p1Offset;
+    if (pNum === 2 && p2Offset !== null && p2Offset !== undefined) return p2Offset;
+    if (pNum === 3 && p3Offset !== null && p3Offset !== undefined) return p3Offset;
+    if (p === 'OT' && otOffset !== null && otOffset !== undefined) return otOffset;
+    
+    // Otherwise, calculate based on previous periods
+    if (pNum === 1) return offset;
+    if (pNum === 2) {
+      const p1Sec = getPeriodLengthSeconds(1);
+      return (p1Offset !== null && p1Offset !== undefined ? p1Offset : offset) + p1Sec + int1;
+    }
+    if (pNum === 3) {
+      const p1Sec = getPeriodLengthSeconds(1);
+      const p2Sec = getPeriodLengthSeconds(2);
+      const p1Start = (p1Offset !== null && p1Offset !== undefined ? p1Offset : offset);
+      const p2Start = (p2Offset !== null && p2Offset !== undefined ? p2Offset : (p1Start + p1Sec + int1));
+      return p2Start + p2Sec + int2;
+    }
+    if (p === 'OT') {
+      const p1Sec = getPeriodLengthSeconds(1);
+      const p2Sec = getPeriodLengthSeconds(2);
+      const p3Sec = getPeriodLengthSeconds(3);
+      const p1Start = (p1Offset !== null && p1Offset !== undefined ? p1Offset : offset);
+      const p2Start = (p2Offset !== null && p2Offset !== undefined ? p2Offset : (p1Start + p1Sec + int1));
+      const p3Start = (p3Offset !== null && p3Offset !== undefined ? p3Offset : (p2Start + p2Sec + int2));
+      return p3Start + p3Sec + int3;
+    }
+    return offset;
+  };
   
-  if (period >= 1) {
-    runningTime += elapsedInPeriod;
-  }
-  if (period >= 2) {
-    runningTime += int1 + getPeriodLengthSeconds(1); // Full P1
-  }
-  if (period >= 3) {
-    runningTime += int2 + getPeriodLengthSeconds(2); // Full P2
-  }
-  if (period >= 4) { // OT
-    runningTime += int3 + getPeriodLengthSeconds(3); // Full P3
+  // Get period start in video
+  const periodStartInVideo = getPeriodStartInVideo(period);
+  
+  // Calculate base running time from period start
+  let runningTime = periodStartInVideo + elapsedInPeriod;
+  
+  // If game start is configured (partial recording), adjust for the offset
+  // Example: Video starts at 15:03 of period 2, so period 2 @ 15:03 = video time 0:00
+  if (gameStartPeriod > 1 || (gameStartPeriod === 1 && gameStartTime !== '18:00')) {
+    // Parse game start time (time remaining when video starts)
+    const startParts = gameStartTime.split(':');
+    const startTimeRemaining = parseInt(startParts[0] || 0) * 60 + parseInt(startParts[1] || 0);
+    const startPeriodSec = getPeriodLengthSeconds(gameStartPeriod);
+    const startElapsed = startPeriodSec - startTimeRemaining;
+    
+    // Calculate where video actually starts in absolute video time
+    const videoStartAbsoluteTime = getPeriodStartInVideo(gameStartPeriod) + startElapsed;
+    
+    // If current event is before video start, return 0 (or handle appropriately)
+    if (period < gameStartPeriod || (period === gameStartPeriod && timeRemaining > startTimeRemaining)) {
+      // Event is before video recording started
+      return 0;
+    }
+    
+    // Adjust: subtract the absolute time where video starts
+    runningTime = runningTime - videoStartAbsoluteTime;
+    
+    // Ensure non-negative
+    if (runningTime < 0) runningTime = 0;
   }
   
   // Add timeout durations that occurred before this point
   const timeouts = S.videoTiming.timeouts || [];
   timeouts.forEach(t => {
     const tPeriod = t.period === 'OT' ? 4 : parseInt(t.period);
+    const timeoutDuration = t.duration || 0;
+    const timeoutVideoStart = t.videoStart;
+    const timeoutGameStart = t.gameStart || t.startTime || t.gameTime || '';
+    
     if (tPeriod < period) {
-      runningTime += t.duration;
+      // Timeout in earlier period - always add duration
+      runningTime += timeoutDuration;
     } else if (tPeriod === period) {
-      // Timeout in same period - only add if it happened before current time
-      // Higher gameTime = earlier in period
-      if (t.gameTime > gameTime) {
-        runningTime += t.duration;
+      // Timeout in same period - check if it happened before current time
+      if (timeoutVideoStart !== null && timeoutVideoStart !== undefined) {
+        // Use video time if available
+        const currentVideoTime = getPeriodStartInVideo(period) + elapsedInPeriod;
+        if (timeoutVideoStart < currentVideoTime) {
+          runningTime += timeoutDuration;
+        }
+      } else if (timeoutGameStart) {
+        // Fall back to game time comparison
+        // Higher gameTime = earlier in period
+        if (timeoutGameStart > gameTime) {
+          runningTime += timeoutDuration;
+        }
       }
     }
   });
@@ -6610,7 +7156,9 @@ function autoSave() {
   setTimeout(() => updateSaveIndicator(), 2000);
   
   // v23.8: Save to file system if directory is set (fire and forget - async)
-  if (S.saveDirectoryHandle) {
+  // Use game folder if available, otherwise use saveDirectoryHandle
+  const targetDirectory = S.gameFolderHandle || S.saveDirectoryHandle;
+  if (targetDirectory) {
     saveToFileSystem(data).catch(e => {
       console.error('Failed to save to file system:', e);
     });
@@ -6619,10 +7167,17 @@ function autoSave() {
     });
   }
   
-  // v23.8: Optionally export JSON file on save (legacy behavior)
+  // v23.8: Optionally export JSON file on save
   const exportJsonOnSave = localStorage.getItem('bs_exportJsonOnSave') === 'true';
-  if (exportJsonOnSave && !S.saveDirectoryHandle) {
-    exportGameDataAsJson();
+  if (exportJsonOnSave) {
+    // Save to game folder if available, otherwise download
+    saveJsonToGameFolder(data).catch(e => {
+      console.error('Failed to save JSON to game folder:', e);
+      // Fall back to download if game folder save fails
+      if (!S.gameFolderHandle) {
+        exportGameDataAsJson();
+      }
+    });
   }
 }
 
@@ -6725,9 +7280,135 @@ function clearSaveFolder() {
 }
 
 /**
- * v23.8: Store directory handle in IndexedDB
+ * Prompt for default directory where game folders will be created
  */
-async function storeDirectoryHandle(handle) {
+async function promptForDefaultDirectory() {
+  // Check if File System Access API is supported
+  if (!('showDirectoryPicker' in window)) {
+    toast('File System Access API not supported in this browser.', 'warning');
+    updateDefaultFolderDisplay();
+    return;
+  }
+  
+  try {
+    const handle = await window.showDirectoryPicker({
+      mode: 'readwrite',
+      startIn: 'documents'
+    });
+    
+    S.defaultDirectoryHandle = handle;
+    
+    // Store directory handle in IndexedDB for persistence
+    await storeDirectoryHandle(handle, 'defaultDirectory');
+    
+    updateDefaultFolderDisplay();
+    toast('Default folder selected. Game folders will be created here when loading games.', 'success');
+    
+    // If a game is already loaded, create its folder now
+    if (S.gameId) {
+      await ensureGameFolder();
+    }
+  } catch (e) {
+    if (e.name !== 'AbortError') {
+      console.error('Error selecting default directory:', e);
+      toast('Failed to select default folder.', 'warning');
+    }
+    updateDefaultFolderDisplay();
+  }
+}
+
+/**
+ * Clear the default directory
+ */
+function clearDefaultFolder() {
+  if (!confirm('Clear default folder? Game folders will not be created automatically.')) return;
+  
+  S.defaultDirectoryHandle = null;
+  S.gameFolderHandle = null;
+  
+  // Remove from IndexedDB
+  if ('indexedDB' in window) {
+    indexedDB.open('benchsight_save', 1).onsuccess = (e) => {
+      const db = e.target.result;
+      const transaction = db.transaction(['handles'], 'readwrite');
+      transaction.objectStore('handles').delete('defaultDirectory');
+    };
+  }
+  
+  updateDefaultFolderDisplay();
+  toast('Default folder cleared.', 'info');
+}
+
+/**
+ * Update the default folder display in settings
+ */
+function updateDefaultFolderDisplay() {
+  const folderPathEl = document.getElementById('defaultFolderPath');
+  const folderStatusEl = document.getElementById('defaultFolderStatus');
+  
+  if (folderPathEl) {
+    if (S.defaultDirectoryHandle) {
+      try {
+        folderPathEl.textContent = `Selected: ${S.defaultDirectoryHandle.name || 'Folder'}`;
+        folderPathEl.classList.remove('empty');
+        folderPathEl.style.color = 'var(--success)';
+      } catch (e) {
+        folderPathEl.textContent = 'Folder selected';
+        folderPathEl.classList.remove('empty');
+        folderPathEl.style.color = 'var(--success)';
+      }
+    } else {
+      folderPathEl.textContent = 'No default folder selected';
+      folderPathEl.classList.add('empty');
+      folderPathEl.style.color = 'var(--muted)';
+    }
+  }
+  
+  if (folderStatusEl) {
+    if (S.defaultDirectoryHandle) {
+      folderStatusEl.textContent = `✅ Default folder set. Game folders (named by game ID) will be created automatically when loading games.`;
+      folderStatusEl.style.color = 'var(--success)';
+    } else {
+      folderStatusEl.textContent = '💡 Select a default folder. Game folders (named by game ID) will be created automatically when loading games.';
+      folderStatusEl.style.color = 'var(--muted)';
+    }
+  }
+}
+
+/**
+ * Ensure game folder exists - create it if it doesn't exist
+ */
+async function ensureGameFolder() {
+  if (!S.defaultDirectoryHandle || !S.gameId) {
+    S.gameFolderHandle = null;
+    return;
+  }
+  
+  try {
+    // Game folder name is just the game ID (e.g., "19038")
+    const gameFolderName = String(S.gameId);
+    
+    // Try to get existing folder, or create it
+    try {
+      S.gameFolderHandle = await S.defaultDirectoryHandle.getDirectoryHandle(gameFolderName, { create: true });
+      console.log(`Game folder ready: ${gameFolderName}`);
+    } catch (e) {
+      console.error('Error creating game folder:', e);
+      toast('Failed to create game folder', 'warning');
+      S.gameFolderHandle = null;
+    }
+  } catch (e) {
+    console.error('Error ensuring game folder:', e);
+    S.gameFolderHandle = null;
+  }
+}
+
+/**
+ * v23.8: Store directory handle in IndexedDB
+ * @param {FileSystemDirectoryHandle} handle - Directory handle to store
+ * @param {string} key - Key to store under ('saveDirectory' or 'defaultDirectory')
+ */
+async function storeDirectoryHandle(handle, key = 'saveDirectory') {
   try {
     if (!('indexedDB' in window)) return;
     
@@ -6744,16 +7425,16 @@ async function storeDirectoryHandle(handle) {
     });
     
     const transaction = db.transaction(['handles'], 'readwrite');
-    await transaction.objectStore('handles').put(handle, 'saveDirectory');
+    await transaction.objectStore('handles').put(handle, key);
   } catch (e) {
     console.error('Failed to store directory handle:', e);
   }
 }
 
 /**
- * v23.8: Load directory handle from IndexedDB
+ * v23.8: Load directory handles from IndexedDB
  */
-async function loadDirectoryHandle() {
+async function loadDirectoryHandles() {
   try {
     if (!('indexedDB' in window)) return;
     
@@ -6778,23 +7459,43 @@ async function loadDirectoryHandle() {
     
     if (!db) return;
     
+    // Load both save directory and default directory
     const transaction = db.transaction(['handles'], 'readonly');
-    const request = transaction.objectStore('handles').get('saveDirectory');
     
+    // Load save directory
+    const saveDirRequest = transaction.objectStore('handles').get('saveDirectory');
     await new Promise((resolve) => {
-      request.onsuccess = () => {
+      saveDirRequest.onsuccess = () => {
         try {
-          if (request.result) {
-            // Verify the handle is still valid
-            S.saveDirectoryHandle = request.result;
+          if (saveDirRequest.result) {
+            S.saveDirectoryHandle = saveDirRequest.result;
           }
         } catch (e) {
-          console.error('Error setting directory handle:', e);
+          console.error('Error setting save directory handle:', e);
         }
         resolve();
       };
-      request.onerror = () => {
-        console.error('Error reading directory handle:', request.error);
+      saveDirRequest.onerror = () => {
+        console.error('Error reading save directory handle:', saveDirRequest.error);
+        resolve(); // Don't reject
+      };
+    });
+    
+    // Load default directory
+    const defaultDirRequest = transaction.objectStore('handles').get('defaultDirectory');
+    await new Promise((resolve) => {
+      defaultDirRequest.onsuccess = () => {
+        try {
+          if (defaultDirRequest.result) {
+            S.defaultDirectoryHandle = defaultDirRequest.result;
+          }
+        } catch (e) {
+          console.error('Error setting default directory handle:', e);
+        }
+        resolve();
+      };
+      defaultDirRequest.onerror = () => {
+        console.error('Error reading default directory handle:', defaultDirRequest.error);
         resolve(); // Don't reject
       };
     });
@@ -6808,7 +7509,11 @@ async function loadDirectoryHandle() {
  * v23.8: Save game data to file system
  */
 async function saveToFileSystem(data) {
-  if (!S.saveDirectoryHandle || !S.gameId) return;
+  if (!S.gameId) return;
+  
+  // Use game folder if available, otherwise use saveDirectoryHandle
+  const targetDirectory = S.gameFolderHandle || S.saveDirectoryHandle;
+  if (!targetDirectory) return;
   
   try {
     // Create comprehensive game data object
@@ -6864,8 +7569,8 @@ async function saveToFileSystem(data) {
     const gameName = `${S.homeTeam || 'Home'}_vs_${S.awayTeam || 'Away'}`.replace(/[^a-zA-Z0-9_]/g, '_');
     const fileName = `benchsight_game_${gameName}_${S.gameId}.json`;
     
-    // Write main save file
-    const fileHandle = await S.saveDirectoryHandle.getFileHandle(fileName, { create: true });
+    // Write main save file to game folder (or saveDirectoryHandle)
+    const fileHandle = await targetDirectory.getFileHandle(fileName, { create: true });
     const writable = await fileHandle.createWritable();
     await writable.write(JSON.stringify(gameData, null, 2));
     await writable.close();
@@ -6877,15 +7582,20 @@ async function saveToFileSystem(data) {
 
 /**
  * v23.8: Create backup in bkup folder
+ * Uses game folder's bkup subfolder if available, otherwise saveDirectoryHandle's bkup folder
  */
 async function createBackup(data) {
-  if (!S.saveDirectoryHandle || !S.gameId) return;
+  if (!S.gameId) return;
+  
+  // Use game folder if available, otherwise use saveDirectoryHandle
+  const targetDirectory = S.gameFolderHandle || S.saveDirectoryHandle;
+  if (!targetDirectory) return;
   
   try {
-    // Get or create bkup folder
+    // Get or create bkup folder within the target directory
     let backupDir;
     try {
-      backupDir = await S.saveDirectoryHandle.getDirectoryHandle('bkup', { create: true });
+      backupDir = await targetDirectory.getDirectoryHandle('bkup', { create: true });
     } catch (e) {
       console.error('Failed to create backup directory:', e);
       return;
@@ -6982,9 +7692,33 @@ async function rotateBackups(backupDir, gameName, gameId) {
 }
 
 /**
- * v23.8: Export complete game data and settings as JSON file
+ * Save JSON data to game folder if available
  */
-function exportGameDataAsJson() {
+async function saveJsonToGameFolder(data) {
+  if (!S.gameFolderHandle || !S.gameId) {
+    return Promise.reject('No game folder available');
+  }
+  
+  try {
+    const fileName = `${S.gameId}_game_data.json`;
+    const fileHandle = await S.gameFolderHandle.getFileHandle(fileName, { create: true });
+    const writable = await fileHandle.createWritable();
+    
+    const jsonString = JSON.stringify(data, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    
+    await writable.write(blob);
+    await writable.close();
+    
+    console.log(`JSON saved to game folder: ${fileName}`);
+    return true;
+  } catch (e) {
+    console.error('Error saving JSON to game folder:', e);
+    throw e;
+  }
+}
+
+async function exportGameDataAsJson() {
   if (!S.gameId) return;
   
   const gameData = {
@@ -7036,16 +7770,37 @@ function exportGameDataAsJson() {
     savedAt: new Date().toISOString()
   };
   
-  const blob = new Blob([JSON.stringify(gameData, null, 2)], { type: 'application/json' });
+  const gameName = `${S.homeTeam || 'Home'}_vs_${S.awayTeam || 'Away'}`.replace(/[^a-zA-Z0-9_]/g, '_');
+  const fileName = `benchsight_game_${gameName}_${S.gameId}_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
+  const jsonString = JSON.stringify(gameData, null, 2);
+  
+  // Try to save to game folder first, otherwise download
+  if (S.gameFolderHandle) {
+    try {
+      const fileHandle = await S.gameFolderHandle.getFileHandle(fileName, { create: true });
+      const writable = await fileHandle.createWritable();
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      await writable.write(blob);
+      await writable.close();
+      toast(`JSON saved to game folder: ${fileName}`, 'success');
+      return;
+    } catch (e) {
+      console.error('Error saving JSON to game folder:', e);
+      // Fall through to download
+    }
+  }
+  
+  // Download JSON file (fallback if game folder not available)
+  const blob = new Blob([jsonString], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  const gameName = `${S.homeTeam || 'Home'}_vs_${S.awayTeam || 'Away'}`.replace(/[^a-zA-Z0-9_]/g, '_');
-  a.download = `benchsight_game_${gameName}_${S.gameId}_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
+  a.download = fileName;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+  toast('JSON exported!', 'success');
 }
 
 function saveGameData() {
@@ -7222,10 +7977,11 @@ function manualSave() {
   updateSaveIndicator('saving');
   autoSave();
   
-  // v23.8: Always export JSON on manual save (in addition to auto-save behavior)
+  // Show appropriate success message
   const exportJsonOnSave = localStorage.getItem('bs_exportJsonOnSave') === 'true';
-  if (exportJsonOnSave && !S.saveDirectoryHandle) {
-    // autoSave() already exports if enabled, but we can show a message
+  if (S.gameFolderHandle) {
+    toast('Game saved to localStorage and game folder!', 'success');
+  } else if (exportJsonOnSave) {
     toast('Game saved to localStorage and JSON exported!', 'success');
   } else if (S.saveDirectoryHandle) {
     toast('Game saved to localStorage and file system!', 'success');
@@ -7527,8 +8283,8 @@ async function selectGame(gid) {
   S.gameId = parseInt(gid);
   localStorage.setItem('bs_lastGame', gid);
   
-  // v23.8: Don't prompt for save directory automatically (requires user gesture)
-  // User can select it manually from Settings if desired
+  // Create/get game folder if default folder is set
+  await ensureGameFolder();
   
   const g = S.games.find(x => x.game_id == gid);
   if (!g) { toast('Game not found', 'error'); return; }
@@ -11150,7 +11906,7 @@ function drawPath(points, fill, stroke, opacity, layer, label, current, extraDat
                 prevLine.setAttribute('y2', svgCoords.y);
               }
             }
-            if (i < sorted.length - 1) {
+            if (i < deduplicated.length - 1) {
               const nextLine = layer.querySelector(`line[data-seq-start="${seq}"][data-seq-end="${sorted[i+1].seq}"]`);
               if (nextLine) {
                 nextLine.setAttribute('x1', svgCoords.x);
@@ -12081,7 +12837,13 @@ function handleListDrop(e, targetRole) {
 function selectPlayer(num) {
   S.selectedPlayer = S.curr.players.find(p => p.num === num) || null;
   if (S.selectedPlayer && S.xyMode !== 'player') setXYMode('player');
-  renderQuickAdd(); renderXYSlots();
+  // Clear highlighting when selecting a different player
+  if (S.highlightedXYPlayerNum !== num) {
+    S.highlightedXYSeq = null;
+    S.highlightedXYType = null;
+    S.highlightedXYPlayerNum = null;
+  }
+  renderQuickAdd(); renderXYSlots(); renderMarkers();
 }
 
 function updatePlayerDetail(field, val) {
@@ -12100,7 +12862,11 @@ function setXYMode(mode) {
   document.getElementById('modeInd').textContent = mode === 'puck' ? '🏒 PUCK' : '👤 PLAYER';
   document.getElementById('modeInd').className = 'mode-ind ' + mode;
   S.xySlot = 1;
-  renderXYSlots(); renderQuickAdd();
+  // Clear highlighting when switching modes
+  S.highlightedXYSeq = null;
+  S.highlightedXYType = null;
+  S.highlightedXYPlayerNum = null;
+  renderXYSlots(); renderQuickAdd(); renderMarkers();
 }
 
 function setXYSlot(n) {
@@ -14026,6 +14792,10 @@ function clearEvent() {
   S.selectedPlayer = null;
   S.xySlot = 1;
   S.xyHistory = [];
+  // Clear highlighting when clearing event
+  S.highlightedXYSeq = null;
+  S.highlightedXYType = null;
+  S.highlightedXYPlayerNum = null;
   document.querySelectorAll('.evt-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('evtD1').innerHTML = '<option value="">--</option>';
   document.getElementById('evtD2').innerHTML = '<option value="">--</option>';
@@ -18233,6 +19003,8 @@ function handleXYEditClick(event) {
   if (S.editingEvtIdx === null) return;
   
   const evt = S.events[S.editingEvtIdx];
+  if (!evt) return;
+  
   const svg = document.getElementById('xyEditSvg');
   const rect = svg.getBoundingClientRect();
   const pt = svg.createSVGPoint();
@@ -18245,8 +19017,6 @@ function handleXYEditClick(event) {
     x: Math.round(relativeCoords.x * 100) / 100, 
     y: Math.round(relativeCoords.y * 100) / 100 
   };
-  
-  const evt = S.events[S.editingEvtIdx];
   
   if (S.editingXYType === 'puck' && evt.puckXY?.[S.editingXYIdx]) {
     evt.puckXY[S.editingXYIdx].x = xy.x;
@@ -19049,6 +19819,9 @@ async function confirmLoadGame() {
     
     // First set the game ID and find game info
     S.gameId = parseInt(gameId);
+    
+    // Create/get game folder if default folder is set
+    await ensureGameFolder();
     const g = S.games.find(x => x.game_id == gameId);
     if (g) {
       S.homeTeam = g.home_team_name;
@@ -21275,18 +22048,6 @@ function saveEditEvent() {
   }
   
   // Save linked event index (convert from 1-based to 0-based)
-  const linkedIdxEl = document.getElementById('editLinkedIdx');
-  if (linkedIdxEl) {
-    const linkedVal = linkedIdxEl.value ? parseInt(linkedIdxEl.value) - 1 : null;
-    if (linkedVal !== null && linkedVal >= 0) {
-      // Propagate the change to all events in the chain
-      propagateLinkedIndexChange(evt.idx, linkedVal);
-    } else {
-      evt.linkedEventIdx = null;
-    }
-  }
-  
-  // Save linked index (convert from 1-based user input to 0-based)
   const linkedIdxEl = document.getElementById('editLinkedIdx');
   if (linkedIdxEl) {
     const linkedVal = linkedIdxEl.value ? parseInt(linkedIdxEl.value) - 1 : null;
@@ -23548,47 +24309,76 @@ function buildExportWorkbook() {
   const period2Start = period1Start + periodLengthSec + int1;
   const period3Start = period2Start + periodLengthSec + int2;
   
-  // Get video URL from videoTiming or first video in videos array
-  const videoUrl = S.videoTiming?.youtubeUrl || 
-                   (S.videos && S.videos.length > 0 ? S.videos[0].url : '') || 
-                   '';
+  // Create video sheet with expected format (one row per video)
+  // Export all videos from S.videos array if available
+  const videoRows = [];
   
-  // Get video type from first video or default to Full_Ice
-  const videoType = (S.videos && S.videos.length > 0 && S.videos[0].type) ? 
-                    S.videos[0].type : 'Full_Ice';
-  
-  // Get description from first video or default
-  const description = (S.videos && S.videos.length > 0 && S.videos[0].description) ? 
-                     S.videos[0].description : 
-                     (S.videos && S.videos.length > 0 && S.videos[0].notes) ?
-                     S.videos[0].notes : '';
-  
-  // Calculate duration if we have end time from last video
-  let durationSeconds = '';
   if (S.videos && S.videos.length > 0) {
-    const lastVideo = S.videos[S.videos.length - 1];
-    if (lastVideo.end_time) {
-      // Try to parse end_time as MM:SS and convert to seconds
-      const endParts = lastVideo.end_time.split(':');
-      if (endParts.length === 2) {
-        const endMin = parseInt(endParts[0]) || 0;
-        const endSec = parseInt(endParts[1]) || 0;
-        durationSeconds = (endMin * 60) + endSec;
+    // Export all videos from S.videos array (one row per video)
+    S.videos.forEach(video => {
+      const videoUrl = video.url || '';
+      const videoType = video.type || 'Full_Ice';
+      const description = video.description || video.notes || video.title || '';
+      
+      // Calculate duration if we have start and end times
+      let durationSeconds = '';
+      if (video.start_time && video.end_time) {
+        const startParts = video.start_time.split(':');
+        const endParts = video.end_time.split(':');
+        if (startParts.length === 2 && endParts.length === 2) {
+          const startMin = parseInt(startParts[0]) || 0;
+          const startSec = parseInt(startParts[1]) || 0;
+          const endMin = parseInt(endParts[0]) || 0;
+          const endSec = parseInt(endParts[1]) || 0;
+          const startTotal = (startMin * 60) + startSec;
+          const endTotal = (endMin * 60) + endSec;
+          durationSeconds = Math.max(0, endTotal - startTotal);
+        }
       }
-    }
+      
+      videoRows.push({
+        game_id: S.gameId,
+        video_type: videoType,
+        video_url: videoUrl,
+        video_id: video.video_id || extractYouTubeId(videoUrl) || '',
+        title: video.title || '',
+        category: video.category || '',
+        period: video.period || '',
+        start_time: video.start_time || '',
+        end_time: video.end_time || '',
+        duration_seconds: durationSeconds,
+        period_1_start: period1Start,
+        period_2_start: period2Start,
+        period_3_start: period3Start,
+        description: description,
+        notes: video.notes || ''
+      });
+    });
+  } else if (S.videoTiming?.youtubeUrl) {
+    // Fall back to legacy single video URL from videoTiming
+    const videoUrl = S.videoTiming.youtubeUrl;
+    const videoType = (videoUrl.includes('youtube') || videoUrl.includes('youtu.be')) ? 'YouTube' : 'File';
+    
+    videoRows.push({
+      game_id: S.gameId,
+      video_type: videoType,
+      video_url: videoUrl,
+      video_id: extractYouTubeId(videoUrl) || '',
+      title: '',
+      category: '',
+      period: '',
+      start_time: '',
+      end_time: '',
+      duration_seconds: '',
+      period_1_start: period1Start,
+      period_2_start: period2Start,
+      period_3_start: period3Start,
+      description: 'Game video',
+      notes: ''
+    });
   }
   
-  // Create video sheet with expected format (one row per game)
-  const videoRows = [{
-    game_id: S.gameId,
-    video_type: videoType,
-    video_url: videoUrl,
-    duration_seconds: durationSeconds || '',
-    period_1_start: period1Start,
-    period_2_start: period2Start,
-    period_3_start: period3Start,
-    description: description
-  }];
+  // Always create video sheet (even if empty) to maintain format
   
   const wsVideos = XLSX.utils.json_to_sheet(videoRows);
   XLSX.utils.book_append_sheet(wb, wsVideos, 'video');
@@ -23939,8 +24729,30 @@ async function exportData() {
   }
   
   const wb = buildExportWorkbook();
-  XLSX.writeFile(wb, `${S.gameId}_tracking.xlsx`);
-  toast('Exported!', 'success');
+  // Save to game folder if available, otherwise download
+  if (S.gameFolderHandle) {
+    try {
+      const fileName = `${S.gameId}_tracking.xlsx`;
+      const fileHandle = await S.gameFolderHandle.getFileHandle(fileName, { create: true });
+      const writable = await fileHandle.createWritable();
+      
+      // Convert workbook to array buffer, then to blob
+      const arrayBuffer = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
+      const blob = new Blob([arrayBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      
+      await writable.write(blob);
+      await writable.close();
+      toast(`Exported to game folder: ${fileName}`, 'success');
+    } catch (e) {
+      console.error('Error saving to game folder:', e);
+      // Fall back to download
+      XLSX.writeFile(wb, `${S.gameId}_tracking.xlsx`);
+      toast('Exported! (saved to downloads)', 'success');
+    }
+  } else {
+    XLSX.writeFile(wb, `${S.gameId}_tracking.xlsx`);
+    toast('Exported!', 'success');
+  }
 }
 
 // ============================================================

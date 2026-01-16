@@ -1,5 +1,5 @@
 {
-  "exportDate": "2026-01-16T15:14:41.597Z",
+  "exportDate": "2026-01-16T16:17:12.708Z",
   "version": "23.8",
   "gameId": 19038,
   "homeTeam": "Ace",
@@ -11445,74 +11445,26 @@
     }
   },
   "currentPeriod": 1,
-  "currentTeam": "away",
+  "currentTeam": "home",
   "slots": {
     "home": {
-      "F1": {
-        "num": "16",
-        "name": "Joe Diberardinis",
-        "pos": "F"
-      },
-      "F2": {
-        "num": "20",
-        "name": "John Morrow",
-        "pos": "F"
-      },
-      "F3": {
-        "num": "88",
-        "name": "John Liersemann",
-        "pos": "F"
-      },
-      "D1": {
-        "num": "65",
-        "name": "Nick Zellmann",
-        "pos": "D"
-      },
-      "D2": {
-        "num": "81",
-        "name": "Kevin Kalbfleisch",
-        "pos": "D"
-      },
-      "G": {
-        "num": "31",
-        "name": "Ian Gustafson",
-        "pos": "G"
-      },
+      "F1": null,
+      "F2": null,
+      "F3": null,
+      "D1": null,
+      "D2": null,
+      "G": null,
       "X": null
     },
     "away": {
-      "F1": {
-        "num": "70",
-        "name": "Sam Downs",
-        "pos": "F"
-      },
-      "F2": {
-        "num": "24",
-        "name": "Jennifer Valente",
-        "pos": "F"
-      },
-      "F3": {
-        "num": "91",
-        "name": "Kevin White",
-        "pos": "F"
-      },
-      "D1": {
-        "num": "93",
-        "name": "Pat Major",
-        "pos": "D"
-      },
-      "D2": {
-        "num": "22",
-        "name": "Robert Mayfield",
-        "pos": "D"
-      },
-      "G": {
-        "num": "39",
-        "name": "Wyatt Crandall",
-        "pos": "G"
-      },
+      "F1": null,
+      "F2": null,
+      "F3": null,
+      "D1": null,
+      "D2": null,
+      "G": null,
       "X": null
     }
   },
-  "savedAt": "2026-01-16T15:14:41.594Z"
+  "savedAt": "2026-01-16T16:17:12.707Z"
 }

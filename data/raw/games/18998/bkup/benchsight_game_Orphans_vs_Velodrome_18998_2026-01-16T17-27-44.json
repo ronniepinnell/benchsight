@@ -1,0 +1,312 @@
+{
+  "exportDate": "2026-01-16T17:27:44.632Z",
+  "version": "23.8",
+  "gameId": 18998,
+  "homeTeam": "Orphans",
+  "awayTeam": "Velodrome",
+  "homeColor": "#000000",
+  "awayColor": "#9C47E4",
+  "homeLogo": "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2023/07/World-Orphans-Logo-small.png?resize=128%2C125&ssl=1",
+  "awayLogo": "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/08/2024-25-VEL-Jersey-Logo.png?fit=128%2C128&ssl=1",
+  "rosters": {
+    "home": [
+      {
+        "id": "P100118",
+        "num": "1",
+        "name": "Michael Gipson",
+        "pos": "G",
+        "rating": null
+      },
+      {
+        "id": "P100098",
+        "num": "2",
+        "name": "Clint Atkins",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100059",
+        "num": "4",
+        "name": "Greg Hoyt",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100063",
+        "num": "5",
+        "name": "Matt Rocco",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100073",
+        "num": "6",
+        "name": "Matt Vivian",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100045",
+        "num": "7",
+        "name": "Aaron Thoman",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100053",
+        "num": "9",
+        "name": "Joshua Parmiter",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100058",
+        "num": "10",
+        "name": "Wayne Kohut",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100082",
+        "num": "11",
+        "name": "Ross Thompson",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100054",
+        "num": "12",
+        "name": "Daniel Heck",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100056",
+        "num": "13",
+        "name": "Dean Porter",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100051",
+        "num": "14",
+        "name": "Austin Webb",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100055",
+        "num": "15",
+        "name": "Chad Ferguson",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100095",
+        "num": "16",
+        "name": "Chuck Webb",
+        "pos": "F",
+        "rating": null
+      }
+    ],
+    "away": [
+      {
+        "id": "P100105",
+        "num": "9",
+        "name": "Ronnie Pinnell",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100132",
+        "num": "14",
+        "name": "Nick Ciampoli",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100108",
+        "num": "22",
+        "name": "Robert Mayfield",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100230",
+        "num": "24",
+        "name": "Jennifer Valente",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100016",
+        "num": "39",
+        "name": "Wyatt Crandall",
+        "pos": "G",
+        "rating": null
+      },
+      {
+        "id": "P100201",
+        "num": "42",
+        "name": "Garrett Ashcroft",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100064",
+        "num": "55",
+        "name": "James Rynearson",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100224",
+        "num": "61",
+        "name": "Kaitlyn Shain",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100001",
+        "num": "70",
+        "name": "Sam Downs",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100039",
+        "num": "75",
+        "name": "Nicole Downs",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100198",
+        "num": "84",
+        "name": "Maxwell Donaty",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100159",
+        "num": "87",
+        "name": "Josh Cronk",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100002",
+        "num": "91",
+        "name": "Kevin White",
+        "pos": "F",
+        "rating": null
+      }
+    ]
+  },
+  "events": [],
+  "shifts": [],
+  "evtIdx": 0,
+  "shiftIdx": 0,
+  "videos": [
+    {
+      "id": "17685842253321iduq7d6z",
+      "url": "https://www.youtube.com/watch?v=oqTG8TXMWqM",
+      "type": "Full_Ice",
+      "video_id": "oqTG8TXMWqM"
+    },
+    {
+      "id": "1768584238114anhssyg2b",
+      "url": "https://www.youtube.com/watch?v=PUA70eC9VXk",
+      "type": "Broadcast",
+      "video_id": "PUA70eC9VXk"
+    }
+  ],
+  "videoTiming": {
+    "videoStartOffset": 0,
+    "periodOffsets": {
+      "1": null,
+      "2": 1153,
+      "3": 2321,
+      "OT": null
+    },
+    "gameStart": {
+      "period": 1,
+      "time": "18:00"
+    },
+    "intermission1": 900,
+    "intermission2": 900,
+    "intermission3": 300,
+    "timeouts": [
+      {
+        "period": "3",
+        "duration": 62,
+        "gameStart": null,
+        "gameStop": null,
+        "videoStart": 3314,
+        "videoStop": 3376,
+        "gameTime": "",
+        "startTime": "",
+        "stopTime": ""
+      }
+    ],
+    "youtubeUrl": "https://www.youtube.com/watch?v=oqTG8TXMWqM"
+  },
+  "periodLengths": {
+    "1": 18,
+    "2": 18,
+    "3": 18,
+    "OT": 5
+  },
+  "penaltyLengths": {
+    "minor": 3,
+    "major": 6,
+    "misconduct": 10
+  },
+  "homeAttacksRightP1": true,
+  "settings": {
+    "sbUrl": "https://uuaowslhpgyiudmbvqze.supabase.co",
+    "sbKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1YW93c2xocGd5aXVkbWJ2cXplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4NTQ5ODcsImV4cCI6MjA4MjQzMDk4N30.9WjZcLzB555vKaiDeby8nYJ3Ce9L-SCkFrYH1Ts4ILU",
+    "autoSaveInt": "30",
+    "pressureDist": "5",
+    "xyHistCnt": "5",
+    "periodLength": "18",
+    "otLength": "5",
+    "penaltyLengthMinor": "3",
+    "penaltyLengthMajor": "6",
+    "penaltyLengthMisconduct": "10"
+  },
+  "customChainPresets": [],
+  "linePresets": {
+    "home_F1": {
+      "name": "F1",
+      "players": [
+        "20",
+        "34",
+        "12"
+      ]
+    }
+  },
+  "currentPeriod": 1,
+  "currentTeam": "home",
+  "slots": {
+    "home": {
+      "F1": null,
+      "F2": null,
+      "F3": null,
+      "D1": null,
+      "D2": null,
+      "G": null,
+      "X": null
+    },
+    "away": {
+      "F1": null,
+      "F2": null,
+      "F3": null,
+      "D1": null,
+      "D2": null,
+      "G": null,
+      "X": null
+    }
+  },
+  "savedAt": "2026-01-16T17:27:44.629Z"
+}

@@ -1,0 +1,290 @@
+{
+  "exportDate": "2026-01-16T17:28:14.769Z",
+  "version": "23.8",
+  "gameId": 18993,
+  "homeTeam": "Ace",
+  "awayTeam": "Velodrome",
+  "homeColor": "#CA0527",
+  "awayColor": "#9C47E4",
+  "homeLogo": "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2023/06/Ace-Hardware-Jersey-Logo.png?resize=128%2C128&ssl=1",
+  "awayLogo": "https://i0.wp.com/www.noradhockey.com/wp-content/uploads/2025/08/2024-25-VEL-Jersey-Logo.png?fit=128%2C128&ssl=1",
+  "rosters": {
+    "home": [
+      {
+        "id": "P100209",
+        "num": "0",
+        "name": "Alyssa Richards",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100153",
+        "num": "7",
+        "name": "John Storms",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100139",
+        "num": "16",
+        "name": "Joe Diberardinis",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100199",
+        "num": "18",
+        "name": "Ethan Kalbfleisch",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100219",
+        "num": "20",
+        "name": "John Morrow",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100026",
+        "num": "27",
+        "name": "Austin Storm",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100133",
+        "num": "31",
+        "name": "Ian Gustafson",
+        "pos": "G",
+        "rating": null
+      },
+      {
+        "id": "P100154",
+        "num": "35",
+        "name": "Josh Engle",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100142",
+        "num": "57",
+        "name": "Lee Chiarizia",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100184",
+        "num": "65",
+        "name": "Nick Zellmann",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100328",
+        "num": "69",
+        "name": "Nora Wilson",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100017",
+        "num": "72",
+        "name": "Owen Kalbfleisch",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100112",
+        "num": "81",
+        "name": "Kevin Kalbfleisch",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100212",
+        "num": "88",
+        "name": "John Liersemann",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100181",
+        "num": "98",
+        "name": "Shane Arnold",
+        "pos": "F",
+        "rating": null
+      }
+    ],
+    "away": [
+      {
+        "id": "P100105",
+        "num": "9",
+        "name": "Ronnie Pinnell",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100132",
+        "num": "14",
+        "name": "Nick Ciampoli",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100108",
+        "num": "22",
+        "name": "Robert Mayfield",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100230",
+        "num": "24",
+        "name": "Jennifer Valente",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100201",
+        "num": "42",
+        "name": "Garrett Ashcroft",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100161",
+        "num": "49",
+        "name": "Galen Wood",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100064",
+        "num": "55",
+        "name": "James Rynearson",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100224",
+        "num": "61",
+        "name": "Kaitlyn Shain",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100001",
+        "num": "70",
+        "name": "Sam Downs",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100039",
+        "num": "75",
+        "name": "Nicole Downs",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100198",
+        "num": "84",
+        "name": "Maxwell Donaty",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100002",
+        "num": "91",
+        "name": "Kevin White",
+        "pos": "F",
+        "rating": null
+      },
+      {
+        "id": "P100093",
+        "num": "93",
+        "name": "Pat Major",
+        "pos": "D",
+        "rating": null
+      },
+      {
+        "id": "P100202",
+        "num": "null",
+        "name": "Francis Forte",
+        "pos": "G",
+        "rating": null
+      }
+    ]
+  },
+  "events": [],
+  "shifts": [],
+  "evtIdx": 0,
+  "shiftIdx": 0,
+  "videos": [],
+  "videoTiming": {
+    "videoStartOffset": 0,
+    "intermission1": 900,
+    "intermission2": 900,
+    "timeouts": [],
+    "youtubeUrl": ""
+  },
+  "periodLengths": {
+    "1": 18,
+    "2": 18,
+    "3": 18,
+    "OT": 5
+  },
+  "penaltyLengths": {
+    "minor": 3,
+    "major": 6,
+    "misconduct": 10
+  },
+  "homeAttacksRightP1": true,
+  "settings": {
+    "sbUrl": "https://uuaowslhpgyiudmbvqze.supabase.co",
+    "sbKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1YW93c2xocGd5aXVkbWJ2cXplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4NTQ5ODcsImV4cCI6MjA4MjQzMDk4N30.9WjZcLzB555vKaiDeby8nYJ3Ce9L-SCkFrYH1Ts4ILU",
+    "autoSaveInt": "30",
+    "pressureDist": "5",
+    "xyHistCnt": "5",
+    "periodLength": "18",
+    "otLength": "5",
+    "penaltyLengthMinor": "3",
+    "penaltyLengthMajor": "6",
+    "penaltyLengthMisconduct": "10"
+  },
+  "customChainPresets": [],
+  "linePresets": {
+    "home_F1": {
+      "name": "F1",
+      "players": [
+        "20",
+        "34",
+        "12"
+      ]
+    }
+  },
+  "currentPeriod": 1,
+  "currentTeam": "home",
+  "slots": {
+    "home": {
+      "F1": null,
+      "F2": null,
+      "F3": null,
+      "D1": null,
+      "D2": null,
+      "G": null,
+      "X": null
+    },
+    "away": {
+      "F1": null,
+      "F2": null,
+      "F3": null,
+      "D1": null,
+      "D2": null,
+      "G": null,
+      "X": null
+    }
+  },
+  "savedAt": "2026-01-16T17:28:14.629Z"
+}
