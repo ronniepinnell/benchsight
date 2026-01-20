@@ -1,165 +1,126 @@
 # Refactoring Progress Report
 
-**Date:** 2026-01-13  
-**Version:** 29.1  
-**Status:** Phase 1 Complete ✅
+**Date:** 2026-01-20  
+**Status:** In Progress
 
 ---
 
-## Executive Summary
+## ✅ Completed
 
-Successfully completed Phase 1 of code refactoring, extracting calculation functions and table builders into modular, testable components.
+### 1. Deployment Scripts Fixed
 
-**Key Achievements:**
-- ✅ Created `src/calculations/` module (20+ functions)
-- ✅ Created `src/builders/` module (3 functions)
-- ✅ Added 24 unit tests
-- ✅ Updated all documentation
-- ✅ Zero breaking changes
+**Files Modified:**
+- `scripts/deploy_to_dev.sh`
+- `scripts/deploy_to_production.sh`
+- `scripts/switch_env.sh`
 
----
+**Changes:**
+- ✅ Standardized environment naming to `dev` (removed `sandbox`/`develop` confusion)
+- ✅ Fixed broken summary logic (now tracks status correctly)
+- ✅ Added error handling with `set -euo pipefail`
+- ✅ Added pre-flight checks (git branch, uncommitted changes)
+- ✅ Improved error messages and user feedback
 
-## Completed Work
-
-### 1. Calculations Module ✅
-
-**Created:** `src/calculations/` with 4 sub-modules
-
-| Module | Functions | Tests |
-|--------|-----------|-------|
-| `goals.py` | 5 functions | 5 tests |
-| `corsi.py` | 7 functions | 6 tests |
-| `ratings.py` | 8 functions | 8 tests |
-| `time.py` | 5 functions | 5 tests |
-
-**Total:** 25 functions, 24 unit tests
-
-### 2. Builders Module ✅
-
-**Created:** `src/builders/` with 2 sub-modules
-
-| Module | Functions | Purpose |
-|--------|-----------|---------|
-| `events.py` | 2 functions | Build fact_events table |
-| `shifts.py` | 1 function | Build fact_shifts table |
-
-### 3. Documentation ✅
-
-- Updated CHANGELOG.md
-- Created REFACTORING.md guide
-- Created CODEBASE_ASSESSMENT.md
-- Updated ARCHITECTURE.md
-- Created REFACTORING_SUMMARY.md
+**Impact:** Scripts are now more reliable and user-friendly.
 
 ---
 
-## Code Quality Improvements
+### 2. .iterrows() Replacements Started
 
-### Before Refactoring
-- Calculation logic embedded in 4,700-line file
-- Hard to test individual functions
-- Code duplication across modules
-- Tight coupling
+**File:** `src/core/base_etl.py`
 
-### After Refactoring
-- ✅ Pure calculation functions in dedicated modules
-- ✅ Unit tests verify correctness
-- ✅ Functions can be imported and reused
-- ✅ Better separation of concerns
+**Replacements Made:**
+1. ✅ Lines 2372-2376: `period_max` dictionary building → Vectorized with `groupby().max()`
+2. ✅ Lines 2380-2388: `shift_ranges` dictionary building → Vectorized with `groupby().apply()`
+3. ✅ Lines 891-903: `season_map` building → Vectorized with pandas operations
+
+**Performance Impact:** These changes should provide 10-50x speedup for these operations.
 
 ---
 
-## Metrics
+## 🔄 In Progress
 
-| Metric | Before | After | Change |
-|--------|--------|-------|--------|
-| Largest file (lines) | 4,700 | 4,700 | No change* |
-| Calculation functions extracted | 0 | 25 | +25 |
-| Builder functions extracted | 0 | 3 | +3 |
-| Unit test coverage | 0% | 15% | +15% |
-| Modular functions | 0 | 28 | +28 |
-| Code duplication | High | Medium | Improved |
+### 3. More .iterrows() Replacements Needed
 
-*Note: `base_etl.py` still contains orchestration logic. Future phases will reduce its size.
+**Remaining in `base_etl.py`:**
+- Line 700-727: Finding closest opponent (nested loops) - Complex, needs scipy.spatial or vectorized distance
+- Line 1530: Building shift_players table - Can be optimized with melt/stack operations
+- Line 2691: Shift processing loop - Can be vectorized
+- Line 2799-2829: Cycle events building - Can be optimized
+- Line 2901: Cycle processing - Can be vectorized
+- Line 4758: Shift goals processing - Can be optimized
+- Line 4842: Game goals processing - Can be optimized
+- Line 5284: Shift players processing - Can be optimized
+- Line 5367: Competition tier mapping - Can be vectorized
+- Line 5408: Performance calculation - Can be optimized
+- Line 5579: Roster position updates - Can be vectorized
 
----
-
-## Next Phase (v29.2)
-
-### Planned Work
-
-1. **Update base_etl.py to use builders**
-   - Replace inline table building with builder calls
-   - Reduce `create_derived_tables()` complexity
-   - Estimated: 1-2 days
-
-2. **Performance Optimization**
-   - Replace `.iterrows()` with vectorized operations
-   - Profile ETL to find bottlenecks
-   - Estimated: 3-5 days
-
-3. **Additional Builders**
-   - Extract player stats builder
-   - Extract team stats builder
-   - Estimated: 2-3 days
-
-### Success Criteria
-
-- [ ] `base_etl.py` reduced to < 3,000 lines
-- [ ] All table building uses builders
-- [ ] Performance maintained or improved
-- [ ] All tests passing
+**Estimated Remaining:** ~10-15 more replacements in `base_etl.py`
 
 ---
 
-## Lessons Learned
+## 📋 Planned
 
-### What Worked Well
+### 4. Refactor base_etl.py Structure
 
-1. **Incremental approach** - Extracting functions first, then updating callers
-2. **Comprehensive tests** - Unit tests caught issues early
-3. **Documentation** - Clear docs helped understand structure
-4. **No breaking changes** - Backward compatibility maintained
+**Target Structure:**
+```
+src/core/
+├── base_etl.py          # Orchestrator only (~300-500 lines)
+├── data_loader.py        # load_blb_tables(), load_tracking_data()
+├── event_enhancer.py     # enhance_event_tables(), enhance_derived_event_tables()
+├── shift_enhancer.py     # enhance_shift_tables(), enhance_shift_players()
+├── table_creator.py      # create_derived_tables(), create_reference_tables()
+└── validator.py          # validate_all() and related
+```
 
-### Challenges
-
-1. **Dependencies** - Many functions depend on global state (OUTPUT_DIR, log)
-2. **Complexity** - Some functions are deeply nested
-3. **Testing** - Integration tests still needed for full validation
-
-### Recommendations
-
-1. Continue incremental refactoring
-2. Add more unit tests as functions are extracted
-3. Consider dependency injection for global state
-4. Profile before optimizing (measure, don't guess)
+**Status:** Not started
 
 ---
 
-## Impact Assessment
+### 5. Replace .iterrows() in Other Files
 
-### Positive Impacts
+**High Priority Files:**
+- `src/tables/remaining_facts.py` - 10+ instances
+- `src/tables/core_facts.py` - 5+ instances
+- `src/tables/event_analytics.py` - 3+ instances
+- `src/tables/shift_analytics.py` - 1+ instances
+- `src/tables/macro_stats.py` - 8+ instances
 
-- ✅ **Maintainability**: Easier to find and fix bugs
-- ✅ **Testability**: Functions can be tested in isolation
-- ✅ **Reusability**: Calculations can be used anywhere
-- ✅ **Documentation**: Clear structure and purpose
-
-### Risks Mitigated
-
-- ✅ No breaking changes introduced
-- ✅ All existing functionality preserved
-- ✅ Tests verify correctness
-- ✅ Documentation updated
+**Status:** Not started
 
 ---
 
-## Conclusion
+## 📊 Statistics
 
-Phase 1 refactoring successfully extracted 28 functions into modular, testable components. The codebase is now more maintainable and testable, with a clear path forward for continued improvement.
+**Total .iterrows() Calls Found:** 233
+**Replaced So Far:** 3 (1.3%)
+**Remaining:** 230 (98.7%)
 
-**Next Steps:** Update `base_etl.py` to use the new builders, then continue with performance optimization.
+**Files Modified:** 4
+- `scripts/deploy_to_dev.sh`
+- `scripts/deploy_to_production.sh`
+- `scripts/switch_env.sh`
+- `src/core/base_etl.py`
 
 ---
 
-*Report generated: 2026-01-13*
+## 🎯 Next Steps
+
+1. Continue replacing .iterrows() in `base_etl.py` (focus on high-impact functions)
+2. Replace .iterrows() in `remaining_facts.py` (many instances, high impact)
+3. Replace .iterrows() in `core_facts.py`
+4. Begin refactoring `base_etl.py` structure (extract modules)
+5. Update `run_etl.py` to use refactored modules
+
+---
+
+## ⚠️ Notes
+
+- Some .iterrows() calls are complex (nested loops, distance calculations) and may require scipy or custom vectorized functions
+- Refactoring should be done incrementally with testing after each change
+- Performance improvements will be most noticeable with larger datasets (100+ games)
+
+---
+
+**Last Updated:** 2026-01-20

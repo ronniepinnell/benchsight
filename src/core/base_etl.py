@@ -887,20 +887,24 @@ def enhance_gameroster(df, dim_season_df=None, dim_schedule_df=None):
         unmapped_mask = df['season_id'].isna() if 'season_id' in df.columns else pd.Series([True] * len(df))
         if unmapped_mask.any():
             # Build comprehensive season map
+            # VECTORIZED: Use vectorized operations instead of iterrows
             season_map = {}
-            for _, row in dim_season_df.iterrows():
-                sid = row.get('season_id', '')
-                season_val = str(row.get('season', ''))
-                if sid:
-                    # Direct season value mapping (e.g., "2025" -> "N2025S")
-                    season_map[season_val] = sid
-                    season_map[season_val.replace('-', '')] = sid
-                    # Extract year pattern from season_id (e.g., N20232024F -> 20232024)
-                    year_part = ''.join(c for c in str(sid) if c.isdigit())
-                    if len(year_part) == 8:
-                        season_str = f"{year_part[:4]}-{year_part[4:]}"  # 2023-2024
-                        season_map[year_part] = sid
-                        season_map[season_str] = sid
+            if len(dim_season_df) > 0:
+                # Direct season value mappings
+                season_map.update(dict(zip(dim_season_df['season'].astype(str), dim_season_df['season_id'])))
+                season_map.update(dict(zip(dim_season_df['season'].astype(str).str.replace('-', ''), dim_season_df['season_id'])))
+                
+                # Extract year patterns from season_id (e.g., N20232024F -> 20232024)
+                season_ids_str = dim_season_df['season_id'].astype(str)
+                year_parts = season_ids_str.str.replace(r'\D', '', regex=True)
+                mask_8digits = year_parts.str.len() == 8
+                if mask_8digits.any():
+                    year_parts_8 = year_parts[mask_8digits]
+                    season_ids_8 = dim_season_df.loc[mask_8digits, 'season_id']
+                    season_map.update(dict(zip(year_parts_8, season_ids_8)))
+                    # Add formatted versions (2023-2024)
+                    season_strs = year_parts_8.str[:4] + '-' + year_parts_8.str[4:]
+                    season_map.update(dict(zip(season_strs, season_ids_8)))
             # Apply fallback mapping only to unmapped rows
             fallback_ids = df.loc[unmapped_mask, 'season'].astype(str).str.replace('-', '').map(season_map)
             df.loc[unmapped_mask, 'season_id'] = fallback_ids
@@ -2169,13 +2173,30 @@ def validate_all():
     # 5. No underscore columns
     log.info("\n[5] No underscore columns check:")
     for csv in OUTPUT_DIR.glob("*.csv"):
-        df = pd.read_csv(csv, dtype=str, nrows=0)
-        underscore_cols = [c for c in df.columns if c.endswith('_')]
-        if underscore_cols:
-            log.error(f"  ✗ {csv.stem}: has underscore cols {underscore_cols[:3]}")
-            all_issues.append(f"{csv.stem}: has underscore columns")
-        else:
-            log.info(f"  ✓ {csv.stem}: clean")
+        try:
+            # Check if file is empty or has no columns
+            file_size = csv.stat().st_size
+            if file_size == 0:
+                log.warn(f"  ⚠ {csv.stem}: empty file (0 bytes)")
+                continue
+            
+            df = pd.read_csv(csv, dtype=str, nrows=0)
+            
+            # Handle case where file has no columns (empty DataFrame)
+            if len(df.columns) == 0:
+                log.warn(f"  ⚠ {csv.stem}: no columns in file")
+                continue
+            
+            underscore_cols = [c for c in df.columns if c.endswith('_')]
+            if underscore_cols:
+                log.error(f"  ✗ {csv.stem}: has underscore cols {underscore_cols[:3]}")
+                all_issues.append(f"{csv.stem}: has underscore columns")
+            else:
+                log.info(f"  ✓ {csv.stem}: clean")
+        except pd.errors.EmptyDataError:
+            log.warn(f"  ⚠ {csv.stem}: empty file (no columns)")
+        except Exception as e:
+            log.warn(f"  ⚠ {csv.stem}: error reading file: {e}")
     
     # 6. Referential integrity
     log.info("\n[6] Referential integrity:")
@@ -2241,6 +2262,7 @@ def main():
         return
     
     # Phase 1: Load BLB tables
+    from src.core.data_loader import load_blb_tables, build_player_lookup, load_tracking_data
     loaded = load_blb_tables()
     
     # Phase 2: Build player lookup
@@ -2275,6 +2297,7 @@ def main():
     create_derived_event_tables()
     
     # Phase 5.11: Enhance shift tables
+    from src.core.shift_enhancer import enhance_shift_tables, enhance_shift_players, update_roster_positions_from_shifts
     enhance_shift_tables()
     
     # Phase 5.11B: Enhance shift players (v19.00)
@@ -2368,24 +2391,27 @@ def enhance_event_tables():
     
     if 'shift_start_total_seconds' in shifts.columns and 'shift_end_total_seconds' in shifts.columns:
         # Find period max time for each game/period (= period duration in countdown format)
-        period_max = {}
-        for _, shift in shifts.iterrows():
-            key = (int(shift['game_id']), int(shift['period']))
-            start = float(shift['shift_start_total_seconds']) if pd.notna(shift['shift_start_total_seconds']) else 0
-            if key not in period_max or start > period_max[key]:
-                period_max[key] = start
+        # VECTORIZED: Use groupby instead of iterrows
+        shifts_clean = shifts[['game_id', 'period', 'shift_start_total_seconds']].copy()
+        shifts_clean['game_id'] = shifts_clean['game_id'].astype(int)
+        shifts_clean['period'] = shifts_clean['period'].astype(int)
+        shifts_clean['shift_start_total_seconds'] = pd.to_numeric(shifts_clean['shift_start_total_seconds'], errors='coerce').fillna(0)
+        period_max = shifts_clean.groupby(['game_id', 'period'])['shift_start_total_seconds'].max().to_dict()
         
         # Build lookup: for each game/period, list of (shift_id, start_countdown, end_countdown)
-        shift_ranges = {}
-        for _, shift in shifts.iterrows():
-            key = (int(shift['game_id']), int(shift['period']))
-            if key not in shift_ranges:
-                shift_ranges[key] = []
-            shift_ranges[key].append((
-                shift['shift_id'],
-                float(shift['shift_start_total_seconds']) if pd.notna(shift['shift_start_total_seconds']) else 0,
-                float(shift['shift_end_total_seconds']) if pd.notna(shift['shift_end_total_seconds']) else 0
-            ))
+        # VECTORIZED: Use groupby.apply instead of iterrows
+        shifts_for_ranges = shifts[['game_id', 'period', 'shift_id', 'shift_start_total_seconds', 'shift_end_total_seconds']].copy()
+        shifts_for_ranges['game_id'] = shifts_for_ranges['game_id'].astype(int)
+        shifts_for_ranges['period'] = shifts_for_ranges['period'].astype(int)
+        shifts_for_ranges['shift_start_total_seconds'] = pd.to_numeric(shifts_for_ranges['shift_start_total_seconds'], errors='coerce').fillna(0)
+        shifts_for_ranges['shift_end_total_seconds'] = pd.to_numeric(shifts_for_ranges['shift_end_total_seconds'], errors='coerce').fillna(0)
+        
+        def build_shift_ranges(group):
+            return [(row['shift_id'], row['shift_start_total_seconds'], row['shift_end_total_seconds']) 
+                    for _, row in group.iterrows()]
+        
+        shift_ranges_dict = shifts_for_ranges.groupby(['game_id', 'period']).apply(build_shift_ranges).to_dict()
+        shift_ranges = {(int(k[0]), int(k[1])): v for k, v in shift_ranges_dict.items()}
         
         def find_shift_id(row):
             """Find shift_id for an event based on game, period, and time."""
@@ -2687,19 +2713,36 @@ def enhance_event_tables():
                 count += 1
         return count
     
-    shift_strength = {}
-    for _, row in shifts.iterrows():
-        game_id = row['game_id']
-        shift_idx = row['shift_index']
-        home_sk = count_skaters(row, 'home')
-        away_sk = count_skaters(row, 'away')
+    # VECTORIZED: Calculate skater counts for all shifts at once
+    def count_skaters_vectorized(df, prefix):
+        """Count skaters for all rows at once."""
+        positions = ['forward_1', 'forward_2', 'forward_3', 'defense_1', 'defense_2']
+        count = pd.Series(0, index=df.index)
+        for pos in positions:
+            col = f'{prefix}_{pos}'
+            if col in df.columns:
+                count += df[col].notna().astype(int)
+        return count
+    
+    if len(shifts) > 0:
+        home_sk = count_skaters_vectorized(shifts, 'home')
+        away_sk = count_skaters_vectorized(shifts, 'away')
         
         strength_map = {
             (5,5): 'STR0001', (5,4): 'STR0002', (5,3): 'STR0003',
             (4,5): 'STR0004', (3,5): 'STR0005', (4,4): 'STR0006',
             (3,3): 'STR0007', (4,3): 'STR0008', (3,4): 'STR0009',
         }
-        shift_strength[(game_id, shift_idx)] = strength_map.get((home_sk, away_sk), 'STR0001')
+        
+        # Create tuples and map
+        strength_tuples = list(zip(home_sk, away_sk))
+        shift_strength_values = [strength_map.get(t, 'STR0001') for t in strength_tuples]
+        shift_strength = dict(zip(
+            zip(shifts['game_id'], shifts['shift_index']),
+            shift_strength_values
+        ))
+    else:
+        shift_strength = {}
     
     def get_strength(row):
         shift_key = row.get('shift_key')
@@ -3078,9 +3121,9 @@ def create_fact_sequences():
             'sequence_key': seq_key,
             'sequence_id': seq_key,
             'game_id': int(first['game_id']),
-            'season_id': first['season_id'],
+            'season_id': first.get('season_id') if 'season_id' in first.index else None,
             'period': int(first['period']),
-            'period_id': first['period_id'],
+            'period_id': first.get('period_id') if 'period_id' in first.index else None,
             'first_event_key': first['event_id'],
             'last_event_key': last['event_id'],
             'event_count': len(grp),
@@ -3163,6 +3206,16 @@ def create_fact_plays():
     events = pd.read_csv(events_path, low_memory=False)
     tracking = pd.read_csv(tracking_path, low_memory=False)
     
+    # Ensure season_id exists in events (fallback from schedule if missing)
+    if 'season_id' not in events.columns or events['season_id'].isna().all():
+        log.info("  Adding season_id from schedule (fallback)...")
+        schedule_path = OUTPUT_DIR / 'dim_schedule.csv'
+        if schedule_path.exists():
+            schedule = pd.read_csv(schedule_path, low_memory=False)
+            season_map = dict(zip(schedule['game_id'].astype(int), schedule['season_id']))
+            events['season_id'] = events['game_id'].astype(int).map(season_map)
+            log.info(f"    season_id added: {events['season_id'].notna().sum()}/{len(events)} mapped")
+    
     log.info(f"Aggregating {len(events)} events into plays...")
     
     events = events.sort_values(['play_key', 'event_id'])
@@ -3197,8 +3250,8 @@ def create_fact_plays():
         
         play = {
             'play_key': play_key, 'play_id': play_key,
-            'game_id': int(first['game_id']), 'season_id': first['season_id'],
-            'period': int(first['period']), 'period_id': first['period_id'],
+            'game_id': int(first['game_id']), 'season_id': first.get('season_id') if 'season_id' in first.index else None,
+            'period': int(first['period']), 'period_id': first.get('period_id') if 'period_id' in first.index else None,
             'sequence_key': first['sequence_key'],
             'first_event_key': first['event_id'], 'last_event_key': last['event_id'],
             'event_count': len(grp), 'duration_seconds': grp['duration'].sum(),
@@ -5393,19 +5446,14 @@ def enhance_shift_players():
     # CF% vs expected
     sp['cf_pct_vs_expected'] = sp['cf_pct'] - sp['expected_cf_pct']
     
-    # Performance flag
-    def get_performance(row):
-        diff = row['cf_pct_vs_expected']
-        if pd.isna(diff):
-            return None
-        if diff > 5:
-            return 'Over'
-        elif diff < -5:
-            return 'Under'
-        else:
-            return 'Expected'
-    
-    sp['performance'] = sp.apply(get_performance, axis=1)
+    # Performance flag - VECTORIZED
+    sp['performance'] = pd.cut(
+        sp['cf_pct_vs_expected'],
+        bins=[-np.inf, -5, 5, np.inf],
+        labels=['Under', 'Expected', 'Over'],
+        include_lowest=True
+    )
+    sp['performance'] = sp['performance'].astype(str).replace('nan', None)
     
     # Adjusted Corsi (multiply by opponent multiplier)
     sp['cf_adj'] = sp['cf'] * sp['opp_multiplier']

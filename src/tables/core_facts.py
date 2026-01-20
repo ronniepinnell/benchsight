@@ -1239,20 +1239,21 @@ def calculate_rush_stats(player_id, game_id, event_players, events):
     rush_xg_total = 0.0
     if len(player_rush_events) > 0 and 'time_to_next_sog' in player_rush_events.columns:
         # Get rush entries that led to shots
-        rush_with_shots = player_rush_events[player_rush_events['time_to_next_sog'].notna()]
+        rush_with_shots = player_rush_events[player_rush_events['time_to_next_sog'].notna()].copy()
         if len(rush_with_shots) > 0:
-            for _, rush_entry in rush_with_shots.iterrows():
-                # Use default danger level for rush entries (medium danger typical for rushes)
-                danger = str(rush_entry.get('danger_level', 'default')).lower()
-                base_xg = XG_BASE_RATES.get(danger, XG_BASE_RATES['default'])
-                xg = base_xg * XG_MODIFIERS['rush']  # Rush modifier (1.3x)
-                
-                # Apply breakaway modifier if present
-                event_detail_2 = str(rush_entry.get('event_detail_2', '')).lower()
-                if 'breakaway' in event_detail_2:
-                    xg = xg * XG_MODIFIERS['breakaway']  # Breakaway modifier (2.5x)
-                
-                rush_xg_total += min(xg, 0.95)
+            # VECTORIZED: Calculate xG for all rush entries at once
+            # Use default danger level for rush entries (medium danger typical for rushes)
+            danger_map = rush_with_shots['danger_level'].astype(str).str.lower().map(
+                lambda x: XG_BASE_RATES.get(x, XG_BASE_RATES['default'])
+            ).fillna(XG_BASE_RATES['default'])
+            xg = danger_map * XG_MODIFIERS['rush']  # Rush modifier (1.3x)
+            
+            # Apply breakaway modifier if present - VECTORIZED
+            event_detail_2_col = rush_with_shots['event_detail_2'].astype(str).str.lower() if 'event_detail_2' in rush_with_shots.columns else pd.Series('', index=rush_with_shots.index)
+            breakaway_mask = event_detail_2_col.str.contains('breakaway', na=False)
+            xg[breakaway_mask] = xg[breakaway_mask] * XG_MODIFIERS['breakaway']  # Breakaway modifier (2.5x)
+            
+            rush_xg_total = xg.clip(upper=0.95).sum()
     stats['rush_xg'] = round(rush_xg_total, 2)
     
     # Rush involvement breakdown
@@ -2042,28 +2043,46 @@ def calculate_xg_stats(player_id, game_id, event_players, events):
     if len(player_shots) == 0: return empty
     
     # Calculate raw xG for each shot (with shot type modifiers)
-    shot_data = []
-    goals_total = 0
-    
-    for _, shot in player_shots.iterrows():
-        danger = str(shot.get('danger_level', 'default')).lower()
-        base_xg = XG_BASE_RATES.get(danger, XG_BASE_RATES['default'])
-        xg = base_xg * (XG_MODIFIERS['rush'] if shot.get('is_rush') == 1 else 1.0)
+    # VECTORIZED: Calculate xG for all shots at once
+    if len(player_shots) == 0:
+        goals_total = 0
+        shot_data = []
+    else:
+        # Count goals
+        goals_total = 0
+        if 'is_goal' in player_shots.columns:
+            goals_total = player_shots['is_goal'].sum()
+        elif 'event_type' in player_shots.columns and 'event_detail' in player_shots.columns:
+            goals_total = (
+                (player_shots['event_type'].astype(str).str.lower() == 'goal') &
+                (player_shots['event_detail'].astype(str).str.lower().str.contains('goal_scored', na=False))
+            ).sum()
         
-        # Apply shot type modifier (from event_detail_2)
-        event_detail_2 = str(shot.get('event_detail_2', '')).lower()
-        shot_type_modifier = 1.0
+        # Map danger levels to base xG rates
+        danger_map = player_shots['danger_level'].astype(str).str.lower().map(
+            lambda x: XG_BASE_RATES.get(x, XG_BASE_RATES['default'])
+        ).fillna(XG_BASE_RATES['default'])
+        
+        # Apply rush modifier
+        rush_multiplier = player_shots['is_rush'].fillna(0).replace({1: XG_MODIFIERS['rush'], 0: 1.0})
+        xg_base = danger_map * rush_multiplier
+        
+        # Apply shot type modifier (from event_detail_2) - VECTORIZED
+        shot_type_modifier = pd.Series(1.0, index=player_shots.index)
+        event_detail_2_col = player_shots['event_detail_2'].astype(str).str.lower() if 'event_detail_2' in player_shots.columns else pd.Series('', index=player_shots.index)
         for shot_type, modifier in SHOT_TYPE_XG_MODIFIERS.items():
-            if shot_type in event_detail_2:
-                shot_type_modifier = modifier
-                break
-        xg = xg * shot_type_modifier
+            mask = event_detail_2_col.str.contains(shot_type.lower(), na=False)
+            shot_type_modifier[mask] = modifier
         
-        shot_time = shot.get('time_start_total_seconds', 0) if 'time_start_total_seconds' in shot else 0
-        shot_data.append({'time': shot_time, 'xg_value': min(xg, 0.95)})
+        xg = xg_base * shot_type_modifier
+        xg = xg.clip(upper=0.95)  # Cap at 0.95
         
-        if str(shot.get('event_type', '')).lower() == 'goal' and 'goal_scored' in str(shot.get('event_detail', '')).lower():
-            goals_total += 1
+        # Build shot_data list
+        shot_time_col = player_shots.get('time_start_total_seconds', pd.Series(0, index=player_shots.index))
+        shot_data = [
+            {'time': float(time), 'xg_value': float(xg_val)}
+            for time, xg_val in zip(shot_time_col.fillna(0), xg)
+        ]
     
     # Apply flurry adjustment
     flurry_result = apply_flurry_adjustment_to_shots(shot_data)
