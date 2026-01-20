@@ -111,6 +111,32 @@ def save_table(df, name, output_dir=None):
 
 def _make_cycle_record(cycle_num, game_id, team_name, events_list, pass_count, end_type, team_map, first_row):
     """Build a cycle record dictionary."""
+    # Handle empty events_list
+    if not events_list:
+        return {
+            'cycle_key': f'CY{game_id}{cycle_num:04d}',
+            'game_id': game_id,
+            'season_id': first_row.get('season_id') if first_row is not None else None,
+            'team_id': team_map.get(team_name),
+            'team_name': team_name,
+            'home_team_id': first_row.get('home_team_id') if first_row is not None else None,
+            'away_team_id': first_row.get('away_team_id') if first_row is not None else None,
+            'pass_count': pass_count,
+            'event_count': 0,
+            'player_count': 0,
+            'start_event_id': None,
+            'end_event_id': None,
+            'start_time': None,
+            'end_time': None,
+            'duration_seconds': 0,
+            'ended_with': end_type,
+            'ended_with_shot': 1 if end_type in ['shot', 'goal'] else 0,
+            'ended_with_goal': 1 if end_type == 'goal' else 0,
+            'event_ids': '',
+            'player_ids': ''
+        }
+    
+    # Non-empty events_list - use original logic
     event_ids = [e['event_id'] for e in events_list]
     player_ids = list(set([e['player_id'] for e in events_list if pd.notna(e.get('player_id'))]))
     
