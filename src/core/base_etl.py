@@ -53,6 +53,15 @@ from src.core.table_writer import (
     is_supabase_enabled
 )
 
+# Import table store for in-memory access (allows ETL to work from scratch)
+try:
+    from src.core.table_store import get_table as get_table_from_store
+    TABLE_STORE_AVAILABLE = True
+except ImportError:
+    TABLE_STORE_AVAILABLE = False
+    def get_table_from_store(name, output_dir=None):
+        return pd.DataFrame()
+
 # Import table builders (v29.1)
 from src.builders.events import build_fact_events
 from src.builders.shifts import build_fact_shifts
@@ -2306,20 +2315,46 @@ def enhance_event_tables():
     """Add derived FK columns to fact_events and fact_event_players."""
     log.section("PHASE 5.5: ENHANCE EVENT TABLES")
     
-    # Load required tables
-    tracking_path = OUTPUT_DIR / 'fact_event_players.csv'
-    events_path = OUTPUT_DIR / 'fact_events.csv'
+    # Load required tables (from cache first, then CSV)
+    tracking = get_table_from_store('fact_event_players', OUTPUT_DIR) if TABLE_STORE_AVAILABLE else pd.DataFrame()
+    if len(tracking) == 0:
+        tracking_path = OUTPUT_DIR / 'fact_event_players.csv'
+        if tracking_path.exists():
+            tracking = pd.read_csv(tracking_path, low_memory=False)
     
-    if not tracking_path.exists() or not events_path.exists():
+    events = get_table_from_store('fact_events', OUTPUT_DIR) if TABLE_STORE_AVAILABLE else pd.DataFrame()
+    if len(events) == 0:
+        events_path = OUTPUT_DIR / 'fact_events.csv'
+        if events_path.exists():
+            events = pd.read_csv(events_path, low_memory=False)
+    
+    if len(tracking) == 0 or len(events) == 0:
         log.warn("Event tables not found, skipping enhancement")
         return
     
-    tracking = pd.read_csv(tracking_path, low_memory=False)
-    events = pd.read_csv(events_path, low_memory=False)
-    shifts = pd.read_csv(OUTPUT_DIR / 'fact_shifts.csv', low_memory=False)
-    players = pd.read_csv(OUTPUT_DIR / 'dim_player.csv', low_memory=False)
-    schedule = pd.read_csv(OUTPUT_DIR / 'dim_schedule.csv', low_memory=False)
-    roster = pd.read_csv(OUTPUT_DIR / 'fact_gameroster.csv', low_memory=False)
+    shifts = get_table_from_store('fact_shifts', OUTPUT_DIR) if TABLE_STORE_AVAILABLE else pd.DataFrame()
+    if len(shifts) == 0:
+        shifts_path = OUTPUT_DIR / 'fact_shifts.csv'
+        if shifts_path.exists():
+            shifts = pd.read_csv(shifts_path, low_memory=False)
+    
+    players = get_table_from_store('dim_player', OUTPUT_DIR) if TABLE_STORE_AVAILABLE else pd.DataFrame()
+    if len(players) == 0:
+        players_path = OUTPUT_DIR / 'dim_player.csv'
+        if players_path.exists():
+            players = pd.read_csv(players_path, low_memory=False)
+    
+    schedule = get_table_from_store('dim_schedule', OUTPUT_DIR) if TABLE_STORE_AVAILABLE else pd.DataFrame()
+    if len(schedule) == 0:
+        schedule_path = OUTPUT_DIR / 'dim_schedule.csv'
+        if schedule_path.exists():
+            schedule = pd.read_csv(schedule_path, low_memory=False)
+    
+    roster = get_table_from_store('fact_gameroster', OUTPUT_DIR) if TABLE_STORE_AVAILABLE else pd.DataFrame()
+    if len(roster) == 0:
+        roster_path = OUTPUT_DIR / 'fact_gameroster.csv'
+        if roster_path.exists():
+            roster = pd.read_csv(roster_path, low_memory=False)
     
     log.info(f"Enhancing fact_event_players: {len(tracking)} rows, {len(tracking.columns)} cols")
     log.info(f"Enhancing fact_events: {len(events)} rows, {len(events.columns)} cols")
@@ -3317,6 +3352,11 @@ def enhance_events_with_flags():
     # Faceoff_AfterGoal is the faceoff after a goal, not a goal
     events['is_goal'] = ((events['event_type'] == 'Goal') & (events['event_detail'] == 'Goal_Scored')).astype(int)
     events['is_save'] = events['event_detail'].str.startswith('Save', na=False).astype(int)
+    # Shots on goal (SOG) = shots that reached the goalie (saved or scored)
+    # EXCLUDES Goal_Scored to avoid double-counting (Shot_Goal + Goal_Scored are linked events)
+    # Only count the shot event (Shot_Goal), not the goal event (Goal_Scored)
+    events['is_sog'] = ((events['event_type'] == 'Shot') & 
+                        events['event_detail'].isin(['Shot_OnNetSaved', 'Shot_OnNet', 'Shot_Goal'])).astype(int)
     events['is_turnover'] = (events['event_type'] == 'Turnover').astype(int)
     events['is_giveaway'] = events['giveaway_type_id'].notna().astype(int)
     # Bad giveaways = misplays/turnovers that hurt the team (not neutral like dumps, battles, shots)
@@ -3431,11 +3471,7 @@ def enhance_events_with_flags():
     events['is_deflected'] = (events['event_detail'] == 'Shot_Deflected').astype(int)
     # Tipped shots (from event_detail_2)
     events['is_tipped'] = events['event_detail_2'].isin(['Shot_Tip', 'Shot_Tipped', 'Goal_Tip']).astype(int)
-    # Shots on goal (SOG) = shots that reached the goalie (saved or scored)
-    # EXCLUDES Goal_Scored to avoid double-counting (Shot_Goal + Goal_Scored are linked events)
-    # Only count the shot event (Shot_Goal), not the goal event (Goal_Scored)
-    events['is_sog'] = ((events['event_type'] == 'Shot') & 
-                        events['event_detail'].isin(['Shot_OnNetSaved', 'Shot_OnNet', 'Shot_Goal'])).astype(int)
+    # is_sog was already created earlier (before shooter/goalie columns)
     # Corsi = all shot attempts (SOG + blocked + missed)
     events['is_corsi'] = ((events['is_sog'] == 1) | 
                           (events['is_blocked_shot'] == 1) | 
@@ -5090,8 +5126,14 @@ def enhance_shift_players():
     # Also include goal columns and stat columns needed for venue mapping
     all_pull_cols += goal_cols_home + goal_cols_away + stat_cols_venue + zone_cols + fo_cols
     
+    # Filter to only columns that actually exist in shifts_for_merge
+    available_cols = [col for col in all_pull_cols if col in shifts_for_merge.columns]
+    missing_cols = [col for col in all_pull_cols if col not in shifts_for_merge.columns]
+    if missing_cols:
+        log.warn(f"  Missing columns in fact_shifts (will be skipped): {missing_cols}")
+    
     # VECTORIZED: Merge all columns at once (much faster than row-by-row lookups)
-    sp = sp.merge(shifts_for_merge[all_pull_cols], left_on='shift_id', right_index=True, how='left')
+    sp = sp.merge(shifts_for_merge[available_cols], left_on='shift_id', right_index=True, how='left')
     
     # VECTORIZED: Map venue-specific goal columns using np.where
     # Create masks for home vs away
@@ -5129,12 +5171,17 @@ def enhance_shift_players():
                            sp['away_pm_ev'].fillna(0))
     
     # Team/opponent ratings (mapped by venue) - VECTORIZED
-    sp['team_avg_rating'] = np.where(home_mask,
-                                    sp['home_avg_rating'].fillna(0),
-                                    sp['away_avg_rating'].fillna(0))
-    sp['opp_avg_rating'] = np.where(home_mask,
-                                    sp['away_avg_rating'].fillna(0),
-                                    sp['home_avg_rating'].fillna(0))
+    # Only set if rating columns exist
+    if 'home_avg_rating' in sp.columns and 'away_avg_rating' in sp.columns:
+        sp['team_avg_rating'] = np.where(home_mask,
+                                        sp['home_avg_rating'].fillna(0),
+                                        sp['away_avg_rating'].fillna(0))
+        sp['opp_avg_rating'] = np.where(home_mask,
+                                        sp['away_avg_rating'].fillna(0),
+                                        sp['home_avg_rating'].fillna(0))
+    else:
+        sp['team_avg_rating'] = 0.0
+        sp['opp_avg_rating'] = 0.0
     sp['team_id'] = np.where(home_mask,
                             sp['home_team_id'].fillna(''),
                             sp['away_team_id'].fillna(''))
@@ -5330,11 +5377,17 @@ def enhance_shift_players():
     log.info("  Pass 2B: Calculating adjusted stats...")
     
     # Player's rating differential vs opponents
-    sp['player_rating_diff'] = sp['player_rating'] - sp['opp_avg_rating']
+    if 'opp_avg_rating' in sp.columns:
+        sp['player_rating_diff'] = sp['player_rating'] - sp['opp_avg_rating']
+    else:
+        sp['player_rating_diff'] = 0.0
     
     # Expected CF% based on rating differential
     # Formula: 50 + (rating_diff * 5) where each rating point = 5% CF advantage
-    sp['expected_cf_pct'] = 50 + (sp['rating_differential'].fillna(0) * 5)
+    if 'rating_differential' in sp.columns:
+        sp['expected_cf_pct'] = 50 + (sp['rating_differential'].fillna(0) * 5)
+    else:
+        sp['expected_cf_pct'] = 50.0
     sp['expected_cf_pct'] = sp['expected_cf_pct'].clip(30, 70)  # Cap at reasonable bounds
     
     # CF% vs expected

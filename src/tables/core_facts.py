@@ -110,9 +110,58 @@ def save_table(df: pd.DataFrame, name: str) -> int:
     df.to_csv(path, index=False)
     return len(df)
 
-def load_table(name: str) -> pd.DataFrame:
+def load_table(name: str, required: bool = False) -> pd.DataFrame:
+    """
+    Load a table from cache first, then from CSV.
+    
+    This checks the in-memory table store first (for tables created in this ETL run),
+    then falls back to CSV files. This allows the ETL to work from scratch without
+    relying on previously generated CSVs.
+    
+    Args:
+        name: Table name (without .csv extension)
+        required: If True, warn when table is missing (for critical dependencies)
+    
+    Returns:
+        DataFrame with table data, or empty DataFrame if not found
+    """
+    # Try table store first (in-memory cache from this run)
+    try:
+        from src.core.table_store import get_table
+        df = get_table(name, OUTPUT_DIR)
+        if len(df) > 0:
+            return df
+        # If in store but empty, that's the actual state
+        if name in get_table.__self__._table_store if hasattr(get_table, '__self__') else False:
+            if required:
+                print(f"  WARNING: {name} is EMPTY (required dependency)")
+            return df
+    except Exception:
+        pass
+    
+    # Fall back to CSV (for tables from previous runs)
     path = OUTPUT_DIR / f"{name}.csv"
-    return pd.read_csv(path, low_memory=False) if path.exists() else pd.DataFrame()
+    if not path.exists():
+        if required:
+            print(f"  WARNING: Required table {name} not found - dependent table may be empty")
+        return pd.DataFrame()
+    try:
+        df = pd.read_csv(path, low_memory=False)
+        if len(df) == 0 and required:
+            print(f"  WARNING: {name} exists but is EMPTY (required dependency)")
+        return df
+    except pd.errors.EmptyDataError:
+        # File exists but has no data/columns
+        if required:
+            print(f"  WARNING: {name} exists but has no data (required dependency)")
+        return pd.DataFrame()
+    except Exception as e:
+        # Log error but return empty DataFrame to prevent crashes
+        if required:
+            print(f"  ERROR: Failed to load {name}: {e}")
+        import logging
+        logging.getLogger('ETL').warning(f"Error loading {name}: {e}")
+        return pd.DataFrame()
 
 def add_names_to_table(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -856,12 +905,12 @@ def calculate_competition_tier_stats(player_id, game_id, shift_players: pd.DataF
     
     # Use existing adjusted stats if available
     if 'cf_pct_adj' in ps.columns:
-        stats['cf_pct_adjusted'] = round(ps['cf_pct_adj'].mean(), 1) if ps['cf_pct_adj'].notna().any() else 50.0
+        stats['cf_pct_adjusted'] = round(ps['cf_pct_adj'].mean(), 1) if 'cf_pct_adj' in ps.columns and pd.notna(ps['cf_pct_adj']).any() else 50.0
     else:
         stats['cf_pct_adjusted'] = 50.0
     
     if 'cf_pct_vs_expected' in ps.columns:
-        stats['cf_pct_vs_expected'] = round(ps['cf_pct_vs_expected'].mean(), 1) if ps['cf_pct_vs_expected'].notna().any() else 0.0
+        stats['cf_pct_vs_expected'] = round(ps['cf_pct_vs_expected'].mean(), 1) if 'cf_pct_vs_expected' in ps.columns and pd.notna(ps['cf_pct_vs_expected']).any() else 0.0
     else:
         stats['cf_pct_vs_expected'] = 0.0
     
@@ -2881,13 +2930,13 @@ def calculate_player_shift_stats(player_id, game_id, shifts, shift_players):
         stats['cf_pct'] = 50.0
     
     # Player's own rating
-    stats['player_rating'] = round(ps['player_rating'].mean(), 2) if 'player_rating' in ps.columns and ps['player_rating'].notna().any() else 4.0
+    stats['player_rating'] = round(ps['player_rating'].mean(), 2) if 'player_rating' in ps.columns and pd.notna(ps['player_rating']).any() else 4.0
     
     # Team avg rating (teammates on ice, excluding goalies - already computed in shift data)
-    stats['team_avg_rating'] = round(ps['team_avg_rating'].mean(), 2) if 'team_avg_rating' in ps.columns and ps['team_avg_rating'].notna().any() else 4.0
+    stats['team_avg_rating'] = round(ps['team_avg_rating'].mean(), 2) if 'team_avg_rating' in ps.columns and pd.notna(ps['team_avg_rating']).any() else 4.0
     
     # Opponent avg rating
-    stats['opp_avg_rating'] = round(ps['opp_avg_rating'].mean(), 2) if 'opp_avg_rating' in ps.columns and ps['opp_avg_rating'].notna().any() else 4.0
+    stats['opp_avg_rating'] = round(ps['opp_avg_rating'].mean(), 2) if 'opp_avg_rating' in ps.columns and pd.notna(ps['opp_avg_rating']).any() else 4.0
     
     # Team rating diff: opp_avg - team_avg (positive = facing tougher team)
     stats['team_rating_diff'] = round(stats['opp_avg_rating'] - stats['team_avg_rating'], 2)
@@ -2905,10 +2954,11 @@ def calculate_player_shift_stats(player_id, game_id, shifts, shift_players):
         team_min_col, team_max_col = 'away_min_rating', 'away_max_rating'
         opp_min_col, opp_max_col = 'home_min_rating', 'home_max_rating'
     
-    stats['team_min_rating_avg'] = round(ps[team_min_col].mean(), 2) if team_min_col in ps.columns and ps[team_min_col].notna().any() else 4.0
-    stats['team_max_rating_avg'] = round(ps[team_max_col].mean(), 2) if team_max_col in ps.columns and ps[team_max_col].notna().any() else 4.0
-    stats['opp_min_rating_avg'] = round(ps[opp_min_col].mean(), 2) if opp_min_col in ps.columns and ps[opp_min_col].notna().any() else 4.0
-    stats['opp_max_rating_avg'] = round(ps[opp_max_col].mean(), 2) if opp_max_col in ps.columns and ps[opp_max_col].notna().any() else 4.0
+    # Use pd.notna() to safely check for non-null values
+    stats['team_min_rating_avg'] = round(ps[team_min_col].mean(), 2) if team_min_col in ps.columns and pd.notna(ps[team_min_col]).any() else 4.0
+    stats['team_max_rating_avg'] = round(ps[team_max_col].mean(), 2) if team_max_col in ps.columns and pd.notna(ps[team_max_col]).any() else 4.0
+    stats['opp_min_rating_avg'] = round(ps[opp_min_col].mean(), 2) if opp_min_col in ps.columns and pd.notna(ps[opp_min_col]).any() else 4.0
+    stats['opp_max_rating_avg'] = round(ps[opp_max_col].mean(), 2) if opp_max_col in ps.columns and pd.notna(ps[opp_max_col]).any() else 4.0
     
     # Min/Max rating diffs (opp - team, positive = opp has better min/max)
     stats['min_rating_diff'] = round(stats['opp_min_rating_avg'] - stats['team_min_rating_avg'], 2)

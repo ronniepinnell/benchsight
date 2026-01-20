@@ -23,18 +23,63 @@ except ImportError:
 
 OUTPUT_DIR = Path(__file__).parent.parent.parent / 'data' / 'output'
 
+# Import table store for in-memory access
+try:
+    from src.core.table_store import get_table as get_table_from_store
+    TABLE_STORE_AVAILABLE = True
+except ImportError:
+    TABLE_STORE_AVAILABLE = False
+    def get_table_from_store(name, output_dir=None):
+        return pd.DataFrame()
 
-def load_table(name: str) -> pd.DataFrame:
-    """Load a table from output directory."""
+
+def load_table(name: str, required: bool = False) -> pd.DataFrame:
+    """
+    Load a table from cache first, then from CSV.
+    
+    This checks the in-memory table store first (for tables created in this ETL run),
+    then falls back to CSV files. This allows the ETL to work from scratch without
+    relying on previously generated CSVs.
+    
+    Args:
+        name: Table name (without .csv extension)
+        required: If True, warn when table is missing (for critical dependencies)
+    
+    Returns:
+        DataFrame with table data, or empty DataFrame if not found
+    """
+    # Try table store first (in-memory cache from this run)
+    if TABLE_STORE_AVAILABLE:
+        df = get_table_from_store(name, OUTPUT_DIR)
+        if len(df) > 0:
+            return df
+        # If we got an empty df from store, it might be in store but empty
+        # Return it anyway (empty is a valid state)
+        if required and len(df) == 0:
+            print(f"  WARNING: {name} is EMPTY (required dependency)")
+        return df
+    
+    # Fall back to CSV (for tables from previous runs)
     path = OUTPUT_DIR / f'{name}.csv'
     if path.exists():
-        return pd.read_csv(path, low_memory=False)
-    return pd.DataFrame()
+        try:
+            df = pd.read_csv(path, low_memory=False)
+            if len(df) == 0 and required:
+                print(f"  WARNING: {name} exists but is EMPTY (required dependency)")
+            return df
+        except Exception as e:
+            if required:
+                print(f"  ERROR: Failed to load {name}: {e}")
+            return pd.DataFrame()
+    else:
+        if required:
+            print(f"  WARNING: Required table {name} not found - table will be empty")
+        return pd.DataFrame()
 
 
 def save_table(df: pd.DataFrame, name: str) -> int:
     """
-    Save a table to output directory.
+    Save a table to output directory AND store in memory cache.
     Automatically adds player_name and team_name columns if player_id/team_id exist.
     Automatically removes 100% null columns (except coordinate/danger/xy columns).
     """
@@ -44,9 +89,20 @@ def save_table(df: pd.DataFrame, name: str) -> int:
         df, removed_cols = drop_all_null_columns(df)
         if removed_cols:
             print(f"  {name}: Removed {len(removed_cols)} all-null columns")
+    
+    # Store in memory cache for later phases
+    if TABLE_STORE_AVAILABLE:
+        try:
+            from src.core.table_store import store_table
+            store_table(name, df if df is not None else pd.DataFrame())
+        except Exception:
+            pass
+    
+    # Also save to CSV
     path = OUTPUT_DIR / f'{name}.csv'
-    df.to_csv(path, index=False)
-    return len(df)
+    df_final = df if df is not None else pd.DataFrame()
+    df_final.to_csv(path, index=False)
+    return len(df_final)
 
 
 # =============================================================================
@@ -62,10 +118,11 @@ def create_fact_player_period_stats() -> pd.DataFrame:
     """
     PRIMARY_PLAYER = 'event_player_1'
     
-    event_players = load_table('fact_event_players')
-    shift_players = load_table('fact_shift_players')
+    event_players = load_table('fact_event_players', required=True)
+    shift_players = load_table('fact_shift_players', required=True)
     
     if len(event_players) == 0:
+        print("  SKIP: fact_event_players is empty - cannot build fact_player_period_stats")
         return pd.DataFrame()
     
     # Filter to only primary player events (event_player_1)
@@ -2534,8 +2591,21 @@ def build_remaining_tables(verbose: bool = True) -> dict:
     results = {
         'tables_created': [],
         'total_rows': 0,
-        'errors': []
+        'errors': [],
+        'skipped': []
     }
+    
+    # Check critical dependencies first
+    critical_tables = ['fact_events', 'fact_event_players', 'fact_shifts', 'fact_shift_players', 'dim_schedule']
+    missing_critical = []
+    for table in critical_tables:
+        path = OUTPUT_DIR / f'{table}.csv'
+        if not path.exists():
+            missing_critical.append(table)
+    
+    if missing_critical and verbose:
+        print(f"\n⚠️  WARNING: Missing critical dependencies: {missing_critical}")
+        print("   Some tables may be empty. Run base ETL first.")
     
     # All remaining table builders
     builders = [
@@ -2609,6 +2679,18 @@ def build_remaining_tables(verbose: bool = True) -> dict:
                 print(f"\nBuilding {table_name}...", end=' ')
             
             df = builder_func()
+            
+            # Skip saving if DataFrame is empty (likely due to missing dependencies)
+            if df is None or len(df) == 0:
+                if verbose:
+                    print(f"SKIP (empty - missing dependencies)")
+                results['skipped'].append(table_name)
+                # Still save empty table with headers to maintain schema
+                path = OUTPUT_DIR / f'{table_name}.csv'
+                df_empty = pd.DataFrame()
+                df_empty.to_csv(path, index=False)
+                continue
+            
             rows = save_table(df, table_name)
             
             results['tables_created'].append(table_name)
@@ -2627,6 +2709,11 @@ def build_remaining_tables(verbose: bool = True) -> dict:
         print("\n" + "=" * 70)
         print(f"Created {len(results['tables_created'])} additional tables")
         print(f"Total rows: {results['total_rows']:,}")
+        if results['skipped']:
+            print(f"Skipped (empty): {len(results['skipped'])} tables")
+            if len(results['skipped']) <= 10:
+                for skipped in results['skipped']:
+                    print(f"  - {skipped}")
         if results['errors']:
             print(f"Errors: {len(results['errors'])}")
         print("=" * 70)

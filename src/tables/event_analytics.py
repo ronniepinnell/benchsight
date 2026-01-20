@@ -45,12 +45,46 @@ def save_table(df: pd.DataFrame, name: str) -> int:
     return len(df)
 
 
-def load_table(name: str) -> pd.DataFrame:
-    """Load a table from output directory."""
+def load_table(name: str, required: bool = False) -> pd.DataFrame:
+    """
+    Load a table from cache first, then from CSV.
+    
+    This checks the in-memory table store first (for tables created in this ETL run),
+    then falls back to CSV files. This allows the ETL to work from scratch without
+    relying on previously generated CSVs.
+    
+    Args:
+        name: Table name (without .csv extension)
+        required: If True, warn when table is missing (for critical dependencies)
+    
+    Returns:
+        DataFrame with table data, or empty DataFrame if not found
+    """
+    # Try table store first (in-memory cache from this run)
+    try:
+        from src.core.table_store import get_table
+        df = get_table(name, OUTPUT_DIR)
+        if len(df) > 0:
+            return df
+    except Exception:
+        pass
+    
+    # Fall back to CSV (for tables from previous runs)
     path = OUTPUT_DIR / f"{name}.csv"
     if path.exists():
-        return pd.read_csv(path, low_memory=False)
-    return pd.DataFrame()
+        try:
+            df = pd.read_csv(path, low_memory=False)
+            if len(df) == 0 and required:
+                print(f"  WARNING: {name} exists but is EMPTY (required dependency)")
+            return df
+        except Exception as e:
+            if required:
+                print(f"  ERROR: Failed to load {name}: {e}")
+            return pd.DataFrame()
+    else:
+        if required:
+            print(f"  WARNING: Required table {name} not found - table will be empty")
+        return pd.DataFrame()
 
 
 def get_last_point(row: pd.Series, prefix: str) -> Tuple[Optional[float], Optional[float]]:

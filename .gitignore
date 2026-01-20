@@ -18,6 +18,7 @@ data/raw/**/*.xlsx
 data/raw/**/*.csv
 data/.dtype_optimization_results.json
 data/.etl_*.json
+data/tracking_backup*
 
 # Node modules
 node_modules/
