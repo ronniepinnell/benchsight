@@ -1,0 +1,69 @@
+# BenchSight Project Rules for Cursor AI
+
+## Modular Rules Architecture
+
+This file references modular rules organized by concern. Rules are loaded on-demand based on context.
+
+**Core rules are always loaded.** Reference rules are loaded based on the files you're editing.
+
+### Loading Strategy
+
+- **Always loaded:** `.agents/core.md` - Critical rules (goal counting, single source of truth, code standards)
+- **Auto-loaded:** Context-based loading based on files you're editing
+- **Manual load:** Reference specific files in comments: `<!-- Load: reference/etl.md -->`
+
+### Rules Index
+
+See `.agents/README.md` for complete rules index and loading guide.
+
+**Core Rules (Always Loaded):**
+- `.agents/core.md` - Critical project rules, code standards, naming conventions
+
+**Reference Rules (On-Demand):**
+- `.agents/reference/etl.md` - ETL patterns, table creation, calculations
+- `.agents/reference/dashboard.md` - Dashboard patterns, Next.js, TypeScript
+- `.agents/reference/api.md` - API patterns, FastAPI, endpoints
+- `.agents/reference/tracker.md` - Tracker patterns, event tracking
+- `.agents/reference/portal.md` - Portal patterns, admin UI
+- `.agents/reference/data.md` - Data validation, type consistency, schema
+- `.agents/reference/testing.md` - Testing patterns, requirements
+- `.agents/reference/deployment.md` - Deployment patterns, CI/CD
+- `.agents/reference/git.md` - Git workflow, commit messages, PR process
+
+### Quick Reference
+
+**Critical Rules (from core.md):**
+- Goal counting: `event_type == 'Goal' AND event_detail == 'Goal_Scored'`
+- Single source of truth: One canonical implementation per calculation
+- Root-level solutions: Fix actual problems, not symptoms
+- Performance: Use vectorized pandas operations, NEVER `.iterrows()`
+
+**For complete rules, see:**
+- `.agents/README.md` - Rules index and loading guide
+- `.agents/core.md` - Core rules (always loaded)
+- `.agents/reference/*.md` - Component-specific rules
+- `docs/MASTER_RULES.md` - Complete rules reference
+
+### Usage
+
+**When working on ETL:**
+- Core rules (auto-loaded)
+- ETL rules (auto-loaded based on `src/` files)
+- Data rules (load if needed: `<!-- Load: reference/data.md -->`)
+
+**When working on Dashboard:**
+- Core rules (auto-loaded)
+- Dashboard rules (auto-loaded based on `ui/dashboard/` files)
+- API rules (load if integrating: `<!-- Load: reference/api.md -->`)
+
+**When working on API:**
+- Core rules (auto-loaded)
+- API rules (auto-loaded based on `api/` files)
+- ETL rules (load if needed: `<!-- Load: reference/etl.md -->`)
+
+### Related Documentation
+
+- `.agents/README.md` - Complete rules index
+- `docs/MASTER_RULES.md` - Complete rules reference
+- `docs/DEVELOPMENT_WORKFLOW.md` - Development workflow
+- `docs/PLANNING_WORKFLOW.md` - PRD-first development

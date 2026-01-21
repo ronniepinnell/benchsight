@@ -1,0 +1,45 @@
+name: Code Quality
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check Python code style
+        if: contains(github.event.pull_request.changed_files, '.py')
+        run: |
+          pip install flake8 black
+          echo "Checking Python code style..."
+          # Check if black would make changes (non-blocking)
+          black --check src/ api/ || echo "Code style suggestions available"
+        continue-on-error: true
+      
+      - name: Check TypeScript code style
+        if: contains(github.event.pull_request.changed_files, '.ts') || contains(github.event.pull_request.changed_files, '.tsx')
+        working-directory: ui/dashboard
+        run: |
+          npm ci
+          echo "Checking TypeScript code style..."
+          npm run lint || echo "Lint suggestions available"
+        continue-on-error: true
+      
+      - name: Check for common issues
+        run: |
+          echo "Checking for common issues..."
+          # Check for .iterrows() usage (should use vectorized operations)
+          if grep -r "\.iterrows()" src/ --include="*.py" 2>/dev/null; then
+            echo "⚠️  Found .iterrows() usage - consider vectorized operations"
+          fi
+          
+          # Check for goal counting pattern
+          if grep -r "event_type.*Goal" src/ --include="*.py" | grep -v "Goal_Scored" 2>/dev/null; then
+            echo "⚠️  Check goal counting - should use GOAL_FILTER pattern"
+          fi
+        continue-on-error: true

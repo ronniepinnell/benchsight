@@ -1,0 +1,182 @@
+# CodeRabbit Configuration for BenchSight
+# AI-powered code review with BenchSight-specific rules
+
+language: en
+
+# Review settings
+review:
+  # Focus areas for reviews
+  focus_areas:
+    - code_quality
+    - performance
+    - security
+    - documentation
+    - benchsight_patterns
+  
+  # Review depth
+  review_depth: comprehensive
+  
+  # Comment style
+  comment_style: polite
+  
+  # Review only changed files
+  review_only_changed_files: true
+
+# BenchSight-specific rules
+rules:
+  - name: goal_counting_pattern
+    description: "Goals must use GOAL_FILTER pattern (event_type == 'Goal' AND event_detail == 'Goal_Scored')"
+    pattern: |
+      (?i)(event_type.*==.*['"]Goal['"]|df\['event_type'\].*==.*['"]Goal['"])
+      (?!.*Goal_Scored)
+    severity: error
+    paths:
+      - "src/**/*.py"
+      - "api/**/*.py"
+  
+  - name: iterrows_usage
+    description: "Avoid .iterrows() - use vectorized pandas operations instead"
+    pattern: "\.iterrows\(\)"
+    severity: warning
+    paths:
+      - "src/**/*.py"
+  
+  - name: single_source_of_truth
+    description: "Check for duplicated calculation logic"
+    pattern: "(def.*count.*goals|def.*calculate.*goals).*def.*count.*goals|def.*calculate.*goals"
+    severity: warning
+    paths:
+      - "src/**/*.py"
+  
+  - name: type_hints_required
+    description: "Python functions should have type hints"
+    pattern: "^def\s+\w+\([^)]*\)\s*:"
+    severity: info
+    paths:
+      - "src/**/*.py"
+      - "api/**/*.py"
+    exclude_pattern: ".*test.*"
+  
+  - name: docstring_required
+    description: "Python functions should have docstrings"
+    severity: info
+    paths:
+      - "src/**/*.py"
+      - "api/**/*.py"
+    exclude_pattern: ".*test.*"
+
+# File patterns to review
+paths:
+  include:
+    - "src/**/*.py"
+    - "api/**/*.py"
+    - "ui/dashboard/src/**/*.ts"
+    - "ui/dashboard/src/**/*.tsx"
+    - "sql/**/*.sql"
+  
+  exclude:
+    - "**/node_modules/**"
+    - "**/.next/**"
+    - "**/__pycache__/**"
+    - "**/venv/**"
+    - "**/.venv/**"
+    - "**/archive/**"
+    - "**/logs/**"
+    - "**/data/raw/**"
+    - "**/data/output/**"
+    - "**/*.pyc"
+    - "**/dist/**"
+    - "**/build/**"
+
+# Language-specific settings
+languages:
+  python:
+    focus_areas:
+      - code_quality
+      - performance
+      - benchsight_patterns
+    checks:
+      - type_hints
+      - docstrings
+      - error_handling
+      - vectorized_operations
+  
+  typescript:
+    focus_areas:
+      - type_safety
+      - component_structure
+      - performance
+    checks:
+      - type_coverage
+      - component_patterns
+      - async_handling
+  
+  sql:
+    focus_areas:
+      - query_performance
+      - correctness
+      - schema_consistency
+
+# Ignore patterns
+ignore:
+  paths:
+    - "**/node_modules/**"
+    - "**/.next/**"
+    - "**/__pycache__/**"
+    - "**/archive/**"
+    - "**/logs/**"
+    - "**/data/raw/**"
+    - "**/data/output/**"
+  
+  patterns:
+    - ".*test.*"  # Less strict on test files
+
+# Review behavior
+behavior:
+  # Auto-approve if only documentation changes
+  auto_approve:
+    paths:
+      - "docs/**"
+      - "*.md"
+    min_approvals: 0
+  
+  # Request changes for critical issues
+  request_changes:
+    min_severity: error
+    min_issues: 1
+  
+  # Comment on warnings
+  comment:
+    min_severity: warning
+    min_issues: 1
+
+# BenchSight-specific patterns to check
+benchsight_patterns:
+  goal_filter:
+    pattern: "GOAL_FILTER.*=.*event_type.*Goal.*event_detail.*Goal_Scored"
+    required: true
+    paths:
+      - "src/calculations/goals.py"
+  
+  vectorized_operations:
+    pattern: "\.iterrows\(\)"
+    should_not_exist: true
+    paths:
+      - "src/**/*.py"
+  
+  single_source_truth:
+    description: "Check for single source of truth in calculations"
+    paths:
+      - "src/calculations/**/*.py"
+
+# Summary settings
+summary:
+  enabled: true
+  include_summary: true
+  include_issues: true
+  include_suggestions: true
+
+# Chat settings
+chat:
+  enabled: true
+  auto_reply: false
