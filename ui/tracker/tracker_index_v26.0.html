@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<<<<<<<< Updated upstream:ui/tracker/tracker_index_v26.0.html
 <title>BenchSight Tracker v26.0</title>
+========
+<title>BenchSight Tracker v27.0</title>
+>>>>>>>> Stashed changes:ui/tracker/tracker_index_v27.0.html
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -421,6 +425,10 @@ kbd { background: var(--bg); border: 1px solid var(--border); padding: 0 3px; bo
     <span id="workTimerDisplay" style="font-size:11px;color:var(--accent);padding:2px 8px;background:var(--card);border-radius:3px;border:1px solid var(--border);min-width:80px;text-align:center;" title="Active work time (auto-pauses after 2 min inactivity)">⏱️ 0:00</span>
     <div class="header-right">
       <span class="save-ind" id="saveInd">--</span>
+      <input type="number" id="autoSaveIntHeader" value="300" min="30" max="3600" step="30" 
+             style="width:60px;padding:2px 4px;font-size:11px;margin-right:4px;background:var(--card);border:1px solid var(--border);border-radius:3px;color:var(--text);" 
+             title="Auto-save interval (seconds)" 
+             onchange="startAutoSave(); toast('Auto-save interval updated', 'info');">
       <button class="btn-sm" onclick="manualSave()" title="Save Now">💾</button>
       <button class="btn-sm" onclick="openLoadGameModal()" title="Load Existing Game">📂</button>
       <button class="btn-sm" onclick="openVerifyModal()" title="Verify Goals">✅</button>
@@ -3357,7 +3365,17 @@ function loadSettings() {
     const s = JSON.parse(localStorage.getItem('bs_settings') || '{}');
     if (s.sbUrl) document.getElementById('sbUrl').value = s.sbUrl;
     if (s.sbKey) document.getElementById('sbKey').value = s.sbKey;
-    if (s.autoSaveInt) document.getElementById('autoSaveInt').value = s.autoSaveInt;
+    const settingsEl = document.getElementById('autoSaveInt');
+    const headerEl = document.getElementById('autoSaveIntHeader');
+    if (s.autoSaveInt) {
+      if (settingsEl) settingsEl.value = s.autoSaveInt;
+      if (headerEl) headerEl.value = s.autoSaveInt;
+    } else {
+      // Default to 300 seconds if no setting saved
+      const defaultValue = '300';
+      if (settingsEl) settingsEl.value = defaultValue;
+      if (headerEl) headerEl.value = defaultValue;
+    }
     if (s.pressureDist) document.getElementById('pressureDist').value = s.pressureDist;
     if (s.xyHistCnt) document.getElementById('xyHistCnt').value = s.xyHistCnt;
     if (s.periodLength) {
@@ -3401,7 +3419,7 @@ function saveSettings() {
   const s = {
     sbUrl: document.getElementById('sbUrl').value,
     sbKey: document.getElementById('sbKey').value,
-    autoSaveInt: document.getElementById('autoSaveInt').value,
+    autoSaveInt: document.getElementById('autoSaveIntHeader')?.value || document.getElementById('autoSaveInt')?.value || '300',
     pressureDist: document.getElementById('pressureDist').value,
     xyHistCnt: document.getElementById('xyHistCnt').value,
     periodLength: document.getElementById('periodLength').value,
@@ -7090,27 +7108,49 @@ function loadAutoSettings() {
   if (savedSide !== null) autoSideOfPuckEnabled = savedSide === 'true';
 }
 
-function getZoneFromXY(x) {
+/**
+ * Get zone from X coordinate for a specific team and period
+ * @param {number} x - X coordinate (0-200)
+ * @param {string} team - 'home' or 'away'
+ * @param {number} period - Period number (1, 2, 3, etc.)
+ * @returns {string} 'o' (offensive), 'd' (defensive), or 'n' (neutral)
+ */
+function getZoneFromX(x, team, period) {
+  if (x == null || x === undefined || x === '') return null;
+  
   // Rink is 200 units wide
-  // Home attacks right in P1 (default)
-  const homeAttacksRight = S.homeAttacksRightP1 !== false;
-  const isHome = S.evtTeam === 'home';
-  const mirrorPeriod = shouldMirrorXY();
+  // Determine which end the team attacks in this period
+  const isOddPeriod = period === 1 || period === 3 || period === 'OT' || period === 'OT1' || period === 'OT2' || period === 'OT3';
+  const homeAttacksRightP1 = S.homeAttacksRightP1 !== false; // Default to true if not set
   
-  let attacksRight = (isHome === homeAttacksRight);
-  if (mirrorPeriod) attacksRight = !attacksRight;
+  // In odd periods, home attacks the same direction as P1
+  // In even periods, home attacks the opposite direction (teams switch ends)
+  const homeAttacksRight = isOddPeriod ? homeAttacksRightP1 : !homeAttacksRightP1;
   
-  if (attacksRight) {
-    // Offensive = right side (x > 140), Defensive = left (x < 60)
+  // Determine if the specified team attacks right in this period
+  const teamAttacksRight = (team === 'home') ? homeAttacksRight : !homeAttacksRight;
+  
+  if (teamAttacksRight) {
+    // Team attacks right: Offensive = right side (x > 140), Defensive = left (x < 60)
     if (x > 140) return 'o';
     if (x < 60) return 'd';
     return 'n';
   } else {
-    // Offensive = left side (x < 60), Defensive = right (x > 140)
+    // Team attacks left: Offensive = left side (x < 60), Defensive = right (x > 140)
     if (x < 60) return 'o';
     if (x > 140) return 'd';
     return 'n';
   }
+}
+
+function getZoneFromXY(x) {
+  // Rink is 200 units wide
+  // Use event team and current period to determine zone
+  const period = S.period || 1;
+  const eventTeam = S.evtTeam || 'home';
+  
+  // Use the same logic as getZoneFromX for consistency
+  return getZoneFromX(x, eventTeam, period);
 }
 
 function autoSetZoneFromXY(x) {
@@ -8015,8 +8055,23 @@ logEventDirect = function() {
 // ============================================================
 function startAutoSave() {
   if (S.saveTimer) clearInterval(S.saveTimer);
+<<<<<<<< Updated upstream:ui/tracker/tracker_index_v26.0.html
   const interval = (parseInt(document.getElementById('autoSaveInt').value) || 300) * 1000;
+========
+  // Check both the header input and the settings modal input
+  const headerInput = document.getElementById('autoSaveIntHeader');
+  const settingsInput = document.getElementById('autoSaveInt');
+  const intervalValue = headerInput?.value || settingsInput?.value || '300';
+  const interval = (parseInt(intervalValue) || 300) * 1000;
+>>>>>>>> Stashed changes:ui/tracker/tracker_index_v27.0.html
   S.saveTimer = setInterval(autoSave, interval);
+  
+  // Sync the values between header and settings
+  if (headerInput && settingsInput) {
+    const value = headerInput.value || settingsInput.value || '300';
+    headerInput.value = value;
+    settingsInput.value = value;
+  }
 }
 
 /**
@@ -8026,6 +8081,7 @@ function markDataChanged() {
   S.lastChange = new Date();
 }
 
+<<<<<<<< Updated upstream:ui/tracker/tracker_index_v26.0.html
 function autoSave() {
   if (!S.gameId) return;
   
@@ -8039,6 +8095,28 @@ function autoSave() {
   } else {
     // No changes tracked yet, skip auto-save
     return;
+========
+/**
+ * Internal save function that performs the actual save operation
+ * @param {boolean} force - If true, always save regardless of change tracking
+ */
+function performSave(force = false) {
+  if (!S.gameId) return false;
+  
+  // Only check for changes if not forcing a save
+  if (!force) {
+    // Only save if there have been changes in the last 1 minute (60 seconds)
+    if (S.lastChange) {
+      const timeSinceChange = (new Date() - S.lastChange) / 1000; // seconds
+      if (timeSinceChange > 60) {
+        // No changes in the last minute, skip auto-save
+        return false;
+      }
+    } else {
+      // No changes tracked yet, skip auto-save
+      return false;
+    }
+>>>>>>>> Stashed changes:ui/tracker/tracker_index_v27.0.html
   }
   
   const key = `bs_${S.gameId}`;
@@ -8072,13 +8150,26 @@ function autoSave() {
   //   });
   // }
   
+<<<<<<<< Updated upstream:ui/tracker/tracker_index_v26.0.html
   // v26.0: Always export JSON file on auto-save (auto-backup)
+========
+  // v26.0: Always export JSON file on save (auto-backup)
+>>>>>>>> Stashed changes:ui/tracker/tracker_index_v27.0.html
   // Save to game folder if available, otherwise try saveDirectoryHandle
   // Don't block on errors - just log them
   saveJsonBackupToGameFolder(data).catch(e => {
     console.warn('Failed to save JSON backup (non-blocking):', e);
     // Don't fall back to download - just silently fail to avoid interrupting user
   });
+<<<<<<<< Updated upstream:ui/tracker/tracker_index_v26.0.html
+========
+  
+  return true;
+}
+
+function autoSave() {
+  performSave(false);
+>>>>>>>> Stashed changes:ui/tracker/tracker_index_v27.0.html
 }
 
 // ============================================================
@@ -9340,18 +9431,25 @@ function closeResumeModal() {
 function manualSave() {
   if (!S.gameId) { toast('No game loaded', 'error'); return; }
   updateSaveIndicator('saving');
-  autoSave();
   
-  // Show appropriate success message
-  const exportJsonOnSave = localStorage.getItem('bs_exportJsonOnSave') === 'true';
-  if (S.gameFolderHandle) {
-    toast('Game saved to localStorage and game folder!', 'success');
-  } else if (exportJsonOnSave) {
-    toast('Game saved to localStorage and JSON exported!', 'success');
-  } else if (S.saveDirectoryHandle) {
-    toast('Game saved to localStorage and file system!', 'success');
+  // Force save regardless of change tracking
+  const saved = performSave(true);
+  
+  if (saved) {
+    // Show appropriate success message
+    const exportJsonOnSave = localStorage.getItem('bs_exportJsonOnSave') === 'true';
+    if (S.gameFolderHandle) {
+      toast('Game saved to localStorage and game folder!', 'success');
+    } else if (exportJsonOnSave) {
+      toast('Game saved to localStorage and JSON exported!', 'success');
+    } else if (S.saveDirectoryHandle) {
+      toast('Game saved to localStorage and file system!', 'success');
+    } else {
+      toast('Game saved!', 'success');
+    }
   } else {
-    toast('Game saved!', 'success');
+    updateSaveIndicator();
+    toast('Save failed', 'error');
   }
 }
 
@@ -12390,34 +12488,51 @@ function autoSideOfPuck() {
   }
   
   const zone = document.getElementById('evtZone').value;
-  if (!zone) {
-    toast('Set zone first', 'error');
+  if (!zone || zone === 'n') {
+    toast('Set zone first (must be offensive or defensive, not neutral)', 'error');
     return;
   }
   
-  // Determine if player is on event team or opponent
-  const isEventTeam = S.selectedPlayer.role?.startsWith('event');
-  const eventTeam = S.evtTeam; // 'home' or 'away'
-  const playerTeam = isEventTeam ? eventTeam : (eventTeam === 'home' ? 'away' : 'home');
+  // Determine player's team - use team property if available, otherwise infer from role
+  let playerTeam;
+  if (S.selectedPlayer.team) {
+    playerTeam = S.selectedPlayer.team; // 'home' or 'away'
+  } else {
+    // Fallback: infer from role
+    const role = S.selectedPlayer.role || '';
+    if (role.startsWith('event_team') || role.startsWith('event_player')) {
+      playerTeam = S.evtTeam;
+    } else if (role.startsWith('opp_team') || role.startsWith('opp_player')) {
+      playerTeam = S.evtTeam === 'home' ? 'away' : 'home';
+    } else {
+      toast('Could not determine player team', 'error');
+      return;
+    }
+  }
   
-  // Calculate side of puck relative to player's team
-  // If player is home and zone is offensive (attacking their opponent's goal), they're offensive
+  const eventTeam = S.evtTeam || 'home'; // 'home' or 'away'
+  
   // Zone is always from the event team's perspective
+  // Side of puck is from the player's team's perspective
   let sideOfPuck;
   if (playerTeam === eventTeam) {
-    // Same team as event - zone matches directly
-    sideOfPuck = zone === 'o' ? 'Offensive' : (zone === 'd' ? 'Defensive' : '');
+    // Player is on event team - zone is already from their perspective
+    // Event team's offensive zone = player's offensive side
+    // Event team's defensive zone = player's defensive side
+    sideOfPuck = zone === 'o' ? 'Offensive' : 'Defensive';
   } else {
-    // Opponent team - zone is inverted
-    sideOfPuck = zone === 'o' ? 'Defensive' : (zone === 'd' ? 'Offensive' : '');
+    // Player is on opponent team - zone is from event team's perspective, need to flip
+    // Event team's offensive zone = opponent's defensive side
+    // Event team's defensive zone = opponent's offensive side
+    sideOfPuck = zone === 'o' ? 'Defensive' : 'Offensive';
   }
   
   if (sideOfPuck) {
     document.getElementById('pdSideOfPuck').value = sideOfPuck;
     updatePlayerDetail('sideOfPuck', sideOfPuck);
-    toast(`Side of puck: ${sideOfPuck}`, 'success');
+    toast(`Side of puck: ${sideOfPuck} (player team: ${playerTeam}, event team: ${eventTeam}, zone: ${zone})`, 'success');
   } else {
-    toast('Could not determine side (neutral zone)', 'info');
+    toast('Could not determine side', 'error');
   }
 }
 
@@ -12429,17 +12544,34 @@ function autoDetectAllSideOfPuck() {
   const zone = document.getElementById('evtZone').value;
   if (!zone || zone === 'n') return; // Need zone and not neutral
   
-  const eventTeam = S.evtTeam;
+  const eventTeam = S.evtTeam || 'home';
   
   S.curr.players.forEach(p => {
-    const isEventTeam = p.role?.startsWith('event');
-    const playerTeam = isEventTeam ? eventTeam : (eventTeam === 'home' ? 'away' : 'home');
+    // Determine player's team - use team property if available, otherwise infer from role
+    let playerTeam;
+    if (p.team) {
+      playerTeam = p.team; // 'home' or 'away'
+    } else {
+      // Fallback: infer from role
+      const role = p.role || '';
+      if (role.startsWith('event_team') || role.startsWith('event_player')) {
+        playerTeam = eventTeam;
+      } else if (role.startsWith('opp_team') || role.startsWith('opp_player')) {
+        playerTeam = eventTeam === 'home' ? 'away' : 'home';
+      } else {
+        return; // Skip if can't determine team
+      }
+    }
     
+    // Zone is always from the event team's perspective
+    // Side of puck is from the player's team's perspective
     let sideOfPuck;
     if (playerTeam === eventTeam) {
-      sideOfPuck = zone === 'o' ? 'Offensive' : (zone === 'd' ? 'Defensive' : '');
+      // Player is on event team - zone is already from their perspective
+      sideOfPuck = zone === 'o' ? 'Offensive' : 'Defensive';
     } else {
-      sideOfPuck = zone === 'o' ? 'Defensive' : (zone === 'd' ? 'Offensive' : '');
+      // Player is on opponent team - zone is from event team's perspective, need to flip
+      sideOfPuck = zone === 'o' ? 'Defensive' : 'Offensive';
     }
     
     if (sideOfPuck) {
@@ -15552,8 +15684,11 @@ function handleRinkClickInternal(event, relX, relY, svgX, svgY) {
       (S.curr.type === 'Zone_Entry_Exit' && d2 && (d2.value.includes('Rush') || d2.value.includes('Carried')));
     
     if (isPossession) {
+      // Only sync to event_team_player_1 (NOT opp_team_player_1 or other roles)
       const evtPlayer1 = S.curr.players.find(p => 
-        p.role === 'event_team_player_1' || p.role === 'event_player_1' || p.roleNum === 1
+        (p.role === 'event_team_player_1' || p.role === 'event_player_1') && 
+        !p.role.startsWith('opp') && 
+        p.roleNum === 1
       );
       if (evtPlayer1) {
         if (!evtPlayer1.xy) evtPlayer1.xy = [];
@@ -15567,7 +15702,7 @@ function handleRinkClickInternal(event, relX, relY, svgX, svgY) {
           evtPlayer1.xy.pop();
         }
       }
-      // DO NOT sync puck XY to other players - only event_player_1
+      // DO NOT sync puck XY to other players - only event_team_player_1 (NOT opponent players)
     }
     
     // v23.4: Smart XY auto-linking based on event type
@@ -15602,8 +15737,10 @@ function handleRinkClickInternal(event, relX, relY, svgX, svgY) {
       const d2 = document.getElementById('evtD2');
       const isPossession = S.curr.type === 'Possession' || 
         (S.curr.type === 'Zone_Entry_Exit' && d2 && (d2.value.includes('Rush') || d2.value.includes('Carried')));
-      const isEvtPlayer1 = S.selectedPlayer.role === 'event_team_player_1' || 
-                           S.selectedPlayer.role === 'event_player_1' || 
+      // Only match event_team_player_1, NOT opponent players
+      const isEvtPlayer1 = (S.selectedPlayer.role === 'event_team_player_1' || 
+                            S.selectedPlayer.role === 'event_player_1') && 
+                           !S.selectedPlayer.role.startsWith('opp') &&
                            S.selectedPlayer.roleNum === 1;
       
       // ONLY sync if it's event_player_1 AND it's a possession event
@@ -15671,11 +15808,13 @@ function smartAutoLinkXY(xy, slot) {
       
     case 'Hit':
     case 'Battle':
-      // Both players at puck location
-      if (slot === 1) {
-        if (e1) { e1.xy = e1.xy || []; e1.xy[0] = {...xy}; }
-        if (o1) { o1.xy = o1.xy || []; o1.xy[0] = {...xy}; }
+      // Only assign to event_player_1, NOT opponent player
+      // Opponent player should be placed separately by user
+      if (slot === 1 && e1) {
+        e1.xy = e1.xy || [];
+        e1.xy[0] = {...xy};
       }
+      // DO NOT auto-assign to o1 - user should place opponent player separately
       break;
       
     case 'Possession':

@@ -1,8 +1,20 @@
 {
   "permissions": {
     "allow": [
+<<<<<<< Updated upstream
       "Bash(ls:*)",
       "Bash(git rev-parse:*)"
+=======
+      "Bash(cd:*)",
+      "Bash(git -C /Users/ronniepinnell/Documents/Documents - Ronnie''s MacBook Pro - 1/Programming_HD/Hockey/Benchsight/git/benchsight status -s)",
+      "Bash(grep:*)",
+      "Bash(git -C \"/Users/ronniepinnell/Documents/Documents - Ronnie''s MacBook Pro - 1/Programming_HD/Hockey/Benchsight/git/benchsight\" show HEAD:ui/tracker/tracker_index_v27.0.html)",
+      "Bash(while read dir)",
+      "Bash(do if [ -d \"$dir/.git\" ])",
+      "Bash(then echo \"GIT REPO: $dir\")",
+      "Bash(fi)",
+      "Bash(done)"
+>>>>>>> Stashed changes
     ]
   }
 }
