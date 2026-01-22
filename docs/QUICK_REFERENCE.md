@@ -119,6 +119,7 @@ stats = df[df['player_role'] == 'event_player_1']
 |-------|----------|
 | `code-explainer` | Understand code, get line-by-line explanations |
 | `table-explainer` | Understand tables, ETL paths, data lineage |
+| `data-dictionary-specialist` | Document tables, trace lineage, update ERDs |
 
 > **Tip:** These agents create living docs in `docs/code-docs/` and `docs/table-docs/` that auto-update on review.
 

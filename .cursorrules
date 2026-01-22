@@ -17,9 +17,11 @@ This file references modular rules organized by concern. Rules are loaded on-dem
 See `.agents/README.md` for complete rules index and loading guide.
 
 **Core Rules (Always Loaded):**
+
 - `.agents/core.md` - Critical project rules, code standards, naming conventions
 
 **Reference Rules (On-Demand):**
+
 - `.agents/reference/etl.md` - ETL patterns, table creation, calculations
 - `.agents/reference/dashboard.md` - Dashboard patterns, Next.js, TypeScript
 - `.agents/reference/api.md` - API patterns, FastAPI, endpoints
@@ -33,12 +35,14 @@ See `.agents/README.md` for complete rules index and loading guide.
 ### Quick Reference
 
 **Critical Rules (from core.md):**
+
 - Goal counting: `event_type == 'Goal' AND event_detail == 'Goal_Scored'`
 - Single source of truth: One canonical implementation per calculation
 - Root-level solutions: Fix actual problems, not symptoms
 - Performance: Use vectorized pandas operations, NEVER `.iterrows()`
 
 **For complete rules, see:**
+
 - `.agents/README.md` - Rules index and loading guide
 - `.agents/core.md` - Core rules (always loaded)
 - `.agents/reference/*.md` - Component-specific rules
@@ -47,16 +51,19 @@ See `.agents/README.md` for complete rules index and loading guide.
 ### Usage
 
 **When working on ETL:**
+
 - Core rules (auto-loaded)
 - ETL rules (auto-loaded based on `src/` files)
 - Data rules (load if needed: `<!-- Load: reference/data.md -->`)
 
 **When working on Dashboard:**
+
 - Core rules (auto-loaded)
 - Dashboard rules (auto-loaded based on `ui/dashboard/` files)
 - API rules (load if integrating: `<!-- Load: reference/api.md -->`)
 
 **When working on API:**
+
 - Core rules (auto-loaded)
 - API rules (auto-loaded based on `api/` files)
 - ETL rules (load if needed: `<!-- Load: reference/etl.md -->`)

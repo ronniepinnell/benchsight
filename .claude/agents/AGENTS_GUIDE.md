@@ -18,6 +18,7 @@
 | UI testing (dashboard) | `ui-comprehensive-tester` | "Test the dashboard thoroughly" |
 | **Understand code** | `code-explainer` | "Explain this file line by line" |
 | **Understand tables** | `table-explainer` | "Explain fact_player_game_stats" |
+| **Data dictionary/lineage** | `data-dictionary-specialist` | "Document this new table" |
 
 ---
 
@@ -206,6 +207,29 @@
 - Shows ETL path from source to output
 - Documents QA rules and validation
 - Maps table relationships
+
+---
+
+### 11. `data-dictionary-specialist` ⭐ ESSENTIAL (NEW)
+**When to use:**
+- Adding new tables to DATA_DICTIONARY.md
+- Tracing data lineage for columns
+- Updating ERDs after schema changes
+- Documenting calculation flows
+
+**Example prompts:**
+```
+"Document fact_line_combinations in the data dictionary"
+"Where does the xg column come from?"
+"Update the ERD with new relationships"
+"Trace lineage for goals column from source to dashboard"
+```
+
+**Features:**
+- Maintains all `docs/data/` files
+- Traces full data lineage (source → transforms → output)
+- Documents column sources (explicit/calculated/derived)
+- Updates ERDs and calculation flows
 
 ---
 
@@ -613,11 +637,11 @@ Invoke the agent and verify it behaves correctly.
 
 ## Summary
 
-**Essential (10 agents):**
+**Essential (11 agents):**
 - hockey-analytics-sme, Jenny, karen, task-completion-validator
 - claude-md-compliance-checker, code-quality-pragmatist
 - github-integration-expert, ui-comprehensive-tester
-- **code-explainer** (NEW), **table-explainer** (NEW)
+- **code-explainer**, **table-explainer**, **data-dictionary-specialist** (NEW)
 
 **Add (4 new agents):**
 - etl-specialist, supabase-specialist, dashboard-developer, tracker-specialist
