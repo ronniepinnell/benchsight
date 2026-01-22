@@ -8,7 +8,7 @@ Last Updated: 2026-01-22
 
 ## Overview
 
-The BenchSight ETL pipeline processes game tracking data through 11 main phases, creating 139 tables (50 dimensions, 81 facts, 8 QA). Each phase builds upon previous phases, with clear data dependencies.
+The BenchSight ETL pipeline processes game tracking data through 11 main phases, creating 145 tables (50 dimensions, 81 facts, 8 QA). Each phase builds upon previous phases, with clear data dependencies.
 
 ---
 

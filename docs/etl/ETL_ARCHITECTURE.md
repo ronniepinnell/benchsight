@@ -486,7 +486,7 @@ Output Layer
 ├── table_writer.py → CSV files
 └── upload.py → Supabase (optional)
         ↓
-data/output/*.csv (139 tables)
+data/output/*.csv (145 tables)
 ```
 
 ---
@@ -590,7 +590,7 @@ data/output/*.csv (139 tables)
 
 - **Location:** `validate.py`
 - **Focus:** Data quality, goal counting, foreign keys
-- **Coverage:** All 139 tables
+- **Coverage:** All 145 tables
 
 ---
 

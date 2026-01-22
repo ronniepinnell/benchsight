@@ -30,7 +30,7 @@ Run the ETL pipeline.
 
 **Description:**
 - Processes game data from BLB tables and tracking files
-- Generates 139 tables (dimensions, facts, QA)
+- Generates 145 tables (dimensions, facts, QA)
 - Takes ~80 seconds for 4 games
 
 **Options:**

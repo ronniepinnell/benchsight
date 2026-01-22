@@ -310,7 +310,7 @@ sequenceDiagram
     ETL->>ETL: Save to CSV files
     ETL->>DB: Upload to Supabase
     DB-->>ETL: Upload complete
-    ETL-->>User: ETL Complete (139 tables)
+    ETL-->>User: ETL Complete (145 tables)
 ```
 
 ---

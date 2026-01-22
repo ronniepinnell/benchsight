@@ -24,7 +24,7 @@ All work is tracked in GitHub Issues (see `docs/GITHUB_ISSUES_BACKLOG.md` Phase 
 
 ### Objective
 
-Verify all 139 tables and their columns by:
+Verify all 145 tables and their columns by:
 - Reviewing code that generates each table
 - Verifying table structure (columns, data types, nullability)
 - Validating data (row counts, null percentages, value ranges)
@@ -118,7 +118,7 @@ Create comprehensive documentation explaining code flow, logic, and architecture
 ### Issues
 
 - **ETL-029**: Create comprehensive code walkthrough documentation
-- **ETL-030**: Document table generation logic for all 139 tables
+- **ETL-030**: Document table generation logic for all 145 tables
 - **ETL-031**: Create architecture diagrams for ETL pipeline
 
 ### Execution Order
@@ -224,7 +224,7 @@ Make the ETL code bulletproof by adding comprehensive error handling, type hints
 
 ## Success Criteria
 
-- All 139 tables verified through each ETL phase
+- All 145 tables verified through each ETL phase
 - PostgreSQL debugging infrastructure operational
 - Dead code identified and removed
 - Comprehensive code documentation complete

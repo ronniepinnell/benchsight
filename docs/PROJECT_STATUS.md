@@ -29,7 +29,7 @@ Version: 2.00
 **Priority:** HIGH
 
 **What Works:**
-- ✅ 139 tables generated (50 dimensions, 81 facts, 8 QA)
+- ✅ 145 tables generated (50 dimensions, 81 facts, 8 QA)
 - ✅ Comprehensive stats (317 columns for players, 128 for goalies)
 - ✅ Advanced metrics (Corsi, Fenwick, xG, WAR/GAR, QoC/QoT)
 - ✅ Data validation framework
@@ -279,7 +279,7 @@ Version: 2.00
 ## Timeline
 
 ### Completed (Phase 1: Foundation)
-- ✅ Core ETL pipeline (139 tables)
+- ✅ Core ETL pipeline (145 tables)
 - ✅ Dashboard foundation (50+ pages)
 - ✅ HTML tracker (v27.0)
 - ✅ API foundation (ETL, upload, staging endpoints)
@@ -308,7 +308,7 @@ Version: 2.00
 ## Success Metrics
 
 ### ETL
-- ✅ 139 tables generated
+- ✅ 145 tables generated
 - ✅ Data validation passing
 - 🚧 Performance: ~80 seconds for 4 games (target: <60 seconds)
 - ✅ Code quality: base_etl.py refactored (~1,065 lines + modular etl_phases/)
