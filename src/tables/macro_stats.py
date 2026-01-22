@@ -934,10 +934,14 @@ def create_fact_player_career_stats_enhanced() -> pd.DataFrame:
                 if 'game_type' not in game_stats.columns:
                     schedule = load_table('dim_schedule')
                     game_stats = add_game_type_to_df(game_stats, schedule)
-                
+
+                # Ensure consistent ID types for comparison (dtype optimization may create mismatches)
+                game_stats['player_id'] = game_stats['player_id'].astype(str)
+                game_stats['season_id'] = game_stats['season_id'].astype(str)
+
                 player_game_stats = game_stats[
-                    (game_stats['player_id'] == player_id) & 
-                    (game_stats['season_id'] == season_id) &
+                    (game_stats['player_id'] == str(player_id)) &
+                    (game_stats['season_id'] == str(season_id)) &
                     (game_stats['game_type'] == game_type)
                 ]
                 career_games = player_game_stats['game_id'].nunique()
