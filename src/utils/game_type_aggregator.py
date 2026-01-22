@@ -82,9 +82,6 @@ def add_game_type_to_df(
         df['game_type'] = DEFAULT_GAME_TYPE
         return df
 
-    # Only merge the columns we need
-    schedule_cols = [game_id_col, GAME_TYPE_COLUMN] if GAME_TYPE_COLUMN in schedule.columns else [game_id_col]
-
     if GAME_TYPE_COLUMN not in schedule.columns:
         df['game_type'] = DEFAULT_GAME_TYPE
         return df
