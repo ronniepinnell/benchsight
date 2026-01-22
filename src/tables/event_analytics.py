@@ -423,6 +423,7 @@ def create_fact_assists() -> pd.DataFrame:
     An assist is credited when a player has '%assist%' in play_detail1 or play_detail_2.
     Only primary and secondary assists count (per CLAUDE.md).
     AssistTertiary is NOT counted as an assist.
+    Stats are only counted for event_player_1 rows (per CLAUDE.md Stat Counting rule).
     """
     print("\nBuilding fact_assists...")
 
@@ -430,6 +431,9 @@ def create_fact_assists() -> pd.DataFrame:
     if len(event_players) == 0:
         print("  ERROR: fact_event_players not found!")
         return pd.DataFrame()
+
+    # Filter to event_player_1 only per STAT COUNTING rule in CLAUDE.md
+    ep1_mask = event_players['player_role'].astype(str).str.lower() == 'event_player_1'
 
     # Find assist records - check both play_detail columns (play_detail1, play_detail_2)
     assist_mask = pd.Series([False] * len(event_players))
@@ -443,21 +447,21 @@ def create_fact_assists() -> pd.DataFrame:
                 ~col_str.str.contains('tertiary', na=False)
             )
 
-    assists = event_players[assist_mask].copy()
+    # Combine: must be event_player_1 AND have assist notation
+    assists = event_players[ep1_mask & assist_mask].copy()
 
     if len(assists) > 0:
-        # Determine assist type using vectorized operations
-        def get_assist_type(row):
-            for col in ['play_detail1', 'play_detail_2']:
-                if col in row.index:
-                    val = str(row[col]).lower()
-                    if 'primary' in val:
-                        return 'Primary'
-                    elif 'secondary' in val:
-                        return 'Secondary'
-            return 'Unknown'
+        # Determine assist type using vectorized string operations (no .apply)
+        pd1_lower = assists['play_detail1'].astype(str).str.lower() if 'play_detail1' in assists.columns else pd.Series([''] * len(assists))
+        pd2_lower = assists['play_detail_2'].astype(str).str.lower() if 'play_detail_2' in assists.columns else pd.Series([''] * len(assists))
 
-        assists['assist_type'] = assists.apply(get_assist_type, axis=1)
+        # Check for primary first (in either column), then secondary
+        is_primary = pd1_lower.str.contains('primary', na=False) | pd2_lower.str.contains('primary', na=False)
+        is_secondary = pd1_lower.str.contains('secondary', na=False) | pd2_lower.str.contains('secondary', na=False)
+
+        assists['assist_type'] = np.where(is_primary, 'Primary',
+                                  np.where(is_secondary, 'Secondary', 'Unknown'))
+
         # Create assist_key from available columns (event_player_key may not exist yet in Phase 4D)
         if 'event_player_key' in assists.columns:
             assists['assist_key'] = 'AS' + assists['event_player_key'].astype(str)
