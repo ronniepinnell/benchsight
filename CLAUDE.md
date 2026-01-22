@@ -1,4 +1,7 @@
-# CLAUDE.md
+# CLAUDE.md - BenchSight Project Instructions
+
+> **Note:** This is the main project instructions file for Claude Code.
+> The file at `.claude/CLAUDE.md` is a separate file for subagent collection documentation (different purpose).
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 

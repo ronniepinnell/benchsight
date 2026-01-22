@@ -156,6 +156,19 @@ FROM dim_player p
 JOIN fact_player_game_stats pgs ON ...;
 ```
 
+## Documentation
+
+| Document | Purpose |
+|----------|---------|
+| [README.md](README.md) | This file - overview and quick start |
+| [SETUP_GUIDE.md](SETUP_GUIDE.md) | Detailed setup instructions |
+| [DASHBOARD_GUIDE.md](DASHBOARD_GUIDE.md) | Complete dashboard guide |
+| [DATA_SOURCES_DOCUMENTATION.md](DATA_SOURCES_DOCUMENTATION.md) | Data sources and tables |
+| [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) | Production deployment checklist |
+| [TODO_AND_ROADMAP.md](TODO_AND_ROADMAP.md) | Future work and roadmap |
+
+> **Note:** Older documentation has been archived to `_archive/`
+
 ## License
 
 MIT

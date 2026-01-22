@@ -255,38 +255,29 @@ xg_base = formulas['xg_base_rates'][danger_level]
 
 ## Technical Debt (Understand and Improve)
 
-### ⚠️ Debt 1: Monolithic base_etl.py (4,400 lines)
+### ✅ Debt 1: Monolithic base_etl.py - RESOLVED
 
-**Where:** `src/core/base_etl.py`
+**Where:** `src/core/base_etl.py` + `src/core/etl_phases/`
 
-**What It Is:**
-One file containing all ETL orchestration and many phase implementations.
+**What It Was:**
+One file containing all ETL orchestration (4,400 lines).
 
-**Why It Exists:**
-- Started small, grew organically
-- Easier to understand flow in one place
-- Refactoring risk during active development
-
-**Problems:**
-- Hard to navigate
-- Slow editor performance
-- Can't parallelize development
-- Hard to test individual pieces
-
-**How to Improve:**
+**Current State (Refactored):**
 ```
-# Current:
+# Before:
 src/core/base_etl.py  (4,400 lines)
 
-# Better:
+# After:
 src/core/
-├── orchestrator.py      # Main flow (~200 lines)
-├── phase1_blb.py        # BLB loading
-├── phase2_lookup.py     # Player lookup
-├── phase3_tracking.py   # Tracking data
-├── phase4_derived.py    # Derived tables
-├── phase5_reference.py  # Reference tables
-└── phases/              # Additional phases
+├── base_etl.py           # Main orchestrator (~1,065 lines)
+└── etl_phases/           # Modular implementations (~4,700 lines)
+    ├── utilities.py
+    ├── derived_columns.py
+    ├── validation.py
+    ├── event_enhancers.py
+    ├── shift_enhancers.py
+    ├── derived_event_tables.py
+    └── reference_tables.py
 ```
 
 **Refactoring Strategy:**

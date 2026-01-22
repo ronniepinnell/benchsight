@@ -11,9 +11,11 @@ Version: 2.00
 
 The BenchSight ETL pipeline transforms raw Excel data into 139 structured CSV tables ready for Supabase. The pipeline executes in 11 main phases, orchestrated by `run_etl.py`.
 
-**Entry Point:** `run_etl.py`  
-**Main ETL Logic:** `src/core/base_etl.py` (4,400+ lines)  
+**Entry Point:** `run_etl.py`
+**Main ETL Logic:** `src/core/base_etl.py` (~1,065 lines) + `src/core/etl_phases/` modules (~4,700 lines)
 **Output:** `data/output/*.csv` (139 tables)
+
+> **Note:** The ETL was refactored from a monolithic 4,400+ line file into modular components. The core orchestrator is now ~1,065 lines with phase-specific logic in `etl_phases/`.
 
 ---
 

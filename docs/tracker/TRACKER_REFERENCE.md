@@ -23,6 +23,7 @@ The tracker is a comprehensive game tracking application with 700+ JavaScript fu
 | v23.5 | 16,162 | ~200 | Original documented version |
 | v26.0 | ~28,000 | ~500 | Video management expansion |
 | v27.0 | 35,174 | 722 | Full feature set, highlight videos, multi-source video |
+| v28.0 | 35,008 | ~720 | Latest version (refinements) |
 
 **Related Documentation:**
 - [TRACKER_ARCHITECTURE_DIAGRAMS.md](TRACKER_ARCHITECTURE_DIAGRAMS.md) - **NEW** Visual tracker architecture diagrams (current HTML, future Rust/Next.js)

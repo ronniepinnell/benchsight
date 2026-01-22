@@ -6,6 +6,16 @@ Last Updated: 2026-01-21
 
 ---
 
+## TL;DR - The Only Command You Need
+
+```bash
+/github-workflow next     # Everything else follows automatically
+```
+
+See [QUICK_REFERENCE.md](../QUICK_REFERENCE.md) for a printable one-page guide.
+
+---
+
 ## Table of Contents
 
 1. [Quick Start Checklist](#quick-start-checklist)
@@ -43,11 +53,23 @@ pre-commit install
 ### Daily Startup
 
 ```bash
-./scripts/daily-start.sh
+# RECOMMENDED: Use the skill
+/github-workflow next
+
 # OR manually:
 git checkout develop && git pull
 ./benchsight.sh env switch dev
 ./benchsight.sh dashboard dev  # Terminal 1
+```
+
+### The Foolproof Flow
+
+```
+/github-workflow next    → Picks issue, creates branch
+[implement]              → Write your code
+/github-workflow commit  → Validates + commits
+/github-workflow pr      → Pushes + creates PR
+/github-workflow merge   → Final test + merge + cleanup
 ```
 
 ---
@@ -210,15 +232,13 @@ I'm working on Issue #1: ETL-001 Modularize base_etl.py
 
 Context:
 - Branch: refactor/etl-modularization
-- Goal: Split src/core/base_etl.py (4,400 lines) into smaller modules
+- Goal: Split src/core/base_etl.py into smaller modules
+- Status: ✅ COMPLETED - base_etl.py now ~1,065 lines + etl_phases/ modules (~4,700 lines)
 - Acceptance criteria:
-  - Create src/core/etl_phases/ directory
-  - Extract Phase 1 logic → phase1_blb_loader.py
-  - Extract Phase 3 logic → phase3_tracking_processor.py
-  - All 139 tables still generated
-  - All tests pass
-
-Start by analyzing base_etl.py and creating an implementation plan.
+  - ✅ Create src/core/etl_phases/ directory
+  - ✅ Extract derived columns, validation, enhancers
+  - ✅ All tables still generated
+  - ✅ All tests pass
 ```
 
 ### Claude's Agents
@@ -1778,7 +1798,119 @@ sudo usermod -aG docker $USER
 
 ---
 
-## Part 8: Quick Setup Checklist
+## Part 8: Post-Code & Commit Workflow
+
+### The Golden Rule
+
+**NEVER commit without running `/post-code`**
+
+### Complete Post-Commit Workflow
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│            WHAT TO DO AFTER WRITING CODE                    │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  1. /post-code                    Run full validation       │
+│     ├── Build check                                         │
+│     ├── CLAUDE.md compliance                                │
+│     ├── Tests (pytest, npm test)                            │
+│     ├── Specialist review (if needed)                       │
+│     ├── Quality check                                       │
+│     ├── Completion validation                               │
+│     ├── Reality check (Karen)                               │
+│     └── Doc sync                                            │
+│                                                             │
+│  2. /pm improve                   Continuous improvement    │
+│     └── Create prevention issues if fix                     │
+│                                                             │
+│  3. git commit                    Make the commit           │
+│     └── Use proper [TYPE] format                            │
+│                                                             │
+│  4. Update GitHub issue           Keep tracking current     │
+│     └── gh issue comment [N]                                │
+│                                                             │
+│  5. /pm next                      What to work on next      │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Skill Invocations by Scenario
+
+| Scenario | Skills to Run |
+|----------|---------------|
+| After writing code | `/post-code` |
+| After ETL changes | `/post-code` then `/validate` |
+| After calculation changes | `/post-code` then `/hockey-stats` |
+| After dashboard changes | `/post-code` then view in browser |
+| Ready to commit | `/post-code commit` |
+| Ready for PR | `/post-code pr` or `/pr-workflow` |
+| Need guidance | `/mentor` |
+| What to work on | `/pm prioritize` or `/pm next` |
+| Verify completion | `/reality-check` |
+| After failures | `/pm reorg` |
+| Check best practices | `/mentor checklist` |
+
+### Quick Reference: Essential Commands
+
+```bash
+# Before committing ANY code
+/post-code
+
+# Quick validation only
+/post-code quick
+
+# Commit with full validation
+/post-code commit
+
+# Create PR with validation
+/post-code pr
+
+# What should I work on?
+/pm next
+
+# After fixing a bug (to create prevention issue)
+/pm improve
+
+# Reorganize issues after failures
+/pm reorg
+
+# Get mentoring/guidance
+/mentor workflow
+```
+
+### Validation Variants
+
+| Command | What It Does | When to Use |
+|---------|--------------|-------------|
+| `/post-code` | Full 10-step validation | After any code changes |
+| `/post-code quick` | Build + tests only | Minor changes |
+| `/post-code commit` | Full + commit | Ready to commit |
+| `/post-code pr` | Full + PR creation | Ready for review |
+| `/validate` | ETL-specific validation | After ETL runs |
+| `/validate goals` | Goal counting only | After goal logic changes |
+| `/compliance-check` | CLAUDE.md rules only | Quick rule check |
+| `/reality-check` | Karen agent | Verify completion |
+
+### After Each Session
+
+```bash
+# 1. Make sure work is committed
+git status
+
+# 2. Update issue
+gh issue comment [NUMBER] --body "Session progress: ..."
+
+# 3. Check what's next
+/pm status
+
+# 4. Sync docs if needed
+/doc-sync check
+```
+
+---
+
+## Part 9: Quick Setup Checklist
 
 ### New Developer Setup
 

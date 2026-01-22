@@ -1,8 +1,11 @@
-# CLAUDE.md
+# CLAUDE.md - Subagent Collection Documentation
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+> **Note:** This file documents the subagent collection structure for Claude Code.
+> For BenchSight project-specific instructions, see `/CLAUDE.md` in the repository root.
 
-## Project Overview
+This file provides guidance to Claude Code (claude.ai/code) when working with subagent definitions.
+
+## Overview
 
 This is a curated collection of Claude Code subagent definitions - specialized AI assistants for specific development tasks. Subagents are markdown files with YAML frontmatter that Claude Code can load and use.
 

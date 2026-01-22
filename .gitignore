@@ -52,3 +52,15 @@ logs/
 .env.local
 venv/
 env/
+
+# Claude Code
+.claude/usage.log
+.claude/plans/
+
+# Debug artifacts
+data/debug/
+*.bak
+*.tmp
+
+# Local configs (keep templates, ignore local overrides)
+config/config_local.ini

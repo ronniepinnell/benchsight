@@ -106,7 +106,8 @@ Before starting, you should:
 | File | Lines | Why It Matters |
 |------|-------|----------------|
 | `run_etl.py` | ~150 | Entry point - how ETL starts |
-| `src/core/base_etl.py` | ~4,400 | ETL orchestrator - controls everything |
+| `src/core/base_etl.py` | ~1,065 | ETL orchestrator - controls everything |
+| `src/core/etl_phases/` | ~4,700 | Modular phase implementations |
 | `src/calculations/goals.py` | ~135 | Critical business rule - goal counting |
 | `src/builders/player_stats.py` | ~800 | Creates fact_player_game_stats (317 columns) |
 | `config/formulas.json` | ~200 | Formula definitions (xG, GAR weights) |

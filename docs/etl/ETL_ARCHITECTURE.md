@@ -140,10 +140,18 @@ graph TB
 - **`run_etl.py`** - Orchestrates all phases, handles command-line arguments
 
 ### Layer 2: Core ETL Engine
-- **`src/core/base_etl.py`** - Main ETL orchestrator (4,400+ lines)
+- **`src/core/base_etl.py`** - Main ETL orchestrator (~1,065 lines)
   - Loads raw data
   - Creates core tables
   - Manages pipeline execution
+- **`src/core/etl_phases/`** - Modular phase implementations (~4,700 lines total)
+  - `utilities.py` - Common utility functions
+  - `derived_columns.py` - Calculate derived columns
+  - `validation.py` - ETL validation
+  - `event_enhancers.py` - Event table enhancement
+  - `shift_enhancers.py` - Shift table enhancement
+  - `derived_event_tables.py` - Derived event tables
+  - `reference_tables.py` - Reference/dimension tables
 - **`src/core/key_utils.py`** - Key generation utilities
 - **`src/core/table_writer.py`** - Table output management (CSV + Supabase)
 - **`src/core/add_all_fkeys.py`** - Foreign key management
@@ -339,8 +347,9 @@ def run_full_etl():
 
 ### 1. Monolithic vs Modular
 
-**Decision:** Hybrid approach
-- **Core ETL (`base_etl.py`):** Monolithic (4,400 lines) - needs refactoring
+**Decision:** Hybrid approach (refactored)
+- **Core ETL (`base_etl.py`):** Orchestrator (~1,065 lines) - refactored from 4,400 lines
+- **Phase Modules (`etl_phases/`):** Modular phase implementations (~4,700 lines)
 - **Table Builders:** Modular (separate files)
 - **Calculations:** Modular (separate modules)
 
@@ -533,10 +542,10 @@ data/output/*.csv (139 tables)
 
 ### Current Bottlenecks
 
-1. **`base_etl.py` (4,400 lines):**
-   - Large file, harder to optimize
-   - Uses `iterrows()` and `apply()` (slow)
-   - **Solution:** Refactor into smaller modules, vectorize operations
+1. **`base_etl.py` (~1,065 lines) + `etl_phases/` (~4,700 lines):**
+   - ✅ Refactored from monolithic 4,400 lines
+   - Still uses some `iterrows()` and `apply()` (slow)
+   - **Next:** Vectorize remaining operations
 
 2. **Game Processing:**
    - Processes games sequentially
@@ -587,14 +596,18 @@ data/output/*.csv (139 tables)
 
 ## Future Architecture Improvements
 
-### 1. Refactor `base_etl.py`
+### 1. Refactor `base_etl.py` ✅ COMPLETED
 
-**Current:** 4,400 lines, monolithic
-**Target:** Split into smaller modules:
-- `data_loader.py` - Data loading
-- `table_creator.py` - Table creation
-- `enhancement_engine.py` - Enhancements
-- `validation_engine.py` - Validation
+**Before:** 4,400 lines, monolithic
+**After:** Split into modular components:
+- `base_etl.py` (~1,065 lines) - Core orchestrator
+- `etl_phases/utilities.py` - Common utilities
+- `etl_phases/derived_columns.py` - Derived column calculations
+- `etl_phases/validation.py` - Validation logic
+- `etl_phases/event_enhancers.py` - Event table enhancement
+- `etl_phases/shift_enhancers.py` - Shift table enhancement
+- `etl_phases/derived_event_tables.py` - Derived event tables
+- `etl_phases/reference_tables.py` - Reference/dimension tables
 
 ### 2. Add Dependency Injection
 

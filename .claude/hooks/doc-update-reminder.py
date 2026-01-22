@@ -57,23 +57,41 @@ def main():
     # Identify specific doc updates that might be needed
     doc_suggestions = []
 
+    # ETL changes
+    if any(f.startswith('src/core/') for f in staged_files):
+        doc_suggestions.append("- docs/etl/CODE_FLOW_ETL.md (ETL core changes)")
     if any(f.startswith('src/calculations/') for f in staged_files):
         doc_suggestions.append("- docs/etl/calculations.md (calculation changes)")
-
     if any(f.startswith('src/tables/') for f in staged_files):
         doc_suggestions.append("- docs/etl/ (table structure changes)")
 
+    # API changes
     if any(f.startswith('api/routes/') for f in staged_files):
         doc_suggestions.append("- docs/api/endpoints.md (API changes)")
 
+    # Dashboard changes
     if any(f.startswith('ui/dashboard/') for f in staged_files):
         doc_suggestions.append("- docs/dashboard/ (dashboard changes)")
 
+    # Portal changes
     if any(f.startswith('ui/portal/') for f in staged_files):
         doc_suggestions.append("- docs/portal/ (portal changes)")
 
+    # Tracker changes
     if any(f.startswith('ui/tracker/') for f in staged_files):
-        doc_suggestions.append("- docs/tracker/ (tracker changes)")
+        doc_suggestions.append("- docs/tracker/TRACKER_REFERENCE.md (tracker changes)")
+
+    # Skills/hooks changes
+    if any(f.startswith('.claude/skills/') for f in staged_files):
+        doc_suggestions.append("- docs/MASTER_INDEX.md (new/modified skills)")
+        doc_suggestions.append("- CLAUDE.md (skill changes)")
+    if any(f.startswith('.claude/hooks/') for f in staged_files):
+        doc_suggestions.append("- docs/MASTER_INDEX.md (new/modified hooks)")
+
+    # New markdown files
+    new_md_files = [f for f in staged_files if f.endswith('.md') and not f.startswith('docs/')]
+    if new_md_files:
+        doc_suggestions.append("- docs/MASTER_INDEX.md (new documentation files)")
 
     # If code changed but no docs, prompt
     if code_changed and not docs_changed:

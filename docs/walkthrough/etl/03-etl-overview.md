@@ -112,21 +112,29 @@ Phase 1 → Phase 2 → Phase 3 → ... → Phase 11
 
 ⚠️ **Technical Debt:** Currently all phases run sequentially even when they could parallelize.
 
-### Decision 3: Monolithic base_etl.py (4,400 lines)
+### Decision 3: Modular ETL Architecture ✅ REFACTORED
 
-🔑 **Why one big file?**
+🔑 **Current structure (refactored from monolithic 4,400 lines):**
 
-**Historical reasons:**
-- Started small, grew organically
-- Easier to understand full flow in one place
-- Refactoring risk during active development
+- `base_etl.py` (~1,065 lines) - Core orchestrator
+- `etl_phases/` (~4,700 lines) - Modular phase implementations
 
-**Tradeoffs:**
+**Module breakdown:**
+| Module | Purpose |
+|--------|---------|
+| `utilities.py` | Common utility functions |
+| `derived_columns.py` | Calculate derived columns |
+| `validation.py` | ETL validation |
+| `event_enhancers.py` | Event table enhancement |
+| `shift_enhancers.py` | Shift table enhancement |
+| `derived_event_tables.py` | Derived event tables |
+| `reference_tables.py` | Reference/dimension tables |
 
+**Benefits:**
 | Pros | Cons |
 |------|------|
-| Everything in one place | Hard to navigate |
-| Easy to trace execution | Long file = slow editor |
+| Easier to navigate | Requires understanding module structure |
+| Faster editor performance | More files to maintain |
 | No import complexity | Hard to test parts |
 | Clear execution order | Can't parallelize development |
 
@@ -358,7 +366,7 @@ df['new_col'] = df['col1'] * df['col2']  # FAST!
 - QA validation
 
 ### What's Technical Debt (Understand But Improve)
-- Monolithic 4,400-line base_etl.py
+- ✅ ~~Monolithic 4,400-line base_etl.py~~ (refactored to ~1,065 + modules)
 - `iterrows()` usage (should vectorize)
 - Sequential execution (could parallelize)
 - No caching between runs

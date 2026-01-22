@@ -11,7 +11,7 @@
 
 This walkthrough covers three key files:
 1. `run_etl.py` - Entry point (~450 lines)
-2. `src/core/base_etl.py` - Orchestrator (~4,400 lines)
+2. `src/core/base_etl.py` - Orchestrator (~1,065 lines) + `etl_phases/` modules (~4,700 lines)
 3. `src/calculations/goals.py` - Critical calculation (~135 lines)
 
 We'll read the actual code with annotations explaining WHY each part exists.
@@ -339,9 +339,9 @@ def count_goals_for_player(
 
 ## File 3: base_etl.py (Orchestrator Highlights)
 
-📍 **File:** `/src/core/base_etl.py` (~4,400 lines)
+📍 **File:** `/src/core/base_etl.py` (~1,065 lines) + `etl_phases/` modules (~4,700 lines)
 
-This file is large. Here are the key sections:
+This file was refactored from 4,400 lines to modular components. Here are the key sections:
 
 ### Main Function Structure (Lines ~2260-2310)
 

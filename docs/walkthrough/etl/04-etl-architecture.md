@@ -15,7 +15,15 @@ The ETL code is organized into purpose-specific modules:
 ```
 src/
 ├── core/                   # 🎯 ORCHESTRATION (runs the show)
-│   ├── base_etl.py         # Main orchestrator (4,400 lines)
+│   ├── base_etl.py         # Main orchestrator (~1,065 lines)
+│   ├── etl_phases/         # Modular phase implementations (~4,700 lines)
+│   │   ├── utilities.py
+│   │   ├── derived_columns.py
+│   │   ├── validation.py
+│   │   ├── event_enhancers.py
+│   │   ├── shift_enhancers.py
+│   │   ├── derived_event_tables.py
+│   │   └── reference_tables.py
 │   ├── key_utils.py        # Key generation (PG001, etc.)
 │   ├── table_writer.py     # CSV output writing
 │   └── safe_csv.py         # Safe CSV reading

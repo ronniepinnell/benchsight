@@ -2,8 +2,8 @@
 
 **Complete categorized index of all documentation**
 
-Last Updated: 2026-01-21
-Version: 2.00
+Last Updated: 2026-01-22
+Version: 3.00
 
 ---
 
@@ -11,118 +11,113 @@ Version: 2.00
 
 This document serves as the master index for all BenchSight documentation.
 
-**Structure:** Organized into folders by topic  
+**Structure:** Organized into folders by topic
 **Entry Point:** [README.md](README.md)
 
 ---
 
 ## Quick Navigation
 
-### 🚀 Getting Started
+### 🚀 Getting Started (docs root)
+- **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** - **START HERE** One-page essential reference
 - [README.md](README.md) - Documentation entry point
-- [setup/SETUP.md](setup/SETUP.md) - Complete setup guide
-- [archive/QUICK_START.md](archive/QUICK_START.md) - 5-minute quick start
+- [START_HERE.md](START_HERE.md) - Onboarding reading list
 - [COMMANDS.md](COMMANDS.md) - Complete command reference
+- [PROJECT_STATUS.md](PROJECT_STATUS.md) - Current project status
+- [CHANGELOG.md](CHANGELOG.md) - Version history
 
-### 📊 Core Documentation
-- [MASTER_ROADMAP.md](MASTER_ROADMAP.md) - **UPDATED** Unified roadmap (with commercial context, target market, MVP definition, visuals)
-- [MASTER_IMPLEMENTATION_PLAN.md](MASTER_IMPLEMENTATION_PLAN.md) - **NEW** Detailed phased implementation plan (8 phases, PR/commit structure)
-- [MASTER_CALCULATIONS_AND_IMPLEMENTATION.md](MASTER_CALCULATIONS_AND_IMPLEMENTATION.md) - Advanced/microstat coverage plan and implementation path
-- [TECH_STACK_ROADMAP.md](TECH_STACK_ROADMAP.md) - **NEW** Current and future tech stack requirements and migration paths
-- [DOCUMENTATION_VERIFICATION_SUMMARY.md](DOCUMENTATION_VERIFICATION_SUMMARY.md) - **NEW** Complete verification of all documentation against codebase
-- [QA_STRATEGY.md](QA_STRATEGY.md) - **NEW** ETL QA strategy
-- [TESTING_STRATEGY.md](TESTING_STRATEGY.md) - **NEW** Testing strategy
-- [PROJECT_SPEC.md](PROJECT_SPEC.md) - **NEW** Consolidated product + tech spec
-- [CLAUDE.md](CLAUDE.md) - **NEW** Claude/Cursor operating guide
-- [START_HERE.md](START_HERE.md) - **NEW** Onboarding reading list
-- [MASTER_RULES.md](MASTER_RULES.md) - Rules and standards
-- [PROJECT_STATUS.md](PROJECT_STATUS.md) - **UPDATED** Current project status (verification complete)
-- [PROJECT_SCOPE.md](PROJECT_SCOPE.md) - Project scope definition
-- [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) - Project structure reference
+### 📋 Planning (docs/planning/)
+- [planning/MASTER_ROADMAP.md](planning/MASTER_ROADMAP.md) - Unified roadmap
+- [planning/MASTER_IMPLEMENTATION_PLAN.md](planning/MASTER_IMPLEMENTATION_PLAN.md) - Phased implementation plan
+- [planning/GITHUB_ISSUES_BACKLOG.md](planning/GITHUB_ISSUES_BACKLOG.md) - Issue tracking and backlog
+- [planning/PROJECT_SCOPE.md](planning/PROJECT_SCOPE.md) - Project scope definition
+- [planning/PROJECT_SPEC.md](planning/PROJECT_SPEC.md) - Product + tech spec
+- [planning/TECH_STACK_ROADMAP.md](planning/TECH_STACK_ROADMAP.md) - Tech stack requirements
 
-### 📊 ETL Documentation
+### 📊 ETL Documentation (docs/etl/)
 - [etl/ETL.md](etl/ETL.md) - ETL overview
-- [etl/CODE_FLOW_ETL.md](etl/CODE_FLOW_ETL.md) - Complete ETL execution flow
-- [etl/ETL_ARCHITECTURE.md](etl/ETL_ARCHITECTURE.md) - ETL architecture overview
+- [etl/ETL_ARCHITECTURE.md](etl/ETL_ARCHITECTURE.md) - Architecture overview
+- [etl/CODE_FLOW_ETL.md](etl/CODE_FLOW_ETL.md) - Complete execution flow
 - [etl/ETL_TABLE_DEPENDENCIES.md](etl/ETL_TABLE_DEPENDENCIES.md) - Table dependencies
 - [etl/ETL_CALCULATIONS_REFERENCE.md](etl/ETL_CALCULATIONS_REFERENCE.md) - Calculation formulas
 - [etl/ETL_DATA_FLOW.md](etl/ETL_DATA_FLOW.md) - Data transformation flow
 - [etl/SRC_MODULES_GUIDE.md](etl/SRC_MODULES_GUIDE.md) - Source modules guide
-- [etl/ETL_FLOW_DIAGRAMS.md](etl/ETL_FLOW_DIAGRAMS.md) - **NEW** Visual ETL flow diagrams (phases, data flow, calculations)
+- [etl/ETL_FLOW_DIAGRAMS.md](etl/ETL_FLOW_DIAGRAMS.md) - Visual flow diagrams
+- [etl/QA_STRATEGY.md](etl/QA_STRATEGY.md) - QA strategy
+- [etl/TESTING_STRATEGY.md](etl/TESTING_STRATEGY.md) - Testing strategy
+- [etl/ETL_VERIFICATION_PLAN.md](etl/ETL_VERIFICATION_PLAN.md) - Verification plan
+- [etl/TABLE_GENERATION_LOGIC.md](etl/TABLE_GENERATION_LOGIC.md) - Table generation logic
 
-### 🎨 Dashboard Documentation
-- [dashboard/DASHBOARD_ARCHITECTURE.md](dashboard/DASHBOARD_ARCHITECTURE.md) - Dashboard architecture
+### 🎨 Dashboard Documentation (docs/dashboard/)
+- [dashboard/DASHBOARD_ARCHITECTURE.md](dashboard/DASHBOARD_ARCHITECTURE.md) - Architecture
 - [dashboard/DASHBOARD_COMPONENT_CATALOG.md](dashboard/DASHBOARD_COMPONENT_CATALOG.md) - Component reference
 - [dashboard/DASHBOARD_DATA_FLOW.md](dashboard/DASHBOARD_DATA_FLOW.md) - Data flow
 - [dashboard/DASHBOARD_ROADMAP.md](dashboard/DASHBOARD_ROADMAP.md) - Development roadmap
 - [dashboard/DASHBOARD_PAGES_INVENTORY.md](dashboard/DASHBOARD_PAGES_INVENTORY.md) - Pages inventory
-- [dashboard/DASHBOARD_ARCHITECTURE_DIAGRAMS.md](dashboard/DASHBOARD_ARCHITECTURE_DIAGRAMS.md) - **NEW** Visual dashboard architecture diagrams (components, data flow, user journey)
+- [dashboard/DASHBOARD_PAGES_ISSUES.md](dashboard/DASHBOARD_PAGES_ISSUES.md) - Page issues tracking
+- [dashboard/DASHBOARD_ARCHITECTURE_DIAGRAMS.md](dashboard/DASHBOARD_ARCHITECTURE_DIAGRAMS.md) - Visual diagrams
 
-### 🎯 Tracker Documentation
-- [tracker/TRACKER_REFERENCE.md](tracker/TRACKER_REFERENCE.md) - Complete function reference (200+ functions, v23.5 documented, v27.0 current)
+### 🎯 Tracker Documentation (docs/tracker/)
+- [tracker/TRACKER_REFERENCE.md](tracker/TRACKER_REFERENCE.md) - Complete function reference (722 functions, v28.0)
 - [tracker/TRACKER_CONVERSION.md](tracker/TRACKER_CONVERSION.md) - Rust/Next.js conversion plan
-- [tracker/TRACKER_ARCHITECTURE_DIAGRAMS.md](tracker/TRACKER_ARCHITECTURE_DIAGRAMS.md) - **NEW** Visual tracker architecture diagrams (current HTML, future Rust/Next.js)
+- [tracker/TRACKER_LOGIC_DOCUMENTATION.md](tracker/TRACKER_LOGIC_DOCUMENTATION.md) - Logic documentation
+- [tracker/TRACKER_ARCHITECTURE_DIAGRAMS.md](tracker/TRACKER_ARCHITECTURE_DIAGRAMS.md) - Visual diagrams
 
-**Note:** Tracker is currently at v27.0, but documentation is based on v23.5. Core functionality and architecture remain consistent.
+### 🔌 API Documentation (docs/api/)
+- [api/API.md](api/API.md) - Complete API documentation
+- [api/API_ARCHITECTURE_DIAGRAMS.md](api/API_ARCHITECTURE_DIAGRAMS.md) - Visual diagrams
 
-### 🔌 API Documentation
-- [api/API.md](api/API.md) - Complete API documentation (reference, architecture, integration)
-- [api/API_ARCHITECTURE_DIAGRAMS.md](api/API_ARCHITECTURE_DIAGRAMS.md) - **NEW** Visual API architecture diagrams (endpoints, job processing, integration)
+### 🏢 Portal Documentation (docs/portal/)
+- [portal/PORTAL.md](portal/PORTAL.md) - Complete portal documentation
+- [portal/PORTAL_ARCHITECTURE_DIAGRAMS.md](portal/PORTAL_ARCHITECTURE_DIAGRAMS.md) - Visual diagrams
 
-### 🏢 Portal Documentation
-- [portal/PORTAL.md](portal/PORTAL.md) - Complete portal documentation (current state, development plan, API requirements)
-- [portal/PORTAL_ARCHITECTURE_DIAGRAMS.md](portal/PORTAL_ARCHITECTURE_DIAGRAMS.md) - **NEW** Visual portal architecture diagrams (components, data flow, user journey)
+### 🗄️ Data Documentation (docs/data/)
+- [data/DATA.md](data/DATA.md) - Data documentation
+- [data/DATA_DICTIONARY.md](data/DATA_DICTIONARY.md) - Comprehensive data dictionary
+- [data/SCHEMA_ERD.md](data/SCHEMA_ERD.md) - Entity-Relationship Diagrams
+- [data/SCHEMA_SCALABILITY_DESIGN.md](data/SCHEMA_SCALABILITY_DESIGN.md) - Multi-tenant design
+- [data/CALCULATION_FLOWS.md](data/CALCULATION_FLOWS.md) - Calculation flow diagrams
 
-### 🗄️ Data Documentation
-- [data/DATA.md](data/DATA.md) - Complete data documentation (lineage, manifest, types)
-- [data/DATA_DICTIONARY.md](data/DATA_DICTIONARY.md) - **NEW** Comprehensive data dictionary (tables, columns, calculations, sources)
-- [data/SCHEMA_ERD.md](data/SCHEMA_ERD.md) - **NEW** Database schema Entity-Relationship Diagrams
-- [data/SCHEMA_SCALABILITY_DESIGN.md](data/SCHEMA_SCALABILITY_DESIGN.md) - **NEW** Multi-tenant schema design and scalability patterns
-- [data/CALCULATION_FLOWS.md](data/CALCULATION_FLOWS.md) - **NEW** Visual calculation flow diagrams (xG, WAR/GAR, Corsi)
-
-### 🔄 Workflows
-- [workflows/WORKFLOW.md](workflows/WORKFLOW.md) - Complete development workflow
+### 🔄 Workflows (docs/workflows/)
+- [workflows/COMPLETE_DEVELOPMENT_GUIDE.md](workflows/COMPLETE_DEVELOPMENT_GUIDE.md) - **MAIN GUIDE** Issue-to-PR workflow
+- [workflows/WORKFLOW.md](workflows/WORKFLOW.md) - Development workflow
+- [workflows/COMPLETE_INSTALLATION_GUIDE.md](workflows/COMPLETE_INSTALLATION_GUIDE.md) - Installation guide
 - [workflows/PLANNING_WORKFLOW.md](workflows/PLANNING_WORKFLOW.md) - PRD-first development
-- [workflows/CONTEXT_RESET_STRATEGY.md](workflows/CONTEXT_RESET_STRATEGY.md) - Context management
 - [workflows/CODERABBIT_WORKFLOW.md](workflows/CODERABBIT_WORKFLOW.md) - CodeRabbit integration
-- [workflows/SYSTEM_EVOLUTION_WORKFLOW.md](workflows/SYSTEM_EVOLUTION_WORKFLOW.md) - Bug → rule evolution
 
-### 🛠️ Setup & Environments
-- [setup/SETUP.md](setup/SETUP.md) - Complete setup
-- [archive/QUICK_START.md](archive/QUICK_START.md) - Quick start
+### 📚 Reference (docs/reference/)
+- [reference/MASTER_RULES.md](reference/MASTER_RULES.md) - Rules and standards
+- [reference/PROJECT_STRUCTURE.md](reference/PROJECT_STRUCTURE.md) - Project structure
+- [reference/README.md](reference/README.md) - Reference materials index
+- [reference/inspiration/](reference/inspiration/) - UI/UX inspiration
+
+### 🛠️ Setup (docs/setup/)
+- [setup/SETUP.md](setup/SETUP.md) - Complete setup guide
 - [setup/DEV_ENV.md](setup/DEV_ENV.md) - Dev environment setup
-- [environments/ENVIRONMENTS.md](environments/ENVIRONMENTS.md) - Environment management
 
-### ✅ Checklists
-- [checklists/CHECKLISTS.md](checklists/CHECKLISTS.md) - All checklists index
+### 💼 Commercial (docs/commercial/)
+- [commercial/COMPETITOR_ANALYSIS.md](commercial/COMPETITOR_ANALYSIS.md) - Competitor research
+- [commercial/GAP_ANALYSIS.md](commercial/GAP_ANALYSIS.md) - Gap analysis
+- [commercial/MONETIZATION_STRATEGY.md](commercial/MONETIZATION_STRATEGY.md) - Monetization strategy
+- [commercial/COMMERCIAL_READINESS_CHECKLIST.md](commercial/COMMERCIAL_READINESS_CHECKLIST.md) - Readiness checklist
 
-### 📝 PRDs (Product Requirements Documents)
+### 📝 PRDs (docs/prds/)
 - [prds/README.md](prds/README.md) - PRD index and guidelines
 - [prds/template.md](prds/template.md) - PRD template
 
-### 🎯 Templates
-- [templates/planning-conversation.md](templates/planning-conversation.md) - Planning template
-- [templates/execution-conversation.md](templates/execution-conversation.md) - Execution template
-- [templates/context-handoff.md](templates/context-handoff.md) - Context handoff template
+### 🤖 Claude Code (.claude/)
+- [../.claude/docs/SKILLS_GUIDE.md](../.claude/docs/SKILLS_GUIDE.md) - Skills guide
+- [../.claude/docs/HOOKS_GUIDE.md](../.claude/docs/HOOKS_GUIDE.md) - Hooks guide
+- [../.claude/agents/AGENTS_GUIDE.md](../.claude/agents/AGENTS_GUIDE.md) - Agents guide
 
-### 🔧 System Evolution
-- [system-evolution/README.md](system-evolution/README.md) - Evolution tracking
-- [system-evolution/rules-history.md](system-evolution/rules-history.md) - Rules evolution log
-
-### 📚 Reference Materials
-- [reference/README.md](reference/README.md) - Reference materials index
-- [reference/inspiration/](reference/inspiration/) - UI/UX inspiration and screenshots
-- [reference/design/wireframes/](reference/design/wireframes/) - Dashboard wireframes
-- [reference/design/roadmap-visuals.md](reference/design/roadmap-visuals.md) - **NEW** Standalone roadmap visual diagrams (timeline, features, dependencies)
-- [walkthrough/README.md](walkthrough/README.md) - **NEW** Codebase walkthrough index
-
-### 💼 Commercial Documentation
-- [commercial/COMPETITOR_ANALYSIS.md](commercial/COMPETITOR_ANALYSIS.md) - **NEW** Deep competitor research (features, pricing, positioning)
-- [commercial/GAP_ANALYSIS.md](commercial/GAP_ANALYSIS.md) - **NEW** Gap analysis (current state vs target state vs competitors)
-- [commercial/MONETIZATION_STRATEGY.md](commercial/MONETIZATION_STRATEGY.md) - **NEW** Monetization strategy (pricing models, revenue projections, go-to-market)
-- [commercial/COMMERCIAL_ROADMAP_VISUALS.md](commercial/COMMERCIAL_ROADMAP_VISUALS.md) - **NEW** Commercial roadmap visuals (positioning map, revenue chart, feature matrix)
-- [commercial/COMMERCIAL_READINESS_CHECKLIST.md](commercial/COMMERCIAL_READINESS_CHECKLIST.md) - **NEW** Commercial readiness checklist
-- [commercial/PILOT_CASE_STUDY_TEMPLATE.md](commercial/PILOT_CASE_STUDY_TEMPLATE.md) - **NEW** Pilot case study template
+### 📝 Development Logs (logs/)
+- [../logs/README.md](../logs/README.md) - Logs overview
+- [../logs/etl.log.md](../logs/etl.log.md) - ETL pipeline changes
+- [../logs/dashboard.log.md](../logs/dashboard.log.md) - Dashboard changes
+- [../logs/tracker.log.md](../logs/tracker.log.md) - Tracker changes
+- [../logs/portal.log.md](../logs/portal.log.md) - Portal changes
+- [../logs/supabase.log.md](../logs/supabase.log.md) - Database changes
+- [../logs/api.log.md](../logs/api.log.md) - API changes
 
 ---
 
@@ -132,70 +127,63 @@ This document serves as the master index for all BenchSight documentation.
 docs/
 ├── README.md                    # Entry point
 ├── MASTER_INDEX.md             # This file
-├── MASTER_ROADMAP.md           # Roadmap (UPDATED with commercial context)
-├── MASTER_IMPLEMENTATION_PLAN.md # NEW: Phased implementation plan
-├── TECH_STACK_ROADMAP.md       # NEW: Tech stack roadmap
-├── MASTER_RULES.md             # Rules
-├── PROJECT_STATUS.md           # Status
-├── PROJECT_SCOPE.md            # Scope
-├── PROJECT_STRUCTURE.md         # Structure
+├── QUICK_REFERENCE.md          # One-page reference
+├── START_HERE.md               # Onboarding
 ├── COMMANDS.md                 # Commands
+├── PROJECT_STATUS.md           # Status
 ├── CHANGELOG.md                # Changelog
 │
-├── setup/                      # Setup guides
-├── environments/               # Environment guides
+├── planning/                   # Planning docs (NEW)
+│   ├── MASTER_ROADMAP.md
+│   ├── MASTER_IMPLEMENTATION_PLAN.md
+│   ├── GITHUB_ISSUES_BACKLOG.md
+│   ├── PROJECT_SCOPE.md
+│   ├── PROJECT_SPEC.md
+│   └── TECH_STACK_ROADMAP.md
+│
+├── reference/                  # Reference docs (NEW)
+│   ├── MASTER_RULES.md
+│   ├── PROJECT_STRUCTURE.md
+│   └── ...
+│
 ├── etl/                        # ETL documentation
-│   └── ETL_FLOW_DIAGRAMS.md   # NEW: Visual ETL diagrams
 ├── dashboard/                  # Dashboard documentation
-│   └── DASHBOARD_ARCHITECTURE_DIAGRAMS.md # NEW: Visual dashboard diagrams
 ├── tracker/                    # Tracker documentation
-│   └── TRACKER_ARCHITECTURE_DIAGRAMS.md # NEW: Visual tracker diagrams
 ├── api/                        # API documentation
-│   └── API_ARCHITECTURE_DIAGRAMS.md # NEW: Visual API diagrams
 ├── portal/                     # Portal documentation
-│   └── PORTAL_ARCHITECTURE_DIAGRAMS.md # NEW: Visual portal diagrams
 ├── data/                       # Data documentation
-│   ├── DATA_DICTIONARY.md      # NEW: Comprehensive data dictionary
-│   ├── SCHEMA_ERD.md          # NEW: Schema ERD diagrams
-│   ├── SCHEMA_SCALABILITY_DESIGN.md # NEW: Scalability design
-│   └── CALCULATION_FLOWS.md   # NEW: Calculation flow diagrams
-├── commercial/                 # NEW: Commercial documentation
-│   ├── COMPETITOR_ANALYSIS.md
-│   ├── GAP_ANALYSIS.md
-│   ├── MONETIZATION_STRATEGY.md
-│   └── COMMERCIAL_ROADMAP_VISUALS.md
 ├── workflows/                  # Workflow guides
-├── checklists/                 # Checklists
-├── reference/                  # Reference materials
-│   └── design/
-│       └── roadmap-visuals.md # NEW: Roadmap visual diagrams
+├── commercial/                 # Commercial documentation
+├── setup/                      # Setup guides
 ├── prds/                       # PRDs
-├── templates/                  # Templates
 └── archive/                    # Archived docs
+
+logs/                           # Component development logs
+├── README.md
+├── etl.log.md
+├── dashboard.log.md
+├── tracker.log.md
+├── portal.log.md
+├── supabase.log.md
+└── api.log.md
 ```
 
 ---
 
----
+## Quick Access
 
-## Recent Updates (2026-01-15)
-
-### New Documentation Added
-- **Data Dictionary**: Comprehensive documentation of all tables, columns, calculations, and sources
-- **Visual Diagrams**: Architecture and flow diagrams for ETL, Dashboard, API, Portal, Tracker, and calculations
-- **Commercial Documentation**: Competitor analysis, gap analysis, monetization strategy, and commercial roadmap visuals
-- **Implementation Plan**: Detailed 8-phase implementation plan with PR/commit structure
-- **Tech Stack Roadmap**: Current and future tech stack requirements and migration paths
-- **Schema Scalability**: Multi-tenant schema design and scalability patterns
-- **Verification Summary**: Complete verification of all documentation against actual codebase
-
-### Updated Documentation
-- **Master Roadmap**: Added commercial context, target market, MVP definition, and visual diagrams
-- **Master Index**: Reorganized and updated with all new documentation
-- **Project Status**: Updated to 100% completion with verification status
-- **Data Documentation**: Updated with current table count (132 tables, verified)
-- **ETL Documentation**: Updated with current table count and verification notes
+| Need | Document |
+|------|----------|
+| Daily reference | [QUICK_REFERENCE.md](QUICK_REFERENCE.md) |
+| Full workflow | [workflows/COMPLETE_DEVELOPMENT_GUIDE.md](workflows/COMPLETE_DEVELOPMENT_GUIDE.md) |
+| Current status | [PROJECT_STATUS.md](PROJECT_STATUS.md) |
+| Issue backlog | [planning/GITHUB_ISSUES_BACKLOG.md](planning/GITHUB_ISSUES_BACKLOG.md) |
+| Rules | [reference/MASTER_RULES.md](reference/MASTER_RULES.md) |
+| ETL details | [etl/ETL_ARCHITECTURE.md](etl/ETL_ARCHITECTURE.md) |
+| Skills/Agents | [../.claude/agents/AGENTS_GUIDE.md](../.claude/agents/AGENTS_GUIDE.md) |
+| Version history | [../CHANGELOG.md](../CHANGELOG.md) |
+| Component logs | [../logs/README.md](../logs/README.md) |
 
 ---
 
-*Last Updated: 2026-01-15*
+*Last Updated: 2026-01-22*

@@ -84,7 +84,8 @@ Exports to: `data/raw/games/{game_id}/`
 | File | Lines | Purpose |
 |------|-------|---------|
 | `run_etl.py` | ~150 | Entry point |
-| `src/core/base_etl.py` | ~4,400 | Main orchestrator (11 phases) |
+| `src/core/base_etl.py` | ~1,065 | Main orchestrator (11 phases) |
+| `src/core/etl_phases/` | ~4,700 | Modular phase implementations |
 | `src/builders/events.py` | ~300 | Creates fact_events |
 | `src/builders/shifts.py` | ~250 | Creates fact_shifts |
 | `src/builders/player_stats.py` | ~800 | Creates fact_player_game_stats |

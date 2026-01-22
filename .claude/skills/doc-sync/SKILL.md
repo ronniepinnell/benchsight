@@ -11,9 +11,23 @@ Keep documentation synchronized with code.
 
 ## Documentation Locations
 
+### Priority Docs (Auto-Update on Each Commit)
+
+| Doc File | Update When |
+|----------|-------------|
+| `docs/MASTER_INDEX.md` | New .md files added anywhere |
+| `docs/PROJECT_STATUS.md` | Code changes to tracked components |
+| `docs/etl/CODE_FLOW_ETL.md` | Changes to `src/core/` or `run_etl.py` |
+| `docs/architecture/*.md` | Changes to corresponding component code |
+| `CLAUDE.md` | New skills, hooks, or major workflow changes |
+| `docs/tracker/TRACKER_REFERENCE.md` | Changes to `ui/tracker/` |
+| `docs/data/DATA_DICTIONARY.md` | New tables or schema changes |
+
+### Component Docs
+
 | Type | Location | Update Trigger |
 |------|----------|----------------|
-| ETL docs | `docs/etl/` | src/calculations/, src/tables/ |
+| ETL docs | `docs/etl/` | src/calculations/, src/tables/, src/core/etl_phases/ |
 | Dashboard docs | `docs/dashboard/` | ui/dashboard/src/ |
 | API docs | `docs/api/` | api/routes/, api/services/ |
 | Data dictionary | `docs/data/` | Schema changes |
