@@ -17,13 +17,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Environment management docs (dev vs prod Supabase/Vercel)
 - Context/token usage monitoring guidance
 - Session handoff checklists
+- `/audit` skill - full codebase audit (full/quick/security/quality/compliance)
+- `code-explainer` agent - line-by-line, flow, architecture, ETL, changes explanations
+- Interactive mode for code-explainer (prompts for target, follow-up Q&A, session logging)
+- `logs/explanations/` folder for storing code explanation sessions
+- Documentation drift warning in `/pm` skill
+- **Living Documentation System:**
+  - `docs/code-docs/` - auto-updating code explanations
+  - `docs/table-docs/` - auto-updating table documentation
+  - Living docs persist across reviews and auto-sync with code changes
+- **Issue Detection & Auto-Escalation:**
+  - Code-explainer now scans for issues during reviews
+  - CRITICAL issues auto-create/update GitHub issues
+  - HIGH/MEDIUM/LOW issues logged to `logs/issues/detected.jsonl`
+  - `docs/backlog/auto-detected.md` tracks all detected issues
+- `table-explainer` agent - schema, ETL path, lineage, QA rules, relationships
+- `component-explainer` agent - dashboard, portal, tracker, API, ML/CV explanation
+- `feature-template-generator` agent - create new explainer templates for features
+- `docs/component-docs/` - living component documentation
+- GitHub issue creation from all explainer agents
 
 ### Changed
 - Reorganized docs folder structure (moved 14 files to subfolders)
-- Updated MASTER_INDEX.md with new paths
-- Enhanced QUICK_REFERENCE.md with maintenance scripts section
+- Updated MASTER_INDEX.md with new paths and living docs sections
+- Enhanced QUICK_REFERENCE.md with maintenance scripts section and new agents
 - `/github-workflow commit` now requires version/changelog/log updates
 - `/pm` skill now includes environment and session management guidance
+- AGENTS_GUIDE.md updated with code-explainer and table-explainer
 
 ## [1.0.0-alpha.2] - 2026-01-22
 

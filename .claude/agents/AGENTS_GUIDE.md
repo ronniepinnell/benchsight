@@ -16,6 +16,8 @@
 | Check CLAUDE.md compliance | `claude-md-compliance-checker` | "Does this follow project rules?" |
 | CI/CD or GitHub integration | `github-integration-expert` | "How do I set up deployment?" |
 | UI testing (dashboard) | `ui-comprehensive-tester` | "Test the dashboard thoroughly" |
+| **Understand code** | `code-explainer` | "Explain this file line by line" |
+| **Understand tables** | `table-explainer` | "Explain fact_player_game_stats" |
 
 ---
 
@@ -157,6 +159,53 @@
 "Verify all filters work on the standings page"
 "Test the game detail page across viewports"
 ```
+
+---
+
+### 9. `code-explainer` ⭐ ESSENTIAL (NEW)
+**When to use:**
+- Learning a new part of the codebase
+- Onboarding or knowledge transfer
+- Understanding complex logic
+- Preparing PR descriptions
+- Creating documentation
+
+**Example prompts:**
+```
+"Explain src/calculations/goals.py line by line"
+"Walk me through the ETL data flow"
+"Explain how shifts are calculated"
+"Trace how a goal gets counted from raw data to dashboard"
+```
+
+**Features:**
+- Creates **living docs** in `docs/code-docs/` that auto-update on review
+- **Auto-detects issues** during explanation (CLAUDE.md violations, performance, etc.)
+- **Auto-escalates CRITICAL issues** to GitHub
+- Logs sessions for future reference
+
+---
+
+### 10. `table-explainer` ⭐ ESSENTIAL (NEW)
+**When to use:**
+- Understanding table schemas
+- Debugging data issues
+- Learning ETL output structure
+- Documenting database design
+
+**Example prompts:**
+```
+"Explain fact_player_game_stats"
+"Show me the ETL path for dim_players"
+"What columns are in fact_goals and how are they calculated?"
+"Trace data lineage for the goals column"
+```
+
+**Features:**
+- Creates **living docs** in `docs/table-docs/` that auto-update on review
+- Shows ETL path from source to output
+- Documents QA rules and validation
+- Maps table relationships
 
 ---
 
@@ -564,10 +613,11 @@ Invoke the agent and verify it behaves correctly.
 
 ## Summary
 
-**Essential (8 agents):**
+**Essential (10 agents):**
 - hockey-analytics-sme, Jenny, karen, task-completion-validator
 - claude-md-compliance-checker, code-quality-pragmatist
 - github-integration-expert, ui-comprehensive-tester
+- **code-explainer** (NEW), **table-explainer** (NEW)
 
 **Add (4 new agents):**
 - etl-specialist, supabase-specialist, dashboard-developer, tracker-specialist
@@ -591,4 +641,4 @@ Invoke the agent and verify it behaves correctly.
 
 ---
 
-*Last Updated: 2025-01-22*
+*Last Updated: 2026-01-22*

@@ -109,9 +109,18 @@ stats = df[df['player_role'] == 'event_player_1']
 | Skill | Use When |
 |-------|----------|
 | `/post-code` | Full validation |
+| `/audit` | Full codebase audit |
 | `/compliance-check` | CLAUDE.md rules |
 | `/reality-check` | Verify completion |
 | `/pm improve` | After fixes |
+
+### Code Understanding (Subagents)
+| Agent | Use When |
+|-------|----------|
+| `code-explainer` | Understand code, get line-by-line explanations |
+| `table-explainer` | Understand tables, ETL paths, data lineage |
+
+> **Tip:** These agents create living docs in `docs/code-docs/` and `docs/table-docs/` that auto-update on review.
 
 ---
 
@@ -156,9 +165,14 @@ git checkout develop && git pull
 | `CLAUDE.md` | Project rules (CRITICAL) |
 | `CHANGELOG.md` | Version history |
 | `logs/*.log.md` | Component change logs |
+| `logs/issues/detected.jsonl` | Auto-detected issues |
 | `docs/MASTER_INDEX.md` | All documentation |
+| `docs/code-docs/` | Living code explanations |
+| `docs/table-docs/` | Living table documentation |
+| `docs/backlog/auto-detected.md` | Auto-detected issue backlog |
 | `docs/workflows/COMPLETE_DEVELOPMENT_GUIDE.md` | Full workflow guide |
 | `.claude/skills/*/SKILL.md` | Skill documentation |
+| `.claude/agents/*.md` | Subagent definitions |
 
 ---
 

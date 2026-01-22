@@ -118,6 +118,17 @@ This document serves as the master index for all BenchSight documentation.
 - [../logs/portal.log.md](../logs/portal.log.md) - Portal changes
 - [../logs/supabase.log.md](../logs/supabase.log.md) - Database changes
 - [../logs/api.log.md](../logs/api.log.md) - API changes
+- [../logs/issues/README.md](../logs/issues/README.md) - Auto-detected issues
+
+### 📖 Living Documentation (NEW)
+- **Code Explanations** (`docs/code-docs/`)
+  - [code-docs/README.md](code-docs/README.md) - Index of code explanations
+  - Auto-updated by code-explainer agent during reviews
+- **Table Documentation** (`docs/table-docs/`)
+  - [table-docs/README.md](table-docs/README.md) - Index of table docs
+  - Auto-updated by table-explainer agent during reviews
+- **Auto-Detected Issues** (`docs/backlog/`)
+  - [backlog/auto-detected.md](backlog/auto-detected.md) - Issue backlog from code reviews
 
 ---
 
@@ -156,6 +167,10 @@ docs/
 ├── commercial/                 # Commercial documentation
 ├── setup/                      # Setup guides
 ├── prds/                       # PRDs
+├── code-docs/                  # Living code explanations (NEW)
+├── table-docs/                 # Living table documentation (NEW)
+├── backlog/                    # Issue tracking (NEW)
+│   └── auto-detected.md        # Auto-detected issues
 └── archive/                    # Archived docs
 
 logs/                           # Component development logs
@@ -181,6 +196,9 @@ logs/                           # Component development logs
 | Rules | [reference/MASTER_RULES.md](reference/MASTER_RULES.md) |
 | ETL details | [etl/ETL_ARCHITECTURE.md](etl/ETL_ARCHITECTURE.md) |
 | Skills/Agents | [../.claude/agents/AGENTS_GUIDE.md](../.claude/agents/AGENTS_GUIDE.md) |
+| Code understanding | `code-explainer` agent |
+| Table understanding | `table-explainer` agent |
+| Auto-detected issues | [backlog/auto-detected.md](backlog/auto-detected.md) |
 | Version history | [../CHANGELOG.md](../CHANGELOG.md) |
 | Component logs | [../logs/README.md](../logs/README.md) |
 
