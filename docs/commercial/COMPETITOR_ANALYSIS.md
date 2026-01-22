@@ -232,39 +232,39 @@ This document provides comprehensive analysis of competitors in the hockey analy
 
 | Feature | BenchSight | Sportlogiq | InStat | Synergy | Hudl |
 |---------|------------|-----------|--------|---------|------|
-| **Advanced Metrics** | | | | | |
-| xG (Expected Goals) | ✅ | ✅ | ❌ | ✅ | ❌ |
-| WAR/GAR | ✅ | ✅ | ❌ | ✅ | ❌ |
-| Corsi/Fenwick | ✅ | ✅ | ✅ | ✅ | ❌ |
-| RAPM | 📋 | ✅ | ❌ | ✅ | ❌ |
-| **Game Tracking** | | | | | |
-| Manual Event Tracking | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Shift Tracking | ✅ | ✅ | ✅ | ✅ | ❌ |
-| XY Positioning | ✅ | ✅ | ✅ | ✅ | ❌ |
-| **Video Integration** | | | | | |
-| Video Sync | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Video Storage | 📋 | ✅ | ✅ | ✅ | ✅ |
-| **Analytics** | | | | | |
-| Player Stats | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Team Stats | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Advanced Analytics | ✅ | ✅ | ⚠️ | ✅ | ❌ |
-| Custom Reports | 📋 | ✅ | ✅ | ✅ | ⚠️ |
-| **Automation** | | | | | |
-| ML/CV Goal Detection | 📋 | ✅ | ⚠️ | ✅ | ❌ |
-| Player Tracking | 📋 | ✅ | ⚠️ | ✅ | ❌ |
-| Event Classification | 📋 | ✅ | ⚠️ | ✅ | ❌ |
-| **Accessibility** | | | | | |
-| Youth/Junior Focus | ✅ | ❌ | ❌ | ❌ | ✅ |
-| Affordable Pricing | ✅ | ❌ | ❌ | ❌ | ⚠️ |
-| Easy to Use | ✅ | ❌ | ❌ | ❌ | ✅ |
-| **Multi-Tenant** | 📋 | ✅ | ✅ | ✅ | ✅ |
-| **Mobile App** | 📋 | ✅ | ✅ | ✅ | ✅ |
+| **Advanced Metrics** | - | - | - | - | - |
+| xG (Expected Goals) | [YES] | [YES] | [NO] | [YES] | [NO] |
+| WAR/GAR | [YES] | [YES] | [NO] | [YES] | [NO] |
+| Corsi/Fenwick | [YES] | [YES] | [YES] | [YES] | [NO] |
+| RAPM | [PLANNED] | [YES] | [NO] | [YES] | [NO] |
+| **Game Tracking** | - | - | - | - | - |
+| Manual Event Tracking | [YES] | [YES] | [YES] | [YES] | [YES] |
+| Shift Tracking | [YES] | [YES] | [YES] | [YES] | [NO] |
+| XY Positioning | [YES] | [YES] | [YES] | [YES] | [NO] |
+| **Video Integration** | - | - | - | - | - |
+| Video Sync | [YES] | [YES] | [YES] | [YES] | [YES] |
+| Video Storage | [PLANNED] | [YES] | [YES] | [YES] | [YES] |
+| **Analytics** | - | - | - | - | - |
+| Player Stats | [YES] | [YES] | [YES] | [YES] | [YES] |
+| Team Stats | [YES] | [YES] | [YES] | [YES] | [YES] |
+| Advanced Analytics | [YES] | [YES] | [PARTIAL] | [YES] | [NO] |
+| Custom Reports | [PLANNED] | [YES] | [YES] | [YES] | [PARTIAL] |
+| **Automation** | - | - | - | - | - |
+| ML/CV Goal Detection | [PLANNED] | [YES] | [PARTIAL] | [YES] | [NO] |
+| Player Tracking | [PLANNED] | [YES] | [PARTIAL] | [YES] | [NO] |
+| Event Classification | [PLANNED] | [YES] | [PARTIAL] | [YES] | [NO] |
+| **Accessibility** | - | - | - | - | - |
+| Youth/Junior Focus | [YES] | [NO] | [NO] | [NO] | [YES] |
+| Affordable Pricing | [YES] | [NO] | [NO] | [NO] | [PARTIAL] |
+| Easy to Use | [YES] | [NO] | [NO] | [NO] | [YES] |
+| **Multi-Tenant** | [PLANNED] | [YES] | [YES] | [YES] | [YES] |
+| **Mobile App** | [PLANNED] | [YES] | [YES] | [YES] | [YES] |
 
 **Legend:**
-- ✅ = Available
-- 📋 = Planned
-- ⚠️ = Limited/Partial
-- ❌ = Not Available
+- [YES] = Available
+- [PLANNED] = Planned
+- [PARTIAL] = Limited/Partial
+- [NO] = Not Available
 
 ---
 

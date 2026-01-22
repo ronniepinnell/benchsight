@@ -227,4 +227,4 @@ DROP VIEW IF EXISTS v_problematic_view CASCADE;
 | Create views | 1 min | Run SQL script |
 | Test | 5 min | Verify queries work |
 | Dashboard update | 10 min | Update connection config |
-| **Total** | **~20-30 min** | |
+| **Total** | **~20-30 min** | - |

@@ -36,14 +36,14 @@ This document consolidates all roadmaps into a single, unified view. It covers E
 
 The MVP is a polished, production-ready version of the current functional prototype, including:
 
-- ✅ All current ETL functionality (139 tables, advanced metrics)
-- ✅ All current Dashboard functionality (50+ pages, analytics)
-- ✅ All current Tracker functionality (event/shift tracking, video sync)
-- ✅ Portal with full API integration
-- ✅ Multi-tenant architecture (single-tenant → multi-tenant)
-- ✅ User authentication and authorization
-- ✅ Production deployment and monitoring
-- ✅ Performance optimization and scalability
+- [YES] All current ETL functionality (139 tables, advanced metrics)
+- [YES] All current Dashboard functionality (50+ pages, analytics)
+- [YES] All current Tracker functionality (event/shift tracking, video sync)
+- [YES] Portal with full API integration
+- [YES] Multi-tenant architecture (single-tenant → multi-tenant)
+- [YES] User authentication and authorization
+- [YES] Production deployment and monitoring
+- [YES] Performance optimization and scalability
 
 **MVP Success Criteria:**
 - Can support 10+ teams simultaneously
@@ -160,27 +160,27 @@ The MVP is a polished, production-ready version of the current functional protot
 ## Current State Summary
 
 ### ETL Pipeline
-- **Status:** ✅ Functional (139 tables)
+- **Status:** [YES] Functional (139 tables)
 - **Completion:** ~90%
 - **Remaining:** Cleanup, refactoring, optimization
 
 ### Dashboard
-- **Status:** ✅ Functional (50+ pages)
+- **Status:** [YES] Functional (50+ pages)
 - **Completion:** ~85%
 - **Remaining:** Polish, enhanced visualizations, mobile optimization
 
 ### Tracker
-- **Status:** ✅ Functional (HTML/JS)
+- **Status:** [YES] Functional (HTML/JS)
 - **Completion:** 100% (current version)
 - **Remaining:** Rust/Next.js conversion (planned)
 
 ### Portal
-- **Status:** 🚧 UI mockup only
+- **Status:** [IN_PROGRESS] UI mockup only
 - **Completion:** ~10%
 - **Remaining:** API integration, full functionality
 
 ### API
-- **Status:** ✅ Functional
+- **Status:** [YES] Functional
 - **Completion:** ~80%
 - **Remaining:** Game management endpoints, data browser endpoints
 
@@ -188,136 +188,136 @@ The MVP is a polished, production-ready version of the current functional protot
 
 ## Unified Roadmap
 
-### Phase 1: Foundation (COMPLETE ✅)
+### Phase 1: Foundation (COMPLETE [YES])
 
 **Timeline:** Weeks 1-4  
-**Status:** ✅ Complete
+**Status:** [YES] Complete
 
 **ETL:**
-- ✅ Core ETL pipeline (139 tables)
-- ✅ Data validation
-- ✅ Supabase integration
+- [YES] Core ETL pipeline (139 tables)
+- [YES] Data validation
+- [YES] Supabase integration
 
 **Dashboard:**
-- ✅ Core pages (players, teams, games, goalies)
-- ✅ Basic analytics
-- ✅ Data visualization
+- [YES] Core pages (players, teams, games, goalies)
+- [YES] Basic analytics
+- [YES] Data visualization
 
 **Tracker:**
-- ✅ HTML tracker functional
-- ✅ Event/shift tracking
-- ✅ Video integration
-- ✅ Export functionality
+- [YES] HTML tracker functional
+- [YES] Event/shift tracking
+- [YES] Video integration
+- [YES] Export functionality
 
 **API:**
-- ✅ ETL endpoints
-- ✅ Upload endpoints
-- ✅ Staging endpoints
+- [YES] ETL endpoints
+- [YES] Upload endpoints
+- [YES] Staging endpoints
 
 ---
 
-### Phase 2: Pre-Deployment & Data Collection (CURRENT 🚧)
+### Phase 2: Pre-Deployment & Data Collection (CURRENT [IN_PROGRESS])
 
 **Timeline:** Weeks 5-8
-**Status:** 🚧 In Progress
+**Status:** [IN_PROGRESS] In Progress
 
 **ETL:**
-- 🚧 Code cleanup and refactoring
-- 🚧 Table verification
-- 🚧 Performance optimization
-- ✅ Documentation consolidation (Review folder cleaned, reference materials organized)
+- [IN_PROGRESS] Code cleanup and refactoring
+- [IN_PROGRESS] Table verification
+- [IN_PROGRESS] Performance optimization
+- [YES] Documentation consolidation (Review folder cleaned, reference materials organized)
 
 **Schema Optimization (NEW):**
-- 📋 Remove 20 empty/duplicate tables (see [COMMERCIAL_SCHEMA_DESIGN.md](data/COMMERCIAL_SCHEMA_DESIGN.md))
-- 📋 Remove 8 null columns from fact_events
-- 📋 Archive 7 development-only tables
-- 📋 Document schema changes in CHANGELOG
+- [PLANNED] Remove 20 empty/duplicate tables (see [COMMERCIAL_SCHEMA_DESIGN.md](data/COMMERCIAL_SCHEMA_DESIGN.md))
+- [PLANNED] Remove 8 null columns from fact_events
+- [PLANNED] Archive 7 development-only tables
+- [PLANNED] Document schema changes in CHANGELOG
 
 **Dashboard:**
-- 🚧 Enhanced visualizations
-- 🚧 Search and filter integration
-- 🚧 Export functionality expansion
-- 📋 Mobile optimization
+- [IN_PROGRESS] Enhanced visualizations
+- [IN_PROGRESS] Search and filter integration
+- [IN_PROGRESS] Export functionality expansion
+- [PLANNED] Mobile optimization
 
 **Portal:**
-- 🚧 API integration
-- 🚧 ETL control functionality
-- 🚧 Data display
-- 📋 Game management
+- [IN_PROGRESS] API integration
+- [IN_PROGRESS] ETL control functionality
+- [IN_PROGRESS] Data display
+- [PLANNED] Game management
 
 **API:**
-- 🚧 Game management endpoints
-- 🚧 Data browser endpoints
-- 📋 Authentication
+- [IN_PROGRESS] Game management endpoints
+- [IN_PROGRESS] Data browser endpoints
+- [PLANNED] Authentication
 
 ---
 
-### Phase 3: Advanced Analytics (PLANNED 📋)
+### Phase 3: Advanced Analytics (PLANNED [PLANNED])
 
 **Timeline:** Weeks 9-12
-**Status:** 📋 Planned
+**Status:** [PLANNED] Planned
 
 **Schema Consolidation:**
-- 📋 Consolidate 6 H2H/matchup tables → 2 tables
-- 📋 Consolidate 6 zone entry/exit tables → 2 tables
-- 📋 Consolidate 6 shot/scoring tables → 2 tables
-- 📋 Update ETL builders for consolidated tables
-- 📋 Update dashboard queries
+- [PLANNED] Consolidate 6 H2H/matchup tables → 2 tables
+- [PLANNED] Consolidate 6 zone entry/exit tables → 2 tables
+- [PLANNED] Consolidate 6 shot/scoring tables → 2 tables
+- [PLANNED] Update ETL builders for consolidated tables
+- [PLANNED] Update dashboard queries
 
 **Schema Normalization:**
-- 📋 Normalize fact_events (200 → 25 columns)
-- 📋 Create fact_event_participants junction table
-- 📋 Create backward-compatible views
-- 📋 Update all queries to use normalized schema
-- 📋 Performance testing and optimization
+- [PLANNED] Normalize fact_events (200 → 25 columns)
+- [PLANNED] Create fact_event_participants junction table
+- [PLANNED] Create backward-compatible views
+- [PLANNED] Update all queries to use normalized schema
+- [PLANNED] Performance testing and optimization
 
 **ETL:**
-- 📋 Spatial xG (GBM with distance/angle/royal-road/rush/rebound/flurry/shooter-talent)
-- 📋 RAPM/WAR rebuild (stints, RidgeCV, replacement level, daisy-chain priors)
-- 📋 Microstats: WDBE faceoffs, gap control, entry/exit value, xT grid spec
-- 📋 ML feature engineering
-- 📋 Real-time data processing
+- [PLANNED] Spatial xG (GBM with distance/angle/royal-road/rush/rebound/flurry/shooter-talent)
+- [PLANNED] RAPM/WAR rebuild (stints, RidgeCV, replacement level, daisy-chain priors)
+- [PLANNED] Microstats: WDBE faceoffs, gap control, entry/exit value, xT grid spec
+- [PLANNED] ML feature engineering
+- [PLANNED] Real-time data processing
 
 **Dashboard:**
-- 📋 xG layers (shot maps, flurry view, shooter talent)
-- 📋 WAR/RAPM components and leaderboards
-- 📋 Microstat surfaces (WDBE, gap, entry/exit value, rush vs cycle)
-- 📋 Predictive analytics
+- [PLANNED] xG layers (shot maps, flurry view, shooter talent)
+- [PLANNED] WAR/RAPM components and leaderboards
+- [PLANNED] Microstat surfaces (WDBE, gap, entry/exit value, rush vs cycle)
+- [PLANNED] Predictive analytics
 
 **Portal:**
-- 📋 Advanced data management
-- 📋 Batch operations
-- 📋 Data quality monitoring
+- [PLANNED] Advanced data management
+- [PLANNED] Batch operations
+- [PLANNED] Data quality monitoring
 
 **ML/CV:**
-- 📋 Goal detection
-- 📋 Player tracking
-- 📋 Event classification
+- [PLANNED] Goal detection
+- [PLANNED] Player tracking
+- [PLANNED] Event classification
 
 ---
 
-### Phase 4: Production & Scale (PLANNED 📋)
+### Phase 4: Production & Scale (PLANNED [PLANNED])
 
 **Timeline:** Weeks 13-16
-**Status:** 📋 Planned
+**Status:** [PLANNED] Planned
 
 **Multi-Tenant Schema:**
-- 📋 Add tenant_id to all tables (see [SCHEMA_SCALABILITY_DESIGN.md](data/SCHEMA_SCALABILITY_DESIGN.md))
-- 📋 Implement Row-Level Security (RLS)
-- 📋 Update foreign keys to include tenant_id
-- 📋 Create composite indexes for tenant queries
-- 📋 Test tenant isolation
+- [PLANNED] Add tenant_id to all tables (see [SCHEMA_SCALABILITY_DESIGN.md](data/SCHEMA_SCALABILITY_DESIGN.md))
+- [PLANNED] Implement Row-Level Security (RLS)
+- [PLANNED] Update foreign keys to include tenant_id
+- [PLANNED] Create composite indexes for tenant queries
+- [PLANNED] Test tenant isolation
 
 **All Components:**
-- 📋 Production deployment
-- 📋 Performance optimization
-- 📋 Scalability improvements
-- 📋 Monitoring and alerting
+- [PLANNED] Production deployment
+- [PLANNED] Performance optimization
+- [PLANNED] Scalability improvements
+- [PLANNED] Monitoring and alerting
 
 **Tracker:**
-- 📋 Rust/Next.js conversion
-- 📋 Real-time collaboration
-- 📋 Mobile app
+- [PLANNED] Rust/Next.js conversion
+- [PLANNED] Real-time collaboration
+- [PLANNED] Mobile app
 
 ---
 
@@ -325,7 +325,7 @@ The MVP is a polished, production-ready version of the current functional protot
 
 ### ETL Roadmap
 
-**Current State:** ✅ Functional, needs cleanup
+**Current State:** [YES] Functional, needs cleanup
 
 **Immediate (Weeks 1-2):**
 - [ ] Code cleanup and refactoring
@@ -365,7 +365,7 @@ The MVP is a polished, production-ready version of the current functional protot
 
 ### Dashboard Roadmap
 
-**Current State:** ✅ Functional, needs polish
+**Current State:** [YES] Functional, needs polish
 
 **Immediate (Weeks 1-2):**
 - [ ] Enhanced visualizations
@@ -394,11 +394,11 @@ The MVP is a polished, production-ready version of the current functional protot
 
 ### Tracker Roadmap
 
-**Current State:** ✅ Functional (HTML/JS)
+**Current State:** [YES] Functional (HTML/JS)
 
 **Immediate (Weeks 1-2):**
-- [ ] Complete logic documentation ✅
-- [ ] Conversion planning ✅
+- [ ] Complete logic documentation [YES]
+- [ ] Conversion planning [YES]
 
 **Short-term (Weeks 3-6):**
 - [ ] Rust backend development
@@ -419,7 +419,7 @@ The MVP is a polished, production-ready version of the current functional protot
 
 ### Portal Roadmap
 
-**Current State:** 🚧 UI mockup only
+**Current State:** [IN_PROGRESS] UI mockup only
 
 **Immediate (Weeks 1-2):**
 - [ ] API integration
@@ -445,7 +445,7 @@ The MVP is a polished, production-ready version of the current functional protot
 
 ### API Roadmap
 
-**Current State:** ✅ Functional, needs expansion
+**Current State:** [YES] Functional, needs expansion
 
 **Immediate (Weeks 1-2):**
 - [ ] Game management endpoints
@@ -472,22 +472,95 @@ The MVP is a polished, production-ready version of the current functional protot
 ## ML/CV Roadmap (Future)
 
 **Timeline:** Weeks 9-16+  
-**Status:** 📋 Planned
+**Status:** [PLANNED] Planned
 
 **Phase 1: Goal Detection**
-- 📋 Computer vision model
-- 📋 Goal detection API
-- 📋 Integration with tracker
+- [PLANNED] Computer vision model
+- [PLANNED] Goal detection API
+- [PLANNED] Integration with tracker
 
 **Phase 2: Player Tracking**
-- 📋 Player identification
-- 📋 Position tracking
-- 📋 Movement analysis
+- [PLANNED] Player identification
+- [PLANNED] Position tracking
+- [PLANNED] Movement analysis
 
 **Phase 3: Event Classification**
-- 📋 Automatic event detection
-- 📋 Event type classification
-- 📋 Quality scoring
+- [PLANNED] Automatic event detection
+- [PLANNED] Event type classification
+- [PLANNED] Quality scoring
+
+---
+
+## AI Coaching & Analysis Roadmap (Commercial Features)
+
+**Timeline:** Weeks 33-48+  
+**Status:** [PLANNED] Planned  
+**Priority:** High (differentiator for commercial launch)
+
+**Overview:** Transform BenchSight into an intelligent coaching assistant with AI-powered video analysis, natural language queries, and specialized coaching modes.
+
+**Related PRD:** [AI_COACHING_FEATURES.md](prds/AI_COACHING_FEATURES.md)
+
+### Phase 9: AI Coach Foundation (Weeks 33-36)
+
+**Goal:** Basic AI coach functionality with video review
+
+**Features:**
+- Video upload and storage infrastructure
+- Video player component with AI annotations
+- Basic Q&A system (LLM integration)
+- Video-event synchronization
+- Simple text-based queries
+
+**Dependencies:**
+- Multi-tenant architecture (Phase 7)
+- Video upload infrastructure
+- ML/CV models (Phase 6)
+
+### Phase 10: Natural Language Queries (Weeks 37-40)
+
+**Goal:** Full natural language query system
+
+**Features:**
+- Natural language understanding system
+- SQL query generation from natural language
+- Response visualization engine
+- Query caching and optimization
+- Voice input (future enhancement)
+
+**Dependencies:**
+- Phase 9 completion
+- LLM integration (OpenAI/Anthropic)
+
+### Phase 11: Coach Modes (Weeks 41-44)
+
+**Goal:** Complete coach mode features
+
+**Features:**
+- **Game Plan Generator:** AI-powered game plan creation based on opponent analysis
+- **Practice Planner:** AI-suggested practice drills based on game performance
+- **Scout Mode:** Player comparison, talent identification, scouting reports
+- **Game Prep Mode:** Pre-game analysis and preparation tools
+
+**Dependencies:**
+- Phase 10 completion
+- Advanced analytics models
+- Recommendation engine
+
+### Phase 12: GM Mode & Advanced Features (Weeks 45-48)
+
+**Goal:** GM mode and advanced analytics
+
+**Features:**
+- **Team Builder:** AI-powered roster optimization and player acquisition
+- **Advanced Analytics Dashboard:** GM-focused analytics with AI insights
+- **Trade Evaluation:** AI-powered trade analysis
+- **Draft Analysis:** Prospect evaluation and draft strategy
+
+**Dependencies:**
+- Phase 11 completion
+- Player valuation models
+- Roster optimization algorithms
 
 ---
 
@@ -530,6 +603,12 @@ gantt
     section Phase 7-8: Commercial
     Multi-Tenant           :p7-multi, 2026-07-15, 4w
     Payments & Launch      :p8-launch, 2026-08-15, 4w
+
+    section Phase 9-12: AI Coaching
+    AI Coach Foundation    :p9-ai, 2026-09-01, 4w
+    Natural Language Query :p10-nl, 2026-10-01, 4w
+    Coach Modes            :p11-coach, 2026-11-01, 4w
+    GM Mode & Advanced     :p12-gm, 2026-12-01, 4w
 ```
 
 ### Component Dependency Graph

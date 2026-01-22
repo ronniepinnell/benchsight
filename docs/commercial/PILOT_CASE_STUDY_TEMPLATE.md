@@ -63,11 +63,11 @@
 
 | Metric | Value | Notes |
 |--------|-------|-------|
-| Games tracked | X |  |
-| Players tracked | X |  |
-| ETL runtime (avg) | X |  |
-| Dashboard load time | X |  |
-| Exports generated | X |  |
+| Games tracked | X | - |
+| Players tracked | X | - |
+| ETL runtime (avg) | X | - |
+| Dashboard load time | X | - |
+| Exports generated | X | - |
 
 ---
 

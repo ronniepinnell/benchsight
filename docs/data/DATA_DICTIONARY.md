@@ -38,11 +38,11 @@ This data dictionary provides complete metadata for all tables in the BenchSight
 
 | Code | Type | Description | Example |
 |------|------|-------------|---------|
-| 📊 BLB | Direct Load | Loaded directly from BLB_Tables.xlsx | dim_player, dim_team |
+| [BLB] BLB | Direct Load | Loaded directly from BLB_Tables.xlsx | dim_player, dim_team |
 | 🎮 TRK | Tracking | Derived from tracking Excel files | fact_events, fact_shifts |
-| 🧮 CALC | Calculated | Calculated from other tables | fact_player_game_stats |
-| 📌 STATIC | Static | Hardcoded constants | dim_period, dim_zone |
-| 🔍 QA | Quality Assurance | Validation tables | qa_goal_verification |
+| [CALC] CALC | Calculated | Calculated from other tables | fact_player_game_stats |
+| [STATIC] STATIC | Static | Hardcoded constants | dim_period, dim_zone |
+| [QA] QA | Quality Assurance | Validation tables | qa_goal_verification |
 
 ### Column Source Types
 
@@ -454,7 +454,7 @@ fact_player_game_stats ← (events + shifts + roster + dims)
 
 ### dim_player
 
-**Source:** 📊 BLB - Direct load from `BLB_Tables.xlsx` → `dim_player` sheet  
+**Source:** [BLB] BLB - Direct load from `BLB_Tables.xlsx` → `dim_player` sheet  
 **ETL Phase:** Phase 1 (`load_blb_tables()`)  
 **Code Location:** `src/core/base_etl.py` lines 864-936  
 **Primary Key:** `player_id`  
@@ -481,7 +481,7 @@ fact_player_game_stats ← (events + shifts + roster + dims)
 
 ### dim_team
 
-**Source:** 📊 BLB - Direct load from `BLB_Tables.xlsx` → `dim_team` sheet  
+**Source:** [BLB] BLB - Direct load from `BLB_Tables.xlsx` → `dim_team` sheet  
 **ETL Phase:** Phase 1  
 **Primary Key:** `team_id`  
 **Row Count:** ~26 rows  
@@ -500,7 +500,7 @@ fact_player_game_stats ← (events + shifts + roster + dims)
 
 ### dim_schedule
 
-**Source:** 📊 BLB - Direct load from `BLB_Tables.xlsx` → `dim_schedule` sheet  
+**Source:** [BLB] BLB - Direct load from `BLB_Tables.xlsx` → `dim_schedule` sheet  
 **ETL Phase:** Phase 1  
 **Primary Key:** `game_id`  
 **Row Count:** ~567 rows  
@@ -621,7 +621,7 @@ fact_player_game_stats ← (events + shifts + roster + dims)
 
 ### fact_player_game_stats
 
-**Source:** 🧮 CALC - Calculated from `fact_events` + `fact_shifts`  
+**Source:** [CALC] CALC - Calculated from `fact_events` + `fact_shifts`  
 **ETL Phase:** Phase 4 (Core Facts)  
 **Code Location:** `src/tables/core_facts.py`  
 **Primary Key:** `player_game_key` (format: `PG{game_id}{player_id}`)  
@@ -1187,7 +1187,7 @@ key = (game_id, team_name, jersey_number)
 
 ### fact_team_game_stats
 
-**Source:** 🧮 CALC - Calculated from `fact_player_game_stats`  
+**Source:** [CALC] CALC - Calculated from `fact_player_game_stats`  
 **ETL Phase:** Phase 4  
 **Primary Key:** `team_game_key`  
 **Purpose:** Team totals per game
@@ -1210,7 +1210,7 @@ key = (game_id, team_name, jersey_number)
 
 ### fact_goalie_game_stats
 
-**Source:** 🧮 CALC - Calculated from `fact_events` + `fact_saves`  
+**Source:** [CALC] CALC - Calculated from `fact_events` + `fact_saves`  
 **ETL Phase:** Phase 4  
 **Primary Key:** `goalie_game_key`  
 **Purpose:** Per-game goalie statistics
@@ -1242,7 +1242,7 @@ WAR_goalie = GAR_goalie / 4.5
 
 ### qa_goal_verification
 
-**Source:** 🔍 QA - Validation check  
+**Source:** [QA] QA - Validation check  
 **ETL Phase:** Phase 9  
 **Purpose:** Verify goal counts match official counts
 

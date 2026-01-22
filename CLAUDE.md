@@ -108,7 +108,7 @@ When extracting functions to separate modules:
 
 ### ETL Pipeline
 - **Entry point:** `run_etl.py`
-- **Core engine:** `src/core/base_etl.py` (~4,400 lines)
+- **Core engine:** `src/core/base_etl.py` (~1,065 lines) + `src/core/etl_phases/` modules
 - **Phase-based processing:** Loading → Event/Shift Building → Calculations → Advanced Analytics → Table Generation → QA
 - **Output:** 139 tables (50 dimensions, 81 facts, 8 QA) as CSVs in `data/output/`
 

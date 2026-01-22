@@ -129,27 +129,27 @@ graph TB
     end
     
     subgraph Advanced["Advanced Analytics"]
-        BS -->|✅ xG, WAR/GAR| ADV1
-        SP -->|✅ xG, WAR/GAR| ADV1
-        IN -->|⚠️ Limited| ADV2
-        SY -->|✅ xG, WAR/GAR| ADV1
-        HU -->|❌ Basic only| ADV3
+        BS -->|[YES] xG, WAR/GAR| ADV1
+        SP -->|[YES] xG, WAR/GAR| ADV1
+        IN -->|[PARTIAL] Limited| ADV2
+        SY -->|[YES] xG, WAR/GAR| ADV1
+        HU -->|[NO] Basic only| ADV3
     end
     
     subgraph Pricing["Pricing"]
-        BS -->|✅ $0.5-2K/year| PRICE1
-        SP -->|❌ $50K+/year| PRICE3
-        IN -->|❌ $10-30K/year| PRICE3
-        SY -->|❌ $15-40K/year| PRICE3
-        HU -->|⚠️ $1.5-3K/year| PRICE2
+        BS -->|[YES] $0.5-2K/year| PRICE1
+        SP -->|[NO] $50K+/year| PRICE3
+        IN -->|[NO] $10-30K/year| PRICE3
+        SY -->|[NO] $15-40K/year| PRICE3
+        HU -->|[PARTIAL] $1.5-3K/year| PRICE2
     end
     
     subgraph Market["Target Market"]
-        BS -->|✅ Youth/Junior| MKT1
-        SP -->|❌ Professional| MKT3
-        IN -->|❌ Professional| MKT3
-        SY -->|❌ College/Pro| MKT2
-        HU -->|✅ Youth/HS| MKT1
+        BS -->|[YES] Youth/Junior| MKT1
+        SP -->|[NO] Professional| MKT3
+        IN -->|[NO] Professional| MKT3
+        SY -->|[NO] College/Pro| MKT2
+        HU -->|[YES] Youth/HS| MKT1
     end
     
     style BS fill:#00ff88
@@ -163,14 +163,14 @@ graph TB
 
 | Feature Category | BenchSight | Sportlogiq | InStat | Synergy | Hudl | Gap |
 |-----------------|------------|-----------|--------|---------|------|-----|
-| **Core Analytics** | ✅ | ✅ | ✅ | ✅ | ✅ | None |
-| **Advanced Metrics** | ✅ | ✅ | ⚠️ | ✅ | ❌ | Advantage |
-| **ML/CV Automation** | 📋 | ✅ | ⚠️ | ✅ | ❌ | **Gap** |
-| **Video Storage** | 📋 | ✅ | ✅ | ✅ | ✅ | **Gap** |
-| **Mobile Apps** | 📋 | ✅ | ✅ | ✅ | ✅ | **Gap** |
-| **Ease of Use** | ✅ | ❌ | ❌ | ❌ | ✅ | Advantage |
-| **Pricing** | ✅ | ❌ | ❌ | ❌ | ⚠️ | Advantage |
-| **Youth Focus** | ✅ | ❌ | ❌ | ❌ | ✅ | Advantage |
+| **Core Analytics** | [YES] | [YES] | [YES] | [YES] | [YES] | None |
+| **Advanced Metrics** | [YES] | [YES] | [PARTIAL] | [YES] | [NO] | Advantage |
+| **ML/CV Automation** | [PLANNED] | [YES] | [PARTIAL] | [YES] | [NO] | **Gap** |
+| **Video Storage** | [PLANNED] | [YES] | [YES] | [YES] | [YES] | **Gap** |
+| **Mobile Apps** | [PLANNED] | [YES] | [YES] | [YES] | [YES] | **Gap** |
+| **Ease of Use** | [YES] | [NO] | [NO] | [NO] | [YES] | Advantage |
+| **Pricing** | [YES] | [NO] | [NO] | [NO] | [PARTIAL] | Advantage |
+| **Youth Focus** | [YES] | [NO] | [NO] | [NO] | [YES] | Advantage |
 
 **Key Insights:**
 - **Advantages:** Advanced analytics, pricing, ease of use, youth focus

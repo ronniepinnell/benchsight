@@ -219,7 +219,7 @@ GS = scoring + shots + playmaking + defense + hustle + 2.0
 |------|---------|---------|---------|
 | High | ≥180 | 30-55 | 0.25 |
 | Medium | ≥160 | 20-65 | 0.08 |
-| Low | Everything else | | 0.03 |
+| Low | Everything else | - | 0.03 |
 
 ---
 

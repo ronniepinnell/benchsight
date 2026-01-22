@@ -45,22 +45,22 @@ This document provides complete reference for all data tables in BenchSight, inc
 
 | Source | Count | Description |
 |--------|-------|-------------|
-| 📊 BLB | 16-17 | Direct from BLB_Tables.xlsx |
+| [BLB] BLB | 16-17 | Direct from BLB_Tables.xlsx |
 | 🎮 TRK | 5 | From tracking Excel files |
-| 📌 STATIC | 19-25 | Hardcoded constants |
-| 🧮 CALC | 84+ | Calculated/derived |
-| 🔍 QA | 4 | Validation tables |
-| **TOTAL** | **132-139** | |
+| [STATIC] STATIC | 19-25 | Hardcoded constants |
+| [CALC] CALC | 84+ | Calculated/derived |
+| [QA] QA | 4 | Validation tables |
+| **TOTAL** | **132-139** | - |
 
 ### Source Type Legend
 
 | Code | Meaning | Example |
 |------|---------|---------|
-| 📊 BLB | Direct load from BLB_Tables.xlsx sheet | dim_player |
+| [BLB] BLB | Direct load from BLB_Tables.xlsx sheet | dim_player |
 | 🎮 TRK | Derived from tracking Excel files | fact_events |
-| 🧮 CALC | Calculated from other tables | fact_player_game_stats |
-| 📌 STATIC | Hardcoded constants | dim_period |
-| 🔍 QA | Quality assurance checks | qa_goal_verification |
+| [CALC] CALC | Calculated from other tables | fact_player_game_stats |
+| [STATIC] STATIC | Hardcoded constants | dim_period |
+| [QA] QA | Quality assurance checks | qa_goal_verification |
 
 ---
 
