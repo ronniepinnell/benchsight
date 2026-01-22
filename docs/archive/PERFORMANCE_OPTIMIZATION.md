@@ -2,8 +2,8 @@
 
 **BenchSight ETL Performance Improvements**
 
-Last Updated: 2026-01-13  
-Version: 29.1
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 

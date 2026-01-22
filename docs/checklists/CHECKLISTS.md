@@ -2,8 +2,8 @@
 
 **All project checklists in one place**
 
-Last Updated: 2026-01-15  
-Version: 1.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
@@ -986,11 +986,11 @@ Use this checklist to track verification progress:
 
 ## Related Documentation
 
-- [DEVELOPMENT_WORKFLOW.md](../workflows/DEVELOPMENT_WORKFLOW.md) - Development workflows
-- [MAINTENANCE_GUIDE.md](../MAINTENANCE_GUIDE.md) - Maintenance guide
+- [WORKFLOW.md](../workflows/WORKFLOW.md) - Development workflows
+- [archive/MAINTENANCE_GUIDE.md](../archive/MAINTENANCE_GUIDE.md) - Maintenance guide (archived)
 - [MASTER_RULES.md](../MASTER_RULES.md) - Rules and standards
 - [COMMANDS.md](../COMMANDS.md) - Command reference
-- [COMPLETE_WORKFLOW_GUIDE.md](../workflows/COMPLETE_WORKFLOW_GUIDE.md) - Complete workflow guide
+- [WORKFLOW.md](../workflows/WORKFLOW.md) - Complete workflow guide
 - [PLANNING_WORKFLOW.md](../workflows/PLANNING_WORKFLOW.md) - PRD-first development
 
 ---

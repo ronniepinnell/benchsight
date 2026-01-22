@@ -2,7 +2,7 @@
 
 **Tracking how rules evolve based on bugs and improvements**
 
-Last Updated: 2026-01-15
+Last Updated: 2026-01-21
 
 ---
 
@@ -54,7 +54,7 @@ This document tracks the evolution of rules, when they were added, why they were
 
 ## Related Documentation
 
-- [SYSTEM_EVOLUTION_WORKFLOW.md](SYSTEM_EVOLUTION_WORKFLOW.md) - Evolution workflow
+- [SYSTEM_EVOLUTION_WORKFLOW.md](../workflows/SYSTEM_EVOLUTION_WORKFLOW.md) - Evolution workflow
 - `bugs/` - Bug documentation
 - `improvements/` - Improvement documentation
 

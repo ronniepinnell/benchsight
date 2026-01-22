@@ -2,8 +2,8 @@
 
 **Complete dependency graph of all 139 tables showing creation order and relationships**
 
-Last Updated: 2026-01-15  
-Version: 29.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
@@ -457,7 +457,7 @@ if fact_events is empty:
 - [ETL_ARCHITECTURE.md](ETL_ARCHITECTURE.md) - Module architecture
 - [ETL_CALCULATIONS_REFERENCE.md](ETL_CALCULATIONS_REFERENCE.md) - Calculation formulas
 - [ETL_DATA_FLOW.md](ETL_DATA_FLOW.md) - Data transformations
-- [DATA_LINEAGE.md](DATA_LINEAGE.md) - Data lineage
+- [DATA.md](../data/DATA.md) - Data lineage and table reference
 
 ---
 

@@ -2,8 +2,8 @@
 
 **Complete project structure reference**
 
-Last Updated: 2026-01-15  
-Version: 29.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
@@ -171,7 +171,7 @@ docs/
 ├── PROJECT_STATUS.md            # Current status
 ├── PROJECT_SCOPE.md             # Project scope
 ├── PROJECT_STRUCTURE.md         # This file
-├── QUICK_START.md               # Quick start guide
+├── archive/QUICK_START.md       # Quick start guide (archived)
 ├── COMMANDS.md                  # Command reference
 ├── DEVELOPMENT_WORKFLOW.md      # Development workflows
 ├── PROJECT_CHECKLIST.md         # Project checklist
@@ -332,7 +332,7 @@ tests/
 ### Documentation Entry Points
 
 - `docs/MASTER_INDEX.md` - Documentation index
-- `docs/QUICK_START.md` - Quick start
+- `docs/archive/QUICK_START.md` - Quick start (archived)
 - `README.md` - Root README
 
 ---
@@ -365,7 +365,7 @@ tests/
 - [PROJECT_SCOPE.md](PROJECT_SCOPE.md) - Project scope
 - [PROJECT_STATUS.md](PROJECT_STATUS.md) - Current status
 - [MASTER_INDEX.md](MASTER_INDEX.md) - Documentation index
-- [QUICK_START.md](QUICK_START.md) - Quick start guide
+- [archive/QUICK_START.md](archive/QUICK_START.md) - Quick start guide (archived)
 
 ---
 

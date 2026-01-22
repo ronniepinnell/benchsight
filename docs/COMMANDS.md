@@ -2,8 +2,8 @@
 
 **Complete command reference for benchsight.sh CLI**
 
-Last Updated: 2026-01-15  
-Version: 29.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
@@ -543,9 +543,9 @@ bs db upload
 
 ## Related Documentation
 
-- [QUICK_START.md](QUICK_START.md) - Quick start guide
-- [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) - Development workflows
-- [MAINTENANCE_GUIDE.md](MAINTENANCE_GUIDE.md) - Maintenance guide
+- [archive/QUICK_START.md](archive/QUICK_START.md) - Quick start guide (archived)
+- [workflows/WORKFLOW.md](workflows/WORKFLOW.md) - Development workflows
+- [archive/MAINTENANCE_GUIDE.md](archive/MAINTENANCE_GUIDE.md) - Maintenance guide (archived)
 - [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) - Project structure
 
 ---

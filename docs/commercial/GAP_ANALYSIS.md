@@ -2,8 +2,8 @@
 
 **Current state vs target state vs competitors: comprehensive gap identification and prioritization**
 
-Last Updated: 2026-01-15  
-Version: 1.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
@@ -14,10 +14,15 @@ This document provides a comprehensive gap analysis comparing BenchSight's curre
 **Analysis Date:** 2026-01-15  
 **Current Phase:** Pre-Deployment & Data Collection  
 **Target Phase:** Commercial MVP Launch
+**Prototype/Pilot:** Personal rec league (workflow validation and pricing sensitivity before junior/college rollout)
 
 ---
 
 ## Current State Assessment
+
+**Pilot Context:**
+- Rec league data is the primary validation source for ETL stability and tracking workflow.
+- Pilot outputs will become sales collateral for junior/college programs.
 
 ### Feature Inventory
 

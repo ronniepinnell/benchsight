@@ -2,8 +2,8 @@
 
 **Step-by-step roadmap for converting HTML tracker to Rust/Next.js**
 
-Last Updated: 2026-01-15  
-Version: 23.5 → Target: Rust/Next.js  
+Last Updated: 2026-01-21
+Version: 2.00
 Timeline: 6-8 weeks
 
 ---

@@ -2,8 +2,8 @@
 
 **Prioritized next steps for all components**
 
-Last Updated: 2026-01-15  
-Version: 29.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
@@ -256,8 +256,8 @@ This document consolidates all "next steps" from various documentation into a si
 
 ## Related Documentation
 
-- [MASTER_ROADMAP.md](MASTER_ROADMAP.md) - Unified roadmap
-- [MASTER_RULES.md](MASTER_RULES.md) - Rules and standards
+- [MASTER_ROADMAP.md](../MASTER_ROADMAP.md) - Unified roadmap
+- [MASTER_RULES.md](../MASTER_RULES.md) - Rules and standards
 - [MASTER_PROJECT_MANAGEMENT.md](MASTER_PROJECT_MANAGEMENT.md) - Project management
 
 ---

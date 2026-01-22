@@ -1,23 +1,28 @@
 # Tracker Complete Reference
 
-**Complete reference for tracker_index_v23.5.html - functions, state, workflows, and features**
+**Complete reference for BenchSight Tracker v27.0 - functions, state, workflows, and features**
 
-Last Updated: 2026-01-15  
-Version: 27.0 (current), 23.5 (documented)  
-Source: `ui/tracker/tracker_index_v27.0.html` (current), `tracker_index_v23.5.html` (documented version)
-
-**Note:** The tracker has been updated to v27.0 since this documentation was written. The function inventory and structure documented here are based on v23.5, but the core functionality and architecture remain consistent.
+Last Updated: 2026-01-21
+Version: 3.00
+Source: `ui/tracker/tracker_index_v27.0.html`
 
 ---
 
 ## Overview
 
-The tracker is a comprehensive game tracking application with 200+ JavaScript functions managing events, shifts, video playback, XY positioning, and data export. This document provides complete reference for all tracker functionality.
+The tracker is a comprehensive game tracking application with 700+ JavaScript functions managing events, shifts, video playback, XY positioning, and data export. This document provides complete reference for all tracker functionality.
 
-**Total Functions:** 200+  
-**Lines of Code:** 16,162  
-**State Object:** `S` (global state management)  
-**Features:** 100+ features across 15 categories
+**Total Functions:** 722 (verified 2026-01-21)
+**Lines of Code:** 35,174 (doubled since v23.5)
+**State Object:** `S` (global state management)
+**Features:** 150+ features across 15 categories
+
+### Version History
+| Version | Lines | Functions | Key Changes |
+|---------|-------|-----------|-------------|
+| v23.5 | 16,162 | ~200 | Original documented version |
+| v26.0 | ~28,000 | ~500 | Video management expansion |
+| v27.0 | 35,174 | 722 | Full feature set, highlight videos, multi-source video |
 
 **Related Documentation:**
 - [TRACKER_ARCHITECTURE_DIAGRAMS.md](TRACKER_ARCHITECTURE_DIAGRAMS.md) - **NEW** Visual tracker architecture diagrams (current HTML, future Rust/Next.js)
@@ -194,6 +199,67 @@ The tracker is a comprehensive game tracking application with 200+ JavaScript fu
 - `clearEventForm()` - Clear event form
 - `validateForm()` - Validate form data
 - `submitForm()` - Submit form
+
+---
+
+## New Features in v27.0 (Since v23.5)
+
+### Video System Expansion (100+ new functions)
+
+The video system has been significantly expanded with multi-source support, highlight videos, and advanced scrubbing.
+
+**Multi-Source Video Management:**
+- `addVideoSource()` - Add video source with hotkey
+- `switchVideoByHotkey()` - Switch sources via keyboard
+- `switchVideoSource()` - Switch video source
+- `setActiveVideoSource()` - Set active source
+- `updateVideoSourcesUI()` - Update source list UI
+- `renderVideoHotkeyBar()` - Render video hotkey bar
+- `showVideoSourcesManager()` - Manage video sources
+- `removeVideoSource()` - Remove video source
+- `saveVideoSources()` / `loadVideoSources()` - Persistence
+
+**Highlight Videos:**
+- `openHighlightVideosModal()` / `closeHighlightVideosModal()` - Modal management
+- `renderHighlightVideos()` - Render highlight list
+- `addHighlightVideo()` - Add highlight video
+- `removeHighlightVideo()` - Remove highlight video
+- `updateHighlightVideoUrl()` - Update highlight URL
+
+**Video Timing & Scrubbing:**
+- `renderVideoScrubBar()` - Scrub bar visualization
+- `handleScrubClick()` - Handle scrub interaction
+- `calculateAdjustedVideoTime()` - Adjusted time calculation
+- `calculateRunningVideoTime()` - Running time calculation
+- `renderVideoTimeouts()` - Timeout markers
+- `addVideoTimeout()` / `removeVideoTimeout()` - Timeout management
+
+### Rink Visualization Enhancements (20+ new functions)
+
+**Zoom Controls:**
+- `rinkZoomIn()` / `rinkZoomOut()` / `rinkZoomReset()` - Zoom controls
+- `toggleRinkZoomLock()` - Lock zoom level
+- `updateRinkZoomLockUI()` - Update zoom UI
+- `rinkZoomAtPoint()` - Zoom at cursor position
+- `updateRinkViewBox()` - Update viewBox
+
+### Settings & Configuration (15+ new functions)
+
+- `loadSettings()` / `saveSettings()` - Settings persistence
+- `openSettings()` / `closeSettings()` - Settings modal
+- `openUserGuide()` - User guide access
+- `openHelp()` / `closeHelp()` - Help system
+- `updatePeriodLengthsFromUI()` - UI-driven period config
+- `updatePenaltyLengthsFromUI()` - UI-driven penalty config
+
+### Video Timing Modal (15+ new functions)
+
+- `openVideoTimingModal()` / `closeVideoTimingModal()` - Modal management
+- `syncPeriodLengthsFromVT()` - Sync period lengths
+- `parseTimeToSeconds()` / `formatSecondsToTime()` - Time parsing
+- `updateTimeoutFromGameTimes()` / `updateTimeoutFromVideoTimes()` - Timeout sync
+- `calculateStopTime()` / `calculateDurationFromTimes()` - Duration calculations
+- `saveVideoTiming()` / `updateVideoTimingPreview()` - Save and preview
 
 ---
 

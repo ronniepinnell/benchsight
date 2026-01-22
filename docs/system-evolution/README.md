@@ -2,7 +2,7 @@
 
 **Every bug is an opportunity to evolve the system**
 
-Last Updated: 2026-01-15
+Last Updated: 2026-01-21
 
 ---
 
@@ -105,7 +105,7 @@ docs/system-evolution/
 
 ## Related Documentation
 
-- [SYSTEM_EVOLUTION_WORKFLOW.md](SYSTEM_EVOLUTION_WORKFLOW.md) - Complete workflow
+- [SYSTEM_EVOLUTION_WORKFLOW.md](../workflows/SYSTEM_EVOLUTION_WORKFLOW.md) - Complete workflow
 - `.agents/` - Modular rules
 - `.coderabbit.yaml` - CodeRabbit rules
 

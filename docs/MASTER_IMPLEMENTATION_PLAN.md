@@ -2,8 +2,8 @@
 
 **Detailed phased implementation plan with PR/commit structure for all components**
 
-Last Updated: 2026-01-15  
-Version: 1.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
@@ -1071,6 +1071,49 @@ This document provides a comprehensive, phase-by-phase implementation plan for t
 - Player tracking functional
 - Event detection working
 - Integration with tracker complete
+
+### Parallel Track (Weeks 29-32): Advanced Analytics Parity
+
+**Objectives:**
+- Achieve NHL Edge / Sportlogiq / MoneyPuck parity on xG, microstats, and player value models
+- Ship spatially aware xG, WDBE, gap control, and RAPM/WAR foundations
+
+**Tasks:**
+
+1. **Spatial & xG Upgrade**
+   - [ ] Normalize XY (period flip, offensive standard) and persist shot/puck/player speed
+   - [ ] Implement GBM xG (distance/angle/shot type/rush/rebound/royal road/speed), calibrate vs lookup
+   - [ ] Add flurry-adjusted xG aggregation to shot chains/scoring chances
+   - [ ] Add shooting talent adjustment (Bayesian shrinkage on Goals - xG)
+
+2. **RAPM/WAR Rebuild**
+   - [ ] Generate stint table (player on-ice intervals), design sparse matrix encoding
+   - [ ] Train RidgeCV for 6 components (EV off/def, PP off, PK def, Penalties, Finishing)
+   - [ ] Define replacement level (outside top 13F/7D by TOI) and apply daisy-chain priors across seasons
+   - [ ] Recompute WAR with NHL goals-per-win (≈6) and surface per-60 rates
+
+3. **Microstat Value (WDBE, Gap, Entry/Exit EV)**
+   - [ ] Implement WDBE: clean vs scrum, directional buckets, expected next-event value
+   - [ ] Compute gap control (static/effective) on entries; correlate with entry outcomes
+   - [ ] Build entry/exit value models (shot/goal probability uplift) and expose in player/team tables
+   - [ ] Draft xT grid spec (16×12) with transition matrix estimation for possession value
+
+**PRs:**
+- `ml/xg-gbm-upgrade` - Spatial xG model + flurry/shooter talent
+- `analytics/rapm-war-rebuild` - Stints, RidgeCV components, replacement level
+- `analytics/microstats-wdbe-gap` - WDBE, gap control, entry/exit value
+
+**Commits:**
+```
+[FEAT] Normalize XY coordinates and add speed features
+[FEAT] Train LightGBM xG with royal road and flurry adjustment
+[FEAT] Add shooting talent adjustment to xG outputs
+[FEAT] Build stint table and sparse design matrix for RAPM
+[FEAT] Train RidgeCV for 6 WAR components with replacement level
+[FEAT] Implement WDBE faceoff direction/value model
+[FEAT] Add gap control metrics on zone entries
+[FEAT] Add entry/exit expected value and draft xT grid spec
+```
 
 ---
 

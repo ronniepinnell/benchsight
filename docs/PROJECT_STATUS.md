@@ -2,8 +2,8 @@
 
 **Current status of all project components**
 
-Last Updated: 2026-01-15  
-Version: 29.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
@@ -88,14 +88,14 @@ Version: 29.0
 **Priority:** LOW (conversion planned)
 
 **What Works:**
-- ✅ HTML tracker functional (v23.5)
+- ✅ HTML tracker functional (v27.0)
 - ✅ Event tracking (15+ event types)
 - ✅ Shift tracking
-- ✅ Video integration (HTML5, YouTube)
-- ✅ XY positioning on rink
+- ✅ Video integration (HTML5, YouTube, multi-source)
+- ✅ XY positioning on rink with zoom controls
 - ✅ Export to Excel
 - ✅ Supabase sync capability
-- ✅ Comprehensive feature set (200+ functions)
+- ✅ Comprehensive feature set (722 functions, 35K lines)
 
 **What Needs Work:**
 - 📋 Rust/Next.js conversion (planned)
@@ -214,7 +214,7 @@ Version: 29.0
 - ✅ Dashboard documentation verified (100% accurate)
 - ✅ API documentation verified (100% accurate)
 - ✅ Portal documentation verified (100% accurate)
-- ✅ Tracker documentation verified (100% accurate, version noted: v23.5 doc → v27.0 current)
+- ✅ Tracker documentation verified and updated to v27.0 (722 functions, 35K lines)
 
 **See:** [DOCUMENTATION_VERIFICATION_SUMMARY.md](DOCUMENTATION_VERIFICATION_SUMMARY.md) for complete verification details.
 
@@ -281,7 +281,7 @@ Version: 29.0
 ### Completed (Phase 1: Foundation)
 - ✅ Core ETL pipeline (139 tables)
 - ✅ Dashboard foundation (50+ pages)
-- ✅ HTML tracker (v23.5)
+- ✅ HTML tracker (v27.0)
 - ✅ API foundation (ETL, upload, staging endpoints)
 
 ### In Progress (Phase 2: Pre-Deployment)
@@ -348,13 +348,13 @@ Version: 29.0
 ## Related Documentation
 
 - [MASTER_ROADMAP.md](MASTER_ROADMAP.md) - Unified roadmap
-- [MASTER_NEXT_STEPS.md](MASTER_NEXT_STEPS.md) - Prioritized next steps
-- [STRATEGIC_ASSESSMENT.md](STRATEGIC_ASSESSMENT.md) - Strategic assessment
-- [MASTER_PROJECT_MANAGEMENT.md](MASTER_PROJECT_MANAGEMENT.md) - Project management
+- [archive/MASTER_NEXT_STEPS.md](archive/MASTER_NEXT_STEPS.md) - Prioritized next steps (archived)
+- [commercial/GAP_ANALYSIS.md](commercial/GAP_ANALYSIS.md) - Strategic assessment (gap analysis)
+- [archive/MASTER_PROJECT_MANAGEMENT.md](archive/MASTER_PROJECT_MANAGEMENT.md) - Project management (archived)
 - [PROJECT_SCOPE.md](PROJECT_SCOPE.md) - Project scope
 - [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) - Project structure
 - [COMMANDS.md](COMMANDS.md) - Command reference
-- [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) - Development workflows
+- [workflows/WORKFLOW.md](workflows/WORKFLOW.md) - Development workflows
 
 ---
 

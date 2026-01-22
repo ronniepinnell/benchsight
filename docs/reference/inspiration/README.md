@@ -2,7 +2,7 @@
 
 **Screenshots and reference materials for dashboard design**
 
-Last Updated: 2026-01-15
+Last Updated: 2026-01-21
 
 ---
 
@@ -78,7 +78,7 @@ This directory contains UI/UX inspiration materials collected from various hocke
 ## Related Documentation
 
 - [wireframes.md](../design/wireframes/wireframes.md) - Wireframe documentation
-- [DASHBOARD_ROADMAP.md](../../DASHBOARD_ROADMAP.md) - Dashboard development plan
+- [DASHBOARD_ROADMAP.md](../../dashboard/DASHBOARD_ROADMAP.md) - Dashboard development plan
 
 ---
 

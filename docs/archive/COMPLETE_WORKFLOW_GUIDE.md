@@ -2,8 +2,8 @@
 
 **Exact steps for Supabase, GitHub, Vercel, agents, and MCPs**
 
-Last Updated: 2026-01-15  
-Version: 29.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
@@ -592,9 +592,9 @@ git push origin feature/name           # Push branch
 ## Related Documentation
 
 - [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) - Development workflows
-- [PLANNING_WORKFLOW.md](PLANNING_WORKFLOW.md) - PRD-first development
-- [CONTEXT_RESET_STRATEGY.md](CONTEXT_RESET_STRATEGY.md) - Context management
-- [CODERABBIT_WORKFLOW.md](CODERABBIT_WORKFLOW.md) - CodeRabbit integration
+- [PLANNING_WORKFLOW.md](../workflows/PLANNING_WORKFLOW.md) - PRD-first development
+- [CONTEXT_RESET_STRATEGY.md](../workflows/CONTEXT_RESET_STRATEGY.md) - Context management
+- [CODERABBIT_WORKFLOW.md](../workflows/CODERABBIT_WORKFLOW.md) - CodeRabbit integration
 - [COMPLETE_SETUP_GUIDE.md](COMPLETE_SETUP_GUIDE.md) - Complete setup
 
 ---

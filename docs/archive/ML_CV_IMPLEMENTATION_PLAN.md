@@ -2,7 +2,7 @@
 
 **Step-by-step guide to implement ML/CV layer for automated tracking**
 
-Last Updated: 2026-01-13
+Last Updated: 2026-01-21
 
 ---
 

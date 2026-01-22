@@ -2,8 +2,8 @@
 
 **Complete project scope definition**
 
-Last Updated: 2026-01-15  
-Version: 29.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
@@ -15,7 +15,7 @@ This document defines the complete scope of the BenchSight project, including wh
 
 ## Project Vision
 
-**Mission:** Build a comprehensive hockey analytics platform that makes game tracking fast and easy, provides advanced analytics, and scales to commercial SaaS for junior hockey teams.
+**Mission:** Build a comprehensive hockey analytics platform that makes game tracking fast and easy, provides advanced analytics, and scales to commercial SaaS for junior and college hockey programs.
 
 **End Goal:**
 1. Full-stack web application
@@ -23,14 +23,16 @@ This document defines the complete scope of the BenchSight project, including wh
 3. Easy-to-use game tracking application
 4. Web admin portal for ETL management
 5. Public dashboard with comprehensive analytics
-6. Commercial multi-tenant SaaS for junior hockey teams
+6. Commercial multi-tenant SaaS for junior and college hockey programs
 7. ML/CV integration for automated tracking
 
 **Target Users:**
 - Junior hockey teams and leagues
+- College club hockey programs
 - Coaches and team managers
 - Players and parents
 - Analysts and scouts
+- **Prototype/Pilot:** Personal rec league (initial data source and validation cohort)
 
 ---
 
@@ -327,6 +329,8 @@ This document defines the complete scope of the BenchSight project, including wh
 - Coaches (secondary)
 - Team managers (secondary)
 - Players/parents (tertiary)
+- **Commercial Audience:** Junior and college hockey programs
+- **Prototype/Pilot:** Personal rec league (data validation cohort)
 
 **Out of Scope (Current Phase):**
 - General public (future)
@@ -486,8 +490,8 @@ This document defines the complete scope of the BenchSight project, including wh
 
 - [MASTER_ROADMAP.md](MASTER_ROADMAP.md) - Project roadmap
 - [PROJECT_STATUS.md](PROJECT_STATUS.md) - Current status
-- [STRATEGIC_ASSESSMENT.md](STRATEGIC_ASSESSMENT.md) - Strategic assessment
-- [MASTER_PROJECT_MANAGEMENT.md](MASTER_PROJECT_MANAGEMENT.md) - Project management
+- [commercial/GAP_ANALYSIS.md](commercial/GAP_ANALYSIS.md) - Strategic assessment (gap analysis)
+- [archive/MASTER_PROJECT_MANAGEMENT.md](archive/MASTER_PROJECT_MANAGEMENT.md) - Project management (archived)
 
 ---
 

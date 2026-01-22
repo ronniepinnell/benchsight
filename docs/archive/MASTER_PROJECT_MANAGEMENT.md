@@ -2,8 +2,8 @@
 
 **Project status dashboard and management structure**
 
-Last Updated: 2026-01-15  
-Version: 29.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
@@ -316,9 +316,9 @@ This document provides a project status dashboard, component completion tracking
 
 ## Related Documentation
 
-- [MASTER_ROADMAP.md](MASTER_ROADMAP.md) - Unified roadmap
+- [MASTER_ROADMAP.md](../MASTER_ROADMAP.md) - Unified roadmap
 - [MASTER_NEXT_STEPS.md](MASTER_NEXT_STEPS.md) - Next steps
-- [MASTER_RULES.md](MASTER_RULES.md) - Rules and standards
+- [MASTER_RULES.md](../MASTER_RULES.md) - Rules and standards
 
 ---
 

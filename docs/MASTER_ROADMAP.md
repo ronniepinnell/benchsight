@@ -2,8 +2,8 @@
 
 **Unified roadmap for all components: ETL, Dashboard, Tracker, Portal, and ML/CV**
 
-Last Updated: 2026-01-15  
-Version: 29.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
@@ -14,7 +14,7 @@ This document consolidates all roadmaps into a single, unified view. It covers E
 **Timeline:** 16-week strategic roadmap (MVP) → 48-week commercial roadmap  
 **Current Phase:** Pre-Deployment & Data Collection  
 **Next Phase:** Advanced Analytics & ML Integration  
-**Commercial Goal:** SaaS platform for high-level youth, junior, and college hockey
+**Commercial Goal:** SaaS platform for high-level youth, junior, and college hockey (rec league is the prototype/pilot)
 
 ---
 
@@ -27,6 +27,7 @@ This document consolidates all roadmaps into a single, unified view. It covers E
 - **Primary Market:** High-level youth hockey teams and leagues
 - **Secondary Market:** Junior hockey programs
 - **Tertiary Market:** College club hockey teams
+- **Prototype/Pilot:** Personal rec league (initial data source and validation cohort)
 - **Value Proposition:** Affordable, comprehensive alternative to expensive professional platforms (Sportlogiq, InStat, Synergy Sports)
 
 ### MVP Definition
@@ -70,6 +71,9 @@ The MVP is a polished, production-ready version of the current functional protot
    - Need league-wide analytics
    - Standings and leaderboards
    - Player/team management
+
+**Pilot Cohort (Prototype):**
+- Personal rec league to validate workflows, tracking, and pricing sensitivity before junior/college rollout
 
 **Competitive Positioning:**
 - **Lower price point** than professional platforms
@@ -214,7 +218,7 @@ The MVP is a polished, production-ready version of the current functional protot
 
 ### Phase 2: Pre-Deployment & Data Collection (CURRENT 🚧)
 
-**Timeline:** Weeks 5-8  
+**Timeline:** Weeks 5-8
 **Status:** 🚧 In Progress
 
 **ETL:**
@@ -222,6 +226,12 @@ The MVP is a polished, production-ready version of the current functional protot
 - 🚧 Table verification
 - 🚧 Performance optimization
 - ✅ Documentation consolidation (Review folder cleaned, reference materials organized)
+
+**Schema Optimization (NEW):**
+- 📋 Remove 20 empty/duplicate tables (see [COMMERCIAL_SCHEMA_DESIGN.md](data/COMMERCIAL_SCHEMA_DESIGN.md))
+- 📋 Remove 8 null columns from fact_events
+- 📋 Archive 7 development-only tables
+- 📋 Document schema changes in CHANGELOG
 
 **Dashboard:**
 - 🚧 Enhanced visualizations
@@ -244,18 +254,34 @@ The MVP is a polished, production-ready version of the current functional protot
 
 ### Phase 3: Advanced Analytics (PLANNED 📋)
 
-**Timeline:** Weeks 9-12  
+**Timeline:** Weeks 9-12
 **Status:** 📋 Planned
 
+**Schema Consolidation:**
+- 📋 Consolidate 6 H2H/matchup tables → 2 tables
+- 📋 Consolidate 6 zone entry/exit tables → 2 tables
+- 📋 Consolidate 6 shot/scoring tables → 2 tables
+- 📋 Update ETL builders for consolidated tables
+- 📋 Update dashboard queries
+
+**Schema Normalization:**
+- 📋 Normalize fact_events (200 → 25 columns)
+- 📋 Create fact_event_participants junction table
+- 📋 Create backward-compatible views
+- 📋 Update all queries to use normalized schema
+- 📋 Performance testing and optimization
+
 **ETL:**
-- 📋 Advanced stat calculations
+- 📋 Spatial xG (GBM with distance/angle/royal-road/rush/rebound/flurry/shooter-talent)
+- 📋 RAPM/WAR rebuild (stints, RidgeCV, replacement level, daisy-chain priors)
+- 📋 Microstats: WDBE faceoffs, gap control, entry/exit value, xT grid spec
 - 📋 ML feature engineering
 - 📋 Real-time data processing
 
 **Dashboard:**
-- 📋 Complete xG analysis
-- 📋 Complete WAR/GAR analysis
-- 📋 RAPM analysis
+- 📋 xG layers (shot maps, flurry view, shooter talent)
+- 📋 WAR/RAPM components and leaderboards
+- 📋 Microstat surfaces (WDBE, gap, entry/exit value, rush vs cycle)
 - 📋 Predictive analytics
 
 **Portal:**
@@ -272,8 +298,15 @@ The MVP is a polished, production-ready version of the current functional protot
 
 ### Phase 4: Production & Scale (PLANNED 📋)
 
-**Timeline:** Weeks 13-16  
+**Timeline:** Weeks 13-16
 **Status:** 📋 Planned
+
+**Multi-Tenant Schema:**
+- 📋 Add tenant_id to all tables (see [SCHEMA_SCALABILITY_DESIGN.md](data/SCHEMA_SCALABILITY_DESIGN.md))
+- 📋 Implement Row-Level Security (RLS)
+- 📋 Update foreign keys to include tenant_id
+- 📋 Create composite indexes for tenant queries
+- 📋 Test tenant isolation
 
 **All Components:**
 - 📋 Production deployment
@@ -299,21 +332,33 @@ The MVP is a polished, production-ready version of the current functional protot
 - [ ] Table verification
 - [ ] Performance optimization
 - [ ] Documentation consolidation
+- [ ] **Schema Cleanup:** Remove 20 empty/duplicate tables
+- [ ] **Schema Cleanup:** Remove 8 null columns from fact tables
+- [ ] **Schema Cleanup:** Archive 7 development-only tables
 
 **Short-term (Weeks 3-4):**
 - [ ] Module refactoring (split base_etl.py)
 - [ ] Vectorization improvements
 - [ ] Parallel processing
 - [ ] Enhanced validation
+- [ ] **Schema Consolidation:** Merge H2H tables (6 → 2)
+- [ ] **Schema Consolidation:** Merge zone tables (6 → 2)
+- [ ] **Schema Consolidation:** Merge shot tables (6 → 2)
 
 **Medium-term (Weeks 5-8):**
-- [ ] Advanced stat calculations
+- [ ] **Schema Normalization:** Normalize fact_events (200 → 25 cols)
+- [ ] **Schema Normalization:** Create fact_event_participants
+- [ ] **Schema Normalization:** Create backward-compatible views
+- [ ] Advanced stat calculations (GBM xG, flurry, shooter talent)
 - [ ] ML feature engineering
 - [ ] Real-time processing support
 
 **Long-term (Weeks 9-16):**
-- [ ] ML integration
-- [ ] Computer vision integration
+- [ ] **Multi-Tenant:** Add tenant_id to all tables
+- [ ] **Multi-Tenant:** Implement Row-Level Security
+- [ ] RAPM/WAR rebuild with replacement level
+- [ ] xT / possession value, WDBE, gap control
+- [ ] ML / computer vision integration
 - [ ] Automated data quality
 
 ---
@@ -454,27 +499,37 @@ The MVP is a polished, production-ready version of the current functional protot
 gantt
     title BenchSight Development Roadmap
     dateFormat YYYY-MM-DD
-    section Phase 1: Foundation
+    section Phase 1: Foundation (COMPLETE)
     ETL Pipeline           :done, p1-etl, 2025-09-01, 4w
     Dashboard Core         :done, p1-dash, 2025-09-01, 4w
     Tracker HTML           :done, p1-track, 2025-09-01, 4w
     API Foundation         :done, p1-api, 2025-09-01, 4w
-    
-    section Phase 2: Pre-Deployment
-    Documentation          :done, p2-docs, 2025-10-01, 2w
-    ETL Cleanup            :active, p2-etl, 2025-10-15, 3w
-    Portal Integration     :active, p2-portal, 2025-10-15, 4w
-    Dashboard Polish       :p2-dash, 2025-11-01, 3w
-    
-    section Phase 3: Advanced Analytics
-    Advanced Stats         :p3-stats, 2025-11-15, 4w
-    ML Feature Engineering :p3-ml, 2025-11-15, 4w
-    Real-time Updates      :p3-realtime, 2025-12-01, 3w
-    
-    section Phase 4: Production
-    Multi-Tenant           :p4-multi, 2025-12-15, 4w
-    Production Deploy      :p4-deploy, 2026-01-15, 2w
-    Tracker Conversion     :p4-track, 2026-01-15, 8w
+    Documentation          :done, p1-docs, 2025-12-15, 4w
+
+    section Phase 2: ETL Optimization (CURRENT)
+    ETL Cleanup            :active, p2-etl, 2026-01-15, 4w
+    Table Verification     :active, p2-verify, 2026-01-21, 2w
+    Performance Tuning     :p2-perf, 2026-02-01, 2w
+
+    section Phase 3: Dashboard Enhancement
+    Dashboard Polish       :p3-dash, 2026-02-15, 4w
+    Advanced Analytics UI  :p3-analytics, 2026-03-01, 4w
+
+    section Phase 4: Portal Development
+    Portal Integration     :p4-portal, 2026-03-15, 4w
+    Game Management        :p4-games, 2026-04-01, 2w
+
+    section Phase 5: Tracker Conversion
+    Rust Backend           :p5-rust, 2026-04-15, 4w
+    Next.js Frontend       :p5-nextjs, 2026-05-01, 4w
+
+    section Phase 6: ML/CV
+    Video Processing       :p6-video, 2026-06-01, 4w
+    Advanced Analytics     :p6-ml, 2026-06-15, 4w
+
+    section Phase 7-8: Commercial
+    Multi-Tenant           :p7-multi, 2026-07-15, 4w
+    Payments & Launch      :p8-launch, 2026-08-15, 4w
 ```
 
 ### Component Dependency Graph
@@ -646,11 +701,11 @@ graph TD
 
 ## Related Documentation
 
-- [DASHBOARD_ROADMAP.md](DASHBOARD_ROADMAP.md) - Dashboard-specific roadmap
-- [TRACKER_CONVERSION_SPEC.md](TRACKER_CONVERSION_SPEC.md) - Tracker conversion plan
-- [PORTAL_DEVELOPMENT_PLAN.md](PORTAL_DEVELOPMENT_PLAN.md) - Portal development plan
-- [STRATEGIC_ASSESSMENT.md](STRATEGIC_ASSESSMENT.md) - Strategic assessment
-- [COMPREHENSIVE_FUTURE_ROADMAP.md](COMPREHENSIVE_FUTURE_ROADMAP.md) - Future roadmap
+- [dashboard/DASHBOARD_ROADMAP.md](dashboard/DASHBOARD_ROADMAP.md) - Dashboard-specific roadmap
+- [tracker/TRACKER_CONVERSION.md](tracker/TRACKER_CONVERSION.md) - Tracker conversion plan
+- [portal/PORTAL.md](portal/PORTAL.md) - Portal development plan
+- [commercial/GAP_ANALYSIS.md](commercial/GAP_ANALYSIS.md) - Strategic assessment (gap analysis)
+- [archive/COMPREHENSIVE_FUTURE_ROADMAP.md](archive/COMPREHENSIVE_FUTURE_ROADMAP.md) - Future roadmap (archived)
 
 ---
 

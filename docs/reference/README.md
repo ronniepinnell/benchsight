@@ -2,7 +2,7 @@
 
 **Reference and inspiration materials for BenchSight development**
 
-Last Updated: 2026-01-15
+Last Updated: 2026-01-21
 
 ---
 
@@ -79,7 +79,7 @@ docs/reference/
 
 ## Related Documentation
 
-- [DASHBOARD_ROADMAP.md](../DASHBOARD_ROADMAP.md) - Dashboard development plan
+- [DASHBOARD_ROADMAP.md](../dashboard/DASHBOARD_ROADMAP.md) - Dashboard development plan
 - [MASTER_INDEX.md](../MASTER_INDEX.md) - Complete documentation index
 
 ---

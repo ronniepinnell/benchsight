@@ -2,8 +2,8 @@
 
 **Complete plan for converting HTML tracker to Rust/Next.js**
 
-Last Updated: 2026-01-15  
-Version: 23.5 → Target: Rust/Next.js  
+Last Updated: 2026-01-21
+Version: 2.00
 Timeline: 6-8 weeks
 
 ---
@@ -940,10 +940,10 @@ CREATE INDEX idx_tracker_shifts_period ON tracker_shifts(period);
 ## Related Documentation
 
 - [TRACKER_REFERENCE.md](TRACKER_REFERENCE.md) - Complete function and feature reference
-- [TRACKER_CONVERSION_SPEC.md](TRACKER_CONVERSION_SPEC.md) - Detailed conversion specification (archived)
-- [TRACKER_CONVERSION_ROADMAP.md](TRACKER_CONVERSION_ROADMAP.md) - Detailed roadmap (archived)
-- [TRACKER_RUST_PLAN.md](TRACKER_RUST_PLAN.md) - Detailed Rust plan (archived)
-- [TRACKER_ARCHITECTURE_PLAN.md](TRACKER_ARCHITECTURE_PLAN.md) - Detailed architecture (archived)
+- [TRACKER_CONVERSION_SPEC.md](../archive/TRACKER_CONVERSION_SPEC.md) - Detailed conversion specification (archived)
+- [TRACKER_CONVERSION_ROADMAP.md](../archive/TRACKER_CONVERSION_ROADMAP.md) - Detailed roadmap (archived)
+- [TRACKER_RUST_PLAN.md](../archive/TRACKER_RUST_PLAN.md) - Detailed Rust plan (archived)
+- [TRACKER_ARCHITECTURE_PLAN.md](../archive/TRACKER_ARCHITECTURE_PLAN.md) - Detailed architecture (archived)
 
 ---
 

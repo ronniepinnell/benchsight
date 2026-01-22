@@ -2,7 +2,7 @@
 
 **Planning and execution are separate conversations**
 
-Last Updated: 2026-01-15
+Last Updated: 2026-01-21
 
 ---
 
@@ -250,9 +250,9 @@ Let's start with Phase 1: [phase name]
 ## Related Documentation
 
 - [PLANNING_WORKFLOW.md](PLANNING_WORKFLOW.md) - PRD-first development
-- [templates/context-handoff.md](templates/context-handoff.md) - Handoff template
-- [templates/planning-conversation.md](templates/planning-conversation.md) - Planning template
-- [templates/execution-conversation.md](templates/execution-conversation.md) - Execution template
+- [templates/context-handoff.md](../templates/context-handoff.md) - Handoff template
+- [templates/planning-conversation.md](../templates/planning-conversation.md) - Planning template
+- [templates/execution-conversation.md](../templates/execution-conversation.md) - Execution template
 
 ---
 

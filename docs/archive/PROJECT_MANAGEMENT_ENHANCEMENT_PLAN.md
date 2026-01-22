@@ -2,7 +2,7 @@
 
 **Enhancing BenchSight's tracking and roadmap system for commercial development**
 
-Last Updated: 2026-01-13  
+Last Updated: 2026-01-21
 Status: Proposal
 
 ---
@@ -593,9 +593,9 @@ See `docs/project-management/templates/` for:
 
 ### C. Reference Documents
 
-- [STRATEGIC_ROADMAP.md](STRATEGIC_ROADMAP.md) - Current strategic roadmap
-- [ROADMAP.md](ROADMAP.md) - Current detailed roadmap
-- [STRATEGIC_ASSESSMENT.md](STRATEGIC_ASSESSMENT.md) - Current state assessment
+- [MASTER_ROADMAP.md](../MASTER_ROADMAP.md) - Current strategic roadmap
+- [ROADMAP_INDEX.md](ROADMAP_INDEX.md) - Archived roadmap index
+- [GAP_ANALYSIS.md](../commercial/GAP_ANALYSIS.md) - Current state assessment
 
 ---
 

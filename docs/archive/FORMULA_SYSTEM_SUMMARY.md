@@ -3,7 +3,7 @@
 **Making formula updates easy for fact_player_game_stats**
 
 Date: 2026-01-13  
-Version: 29.1
+Version: 2.00
 
 ---
 

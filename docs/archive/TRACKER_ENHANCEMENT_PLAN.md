@@ -2,7 +2,7 @@
 
 **Enhancing BenchSight Game Tracker for commercial development**
 
-Last Updated: 2026-01-13  
+Last Updated: 2026-01-21
 Status: Enhancement Proposal  
 Tracker Version: v23.5
 
@@ -684,9 +684,9 @@ ui/tracker/
 
 ## Related Documents
 
-- [STRATEGIC_ROADMAP.md](../STRATEGIC_ROADMAP.md) - Overall roadmap (Tracker integration in Phase 1)
-- [STRATEGIC_ASSESSMENT.md](../STRATEGIC_ASSESSMENT.md) - Current state assessment
-- [TRACKER_USER_GUIDE_v23.5.md](TRACKER_USER_GUIDE_v23.5.md) - Current tracker documentation
+- [MASTER_ROADMAP.md](../MASTER_ROADMAP.md) - Overall roadmap (Tracker integration in Phase 1)
+- [GAP_ANALYSIS.md](../commercial/GAP_ANALYSIS.md) - Current state assessment
+- [TRACKER_USAGE_AND_DEPLOYMENT.md](TRACKER_USAGE_AND_DEPLOYMENT.md) - Current tracker documentation
 
 ---
 

@@ -2,7 +2,7 @@
 
 **CodeRabbit integration into PR process**
 
-Last Updated: 2026-01-15
+Last Updated: 2026-01-21
 
 ---
 
@@ -208,10 +208,9 @@ CodeRabbit provides automated AI-powered code reviews for every pull request. Th
 
 ## Related Documentation
 
-- [CODERABBIT_SETUP.md](CODERABBIT_SETUP.md) - Setup guide
 - `.coderabbit.yaml` - Configuration
-- [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) - Development workflow
-- [INDUSTRY_STANDARDS_WORKFLOW.md](INDUSTRY_STANDARDS_WORKFLOW.md) - PR workflow
+- [WORKFLOW.md](WORKFLOW.md) - Development workflow
+- [DOCUMENTATION_MAINTENANCE.md](DOCUMENTATION_MAINTENANCE.md) - Documentation maintenance
 
 ---
 

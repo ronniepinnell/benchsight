@@ -2,7 +2,7 @@
 
 **Complete extraction of all logic from tracker_index_v23.5.html**
 
-Last Updated: 2026-01-13  
+Last Updated: 2026-01-21
 Source: `ui/tracker/tracker_index_v23.5.html` (16,162 lines)  
 Purpose: Document all logic for Next.js rebuild
 

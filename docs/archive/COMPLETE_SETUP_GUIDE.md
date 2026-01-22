@@ -92,7 +92,7 @@ git checkout develop
 git push origin develop
 ```
 
-**Note:** If you get authentication errors, see [GitHub Authentication Guide](troubleshooting/QUICK_FIX_GITHUB_AUTH.md)
+**Note:** If you get authentication errors, see [WORKFLOW.md](../workflows/WORKFLOW.md) for GitHub troubleshooting steps.
 
 ---
 
@@ -120,7 +120,7 @@ If your Supabase plan supports branching, you can use branches instead of separa
    - Easy schema merging
    - Automatic branch creation from PRs (if GitHub integrated)
 
-**See [SUPABASE_BRANCHING.md](SUPABASE_BRANCHING.md) for complete guide.**
+**See [BRANCHES_AND_SUPABASE.md](BRANCHES_AND_SUPABASE.md) for complete guide.**
 
 **Option B: Separate Supabase Projects (Current Guide)**
 
@@ -643,7 +643,7 @@ git push origin develop
 
 #### "Authentication Error"
 
-**Solution:** See [GitHub Authentication Guide](troubleshooting/QUICK_FIX_GITHUB_AUTH.md)
+**Solution:** See [WORKFLOW.md](../workflows/WORKFLOW.md) for GitHub troubleshooting steps.
 
 ```bash
 # Use Personal Access Token
@@ -800,14 +800,14 @@ python validate.py                 # Validate data
 
 ## Additional Resources
 
-- **Dev Environment Setup:** [DEV_ENVIRONMENT_SETUP.md](DEV_ENVIRONMENT_SETUP.md) ⭐ **Start here for dev setup**
-- **Supabase Branching:** [SUPABASE_BRANCHING.md](SUPABASE_BRANCHING.md) - Supabase branching details
+- **Dev Environment Setup:** [DEV_ENV.md](../setup/DEV_ENV.md) ⭐ **Start here for dev setup**
+- **Supabase Branching:** [BRANCHES_AND_SUPABASE.md](BRANCHES_AND_SUPABASE.md) - Supabase branching details
 - **Running ETL to Dev:** [RUN_ETL_TO_DEV.md](RUN_ETL_TO_DEV.md) - ETL workflow
-- **Git/GitHub:** [GIT_GITHUB_GUIDE.md](GIT_GITHUB_GUIDE.md)
-- **CodeRabbit:** [CODERABBIT_SETUP.md](CODERABBIT_SETUP.md)
+- **Git/GitHub:** [WORKFLOW.md](../workflows/WORKFLOW.md)
+- **CodeRabbit:** [CODERABBIT_WORKFLOW.md](../workflows/CODERABBIT_WORKFLOW.md)
 - **Environment Variables:** [ENVIRONMENT_VARIABLES_EXPLAINED.md](ENVIRONMENT_VARIABLES_EXPLAINED.md)
 - **Branch Strategy:** [BRANCH_STRATEGY_QUICK_REFERENCE.md](BRANCH_STRATEGY_QUICK_REFERENCE.md)
-- **Industry Standards:** [INDUSTRY_STANDARDS_WORKFLOW.md](INDUSTRY_STANDARDS_WORKFLOW.md) ⭐
+- **Industry Standards:** [WORKFLOW.md](../workflows/WORKFLOW.md) ⭐
 
 ---
 

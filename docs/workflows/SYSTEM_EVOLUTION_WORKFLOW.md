@@ -2,7 +2,7 @@
 
 **How bugs and improvements evolve the system**
 
-Last Updated: 2026-01-15
+Last Updated: 2026-01-21
 
 ---
 
@@ -199,8 +199,8 @@ Every bug is an opportunity to evolve the system. When a bug occurs, we fix it A
 
 ## Related Documentation
 
-- [System Evolution Index](system-evolution/README.md) - Evolution structure
-- [Rules History](system-evolution/rules-history.md) - Rules evolution log
+- [System Evolution Index](../system-evolution/README.md) - Evolution structure
+- [Rules History](../system-evolution/rules-history.md) - Rules evolution log
 - `.agents/` - Modular rules
 - `.coderabbit.yaml` - CodeRabbit rules
 

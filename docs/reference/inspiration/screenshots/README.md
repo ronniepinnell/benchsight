@@ -2,7 +2,7 @@
 
 **UI/UX inspiration screenshots from hockey analytics platforms**
 
-Last Updated: 2026-01-15
+Last Updated: 2026-01-21
 
 ---
 

@@ -2,8 +2,8 @@
 
 **Complete admin portal documentation: current state, development plan, API requirements, and technical specification**
 
-Last Updated: 2026-01-15  
-Version: 1.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
@@ -848,7 +848,7 @@ function log(message, level = 'info') {
 
 - [API.md](../api/API.md) - Complete API reference
 - [ETL.md](../etl/ETL.md) - ETL process documentation
-- [Dashboard.md](../dashboard/DASHBOARD.md) - Dashboard documentation
+- [DASHBOARD_ARCHITECTURE.md](../dashboard/DASHBOARD_ARCHITECTURE.md) - Dashboard documentation
 
 ---
 

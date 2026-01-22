@@ -2,8 +2,8 @@
 
 **Pricing models, revenue projections, and go-to-market strategy**
 
-Last Updated: 2026-01-15  
-Version: 1.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
@@ -12,7 +12,13 @@ Version: 1.0
 This document outlines BenchSight's monetization strategy, including pricing models, revenue projections, customer acquisition strategy, and go-to-market plan.
 
 **Target Market:** Youth, junior, and college hockey teams  
+**Prototype/Pilot:** Personal rec league (validation cohort for workflows and pricing)
 **Positioning:** Professional-grade analytics at youth prices
+
+**Go-to-Market Thesis:**
+- Start with a rec-league pilot to validate product workflow and price sensitivity.
+- Use pilot data and testimonials to sell into junior and college club programs.
+- Land-and-expand: start with single-team subscriptions, then grow to multi-team programs.
 
 ---
 
@@ -153,6 +159,9 @@ This document outlines BenchSight's monetization strategy, including pricing mod
 - Mix: 60% Team, 30% Pro, 10% Enterprise
 - Monthly churn: 5%
 - Annual retention: 80%
+- Conversion funnel: 30% pilot-to-paid, 15% paid-to-Pro upgrade within 12 months
+- Average sales cycle: 4-8 weeks (Team/Pro), 8-16 weeks (Enterprise)
+- CAC targets: $150-300 per team (direct outreach + referrals)
 
 **Revenue Projection:**
 
@@ -176,6 +185,9 @@ This document outlines BenchSight's monetization strategy, including pricing mod
 - Mix: 50% Team, 35% Pro, 15% Enterprise
 - Monthly churn: 4%
 - Annual retention: 85%
+- Conversion funnel: 40% pilot-to-paid, 20% paid-to-Pro upgrade within 12 months
+- Average sales cycle: 4-6 weeks (Team/Pro), 8-12 weeks (Enterprise)
+- CAC targets: $120-250 per team (direct outreach + partnerships)
 
 **Revenue Projection:**
 
@@ -198,6 +210,60 @@ This document outlines BenchSight's monetization strategy, including pricing mod
 - 24-month customer acquisition: 1,000 teams
 - Mix: 40% Team, 40% Pro, 20% Enterprise
 - Monthly churn: 3%
+- Conversion funnel: 50% pilot-to-paid, 25% paid-to-Pro upgrade within 12 months
+- Average sales cycle: 2-4 weeks (Team/Pro), 6-10 weeks (Enterprise)
+- CAC targets: $80-200 per team (partner-led + inbound)
+
+---
+
+## Go-to-Market Plan
+
+### Phase 1: Pilot Validation (Rec League)
+**Goals:**
+- Validate tracking workflow and ETL reliability
+- Establish baseline ROI narrative (time saved, insights gained)
+- Collect testimonials and example dashboards
+
+**Tactics:**
+- Track 1-2 seasons of rec-league games
+- Publish anonymized sample dashboards
+- Create pilot case study and highlight reel
+
+### Phase 2: Early Adopters (Junior + College Club)
+**Goals:**
+- Acquire 10-25 paid teams
+- Validate onboarding and support load
+- Confirm pricing willingness
+
+**Tactics:**
+- Direct outreach to coaches and program directors
+- Offer pilot-to-paid discounts with annual commitment
+- Use referee/league admin relationships for warm intros
+
+### Phase 3: Scale (Leagues and Multi-Team Programs)
+**Goals:**
+- Expand into multi-team programs and leagues
+- Introduce Enterprise plans
+- Build channel partnerships
+
+**Tactics:**
+- Partner with regional leagues and rink operators
+- Launch referral program
+- Introduce white-label options for leagues
+
+---
+
+## Sales Motion
+
+**Primary Motion:** Founder-led sales → coach/manager buyer  
+**Secondary Motion:** League admin partnerships and referrals  
+**Expansion Motion:** Upgrade Team → Pro → Enterprise based on team count and analytics depth
+
+**Proof Assets to Build:**
+- Pilot case study
+- One-page ROI calculator
+- Sample dashboards (public, anonymized)
+
 - Annual retention: 90%
 
 **Revenue Projection:**

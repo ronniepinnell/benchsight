@@ -2,8 +2,8 @@
 
 **Complete documentation index**
 
-Last Updated: 2026-01-15  
-Version: 29.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
@@ -11,7 +11,7 @@ Version: 29.0
 
 ### 🚀 Getting Started
 - [Setup Guide](setup/SETUP.md) - Complete setup instructions
-- [Quick Start](setup/QUICK_START.md) - Get running in 5 minutes
+- [Quick Start](archive/QUICK_START.md) - Get running in 5 minutes
 - [Commands Reference](COMMANDS.md) - All CLI commands
 
 ### 📊 Core Documentation
@@ -22,16 +22,20 @@ Version: 29.0
 - [Master Rules](MASTER_RULES.md) - Coding standards
 - [Project Status](PROJECT_STATUS.md) - Current status
 - [Project Scope](PROJECT_SCOPE.md) - Project scope
+- [QA Strategy](QA_STRATEGY.md) - ETL QA strategy
+- [Testing Strategy](TESTING_STRATEGY.md) - Testing strategy
+- [Project Spec](PROJECT_SPEC.md) - Consolidated product + tech spec
+- [Claude/Cursor Guide](CLAUDE.md) - Claude/Cursor operating guide
+- [Start Here](START_HERE.md) - Onboarding reading list
 
 ### 🔄 Workflows
-- [Development Workflow](workflows/DEVELOPMENT_WORKFLOW.md) - Development workflows
+- [Workflow Guide](workflows/WORKFLOW.md) - End-to-end development workflow
 - [Planning Workflow](workflows/PLANNING_WORKFLOW.md) - PRD-first development
-- [Complete Workflow Guide](workflows/COMPLETE_WORKFLOW_GUIDE.md) - Complete workflow
 
 ### 🛠️ Setup & Environments
 - [Setup Guide](setup/SETUP.md) - Complete setup
 - [Environments Guide](environments/ENVIRONMENTS.md) - Dev/prod environments
-- [Dev Environment Complete](setup/DEV_ENV_COMPLETE.md) - Dev environment setup
+- [Dev Environment Setup](setup/DEV_ENV.md) - Dev environment setup
 
 ### 📊 Components
 - [ETL Documentation](etl/ETL.md) - ETL pipeline
@@ -53,8 +57,6 @@ Version: 29.0
 
 ### ✅ Checklists
 - [All Checklists](checklists/CHECKLISTS.md) - All checklists
-- [Project Checklist](checklists/PROJECT_CHECKLIST.md) - Project checklist
-- [Pre-Restructuring Checklist](checklists/PRE_RESTRUCTURING_CHECKLIST.md) - Pre-restructuring
 
 ---
 

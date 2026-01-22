@@ -2,8 +2,8 @@
 
 **Deep research on hockey analytics platforms: features, pricing, positioning, and market gaps**
 
-Last Updated: 2026-01-15  
-Version: 1.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
@@ -13,6 +13,7 @@ This document provides comprehensive analysis of competitors in the hockey analy
 
 **Research Date:** 2026-01-15  
 **Market Focus:** Youth, Junior, College Hockey Analytics Platforms
+**Prototype/Pilot:** Personal rec league (validation cohort before junior/college rollout)
 
 ---
 

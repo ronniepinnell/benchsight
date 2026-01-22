@@ -2,8 +2,8 @@
 
 **Complete guide for setting up development environments from scratch**
 
-Last Updated: 2026-01-15  
-Version: 29.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
@@ -833,7 +833,7 @@ curl http://localhost:3000
 
 - [SETUP.md](SETUP.md) - Basic setup guide
 - [environments/ENVIRONMENTS.md](../environments/ENVIRONMENTS.md) - Environment management
-- [workflows/DEVELOPMENT_WORKFLOW.md](../workflows/DEVELOPMENT_WORKFLOW.md) - Development workflows
+- [workflows/WORKFLOW.md](../workflows/WORKFLOW.md) - Development workflows
 
 ---
 

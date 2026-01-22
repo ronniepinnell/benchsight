@@ -21,7 +21,7 @@ python run_etl.py
 python upload.py
 ```
 
-**Note:** This assumes you've set up a Supabase `develop` branch. See [DEV_ENVIRONMENT_SETUP.md](DEV_ENVIRONMENT_SETUP.md) for setup.
+**Note:** This assumes you've set up a Supabase `develop` branch. See [DEV_ENV.md](../setup/DEV_ENV.md) for setup.
 
 ---
 

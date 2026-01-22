@@ -2,8 +2,8 @@
 
 **Unified rules, standards, and conventions for the entire project**
 
-Last Updated: 2026-01-15  
-Version: 29.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
@@ -12,8 +12,8 @@ Version: 29.0
 This document consolidates all rules, standards, and conventions for BenchSight. It covers coding standards, data rules, naming conventions, git workflow, and testing requirements.
 
 **Source Documents:**
-- [CODE_STANDARDS.md](CODE_STANDARDS.md) - Coding standards
-- [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
+- [workflows/WORKFLOW.md](workflows/WORKFLOW.md) - Development workflow
+- [checklists/CHECKLISTS.md](checklists/CHECKLISTS.md) - Pre-flight checklists
 - Critical rules from README.md
 
 ---
@@ -446,13 +446,45 @@ def test_calculate_cf_pct():
 
 ---
 
+## Professional Standards (Minimum Bar)
+
+**Planning:**
+- PRD required for features/refactors; keep scope and acceptance criteria clear
+- Link issues and PRDs in PRs
+
+**Code Quality:**
+- Lint/format before commit
+- Prefer vectorized pandas; avoid `.iterrows()`
+- Keep files under 1,000 lines; split large modules
+
+**Testing:**
+- Add/adjust tests for behavior changes
+- Run ETL validation when ETL changes
+- Validate API responses when API changes
+
+**Documentation:**
+- Update affected docs in the same PR
+- Run `./scripts/docs-check.sh` on doc changes
+- Update `docs/MASTER_INDEX.md` when adding/moving docs
+
+**Security:**
+- Never commit secrets or API keys
+- Use least-privilege roles in Supabase
+- Require reviews for auth and billing changes
+
+**Release Hygiene:**
+- Use PRs; no direct pushes to `main`
+- Keep PRs scoped and reviewable
+- Document user-visible changes in `docs/CHANGELOG.md`
+
+---
+
 ## Related Documentation
 
-- [CODE_STANDARDS.md](CODE_STANDARDS.md) - Detailed coding standards
-- [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
+- [WORKFLOW.md](workflows/WORKFLOW.md) - End-to-end workflow guidance
 - [COMMANDS.md](COMMANDS.md) - Command reference
-- [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) - Development workflows
-- [PROJECT_CHECKLIST.md](PROJECT_CHECKLIST.md) - Pre-flight checklists
+- [workflows/WORKFLOW.md](workflows/WORKFLOW.md) - Development workflows
+- [checklists/CHECKLISTS.md](checklists/CHECKLISTS.md) - Pre-flight checklists
 - [README.md](../README.md) - Project overview
 
 ---

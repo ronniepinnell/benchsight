@@ -2,7 +2,7 @@
 
 **Guide to BenchSight's roadmap and planning documents**
 
-Last Updated: 2026-01-13
+Last Updated: 2026-01-21
 
 ---
 
@@ -10,9 +10,9 @@ Last Updated: 2026-01-13
 
 | Document | Purpose | Update Frequency | Use When |
 |----------|---------|------------------|----------|
-| **[STRATEGIC_ROADMAP.md](STRATEGIC_ROADMAP.md)** | High-level 16-week commercial plan | Quarterly | Strategic planning, phase overview |
-| **[ROADMAP.md](ROADMAP.md)** | Detailed MVP → Commercial phases | Monthly | Technical planning, detailed tasks |
-| **[STRATEGIC_ASSESSMENT.md](STRATEGIC_ASSESSMENT.md)** | Current state analysis | Quarterly | Understanding gaps, progress tracking |
+| **[MASTER_ROADMAP.md](../MASTER_ROADMAP.md)** | High-level commercial plan | Quarterly | Strategic planning, phase overview |
+| **[MASTER_IMPLEMENTATION_PLAN.md](../MASTER_IMPLEMENTATION_PLAN.md)** | Detailed MVP → Commercial phases | Monthly | Technical planning, detailed tasks |
+| **[GAP_ANALYSIS.md](../commercial/GAP_ANALYSIS.md)** | Current state analysis | Quarterly | Understanding gaps, progress tracking |
 | **[TODO.md](TODO.md)** | Current tasks and priorities | Weekly | Daily work, immediate next steps |
 | **[PROJECT_MANAGEMENT_ENHANCEMENT_PLAN.md](PROJECT_MANAGEMENT_ENHANCEMENT_PLAN.md)** | PM system enhancement proposal | As needed | Planning improvements to tracking |
 
@@ -47,21 +47,21 @@ STRATEGIC_ASSESSMENT.md (v29.0)
 ## Which Document Should I Use?
 
 ### For Strategic Planning
-**Use:** [STRATEGIC_ROADMAP.md](STRATEGIC_ROADMAP.md)
+**Use:** [MASTER_ROADMAP.md](../MASTER_ROADMAP.md)
 - Planning next quarter
 - Understanding overall vision
 - Phase-level milestones
 - Commercial readiness planning
 
 ### For Technical Planning
-**Use:** [ROADMAP.md](ROADMAP.md)
+**Use:** [MASTER_IMPLEMENTATION_PLAN.md](../MASTER_IMPLEMENTATION_PLAN.md)
 - Understanding technical phases
 - Technical debt items
 - Detailed task breakdown
 - Performance optimization planning
 
 ### For Understanding Current State
-**Use:** [STRATEGIC_ASSESSMENT.md](STRATEGIC_ASSESSMENT.md)
+**Use:** [GAP_ANALYSIS.md](../commercial/GAP_ANALYSIS.md)
 - Understanding what exists vs. what's missing
 - Gap analysis
 - Risk assessment

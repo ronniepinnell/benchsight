@@ -2,8 +2,8 @@
 
 **Visual diagrams for market positioning, revenue projections, and feature comparison**
 
-Last Updated: 2026-01-15  
-Version: 1.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 

@@ -6,7 +6,7 @@
 
 ## Handoff Information
 
-**Feature/Refactor/Bug:** [Name]
+**Feature/Refactor/Bug:** Name
 
 **PRD Location:** `docs/prds/[category]/[name].md`
 
@@ -110,9 +110,9 @@
 
 ## Related Documents
 
-- [PRD]([PRD location])
-- [Architecture Doc]([Architecture doc])
-- [Related PRD]([Related PRD])
+- PRD: TBD
+- Architecture Doc: TBD
+- Related PRD: TBD
 
 ---
 

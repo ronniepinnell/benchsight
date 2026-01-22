@@ -2,8 +2,8 @@
 
 **Complete categorized index of all documentation**
 
-Last Updated: 2026-01-15  
-Version: 29.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
@@ -21,14 +21,20 @@ This document serves as the master index for all BenchSight documentation.
 ### 🚀 Getting Started
 - [README.md](README.md) - Documentation entry point
 - [setup/SETUP.md](setup/SETUP.md) - Complete setup guide
-- [setup/QUICK_START.md](setup/QUICK_START.md) - 5-minute quick start
+- [archive/QUICK_START.md](archive/QUICK_START.md) - 5-minute quick start
 - [COMMANDS.md](COMMANDS.md) - Complete command reference
 
 ### 📊 Core Documentation
 - [MASTER_ROADMAP.md](MASTER_ROADMAP.md) - **UPDATED** Unified roadmap (with commercial context, target market, MVP definition, visuals)
 - [MASTER_IMPLEMENTATION_PLAN.md](MASTER_IMPLEMENTATION_PLAN.md) - **NEW** Detailed phased implementation plan (8 phases, PR/commit structure)
+- [MASTER_CALCULATIONS_AND_IMPLEMENTATION.md](MASTER_CALCULATIONS_AND_IMPLEMENTATION.md) - Advanced/microstat coverage plan and implementation path
 - [TECH_STACK_ROADMAP.md](TECH_STACK_ROADMAP.md) - **NEW** Current and future tech stack requirements and migration paths
 - [DOCUMENTATION_VERIFICATION_SUMMARY.md](DOCUMENTATION_VERIFICATION_SUMMARY.md) - **NEW** Complete verification of all documentation against codebase
+- [QA_STRATEGY.md](QA_STRATEGY.md) - **NEW** ETL QA strategy
+- [TESTING_STRATEGY.md](TESTING_STRATEGY.md) - **NEW** Testing strategy
+- [PROJECT_SPEC.md](PROJECT_SPEC.md) - **NEW** Consolidated product + tech spec
+- [CLAUDE.md](CLAUDE.md) - **NEW** Claude/Cursor operating guide
+- [START_HERE.md](START_HERE.md) - **NEW** Onboarding reading list
 - [MASTER_RULES.md](MASTER_RULES.md) - Rules and standards
 - [PROJECT_STATUS.md](PROJECT_STATUS.md) - **UPDATED** Current project status (verification complete)
 - [PROJECT_SCOPE.md](PROJECT_SCOPE.md) - Project scope definition
@@ -75,30 +81,24 @@ This document serves as the master index for all BenchSight documentation.
 - [data/CALCULATION_FLOWS.md](data/CALCULATION_FLOWS.md) - **NEW** Visual calculation flow diagrams (xG, WAR/GAR, Corsi)
 
 ### 🔄 Workflows
-- [workflows/DEVELOPMENT_WORKFLOW.md](workflows/DEVELOPMENT_WORKFLOW.md) - Development workflows
+- [workflows/WORKFLOW.md](workflows/WORKFLOW.md) - Complete development workflow
 - [workflows/PLANNING_WORKFLOW.md](workflows/PLANNING_WORKFLOW.md) - PRD-first development
-- [workflows/COMPLETE_WORKFLOW_GUIDE.md](workflows/COMPLETE_WORKFLOW_GUIDE.md) - Complete workflow guide
 - [workflows/CONTEXT_RESET_STRATEGY.md](workflows/CONTEXT_RESET_STRATEGY.md) - Context management
 - [workflows/CODERABBIT_WORKFLOW.md](workflows/CODERABBIT_WORKFLOW.md) - CodeRabbit integration
 - [workflows/SYSTEM_EVOLUTION_WORKFLOW.md](workflows/SYSTEM_EVOLUTION_WORKFLOW.md) - Bug → rule evolution
 
 ### 🛠️ Setup & Environments
 - [setup/SETUP.md](setup/SETUP.md) - Complete setup
-- [setup/QUICK_START.md](setup/QUICK_START.md) - Quick start
-- [setup/DEV_ENV_COMPLETE.md](setup/DEV_ENV_COMPLETE.md) - Dev environment setup
+- [archive/QUICK_START.md](archive/QUICK_START.md) - Quick start
+- [setup/DEV_ENV.md](setup/DEV_ENV.md) - Dev environment setup
 - [environments/ENVIRONMENTS.md](environments/ENVIRONMENTS.md) - Environment management
 
 ### ✅ Checklists
 - [checklists/CHECKLISTS.md](checklists/CHECKLISTS.md) - All checklists index
-- [checklists/PROJECT_CHECKLIST.md](checklists/PROJECT_CHECKLIST.md) - Project checklist
-- [checklists/PRE_RESTRUCTURING_CHECKLIST.md](checklists/PRE_RESTRUCTURING_CHECKLIST.md) - Pre-restructuring checklist
 
 ### 📝 PRDs (Product Requirements Documents)
 - [prds/README.md](prds/README.md) - PRD index and guidelines
 - [prds/template.md](prds/template.md) - PRD template
-- [prds/features/](prds/features/) - Feature PRDs
-- [prds/refactors/](prds/refactors/) - Refactoring PRDs
-- [prds/bugs/](prds/bugs/) - Bug fix PRDs
 
 ### 🎯 Templates
 - [templates/planning-conversation.md](templates/planning-conversation.md) - Planning template
@@ -114,12 +114,15 @@ This document serves as the master index for all BenchSight documentation.
 - [reference/inspiration/](reference/inspiration/) - UI/UX inspiration and screenshots
 - [reference/design/wireframes/](reference/design/wireframes/) - Dashboard wireframes
 - [reference/design/roadmap-visuals.md](reference/design/roadmap-visuals.md) - **NEW** Standalone roadmap visual diagrams (timeline, features, dependencies)
+- [walkthrough/README.md](walkthrough/README.md) - **NEW** Codebase walkthrough index
 
 ### 💼 Commercial Documentation
 - [commercial/COMPETITOR_ANALYSIS.md](commercial/COMPETITOR_ANALYSIS.md) - **NEW** Deep competitor research (features, pricing, positioning)
 - [commercial/GAP_ANALYSIS.md](commercial/GAP_ANALYSIS.md) - **NEW** Gap analysis (current state vs target state vs competitors)
 - [commercial/MONETIZATION_STRATEGY.md](commercial/MONETIZATION_STRATEGY.md) - **NEW** Monetization strategy (pricing models, revenue projections, go-to-market)
 - [commercial/COMMERCIAL_ROADMAP_VISUALS.md](commercial/COMMERCIAL_ROADMAP_VISUALS.md) - **NEW** Commercial roadmap visuals (positioning map, revenue chart, feature matrix)
+- [commercial/COMMERCIAL_READINESS_CHECKLIST.md](commercial/COMMERCIAL_READINESS_CHECKLIST.md) - **NEW** Commercial readiness checklist
+- [commercial/PILOT_CASE_STUDY_TEMPLATE.md](commercial/PILOT_CASE_STUDY_TEMPLATE.md) - **NEW** Pilot case study template
 
 ---
 

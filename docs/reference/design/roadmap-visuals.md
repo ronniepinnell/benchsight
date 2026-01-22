@@ -2,7 +2,7 @@
 
 **Standalone visual reference for roadmap diagrams**
 
-Last Updated: 2026-01-15
+Last Updated: 2026-01-21
 
 ---
 
@@ -12,27 +12,37 @@ Last Updated: 2026-01-15
 gantt
     title BenchSight Development Roadmap
     dateFormat YYYY-MM-DD
-    section Phase 1: Foundation
+    section Phase 1: Foundation (COMPLETE)
     ETL Pipeline           :done, p1-etl, 2025-09-01, 4w
     Dashboard Core         :done, p1-dash, 2025-09-01, 4w
     Tracker HTML           :done, p1-track, 2025-09-01, 4w
     API Foundation         :done, p1-api, 2025-09-01, 4w
-    
-    section Phase 2: Pre-Deployment
-    Documentation          :done, p2-docs, 2025-10-01, 2w
-    ETL Cleanup            :active, p2-etl, 2025-10-15, 3w
-    Portal Integration     :active, p2-portal, 2025-10-15, 4w
-    Dashboard Polish       :p2-dash, 2025-11-01, 3w
-    
-    section Phase 3: Advanced Analytics
-    Advanced Stats         :p3-stats, 2025-11-15, 4w
-    ML Feature Engineering :p3-ml, 2025-11-15, 4w
-    Real-time Updates      :p3-realtime, 2025-12-01, 3w
-    
-    section Phase 4: Production
-    Multi-Tenant           :p4-multi, 2025-12-15, 4w
-    Production Deploy      :p4-deploy, 2026-01-15, 2w
-    Tracker Conversion     :p4-track, 2026-01-15, 8w
+    Documentation          :done, p1-docs, 2025-12-15, 4w
+
+    section Phase 2: ETL Optimization (CURRENT)
+    ETL Cleanup            :active, p2-etl, 2026-01-15, 4w
+    Table Verification     :active, p2-verify, 2026-01-21, 2w
+    Performance Tuning     :p2-perf, 2026-02-01, 2w
+
+    section Phase 3: Dashboard Enhancement
+    Dashboard Polish       :p3-dash, 2026-02-15, 4w
+    Advanced Analytics UI  :p3-analytics, 2026-03-01, 4w
+
+    section Phase 4: Portal Development
+    Portal Integration     :p4-portal, 2026-03-15, 4w
+    Game Management        :p4-games, 2026-04-01, 2w
+
+    section Phase 5: Tracker Conversion
+    Rust Backend           :p5-rust, 2026-04-15, 4w
+    Next.js Frontend       :p5-nextjs, 2026-05-01, 4w
+
+    section Phase 6: ML/CV
+    Video Processing       :p6-video, 2026-06-01, 4w
+    Advanced Analytics     :p6-ml, 2026-06-15, 4w
+
+    section Phase 7-8: Commercial
+    Multi-Tenant           :p7-multi, 2026-07-15, 4w
+    Payments & Launch      :p8-launch, 2026-08-15, 4w
 ```
 
 ---
@@ -138,21 +148,29 @@ gantt
     title Commercial Roadmap
     dateFormat YYYY-MM-DD
     section MVP Development
-    MVP Features           :mvp, 2025-09-01, 16w
-    Multi-Tenant           :multi, 2025-12-15, 4w
-    Beta Testing           :beta, 2026-01-01, 4w
-    
+    MVP Features           :done, mvp, 2025-09-01, 16w
+    ETL Optimization       :active, etl, 2026-01-15, 4w
+    Dashboard Enhancement  :dash, 2026-02-15, 4w
+    Portal Development     :portal, 2026-03-15, 4w
+
+    section Tracker Conversion
+    Rust Backend           :rust, 2026-04-15, 4w
+    Next.js Frontend       :nextjs, 2026-05-01, 4w
+
+    section ML/CV & Multi-Tenant
+    ML/CV Integration      :ml, 2026-06-01, 8w
+    Multi-Tenant           :multi, 2026-07-15, 4w
+
     section Commercial Prep
-    Payment Integration    :pay, 2026-01-15, 4w
-    Onboarding Flows       :onboard, 2026-02-01, 4w
-    Marketing Site         :marketing, 2026-02-15, 4w
-    
+    Payment Integration    :pay, 2026-08-15, 4w
+    Onboarding Flows       :onboard, 2026-09-01, 4w
+    Marketing Site         :marketing, 2026-09-15, 4w
+
     section Launch
-    Public Launch          :launch, 2026-03-15, 2w
-    Customer Acquisition   :acq, 2026-03-15, 12w
-    Feature Expansion      :features, 2026-04-01, 12w
+    Public Launch          :launch, 2026-10-15, 2w
+    Customer Acquisition   :acq, 2026-10-15, 12w
 ```
 
 ---
 
-*Last Updated: 2026-01-15*
+*Last Updated: 2026-01-21*

@@ -2,8 +2,8 @@
 
 **Complete API architecture, integration, and endpoint documentation**
 
-Last Updated: 2026-01-15  
-Version: 1.0.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
@@ -1149,7 +1149,7 @@ Currently, the API does not require authentication (development mode). Future ve
 
 - [ETL.md](../etl/ETL.md) - ETL process documentation
 - [Portal.md](../portal/PORTAL.md) - Admin portal documentation
-- [Dashboard.md](../dashboard/DASHBOARD.md) - Dashboard documentation
+- [DASHBOARD_ARCHITECTURE.md](../dashboard/DASHBOARD_ARCHITECTURE.md) - Dashboard documentation
 
 ---
 

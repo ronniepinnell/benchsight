@@ -2,13 +2,14 @@
 
 **Complete development workflows: daily operations, Git, GitHub, Supabase, Vercel, agents, and MCPs**
 
-Last Updated: 2026-01-15  
-Version: 1.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
 ## Table of Contents
 
+1. [Project Operating Model](#project-operating-model)
 1. [Daily Workflow](#daily-workflow)
 2. [Feature Development](#feature-development)
 3. [Bug Fix Workflow](#bug-fix-workflow)
@@ -16,12 +17,44 @@ Version: 1.0
 5. [GitHub Workflow](#github-workflow)
 6. [Supabase Workflow](#supabase-workflow)
 7. [Vercel Workflow](#vercel-workflow)
-8. [Testing Workflow](#testing-workflow)
-9. [Documentation Workflow](#documentation-workflow)
-10. [Deployment Workflow](#deployment-workflow)
-11. [Agent Usage Guide](#agent-usage-guide)
-12. [Troubleshooting](#troubleshooting)
-13. [Quick Reference](#quick-reference)
+8. [Next.js Workflow](#nextjs-workflow)
+9. [Testing Workflow](#testing-workflow)
+10. [Documentation Workflow](#documentation-workflow)
+11. [Automation and Hooks](#automation-and-hooks)
+12. [Subagent Reviews and Skills](#subagent-reviews-and-skills)
+13. [Deployment Workflow](#deployment-workflow)
+14. [Agent Usage Guide](#agent-usage-guide)
+15. [Troubleshooting](#troubleshooting)
+16. [Quick Reference](#quick-reference)
+
+---
+
+## Project Operating Model
+
+**Purpose:** A repeatable system for planning, execution, and operational rigor across Cursor, Claude, GitHub, Supabase, Vercel, Next.js, and CodeRabbit.
+
+**Single Source of Truth:**
+- Requirements: PRDs in `docs/prds/`
+- Roadmap: `docs/MASTER_ROADMAP.md`
+- Rules/standards: `docs/MASTER_RULES.md`
+- Workflow: `docs/workflows/WORKFLOW.md`
+
+**Minimum Quality Gates (every PR):**
+- Tests and checks pass for touched areas
+- Doc updates included for user-visible or system changes
+- Performance impact considered (ETL and dashboard)
+- Security impact considered (auth, secrets, PII)
+
+**Environment Separation:**
+- Dev: local + Supabase dev project + Vercel preview
+- Prod: locked-down Supabase project + Vercel production
+- No production changes without PR review and release note
+
+**Release Cadence:**
+- Feature: weekly or bi-weekly releases
+- Hotfix: as needed, with postmortem doc update
+
+---
 
 ---
 
@@ -290,6 +323,37 @@ git push origin feature/your-branch
 
 ### Branch Strategy
 
+**Default branches:**
+- `main`: production
+- `develop`: integration
+
+**Feature branches:**
+- `feature/<topic>`
+- `fix/<bug>`
+- `docs/<topic>`
+
+**Hotfix:**
+- `hotfix/<issue>` (merge to `main` + `develop`)
+
+---
+
+### Git Worktrees (Parallel Agents)
+
+**Use for:** parallel tasks (docs + code) without branch switching
+
+**Example:**
+```bash
+git worktree add ../benchsight-docs docs-update
+git worktree add ../benchsight-feature feature/portal-api
+```
+
+**Rules:**
+- One worktree per branch
+- Keep changes isolated per worktree
+- Merge via PR only
+
+### Branch Strategy
+
 - `main` - Production (protected)
 - `develop` - Development (default)
 - `feature/*` - Features
@@ -360,6 +424,11 @@ Optional longer description
 5. Assign labels
 6. Submit
 
+**Recommended Labels:**
+- `type:feature`, `type:bug`, `type:refactor`, `type:docs`
+- `area:etl`, `area:dashboard`, `area:api`, `area:portal`, `area:tracker`
+- `priority:p0/p1/p2`, `status:blocked`
+
 #### Issue Lifecycle
 
 ```
@@ -385,7 +454,7 @@ git merge develop  # Or rebase
 
 # 2. Run tests/validation
 ./benchsight.sh etl validate
-./benchsight.sh docs check
+./scripts/docs-check.sh
 
 # 3. Self-review
 # - Check code follows standards
@@ -412,6 +481,12 @@ git push origin feature/your-branch
 4. Address feedback
 5. Get approval
 6. Merge to `develop`
+
+**PR Checklist (minimum):**
+- PRD referenced (if applicable)
+- Docs updated (scope/architecture/usage)
+- Tests or validation run for changed areas
+- Any schema changes called out
 
 #### After Merge
 
@@ -469,6 +544,13 @@ git push origin feature/your-branch
 - Use branch URL in config
 - Merge branch when ready
 
+### Data Safety Rules
+
+- Never run destructive SQL on production without a backup
+- Use dev project for schema experiments and ETL validation
+- Keep RLS policies in versioned SQL when multi-tenancy starts
+- Document schema changes in `docs/data/`
+
 ---
 
 ## Vercel Workflow
@@ -508,6 +590,38 @@ vercel        # Preview
 - Dev: Dev Supabase URL/key
 - Never commit to git
 
+### Release Guardrails
+
+- Use preview deployments for feature branches
+- Require PR approval before merging to `develop`
+- Merge to `main` only when release-ready and tagged
+
+---
+
+## Next.js Workflow
+
+**Routing:**
+- Use App Router (`ui/dashboard/src/app/`)
+- Server Components by default; use Client Components only when needed
+
+**Data Access:**
+- Prefer server-side Supabase queries for dashboard pages
+- Keep query logic in `lib/supabase/queries/`
+- Avoid duplicate query logic across pages
+
+**Performance:**
+- Avoid loading large datasets in client components
+- Use pagination or pre-aggregated views
+- Prefer Supabase views for heavy aggregations
+
+**Environment Variables:**
+- Define required envs in `ui/dashboard/.env.example`
+- Keep dev/prod values only in Vercel
+
+**UI Consistency:**
+- Use shared components from `components/`
+- Avoid page-level bespoke styling when a component exists
+
 ---
 
 ## Testing Workflow
@@ -546,6 +660,12 @@ vercel        # Preview
    - Manual testing
    - Check all pages
    - Verify data loading
+
+### CI Coverage (Recommended)
+
+- ETL unit tests on `src/**` or `tests/**`
+- API unit tests on `api/**`
+- Dashboard lint on `ui/dashboard/**`
 
 ### Validation
 
@@ -590,6 +710,72 @@ vercel        # Preview
 
 4. **Update index**
    - Update [MASTER_INDEX.md](../MASTER_INDEX.md) if new docs added
+
+### Documentation Update Checklist
+
+- Update affected docs in the same PR
+- Keep links accurate (run `./scripts/docs-check.sh`)
+- Update `docs/PROJECT_STATUS.md` when scope/status shifts
+- Add a short note in `docs/CHANGELOG.md` for user-visible changes
+
+### QA Checklist (ETL Changes)
+
+- Run `./benchsight.sh etl run --games 18969`
+- Run `./benchsight.sh etl validate`
+- Review `qa_*` tables for anomalies
+- Spot-check goals, shots, and penalties for game `18969`
+
+---
+
+## Automation and Hooks
+
+**Goal:** Keep quality high with minimal manual overhead.
+
+**Recommended Automation (local):**
+- Docs link check: `./scripts/docs-check.sh`
+- Lint/format on staged files (language-specific)
+- Unit tests for touched packages
+
+**Recommended Automation (CI):**
+- Docs link check on `docs/**` changes
+- Lint/test per package (ETL, API, dashboard)
+- CodeRabbit review on PRs
+
+**Suggested Hook Strategy:**
+- `pre-commit`: format + lint + docs check (fast only)
+- `pre-push`: tests for touched packages
+- CI: full test/lint + docs check + code review bot
+
+**Pre-commit install:**
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+**Config:** `.pre-commit-config.yaml`
+
+**Automatic Doc Updates (lightweight):**
+- Always update `docs/PROJECT_STATUS.md` for status-impacting changes
+- Update `docs/MASTER_INDEX.md` when adding or moving docs
+- Update component docs when behavior changes (ETL, API, portal, dashboard)
+
+---
+
+## Subagent Reviews and Skills
+
+**When to use subagents:**
+- Complex refactors (ETL modularization)
+- Cross-cutting changes (auth + RLS + billing)
+- Security or data integrity changes
+
+**Review Pattern:**
+1. Primary agent implements
+2. Subagent performs focused review (risk, edge cases, tests)
+3. Address findings before PR
+
+**Skills (Claude/Cursor):**
+- Use skills only when explicitly relevant
+- Keep context tight; load only required references
 
 ---
 
@@ -672,6 +858,23 @@ vercel        # Preview
 - **Context:** Reference PRDs, planning docs
 - **Optimization:** Use context reset strategy
 
+**Subagent Reviews:**
+- Use subagents for review passes (performance, security, data integrity)
+- Keep review scope narrow and time-boxed
+- Address findings before PR
+
+### ChatGPT (Integrated)
+
+- **Use for:** Fast second opinions, alternative approaches, debugging heuristics
+- **When:** After primary plan/implementation draft exists
+- **Role:** Reviewer, not primary implementer
+
+### Gemini (API Key Available)
+
+- **Use for:** Multimodal reviews (UI screenshots), summaries, alternative reasoning
+- **When:** UI/UX validation or quick comparative review
+- **Role:** Reviewer or UX critique
+
 ### CodeRabbit
 
 - **Use for:** Automated code review
@@ -712,6 +915,11 @@ vercel        # Preview
 - **Purpose:** Update documentation
 - **Context:** Code changes, existing docs
 - **Output:** Updated documentation
+
+**Skills (when available):**
+- Use only when directly relevant
+- Read `SKILL.md` for the skill before applying
+- Keep context small; load only referenced files
 
 ### Model Performance Optimization
 
@@ -988,7 +1196,7 @@ Merge to develop
 - [MASTER_RULES.md](../MASTER_RULES.md) - Rules and standards
 - [CHECKLISTS.md](../checklists/CHECKLISTS.md) - Pre-flight checklists
 - [COMMANDS.md](../COMMANDS.md) - Command reference
-- [MAINTENANCE_GUIDE.md](../MAINTENANCE_GUIDE.md) - Maintenance guide
+- [archive/MAINTENANCE_GUIDE.md](../archive/MAINTENANCE_GUIDE.md) - Maintenance guide (archived)
 - [PLANNING_WORKFLOW.md](PLANNING_WORKFLOW.md) - PRD-first development
 - [CONTEXT_RESET_STRATEGY.md](CONTEXT_RESET_STRATEGY.md) - Context management strategy
 - [CODERABBIT_WORKFLOW.md](CODERABBIT_WORKFLOW.md) - CodeRabbit integration

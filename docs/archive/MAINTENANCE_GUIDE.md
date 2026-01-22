@@ -2,8 +2,8 @@
 
 **Guide for maintaining and updating the BenchSight project**
 
-Last Updated: 2026-01-15  
-Version: 29.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
@@ -451,12 +451,12 @@ git merge feature/new-feature
 
 ## Related Documentation
 
-- [PROJECT_STATUS.md](PROJECT_STATUS.md) - Current project status
-- [MASTER_ROADMAP.md](MASTER_ROADMAP.md) - Project roadmap
+- [PROJECT_STATUS.md](../PROJECT_STATUS.md) - Current project status
+- [MASTER_ROADMAP.md](../MASTER_ROADMAP.md) - Project roadmap
 - [MASTER_NEXT_STEPS.md](MASTER_NEXT_STEPS.md) - Next steps
 - [DEV_ENV_COMPLETE.md](DEV_ENV_COMPLETE.md) - Development environment setup
 - [QUICK_START.md](QUICK_START.md) - Quick start guide
-- [COMMANDS.md](COMMANDS.md) - Complete command reference
+- [COMMANDS.md](../COMMANDS.md) - Complete command reference
 - [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) - Development workflows
 - [PROJECT_CHECKLIST.md](PROJECT_CHECKLIST.md) - Pre-flight checklists
 

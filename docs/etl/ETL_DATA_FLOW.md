@@ -2,8 +2,8 @@
 
 **Complete data transformation flow from raw files to final tables**
 
-Last Updated: 2026-01-15  
-Version: 29.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
@@ -520,7 +520,7 @@ Output: 139 CSV tables
 - [ETL_ARCHITECTURE.md](ETL_ARCHITECTURE.md) - Module architecture
 - [ETL_TABLE_DEPENDENCIES.md](ETL_TABLE_DEPENDENCIES.md) - Table dependencies
 - [ETL_CALCULATIONS_REFERENCE.md](ETL_CALCULATIONS_REFERENCE.md) - Calculation formulas
-- [DATA_LINEAGE.md](DATA_LINEAGE.md) - Data lineage
+- [DATA.md](../data/DATA.md) - Data lineage and table reference
 
 ---
 

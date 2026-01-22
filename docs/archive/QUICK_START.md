@@ -2,7 +2,7 @@
 
 **Get up and running in 5 minutes**
 
-Last Updated: 2026-01-15
+Last Updated: 2026-01-21
 
 ---
 
@@ -16,7 +16,7 @@ python --version  # Should be 3.11+
 python -c "import pandas; print('Ready!')"
 ```
 
-If not set up, see [SETUP.md](SETUP.md) first.
+If not set up, see [SETUP.md](../setup/SETUP.md) first.
 
 ---
 
@@ -125,7 +125,7 @@ python upload.py           # Upload data
 ./benchsight.sh help                       # Show help
 ```
 
-**Complete Command Reference:** See [COMMANDS.md](COMMANDS.md)
+**Complete Command Reference:** See [COMMANDS.md](../COMMANDS.md)
 
 ### Direct Python Commands (Alternative)
 
@@ -245,9 +245,9 @@ python validate.py --fk     # Foreign keys
 
 1. **Explore Data**: Open CSV files in Excel/Google Sheets
 2. **Read Documentation**: 
-   - [MASTER_INDEX.md](MASTER_INDEX.md) - Documentation index
-   - [PROJECT_STATUS.md](PROJECT_STATUS.md) - Current project status
-   - [COMMANDS.md](COMMANDS.md) - Complete command reference
+   - [MASTER_INDEX.md](../MASTER_INDEX.md) - Documentation index
+   - [PROJECT_STATUS.md](../PROJECT_STATUS.md) - Current project status
+   - [COMMANDS.md](../COMMANDS.md) - Complete command reference
    - [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) - Development workflows
    - [PROJECT_CHECKLIST.md](PROJECT_CHECKLIST.md) - Pre-flight checklists
 3. **Set Up Dashboard**: See [DEV_ENV_VERCEL.md](DEV_ENV_VERCEL.md) for Vercel setup

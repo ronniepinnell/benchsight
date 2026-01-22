@@ -2,8 +2,8 @@
 
 **Comprehensive checklist to prepare for restructuring and planning work**
 
-Last Updated: 2026-01-15  
-Version: 29.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
@@ -297,7 +297,7 @@ Once all items are complete:
 
 - [COMPLETE_WORKFLOW_GUIDE.md](COMPLETE_WORKFLOW_GUIDE.md) - Complete workflow guide
 - [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) - Development workflows
-- [PLANNING_WORKFLOW.md](PLANNING_WORKFLOW.md) - PRD-first development
+- [PLANNING_WORKFLOW.md](../workflows/PLANNING_WORKFLOW.md) - PRD-first development
 - [COMPLETE_SETUP_GUIDE.md](COMPLETE_SETUP_GUIDE.md) - Complete setup guide
 
 ---

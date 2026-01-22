@@ -2,7 +2,7 @@
 
 **PRD-first development process**
 
-Last Updated: 2026-01-15
+Last Updated: 2026-01-21
 
 ---
 
@@ -290,9 +290,9 @@ Let's start with Phase 1: [phase name]
 
 ## Related Documentation
 
-- [PRD Index](prds/README.md) - PRD directory
-- [PRD Template](prds/template.md) - PRD template
-- [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) - Development workflow
+- [PRD Index](../prds/README.md) - PRD directory
+- [PRD Template](../prds/template.md) - PRD template
+- [WORKFLOW.md](WORKFLOW.md) - Development workflow
 - [CONTEXT_RESET_STRATEGY.md](CONTEXT_RESET_STRATEGY.md) - Context reset strategy
 
 ---

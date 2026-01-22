@@ -2,8 +2,8 @@
 
 **Visual representation of portal architecture, component structure, and data flow**
 
-Last Updated: 2026-01-15  
-Version: 1.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 

@@ -2,8 +2,8 @@
 
 **Comprehensive reference for all tables, columns, calculations, and business rules**
 
-Last Updated: 2026-01-15  
-Version: 1.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
@@ -51,6 +51,402 @@ This data dictionary provides complete metadata for all tables in the BenchSight
 | **Explicit** | Directly from source data | player_id, game_id, event_type |
 | **Calculated** | Formula-based calculation | shooting_pct = goals / sog * 100 |
 | **Derived** | Filtered/aggregated from source | goals = COUNT WHERE event_type='Goal' AND event_detail='Goal_Scored' |
+
+---
+
+## Table Population Reference
+
+This section documents **HOW** each table is populated - the source code location, input dependencies, transformation logic, and ETL phase. Use this to understand what creates each table and trace data lineage.
+
+### ETL Phase Overview
+
+The ETL pipeline runs in 11+ phases. Each phase builds on outputs from previous phases.
+
+```
+Phase 1: Load BLB Tables (dim_player, dim_team, dim_schedule, etc.)
+    ↓
+Phase 2: Build Player Lookup (game_id + jersey → player_id mapping)
+    ↓
+Phase 3: Load Tracking Data (raw events/shifts from game Excel files)
+    ↓
+Phase 4: Create Derived Tables (fact_events, fact_shifts from tracking)
+    ↓
+Phase 5: Create Reference Tables (23 static dimension tables)
+    ↓
+Phase 5.5-5.12: Enhance Tables (add FKs, flags, derived columns)
+    ↓
+Phase 6: Player/Team/Goalie Game Stats (fact_player_game_stats, etc.)
+    ↓
+Phase 7: Macro Stats (season/career aggregations)
+    ↓
+Phase 8-10: Analytics Tables (scoring chances, shift quality, etc.)
+    ↓
+Phase 11: QA Tables (validation checks)
+```
+
+### Phase 1: BLB Table Loading
+
+**File:** `src/core/base_etl.py` → `load_blb_tables()` (line 956)
+**Source:** `data/raw/BLB_Tables.xlsx`
+**Purpose:** Load master data tables from the league database export
+
+| Table | Source Sheet | Key | Transformation | Rows |
+|-------|--------------|-----|----------------|------|
+| **dim_player** | dim_player | player_id | Removes 7 CSAH-specific columns (all null for NORAD) | ~337 |
+| **dim_team** | dim_team | team_id | Filters to NORAD teams; removes csah_team column | ~26 |
+| **dim_league** | dim_league | league_id | Direct load | ~3 |
+| **dim_season** | dim_season | season_id | Direct load | ~10 |
+| **dim_schedule** | dim_schedule | game_id | Removes video/team_game_id columns | ~567 |
+| **dim_playerurlref** | dim_playerurlref | - | Direct load (player URL references) | ~300 |
+| **dim_randomnames** | dim_randomnames | - | Direct load (anonymization names) | ~500 |
+| **dim_event_type** | dim_event_type | event_type_id | Direct load (NOT auto-generated) | ~15 |
+| **dim_event_detail** | dim_event_detail | event_detail_id | Direct load (NOT auto-generated) | ~50 |
+| **dim_event_detail_2** | dim_play_detail_2 | event_detail_2_id | Column rename: play_detail_* → event_detail_2_* | ~30 |
+| **dim_play_detail** | dim_play_detail | play_detail_id | Direct load or dynamic creation in Phase 5 | ~40 |
+| **dim_play_detail_2** | dim_play_detail_2 | play_detail_2_id | Column rename: play_detail_* → play_detail_2_* | ~30 |
+| **fact_gameroster** | fact_gameroster | (game_id, player_id) | Enhanced with season/schedule data; official league stats | ~2000 |
+| **fact_leadership** | fact_leadership | composite | Direct load (team captains/alternates) | ~100 |
+| **fact_registration** | fact_registration | player_season_registration_id | Direct load | ~400 |
+| **fact_draft** | fact_draft | player_draft_id | Direct load | ~200 |
+
+**Code Pattern:**
+```python
+# In load_blb_tables() - line 956
+xlsx = pd.ExcelFile('data/raw/BLB_Tables.xlsx')
+dim_player = pd.read_excel(xlsx, sheet_name='dim_player')
+# Drop CSAH-specific columns (all null for NORAD)
+csah_cols = [c for c in dim_player.columns if 'csah' in c.lower()]
+dim_player = dim_player.drop(columns=csah_cols)
+```
+
+---
+
+### Phase 2: Build Player Lookup
+
+**File:** `src/core/base_etl.py` → `build_player_lookup()` (line 1095)
+**Input:** fact_gameroster
+**Output:** In-memory dictionary (not a table)
+**Purpose:** Map tracking data (game_id, team_name, jersey_number) → player_id
+
+**Why This Exists:**
+Tracking files identify players by jersey number, not player_id. This lookup resolves:
+- `(game_id=19001, team='Blue', jersey=12)` → `player_id='P001'`
+
+**Logic:**
+```python
+# Primary lookup: (game_id, team_name, jersey_number) → player_id
+player_lookup = {}
+for _, row in fact_gameroster.iterrows():
+    key = (row['game_id'], row['team_name'], row['jersey_number'])
+    player_lookup[key] = row['player_id']
+```
+
+**Edge Cases Handled:**
+- Players who change jerseys mid-season
+- Players who play for multiple teams
+- Missing jersey numbers (uses fallback lookups)
+
+---
+
+### Phase 3: Load Tracking Data
+
+**File:** `src/core/base_etl.py` (inline, line 1155)
+**Source:** `data/raw/games/{game_id}/` tracking Excel files
+**Purpose:** Load raw event and shift data from game tracking files
+
+**Input Files per Game:**
+- `{game_id}_tracking.xlsx` → Events sheet, Shifts sheet
+- Or legacy format: `events.xlsx`, `shifts.xlsx`
+
+**Intermediate Tables Created:**
+| Table | Source | Purpose |
+|-------|--------|---------|
+| **fact_event_players** | Events sheet | One row per player per event (expanded from event_player_1/2/3) |
+| **fact_shifts (raw)** | Shifts sheet | Raw shift data before deduplication |
+
+**Key Transformations:**
+1. **Player Resolution:** Jersey numbers → player_ids via Phase 2 lookup
+2. **Time Calculation:** Convert min:sec to total_seconds
+3. **Key Generation:** Create event_id, shift_id, event_chain_key, sequence_key
+
+**Excluded Games:** 18965, 18993, 19032 (incomplete tracking data)
+
+---
+
+### Phase 4: Create Derived Tables
+
+**File:** `src/core/base_etl.py` → `create_derived_tables()` (line 1455)
+**Purpose:** Build core fact tables from tracking data
+
+| Table | Builder | Input | Logic | Rows |
+|-------|---------|-------|-------|------|
+| **fact_events** | `src/builders/events.py` → `build_fact_events()` | fact_event_players | One row per event; prioritizes Goal > Shot > Pass when deduping | ~5,800/4 games |
+| **fact_shifts** | `src/builders/shifts.py` → `build_fact_shifts()` | raw tracking shifts | Deduplicate; assign shift_id; calculate duration | ~400/4 games |
+| **fact_shift_players** | inline | fact_shifts | One row per player per shift (from shift rosters) | ~2,000/4 games |
+| **fact_tracking** | inline | fact_event_players | Unique tracking points with XY coordinates | ~8,000/4 games |
+
+**fact_events Builder Logic (`src/builders/events.py`):**
+```python
+def build_fact_events(fact_event_players: pd.DataFrame) -> pd.DataFrame:
+    """
+    Collapse fact_event_players to one row per event.
+    Priority: Goal > Shot > Pass > other (when same event has multiple types)
+    """
+    # Group by event_id, take first row after sorting by priority
+    priority_order = {'Goal': 0, 'Shot': 1, 'Pass': 2}
+    df['priority'] = df['event_type'].map(priority_order).fillna(99)
+    fact_events = df.sort_values('priority').groupby('event_id').first()
+    return fact_events
+```
+
+---
+
+### Phase 5: Create Reference Tables (Static Dimensions)
+
+**File:** `src/tables/dimension_tables.py` → `create_all_dimension_tables()` (called from line 1579)
+**Purpose:** Create 23 hardcoded dimension tables
+
+| Table | Rows | Purpose | Key Columns |
+|-------|------|---------|-------------|
+| **dim_comparison_type** | 6 | H2H, WOWY, vs_team analysis types | comparison_type_code |
+| **dim_competition_tier** | 4 | Elite/Above Avg/Avg/Below Avg rating tiers | tier_name, min_rating, max_rating |
+| **dim_composite_rating** | 8 | Offensive/Defensive/Two-way ratings | rating_code, scale_min, scale_max |
+| **dim_danger_zone** | 4 | High/Medium/Low/Perimeter shot danger | danger_zone_name |
+| **dim_highlight_category** | 10 | Highlight event classifications | category_name |
+| **dim_micro_stat** | 22 | Screen, Tip, One-timer, Board Battle, etc. | micro_stat_code |
+| **dim_net_location** | 10 | Glove High/Low, Blocker, Five Hole, etc. | net_location_name |
+| **dim_pass_outcome** | 4 | Completed/Missed/Intercepted/Blocked | outcome_name |
+| **dim_period** | 5 | Periods 1-3, OT, SO | period_number, period_name |
+| **dim_position** | 4 | F/D/G/XTRA positions | position_code |
+| **dim_rating** | 5 | 2-6 rating scale | rating_value, rating_name |
+| **dim_rating_matchup** | 5 | Big Advantage to Big Disadvantage | matchup_name |
+| **dim_rink_zone** | 267 | 200ft x 85ft grid coordinates | x, y, zone_name |
+| **dim_save_outcome** | 3 | Saved/Blocked/Scored | outcome_name |
+| **dim_shift_slot** | 7 | F1-F3, D1-D2, G, XTRA slots | slot_code |
+| **dim_shot_outcome** | 5 | Scored/Saved/Blocked/Missed/Crossbar | outcome_name |
+| **dim_situation** | 6 | EV/PP/PK/EN/4v4/3v3 | situation_code |
+| **dim_stat** | 83 | All stat definitions | stat_code, stat_name, category |
+| **dim_stat_category** | 13 | Stat groupings | category_name |
+| **dim_stat_type** | 57 | Specific measurements | type_code |
+| **dim_strength** | 18 | PP/PK/EV/EN with goal variations | strength_code |
+| **dim_terminology_mapping** | 84 | Cross-reference mappings | source_term, target_term |
+| **dim_turnover_quality** | 3 | High/Medium/Low quality | quality_name |
+| **dim_turnover_type** | 21 | Giveaway/Takeaway subtypes | turnover_type_name |
+| **dim_video_type** | 9 | Video classifications | video_type_name |
+| **dim_zone** | 3 | O/N/D zones | zone_code, zone_name |
+| **dim_zone_outcome** | 6 | Zone entry/exit outcomes | outcome_name |
+
+**Dynamic Dimension Tables (from tracking data):**
+
+| Table | Source | Logic |
+|-------|--------|-------|
+| **dim_zone_entry_type** | fact_events | Extract unique zone_entry_type values |
+| **dim_zone_exit_type** | fact_events | Extract unique zone_exit_type values |
+| **dim_stoppage_type** | fact_events | Extract unique stoppage_type values |
+| **dim_giveaway_type** | fact_events | Extract unique giveaway_type values |
+| **dim_takeaway_type** | fact_events | Extract unique takeaway_type values |
+
+---
+
+### Phases 5.5-5.12: Table Enhancement
+
+These phases add foreign keys, calculated columns, and flags to existing tables.
+
+| Phase | Function | Line | Tables Modified | Enhancements |
+|-------|----------|------|-----------------|--------------|
+| **5.5** | `enhance_event_tables()` | 2337 | fact_events, fact_event_players | Add shift_id FK, period_id, zone_id, event_type_id, event_detail_id |
+| **5.6** | `enhance_derived_event_tables()` | 2995 | fact_tracking | Add FKs to tracking table |
+| **5.7** | `create_fact_sequences()` | 3063 | Creates fact_sequences | Group continuous events; assign is_goal, is_sog flags |
+| **5.8** | `create_fact_plays()` | 3195 | Creates fact_plays | Group sequences into possession units |
+| **5.9** | `enhance_events_with_flags()` | 3310 | fact_events | Add is_goal, is_shot_on_goal, is_corsi_event, is_fenwick_event flags |
+| **5.10** | `create_derived_event_tables()` | 3973 | Creates analytics tables | fact_scoring_chances, fact_shot_danger, fact_linked_events |
+| **5.11** | `enhance_shift_tables()` | 4493 | fact_shifts | Add period_id, team_ids, strength, situation |
+| **5.11B** | `enhance_shift_players()` | 5105 | fact_shift_players | Add player_name, player_position, player_rating |
+| **5.12** | (inline) | 5535 | fact_gameroster | Update positions from actual shift data |
+
+---
+
+### Phase 6: Player/Team/Goalie Stats
+
+**Files:** `src/tables/core_facts.py`, `src/builders/player_stats.py`, `src/builders/goalie_stats.py`, `src/builders/team_stats.py`
+
+| Table | Builder | Input Tables | Key Logic | Columns |
+|-------|---------|--------------|-----------|---------|
+| **fact_player_game_stats** | `PlayerStatsBuilder` | fact_event_players, fact_events, fact_shifts, fact_shift_players, fact_gameroster | Aggregate per (game_id, player_id); skaters only | 317 |
+| **fact_goalie_game_stats** | `GoalieStatsBuilder` | fact_events, fact_shifts, fact_gameroster | Aggregate per (game_id, goalie_id); goalies only | ~50 |
+| **fact_team_game_stats** | `TeamStatsBuilder` | fact_player_game_stats (aggregated) | Sum player stats per team | ~100 |
+
+**fact_player_game_stats Calculation Categories:**
+1. **Event Stats:** Goals, assists, shots, passes (from fact_event_players WHERE player_role='event_player_1')
+2. **Shift Stats:** TOI, shift count, avg shift (from fact_shifts)
+3. **Advanced:** xG, xA, Corsi, Fenwick (calculated from events + on-ice analysis)
+4. **Micro Stats:** Blocks, takeaways, screens (from event_detail filtering)
+5. **Zone Stats:** Entry/exit analysis (from zone_entry_type/zone_exit_type)
+6. **Strength Splits:** EV/PP/PK breakdowns (from shift strength)
+7. **Game Score:** Composite performance metric
+8. **WAR/GAR:** Wins/Goals Above Replacement
+
+---
+
+### Phase 7: Macro Stats (Season/Career Aggregations)
+
+**File:** `src/tables/macro_stats.py`
+
+| Table | Input | Grain | Logic |
+|-------|-------|-------|-------|
+| **fact_player_season_stats_basic** | fact_gameroster | (player_id, season_id, game_type) | Official league stats (G, A, PIM); skaters only |
+| **fact_player_career_stats_basic** | fact_gameroster | (player_id, game_type) | Sum across all seasons |
+| **fact_goalie_season_stats_basic** | fact_gameroster | (player_id, season_id, game_type) | GP, W, L, GAA, SV%; goalies only |
+| **fact_goalie_career_stats_basic** | fact_gameroster | (player_id, game_type) | Career totals |
+| **fact_team_season_stats_basic** | fact_gameroster | (team_id, season_id, game_type) | Team totals |
+| **fact_player_season_stats** | fact_player_game_stats | (player_id, season_id) | Advanced tracking stats aggregated |
+| **fact_player_career_stats** | fact_player_season_stats | (player_id) | Career advanced stats + linemate data |
+| **fact_goalie_season_stats** | fact_goalie_game_stats | (player_id, season_id) | Goalie tracking metrics |
+| **fact_goalie_career_stats** | fact_goalie_season_stats | (player_id) | Goalie career tracking |
+| **fact_team_season_stats** | fact_team_game_stats | (team_id, season_id) | Team advanced metrics |
+
+---
+
+### Phases 8-10: Analytics Tables
+
+**File:** `src/tables/event_analytics.py`, `src/tables/shift_analytics.py`, `src/tables/remaining_facts.py`
+
+#### Event Analytics (Phase 8)
+
+| Table | Input | Grain | Logic |
+|-------|-------|-------|-------|
+| **fact_scoring_chances** | fact_events | event_id | High-danger events (xG > threshold) |
+| **fact_shot_danger** | fact_events (shots) | event_id | Danger zone + xG calculation |
+| **fact_linked_events** | fact_events | (event_id_1, event_id_2) | Causal links (shot→rebound, pass→shot) |
+| **fact_rush_events** | fact_events | event_id | Rush identification + speed |
+| **fact_possession_time** | fact_shifts + fact_events | (game_id, team_id) | Possession by zone |
+
+#### Shift Analytics (Phase 9)
+
+| Table | Input | Grain | Logic |
+|-------|-------|-------|-------|
+| **fact_h2h** | fact_shift_players | (player_1_id, player_2_id, game_id) | Head-to-head matchup (together vs apart) |
+| **fact_wowy** | fact_shift_players | (player_id, season_id) | With/Without You season analysis |
+| **fact_line_combos** | fact_shift_players | (season_id, F1, F2, F3) | Forward line combinations |
+| **fact_shift_quality** | fact_shifts + players | shift_id | Shift quality scoring (EV only) |
+| **fact_shift_quality_logical** | fact_shift_quality | shift_id | Quality tiers (Elite/Good/Avg/Below) |
+
+#### Remaining Facts (Phase 10)
+
+**File:** `src/tables/remaining_facts.py` → `build_remaining_tables()`
+
+| Table | Input | Grain | Purpose |
+|-------|-------|-------|---------|
+| **fact_player_period_stats** | fact_player_game_stats | (game_id, player_id, period) | Period breakdown |
+| **fact_period_momentum** | fact_events | (game_id, period) | Momentum analysis |
+| **fact_player_micro_stats** | fact_events | (game_id, player_id, micro_stat_id) | Micro-stat tracking |
+| **fact_player_qoc_summary** | fact_shift_players | (game_id, player_id) | Quality of competition |
+| **fact_player_position_splits** | fact_gameroster | (season_id, player_id, position) | Position splits |
+| **fact_player_trends** | fact_player_season_stats | (season_id, player_id) | Trend analysis |
+| **fact_player_stats_long** | fact_player_game_stats | (game_id, player_id, stat_id) | Unpivoted stats |
+| **fact_player_stats_by_competition_tier** | fact_player_game_stats | (player_id, tier, season) | Stats vs rating tier |
+| **fact_player_pair_stats** | fact_h2h | (player_1_id, player_2_id, season) | Linemate chemistry |
+| **fact_player_boxscore_all** | fact_player_game_stats | (game_id, player_id) | Complete boxscore |
+| **fact_playergames** | fact_gameroster | (game_id, player_id) | Legacy format |
+| **fact_event_chains** | fact_events | (event_chain_key, event_id) | Event sequences |
+| **fact_player_event_chains** | fact_event_chains | (player_id, event_chain_key) | Player in chains |
+| **fact_zone_entry_summary** | fact_events | (game_id, team_id, entry_type) | Entry aggregation |
+| **fact_zone_exit_summary** | fact_events | (game_id, team_id, exit_type) | Exit aggregation |
+| **fact_team_zone_time** | fact_shifts | (game_id, team_id, zone) | Zone possession |
+| **fact_matchup_summary** | fact_shift_players | (player_1, player_2, game_id) | Direct matchups |
+| **fact_matchup_performance** | fact_events | (player_id, opp_team, season) | Vs opponent |
+| **fact_head_to_head** | fact_h2h | (player_1, player_2, season) | Season H2H |
+| **fact_special_teams_summary** | fact_events | (game_id, team_id) | PP/PK stats |
+| **fact_player_xy_long** | fact_events | (game_id, player_id, event_id) | Player location |
+| **fact_player_xy_wide** | fact_events | (game_id, player_id) | Location summary |
+| **fact_puck_xy_long** | fact_events | (game_id, event_id) | Puck location |
+| **fact_puck_xy_wide** | fact_events | (game_id) | Puck summary |
+| **fact_shot_xy** | fact_events (shots) | (game_id, event_id) | Shot locations |
+| **fact_highlights** | fact_events | (game_id, event_id) | Highlight events |
+| **fact_video** | fact_events | (game_id, event_id) | Video references |
+| **fact_team_standings_snapshot** | dim_schedule | (season_id) | Standings |
+| **fact_league_leaders_snapshot** | fact_player_season_stats | (season_id) | Leaders |
+| **lookup_player_game_rating** | dim_player | (game_id, player_id) | Rating lookup |
+
+---
+
+### Phase 11: QA Tables
+
+**File:** `src/qa/build_qa_facts.py`, `src/tables/remaining_facts.py`
+
+| Table | Input | Purpose | Key Checks |
+|-------|-------|---------|------------|
+| **qa_goal_accuracy** | fact_events vs dim_schedule | Validate goal counts | calculated vs official must match |
+| **qa_data_completeness** | fact_event_players | Check coverage | Missing player_ids, missing events |
+| **qa_scorer_comparison** | fact_player_game_stats | Cross-verify scorers | Multiple calculation paths agree |
+| **qa_suspicious_stats** | fact_player_game_stats | Flag anomalies | Statistical outliers |
+| **fact_suspicious_stats** | qa_suspicious_stats | Flagged records | Unusual patterns |
+
+---
+
+### Table Dependency Graph
+
+```
+BLB_Tables.xlsx
+├── dim_player ─────────────────────────────────┐
+├── dim_team ───────────────────────────────────┤
+├── dim_schedule ───────────────────────────────┤
+├── fact_gameroster ────────────────────────────┤
+│       ↓                                       │
+│   Player Lookup (Phase 2)                     │
+│       ↓                                       │
+Tracking Files (games/{id}/)                    │
+├── fact_event_players ─────────────────────────┤
+│       ↓                                       │
+├── fact_events ←───────────────────────────────┤
+│   ├── fact_sequences                          │
+│   │   └── fact_plays                          │
+│   ├── fact_scoring_chances                    │
+│   ├── fact_shot_danger                        │
+│   └── fact_linked_events                      │
+│                                               │
+├── fact_shifts ←───────────────────────────────┤
+│   └── fact_shift_players                      │
+│       ├── fact_h2h                            │
+│       ├── fact_wowy                           │
+│       └── fact_line_combos                    │
+│                                               │
+└───────────────────────────────────────────────┘
+        ↓
+fact_player_game_stats ← (events + shifts + roster + dims)
+        ↓
+├── fact_player_season_stats
+│   └── fact_player_career_stats
+├── fact_team_game_stats
+│   └── fact_team_season_stats
+└── fact_goalie_game_stats
+    └── fact_goalie_season_stats
+            ↓
+        QA Tables (validation)
+```
+
+---
+
+### Key Code Locations Summary
+
+| Component | File | Line | Purpose |
+|-----------|------|------|---------|
+| ETL Orchestrator | `src/core/base_etl.py` | 1-5600 | All phases |
+| BLB Loading | `src/core/base_etl.py` | 956 | Phase 1 |
+| Player Lookup | `src/core/base_etl.py` | 1095 | Phase 2 |
+| Event Builder | `src/builders/events.py` | all | fact_events |
+| Shift Builder | `src/builders/shifts.py` | all | fact_shifts |
+| Static Dims | `src/tables/dimension_tables.py` | all | 23 dim tables |
+| Player Stats | `src/builders/player_stats.py` | all | fact_player_game_stats |
+| Goalie Stats | `src/builders/goalie_stats.py` | all | fact_goalie_game_stats |
+| Team Stats | `src/builders/team_stats.py` | all | fact_team_game_stats |
+| Macro Stats | `src/tables/macro_stats.py` | all | *_season/career_stats |
+| Event Analytics | `src/tables/event_analytics.py` | all | Scoring chances, etc. |
+| Shift Analytics | `src/tables/shift_analytics.py` | all | H2H, WOWY, combos |
+| Remaining | `src/tables/remaining_facts.py` | all | 30+ other tables |
+| QA | `src/qa/build_qa_facts.py` | all | Validation tables |
+| Key Utils | `src/core/key_utils.py` | all | Key generation |
+| Goals Calc | `src/calculations/goals.py` | all | Goal counting logic |
 
 ---
 

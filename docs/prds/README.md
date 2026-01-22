@@ -2,7 +2,7 @@
 
 **PRD-first development - Document before coding**
 
-Last Updated: 2026-01-15
+Last Updated: 2026-01-21
 
 ---
 
@@ -151,8 +151,8 @@ cp docs/prds/template.md docs/prds/features/feature-name.md
 
 ## Related Documentation
 
-- [PLANNING_WORKFLOW.md](PLANNING_WORKFLOW.md) - Planning process
-- [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) - Development workflow
+- [PLANNING_WORKFLOW.md](../workflows/PLANNING_WORKFLOW.md) - Planning process
+- [WORKFLOW.md](../workflows/WORKFLOW.md) - Development workflow
 - [template.md](template.md) - PRD template
 
 ---

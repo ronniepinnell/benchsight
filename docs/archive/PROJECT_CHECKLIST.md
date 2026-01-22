@@ -2,8 +2,8 @@
 
 **Pre-flight checklists for common tasks**
 
-Last Updated: 2026-01-15  
-Version: 29.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
@@ -33,8 +33,8 @@ This document provides checklists for common tasks to ensure nothing is missed a
 
 - [ ] Project status checked: `./benchsight.sh status`
 - [ ] Documentation reviewed: `./benchsight.sh docs`
-- [ ] Current phase understood (see [MASTER_ROADMAP.md](MASTER_ROADMAP.md))
-- [ ] Project scope reviewed (see [PROJECT_SCOPE.md](PROJECT_SCOPE.md))
+- [ ] Current phase understood (see [MASTER_ROADMAP.md](../MASTER_ROADMAP.md))
+- [ ] Project scope reviewed (see [PROJECT_SCOPE.md](../PROJECT_SCOPE.md))
 
 ---
 
@@ -42,7 +42,7 @@ This document provides checklists for common tasks to ensure nothing is missed a
 
 ### Code Quality
 
-- [ ] Code follows [MASTER_RULES.md](MASTER_RULES.md)
+- [ ] Code follows [MASTER_RULES.md](../MASTER_RULES.md)
 - [ ] No TypeScript errors
 - [ ] No Python syntax errors
 - [ ] No console errors
@@ -50,7 +50,7 @@ This document provides checklists for common tasks to ensure nothing is missed a
 - [ ] Functions are < 300 lines
 - [ ] Files are < 1000 lines
 - [ ] No `.iterrows()` used (use vectorized operations)
-- [ ] Goal counting uses correct filter (see [MASTER_RULES.md](MASTER_RULES.md))
+- [ ] Goal counting uses correct filter (see [MASTER_RULES.md](../MASTER_RULES.md))
 
 ### Testing
 
@@ -67,7 +67,7 @@ This document provides checklists for common tasks to ensure nothing is missed a
 - [ ] Type hints added (Python)
 - [ ] Interfaces defined (TypeScript)
 - [ ] Relevant documentation updated
-- [ ] [MASTER_INDEX.md](MASTER_INDEX.md) updated (if new docs added)
+- [ ] [MASTER_INDEX.md](../MASTER_INDEX.md) updated (if new docs added)
 
 ### Git
 
@@ -321,8 +321,8 @@ This document provides checklists for common tasks to ensure nothing is missed a
 
 - [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) - Development workflows
 - [MAINTENANCE_GUIDE.md](MAINTENANCE_GUIDE.md) - Maintenance guide
-- [MASTER_RULES.md](MASTER_RULES.md) - Rules and standards
-- [COMMANDS.md](COMMANDS.md) - Command reference
+- [MASTER_RULES.md](../MASTER_RULES.md) - Rules and standards
+- [COMMANDS.md](../COMMANDS.md) - Command reference
 
 ---
 

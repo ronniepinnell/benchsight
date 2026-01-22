@@ -227,9 +227,9 @@ Related Issues: #issue-number
 
 ## Related Documents
 
-- [Related PRD](link)
-- [Architecture Doc](link)
-- [Component Doc](link)
+- Related PRD: TBD
+- Architecture Doc: TBD
+- Component Doc: TBD
 
 ---
 

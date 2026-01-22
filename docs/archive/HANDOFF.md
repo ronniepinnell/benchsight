@@ -1,7 +1,7 @@
 # BenchSight Chat Handoff Document
 
-Last Updated: 2026-01-13
-Version: 29.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ## Purpose
 

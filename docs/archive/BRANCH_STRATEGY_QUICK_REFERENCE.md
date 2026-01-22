@@ -181,4 +181,4 @@ git reset --hard origin/branch-name  # Reset to remote state
 
 ---
 
-*See [DEV_SANDBOX_SETUP.md](DEV_SANDBOX_SETUP.md) for complete guide*
+*See [DEV_ENV.md](../setup/DEV_ENV.md) for complete guide*

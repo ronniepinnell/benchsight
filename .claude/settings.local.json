@@ -1,10 +1,8 @@
 {
   "permissions": {
     "allow": [
-<<<<<<< Updated upstream
       "Bash(ls:*)",
-      "Bash(git rev-parse:*)"
-=======
+      "Bash(git rev-parse:*)",
       "Bash(cd:*)",
       "Bash(git -C /Users/ronniepinnell/Documents/Documents - Ronnie''s MacBook Pro - 1/Programming_HD/Hockey/Benchsight/git/benchsight status -s)",
       "Bash(grep:*)",
@@ -13,8 +11,22 @@
       "Bash(do if [ -d \"$dir/.git\" ])",
       "Bash(then echo \"GIT REPO: $dir\")",
       "Bash(fi)",
-      "Bash(done)"
->>>>>>> Stashed changes
+      "Bash(done)",
+      "Bash(wc:*)",
+      "Bash(sort:*)",
+      "Bash(xargs:*)",
+      "Bash(tree:*)",
+      "Bash(chmod:*)",
+      "Bash(./scripts/cleanup_archive.sh:*)",
+      "Bash(python:*)",
+      "Bash(gh auth status:*)",
+      "Bash(git remote get-url:*)",
+      "Bash(gh auth login:*)",
+      "Bash(sudo chown:*)",
+      "Bash(cat:*)",
+      "Bash(./scripts/create-github-issues.sh)",
+      "Bash(gh issue list:*)",
+      "Bash(gh issue view:*)"
     ]
   }
 }

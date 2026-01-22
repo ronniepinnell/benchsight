@@ -2,8 +2,8 @@
 
 **Standard development workflows for BenchSight**
 
-Last Updated: 2026-01-15  
-Version: 29.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
@@ -69,12 +69,12 @@ This document outlines standard development workflows for working on BenchSight,
    - Use PRD template: `docs/prds/template.md`
    - Document problem, solution, technical design
    - Break into phases
-   - See [PLANNING_WORKFLOW.md](PLANNING_WORKFLOW.md)
+   - See [PLANNING_WORKFLOW.md](../workflows/PLANNING_WORKFLOW.md)
 
 2. **Review requirements**
-   - Check [PROJECT_SCOPE.md](PROJECT_SCOPE.md)
-   - Review [MASTER_ROADMAP.md](MASTER_ROADMAP.md)
-   - Check [PROJECT_STATUS.md](PROJECT_STATUS.md)
+   - Check [PROJECT_SCOPE.md](../PROJECT_SCOPE.md)
+   - Review [MASTER_ROADMAP.md](../MASTER_ROADMAP.md)
+   - Check [PROJECT_STATUS.md](../PROJECT_STATUS.md)
 
 3. **Design feature**
    - Plan component structure
@@ -84,7 +84,7 @@ This document outlines standard development workflows for working on BenchSight,
 4. **Context Reset**
    - After planning, start new conversation
    - Reference PRD in execution
-   - See [CONTEXT_RESET_STRATEGY.md](CONTEXT_RESET_STRATEGY.md)
+   - See [CONTEXT_RESET_STRATEGY.md](../workflows/CONTEXT_RESET_STRATEGY.md)
 
 5. **Create feature branch**
    ```bash
@@ -103,7 +103,7 @@ This document outlines standard development workflows for working on BenchSight,
 
 2. **Implement feature**
    - Write code
-   - Follow [MASTER_RULES.md](MASTER_RULES.md)
+   - Follow [MASTER_RULES.md](../MASTER_RULES.md)
    - Use existing patterns
    - Test as you go
 
@@ -202,7 +202,7 @@ This document outlines standard development workflows for working on BenchSight,
 
 2. **Implement fix**
    - Fix root cause (not symptoms)
-   - Follow [MASTER_RULES.md](MASTER_RULES.md)
+   - Follow [MASTER_RULES.md](../MASTER_RULES.md)
    - Test fix thoroughly
 
 3. **Test fix**
@@ -314,12 +314,12 @@ This document outlines standard development workflows for working on BenchSight,
    - Update examples
 
 3. **Project documentation**
-   - Update [PROJECT_STATUS.md](PROJECT_STATUS.md)
-   - Update [MASTER_ROADMAP.md](MASTER_ROADMAP.md)
+   - Update [PROJECT_STATUS.md](../PROJECT_STATUS.md)
+   - Update [MASTER_ROADMAP.md](../MASTER_ROADMAP.md)
    - Update relevant component docs
 
 4. **Update index**
-   - Update [MASTER_INDEX.md](MASTER_INDEX.md) if new docs added
+   - Update [MASTER_INDEX.md](../MASTER_INDEX.md) if new docs added
 
 ---
 
@@ -390,7 +390,7 @@ This document outlines standard development workflows for working on BenchSight,
 
 ### Before Submitting PR
 
-- [ ] Code follows [MASTER_RULES.md](MASTER_RULES.md)
+- [ ] Code follows [MASTER_RULES.md](../MASTER_RULES.md)
 - [ ] Tests pass
 - [ ] Validation passes
 - [ ] Documentation updated
@@ -448,7 +448,7 @@ This document outlines standard development workflows for working on BenchSight,
 
 ### Code Quality
 
-- Follow [MASTER_RULES.md](MASTER_RULES.md)
+- Follow [MASTER_RULES.md](../MASTER_RULES.md)
 - Write clean, readable code
 - Use meaningful names
 - Add comments for complex logic
@@ -479,14 +479,14 @@ This document outlines standard development workflows for working on BenchSight,
 
 ## Related Documentation
 
-- [MASTER_RULES.md](MASTER_RULES.md) - Rules and standards
+- [MASTER_RULES.md](../MASTER_RULES.md) - Rules and standards
 - [PROJECT_CHECKLIST.md](PROJECT_CHECKLIST.md) - Pre-flight checklist
-- [COMMANDS.md](COMMANDS.md) - Command reference
+- [COMMANDS.md](../COMMANDS.md) - Command reference
 - [MAINTENANCE_GUIDE.md](MAINTENANCE_GUIDE.md) - Maintenance guide
 - [COMPLETE_WORKFLOW_GUIDE.md](COMPLETE_WORKFLOW_GUIDE.md) - Complete workflow for Supabase, GitHub, Vercel, agents, MCPs
 - [PRE_RESTRUCTURING_CHECKLIST.md](PRE_RESTRUCTURING_CHECKLIST.md) - Pre-restructuring preparation checklist
-- [PLANNING_WORKFLOW.md](PLANNING_WORKFLOW.md) - PRD-first development
-- [CONTEXT_RESET_STRATEGY.md](CONTEXT_RESET_STRATEGY.md) - Context management strategy
+- [PLANNING_WORKFLOW.md](../workflows/PLANNING_WORKFLOW.md) - PRD-first development
+- [CONTEXT_RESET_STRATEGY.md](../workflows/CONTEXT_RESET_STRATEGY.md) - Context management strategy
 
 ---
 

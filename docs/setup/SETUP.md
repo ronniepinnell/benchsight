@@ -2,8 +2,8 @@
 
 **Complete installation and configuration instructions**
 
-Last Updated: 2026-01-15  
-Version: 29.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
@@ -491,7 +491,7 @@ After setup is complete:
 
 - **Documentation**: See `docs/` directory
 - **Commands**: See [COMMANDS.md](../COMMANDS.md) for complete command reference
-- **Workflows**: See [workflows/DEVELOPMENT_WORKFLOW.md](../workflows/DEVELOPMENT_WORKFLOW.md) for development workflows
+- **Workflows**: See [workflows/WORKFLOW.md](../workflows/WORKFLOW.md) for development workflows
 
 ---
 

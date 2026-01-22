@@ -2,8 +2,8 @@
 
 **Complete guide for setting up Vercel for dashboard development and deployment**
 
-Last Updated: 2026-01-15  
-Version: 29.0
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
@@ -300,7 +300,7 @@ vercel dev
 - [DEV_ENV_COMPLETE.md](DEV_ENV_COMPLETE.md) - Complete dev environment guide
 - [DEV_ENV_SUPABASE.md](DEV_ENV_SUPABASE.md) - Supabase setup
 - [PRODUCTION_SETUP.md](PRODUCTION_SETUP.md) - Production deployment
-- [GET_WEBSITE_LIVE.md](GET_WEBSITE_LIVE.md) - Quick deployment guide
+- [QUICK_DEPLOYMENT_GUIDE.md](../deployment/QUICK_DEPLOYMENT_GUIDE.md) - Quick deployment guide
 
 ---
 

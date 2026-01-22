@@ -2,8 +2,8 @@
 
 **Complete export data structure and format specification**
 
-Last Updated: 2026-01-15  
-Version: 23.5
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 

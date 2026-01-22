@@ -2,7 +2,7 @@
 
 **Strategy for keeping documentation in sync with code**
 
-Last Updated: 2026-01-15
+Last Updated: 2026-01-21
 
 ---
 
@@ -84,13 +84,28 @@ Documentation must stay in sync with code. This document outlines the strategy f
 
 ### Automated Checks
 
-**Use:** `scripts/docs-check.sh`
+**Use:** `./scripts/docs-check.sh`
 
 **Checks:**
 - Broken links
 - Cross-references
 - Outdated docs
 - Doc structure
+
+### Suggested Automation
+
+- **Pre-commit:** Run docs check on `docs/**` changes
+- **CI:** Run docs check on PRs touching docs
+- **Weekly:** Schedule a docs link check and update `MASTER_INDEX.md` if needed
+
+### Pre-Commit Setup
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+**Config:** `.pre-commit-config.yaml`
 
 ### Manual Checks
 
@@ -230,8 +245,8 @@ Documentation must stay in sync with code. This document outlines the strategy f
 
 ## Related Documentation
 
-- [MASTER_INDEX.md](MASTER_INDEX.md) - Documentation index
-- [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) - Development workflow
+- [MASTER_INDEX.md](../MASTER_INDEX.md) - Documentation index
+- [WORKFLOW.md](WORKFLOW.md) - Development workflow
 - `scripts/docs-check.sh` - Documentation check script
 
 ---
