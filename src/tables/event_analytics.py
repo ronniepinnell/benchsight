@@ -350,10 +350,133 @@ def calculate_xg_from_xy(distance: float, angle: float,
     
     # Rebound modifier
     rebound_mod = 1.25 if is_rebound else 1.0
-    
+
     # Calculate final xG
     xg = base_xg * shot_type_mod * rush_mod * rebound_mod
     return round(min(xg, 0.95), 3)  # Cap at 95%
+
+
+def create_fact_goals() -> pd.DataFrame:
+    """
+    Create fact_goals table - filtered view of goal events.
+
+    Goals are counted when BOTH conditions are true:
+    - event_type = 'Goal'
+    - event_detail = 'Goal_Scored'
+
+    This follows the CLAUDE.md goal counting rule.
+    """
+    print("\nBuilding fact_goals...")
+
+    events = load_table('fact_events')
+    if len(events) == 0:
+        print("  ERROR: fact_events not found!")
+        return pd.DataFrame()
+
+    # Apply goal filter per CLAUDE.md rules
+    goals = events[
+        (events['event_type'].astype(str).str.lower() == 'goal') &
+        (events['event_detail'].astype(str).str.lower() == 'goal_scored')
+    ].copy()
+
+    # Add goal-specific key
+    if len(goals) > 0:
+        goals['goal_key'] = 'GL' + goals['event_id'].astype(str)
+        goals['_export_timestamp'] = pd.Timestamp.now().isoformat()
+
+    print(f"  Created {len(goals)} goal records from {len(events)} events")
+    return goals
+
+
+def create_fact_shots() -> pd.DataFrame:
+    """
+    Create fact_shots table - filtered view of shot events.
+
+    Shots are events where event_type = 'Shot'.
+    Note: Goals are NOT shots - they are separate events.
+    """
+    print("\nBuilding fact_shots...")
+
+    events = load_table('fact_events')
+    if len(events) == 0:
+        print("  ERROR: fact_events not found!")
+        return pd.DataFrame()
+
+    # Filter to shot events only
+    shots = events[
+        events['event_type'].astype(str).str.lower() == 'shot'
+    ].copy()
+
+    # Add shot-specific key
+    if len(shots) > 0:
+        shots['shot_key'] = 'SH' + shots['event_id'].astype(str)
+        shots['_export_timestamp'] = pd.Timestamp.now().isoformat()
+
+    print(f"  Created {len(shots)} shot records from {len(events)} events")
+    return shots
+
+
+def create_fact_assists() -> pd.DataFrame:
+    """
+    Create fact_assists table - assists from event_players.
+
+    An assist is credited when a player has '%assist%' in play_detail1 or play_detail_2.
+    Only primary and secondary assists count (per CLAUDE.md).
+    AssistTertiary is NOT counted as an assist.
+    Stats are only counted for event_player_1 rows (per CLAUDE.md Stat Counting rule).
+    """
+    print("\nBuilding fact_assists...")
+
+    event_players = load_table('fact_event_players')
+    if len(event_players) == 0:
+        print("  ERROR: fact_event_players not found!")
+        return pd.DataFrame()
+
+    # Filter to event_player_1 only per STAT COUNTING rule in CLAUDE.md
+    ep1_mask = event_players['player_role'].astype(str).str.lower() == 'event_player_1'
+
+    # Find assist records - check both play_detail columns (play_detail1, play_detail_2)
+    assist_mask = pd.Series([False] * len(event_players))
+
+    for col in ['play_detail1', 'play_detail_2']:
+        if col in event_players.columns:
+            col_str = event_players[col].astype(str).str.lower()
+            # Include primary and secondary assists, exclude tertiary
+            assist_mask |= (
+                col_str.str.contains('assist', na=False) &
+                ~col_str.str.contains('tertiary', na=False)
+            )
+
+    # Combine: must be event_player_1 AND have assist notation
+    assists = event_players[ep1_mask & assist_mask].copy()
+
+    if len(assists) > 0:
+        # Determine assist type using vectorized string operations (no .apply)
+        pd1_lower = assists['play_detail1'].astype(str).str.lower() if 'play_detail1' in assists.columns else pd.Series([''] * len(assists))
+        pd2_lower = assists['play_detail_2'].astype(str).str.lower() if 'play_detail_2' in assists.columns else pd.Series([''] * len(assists))
+
+        # Check for primary first (in either column), then secondary
+        is_primary = pd1_lower.str.contains('primary', na=False) | pd2_lower.str.contains('primary', na=False)
+        is_secondary = pd1_lower.str.contains('secondary', na=False) | pd2_lower.str.contains('secondary', na=False)
+
+        assists['assist_type'] = np.where(is_primary, 'Primary',
+                                  np.where(is_secondary, 'Secondary', 'Unknown'))
+
+        # Create assist_key from available columns (event_player_key may not exist yet in Phase 4D)
+        if 'event_player_key' in assists.columns:
+            assists['assist_key'] = 'AS' + assists['event_player_key'].astype(str)
+        else:
+            # Create key from game_id, event_id, player_id
+            assists['assist_key'] = (
+                'AS' +
+                assists['game_id'].astype(str) + '_' +
+                assists['event_id'].astype(str) + '_' +
+                assists['player_id'].astype(str)
+            )
+        assists['_export_timestamp'] = pd.Timestamp.now().isoformat()
+
+    print(f"  Created {len(assists)} assist records from {len(event_players)} event_player records")
+    return assists
 
 
 def create_fact_scoring_chances() -> pd.DataFrame:
@@ -984,9 +1107,28 @@ def create_all_event_analytics():
     print("\n" + "=" * 70)
     print("CREATING EVENT ANALYTICS TABLES")
     print("=" * 70)
-    
+
     results = {}
-    
+
+    # Basic event filters (goals, shots, assists)
+    df = create_fact_goals()
+    if len(df) > 0:
+        rows = save_table(df, 'fact_goals')
+        results['fact_goals'] = rows
+        print(f"  ✓ fact_goals: {rows} rows")
+
+    df = create_fact_shots()
+    if len(df) > 0:
+        rows = save_table(df, 'fact_shots')
+        results['fact_shots'] = rows
+        print(f"  ✓ fact_shots: {rows} rows")
+
+    df = create_fact_assists()
+    if len(df) > 0:
+        rows = save_table(df, 'fact_assists')
+        results['fact_assists'] = rows
+        print(f"  ✓ fact_assists: {rows} rows")
+
     # 1. Scoring chances
     df = create_fact_scoring_chances()
     if len(df) > 0:
