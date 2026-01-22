@@ -216,6 +216,8 @@ Set in Vercel Dashboard → Project Settings → Environment Variables:
 - **Commit format:** `[TYPE] Brief description` (FEAT, FIX, DOCS, REFACTOR, TEST, CHORE)
 - **PRD-first:** Create PRD in `docs/prds/` before implementing features
 - **Never push directly to `main`** - all changes go through `develop` first
+- **Never use "Closes #XX" in PR descriptions** - issues are closed manually after verification
+- **Never include "Generated with Claude Code" in PRs** - omit this footer entirely
 
 
 
