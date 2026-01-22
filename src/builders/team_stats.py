@@ -89,9 +89,11 @@ class TeamStatsBuilder:
         
         # Method 1: Use event_players to find events where team has event_player_1
         if len(event_players) > 0:
+            # Use player_team_id (actual column name) instead of team_id
+            team_col = 'player_team_id' if 'player_team_id' in event_players.columns else 'team_id'
             team_primary_player_events = event_players[
-                (event_players['game_id'] == game_id) & 
-                (event_players['team_id'] == team_id) &
+                (event_players['game_id'] == game_id) &
+                (event_players[team_col] == team_id) &
                 (event_players['player_role'].astype(str).str.lower() == 'event_player_1')
             ]
             team_event_ids = team_primary_player_events['event_id'].unique()
@@ -160,8 +162,8 @@ class TeamStatsBuilder:
         # Count all events where any team player has BlockedShot
         if len(event_players) > 0:
             team_event_players = event_players[
-                (event_players['game_id'] == game_id) & 
-                (event_players['team_id'] == team_id)
+                (event_players['game_id'] == game_id) &
+                (event_players[team_col] == team_id)
             ]
             if 'play_detail1' in team_event_players.columns:
                 blocks_df = team_event_players[
@@ -232,8 +234,8 @@ class TeamStatsBuilder:
             if len(event_players) > 0:
                 period_event_ids = period_events['event_id'].unique()
                 period_team_event_players = event_players[
-                    (event_players['game_id'] == game_id) & 
-                    (event_players['team_id'] == team_id) &
+                    (event_players['game_id'] == game_id) &
+                    (event_players[team_col] == team_id) &
                     (event_players['event_id'].isin(period_event_ids))
                 ]
                 if 'play_detail1' in period_team_event_players.columns:

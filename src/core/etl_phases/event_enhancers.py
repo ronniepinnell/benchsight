@@ -20,6 +20,9 @@ from src.utils.key_parser import parse_shift_key
 # Import table writer for saving
 from src.core.table_writer import save_output_table
 
+# Import safe CSV reader
+from src.core.safe_csv import safe_read_csv
+
 # Import utilities
 from .utilities import drop_all_null_columns
 
@@ -40,13 +43,13 @@ def enhance_event_tables(output_dir: Path, log, table_store_available: bool = Fa
     if len(tracking) == 0:
         tracking_path = output_dir / 'fact_event_players.csv'
         if tracking_path.exists():
-            tracking = pd.read_csv(tracking_path, low_memory=False)
+            tracking = safe_read_csv(tracking_path)
 
     events = get_table_from_store('fact_events', output_dir) if table_store_available and get_table_from_store else pd.DataFrame()
     if len(events) == 0:
         events_path = output_dir / 'fact_events.csv'
         if events_path.exists():
-            events = pd.read_csv(events_path, low_memory=False)
+            events = safe_read_csv(events_path)
 
     if len(tracking) == 0 or len(events) == 0:
         log.warn("Event tables not found, skipping enhancement")
@@ -56,25 +59,25 @@ def enhance_event_tables(output_dir: Path, log, table_store_available: bool = Fa
     if len(shifts) == 0:
         shifts_path = output_dir / 'fact_shifts.csv'
         if shifts_path.exists():
-            shifts = pd.read_csv(shifts_path, low_memory=False)
+            shifts = safe_read_csv(shifts_path)
 
     players = get_table_from_store('dim_player', output_dir) if table_store_available and get_table_from_store else pd.DataFrame()
     if len(players) == 0:
         players_path = output_dir / 'dim_player.csv'
         if players_path.exists():
-            players = pd.read_csv(players_path, low_memory=False)
+            players = safe_read_csv(players_path)
 
     schedule = get_table_from_store('dim_schedule', output_dir) if table_store_available and get_table_from_store else pd.DataFrame()
     if len(schedule) == 0:
         schedule_path = output_dir / 'dim_schedule.csv'
         if schedule_path.exists():
-            schedule = pd.read_csv(schedule_path, low_memory=False)
+            schedule = safe_read_csv(schedule_path)
 
     roster = get_table_from_store('fact_gameroster', output_dir) if table_store_available and get_table_from_store else pd.DataFrame()
     if len(roster) == 0:
         roster_path = output_dir / 'fact_gameroster.csv'
         if roster_path.exists():
-            roster = pd.read_csv(roster_path, low_memory=False)
+            roster = safe_read_csv(roster_path)
 
     log.info(f"Enhancing fact_event_players: {len(tracking)} rows, {len(tracking.columns)} cols")
     log.info(f"Enhancing fact_events: {len(events)} rows, {len(events.columns)} cols")
@@ -159,13 +162,13 @@ def enhance_event_tables(output_dir: Path, log, table_store_available: bool = Fa
         log.warn("    Shift time columns not found, skipping shift_id FK")
 
     # Load dimension tables for mapping
-    shot_type = pd.read_csv(output_dir / 'dim_shot_type.csv', low_memory=False)
-    ze_type = pd.read_csv(output_dir / 'dim_zone_entry_type.csv', low_memory=False)
-    zx_type = pd.read_csv(output_dir / 'dim_zone_exit_type.csv', low_memory=False)
-    pass_type = pd.read_csv(output_dir / 'dim_pass_type.csv', low_memory=False)
-    stoppage_type = pd.read_csv(output_dir / 'dim_stoppage_type.csv', low_memory=False)
-    giveaway_type = pd.read_csv(output_dir / 'dim_giveaway_type.csv', low_memory=False)
-    takeaway_type = pd.read_csv(output_dir / 'dim_takeaway_type.csv', low_memory=False)
+    shot_type = safe_read_csv(output_dir / 'dim_shot_type.csv')
+    ze_type = safe_read_csv(output_dir / 'dim_zone_entry_type.csv')
+    zx_type = safe_read_csv(output_dir / 'dim_zone_exit_type.csv')
+    pass_type = safe_read_csv(output_dir / 'dim_pass_type.csv')
+    stoppage_type = safe_read_csv(output_dir / 'dim_stoppage_type.csv')
+    giveaway_type = safe_read_csv(output_dir / 'dim_giveaway_type.csv')
+    takeaway_type = safe_read_csv(output_dir / 'dim_takeaway_type.csv')
 
     # 1. player_name
     log.info("  Adding player_name...")
@@ -280,7 +283,7 @@ def enhance_event_tables(output_dir: Path, log, table_store_available: bool = Fa
     log.info("  Adding stoppage_type_id...")
     stoppage_type_path = output_dir / 'dim_stoppage_type.csv'
     if stoppage_type_path.exists():
-        stoppage_dim = pd.read_csv(stoppage_type_path)
+        stoppage_dim = safe_read_csv(stoppage_type_path)
         # Build mapping from code to ID
         stoppage_map = dict(zip(stoppage_dim['stoppage_type_code'], stoppage_dim['stoppage_type_id']))
     else:
@@ -296,7 +299,7 @@ def enhance_event_tables(output_dir: Path, log, table_store_available: bool = Fa
     # Dynamic lookup from dim_giveaway_type - match event_detail_2 to giveaway_type_code
     giveaway_type_path = output_dir / 'dim_giveaway_type.csv'
     if giveaway_type_path.exists():
-        giveaway_dim = pd.read_csv(giveaway_type_path)
+        giveaway_dim = safe_read_csv(giveaway_type_path)
         # VECTORIZED: Build mapping from code to ID (handles variations like / vs _)
         giveaway_map = dict(zip(giveaway_dim['giveaway_type_code'], giveaway_dim['giveaway_type_id']))
         # Also map variations (replace / with _)
@@ -329,7 +332,7 @@ def enhance_event_tables(output_dir: Path, log, table_store_available: bool = Fa
     log.info("  Adding takeaway_type_id...")
     takeaway_type_path = output_dir / 'dim_takeaway_type.csv'
     if takeaway_type_path.exists():
-        takeaway_dim = pd.read_csv(takeaway_type_path)
+        takeaway_dim = safe_read_csv(takeaway_type_path)
         # VECTORIZED: Build takeaway map
         takeaway_map = dict(zip(takeaway_dim['takeaway_type_code'], takeaway_dim['takeaway_type_id']))
         takeaway_map.update(dict(zip(
@@ -517,7 +520,7 @@ def _build_cycle_events(tracking, events, output_dir, log):
     - Includes Pass and Possession events
     - Ends with: Shot, Goal, Turnover, Zone exit, or possession change
     """
-    teams = pd.read_csv(output_dir / 'dim_team.csv')
+    teams = safe_read_csv(output_dir / 'dim_team.csv')
     team_name_to_id = dict(zip(teams['team_name'], teams['team_id']))
 
     # Get primary player rows only for detection
@@ -698,8 +701,8 @@ def enhance_derived_event_tables(output_dir: Path, log):
     log.section("PHASE 5.6: ENHANCE DERIVED EVENT TABLES")
 
     # Load fact_events with new FKs for lookup
-    events = pd.read_csv(output_dir / 'fact_events.csv', low_memory=False)
-    tracking = pd.read_csv(output_dir / 'fact_event_players.csv', low_memory=False)
+    events = safe_read_csv(output_dir / 'fact_events.csv')
+    tracking = safe_read_csv(output_dir / 'fact_event_players.csv')
 
     # Create lookup maps from events
     event_fks = ['season_id', 'time_bucket_id', 'strength_id', 'shot_type_id',
@@ -721,7 +724,7 @@ def enhance_derived_event_tables(output_dir: Path, log):
     log.info("Enhancing fact_player_event_chains...")
     pec_path = output_dir / 'fact_player_event_chains.csv'
     if pec_path.exists():
-        pec = pd.read_csv(pec_path, low_memory=False)
+        pec = safe_read_csv(pec_path)
 
         # Skip if empty or missing event_key
         if len(pec) > 0 and 'event_key' in pec.columns:
@@ -739,7 +742,7 @@ def enhance_derived_event_tables(output_dir: Path, log):
     log.info("Enhancing fact_tracking...")
     ft_path = output_dir / 'fact_tracking.csv'
     if ft_path.exists():
-        ft = pd.read_csv(ft_path, low_memory=False)
+        ft = safe_read_csv(ft_path)
 
         # Add FKs via tracking_event_key
         for col in ['season_id', 'time_bucket_id', 'strength_id']:
@@ -780,8 +783,8 @@ def enhance_events_with_flags(output_dir: Path, log, save_table_func=None):
         log.warn("fact_events not found, skipping enhancement")
         return
 
-    events = pd.read_csv(events_path, low_memory=False)
-    tracking = pd.read_csv(tracking_path, low_memory=False)
+    events = safe_read_csv(events_path)
+    tracking = safe_read_csv(tracking_path)
 
     # Get first row per event for time/context
     first_per_event = tracking[tracking['player_role'] == 'event_player_1'].copy()
@@ -822,7 +825,7 @@ def enhance_events_with_flags(output_dir: Path, log, save_table_func=None):
     if not ze_type_path.exists():
         raise FileNotFoundError(f"dim_zone_entry_type.csv not found - must run dim table creation first")
 
-    ze_types = pd.read_csv(ze_type_path)
+    ze_types = safe_read_csv(ze_type_path)
     controlled_entry_ids = ze_types[ze_types['is_controlled'] == True]['zone_entry_type_id'].tolist()
     carried_entry_ids = ze_types[ze_types['zone_entry_type_name'].str.contains('Carried', na=False)]['zone_entry_type_id'].tolist()
 
@@ -843,7 +846,7 @@ def enhance_events_with_flags(output_dir: Path, log, save_table_func=None):
     if not zx_type_path.exists():
         raise FileNotFoundError(f"dim_zone_exit_type.csv not found - must run dim table creation first")
 
-    zx_types = pd.read_csv(zx_type_path)
+    zx_types = safe_read_csv(zx_type_path)
     controlled_exit_ids = zx_types[zx_types['is_controlled'] == True]['zone_exit_type_id'].tolist()
     carried_exit_ids = zx_types[zx_types['zone_exit_type_name'].str.contains('Carried', na=False)]['zone_exit_type_id'].tolist()
 
