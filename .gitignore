@@ -56,6 +56,16 @@ env/
 # Claude Code
 .claude/usage.log
 .claude/plans/
+.claude/settings.local.json
+
+# Obsidian (editor)
+.obsidian/
+
+# Generated documentation (can regenerate)
+docs/html/
+docs/table-docs/
+docs/code-docs/
+docs/component-docs/
 
 # Debug artifacts
 data/debug/
