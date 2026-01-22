@@ -239,26 +239,48 @@ def build_fact_puck_xy_long(event_players: pd.DataFrame) -> pd.DataFrame:
     
     records = []
     for _, row in puck_data.iterrows():
+        event_id = row['event_id'] if 'event_id' in row.index else None
+        game_id = row['game_id'] if 'game_id' in row.index else None
+        
+        if not event_id:
+            continue
+            
         for i in POINT_NUMBERS:
-            x = row.get(f'puck_x_{i}')
-            y = row.get(f'puck_y_{i}')
+            x_col = f'puck_x_{i}'
+            y_col = f'puck_y_{i}'
+            
+            if x_col not in row.index or y_col not in row.index:
+                continue
+                
+            x = row[x_col]
+            y = row[y_col]
             
             if pd.notna(x) and pd.notna(y):
+                try:
+                    x_float = float(x)
+                    y_float = float(y)
+                except (ValueError, TypeError):
+                    continue
+                    
                 records.append({
-                    'puck_xy_key': f"PKL{row.get('game_id', '')}{str(row.get('event_id', ''))[-5:]}{i:02d}",
-                    'event_id': row['event_id'],
-                    'game_id': row.get('game_id'),
+                    'puck_xy_key': f"PKL{game_id or ''}{str(event_id)[-5:]}{i:02d}",
+                    'event_id': event_id,
+                    'game_id': game_id,
                     'point_number': i,
-                    'x': x,
-                    'y': y,
-                    'distance_to_net': calculate_distance_to_net(x, y),
-                    'angle_to_net': calculate_angle_to_net(x, y),
+                    'x': x_float,
+                    'y': y_float,
+                    'distance_to_net': calculate_distance_to_net(x_float, y_float),
+                    'angle_to_net': calculate_angle_to_net(x_float, y_float),
                     '_export_timestamp': datetime.now().isoformat()
                 })
     
     df = pd.DataFrame(records)
-    save_output_table(df, 'fact_puck_xy_long', OUTPUT_DIR)
-    logger.info(f"  ✓ fact_puck_xy_long: {len(df)} rows")
+    if len(df) > 0:
+        # Save directly to ensure it's saved even if save_output_table skips empty
+        df.to_csv(OUTPUT_DIR / 'fact_puck_xy_long.csv', index=False)
+        logger.info(f"  ✓ fact_puck_xy_long: {len(df)} rows (saved directly)")
+    else:
+        logger.info("  ⚠ fact_puck_xy_long: 0 rows (no data found)")
     return df
 
 
@@ -343,30 +365,53 @@ def build_fact_player_xy_long(event_players: pd.DataFrame) -> pd.DataFrame:
     
     records = []
     for _, row in player_data.iterrows():
+        event_id = row['event_id'] if 'event_id' in row.index else None
+        game_id = row['game_id'] if 'game_id' in row.index else None
+        player_id = row['player_id'] if 'player_id' in row.index else None
+        
+        if not event_id or not player_id:
+            continue
+            
         for i in POINT_NUMBERS:
-            x = row.get(f'player_x_{i}')
-            y = row.get(f'player_y_{i}')
+            x_col = f'player_x_{i}'
+            y_col = f'player_y_{i}'
+            
+            if x_col not in row.index or y_col not in row.index:
+                continue
+                
+            x = row[x_col]
+            y = row[y_col]
             
             if pd.notna(x) and pd.notna(y):
+                try:
+                    x_float = float(x)
+                    y_float = float(y)
+                except (ValueError, TypeError):
+                    continue
+                    
                 records.append({
-                    'player_xy_key': f"PXL{row.get('game_id', '')}{str(row.get('event_id', ''))[-5:]}{str(row.get('player_id', ''))[-4:]}{i:02d}",
-                    'event_id': row.get('event_id'),
-                    'game_id': row.get('game_id'),
-                    'player_id': row.get('player_id'),
-                    'player_name': row.get('player_name'),
-                    'player_role': row.get('player_role'),
+                    'player_xy_key': f"PXL{game_id or ''}{str(event_id)[-5:]}{str(player_id)[-4:]}{i:02d}",
+                    'event_id': event_id,
+                    'game_id': game_id,
+                    'player_id': player_id,
+                    'player_name': row['player_name'] if 'player_name' in row.index else None,
+                    'player_role': row['player_role'] if 'player_role' in row.index else None,
                     'is_event_team': 'event_player' in str(row.get('player_role', '')),
                     'point_number': i,
-                    'x': x,
-                    'y': y,
-                    'distance_to_net': calculate_distance_to_net(x, y),
-                    'angle_to_net': calculate_angle_to_net(x, y),
+                    'x': x_float,
+                    'y': y_float,
+                    'distance_to_net': calculate_distance_to_net(x_float, y_float),
+                    'angle_to_net': calculate_angle_to_net(x_float, y_float),
                     '_export_timestamp': datetime.now().isoformat()
                 })
     
     df = pd.DataFrame(records)
-    save_output_table(df, 'fact_player_xy_long', OUTPUT_DIR)
-    logger.info(f"  ✓ fact_player_xy_long: {len(df)} rows")
+    if len(df) > 0:
+        # Save directly to ensure it's saved even if save_output_table skips empty
+        df.to_csv(OUTPUT_DIR / 'fact_player_xy_long.csv', index=False)
+        logger.info(f"  ✓ fact_player_xy_long: {len(df)} rows (saved directly)")
+    else:
+        logger.info("  ⚠ fact_player_xy_long: 0 rows (no data found)")
     return df
 
 

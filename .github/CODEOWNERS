@@ -1,0 +1,45 @@
+# Code Owners
+# Each line is a file pattern followed by one or more owners.
+# Order is important; the last matching pattern takes precedence.
+
+# Global owners
+* @ronniepinnell
+
+# ETL Pipeline
+/src/ @ronniepinnell
+/run_etl.py @ronniepinnell
+/validate.py @ronniepinnell
+/upload.py @ronniepinnell
+
+# API
+/api/ @ronniepinnell
+
+# Dashboard
+/ui/dashboard/ @ronniepinnell
+
+# Tracker
+/ui/tracker/ @ronniepinnell
+
+# Portal
+/ui/portal/ @ronniepinnell
+
+# Documentation
+/docs/ @ronniepinnell
+README.md @ronniepinnell
+
+# Configuration
+/config/ @ronniepinnell
+/.claude/ @ronniepinnell
+/.agents/ @ronniepinnell
+/.cursorrules @ronniepinnell
+/.coderabbit.yaml @ronniepinnell
+
+# GitHub workflows
+/.github/ @ronniepinnell
+
+# Scripts
+/scripts/ @ronniepinnell
+/benchsight.sh @ronniepinnell
+
+# SQL
+/sql/ @ronniepinnell

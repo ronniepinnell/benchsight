@@ -18,6 +18,7 @@ data/raw/**/*.xlsx
 data/raw/**/*.csv
 data/.dtype_optimization_results.json
 data/.etl_*.json
+data/tracking_backup*
 
 # Node modules
 node_modules/
@@ -51,3 +52,15 @@ logs/
 .env.local
 venv/
 env/
+
+# Claude Code
+.claude/usage.log
+.claude/plans/
+
+# Debug artifacts
+data/debug/
+*.bak
+*.tmp
+
+# Local configs (keep templates, ignore local overrides)
+config/config_local.ini

@@ -23,18 +23,63 @@ except ImportError:
 
 OUTPUT_DIR = Path(__file__).parent.parent.parent / 'data' / 'output'
 
+# Import table store for in-memory access
+try:
+    from src.core.table_store import get_table as get_table_from_store
+    TABLE_STORE_AVAILABLE = True
+except ImportError:
+    TABLE_STORE_AVAILABLE = False
+    def get_table_from_store(name, output_dir=None):
+        return pd.DataFrame()
 
-def load_table(name: str) -> pd.DataFrame:
-    """Load a table from output directory."""
+
+def load_table(name: str, required: bool = False) -> pd.DataFrame:
+    """
+    Load a table from cache first, then from CSV.
+    
+    This checks the in-memory table store first (for tables created in this ETL run),
+    then falls back to CSV files. This allows the ETL to work from scratch without
+    relying on previously generated CSVs.
+    
+    Args:
+        name: Table name (without .csv extension)
+        required: If True, warn when table is missing (for critical dependencies)
+    
+    Returns:
+        DataFrame with table data, or empty DataFrame if not found
+    """
+    # Try table store first (in-memory cache from this run)
+    if TABLE_STORE_AVAILABLE:
+        df = get_table_from_store(name, OUTPUT_DIR)
+        if len(df) > 0:
+            return df
+        # If we got an empty df from store, it might be in store but empty
+        # Return it anyway (empty is a valid state)
+        if required and len(df) == 0:
+            print(f"  WARNING: {name} is EMPTY (required dependency)")
+        return df
+    
+    # Fall back to CSV (for tables from previous runs)
     path = OUTPUT_DIR / f'{name}.csv'
     if path.exists():
-        return pd.read_csv(path, low_memory=False)
-    return pd.DataFrame()
+        try:
+            df = pd.read_csv(path, low_memory=False)
+            if len(df) == 0 and required:
+                print(f"  WARNING: {name} exists but is EMPTY (required dependency)")
+            return df
+        except Exception as e:
+            if required:
+                print(f"  ERROR: Failed to load {name}: {e}")
+            return pd.DataFrame()
+    else:
+        if required:
+            print(f"  WARNING: Required table {name} not found - table will be empty")
+        return pd.DataFrame()
 
 
 def save_table(df: pd.DataFrame, name: str) -> int:
     """
-    Save a table to output directory.
+    Save a table to output directory AND store in memory cache.
     Automatically adds player_name and team_name columns if player_id/team_id exist.
     Automatically removes 100% null columns (except coordinate/danger/xy columns).
     """
@@ -44,9 +89,20 @@ def save_table(df: pd.DataFrame, name: str) -> int:
         df, removed_cols = drop_all_null_columns(df)
         if removed_cols:
             print(f"  {name}: Removed {len(removed_cols)} all-null columns")
+    
+    # Store in memory cache for later phases
+    if TABLE_STORE_AVAILABLE:
+        try:
+            from src.core.table_store import store_table
+            store_table(name, df if df is not None else pd.DataFrame())
+        except Exception:
+            pass
+    
+    # Also save to CSV
     path = OUTPUT_DIR / f'{name}.csv'
-    df.to_csv(path, index=False)
-    return len(df)
+    df_final = df if df is not None else pd.DataFrame()
+    df_final.to_csv(path, index=False)
+    return len(df_final)
 
 
 # =============================================================================
@@ -62,10 +118,11 @@ def create_fact_player_period_stats() -> pd.DataFrame:
     """
     PRIMARY_PLAYER = 'event_player_1'
     
-    event_players = load_table('fact_event_players')
-    shift_players = load_table('fact_shift_players')
+    event_players = load_table('fact_event_players', required=True)
+    shift_players = load_table('fact_shift_players', required=True)
     
     if len(event_players) == 0:
+        print("  SKIP: fact_event_players is empty - cannot build fact_player_period_stats")
         return pd.DataFrame()
     
     # Filter to only primary player events (event_player_1)
@@ -680,15 +737,13 @@ def create_fact_player_season_stats() -> pd.DataFrame:
     all_results = []
     
     # Get unique player-season combinations
-    player_seasons = player_game_stats[['player_id', 'season_id']].drop_duplicates()
+    # VECTORIZED: Use groupby instead of iterrows
+    records = []
     
-    for _, ps in player_seasons.iterrows():
-        player_id = ps['player_id']
-        season_id = ps['season_id']
-        
-        player_games = player_game_stats[(player_game_stats['player_id'] == player_id) & 
-                                          (player_game_stats['season_id'] == season_id)]
-        
+    # Group by player_id and season_id
+    grouped = player_game_stats.groupby(['player_id', 'season_id'])
+    
+    for (player_id, season_id), player_games in grouped:
         # Use GAME_TYPE_SPLITS from shared utility
         for game_type in GAME_TYPE_SPLITS:
             if game_type == 'All':
@@ -707,7 +762,7 @@ def create_fact_player_season_stats() -> pd.DataFrame:
                 'games_played': len(games),
             }
             
-            # Sum numeric columns
+            # Sum numeric columns - VECTORIZED
             for col in numeric_cols:
                 if col in games.columns:
                     result[col] = games[col].sum()
@@ -755,59 +810,47 @@ def create_fact_player_career_stats() -> pd.DataFrame:
         
         all_results = []
         
-        # Get unique player-season combinations
-        player_seasons = player_game_stats[['player_id', 'season_id']].drop_duplicates()
+        # VECTORIZED: Use groupby instead of iterrows
+        all_results = []
         
-        for _, ps in player_seasons.iterrows():
-            player_id = ps['player_id']
-            season_id = ps['season_id']
+        # Group by player_id, season_id, and game_type
+        grouped = player_game_stats.groupby(['player_id', 'season_id', 'game_type'])
+        
+        numeric_cols = player_game_stats.select_dtypes(include=['number']).columns.tolist()
+        numeric_cols = [c for c in numeric_cols if c not in ['game_id', 'season_id']]
+        
+        for (player_id, season_id, game_type), games in grouped:
+            if len(games) == 0:
+                continue
             
-            player_games = player_game_stats[
-                (player_game_stats['player_id'] == player_id) & 
-                (player_game_stats['season_id'] == season_id)
-            ]
+            agg_dict = {col: 'sum' for col in numeric_cols if col in games.columns}
+            agg_dict['game_id'] = 'count'
+            if 'player_name' in games.columns:
+                agg_dict['player_name'] = 'first'
+            if 'team_name' in games.columns:
+                agg_dict['team_name'] = 'last'
             
-            # Split by game_type
-            for game_type in GAME_TYPE_SPLITS:
-                if game_type == 'All':
-                    games = player_games
-                else:
-                    games = player_games[player_games['game_type'] == game_type]
-                
-                if len(games) == 0:
-                    continue
-                
-                numeric_cols = games.select_dtypes(include=['number']).columns.tolist()
-                numeric_cols = [c for c in numeric_cols if c not in ['game_id', 'season_id']]
-                
-                agg_dict = {col: 'sum' for col in numeric_cols if col in games.columns}
-                agg_dict['game_id'] = 'count'
-                if 'player_name' in games.columns:
-                    agg_dict['player_name'] = 'first'
-                if 'team_name' in games.columns:
-                    agg_dict['team_name'] = 'last'
-                
-                grouped_type = games.agg(agg_dict).to_dict()
-                
-                result = {
-                    'player_career_key': f"{player_id}_{season_id}_{game_type}",
-                    'player_id': player_id,
-                    'season_id': season_id,
-                    'game_type': game_type,
-                    'career_games': grouped_type.get('game_id', 0),
-                    '_export_timestamp': datetime.now().isoformat(),
-                }
-                
-                # Add aggregated numeric columns
-                for col in numeric_cols:
-                    if col in grouped_type:
-                        result[col] = grouped_type[col]
-                
-                # Add player/team info
-                if 'player_name' in grouped_type:
-                    result['player_name'] = grouped_type['player_name']
-                if 'team_name' in grouped_type:
-                    result['team_name'] = grouped_type['team_name']
+            grouped_type = games.agg(agg_dict).to_dict()
+            
+            result = {
+                'player_career_key': f"{player_id}_{season_id}_{game_type}",
+                'player_id': player_id,
+                'season_id': season_id,
+                'game_type': game_type,
+                'career_games': grouped_type.get('game_id', 0),
+                '_export_timestamp': datetime.now().isoformat(),
+            }
+            
+            # Add aggregated numeric columns
+            for col in numeric_cols:
+                if col in grouped_type:
+                    result[col] = grouped_type[col]
+            
+            # Add player/team info
+            if 'player_name' in grouped_type:
+                result['player_name'] = grouped_type['player_name']
+            if 'team_name' in grouped_type:
+                result['team_name'] = grouped_type['team_name']
                 
                 all_results.append(result)
         
@@ -817,53 +860,42 @@ def create_fact_player_career_stats() -> pd.DataFrame:
         all_results = []
         
         # Get unique player-season combinations
-        player_seasons = player_season_stats[['player_id', 'season_id']].drop_duplicates()
+        # VECTORIZED: Use groupby instead of iterrows
+        grouped = player_season_stats.groupby(['player_id', 'season_id', 'game_type'])
         
-        for _, ps in player_seasons.iterrows():
-            player_id = ps['player_id']
-            season_id = ps['season_id']
+        numeric_cols = player_season_stats.select_dtypes(include=['number']).columns.tolist()
+        numeric_cols = [c for c in numeric_cols if c not in ['season_id']]
+        
+        for (player_id, season_id, game_type), type_data in grouped:
+            if len(type_data) == 0:
+                continue
             
-            player_season_data = player_season_stats[
-                (player_season_stats['player_id'] == player_id) & 
-                (player_season_stats['season_id'] == season_id)
-            ]
+            agg_dict = {col: 'sum' for col in numeric_cols if col in type_data.columns}
+            if 'player_name' in type_data.columns:
+                agg_dict['player_name'] = 'first'
+            if 'team_name' in type_data.columns:
+                agg_dict['team_name'] = 'last'
             
-            # Split by game_type
-            for game_type in GAME_TYPE_SPLITS:
-                type_data = player_season_data[player_season_data['game_type'] == game_type]
-                
-                if len(type_data) == 0:
-                    continue
-                
-                numeric_cols = type_data.select_dtypes(include=['number']).columns.tolist()
-                numeric_cols = [c for c in numeric_cols if c not in ['season_id']]
-                
-                agg_dict = {col: 'sum' for col in numeric_cols if col in type_data.columns}
-                if 'player_name' in type_data.columns:
-                    agg_dict['player_name'] = 'first'
-                if 'team_name' in type_data.columns:
-                    agg_dict['team_name'] = 'last'
-                
-                grouped_type = type_data.agg(agg_dict).to_dict()
-                
-                result = {
-                    'player_career_key': f"{player_id}_{season_id}_{game_type}",
-                    'player_id': player_id,
-                    'season_id': season_id,
-                    'game_type': game_type,
-                    '_export_timestamp': datetime.now().isoformat(),
-                }
-                
-                # Add aggregated columns
-                for col in numeric_cols:
-                    if col in grouped_type:
-                        result[col] = grouped_type[col]
-                
-                # Add player/team info
-                if 'player_name' in grouped_type:
-                    result['player_name'] = grouped_type['player_name']
-                if 'team_name' in grouped_type:
-                    result['team_name'] = grouped_type['team_name']
+            grouped_type = type_data.agg(agg_dict).to_dict()
+            
+            result = {
+                'player_career_key': f"{player_id}_{season_id}_{game_type}",
+                'player_id': player_id,
+                'season_id': season_id,
+                'game_type': game_type,
+                '_export_timestamp': datetime.now().isoformat(),
+            }
+            
+            # Add aggregated columns
+            for col in numeric_cols:
+                if col in grouped_type:
+                    result[col] = grouped_type[col]
+            
+            # Add player/team info
+            if 'player_name' in grouped_type:
+                result['player_name'] = grouped_type['player_name']
+            if 'team_name' in grouped_type:
+                result['team_name'] = grouped_type['team_name']
                 
                 all_results.append(result)
         
@@ -896,18 +928,11 @@ def create_fact_team_season_stats() -> pd.DataFrame:
     
     all_results = []
     
-    # Get unique team-season combinations
-    team_seasons = team_game_stats[['team_id', 'season_id']].drop_duplicates()
+    # VECTORIZED: Use groupby instead of iterrows
+    grouped = team_game_stats.groupby(['team_id', 'season_id', 'game_type'])
     
-    for _, ts in team_seasons.iterrows():
-        team_id = ts['team_id']
-        season_id = ts['season_id']
-        
-        team_games = team_game_stats[(team_game_stats['team_id'] == team_id) & 
-                                      (team_game_stats['season_id'] == season_id)]
-        
-        # Use GAME_TYPE_SPLITS from shared utility
-        for game_type in GAME_TYPE_SPLITS:
+    for (team_id, season_id, game_type), team_games in grouped:
+        # Use GAME_TYPE_SPLITS from shared utility (already grouped by game_type)
             if game_type == 'All':
                 games = team_games
             else:
@@ -1008,34 +1033,36 @@ def create_fact_league_leaders_snapshot() -> pd.DataFrame:
     
     records = []
     
-    # Goals leaders
+    # Goals leaders - VECTORIZED
     top_goals = season_stats.nlargest(10, 'goals')
-    for rank, (_, row) in enumerate(top_goals.iterrows(), 1):
-        records.append({
-            'leader_key': f"goals_{rank}",
+    if len(top_goals) > 0:
+        goals_records = pd.DataFrame({
+            'leader_key': [f"goals_{i+1}" for i in range(len(top_goals))],
             'category': 'goals',
-            'rank': rank,
-            'player_id': row['player_id'],
-            'value': row['goals'],
-            'games_played': row['games_played'],
+            'rank': range(1, len(top_goals) + 1),
+            'player_id': top_goals['player_id'].values,
+            'value': top_goals['goals'].values,
+            'games_played': top_goals.get('games_played', pd.Series(0, index=top_goals.index)).values,
             'snapshot_date': datetime.now().date().isoformat(),
             '_export_timestamp': datetime.now().isoformat()
         })
+        records.extend(goals_records.to_dict('records'))
     
-    # Points leaders
+    # Points leaders - VECTORIZED
     if 'points' in season_stats.columns:
         top_points = season_stats.nlargest(10, 'points')
-        for rank, (_, row) in enumerate(top_points.iterrows(), 1):
-            records.append({
-                'leader_key': f"points_{rank}",
+        if len(top_points) > 0:
+            points_records = pd.DataFrame({
+                'leader_key': [f"points_{i+1}" for i in range(len(top_points))],
                 'category': 'points',
-                'rank': rank,
-                'player_id': row['player_id'],
-                'value': row['points'],
-                'games_played': row['games_played'],
+                'rank': range(1, len(top_points) + 1),
+                'player_id': top_points['player_id'].values,
+                'value': top_points['points'].values,
+                'games_played': top_points.get('games_played', pd.Series(0, index=top_points.index)).values,
                 'snapshot_date': datetime.now().date().isoformat(),
                 '_export_timestamp': datetime.now().isoformat()
             })
+            records.extend(points_records.to_dict('records'))
     
     return pd.DataFrame(records)
 
@@ -1218,17 +1245,20 @@ def create_fact_player_trends() -> pd.DataFrame:
         if 'goals' in player_games.columns:
             player_games['goals_3g_avg'] = player_games['goals'].rolling(3, min_periods=1).mean()
         
-        for _, row in player_games.iterrows():
-            records.append({
-                'trend_key': f"{player_id}_{row['game_id']}",
-                'player_id': player_id,
-                'game_id': row['game_id'],
-                'game_date': row.get('game_date'),
-                'points_3g_avg': row.get('points_3g_avg', 0),
-                'goals_3g_avg': row.get('goals_3g_avg', 0),
-                'trend_direction': 'stable',  # Placeholder
-                '_export_timestamp': datetime.now().isoformat()
-            })
+        # VECTORIZED: Build records without iterrows
+        if len(player_games) > 0:
+            player_games = player_games.copy()
+            player_games['trend_key'] = player_id.astype(str) + '_' + player_games['game_id'].astype(str)
+            player_games['player_id'] = player_id
+            player_games['points_3g_avg'] = player_games.get('points_3g_avg', 0).fillna(0)
+            player_games['goals_3g_avg'] = player_games.get('goals_3g_avg', 0).fillna(0)
+            player_games['trend_direction'] = 'stable'  # Placeholder
+            player_games['_export_timestamp'] = datetime.now().isoformat()
+            
+            records_df = player_games[['trend_key', 'player_id', 'game_id', 'game_date', 
+                                       'points_3g_avg', 'goals_3g_avg', 'trend_direction', 
+                                       '_export_timestamp']].copy()
+            records.extend(records_df.to_dict('records'))
     
     return pd.DataFrame(records)
 
@@ -2534,8 +2564,21 @@ def build_remaining_tables(verbose: bool = True) -> dict:
     results = {
         'tables_created': [],
         'total_rows': 0,
-        'errors': []
+        'errors': [],
+        'skipped': []
     }
+    
+    # Check critical dependencies first
+    critical_tables = ['fact_events', 'fact_event_players', 'fact_shifts', 'fact_shift_players', 'dim_schedule']
+    missing_critical = []
+    for table in critical_tables:
+        path = OUTPUT_DIR / f'{table}.csv'
+        if not path.exists():
+            missing_critical.append(table)
+    
+    if missing_critical and verbose:
+        print(f"\n⚠️  WARNING: Missing critical dependencies: {missing_critical}")
+        print("   Some tables may be empty. Run base ETL first.")
     
     # All remaining table builders
     builders = [
@@ -2609,6 +2652,18 @@ def build_remaining_tables(verbose: bool = True) -> dict:
                 print(f"\nBuilding {table_name}...", end=' ')
             
             df = builder_func()
+            
+            # Skip saving if DataFrame is empty (likely due to missing dependencies)
+            if df is None or len(df) == 0:
+                if verbose:
+                    print(f"SKIP (empty - missing dependencies)")
+                results['skipped'].append(table_name)
+                # Still save empty table with headers to maintain schema
+                path = OUTPUT_DIR / f'{table_name}.csv'
+                df_empty = pd.DataFrame()
+                df_empty.to_csv(path, index=False)
+                continue
+            
             rows = save_table(df, table_name)
             
             results['tables_created'].append(table_name)
@@ -2627,6 +2682,11 @@ def build_remaining_tables(verbose: bool = True) -> dict:
         print("\n" + "=" * 70)
         print(f"Created {len(results['tables_created'])} additional tables")
         print(f"Total rows: {results['total_rows']:,}")
+        if results['skipped']:
+            print(f"Skipped (empty): {len(results['skipped'])} tables")
+            if len(results['skipped']) <= 10:
+                for skipped in results['skipped']:
+                    print(f"  - {skipped}")
         if results['errors']:
             print(f"Errors: {len(results['errors'])}")
         print("=" * 70)

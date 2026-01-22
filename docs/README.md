@@ -1,204 +1,96 @@
-# BenchSight Documentation Index
+# BenchSight Documentation
 
-**Complete guide to all BenchSight documentation**
+**Complete documentation index**
 
-Last Updated: 2026-01-13
-
-**Note:** Temporary handoff documents have been moved to `docs/archive/`. See `docs/archive/README.md` for details.
-
----
-
-## 🚀 Getting Started
-
-**New users should read these first:**
-
-1. **[QUICK_START.md](QUICK_START.md)** - Get running in 5 minutes
-2. **[SETUP.md](SETUP.md)** - Complete installation and configuration
-3. **[ARCHITECTURE.md](ARCHITECTURE.md)** - Understand the system design
+Last Updated: 2026-01-21
+Version: 2.00
 
 ---
 
-## 📖 Core Documentation
+## Quick Navigation
 
-### System Overview
-- **[ARCHITECTURE.md](ARCHITECTURE.md)** - System design, data flow, and architecture
-- **[ETL.md](ETL.md)** - ETL pipeline details and phases
-- **[DATA_DICTIONARY.md](DATA_DICTIONARY.md)** - Complete table and column definitions
-- **[DATA_LINEAGE.md](DATA_LINEAGE.md)** - Data lineage and dependencies
+### 🚀 Getting Started
+- [Setup Guide](setup/SETUP.md) - Complete setup instructions
+- [Quick Start](archive/QUICK_START.md) - Get running in 5 minutes
+- [Commands Reference](COMMANDS.md) - All CLI commands
 
-### Development
-- **[CODE_STANDARDS.md](CODE_STANDARDS.md)** - Coding standards and best practices
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** - How to contribute to the project
-- **[MAINTENANCE.md](MAINTENANCE.md)** - Maintenance procedures and checklists
-- **[HANDOFF.md](HANDOFF.md)** - Continuity between development sessions
+### 📊 Core Documentation
+- [Master Index](MASTER_INDEX.md) - Complete documentation index
+- [Master Roadmap](MASTER_ROADMAP.md) - Project roadmap (with commercial context)
+- [Master Implementation Plan](MASTER_IMPLEMENTATION_PLAN.md) - Detailed phased implementation plan
+- [Tech Stack Roadmap](TECH_STACK_ROADMAP.md) - Current and future tech stack
+- [Master Rules](MASTER_RULES.md) - Coding standards
+- [Project Status](PROJECT_STATUS.md) - Current status
+- [Project Scope](PROJECT_SCOPE.md) - Project scope
+- [QA Strategy](QA_STRATEGY.md) - ETL QA strategy
+- [Testing Strategy](TESTING_STRATEGY.md) - Testing strategy
+- [Project Spec](PROJECT_SPEC.md) - Consolidated product + tech spec
+- [Claude/Cursor Guide](CLAUDE.md) - Claude/Cursor operating guide
+- [Start Here](START_HERE.md) - Onboarding reading list
 
-### Deployment & Integration
-- **[SUPABASE.md](SUPABASE.md)** - Supabase setup and configuration
-- **[SUPABASE_RESET_GAMEPLAN.md](SUPABASE_RESET_GAMEPLAN.md)** - Step-by-step Supabase deployment
-- **[SUPABASE_UPDATE.md](SUPABASE_UPDATE.md)** - Supabase update procedures
-- **[NEXTJS_DASHBOARD_GUIDE.md](NEXTJS_DASHBOARD_GUIDE.md)** - Next.js 14 dashboard implementation
-- **[DASHBOARD_INTEGRATION.md](DASHBOARD_INTEGRATION.md)** - Dashboard integration guide
-- **[deployment/](deployment/)** - Deployment guides and procedures (see [deployment/README.md](deployment/README.md))
-- **[deployment/](deployment/)** - Deployment guides and instructions (see [deployment/README.md](deployment/README.md))
-- **[troubleshooting/](troubleshooting/)** - Troubleshooting guides and quick fixes (see [troubleshooting/README.md](troubleshooting/README.md))
+### 🔄 Workflows
+- [Workflow Guide](workflows/WORKFLOW.md) - End-to-end development workflow
+- [Planning Workflow](workflows/PLANNING_WORKFLOW.md) - PRD-first development
 
-### Phase 1 Implementation
-- **[PHASE1_QUICK_START.md](PHASE1_QUICK_START.md)** - 🚀 **START HERE** - How to use Phase 1 plans
-- **[PHASE1_PROGRESS.md](PHASE1_PROGRESS.md)** - 📊 Track your implementation progress
-- **[PHASE1_ETL_API_PLAN.md](PHASE1_ETL_API_PLAN.md)** - ⭐ Detailed ETL API implementation plan
-- **[ADMIN_PORTAL_SPEC.md](ADMIN_PORTAL_SPEC.md)** - ⭐ Admin portal backend specification
+### 🛠️ Setup & Environments
+- [Setup Guide](setup/SETUP.md) - Complete setup
+- [Environments Guide](environments/ENVIRONMENTS.md) - Dev/prod environments
+- [Dev Environment Setup](setup/DEV_ENV.md) - Dev environment setup
 
----
+### 📊 Components
+- [ETL Documentation](etl/ETL.md) - ETL pipeline
+  - [ETL Flow Diagrams](etl/ETL_FLOW_DIAGRAMS.md) - Visual ETL flow diagrams
+- [Dashboard Documentation](dashboard/DASHBOARD_ARCHITECTURE.md) - Dashboard
+  - [Dashboard Architecture Diagrams](dashboard/DASHBOARD_ARCHITECTURE_DIAGRAMS.md) - Visual dashboard diagrams
+- [Tracker Documentation](tracker/TRACKER_REFERENCE.md) - Tracker reference
+  - [Tracker Architecture Diagrams](tracker/TRACKER_ARCHITECTURE_DIAGRAMS.md) - Visual tracker diagrams
+  - [Tracker Conversion Plan](tracker/TRACKER_CONVERSION.md) - Rust/Next.js conversion
+- [API Documentation](api/API.md) - Complete API documentation
+  - [API Architecture Diagrams](api/API_ARCHITECTURE_DIAGRAMS.md) - Visual API diagrams
+- [Portal Documentation](portal/PORTAL.md) - Complete portal documentation
+  - [Portal Architecture Diagrams](portal/PORTAL_ARCHITECTURE_DIAGRAMS.md) - Visual portal diagrams
+- [Data Documentation](data/DATA.md) - Complete data reference
+  - [Data Dictionary](data/DATA_DICTIONARY.md) - Comprehensive data dictionary
+  - [Schema ERD](data/SCHEMA_ERD.md) - Database schema diagrams
+  - [Calculation Flows](data/CALCULATION_FLOWS.md) - Calculation flow diagrams
+  - [Schema Scalability Design](data/SCHEMA_SCALABILITY_DESIGN.md) - Multi-tenant schema design
 
-## 📊 Data Documentation
-
-### Data Definitions
-- **[DATA_DICTIONARY.md](DATA_DICTIONARY.md)** - Complete table/column reference
-- **[DATA_DICTIONARY_FULL.md](DATA_DICTIONARY_FULL.md)** - Auto-generated full dictionary (enhanced with code extraction)
-- **[SRC_MODULES_GUIDE.md](SRC_MODULES_GUIDE.md)** - Complete guide to all src/ modules, data flow, and where to update code
-- **[TABLE_INVENTORY.md](TABLE_INVENTORY.md)** - Table inventory and counts
-- **[TABLE_MANIFEST.md](TABLE_MANIFEST.md)** - Table manifest and metadata
-
-### Validation
-- **[VALIDATION.md](VALIDATION.md)** - Validation procedures
-- **[VALIDATION_PLAN.md](VALIDATION_PLAN.md)** - Validation strategy
-- **[VALIDATION_FINDINGS.md](VALIDATION_FINDINGS.md)** - Validation results
-- **[VALIDATION_LOG.md](VALIDATION_LOG.md)** - Validation history
-
-### Data Quality
-- **[TRACKING_ERRORS.md](TRACKING_ERRORS.md)** - Known tracking errors
-- **[GOALIE_STATS_LIMITATIONS.md](GOALIE_STATS_LIMITATIONS.md)** - Goalie stats limitations
-
----
-
-## 🎯 Domain-Specific Documentation
-
-### Hockey Analytics
-- **[RUSH_DEFINITIONS.md](RUSH_DEFINITIONS.md)** - Rush event definitions
-- **[RUSH_TERMINOLOGY.md](RUSH_TERMINOLOGY.md)** - Rush terminology
-- **[TRACKER_DROPDOWN_MAP.md](TRACKER_DROPDOWN_MAP.md)** - Tracker dropdown mappings
-
-### Calculations
-- **[CALCULATION_LOG.md](CALCULATION_LOG.md)** - Calculation history and changes
-- **[FUTURE_COLUMNS.md](FUTURE_COLUMNS.md)** - Planned future columns
+### ✅ Checklists
+- [All Checklists](checklists/CHECKLISTS.md) - All checklists
 
 ---
 
-## 📝 Project Management
-
-- **[CHANGELOG.md](CHANGELOG.md)** - Version history and changes
-- **[TODO.md](TODO.md)** - Current tasks and priorities
-- **[ROADMAP.md](ROADMAP.md)** - Future development roadmap
-- **[STRATEGIC_ASSESSMENT.md](STRATEGIC_ASSESSMENT.md)** - ⭐ Current state vs. end goal analysis
-- **[STRATEGIC_ROADMAP.md](STRATEGIC_ROADMAP.md)** - ⭐ 16-week path to commercial product
-- **[HONEST_ASSESSMENT.md](HONEST_ASSESSMENT.md)** - Project assessment
-- **[HONEST_OPINIONS.md](HONEST_OPINIONS.md)** - Development opinions
-
----
-
-## 🔧 Technical Reference
-
-### Code Documentation
-- **[SRC_MANIFEST.md](SRC_MANIFEST.md)** - Source code manifest
-- **[CODE_STANDARDS.md](CODE_STANDARDS.md)** - Coding standards
-
-### SQL Reference
-- See `../sql/` directory for SQL scripts
-- **[sql/views/VIEW_CATALOG.md](../sql/views/VIEW_CATALOG.md)** - View documentation
-
-### Cleanup & Audit
-- **[CLEANUP_AUDIT.md](CLEANUP_AUDIT.md)** - Code cleanup audit
-
----
-
-## 📁 Documentation Structure
+## Documentation Structure
 
 ```
 docs/
-├── README.md (this file)          # Documentation index
-├── QUICK_START.md                  # 5-minute quick start
-├── SETUP.md                        # Installation guide
-├── ARCHITECTURE.md                 # System design
-├── ETL.md                          # ETL pipeline
-├── DATA_DICTIONARY.md              # Table definitions
-├── CODE_STANDARDS.md               # Coding standards
-├── CONTRIBUTING.md                 # Contribution guide
-├── CHANGELOG.md                    # Version history
-├── TODO.md                         # Current tasks
-├── deployment/                     # Deployment guides and instructions
-├── troubleshooting/                # Troubleshooting guides and fixes
-├── validated_tables/               # Validated table docs
-├── html/                           # Generated HTML docs
-└── archive/                        # Archived temporary/handoff docs
+├── README.md                    # This file
+├── MASTER_INDEX.md             # Complete index
+├── MASTER_ROADMAP.md           # Roadmap
+├── MASTER_RULES.md             # Rules
+├── PROJECT_STATUS.md           # Status
+├── setup/                      # Setup guides
+├── environments/               # Environment guides
+├── tracker/                    # Tracker docs
+├── api/                        # API docs
+├── portal/                     # Portal docs
+├── checklists/                 # Checklists
+├── reference/                  # Reference materials
+├── prds/                       # PRDs
+└── archive/                    # Archived docs
 ```
 
 ---
 
-## 🔍 Finding What You Need
+### 💼 Commercial Documentation
+- [Competitor Analysis](commercial/COMPETITOR_ANALYSIS.md) - Deep competitor research
+- [Gap Analysis](commercial/GAP_ANALYSIS.md) - Current vs target vs competitors
+- [Monetization Strategy](commercial/MONETIZATION_STRATEGY.md) - Pricing and revenue models
+- [Commercial Roadmap Visuals](commercial/COMMERCIAL_ROADMAP_VISUALS.md) - Commercial roadmap diagrams
 
-### "How do I..."
-- **Set up the project?** → [SETUP.md](SETUP.md)
-- **Run the ETL?** → [QUICK_START.md](QUICK_START.md) or [ETL.md](ETL.md)
-- **Understand the architecture?** → [ARCHITECTURE.md](ARCHITECTURE.md)
-- **Find table definitions?** → [DATA_DICTIONARY.md](DATA_DICTIONARY.md)
-- **Contribute code?** → [CONTRIBUTING.md](CONTRIBUTING.md)
-- **Deploy to Supabase?** → [SUPABASE_RESET_GAMEPLAN.md](SUPABASE_RESET_GAMEPLAN.md) or [deployment/](deployment/)
-- **Build the dashboard?** → [NEXTJS_DASHBOARD_GUIDE.md](NEXTJS_DASHBOARD_GUIDE.md)
-- **Fix deployment issues?** → [deployment/](deployment/)
-- **Troubleshoot Git/GitHub issues?** → [troubleshooting/](troubleshooting/)
-
-### "What is..."
-- **A rush event?** → [RUSH_DEFINITIONS.md](RUSH_DEFINITIONS.md)
-- **The goal counting rule?** → [CODE_STANDARDS.md](CODE_STANDARDS.md) (Critical Rules section)
-- **The current version?** → [CHANGELOG.md](CHANGELOG.md)
-- **The project status?** → [TODO.md](TODO.md) and [ROADMAP.md](ROADMAP.md)
-
-### "I need to..."
-- **Fix a bug** → [CODE_STANDARDS.md](CODE_STANDARDS.md) and [CONTRIBUTING.md](CONTRIBUTING.md)
-- **Add a feature** → [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_STANDARDS.md](CODE_STANDARDS.md)
-- **Validate data** → [VALIDATION.md](VALIDATION.md)
-- **Update documentation** → [CONTRIBUTING.md](CONTRIBUTING.md) (Documentation section)
-- **Deploy the project** → [deployment/README.md](deployment/README.md)
-- **Troubleshoot issues** → [troubleshooting/README.md](troubleshooting/README.md)
+### ✅ Verification & Quality
+- [Documentation Verification Summary](DOCUMENTATION_VERIFICATION_SUMMARY.md) - Complete verification of all documentation against codebase
 
 ---
 
-## 📚 Documentation Standards
-
-All documentation should:
-- Be clear and concise
-- Include code examples where helpful
-- Cross-reference related documents
-- Update "Last Updated" dates when changed
-- Follow consistent formatting
-
----
-
-## 🔄 Keeping Documentation Current
-
-**When to update docs:**
-- Adding new features → Update relevant docs + CHANGELOG.md
-- Changing behavior → Update affected docs
-- Fixing bugs → Update known issues in HANDOFF.md
-- Improving clarity → Update any relevant docs
-
-**Documentation checklist:**
-- [ ] Updated relevant documentation files
-- [ ] Updated CHANGELOG.md (if significant)
-- [ ] Updated "Last Updated" dates
-- [ ] Added cross-references
-- [ ] Verified links work
-
----
-
-## 💡 Tips
-
-1. **Start with Quick Start** - Don't skip the basics
-2. **Read Architecture** - Understand the system before diving in
-3. **Check CODE_STANDARDS** - Follow the rules, especially goal counting
-4. **Use Search** - Most docs are searchable
-5. **Check CHANGELOG** - See what changed recently
-
----
-
-*Last updated: 2026-01-13*
+*Last Updated: 2026-01-15*

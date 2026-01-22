@@ -205,7 +205,20 @@ def validate_dimension_tables() -> Dict[str, List[str]]:
             issues[table] = table_issues
             continue
         
-        df = pd.read_csv(path)
+        try:
+            df = pd.read_csv(path)
+            if len(df) == 0:
+                table_issues.append("Table is empty")
+                issues[table] = table_issues
+                continue
+        except pd.errors.EmptyDataError:
+            table_issues.append("Table file is empty (no columns)")
+            issues[table] = table_issues
+            continue
+        except Exception as e:
+            table_issues.append(f"Error reading table: {e}")
+            issues[table] = table_issues
+            continue
         
         # Check required columns
         missing_cols = [c for c in spec['required_cols'] if c not in df.columns]
@@ -1039,7 +1052,7 @@ def propagate_toi_to_derived_tables():
         try:
             df = pd.read_csv(table_path, low_memory=False)
             
-            if 'event_id' not in df.columns:
+            if len(df) == 0 or 'event_id' not in df.columns:
                 continue
             
             # Remove existing TOI columns to avoid duplicates

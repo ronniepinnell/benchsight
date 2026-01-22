@@ -2,290 +2,294 @@
 
 **Hockey Analytics Platform for NORAD Recreational League**
 
-Version: 29.0  
-Updated: 2026-01-13
-
----
-
-## 🚀 Getting Started
-
-**New to BenchSight?** Start here:
-
-1. **[Quick Start Guide](docs/QUICK_START.md)** - Get running in 5 minutes
-2. **[Setup Instructions](docs/SETUP.md)** - Complete installation guide
-3. **[Architecture Overview](docs/ARCHITECTURE.md)** - Understand the system
+[![Status](https://img.shields.io/badge/status-70%25%20complete-yellow)]()
+[![Version](https://img.shields.io/badge/version-29.0-blue)]()
+[![CodeRabbit](https://img.shields.io/badge/CodeRabbit-enabled-green)]()
+[![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-enabled-green)]()
 
 ---
 
 ## Quick Start
 
+Get up and running in 5 minutes:
+
 ```bash
-# 1. Run ETL (generates 139 tables)
-python run_etl.py
+# Run ETL pipeline
+./benchsight.sh etl run
 
-# 2. Validate output
-python validate.py
+# Start dashboard
+./benchsight.sh dashboard dev
 
-# 3. Generate Supabase schema
-python upload.py --schema
-
-# 4. Create tables in Supabase SQL Editor
-# Run: sql/reset_supabase.sql
-
-# 5. Upload data to Supabase
-python upload.py
-
-# 6. Deploy views in Supabase SQL Editor
-# Run: sql/views/99_DEPLOY_ALL_VIEWS.sql
+# Check project status
+./benchsight.sh status
 ```
 
-### Upload Commands
-
-| Command | Description |
-|---------|-------------|
-| `python upload.py` | Upload all 139 tables |
-| `python upload.py --dims` | Dimension tables only |
-| `python upload.py --facts` | Fact tables only |
-| `python upload.py --tables dim_player fact_events` | Specific tables |
-| `python upload.py --pattern "fact_player*"` | Pattern matching |
-| `python upload.py --list` | List available tables |
-| `python upload.py --dry-run` | Preview without uploading |
-
-### ETL Commands
-
-| Command | Description |
-|---------|-------------|
-| `python run_etl.py` | Full ETL (all games) |
-| `python run_etl.py --wipe` | Clean slate then full ETL |
-| `python run_etl.py --list-games` | List available game IDs |
-| `python run_etl.py --games 18969 18977` | Process specific games |
-| `python run_etl.py --exclude-games 18969` | Exclude specific games |
-| `python run_etl.py --validate` | Validate tables exist |
-| `python run_etl.py --status` | Show current status |
+**Full Quick Start:** See [docs/QUICK_START.md](docs/QUICK_START.md)
 
 ---
 
-## What's New in v29.0
+## Overview
 
-- **Game Type Aggregator** - Single source of truth for Regular/Playoffs/All splits
-- **Code Refactoring** - Eliminated duplication across 6 season stats tables
-- **139 ETL tables** - Complete dimensional data warehouse
-- **30 Supabase views** - Pre-aggregated for dashboard consumption
-- **Next.js 14 dashboard guide** - Full implementation guide with TypeScript, Tailwind, shadcn/ui
-- **Advanced goalie stats** - 128 columns including rush/set play SV%, rebound control
+BenchSight is a comprehensive hockey analytics platform that processes game data, generates advanced statistics, and provides a public-facing dashboard for analytics consumption.
 
-See [CHANGELOG.md](docs/CHANGELOG.md) for complete version history.
+### Components
+
+- **ETL Pipeline** - Processes game data and generates 139 tables
+- **Dashboard** - Public-facing analytics dashboard (50+ pages)
+- **Tracker** - Game tracking application (HTML/JS → Rust/Next.js)
+- **Portal** - Admin interface for ETL management
+- **API** - Backend API for ETL and data operations
+
+### Current Status
+
+- **ETL:** ✅ Functional (90% complete)
+- **Dashboard:** ✅ Functional (85% complete)
+- **Tracker:** ✅ Functional (100% current version)
+- **Portal:** 🚧 UI Only (10% complete)
+- **API:** ✅ Functional (80% complete)
+
+**Detailed Status:** See [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md)
 
 ---
 
-## Database Architecture
+## Development Workflow
 
+### PRD-First Development
+
+**Document before coding:**
+```bash
+./benchsight.sh prd create feature feature-name
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                      NEXT.JS DASHBOARD (Vercel)                         │
-│   Standings | Leaderboards | Player Profiles | Game Details            │
-└─────────────────────────────────────────────────────────────────────────┘
-                                   │
-                                   ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         SUPABASE VIEW LAYER                             │
-│   30 views: v_leaderboard_*, v_standings_*, v_rankings_*, etc.         │
-│   Pre-aggregated, always fresh, no additional computation              │
-└─────────────────────────────────────────────────────────────────────────┘
-                                   │
-                                   ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         ETL TABLE LAYER                                  │
-│   139 tables: dim_*, fact_*, qa_*, lookup_*                            │
-│   Source of truth, validated, versioned                                 │
-└─────────────────────────────────────────────────────────────────────────┘
+
+**Planning workflow:**
+1. Create PRD
+2. Plan and design
+3. Reset context
+4. Implement with PRD reference
+
+**See:** [docs/PLANNING_WORKFLOW.md](docs/PLANNING_WORKFLOW.md)
+
+### GitHub Integration
+
+- **Issue Templates:** Bug reports, feature requests, questions, refactors
+- **PR Template:** Checklist and PRD reference
+- **CI/CD:** Automated tests and code quality checks
+- **CodeRabbit:** AI-powered code reviews
+
+**See:** [docs/CODERABBIT_WORKFLOW.md](docs/CODERABBIT_WORKFLOW.md)
+
+---
+
+## Commands
+
+### Unified CLI
+
+Use `benchsight.sh` for all operations:
+
+```bash
+# ETL
+./benchsight.sh etl run
+./benchsight.sh etl validate
+./benchsight.sh etl status
+
+# Dashboard
+./benchsight.sh dashboard dev
+./benchsight.sh dashboard build
+./benchsight.sh dashboard deploy
+
+# API
+./benchsight.sh api dev
+./benchsight.sh api test
+
+# Database
+./benchsight.sh db upload
+./benchsight.sh db schema
+
+# Environment
+./benchsight.sh env switch dev
+./benchsight.sh env status
+
+# Project
+./benchsight.sh status
+./benchsight.sh docs
+./benchsight.sh help
 ```
+
+**Complete Command Reference:** See [docs/COMMANDS.md](docs/COMMANDS.md)
 
 ---
 
 ## Project Structure
 
 ```
-benchsight_v28/
-├── run_etl.py          # Main ETL (generates 139 tables)
-├── upload.py           # Upload to Supabase
-├── validate.py         # Data validation
-│
-├── data/
-│   ├── raw/            # Input Excel files
-│   │   ├── BLB_Tables.xlsx
-│   │   └── games/[game_id]/
-│   └── output/         # Generated CSVs (139 tables)
-│
-├── docs/
-│   ├── CHANGELOG.md
-│   ├── TODO.md
-│   ├── DATA_DICTIONARY.md
-│   ├── NEXTJS_DASHBOARD_GUIDE.md    # ← New: Full Next.js implementation
-│   ├── DASHBOARD_INTEGRATION.md
-│   └── SUPABASE_RESET_GAMEPLAN.md
-│
-├── sql/
-│   └── views/
-│       ├── 99_DEPLOY_ALL_VIEWS.sql  # ← Deploy all 30 views
-│       └── VIEW_CATALOG.md          # ← View documentation
-│
-├── src/
-│   ├── core/           # Core ETL logic
-│   ├── tables/         # Table builders (macro_stats.py for aggregations)
-│   └── advanced/       # Advanced analytics
-│
-├── ui/
-│   └── tracker/        # Game tracking interface
-│
+benchsight/
+├── src/              # ETL Python code
+├── api/              # FastAPI backend
+├── ui/               # Frontend applications
+│   ├── dashboard/    # Next.js dashboard
+│   ├── tracker/      # HTML tracker
+│   └── portal/       # Admin portal
+├── docs/             # Documentation
+├── scripts/          # Utility scripts
+└── data/             # Data files
 ```
+
+**Complete Structure:** See [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md)
 
 ---
 
-## 📚 Documentation
+## Documentation
 
 ### Getting Started
-- **[Quick Start](docs/QUICK_START.md)** - 5-minute guide to get running
-- **[Setup Guide](docs/SETUP.md)** - Complete installation instructions
-- **[Contributing](docs/CONTRIBUTING.md)** - How to contribute
 
-### Core Documentation
-| File | Purpose |
-|------|---------|
-| `docs/ARCHITECTURE.md` | System design and data flow |
-| `docs/ETL.md` | ETL pipeline details |
-| `docs/DATA_DICTIONARY.md` | Complete table/column definitions |
-| `docs/CODE_STANDARDS.md` | Coding standards and best practices |
-| `docs/CHANGELOG.md` | Version history and changes |
+- [Quick Start Guide](docs/QUICK_START.md) - Get running in 5 minutes
+- [Setup Guide](docs/SETUP.md) - Complete installation
+- [Development Workflow](docs/DEVELOPMENT_WORKFLOW.md) - Development workflows
 
-### Deployment & Integration
-| File | Purpose |
-|------|---------|
-| `docs/NEXTJS_DASHBOARD_GUIDE.md` | Next.js 14 dashboard implementation |
-| `docs/SUPABASE_RESET_GAMEPLAN.md` | Step-by-step Supabase deployment |
-| `docs/DASHBOARD_INTEGRATION.md` | Dashboard integration guide |
-| `sql/views/99_DEPLOY_ALL_VIEWS.sql` | Deploy all 30 views to Supabase |
+### Project Documentation
 
-### Reference
-| File | Purpose |
-|------|---------|
-| `docs/TODO.md` | Current tasks and priorities |
-| `docs/HANDOFF.md` | Continuity between sessions |
-| `docs/MAINTENANCE.md` | Maintenance procedures |
+- [Master Index](docs/MASTER_INDEX.md) - All documentation
+- [Project Status](docs/PROJECT_STATUS.md) - Current status
+- [Project Scope](docs/PROJECT_SCOPE.md) - Project scope
+- [Master Roadmap](docs/MASTER_ROADMAP.md) - Project roadmap
+- [Master Rules](docs/MASTER_RULES.md) - Rules and standards
+
+### Component Documentation
+
+- [ETL Documentation](docs/ETL_ARCHITECTURE.md) - ETL system
+- [Dashboard Documentation](docs/DASHBOARD_ARCHITECTURE.md) - Dashboard system
+- [Tracker Documentation](docs/TRACKER_COMPLETE_LOGIC.md) - Tracker logic
+- [API Documentation](docs/API_REFERENCE.md) - API reference
+- [Portal Documentation](docs/PORTAL_CURRENT_STATE.md) - Portal status
 
 ---
 
-## Output Summary
+## Development
 
-| Metric | Count |
-|--------|-------|
-| **ETL Tables** | 139 |
-| **Supabase Views** | 30 |
-| **Total Database Objects** | 169 |
-| **Tracked Games** | 4 |
-| **Goals Verified** | 17 |
-| **Player Game Stats Columns** | 444 |
-| **Goalie Game Stats Columns** | 128 |
+### Prerequisites
+
+- Python 3.11+
+- Node.js 18+
+- Supabase account
+- Vercel account (for dashboard)
+
+### Setup
+
+1. **Clone repository**
+   ```bash
+   git clone <repository-url>
+   cd benchsight
+   ```
+
+2. **Set up ETL**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Set up Dashboard**
+   ```bash
+   cd ui/dashboard
+   npm install
+   ```
+
+4. **Set up API**
+   ```bash
+   cd api
+   python -m venv venv
+   source venv/bin/activate
+   pip install -r requirements.txt
+   ```
+
+5. **Configure environments**
+   ```bash
+   ./scripts/setup-supabase-dev.sh
+   ./scripts/setup-vercel-dev.sh
+   ```
+
+**Complete Setup:** See [docs/DEV_ENV_COMPLETE.md](docs/DEV_ENV_COMPLETE.md)
+
+### Development Workflow
+
+```bash
+# Start dashboard (Terminal 1)
+./benchsight.sh dashboard dev
+
+# Run ETL (Terminal 2, when needed)
+./benchsight.sh etl run
+
+# Start API (Terminal 3, when needed)
+./benchsight.sh api dev
+```
+
+**Development Guide:** See [docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md)
 
 ---
 
-## Tech Stack
+## Features
 
-| Component | Technology |
-|-----------|------------|
-| ETL | Python, Pandas |
-| Database | Supabase (PostgreSQL) |
-| Tracker | HTML/JavaScript |
-| **Dashboard** | Next.js 14, TypeScript, Tailwind, shadcn/ui, Recharts |
-| Deployment | Vercel |
+### ETL Pipeline
+
+- ✅ 139 tables generated (dimensions, facts, QA)
+- ✅ Comprehensive stats (317 columns for players, 128 for goalies)
+- ✅ Advanced metrics (Corsi, Fenwick, xG, WAR/GAR, QoC/QoT)
+- ✅ Data validation framework
+- ✅ Formula management system
+
+### Dashboard
+
+- ✅ 50+ pages (players, teams, games, goalies, standings, leaders)
+- ✅ Season and game type filtering
+- ✅ Historical data support
+- ✅ Enhanced visualizations (shot maps, charts)
+- ✅ Responsive design
+
+### Tracker
+
+- ✅ Event tracking (15+ event types)
+- ✅ Shift tracking
+- ✅ Video integration (HTML5, YouTube)
+- ✅ XY positioning on rink
+- ✅ Export to Excel
+
+### API
+
+- ✅ ETL endpoints (trigger, status, history)
+- ✅ Upload endpoints (tables, schema)
+- ✅ Staging endpoints (BLB, tracking)
+- ✅ Background job processing
 
 ---
 
-## Critical Rules
+## Roadmap
 
-### Goal Counting
-```
-Goals ONLY via: event_type='Goal' AND event_detail='Goal_Scored'
-Shot_Goal = the shot attempt, NOT the goal itself
-```
+### Current Phase: Pre-Deployment & Data Collection
 
-### Player Attribution
-```
-event_player_1 = Primary actor (shooter, passer, faceoff winner)
-```
+- 🚧 ETL cleanup and optimization
+- 🚧 Dashboard enhancements
+- 🚧 Portal API integration
+- 📋 Documentation completion
 
-### Basic vs Advanced Stats
-```
-Basic (_basic tables) = Official noradhockey.com data (G, A, PIM)
-Advanced (other tables) = Tracking-derived micro-stats
-```
+### Next Phase: Advanced Analytics
+
+- 📋 Complete xG analysis
+- 📋 Complete WAR/GAR analysis
+- 📋 RAPM analysis
+- 📋 ML feature engineering
+
+### Future Phases
+
+- 📋 Production deployment
+- 📋 ML/CV integration
+- 📋 Multi-tenancy
+- 📋 Commercial launch
+
+**Complete Roadmap:** See [docs/MASTER_ROADMAP.md](docs/MASTER_ROADMAP.md)
 
 ---
 
-## 🛠️ Development
+## Contributing
 
-### Parallel Development
-
-**Yes! You can run multiple dev processes simultaneously.**
-
-```bash
-# Option 1: Use the helper script
-./dev.sh
-
-# Option 2: Run in separate terminals
-# Terminal 1 - Dashboard:
-cd ui/dashboard && npm run dev
-
-# Terminal 2 - ETL (when needed):
-python run_etl.py
-```
-
-See [Development Guide](docs/DEVELOPMENT.md) for details.
-
-### Dashboard Prototyping
-
-**Quick start for prototyping new dashboards:**
-
-```bash
-cd ui/dashboard
-npm install  # First time only
-npm run dev  # Start dev server
-
-# Create a new prototype page
-./scripts/create-dashboard-page.sh my-prototype
-```
-
-See [Dashboard Quick Start](ui/dashboard/QUICK_START.md) and [Prototyping Guide](ui/dashboard/PROTOTYPING.md) for details.
-
-### Running the ETL
-
-```bash
-# Full ETL (all games)
-python run_etl.py
-
-# Clean slate (delete output, then run)
-python run_etl.py --wipe
-
-# Process specific games
-python run_etl.py --games 18969 18977
-
-# Check status
-python run_etl.py --status
-```
-
-### Validation
-
-```bash
-# Quick validation
-python validate.py --quick
-
-# Full validation
-python validate.py
-```
-
-### Contributing
-
-See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for:
+See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for:
 - Code standards
 - Development workflow
 - Pull request process
@@ -293,22 +297,21 @@ See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for:
 
 ---
 
-## 📋 Next Steps
+## Support
 
-1. **Set up your environment** - See [SETUP.md](docs/SETUP.md)
-2. **Run your first ETL** - See [QUICK_START.md](docs/QUICK_START.md)
-3. **Explore the data** - Check `data/output/` for generated tables
-4. **Deploy to Supabase** - Follow [SUPABASE_RESET_GAMEPLAN.md](docs/SUPABASE_RESET_GAMEPLAN.md)
-5. **Build dashboard** - Use [NEXTJS_DASHBOARD_GUIDE.md](docs/NEXTJS_DASHBOARD_GUIDE.md)
-
----
-
-## 📞 Support
-
-- **Documentation**: See `docs/` directory
-- **Issues**: Check existing issues or create new one
-- **Questions**: Review [HANDOFF.md](docs/HANDOFF.md) for known issues
+- **Documentation:** See [docs/MASTER_INDEX.md](docs/MASTER_INDEX.md)
+- **Quick Start:** See [docs/QUICK_START.md](docs/QUICK_START.md)
+- **Status:** See [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md)
+- **Maintenance:** See [docs/MAINTENANCE_GUIDE.md](docs/MAINTENANCE_GUIDE.md)
 
 ---
 
-*BenchSight v29.0 - NORAD Hockey Analytics*
+## License
+
+[Add license information]
+
+---
+
+**BenchSight v29.0 - NORAD Hockey Analytics**
+
+*Last Updated: 2026-01-15*

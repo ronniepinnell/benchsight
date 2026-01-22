@@ -210,6 +210,14 @@ def save_output_table(df: pd.DataFrame, table_name: str, output_dir: Optional[Pa
         elif rows_uploaded > 0:
             log.info(f"  Supabase: {table_name} - {rows_uploaded} rows")
     
+    # Store in memory cache for later phases (allows ETL to work from scratch)
+    try:
+        from src.core.table_store import store_table
+        store_table(table_name, df)
+    except Exception:
+        # If table_store not available, continue without caching
+        pass
+    
     # Then save to CSV (always)
     csv_path = output_dir / f"{table_name}.csv"
     df.to_csv(csv_path, index=False)

@@ -1,0 +1,116 @@
+{
+  "projectRules": [
+    "Use vectorized pandas operations, never .iterrows()",
+    "Max 300 lines per function, max 1000 lines per file",
+    "All new dashboard components use server components by default",
+    "Follow existing key generation patterns in key_utils.py",
+    "All API endpoints must include proper error handling and validation",
+    "Use TypeScript for all new frontend code",
+    "Follow existing Supabase patterns for database interactions",
+    "Document all new functions and modules",
+    "Write tests for critical business logic",
+    "Use consistent naming conventions (snake_case for Python, camelCase for TypeScript)",
+    "CRITICAL: Goals are ONLY counted when event_type == 'Goal' AND event_detail == 'Goal_Scored'",
+    "Always use single source of truth - no duplicated calculation logic",
+    "Fix root causes, not symptoms - understand full data flow before making changes",
+    "Reference config/formulas.json for formula definitions",
+    "Use src/calculations/ modules for all calculations",
+    "Follow table naming: dim_* (dimensions), fact_* (facts), qa_* (QA), v_* (views)",
+    "ETL performance target: < 90 seconds for 4 games",
+    "Dashboard performance target: < 2 seconds page load",
+    "API performance target: < 200ms endpoint response",
+    "Always run python validate.py after ETL changes",
+    "Update documentation when making changes",
+    "Use type hints for all Python functions",
+    "Use Google-style docstrings for all Python functions",
+    "Use interfaces for all TypeScript data structures",
+    "Use async/await in TypeScript, not promises",
+    "Client Components only when interactivity or hooks are needed",
+    "Follow git workflow: develop branch for development, [TYPE] commit messages",
+    "Check docs/MASTER_RULES.md for detailed coding standards",
+    "Check docs/MASTER_ROADMAP.md for project roadmap",
+    "Check docs/PROJECT_STATUS.md for current project status"
+  ],
+  "projectStructure": {
+    "etl": {
+      "main": "run_etl.py",
+      "core": "src/core/base_etl.py",
+      "calculations": "src/calculations/",
+      "tables": "src/tables/",
+      "utils": "src/utils/"
+    },
+    "dashboard": {
+      "root": "ui/dashboard/",
+      "app": "ui/dashboard/src/app/",
+      "components": "ui/dashboard/src/components/",
+      "lib": "ui/dashboard/src/lib/"
+    },
+    "api": {
+      "main": "api/main.py",
+      "routes": "api/routes/",
+      "services": "api/services/",
+      "models": "api/models/"
+    },
+    "docs": "docs/",
+    "scripts": "scripts/"
+  },
+  "commonCommands": {
+    "etl": {
+      "run": "python run_etl.py",
+      "validate": "python validate.py",
+      "upload": "python upload.py"
+    },
+    "dashboard": {
+      "dev": "cd ui/dashboard && npm run dev",
+      "build": "cd ui/dashboard && npm run build"
+    },
+    "api": {
+      "dev": "cd api && uvicorn main:app --reload"
+    }
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/bash-validator.py\""
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/doc-update-reminder.py\""
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/goal-counting-guard.py\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/post-etl-reminder.py\""
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/etl-failure-handler.py\""
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/github-sync-reminder.py\""
+          }
+        ]
+      }
+    ]
+  }
+}

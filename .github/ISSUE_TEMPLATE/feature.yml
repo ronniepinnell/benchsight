@@ -1,0 +1,83 @@
+name: Feature Request
+description: Request a new feature or enhancement
+title: "[FEAT] "
+labels: ["type:feature"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Component
+      description: Which component does this affect?
+      options:
+        - ETL Pipeline (src/)
+        - Dashboard (ui/dashboard/)
+        - Tracker (ui/tracker/)
+        - Portal (ui/portal/)
+        - API (api/)
+        - Data/Schema
+        - Documentation
+        - Infrastructure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How urgent is this?
+      options:
+        - P0 - Critical/Blocking
+        - P1 - High (core functionality)
+        - P2 - Medium (important)
+        - P3 - Low (nice to have)
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this solve?
+      placeholder: "Currently, users cannot... This causes..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How should this be implemented?
+      placeholder: "Implement X that does Y by..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: How do we know it's done?
+      placeholder: |
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+        - [ ] Tests pass
+        - [ ] Documentation updated
+    validations:
+      required: true
+
+  - type: textarea
+    id: prd
+    attributes:
+      label: PRD Reference
+      description: Link to PRD if exists (docs/prds/)
+      placeholder: "docs/prds/features/feature-name.md or N/A"
+    validations:
+      required: false
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: What must be completed first?
+      placeholder: "Depends on #issue-number or None"
+    validations:
+      required: false

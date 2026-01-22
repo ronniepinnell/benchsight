@@ -430,11 +430,17 @@ This is THE ONLY file you should run for ETL.
             print("=" * 70)
             print("WIPE MODE: Deleting all existing output files...")
             print("=" * 70)
+            print("⚠️  WARNING: This will delete ALL tables, including dependencies.")
+            print("   Later ETL phases depend on tables created in earlier phases.")
+            print("   If dependencies are missing, some tables may be created empty.")
+            print()
             csv_files = list(OUTPUT_DIR.glob('*.csv'))
             if csv_files:
                 for f in csv_files:
                     f.unlink()
                 print(f"Deleted {len(csv_files)} CSV files from {OUTPUT_DIR}")
+                print()
+                print("✓ Wipe complete. Running full ETL to rebuild all tables...")
             else:
                 print("No CSV files to delete")
             print()

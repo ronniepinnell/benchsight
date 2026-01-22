@@ -1,0 +1,80 @@
+name: Refactor
+description: Code restructuring without behavior change
+title: "[REFACTOR] "
+labels: ["type:refactor"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Component
+      description: Which component?
+      options:
+        - ETL Pipeline (src/)
+        - Dashboard (ui/dashboard/)
+        - Tracker (ui/tracker/)
+        - Portal (ui/portal/)
+        - API (api/)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How urgent?
+      options:
+        - P0 - Technical debt blocking progress
+        - P1 - High (improves velocity)
+        - P2 - Medium (code quality)
+        - P3 - Low (nice to have)
+    validations:
+      required: true
+
+  - type: textarea
+    id: current
+    attributes:
+      label: Current State
+      description: What's the current state of the code?
+      placeholder: "Currently, the code is structured as..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed Changes
+      description: What changes should be made?
+      placeholder: "Refactor to..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: rationale
+    attributes:
+      label: Rationale
+      description: Why is this refactor needed?
+      placeholder: "This improves X because..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: How do we know it's done?
+      placeholder: |
+        - [ ] Behavior unchanged
+        - [ ] All tests pass
+        - [ ] Performance maintained or improved
+        - [ ] Code follows standards
+    validations:
+      required: true
+
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks
+      description: What could go wrong?
+      placeholder: "Risk of breaking X if..."
+    validations:
+      required: false

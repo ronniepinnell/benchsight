@@ -1,0 +1,133 @@
+# CodeRabbit Configuration for BenchSight
+# AI-powered code review with BenchSight-specific instructions
+# Docs: https://docs.coderabbit.ai/guides/configure-coderabbit
+
+language: en
+
+# Early access features
+early_access: true
+
+# Tone and style
+tone_instructions: |
+  Be concise and direct. Focus on actionable feedback.
+  Prioritize: data integrity, performance, security, maintainability.
+  Flag critical issues (goal counting, .iterrows()) as errors, not suggestions.
+
+# Review configuration
+reviews:
+  # Enable reviews
+  request_changes_workflow: true
+  high_level_summary: true
+  high_level_summary_placeholder: "@coderabbitai summary"
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+
+  # Auto-review settings
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - main
+      - develop
+
+  # Path-specific instructions
+  path_instructions:
+    # ETL Pipeline - Most critical
+    - path: "src/**/*.py"
+      instructions: |
+        CRITICAL BenchSight ETL Rules:
+
+        1. GOAL COUNTING (CRITICAL - flag as error if violated):
+           - Goals MUST use: event_type == 'Goal' AND event_detail == 'Goal_Scored'
+           - NEVER count event_type == 'Shot' with event_detail == 'Goal' as a goal
+           - Reference: src/calculations/goals.py is the single source of truth
+
+        2. PERFORMANCE (flag as error):
+           - NEVER use .iterrows() - use vectorized pandas operations
+           - Prefer .groupby().apply() over loops
+           - Check for N+1 query patterns
+
+        3. STAT COUNTING:
+           - Stats only counted for player_role == 'event_player_1'
+           - Micro-stats counted once per linked_event (not per event)
+           - Assists: only 'AssistPrimary' and 'AssistSecondary' count
+
+        4. CODE QUALITY:
+           - Functions must have type hints
+           - Functions must have docstrings (Google style)
+           - Max 100 character lines
+           - Single source of truth for calculations (check src/calculations/)
+
+        5. KEY FORMATTING:
+           - Keys follow {XX}{ID}{5D} pattern
+           - Only use _ for multi-player keys (line combos, h2h)
+
+    # API
+    - path: "api/**/*.py"
+      instructions: |
+        BenchSight API Rules:
+
+        1. Same goal counting and performance rules as ETL
+        2. All endpoints must have proper error handling
+        3. Use Pydantic models for request/response validation
+        4. Check for security issues (SQL injection, auth bypass)
+        5. Verify CORS configuration for allowed origins
+
+    # Dashboard - TypeScript/React
+    - path: "ui/dashboard/**/*.{ts,tsx}"
+      instructions: |
+        BenchSight Dashboard Rules:
+
+        1. TypeScript strict mode - no `any` types
+        2. Use interfaces for all data structures
+        3. Server Components by default, Client Components only for interactivity
+        4. Check for proper loading/error states
+        5. Verify Supabase queries are efficient (no N+1)
+        6. Ensure accessibility (ARIA labels, semantic HTML)
+        7. camelCase for functions, PascalCase for components
+
+    # Tests
+    - path: "tests/**/*.py"
+      instructions: |
+        Test Review Rules:
+
+        1. Check test coverage for critical paths
+        2. Verify goal counting tests exist for any goal-related changes
+        3. Ensure data integrity tests for ETL changes
+        4. Mock external services appropriately
+        5. Type hints optional in test files
+
+    # Documentation
+    - path: "docs/**/*.md"
+      instructions: |
+        Documentation Review:
+
+        1. Check for broken links
+        2. Ensure accuracy against current codebase
+        3. Verify code examples are correct
+        4. Check last updated date
+        5. Ensure new docs are added to MASTER_INDEX.md
+
+    # Configuration
+    - path: "config/**/*"
+      instructions: |
+        Configuration Review:
+
+        1. No secrets or credentials
+        2. Check for valid JSON/YAML syntax
+        3. Verify formula definitions match src/calculations/
+        4. Environment-specific values properly separated
+
+# Chat configuration
+chat:
+  auto_reply: true
+
+# Knowledge base
+knowledge_base:
+  learnings:
+    scope: auto
+  issues:
+    scope: auto
+  pull_requests:
+    scope: auto

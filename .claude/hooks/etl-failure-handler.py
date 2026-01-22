@@ -1,0 +1,301 @@
+#!/usr/bin/env python3
+"""
+ETL Failure Handler Hook
+
+Detects ETL failures and offers to create GitHub issues with full context.
+Runs as a PostToolUse hook after Bash commands.
+"""
+import json
+import sys
+import os
+import re
+import subprocess
+from datetime import datetime
+from pathlib import Path
+
+# Failure patterns to detect
+ETL_FAILURE_PATTERNS = [
+    r"ETL failed",
+    r"Error in phase",
+    r"Traceback \(most recent call last\)",
+    r"Exception:",
+    r"KeyError:",
+    r"ValueError:",
+    r"pandas.*Error",
+    r"CRITICAL:",
+    r"FAILED:",
+    r"etl.*error",
+    r"validation failed",
+]
+
+# Patterns that indicate ETL was running
+ETL_COMMAND_PATTERNS = [
+    r"etl run",
+    r"run_etl\.py",
+    r"benchsight\.sh etl",
+    r"python.*etl",
+]
+
+
+def is_etl_command(command: str) -> bool:
+    """Check if command was an ETL operation."""
+    for pattern in ETL_COMMAND_PATTERNS:
+        if re.search(pattern, command, re.IGNORECASE):
+            return True
+    return False
+
+
+def detect_failure(stdout: str, stderr: str, exit_code: int) -> dict | None:
+    """Detect if ETL failed and extract details."""
+    combined = f"{stdout}\n{stderr}"
+
+    # Check exit code first
+    if exit_code == 0:
+        # Even with exit 0, check for error patterns (some errors don't set exit code)
+        has_error = False
+        for pattern in ETL_FAILURE_PATTERNS:
+            if re.search(pattern, combined, re.IGNORECASE):
+                has_error = True
+                break
+        if not has_error:
+            return None
+
+    # Extract error details
+    error_details = {
+        "exit_code": exit_code,
+        "error_type": "Unknown",
+        "error_message": "",
+        "phase": "Unknown",
+        "traceback": "",
+    }
+
+    # Try to identify the phase
+    phase_match = re.search(r"Phase[:\s]+(\w+)", combined, re.IGNORECASE)
+    if phase_match:
+        error_details["phase"] = phase_match.group(1)
+
+    # Try to extract error type and message
+    error_match = re.search(r"(\w+Error|\w+Exception):\s*(.+?)(?:\n|$)", combined)
+    if error_match:
+        error_details["error_type"] = error_match.group(1)
+        error_details["error_message"] = error_match.group(2).strip()
+
+    # Extract traceback if present
+    tb_match = re.search(r"(Traceback \(most recent call last\):.*?)(?:\n\n|\Z)",
+                         combined, re.DOTALL)
+    if tb_match:
+        error_details["traceback"] = tb_match.group(1)[:2000]  # Limit size
+
+    # If no specific error found, use last 500 chars of stderr
+    if not error_details["error_message"] and stderr:
+        error_details["error_message"] = stderr[-500:].strip()
+
+    return error_details
+
+
+def get_recent_commits(limit: int = 5) -> str:
+    """Get recent git commits for context."""
+    try:
+        result = subprocess.run(
+            ["git", "log", f"--oneline", f"-{limit}"],
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+        return result.stdout.strip() if result.returncode == 0 else "Unable to get commits"
+    except:
+        return "Unable to get commits"
+
+
+def get_changed_files() -> str:
+    """Get recently changed files."""
+    try:
+        result = subprocess.run(
+            ["git", "diff", "--name-only", "HEAD~3"],
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+        return result.stdout.strip() if result.returncode == 0 else "Unable to get changes"
+    except:
+        return "Unable to get changes"
+
+
+def get_current_branch() -> str:
+    """Get current git branch."""
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        return result.stdout.strip() if result.returncode == 0 else "unknown"
+    except:
+        return "unknown"
+
+
+def create_issue_body(error_details: dict, command: str) -> str:
+    """Create detailed issue body."""
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    branch = get_current_branch()
+    recent_commits = get_recent_commits()
+    changed_files = get_changed_files()
+
+    body = f"""## ETL Failure Report
+
+**Generated:** {timestamp}
+**Branch:** `{branch}`
+**Phase:** {error_details['phase']}
+**Exit Code:** {error_details['exit_code']}
+
+## Error Details
+
+**Type:** `{error_details['error_type']}`
+**Message:**
+```
+{error_details['error_message']}
+```
+
+## Command Run
+
+```bash
+{command}
+```
+
+## Traceback
+
+```python
+{error_details['traceback'] if error_details['traceback'] else 'No traceback captured'}
+```
+
+## Recent Commits
+
+```
+{recent_commits}
+```
+
+## Recently Changed Files
+
+```
+{changed_files}
+```
+
+## Suggested Actions
+
+- [ ] Review the error message and traceback
+- [ ] Check recent commits for related changes
+- [ ] Run `/validate` to check data state
+- [ ] Consult `/hockey-stats` if calculation-related
+
+---
+🤖 Auto-generated by ETL Failure Handler
+"""
+    return body
+
+
+def create_github_issue(title: str, body: str, labels: list) -> bool:
+    """Create GitHub issue using gh CLI."""
+    try:
+        label_args = []
+        for label in labels:
+            label_args.extend(["--label", label])
+
+        result = subprocess.run(
+            ["gh", "issue", "create",
+             "--title", title,
+             "--body", body] + label_args,
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+
+        if result.returncode == 0:
+            # Extract issue URL from output
+            issue_url = result.stdout.strip()
+            return True, issue_url
+        else:
+            return False, result.stderr
+    except Exception as e:
+        return False, str(e)
+
+
+def log_failure(error_details: dict, command: str):
+    """Log failure locally for reference."""
+    log_dir = Path.home() / ".claude" / "etl-failures"
+    log_dir.mkdir(parents=True, exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_file = log_dir / f"etl_failure_{timestamp}.json"
+
+    log_data = {
+        "timestamp": datetime.now().isoformat(),
+        "command": command,
+        "error_details": error_details,
+        "branch": get_current_branch(),
+    }
+
+    with open(log_file, "w") as f:
+        json.dump(log_data, f, indent=2)
+
+    return log_file
+
+
+def main():
+    try:
+        data = json.load(sys.stdin)
+    except json.JSONDecodeError:
+        sys.exit(0)
+
+    tool_name = data.get("tool_name", "")
+    if tool_name != "Bash":
+        sys.exit(0)
+
+    tool_input = data.get("tool_input", {})
+    tool_result = data.get("tool_result", {})
+
+    command = tool_input.get("command", "")
+    stdout = tool_result.get("stdout", "")
+    stderr = tool_result.get("stderr", "")
+    exit_code = tool_result.get("exitCode", 0)
+
+    # Only process ETL commands
+    if not is_etl_command(command):
+        sys.exit(0)
+
+    # Check for failure
+    error_details = detect_failure(stdout, stderr, exit_code)
+    if not error_details:
+        sys.exit(0)
+
+    # Log the failure locally (always)
+    log_file = log_failure(error_details, command)
+
+    # Create issue title
+    title = f"[ETL] {error_details['phase']} phase failed: {error_details['error_type']}"
+    if len(title) > 100:
+        title = title[:97] + "..."
+
+    # Output to prompt user
+    output = {
+        "decision": "ask",
+        "reason": f"""
+ETL FAILURE DETECTED
+====================
+Phase: {error_details['phase']}
+Error: {error_details['error_type']}
+Message: {error_details['error_message'][:200]}...
+
+Logged to: {log_file}
+
+Create GitHub issue to track this failure?
+(Title: {title})
+""".strip()
+    }
+
+    print(json.dumps(output))
+    sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()
