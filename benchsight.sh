@@ -526,6 +526,208 @@ cmd_docs_check() {
     fi
 }
 
+# Debug Commands (Local PostgreSQL)
+cmd_debug_start() {
+    print_header "Starting Debug PostgreSQL"
+
+    if ! command -v docker &> /dev/null; then
+        print_error "Docker not found. Install Docker Desktop first."
+        exit 1
+    fi
+
+    if [ ! -f "docker/docker-compose.yml" ]; then
+        print_error "docker/docker-compose.yml not found"
+        exit 1
+    fi
+
+    docker-compose -f docker/docker-compose.yml up -d
+
+    # Wait for PostgreSQL to be ready
+    print_info "Waiting for PostgreSQL to start..."
+    sleep 3
+
+    if docker exec benchsight-pg pg_isready -U benchsight -d benchsight &> /dev/null; then
+        print_success "PostgreSQL started on localhost:5432"
+        print_info "Schemas: raw, stage, intermediate, datamart"
+    else
+        print_warning "PostgreSQL may still be starting. Try: ./benchsight.sh debug status"
+    fi
+}
+
+cmd_debug_stop() {
+    print_header "Stopping Debug PostgreSQL"
+
+    if [ ! -f "docker/docker-compose.yml" ]; then
+        print_error "docker/docker-compose.yml not found"
+        exit 1
+    fi
+
+    docker-compose -f docker/docker-compose.yml stop
+    print_success "PostgreSQL stopped (data preserved)"
+}
+
+cmd_debug_reset() {
+    print_warning "This will DELETE ALL data in the debug database"
+    read -p "Continue? (y/N) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        print_info "Resetting debug database..."
+        docker-compose -f docker/docker-compose.yml down -v
+        docker-compose -f docker/docker-compose.yml up -d
+        sleep 3
+        print_success "Database reset complete"
+    else
+        print_info "Cancelled"
+    fi
+}
+
+cmd_debug_status() {
+    print_header "Debug PostgreSQL Status"
+
+    if docker ps | grep -q benchsight-pg; then
+        print_success "Container: Running"
+
+        if docker exec benchsight-pg pg_isready -U benchsight -d benchsight &> /dev/null; then
+            print_success "Database: Ready"
+
+            # Show schema summary
+            echo ""
+            print_info "Schema Summary:"
+            docker exec benchsight-pg psql -U benchsight -d benchsight -c "SELECT * FROM schema_summary();" 2>/dev/null || print_warning "Helper functions not loaded"
+        else
+            print_warning "Database: Not ready"
+        fi
+    else
+        print_warning "Container: Not running"
+        print_info "Start with: ./benchsight.sh debug start"
+    fi
+}
+
+cmd_debug_shell() {
+    print_header "Opening PostgreSQL Shell"
+
+    if ! docker ps | grep -q benchsight-pg; then
+        print_error "Debug PostgreSQL is not running"
+        print_info "Start with: ./benchsight.sh debug start"
+        exit 1
+    fi
+
+    docker exec -it benchsight-pg psql -U benchsight -d benchsight
+}
+
+cmd_debug_tables() {
+    SCHEMA="${1:-datamart}"
+    print_header "Tables in $SCHEMA Schema"
+
+    if ! docker ps | grep -q benchsight-pg; then
+        print_error "Debug PostgreSQL is not running"
+        exit 1
+    fi
+
+    docker exec benchsight-pg psql -U benchsight -d benchsight -c "\dt $SCHEMA.*"
+}
+
+cmd_debug_counts() {
+    print_header "Table Row Counts"
+
+    if ! docker ps | grep -q benchsight-pg; then
+        print_error "Debug PostgreSQL is not running"
+        exit 1
+    fi
+
+    echo ""
+    print_info "Raw Schema:"
+    docker exec benchsight-pg psql -U benchsight -d benchsight -c "SELECT * FROM get_table_counts('raw');" 2>/dev/null || echo "  (no tables)"
+
+    echo ""
+    print_info "Stage Schema:"
+    docker exec benchsight-pg psql -U benchsight -d benchsight -c "SELECT * FROM get_table_counts('stage');" 2>/dev/null || echo "  (no tables)"
+
+    echo ""
+    print_info "Intermediate Schema:"
+    docker exec benchsight-pg psql -U benchsight -d benchsight -c "SELECT * FROM get_table_counts('intermediate');" 2>/dev/null || echo "  (no tables)"
+
+    echo ""
+    print_info "Datamart Schema:"
+    docker exec benchsight-pg psql -U benchsight -d benchsight -c "SELECT * FROM get_table_counts('datamart');" 2>/dev/null || echo "  (no tables)"
+}
+
+cmd_debug_query() {
+    if [ "$#" -eq 0 ]; then
+        print_error "SQL query required"
+        print_info "Usage: ./benchsight.sh debug query \"SELECT * FROM datamart.dim_player LIMIT 5\""
+        exit 1
+    fi
+
+    QUERY="$1"
+
+    if ! docker ps | grep -q benchsight-pg; then
+        print_error "Debug PostgreSQL is not running"
+        exit 1
+    fi
+
+    docker exec benchsight-pg psql -U benchsight -d benchsight -c "$QUERY"
+}
+
+cmd_debug_run() {
+    print_header "Running ETL in Debug Mode"
+
+    if ! docker ps | grep -q benchsight-pg; then
+        print_error "Debug PostgreSQL is not running"
+        print_info "Start with: ./benchsight.sh debug start"
+        exit 1
+    fi
+
+    # Pass all arguments to run_etl.py with --debug flag
+    python run_etl.py --debug "$@"
+}
+
+cmd_debug_compare() {
+    print_header "Comparing Local vs Supabase"
+
+    if ! docker ps | grep -q benchsight-pg; then
+        print_error "Debug PostgreSQL is not running"
+        exit 1
+    fi
+
+    print_warning "Comparison feature requires issues #18-#21 to be implemented"
+    print_info "See: gh issue view 21"
+}
+
+cmd_debug_help() {
+    cat << EOF
+${BLUE}Debug PostgreSQL Commands${NC}
+
+${GREEN}Database Management:${NC}
+  debug start          Start local PostgreSQL container
+  debug stop           Stop container (preserves data)
+  debug reset          Reset database (deletes all data)
+  debug status         Show container and database status
+
+${GREEN}Inspection:${NC}
+  debug shell          Open psql shell
+  debug tables [schema] List tables (default: datamart)
+  debug counts         Show row counts per schema
+  debug query "SQL"    Run ad-hoc SQL query
+
+${GREEN}ETL Execution:${NC}
+  debug run            Run ETL in debug mode
+  debug run --to-phase 4B   Run up to specific phase
+  debug run --step     Step through phases interactively
+
+${GREEN}Comparison:${NC}
+  debug compare        Compare local vs Supabase (not yet implemented)
+
+${GREEN}Examples:${NC}
+  ./benchsight.sh debug start
+  ./benchsight.sh debug shell
+  ./benchsight.sh debug query "SELECT COUNT(*) FROM datamart.fact_events"
+  ./benchsight.sh debug tables raw
+  ./benchsight.sh debug run --to-phase 4B
+
+EOF
+}
+
 # Project Commands
 cmd_status() {
     print_header "Project Status"
@@ -784,6 +986,28 @@ main() {
             ;;
         status)
             cmd_status "$@"
+            ;;
+        debug)
+            if [ "$#" -eq 0 ]; then
+                cmd_debug_help
+                exit 0
+            fi
+            SUBCOMMAND="$1"
+            shift
+            case "$SUBCOMMAND" in
+                start) cmd_debug_start "$@" ;;
+                stop) cmd_debug_stop "$@" ;;
+                reset) cmd_debug_reset "$@" ;;
+                status) cmd_debug_status "$@" ;;
+                shell) cmd_debug_shell "$@" ;;
+                tables) cmd_debug_tables "$@" ;;
+                counts) cmd_debug_counts "$@" ;;
+                query) cmd_debug_query "$@" ;;
+                run) cmd_debug_run "$@" ;;
+                compare) cmd_debug_compare "$@" ;;
+                help|--help|-h) cmd_debug_help ;;
+                *) print_error "Unknown debug subcommand: $SUBCOMMAND"; cmd_debug_help; exit 1 ;;
+            esac
             ;;
         docs)
             if [ "$#" -gt 0 ]; then

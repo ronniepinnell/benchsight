@@ -70,6 +70,39 @@ All keys should be formated in a {XX}{ID}{5D} manner. In some instances such as 
 ### Key Addition
 Foreign keys should be added to any table in which there is a column representing a cooresponding dim table.
 
+### Code Modularization Best Practices
+
+When extracting functions to separate modules:
+
+1. **No wrapper functions** - Call module functions directly with explicit arguments instead of creating thin wrappers that pass globals:
+   ```python
+   # GOOD: Direct call with explicit args
+   build_reference_tables(OUTPUT_DIR, log, save_output_table)
+
+   # BAD: Wrapper that just passes globals
+   def create_reference_tables():
+       return _create_reference_tables(OUTPUT_DIR, log, save_output_table)
+   ```
+
+2. **Use Edit tool for reviewable changes** - Make small, incremental edits that are easy to review in git diff. Avoid bulk operations via scripts.
+
+3. **Verify before cleanup** - When refactoring:
+   - First: Add imports and update call sites
+   - Second: Run tests/ETL to verify functionality
+   - Third: Remove dead code (create GitHub issue if large)
+
+4. **Explicit dependencies** - Module functions should accept their dependencies as parameters, not rely on globals:
+   ```python
+   # GOOD: Explicit parameters
+   def enhance_events(output_dir: Path, log, save_func):
+
+   # BAD: Relies on globals
+   def enhance_events():
+       # uses OUTPUT_DIR, log from outer scope
+   ```
+
+5. **Track dead code** - When modularization creates dead code too large to remove immediately, create a GitHub issue to track cleanup.
+
 
 ## Architecture
 
@@ -174,9 +207,12 @@ Set in Vercel Dashboard → Project Settings → Environment Variables:
 
 ## Git Workflow
 
-- **Branches:** `main` (production), `develop` (development), `feature/*`, `fix/*`
+- **Branches:** `main` (production), `develop` (staging/integration), `feature/*`, `fix/*`
+- **Default merge target:** `develop` (NOT `main`)
+- **Flow:** `feature/*` or `fix/*` → `develop` → `main` (production releases only)
 - **Commit format:** `[TYPE] Brief description` (FEAT, FIX, DOCS, REFACTOR, TEST, CHORE)
 - **PRD-first:** Create PRD in `docs/prds/` before implementing features
+- **Never push directly to `main`** - all changes go through `develop` first
 
 
 

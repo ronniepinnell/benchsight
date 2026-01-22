@@ -324,16 +324,25 @@ git push origin feature/your-branch
 ### Branch Strategy
 
 **Default branches:**
-- `main`: production
-- `develop`: integration
+- `main`: production (protected - releases only)
+- `develop`: integration/staging (default merge target)
+
+**Merge Flow:**
+```
+feature/* or fix/*  →  develop  →  main
+       ↑                  ↑          ↑
+   (work here)       (staging)  (production)
+```
 
 **Feature branches:**
-- `feature/<topic>`
-- `fix/<bug>`
-- `docs/<topic>`
+- `feature/<topic>` → merge to `develop`
+- `fix/<bug>` → merge to `develop`
+- `docs/<topic>` → merge to `develop`
 
-**Hotfix:**
-- `hotfix/<issue>` (merge to `main` + `develop`)
+**Hotfix (urgent production fixes only):**
+- `hotfix/<issue>` → merge to `main` AND `develop`
+
+**IMPORTANT:** Always target `develop` for PRs, NOT `main`.
 
 ---
 
@@ -354,11 +363,11 @@ git worktree add ../benchsight-feature feature/portal-api
 
 ### Branch Strategy
 
-- `main` - Production (protected)
-- `develop` - Development (default)
-- `feature/*` - Features
-- `fix/*` - Bug fixes
-- `hotfix/*` - Urgent production fixes
+- `main` - Production (protected - releases only)
+- `develop` - Staging/Integration (default merge target for all PRs)
+- `feature/*` - Features → merge to `develop`
+- `fix/*` - Bug fixes → merge to `develop`
+- `hotfix/*` - Urgent production fixes → merge to `main` AND `develop`
 
 ### When to Pull
 
@@ -561,20 +570,23 @@ git push origin feature/your-branch
 - Project: `benchsight`
 - Branch: `main`
 - Environment Variables: Production Supabase credentials
-- Auto-deploy: On push to `main`
+- Auto-deploy: On merge to `main` (from `develop` only)
+- **Never push directly to `main`**
 
-**Development:**
+**Development/Staging:**
 - Project: `benchsight-dev`
 - Branch: `develop`
 - Environment Variables: Dev Supabase credentials
-- Auto-deploy: On push to `develop`
+- Auto-deploy: On merge to `develop` (from feature/fix branches)
 
 ### Deployment
 
 **Automatic:**
-- Push to `main` → Production deployment
-- Push to `develop` → Dev deployment
+- Merge to `main` → Production deployment (from `develop` only)
+- Merge to `develop` → Dev/Staging deployment
 - Push to `feature/*` → Preview deployment
+
+**IMPORTANT:** Never push directly to `main`. All changes go: `feature/*` → `develop` → `main`
 
 **Manual:**
 ```bash
@@ -1191,6 +1203,191 @@ Merge to develop
 
 ---
 
+## Git Branch Strategy & Workflow (Complete Reference)
+
+This section provides the complete branching strategy and workflow for BenchSight development.
+
+### Branch Hierarchy
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         BRANCH FLOW                             │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│   feature/* ─┐                                                  │
+│              │                                                  │
+│   fix/* ─────┼──→ develop ──────────→ main                      │
+│              │         ↑                 ↑                      │
+│   docs/* ────┘    (staging)        (production)                 │
+│                                                                 │
+│   hotfix/* ────────────────────────→ main + develop             │
+│                                    (emergency only)             │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Branch Purposes
+
+| Branch | Purpose | Merge Target | Auto-Deploy |
+|--------|---------|--------------|-------------|
+| `main` | Production releases only | N/A (protected) | Vercel Production |
+| `develop` | Integration/staging | `main` (releases) | Vercel Dev/Preview |
+| `feature/*` | New features | `develop` | Preview URL |
+| `fix/*` | Bug fixes | `develop` | Preview URL |
+| `docs/*` | Documentation | `develop` | Preview URL |
+| `hotfix/*` | Urgent prod fixes | `main` + `develop` | Production |
+
+### Why Develop First?
+
+**Benefits of the develop-first workflow:**
+
+1. **Isolation** - Broken code doesn't affect production
+2. **Testing** - Changes are tested in staging before production
+3. **Review** - CodeRabbit and human review before merge
+4. **Rollback** - Easy to revert from develop without touching main
+5. **Collaboration** - Team can review changes in staging environment
+
+**Never push directly to `main` because:**
+- Production should only contain tested, reviewed code
+- Direct pushes bypass the review process
+- Difficult to revert without affecting production
+- No staging/testing opportunity
+
+### Complete Workflow: Feature Development
+
+```bash
+# 1. Start from develop
+git checkout develop
+git pull origin develop
+
+# 2. Create feature branch
+git checkout -b feature/my-feature
+
+# 3. Make changes, commit often
+git add .
+git commit -m "[FEAT] Add my feature"
+
+# 4. Push feature branch
+git push -u origin feature/my-feature
+
+# 5. Create PR targeting DEVELOP (not main!)
+gh pr create --base develop --title "[FEAT] My Feature" --body "Description"
+
+# 6. After approval, merge to develop
+gh pr merge --squash --delete-branch
+
+# 7. Return to develop
+git checkout develop
+git pull
+```
+
+### Complete Workflow: Production Release
+
+```bash
+# Only when develop is stable and tested:
+
+# 1. Ensure develop is up to date
+git checkout develop
+git pull origin develop
+
+# 2. Run full validation
+./benchsight.sh etl run
+./benchsight.sh etl validate
+pytest
+
+# 3. Create release PR: develop → main
+gh pr create --base main --head develop \
+  --title "Release: v1.X.X" \
+  --body "## Release Notes
+- Feature A
+- Feature B
+- Bug fix C"
+
+# 4. After approval, merge to main
+gh pr merge --merge  # Use merge commit for releases
+
+# 5. Tag the release
+git checkout main
+git pull
+git tag -a v1.X.X -m "Release v1.X.X"
+git push origin v1.X.X
+```
+
+### Complete Workflow: Hotfix (Emergency Only)
+
+```bash
+# For urgent production fixes only:
+
+# 1. Create hotfix from main
+git checkout main
+git pull origin main
+git checkout -b hotfix/critical-bug
+
+# 2. Fix the bug
+git add .
+git commit -m "[HOTFIX] Fix critical bug"
+
+# 3. Push and create PR to main
+git push -u origin hotfix/critical-bug
+gh pr create --base main --title "[HOTFIX] Critical bug fix"
+
+# 4. After approval, merge to main
+gh pr merge --squash --delete-branch
+
+# 5. IMPORTANT: Also merge to develop
+git checkout develop
+git pull origin develop
+git merge main  # Bring hotfix into develop
+git push origin develop
+```
+
+### PR Targeting Quick Reference
+
+| I'm working on... | Create PR targeting... |
+|-------------------|------------------------|
+| New feature | `develop` |
+| Bug fix | `develop` |
+| Documentation | `develop` |
+| Refactor | `develop` |
+| Performance improvement | `develop` |
+| Production release | `main` (from `develop`) |
+| Emergency hotfix | `main` (then also merge to `develop`) |
+
+### Common Mistakes to Avoid
+
+❌ **Don't do this:**
+```bash
+gh pr create --base main  # Wrong! Targets main directly
+git push origin main      # Wrong! Direct push to main
+```
+
+✅ **Do this instead:**
+```bash
+gh pr create --base develop  # Correct! Targets develop
+git push origin feature/x    # Correct! Push to feature branch
+```
+
+### GitHub CLI Commands
+
+```bash
+# Create PR to develop (default for features)
+gh pr create --base develop
+
+# Create release PR to main (only from develop)
+gh pr create --base main --head develop
+
+# List open PRs
+gh pr list
+
+# Merge PR with squash (for features)
+gh pr merge --squash --delete-branch
+
+# Merge PR with merge commit (for releases)
+gh pr merge --merge
+```
+
+---
+
 ## Related Documentation
 
 - [MASTER_RULES.md](../MASTER_RULES.md) - Rules and standards
@@ -1203,4 +1400,4 @@ Merge to develop
 
 ---
 
-*Last Updated: 2026-01-15*
+*Last Updated: 2026-01-21*

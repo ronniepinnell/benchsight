@@ -289,10 +289,19 @@ export default async function PlayerPage({
 ### Branch Strategy
 
 **Main Branches:**
-- `main` - Production-ready code
-- `develop` - Development branch
+- `main` - Production-ready code (protected, releases only)
+- `develop` - Integration/staging branch (default merge target)
 - `feature/*` - Feature branches
 - `fix/*` - Bug fix branches
+
+**Merge Flow:**
+```
+feature/* or fix/*  →  develop  →  main
+       ↑                  ↑          ↑
+   (work here)       (staging)  (production)
+```
+
+**IMPORTANT:** Always merge to `develop` first, NOT directly to `main`.
 
 ### Commit Messages
 
@@ -322,15 +331,15 @@ Detailed explanation (if needed)
 
 ### Pull Request Process
 
-1. Create feature branch
+1. Create feature branch from `develop`
 2. Make changes
 3. Test changes
 4. Update documentation
-5. Create pull request
-6. Code review
-7. Merge to develop
-8. Deploy to staging
-9. Merge to main
+5. Create pull request **targeting `develop`** (NOT `main`)
+6. Code review (CodeRabbit + human)
+7. Merge to `develop`
+8. Test in staging environment
+9. When ready for production release: merge `develop` → `main`
 
 ---
 
