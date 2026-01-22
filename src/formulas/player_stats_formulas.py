@@ -250,8 +250,8 @@ PLAYER_STATS_FORMULAS = {
     'possession_time_defensive_zone_per_60': {
         'type': 'rate',
         'function': lambda df: pd.Series([
-            (pd / 60.0 / toi * 60.0) if pd.notna(toi) and toi > 0 else 0.0
-            for pd, toi in zip(df.get('possession_time_defensive_zone', pd.Series([0]*len(df))), df['toi_minutes'])
+            (poss_def / 60.0 / toi * 60.0) if pd.notna(toi) and toi > 0 else 0.0
+            for poss_def, toi in zip(df.get('possession_time_defensive_zone', pd.Series([0]*len(df))), df['toi_minutes'])
         ]),
         'description': 'Possession time in defensive zone per 60 minutes (minutes)',
         'dependencies': ['possession_time_defensive_zone', 'toi_minutes'],

@@ -212,7 +212,14 @@ def validate_all(output_dir=None, valid_tracking_games=None, log=None):
     # Summary
     log.section("VALIDATION SUMMARY")
 
-    total_rows = sum(len(pd.read_csv(f, dtype=str)) for f in output_dir.glob("*.csv"))
+    # Count rows safely, handling empty files
+    def safe_row_count(filepath):
+        try:
+            return len(pd.read_csv(filepath, dtype=str))
+        except pd.errors.EmptyDataError:
+            return 0
+
+    total_rows = sum(safe_row_count(f) for f in output_dir.glob("*.csv"))
     table_count = len(list(output_dir.glob("*.csv")))
 
     log.info(f"Tables: {table_count}")
