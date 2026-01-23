@@ -114,7 +114,7 @@ When extracting functions to separate modules:
 - **Entry point:** `run_etl.py`
 - **Core engine:** `src/core/base_etl.py` (~1,065 lines) + `src/core/etl_phases/` modules
 - **Phase-based processing:** Loading → Event/Shift Building → Calculations → Advanced Analytics → Table Generation → QA
-- **Output:** 139 tables (50 dimensions, 81 facts, 8 QA) as CSVs in `data/output/`
+- **Output:** 145 tables (50 dimensions, 87 facts, 8 QA) as CSVs in `data/output/`
 
 ### Dashboard
 - **Framework:** Next.js 14 (App Router) with TypeScript strict mode

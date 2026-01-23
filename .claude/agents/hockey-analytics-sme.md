@@ -114,7 +114,7 @@ When invoked for hockey analytics questions, use this interactive format:
 ### Follow-Up Menu
 
 After answering, offer:
-```
+```text
 Would you like me to:
 - [D]eeper dive on this topic?
 - [S]how related metrics/calculations?

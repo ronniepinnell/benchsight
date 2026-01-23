@@ -525,7 +525,7 @@ After `/pm`:
 
 Ask PM questions about workflow, process, or priorities:
 
-```
+```bash
 /pm ask "Should I create a PRD for this?"
 /pm ask "Is this ready for PR?"
 /pm ask "Should I work on issue A or B first?"
@@ -545,7 +545,7 @@ Ask PM questions about workflow, process, or priorities:
 ### Follow-Up Menu
 
 After answering, offer:
-```
+```text
 Would you like me to:
 - [E]xplain the reasoning further?
 - [S]how related documentation?
@@ -563,7 +563,7 @@ Enter choice:
 PM decisions are logged to the unified issue log:
 
 ### Log Location
-```
+```text
 logs/issues/detected.jsonl   # All detected issues + PM decisions
 ```
 
