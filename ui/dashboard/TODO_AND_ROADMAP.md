@@ -42,6 +42,18 @@
   - **Effort:** 45-60 min
   - **Data:** `fact_events`
 
+- [ ] **Blog / Insights Hub**
+  - Add `/norad/blog` list + post detail (MDX/Markdown)
+  - Surface latest post on NORAD home and nav
+  - Seed with ML idea post and RSS/JSON feed
+  - **Effort:** 1-2 hours
+
+- [ ] **Dashboard Landing Page**
+  - Marketing/what-is-BenchSight hero with CTA to portal/signup
+  - Feature bullets, screenshots, trust/usage highlights
+  - Add link from top nav/footer
+  - **Effort:** 1-2 hours
+
 - [ ] **Enhanced Game Page**
   - Add shift charts visualization
   - Improve boxscore display

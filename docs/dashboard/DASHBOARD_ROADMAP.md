@@ -99,6 +99,8 @@ This document outlines the roadmap for the BenchSight dashboard, from current st
 - [ ] Team comparison enhancements
 - [ ] Breadcrumbs navigation
 - [ ] Enhanced tooltips with formula explanations
+- [ ] Blog/Insights hub (`/norad/blog`) with MDX posts, RSS, and navigation surfacing
+- [ ] Marketing/landing page for BenchSight dashboard (hero, features, CTA)
 - [ ] Mobile optimization
 
 ---
@@ -168,6 +170,10 @@ This document outlines the roadmap for the BenchSight dashboard, from current st
    - Responsive tables
    - Mobile navigation
    - Touch-friendly interactions
+
+5. **Insights & Landing**
+   - `/norad/blog` with MDX posts, RSS, and latest-post surface on home
+   - Marketing/landing page with hero, feature highlights, and CTA to portal/signup
 
 ### Medium Priority (1-2 Months)
 
