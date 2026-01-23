@@ -218,7 +218,7 @@
 - Documenting calculation flows
 
 **Example prompts:**
-```
+```text
 "Document fact_line_combinations in the data dictionary"
 "Where does the xg column come from?"
 "Update the ERD with new relationships"

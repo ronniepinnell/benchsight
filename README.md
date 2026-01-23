@@ -34,7 +34,7 @@ BenchSight is a comprehensive hockey analytics platform that processes game data
 
 ### Components
 
-- **ETL Pipeline** - Processes game data and generates 139 tables
+- **ETL Pipeline** - Processes game data and generates 145 tables
 - **Dashboard** - Public-facing analytics dashboard (50+ pages)
 - **Tracker** - Game tracking application (HTML/JS → Rust/Next.js)
 - **Portal** - Admin interface for ETL management
@@ -229,7 +229,7 @@ benchsight/
 
 ### ETL Pipeline
 
-- ✅ 139 tables generated (dimensions, facts, QA)
+- ✅ 145 tables generated (dimensions, facts, QA)
 - ✅ Comprehensive stats (317 columns for players, 128 for goalies)
 - ✅ Advanced metrics (Corsi, Fenwick, xG, WAR/GAR, QoC/QoT)
 - ✅ Data validation framework
