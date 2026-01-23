@@ -436,10 +436,10 @@ class TableVerifier:
                 message="fact_events table not found"
             )
 
-        # Count goals using the correct rule
+        # Count goals using the correct rule (exact match per CLAUDE.md)
         goal_mask = (
-            (events['event_type'].astype(str).str.lower() == 'goal') &
-            (events['event_detail'].astype(str).str.lower().str.contains('goal_scored', na=False))
+            (events['event_type'].astype(str) == 'Goal') &
+            (events['event_detail'].astype(str) == 'Goal_Scored')
         )
         goal_count = goal_mask.sum()
 

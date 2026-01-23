@@ -28,9 +28,6 @@ OUTPUT_DIR = BASE_DIR / "data" / "output"
 CLEAN_DIR = BASE_DIR / "data" / "clean"
 RAW_DIR = BASE_DIR / "data" / "raw"
 
-# Track if ETL has been run this session
-_etl_run_complete = False
-
 
 @pytest.fixture(scope="session")
 def base_dir():
@@ -102,8 +99,6 @@ def pytest_configure(config):
 
 def pytest_sessionstart(session):
     """Run ETL with --wipe at the start of the test session if requested."""
-    global _etl_run_complete
-
     if session.config.getoption("--run-etl"):
         print("\n" + "=" * 60)
         print("RUNNING ETL WITH --wipe BEFORE TESTS")
@@ -125,7 +120,6 @@ def pytest_sessionstart(session):
         if result.returncode != 0:
             pytest.exit(f"ETL failed with return code {result.returncode}", returncode=1)
 
-        _etl_run_complete = True
         print("=" * 60)
         print("ETL COMPLETE - Starting tests")
         print("=" * 60 + "\n")

@@ -317,7 +317,9 @@ def main():
     elif args.full:
         # Run legacy validation + comprehensive verification
         validator.run_all()
-        run_comprehensive_verification()
+        comprehensive_passed = run_comprehensive_verification()
+        if not comprehensive_passed:
+            validator.failed += 1
     else:
         # Run legacy validation
         validator.run_all()
