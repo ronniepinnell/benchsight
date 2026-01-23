@@ -381,3 +381,68 @@ claude chat --help
 | Data integrity review | Claude | Cursor Agent |
 | UI/UX review (screenshots) | Gemini | Claude |
 | Quick debugging ideas | ChatGPT | Claude |
+
+---
+
+## Dashboard Page Review Process
+
+Dashboard pages are reviewed in two passes using a hybrid approach:
+
+### Pass 1: Audit (Automated + Manual)
+**Goal:** Identify bugs, broken features, and technical issues.
+
+1. **Automated Testing** (via MCP/Puppeteer):
+   - Page loads without 404/500 errors
+   - No console errors
+   - Loading states render
+   - Data fetches complete
+
+2. **Manual Verification**:
+   - Interactive elements work (buttons, links, filters)
+   - Responsive on mobile/tablet
+   - Error states handled gracefully
+
+### Pass 2: Wireframe Alignment (Design + Data Source)
+**Goal:** Ensure pages match design spec and document data sources.
+
+For each component on the page, document:
+
+| Component | Wireframe Match | Data Source | Notes |
+|-----------|-----------------|-------------|-------|
+| Player Card | ✅/❌ | `dim_players` | |
+| Stats Table | ✅/❌ | `v_player_season_stats` | |
+| Trend Chart | ✅/❌ | `fact_player_game_stats` | |
+
+**Required for each page:**
+1. **Layout** - Does structure match wireframe?
+2. **Components** - Are all specified components present?
+3. **Data Sources** - Document every Supabase table/view used
+4. **Missing Data** - What tables/views need to be created?
+5. **Design System** - Colors, spacing, typography compliance
+
+### Issue Template Structure
+```markdown
+## Page: `/route/path`
+
+### Automated Checks
+- [ ] Page loads (no 404/500)
+- [ ] No console errors
+- [ ] Data loads successfully
+
+### Components & Data Sources
+| Component | Present | Data Source | Wireframe Match |
+|-----------|---------|-------------|-----------------|
+| Header | ✅/❌ | `table_name` | ✅/❌ |
+
+### Design Alignment
+- [ ] Layout matches wireframe
+- [ ] Design system compliance
+
+### Issues Found
+<!-- Document here -->
+```
+
+### Reference Files
+- Wireframes: `docs/reference/design/wireframes/wireframes.md`
+- Data Dictionary: `docs/data/DATA_DICTIONARY.md`
+- Schema ERD: `docs/data/SCHEMA_ERD.md`

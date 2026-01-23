@@ -403,11 +403,11 @@ export async function getUpcomingSchedule(limit: number = 10) {
   const { data, error } = await supabase
     .from('dim_schedule')
     .select('*')
-    .or(`game_date.gte.${today},and(game_date.eq.${today},game_time.gte.${new Date().toTimeString().slice(0, 5)})`)
-    .order('game_date', { ascending: true })
+    .or(`date.gte.${today},and(date.eq.${today},game_time.gte.${new Date().toTimeString().slice(0, 5)})`)
+    .order('date', { ascending: true })
     .order('game_time', { ascending: true, nullsLast: true })
     .limit(limit)
-  
+
   if (error) throw error
   return data ?? []
 }
@@ -419,9 +419,9 @@ export async function getTeamSchedule(teamName: string, limit: number = 20) {
     .from('dim_schedule')
     .select('*')
     .or(`home_team_name.eq.${teamName},away_team_name.eq.${teamName}`)
-    .order('game_date', { ascending: true })
+    .order('date', { ascending: true })
     .limit(limit)
-  
+
   if (error) throw error
   return data ?? []
 }

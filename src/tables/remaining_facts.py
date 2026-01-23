@@ -2572,13 +2572,10 @@ def build_remaining_tables(verbose: bool = True) -> dict:
 
         # Special teams
         ('fact_special_teams_summary', create_fact_special_teams_summary),
-        
-        # XY placeholders
-        ('fact_player_xy_long', create_fact_player_xy_long),
-        ('fact_player_xy_wide', create_fact_player_xy_wide),
-        ('fact_puck_xy_long', create_fact_puck_xy_long),
-        ('fact_puck_xy_wide', create_fact_puck_xy_wide),
-        ('fact_shot_xy', create_fact_shot_xy),
+
+        # Note: XY tables (fact_player_xy_*, fact_puck_xy_*, fact_shot_xy) are built
+        # by src/xy/xy_table_builder.py in Phase 10B, not here as placeholders
+
         ('fact_video', create_fact_video),
         ('fact_highlights', create_fact_highlights),
         
