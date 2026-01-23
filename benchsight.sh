@@ -322,25 +322,58 @@ cmd_env_switch() {
 
 cmd_env_status() {
     print_header "Environment Status"
-    
-    if [ -f "config/config_local.ini" ]; then
-        print_info "Current config: config/config_local.ini"
-        if grep -q "dev" config/config_local.ini 2>/dev/null; then
-            print_success "Environment: Development"
-        elif grep -q "production" config/config_local.ini 2>/dev/null; then
-            print_warning "Environment: Production"
+
+    # Show BENCHSIGHT_ENV setting
+    if [ -n "${BENCHSIGHT_ENV:-}" ]; then
+        if [ "$BENCHSIGHT_ENV" = "dev" ] || [ "$BENCHSIGHT_ENV" = "development" ]; then
+            print_success "BENCHSIGHT_ENV: $BENCHSIGHT_ENV (Development)"
+            if [ -f "config/config.dev.ini" ]; then
+                print_info "Using: config/config.dev.ini"
+            else
+                print_warning "config/config.dev.ini not found!"
+            fi
+        elif [ "$BENCHSIGHT_ENV" = "prod" ] || [ "$BENCHSIGHT_ENV" = "production" ]; then
+            print_warning "BENCHSIGHT_ENV: $BENCHSIGHT_ENV (Production)"
+            if [ -f "config/config.prod.ini" ]; then
+                print_info "Using: config/config.prod.ini"
+            else
+                print_warning "config/config.prod.ini not found!"
+            fi
         else
-            print_info "Environment: Unknown"
+            print_info "BENCHSIGHT_ENV: $BENCHSIGHT_ENV (Unknown)"
         fi
     else
-        print_warning "No config file found"
+        print_info "BENCHSIGHT_ENV: (not set - using legacy config_local.ini)"
+        if [ -f "config/config_local.ini" ]; then
+            # Check which Supabase URL is in the config
+            if grep -q "amuisqvhhiigxetsfame" config/config_local.ini 2>/dev/null; then
+                print_success "config_local.ini points to: Development"
+            elif grep -q "uuaowslhpgyiudmbvqze" config/config_local.ini 2>/dev/null; then
+                print_warning "config_local.ini points to: Production"
+            else
+                print_info "config_local.ini: Unknown target"
+            fi
+        else
+            print_warning "config/config_local.ini not found"
+        fi
     fi
-    
+
+    echo ""
+    print_info "Dashboard environment (Next.js auto-selects):"
+    if [ -f "ui/dashboard/.env.development" ]; then
+        print_success "  .env.development exists (used by npm run dev)"
+    fi
+    if [ -f "ui/dashboard/.env.production" ]; then
+        print_info "  .env.production exists (used by builds)"
+    fi
     if [ -f "ui/dashboard/.env.local" ]; then
-        print_info "Dashboard env: .env.local exists"
-    else
-        print_warning "Dashboard .env.local not found"
+        print_info "  .env.local exists (overrides above)"
     fi
+
+    echo ""
+    print_info "To switch environments:"
+    print_info "  export BENCHSIGHT_ENV=dev   # Use dev Supabase"
+    print_info "  export BENCHSIGHT_ENV=prod  # Use prod Supabase"
 }
 
 # Workflow Commands

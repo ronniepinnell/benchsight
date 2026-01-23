@@ -74,3 +74,12 @@ data/debug/
 
 # Local configs (keep templates, ignore local overrides)
 config/config_local.ini
+config/config.dev.ini
+config/config.prod.ini
+config/config_local.*.ini
+
+# Dashboard environment files (contain secrets)
+ui/dashboard/.env.local
+ui/dashboard/.env.development
+ui/dashboard/.env.production
+ui/dashboard/.env.local.*
