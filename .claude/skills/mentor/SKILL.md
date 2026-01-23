@@ -17,6 +17,8 @@ Your personal guide to mastering Claude Code and BenchSight development workflow
 /mentor why [topic]     # Explain why we do something
 /mentor patterns        # Show common patterns to follow
 /mentor mistakes        # Common mistakes to avoid
+/mentor ask "question"  # Ask questions about workflow, process, tools
+/mentor log             # View recent mentor Q&A and decisions
 ```
 
 ---
@@ -345,3 +347,61 @@ When stuck:
 2. Check the GitHub issue
 3. Ask `/mentor why [topic]`
 4. Use Task with appropriate specialist agent
+
+---
+
+## Q&A Mode (`/mentor ask`)
+
+Ask mentor questions about workflow, process, or tools:
+
+```
+/mentor ask "When should I use the Explore agent vs grep?"
+/mentor ask "Should I write tests before or after the fix?"
+/mentor ask "What's the right way to add a new ETL phase?"
+```
+
+### Common Questions
+
+| Question Type | Example | Response Includes |
+|---------------|---------|-------------------|
+| **Process** | "Do I need a PRD for this?" | Yes/No + criteria |
+| **Tools** | "Which skill for X?" | Recommendation + why |
+| **Workflow** | "How do I add a table?" | Step-by-step guide |
+| **Patterns** | "Best way to refactor?" | Pattern + example |
+
+### Follow-Up Menu
+
+After answering, offer:
+```
+Would you like me to:
+- [E]xplain the reasoning further?
+- [S]how related patterns or examples?
+- [P]oint to documentation?
+- [D]one
+
+Enter choice:
+```
+
+---
+
+## Session Logging (`/mentor log`)
+
+Mentor Q&A sessions are logged to the unified issue log:
+
+### Log Location
+```
+logs/issues/detected.jsonl   # All Q&A and decisions
+```
+
+### Log Format
+```json
+{
+  "timestamp": "2026-01-22T14:30:00Z",
+  "type": "mentor_qa",
+  "question": "When should I use the Explore agent?",
+  "answer_summary": "Use Explore for open-ended codebase questions, grep for specific patterns",
+  "referenced_docs": [".claude/agents/AGENTS_GUIDE.md"]
+}
+```
+
+This ensures learning continuity across sessions.

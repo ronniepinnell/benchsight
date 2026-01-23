@@ -26,6 +26,8 @@ Use this skill when you need:
 /pm reorg              # Reorganize issues after changes/failures
 /pm improve            # Continuous improvement suggestions
 /pm next               # What should I work on next?
+/pm ask "question"     # Ask PM questions (workflow, process, priorities)
+/pm log                # View recent PM decisions and session history
 ```
 
 ---
@@ -519,9 +521,79 @@ After `/pm`:
 
 ---
 
+## Q&A Mode (`/pm ask`)
+
+Ask PM questions about workflow, process, or priorities:
+
+```
+/pm ask "Should I create a PRD for this?"
+/pm ask "Is this ready for PR?"
+/pm ask "Should I work on issue A or B first?"
+/pm ask "What's the right process for adding a new table?"
+```
+
+### Common Questions
+
+| Question Type | Example | Response Includes |
+|---------------|---------|-------------------|
+| **Process** | "Do I need a PRD?" | Yes/No + criteria |
+| **Priority** | "A or B first?" | Recommendation + reasoning |
+| **Readiness** | "Ready for PR?" | Checklist status |
+| **Workflow** | "How do I add X?" | Step-by-step guide |
+| **Decision** | "Should I refactor?" | Pros/cons + recommendation |
+
+### Follow-Up Menu
+
+After answering, offer:
+```
+Would you like me to:
+- [E]xplain the reasoning further?
+- [S]how related documentation?
+- [C]reate an issue/PRD for this?
+- [L]og this decision for future reference?
+- [D]one
+
+Enter choice:
+```
+
+---
+
+## Session Logging (`/pm log`)
+
+PM decisions are logged to the unified issue log:
+
+### Log Location
+```
+logs/issues/detected.jsonl   # All detected issues + PM decisions
+```
+
+### Decision Log Format
+```json
+{
+  "timestamp": "2026-01-22T14:30:00Z",
+  "type": "pm_decision",
+  "question": "Should I work on #31 or #35 first?",
+  "decision": "#31 first - it's a dependency for #35",
+  "reasoning": "Issue #35 depends on #31 being complete"
+}
+```
+
+### Viewing Logs
+```bash
+# Recent PM decisions
+grep '"type":"pm_decision"' logs/issues/detected.jsonl | tail -10 | jq .
+
+# All recent logs
+tail -20 logs/issues/detected.jsonl | jq .
+```
+
+---
+
 ## Notes
 
 - This skill is for guidance, not enforcement
 - Use judgment - rules have exceptions
 - The goal is quality, not bureaucracy
 - When in doubt, ask the user
+- **All significant decisions are logged for continuity**
+- **Use `/pm ask` for clarification before making decisions**

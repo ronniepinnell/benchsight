@@ -36,6 +36,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `feature-template-generator` agent - create new explainer templates for features
 - `docs/component-docs/` - living component documentation
 - GitHub issue creation from all explainer agents
+- **Q&A Mode for Key Agents:**
+  - `/pm ask "question"` - PM decision Q&A with logging
+  - `/mentor ask "question"` - Workflow Q&A with logging
+  - `hockey-analytics-sme` Q&A mode with research logging
+- **Unified Logging:** All Q&A, decisions, and issues log to `logs/issues/detected.jsonl`
+- `data-dictionary-specialist` agent - maintains docs/data/, traces lineage, updates ERDs
 
 ### Changed
 - Reorganized docs folder structure (moved 14 files to subfolders)
@@ -44,6 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `/github-workflow commit` now requires version/changelog/log updates
 - `/pm` skill now includes environment and session management guidance
 - AGENTS_GUIDE.md updated with code-explainer and table-explainer
+- Simplified logging structure (removed separate logs/pm/, consolidated to logs/issues/)
+- logs/issues/README.md updated for unified log format
 
 ## [1.0.0-alpha.2] - 2026-01-22
 
