@@ -11,6 +11,7 @@ BenchSight is a hockey analytics platform for currentlt for the NORAD Recreation
 
 **Components:**
 - **ETL Pipeline** (`src/`, `run_etl.py`): Python pipeline generating 145 tables from Excel game data
+- **Validation** (`src/validation/`): Comprehensive table verification framework
 - **Dashboard** (`ui/dashboard/`): Next.js 14 analytics dashboard with 50+ pages
 - **API** (`api/`): FastAPI backend for ETL operations and data uploads
 - **Tracker** (`ui/tracker/`): HTML/JS game tracking application

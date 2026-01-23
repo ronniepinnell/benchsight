@@ -64,8 +64,39 @@ cmd_etl_run() {
 
 cmd_etl_validate() {
     print_header "Validating ETL Output"
-    python validate.py
+
+    if [ "$#" -gt 0 ]; then
+        case "$1" in
+            --manifest|--comprehensive)
+                print_info "Running comprehensive table verification"
+                python validate.py --manifest
+                ;;
+            --full)
+                print_info "Running full validation suite"
+                python validate.py --full
+                ;;
+            --quick)
+                print_info "Running quick validation"
+                python validate.py --quick
+                ;;
+            --goals)
+                print_info "Validating goal counts"
+                python validate.py --goals
+                ;;
+            *)
+                python validate.py "$@"
+                ;;
+        esac
+    else
+        python validate.py
+    fi
+
     print_success "Validation complete"
+}
+
+cmd_etl_verify() {
+    print_header "Running Comprehensive Table Verification"
+    python -m src.validation.table_verifier
 }
 
 cmd_etl_status() {
@@ -82,6 +113,20 @@ cmd_etl_wipe() {
         print_success "ETL wiped and rebuilt"
     else
         print_info "Cancelled"
+    fi
+}
+
+cmd_etl_test() {
+    print_header "Running ETL Tests"
+
+    if [ "$#" -gt 0 ] && [ "$1" == "--fresh" ]; then
+        shift
+        print_info "Running ETL with --wipe first, then tests"
+        pytest --run-etl tests/ "$@"
+    else
+        print_info "Running tests with existing output"
+        print_info "Use --fresh to wipe and rebuild ETL first"
+        pytest tests/ "$@"
     fi
 }
 
@@ -807,7 +852,12 @@ ${GREEN}Usage:${NC}
 ${GREEN}ETL Commands:${NC}
   etl run [--games GAME_ID ...]    Run ETL pipeline
   etl run --wipe                   Wipe and rebuild
-  etl validate                     Validate ETL output
+  etl validate                     Validate ETL output (legacy)
+  etl validate --manifest          Comprehensive table verification
+  etl validate --full              All validation checks
+  etl verify                       Comprehensive table verification
+  etl test                         Run ETL tests (uses existing output)
+  etl test --fresh                 Wipe + run ETL, then tests
   etl status                       Check ETL status
   etl wipe                         Wipe output directory
 
@@ -891,6 +941,8 @@ main() {
             case "$SUBCOMMAND" in
                 run) cmd_etl_run "$@" ;;
                 validate) cmd_etl_validate "$@" ;;
+                verify) cmd_etl_verify "$@" ;;
+                test) cmd_etl_test "$@" ;;
                 status) cmd_etl_status "$@" ;;
                 wipe) cmd_etl_wipe "$@" ;;
                 *) print_error "Unknown ETL subcommand: $SUBCOMMAND"; cmd_help; exit 1 ;;
