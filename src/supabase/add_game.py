@@ -20,14 +20,14 @@ except ImportError:
     print("Install supabase: pip3 install supabase")
     sys.exit(1)
 
-# Config
-# Load from config
-import configparser
+# Config - use centralized config_loader for environment-aware config
 from pathlib import Path
-_config = configparser.ConfigParser()
-_config.read(Path(__file__).parent.parent.parent / "config" / "config_local.ini")
-SUPABASE_URL = _config.get("supabase", "url", fallback="https://uuaowslhpgyiudmbvqze.supabase.co")
-SUPABASE_KEY = _config.get("supabase", "service_key", fallback="")
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from config.config_loader import load_config
+
+_cfg = load_config()
+SUPABASE_URL = _cfg.supabase_url
+SUPABASE_KEY = _cfg.supabase_service_key
 BLB_FILE = "data/raw/BLB_Tables.xlsx"
 GAMES_DIR = "data/raw/games"
 

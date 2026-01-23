@@ -49,23 +49,22 @@ _uploaded_tables = set()
 def enable_supabase() -> bool:
     """
     Enable direct Supabase upload.
-    
+
     Call this BEFORE running ETL to enable uploads.
+    Uses centralized config_loader for environment-aware config.
     """
     global _supabase_enabled, _supabase_client
-    
-    config_path = Path("config/config_local.ini")
-    
-    if not config_path.exists():
-        log.error(f"Supabase config not found: {config_path}")
-        return False
-    
-    config = configparser.ConfigParser()
-    config.read(config_path)
-    
+
     try:
-        url = config.get('supabase', 'url')
-        key = config.get('supabase', 'service_key')
+        from config.config_loader import load_config
+        cfg = load_config()
+
+        if not cfg.supabase_url or not cfg.supabase_service_key:
+            log.error("Supabase credentials not configured. Set BENCHSIGHT_ENV or create config_local.ini")
+            return False
+
+        url = cfg.supabase_url
+        key = cfg.supabase_service_key
         
         from supabase import create_client
         _supabase_client = create_client(url, key)
