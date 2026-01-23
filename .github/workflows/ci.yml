@@ -34,9 +34,7 @@ jobs:
           pip install -r requirements.txt
       
       - name: Run ETL validation
-        run: |
-          python validate.py --quick || echo "Validation check completed"
-        continue-on-error: true
+        run: python validate.py --manifest
       
       - name: Check Python code quality
         run: |
