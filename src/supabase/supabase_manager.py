@@ -38,38 +38,30 @@ logger = logging.getLogger('SupabaseManager')
 class SupabaseManager:
     """
     Manages all Supabase operations for BenchSight.
-    
-    Reads configuration from config/config_local.ini.
+
+    Reads configuration via config_loader (supports BENCHSIGHT_ENV).
     """
-    
+
     # Tables to skip (system tables, etc.)
     SKIP_TABLES = {'VERSION', 'TABLE_MANIFEST'}
-    
+
     # Batch size for uploads
     BATCH_SIZE = 500
-    
+
     def __init__(self, config_path: Optional[Path] = None):
         """
         Initialize Supabase manager.
-        
+
         Args:
-            config_path: Path to config file (default: config/config_local.ini)
+            config_path: Path to config file (optional, uses config_loader by default)
         """
-        # Find config
-        if config_path is None:
-            base_dir = Path(__file__).parent.parent.parent
-            config_path = base_dir / 'config' / 'config_local.ini'
-        
-        if not config_path.exists():
-            raise FileNotFoundError(f"Config not found: {config_path}")
-        
-        # Load config
-        config = configparser.ConfigParser()
-        config.read(config_path)
-        
-        self.url = config.get('supabase', 'url')
-        self.key = config.get('supabase', 'service_key')
-        
+        # Use config_loader for environment-aware config
+        from config.config_loader import load_config
+        cfg = load_config(config_path)
+
+        self.url = cfg.supabase_url
+        self.key = cfg.supabase_service_key
+
         if not self.url or not self.key:
             raise ValueError("Supabase URL and service_key required in config")
         

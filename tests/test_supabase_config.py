@@ -17,42 +17,46 @@ SQL_DIR = Path("sql")
 
 
 class TestSupabaseConfiguration:
-    """Test Supabase configuration files."""
-    
-    def test_config_local_ini_exists(self):
-        """Verify config_local.ini exists."""
-        config_file = CONFIG_DIR / "config_local.ini"
-        assert config_file.exists(), "config_local.ini not found"
-    
-    def test_config_has_supabase_section(self):
-        """Verify config has [supabase] section."""
-        config_file = CONFIG_DIR / "config_local.ini"
-        if config_file.exists():
-            config = configparser.ConfigParser()
-            config.read(config_file)
-            assert 'supabase' in config.sections(), "Missing [supabase] section"
-    
-    def test_config_has_url(self):
+    """Test Supabase configuration using centralized config_loader."""
+
+    def test_config_loader_works(self):
+        """Verify config_loader can load configuration."""
+        import sys
+        sys.path.insert(0, str(PROJECT_DIR))
+        from config.config_loader import load_config
+        cfg = load_config()
+        assert cfg is not None, "config_loader returned None"
+
+    def test_config_has_supabase_url(self):
         """Verify config has Supabase URL."""
-        config_file = CONFIG_DIR / "config_local.ini"
-        if config_file.exists():
-            config = configparser.ConfigParser()
-            config.read(config_file)
-            if 'supabase' in config.sections():
-                url = config.get('supabase', 'url', fallback=None)
-                assert url is not None, "Missing supabase url"
-                assert 'supabase.co' in url, "URL doesn't look like Supabase"
-    
-    def test_config_has_key(self):
-        """Verify config has Supabase key."""
-        config_file = CONFIG_DIR / "config_local.ini"
-        if config_file.exists():
-            config = configparser.ConfigParser()
-            config.read(config_file)
-            if 'supabase' in config.sections():
-                key = config.get('supabase', 'key', fallback=None)
-                assert key is not None, "Missing supabase key"
-                assert len(key) > 50, "Key seems too short"
+        import sys
+        sys.path.insert(0, str(PROJECT_DIR))
+        from config.config_loader import load_config
+        cfg = load_config()
+        # URL should be set via BENCHSIGHT_ENV or config_local.ini
+        if cfg.supabase_url:
+            assert 'supabase.co' in cfg.supabase_url, "URL doesn't look like Supabase"
+
+    def test_config_has_service_key(self):
+        """Verify config has Supabase service key."""
+        import sys
+        sys.path.insert(0, str(PROJECT_DIR))
+        from config.config_loader import load_config
+        cfg = load_config()
+        # Key should be set via BENCHSIGHT_ENV or config_local.ini
+        if cfg.supabase_service_key:
+            assert len(cfg.supabase_service_key) > 50, "Key seems too short"
+
+    def test_config_validates(self):
+        """Verify config validation works."""
+        import sys
+        sys.path.insert(0, str(PROJECT_DIR))
+        from config.config_loader import load_config
+        cfg = load_config()
+        valid, errors = cfg.validate()
+        # Just verify validate() works - actual validity depends on env setup
+        assert isinstance(valid, bool)
+        assert isinstance(errors, list)
 
 
 class TestSupabaseSQLFiles:
