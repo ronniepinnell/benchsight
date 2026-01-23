@@ -1844,63 +1844,15 @@ def create_fact_team_zone_time() -> pd.DataFrame:
 
 
 # =============================================================================
-# MATCHUP TABLES
+# MATCHUP TABLES - REMOVED (Issue #99)
 # =============================================================================
-
-def create_fact_matchup_summary() -> pd.DataFrame:
-    """
-    Create matchup summary stats.
-    
-    Uses fact_h2h as base which already includes:
-    - Logical shift counting (not raw shift rows)
-    - Real statistics (gf, ga, cf, ca, cf_pct, ff_pct) from fact_shift_players
-    - Proper player_id usage (not jersey numbers)
-    """
-    h2h = load_table('fact_h2h')
-    
-    if len(h2h) == 0:
-        return pd.DataFrame()
-    
-    # Copy H2H data (which uses logical shifts and real stats)
-    h2h = h2h.copy()
-    h2h['matchup_key'] = h2h.get('h2h_key', h2h.index.astype(str))
-    h2h['_export_timestamp'] = datetime.now().isoformat()
-    
-    return h2h
-
-
-def create_fact_matchup_performance() -> pd.DataFrame:
-    """Create matchup performance analysis."""
-    h2h = load_table('fact_h2h')
-    wowy = load_table('fact_wowy')
-    
-    if len(h2h) == 0:
-        return pd.DataFrame()
-    
-    # Join H2H with WOWY
-    if len(wowy) > 0:
-        merged = h2h.merge(wowy, on=['game_id', 'player_1_id', 'player_2_id'], how='left', suffixes=('', '_wowy'))
-    else:
-        merged = h2h.copy()
-    
-    merged['performance_key'] = merged.get('h2h_key', merged.index.astype(str)) + '_perf'
-    merged['_export_timestamp'] = datetime.now().isoformat()
-    
-    return merged
-
-
-def create_fact_head_to_head() -> pd.DataFrame:
-    """Alias for fact_h2h with different column names."""
-    h2h = load_table('fact_h2h')
-    
-    if len(h2h) == 0:
-        return pd.DataFrame()
-    
-    df = h2h.copy()
-    df = df.rename(columns={'h2h_key': 'head_to_head_key'})
-    df['_export_timestamp'] = datetime.now().isoformat()
-    
-    return df
+# The following tables were removed as duplicates of fact_h2h:
+# - fact_matchup_summary: Copy of fact_h2h with matchup_key alias
+# - fact_matchup_performance: Join of fact_h2h + fact_wowy (no new calculations)
+# - fact_head_to_head: Alias with h2h_key renamed to head_to_head_key
+#
+# Use fact_h2h (in src/tables/shift_analytics.py) as the canonical H2H table.
+# =============================================================================
 
 
 # =============================================================================
@@ -2615,11 +2567,9 @@ def build_remaining_tables(verbose: bool = True) -> dict:
         ('fact_zone_exit_summary', create_fact_zone_exit_summary),
         ('fact_team_zone_time', create_fact_team_zone_time),
         
-        # Matchups
-        ('fact_matchup_summary', create_fact_matchup_summary),
-        ('fact_matchup_performance', create_fact_matchup_performance),
-        ('fact_head_to_head', create_fact_head_to_head),
-        
+        # Note: H2H/matchup tables (fact_matchup_summary, fact_matchup_performance,
+        # fact_head_to_head) removed as duplicates of fact_h2h - see Issue #99
+
         # Special teams
         ('fact_special_teams_summary', create_fact_special_teams_summary),
         

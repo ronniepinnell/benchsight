@@ -78,14 +78,11 @@ DROP TABLE IF EXISTS public."fact_goalie_season_stats" CASCADE;
 DROP TABLE IF EXISTS public."fact_goalie_season_stats_basic" CASCADE;
 DROP TABLE IF EXISTS public."fact_goals" CASCADE;
 DROP TABLE IF EXISTS public."fact_h2h" CASCADE;
-DROP TABLE IF EXISTS public."fact_head_to_head" CASCADE;
 DROP TABLE IF EXISTS public."fact_high_danger_chances" CASCADE;
 DROP TABLE IF EXISTS public."fact_highlights" CASCADE;
 DROP TABLE IF EXISTS public."fact_leadership" CASCADE;
 DROP TABLE IF EXISTS public."fact_line_combos" CASCADE;
 DROP TABLE IF EXISTS public."fact_linked_events" CASCADE;
-DROP TABLE IF EXISTS public."fact_matchup_performance" CASCADE;
-DROP TABLE IF EXISTS public."fact_matchup_summary" CASCADE;
 DROP TABLE IF EXISTS public."fact_penalties" CASCADE;
 DROP TABLE IF EXISTS public."fact_period_momentum" CASCADE;
 DROP TABLE IF EXISTS public."fact_player_boxscore_all" CASCADE;
@@ -1976,31 +1973,6 @@ CREATE TABLE IF NOT EXISTS public."fact_h2h" (
     "away_team_id" TEXT,
     "venue_id" TEXT
 );
-CREATE TABLE IF NOT EXISTS public."fact_head_to_head" (
-    "head_to_head_key" TEXT,
-    "game_id" BIGINT,
-    "player_1_id" TEXT,
-    "player_1_name" TEXT,
-    "player_2_id" TEXT,
-    "player_2_name" TEXT,
-    "same_team" BOOLEAN,
-    "venue" TEXT,
-    "shifts_together" BIGINT,
-    "toi_together" BIGINT,
-    "goals_for" BIGINT,
-    "goals_against" BIGINT,
-    "plus_minus" BIGINT,
-    "corsi_for" BIGINT,
-    "corsi_against" BIGINT,
-    "cf_pct" DOUBLE PRECISION,
-    "fenwick_for" BIGINT,
-    "fenwick_against" BIGINT,
-    "ff_pct" DOUBLE PRECISION,
-    "_export_timestamp" TEXT,
-    "home_team_id" TEXT,
-    "away_team_id" TEXT,
-    "venue_id" TEXT
-);
 CREATE TABLE IF NOT EXISTS public."fact_high_danger_chances" (
     "event_id" TEXT,
     "game_id" BIGINT,
@@ -2218,80 +2190,6 @@ CREATE TABLE IF NOT EXISTS public."fact_linked_events" (
     "event_1_detail" TEXT,
     "event_1_player_id" TEXT,
     "play_chain" TEXT
-);
-CREATE TABLE IF NOT EXISTS public."fact_matchup_performance" (
-    "h2h_key" TEXT,
-    "game_id" BIGINT,
-    "player_1_id" TEXT,
-    "player_1_name" TEXT,
-    "player_2_id" TEXT,
-    "player_2_name" TEXT,
-    "same_team" BOOLEAN,
-    "venue" TEXT,
-    "shifts_together" BIGINT,
-    "toi_together" BIGINT,
-    "goals_for" BIGINT,
-    "goals_against" BIGINT,
-    "plus_minus" BIGINT,
-    "corsi_for" BIGINT,
-    "corsi_against" BIGINT,
-    "cf_pct" DOUBLE PRECISION,
-    "fenwick_for" BIGINT,
-    "fenwick_against" BIGINT,
-    "ff_pct" DOUBLE PRECISION,
-    "wowy_key" TEXT,
-    "venue_wowy" TEXT,
-    "shifts_together_wowy" BIGINT,
-    "p1_total_shifts" BIGINT,
-    "p2_total_shifts" BIGINT,
-    "p1_shifts_without_p2" BIGINT,
-    "p2_shifts_without_p1" BIGINT,
-    "toi_together_wowy" BIGINT,
-    "toi_apart" BIGINT,
-    "toi_p1_without_p2" BIGINT,
-    "toi_p2_without_p1" BIGINT,
-    "cf_together" BIGINT,
-    "ca_together" BIGINT,
-    "cf_pct_together" DOUBLE PRECISION,
-    "gf_together" BIGINT,
-    "ga_together" BIGINT,
-    "gf_pct_together" BIGINT,
-    "cf_apart" BIGINT,
-    "ca_apart" BIGINT,
-    "cf_pct_apart" DOUBLE PRECISION,
-    "gf_apart" BIGINT,
-    "ga_apart" BIGINT,
-    "gf_pct_apart" BIGINT,
-    "cf_pct_delta" DOUBLE PRECISION,
-    "gf_pct_delta" BIGINT,
-    "relative_corsi" DOUBLE PRECISION,
-    "player_1_name_wowy" TEXT,
-    "player_2_name_wowy" TEXT,
-    "performance_key" TEXT,
-    "_export_timestamp" TEXT
-);
-CREATE TABLE IF NOT EXISTS public."fact_matchup_summary" (
-    "h2h_key" TEXT,
-    "game_id" BIGINT,
-    "player_1_id" TEXT,
-    "player_1_name" TEXT,
-    "player_2_id" TEXT,
-    "player_2_name" TEXT,
-    "same_team" BOOLEAN,
-    "venue" TEXT,
-    "shifts_together" BIGINT,
-    "toi_together" BIGINT,
-    "goals_for" BIGINT,
-    "goals_against" BIGINT,
-    "plus_minus" BIGINT,
-    "corsi_for" BIGINT,
-    "corsi_against" BIGINT,
-    "cf_pct" DOUBLE PRECISION,
-    "fenwick_for" BIGINT,
-    "fenwick_against" BIGINT,
-    "ff_pct" DOUBLE PRECISION,
-    "matchup_key" TEXT,
-    "_export_timestamp" TEXT
 );
 CREATE TABLE IF NOT EXISTS public."fact_penalties" (
     "event_id" TEXT,

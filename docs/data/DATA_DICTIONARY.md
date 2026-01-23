@@ -353,9 +353,6 @@ These phases add foreign keys, calculated columns, and flags to existing tables.
 | **fact_zone_entry_summary** | fact_events | (game_id, team_id, entry_type) | Entry aggregation |
 | **fact_zone_exit_summary** | fact_events | (game_id, team_id, exit_type) | Exit aggregation |
 | **fact_team_zone_time** | fact_shifts | (game_id, team_id, zone) | Zone possession |
-| **fact_matchup_summary** | fact_shift_players | (player_1, player_2, game_id) | Direct matchups |
-| **fact_matchup_performance** | fact_events | (player_id, opp_team, season) | Vs opponent |
-| **fact_head_to_head** | fact_h2h | (player_1, player_2, season) | Season H2H |
 | **fact_special_teams_summary** | fact_events | (game_id, team_id) | PP/PK stats |
 | **fact_player_xy_long** | fact_events | (game_id, player_id, event_id) | Player location |
 | **fact_player_xy_wide** | fact_events | (game_id, player_id) | Location summary |
