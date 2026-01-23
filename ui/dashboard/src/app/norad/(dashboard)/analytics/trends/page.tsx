@@ -43,7 +43,6 @@ export default async function TrendsPage() {
     const season = p.season || p.season_id || ''
     return typeof season === 'string' && !season.toLowerCase().includes('summer')
   })
-    .order('points', { ascending: false })
   
   // Aggregate team stats by season
   const teamStatsBySeason = (teamTrends || []).reduce((acc: any, stat: any) => {

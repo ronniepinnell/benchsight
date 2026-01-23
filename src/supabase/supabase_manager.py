@@ -303,10 +303,14 @@ class SupabaseManager:
             csv_path = self.data_dir / f'{table_name}.csv'
             if not csv_path.exists():
                 return 0, [f"CSV not found: {csv_path}"]
-            df = pd.read_csv(csv_path, low_memory=False)
-        
+            try:
+                df = pd.read_csv(csv_path, low_memory=False)
+            except pd.errors.EmptyDataError:
+                logger.info(f"  SKIP {table_name}: empty CSV (no columns)")
+                return 0, []
+
         if len(df) == 0:
-            logger.info(f"  SKIP {table_name}: empty")
+            logger.info(f"  SKIP {table_name}: empty (0 rows)")
             return 0, []
         
         # Clean DataFrame
@@ -377,16 +381,26 @@ class SupabaseManager:
             try:
                 # Read full file for better type inference
                 df = pd.read_csv(csv_path, low_memory=False)
+
+                # Skip empty CSVs (no data rows)
+                if len(df) == 0:
+                    logger.info(f"  SKIP {table_name}: empty (0 rows, schema only)")
+                    continue
+
                 df = self._clean_dataframe(df)
-                
+
                 # Count types for summary
                 for col in df.columns:
                     pg_type = self._infer_pg_type(df[col], col)
                     type_counts[pg_type] = type_counts.get(pg_type, 0) + 1
-                
+
                 create_sql = self.generate_create_sql(table_name, df)
                 sql_statements.append(create_sql)
                 results['tables_created'] += 1
+            except pd.errors.EmptyDataError:
+                # CSV file is completely empty (no columns)
+                logger.info(f"  SKIP {table_name}: empty CSV (no columns)")
+                continue
             except Exception as e:
                 results['errors'].append(f"{table_name}: {e}")
                 logger.error(f"  ERROR creating schema for {table_name}: {e}")

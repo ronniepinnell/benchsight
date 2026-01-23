@@ -20,6 +20,11 @@ data/.dtype_optimization_results.json
 data/.etl_*.json
 data/tracking_backup*
 
+# External data sources (NHL, training app - large files, stored locally)
+data/hockey_data/
+data/hockey_training/
+data/external/
+
 # Node modules
 node_modules/
 ui/**/node_modules/

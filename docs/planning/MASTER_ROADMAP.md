@@ -556,6 +556,14 @@ The MVP is a polished, production-ready version of the current functional protot
 - **Advanced Analytics Dashboard:** GM-focused analytics with AI insights
 - **Trade Evaluation:** AI-powered trade analysis
 - **Draft Analysis:** Prospect evaluation and draft strategy
+- **Moneyball Draft Board:** Rating-cap-aware optimizer with keepers, opponent-pick sims, and human/vibes overlays
+
+**Moneyball Draft Board - Data Inputs (prep before Phase 12)**
+- Draft history: last season draft order and picks (`team_id`, `pick_number`, `player_id`, `rating`, `position`).
+- Keepers: per-team kept players (`team_id`, `player_id`, `rating`, `position`, `captain_flag`), consumed rating slots.
+- Player pool: unified value outputs (rich/sparse/new routes) with offense/defense splits and confidence, human/vibes notes (optional tags).
+- Team rules: rating cap template, role needs (PP/PK/transition/faceoff/defense), attendance/reliability flags if available.
+- Opponent tendencies: optional heuristics from last-year picks (offense/defense bias, positional runs).
 
 **Dependencies:**
 - Phase 11 completion
@@ -609,6 +617,17 @@ gantt
     Natural Language Query :p10-nl, 2026-10-01, 4w
     Coach Modes            :p11-coach, 2026-11-01, 4w
     GM Mode & Advanced     :p12-gm, 2026-12-01, 4w
+
+    section NHL Data & Training (Parallel)
+    Multi-League Schema    :nhl-schema, 2026-02-15, 4w
+    NHL Data Loaders       :nhl-load, 2026-03-01, 4w
+    Benchmarking Views     :nhl-bench, 2026-03-15, 4w
+    xG Model Training      :nhl-xg, 2026-06-01, 6w
+    Training Schema Merge  :train-schema, 2026-07-15, 4w
+    Athlete Portal MVP     :train-portal, 2026-08-01, 6w
+    CV Coach Migration     :cv-migrate, 2026-09-01, 4w
+    Performance Correlation:train-corr, 2026-10-01, 4w
+    NHL Exploration Dash   :nhl-explore, 2026-10-15, 6w
 ```
 
 ### Component Dependency Graph
@@ -648,7 +667,7 @@ graph LR
         MVP4[Authentication]
         MVP5[Payment]
     end
-    
+
     subgraph Commercial["Commercial Features (Weeks 17-32)"]
         COM1[Mobile Optimization]
         COM2[Advanced Analytics]
@@ -656,7 +675,7 @@ graph LR
         COM4[Onboarding]
         COM5[Support System]
     end
-    
+
     subgraph Future["Future Features (Weeks 33+)"]
         FUT1[ML/CV Integration]
         FUT2[Mobile Apps]
@@ -664,13 +683,25 @@ graph LR
         FUT4[Predictive Analytics]
         FUT5[Multi-League]
     end
-    
+
+    subgraph Expansion["NHL Data & Training (Parallel)"]
+        EXP1[Multi-League Schema]
+        EXP2[NHL Benchmarking]
+        EXP3[xG Model Training]
+        EXP4[Athlete Portal]
+        EXP5[CV Coach Enhancement]
+        EXP6[NHL Explorer]
+    end
+
     MVP --> Commercial
     Commercial --> Future
-    
+    MVP --> Expansion
+    Expansion --> Future
+
     style MVP fill:#00ff88
     style Commercial fill:#00d4ff
     style Future fill:#aa66ff
+    style Expansion fill:#ff8800
 ```
 
 ## Dependencies
@@ -845,6 +876,292 @@ graph TD
 
 ---
 
+## NHL Data & Training Integration Roadmap (Parallel Track)
+
+**Status:** [PLANNED] Planned
+**Priority:** Medium-High (strategic expansion)
+**Timeline:** Runs parallel to Phases 3-12
+
+**Overview:** Expand BenchSight from a NORAD-focused platform into a comprehensive hockey intelligence hub with NHL benchmarking, ML models trained on pro data, and personal training integration.
+
+**Data Sources Available (9.9 GB):**
+| Source | Records | Location |
+|--------|---------|----------|
+| MoneyPuck Shots | 1.9M (2007-2023) | `data/hockey_data/NHL_Project/MoneyPuckData/Shots/` |
+| MoneyPuck Skaters | 17 seasons | `data/hockey_data/NHL_Project/MoneyPuckData/Skaters/` |
+| MoneyPuck Lines | 17 seasons | `data/hockey_data/NHL_Project/MoneyPuckData/Lines/` |
+| NHL Event Data | 8M+ events | `data/hockey_data/HockeyDataReference/Hockey_Statistics/NHL/` |
+| NHL Shifts | 5.7M shifts | `data/hockey_data/HockeyDataReference/Hockey_Statistics/NHL/` |
+| PWHL | 2024-25 season | `data/hockey_data/HockeyDataReference/Hockey_Statistics/PWHL/` |
+| Big Data Cup | 3 games + tracking | `data/hockey_data/HockeyDataReference/Hockey_Statistics/Big-Data-Cup-2025-Data/` |
+
+**Training App Source:** `data/hockey_training/master/` (Vanilla JS PWA + Supabase + Python workers)
+
+---
+
+### Track A: Multi-League Data Foundation (Parallel to Phase 3)
+
+**Goal:** Abstract BenchSight to support multiple leagues with consistent schemas.
+
+**New Tables:**
+```
+dim_leagues              -- NORAD, NHL, PWHL, AHL, etc.
+dim_nhl_players          -- NHL player master (3,200+ players)
+dim_nhl_teams            -- 32 NHL teams + historical
+dim_nhl_seasons          -- Season metadata (2007-2025)
+fact_nhl_shots           -- 1.9M shot records with xG
+fact_nhl_player_games    -- Per-player per-game stats
+fact_nhl_shifts          -- Shift-level data
+fact_nhl_lines           -- Line combination stats
+```
+
+**Schema Changes:**
+- [ ] Add `league_id` to relevant dim/fact tables
+- [ ] Create `dim_leagues` table
+- [ ] Create NHL data loaders in `src/loaders/`
+- [ ] Add `--source nhl|pwhl|bdc` flag to ETL
+- [ ] Update dashboard queries to filter by league context
+
+**ETL Approach:**
+- Store raw CSVs in `data/external/` (gitignored)
+- One-time bulk load + incremental updates for current season
+- Separate ETL run modes: `./benchsight.sh etl run --source norad` vs `--source nhl`
+
+---
+
+### Track B: NHL Benchmarking (Parallel to Phase 3-4)
+
+**Goal:** Compare NORAD players/teams against NHL percentiles.
+
+**Features:**
+- [ ] Percentile rankings (e.g., "Your Corsi% is 65th percentile of NHL forwards")
+- [ ] Position-adjusted comparisons (F vs F, D vs D, G vs G)
+- [ ] Stat radar charts overlaying player vs NHL median/elite
+- [ ] "NHL Comparable" finder (which NHL player has similar profile?)
+- [ ] Team benchmarking (shot quality, possession, special teams vs NHL)
+
+**New Views:**
+```sql
+v_nhl_percentiles_skaters    -- Pre-computed percentiles by position
+v_nhl_percentiles_goalies    -- Goalie-specific percentiles
+v_player_nhl_comparison      -- Join NORAD player stats to NHL benchmarks
+```
+
+**Dashboard Pages:**
+- [ ] `/players/[id]/benchmark` - NHL comparison for individual player
+- [ ] `/teams/[id]/benchmark` - Team vs NHL baselines
+- [ ] `/nhl/percentiles` - League-wide percentile explorer
+
+---
+
+### Track C: xG Model Training (Parallel to Phase 6 ML/CV)
+
+**Goal:** Train expected goals model on NHL shots, apply to NORAD.
+
+**Training Data:** MoneyPuck shots (1.9M records)
+- Shot location (x, y coordinates)
+- Shot type (wrist, slap, backhand, etc.)
+- Game state (score, period, strength)
+- Rush/rebound indicators
+- Shooter angle and distance
+
+**Model Approach:**
+- [ ] Train gradient boosting model on NHL data
+- [ ] Validate against MoneyPuck's published xG values
+- [ ] Apply to NORAD shots with coordinate mapping
+- [ ] Store model in `models/xg/` with versioning
+
+**New Tables:**
+```
+ml_xg_models             -- Model metadata, version, accuracy
+fact_shots.xg_predicted  -- Add xG column to existing shot facts
+```
+
+**Additional Models (Future):**
+- [ ] Win Probability Model (score, time, strength, Corsi)
+- [ ] Player Similarity Model (cosine similarity clustering)
+
+---
+
+### Track D: Athlete Portal & Training Integration (Parallel to Phase 7-8)
+
+**Goal:** Merge hockey_training app into BenchSight with authenticated Athlete Portal.
+
+**Tables to Port from hockey_training:**
+```
+-- Planning
+plan_sessions           → fact_training_sessions
+plan_settings           → dim_athlete_settings
+events                  → dim_training_events
+
+-- Logging
+actual_sessions         → fact_training_actuals
+actual_lift_sets        → fact_lift_sets
+workout_notes           → fact_training_notes
+journal_entries         → fact_journal_entries
+food_logs               → fact_nutrition_logs
+
+-- Recovery
+recovery_daily          → fact_recovery_daily
+body_comp_daily         → fact_body_comp
+
+-- Hockey-specific
+helios_player_sessions  → fact_helios_sessions
+helios_player_shifts    → fact_helios_shifts
+cv_jobs                 → fact_cv_jobs
+cv_sessions             → fact_cv_sessions
+```
+
+**Athlete Portal Pages:**
+- [ ] `/athlete/today` - Daily training plan + readiness
+- [ ] `/athlete/week` - Weekly overview with hockey games highlighted
+- [ ] `/athlete/dashboard` - Training load trends, recovery metrics
+- [ ] `/athlete/cv-coach` - Shot/stickhandling video analysis
+- [ ] `/athlete/nutrition` - Meal logging and macro tracking
+- [ ] `/athlete/recovery` - Oura/Apple Health data visualization
+
+**External Integrations (Port from hockey_training):**
+| Service | Data | Status in hockey_training |
+|---------|------|---------------------------|
+| Strava | Runs, rides, activities | ✅ Implemented |
+| Oura | Sleep, HRV, readiness | ✅ Implemented |
+| Helios | Game tracking, shifts | ✅ Implemented |
+| Apple Health | HR, sleep, workouts | ✅ Implemented |
+| Strong | Lift sessions | ✅ Implemented |
+| Withings | Body composition | 📋 Planned |
+
+**Worker Architecture:**
+- Port Python workers from `data/hockey_training/master/worker/` to `api/workers/`
+- Run via GitHub Actions or migrate to Railway
+- Store sync state in `ingest_state` table
+
+**Auth Consideration:**
+- Athlete portal requires Supabase Auth
+- Personal data isolated via RLS (user_id = auth.uid())
+- Public BenchSight dashboard remains open
+
+---
+
+### Track E: Performance Correlation Engine (Parallel to Phase 9-12)
+
+**Goal:** Connect training load to game performance.
+
+**Analyses:**
+- [ ] Does readiness score predict points/game?
+- [ ] Training volume vs. ice time correlation
+- [ ] Recovery metrics vs. Corsi differential
+- [ ] Pre-game nutrition impact on performance
+
+**New Views:**
+```sql
+v_training_game_correlation  -- Join training metrics to game stats
+v_readiness_performance      -- Readiness score vs game outcomes
+```
+
+**Dashboard Pages:**
+- [ ] `/athlete/correlations` - Training-performance insights
+- [ ] `/athlete/predictions` - AI-suggested training adjustments
+
+---
+
+### Track F: CV Coach Enhancement (Parallel to Phase 9-12)
+
+**Goal:** Enhance video analysis using NHL tracking data patterns.
+
+**Current State (from hockey_training):**
+- ✅ ArUco marker-based net calibration
+- ✅ Shot placement heatmaps
+- ✅ Stickhandling cadence scoring
+- 🚧 Basic form analysis (MediaPipe foundation)
+
+**Enhancements Using NHL Tracking Data:**
+- [ ] Learn optimal skating patterns from Big Data Cup tracking
+- [ ] Compare user's movement patterns to professional benchmarks
+- [ ] Enhance shot release point detection
+- [ ] Stride length/cadence analysis against NHL baselines
+
+**Advanced Form Analysis:**
+- [ ] Skating stride analysis (crossovers, edges, transitions)
+- [ ] Shot mechanics breakdown (weight transfer, follow-through)
+- [ ] Comparison overlays with "ideal" form
+- [ ] Progress tracking over time
+
+---
+
+### Track G: NHL Exploration Dashboard (Parallel to Phase 9-12)
+
+**Goal:** Separate section for exploring professional hockey data.
+
+**Dashboard Pages:**
+- [ ] `/nhl/players` - Player search with advanced filters
+- [ ] `/nhl/teams` - Team comparisons and rankings
+- [ ] `/nhl/games` - Game analysis with shot maps
+- [ ] `/nhl/trends` - League-wide trends over time
+- [ ] `/nhl/xg-explorer` - Interactive xG visualization
+
+**Research Tools:**
+- [ ] Custom query builder for stat exploration
+- [ ] Export capabilities for further analysis
+- [ ] Saved queries and dashboards
+
+---
+
+### Implementation Priority (Suggested Order)
+
+**Immediate (During Phase 3):**
+1. Multi-league schema changes (`league_id`, `dim_leagues`)
+2. MoneyPuck shots loader (cleanest data, highest value)
+3. Basic percentile benchmarking view
+
+**Short-term (During Phase 4-6):**
+4. xG model training pipeline
+5. Player benchmarking dashboard page
+6. NHL player search/exploration
+
+**Medium-term (During Phase 7-8):**
+7. Migrate training schema to BenchSight
+8. Athlete portal MVP (today, week views)
+9. Strava/Oura worker integration
+
+**Long-term (During Phase 9-12):**
+10. CV Coach migration and enhancement
+11. Win probability model
+12. Performance correlation engine
+13. Full NHL exploration dashboard
+
+---
+
+### Success Metrics
+
+| Metric | Target |
+|--------|--------|
+| Benchmarking | Any NORAD player can see NHL percentile rankings |
+| xG Model | Model achieves <0.05 MAE vs MoneyPuck baseline |
+| Training Integration | Full workout logging through BenchSight dashboard |
+| Correlation Insights | 3+ statistically significant training-performance correlations |
+| CV Coach | Shot accuracy trends visible over 10+ sessions |
+
+---
+
+### Technical Considerations
+
+**Storage:**
+- External data stays in `data/external/` (gitignored)
+- Document download/setup instructions in README
+- Consider Supabase Storage for large files
+
+**Performance:**
+- NHL data is large - pre-aggregate common queries
+- Create materialized views for percentiles
+- Index on league_id, season, player_id
+
+**Deployment:**
+- Workers can run on Railway (FastAPI already there)
+- Consider scheduled jobs for API syncs
+- CV processing may need GPU (future)
+
+---
+
 ## Related Documentation
 
 - [dashboard/DASHBOARD_ROADMAP.md](dashboard/DASHBOARD_ROADMAP.md) - Dashboard-specific roadmap
@@ -853,7 +1170,8 @@ graph TD
 - [commercial/GAP_ANALYSIS.md](commercial/GAP_ANALYSIS.md) - Strategic assessment (gap analysis)
 - [GITHUB_ISSUES_BACKLOG.md](GITHUB_ISSUES_BACKLOG.md) - Detailed issue descriptions
 - [archive/COMPREHENSIVE_FUTURE_ROADMAP.md](archive/COMPREHENSIVE_FUTURE_ROADMAP.md) - Future roadmap (archived)
+- **[NEW]** [NHL_TRAINING_EXPANSION.md](NHL_TRAINING_EXPANSION.md) - Detailed NHL data + training integration plan
 
 ---
 
-*Last Updated: 2026-01-22*
+*Last Updated: 2026-01-23*
