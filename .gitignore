@@ -88,3 +88,8 @@ ui/dashboard/.env.local
 ui/dashboard/.env.development
 ui/dashboard/.env.production
 ui/dashboard/.env.local.*
+
+# Playwright test artifacts
+ui/dashboard/playwright-report/
+ui/dashboard/test-results/
+ui/dashboard/test-login-audit.mjs
