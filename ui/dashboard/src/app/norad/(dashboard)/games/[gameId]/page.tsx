@@ -2,7 +2,7 @@
 // src/app/norad/(dashboard)/games/[gameId]/page.tsx
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getGameFromSchedule, getGameRoster, getGameGoals, getGameGoalieStats, getGameShots } from '@/lib/supabase/queries/games'
+import { getGameFromSchedule, getGameRoster, getGameGoals, getGameGoalieStats, getGameShots, getGameVideos, getGameHighlights } from '@/lib/supabase/queries/games'
 import { getGameTrackingStatus } from '@/lib/supabase/queries/game-tracking'
 import { createClient } from '@/lib/supabase/server'
 import { getTeamById } from '@/lib/supabase/queries/teams'
@@ -19,6 +19,10 @@ import { GameSummary } from '@/components/games/game-summary'
 import { PlayByPlayTimeline } from '@/components/games/PlayByPlayTimeline'
 import { ShiftChart } from '@/components/games/shift-chart'
 import { SortableGoaliesTable } from '@/components/games/sortable-goalies-table'
+import { ThreeStars } from '@/components/games/three-stars'
+import { GameDetailTabs } from '@/components/games/game-detail-tabs'
+import { GameMediaSection } from '@/components/games/game-media-section'
+import { CompactTeamStats } from '@/components/games/compact-team-stats'
 import type { FactPlayerGameStats, FactGoalieGameStats, DimTeam, DimPlayer } from '@/types/database'
 
 export const revalidate = 300
@@ -47,6 +51,8 @@ interface GameEvent {
   time_seconds?: number
   time_remaining?: string
   period_time?: string
+  event_start_min?: number
+  event_start_sec?: number
   is_goal?: boolean
   is_highlight?: boolean
   is_save?: boolean
@@ -62,6 +68,7 @@ interface GameEvent {
   play_detail_2?: string
   team_id?: string
   event_time?: string
+  running_video_time?: number
 }
 
 interface EnhancedHighlight extends GameEvent {
@@ -156,7 +163,7 @@ export default async function GameDetailPage({
   }
   
   // Fetch all data in parallel with improved error handling
-  const [roster, goals, players, goalieStats, shots, gameEventsResult, allEventsResult, shiftsResult, priorGamesResult] = await Promise.allSettled([
+  const [roster, goals, players, goalieStats, shots, gameEventsResult, allEventsResult, shiftsResult, priorGamesResult, gameVideosResult, gameHighlightsResult] = await Promise.allSettled([
     getGameRoster(gameIdNum),
     getGameGoals(gameIdNum),
     getPlayers(),
@@ -171,17 +178,21 @@ export default async function GameDetailPage({
       .limit(50),
     // Fetch all events for play-by-play timeline
     // Order by event_id to ensure we get events in sequential order (EV1896901000, EV1896901001, etc.)
+    // Supabase default limit is 1000 - games can have 1500+ events
     supabase
       .from('fact_events')
       .select('*')
       .eq('game_id', gameIdNum)
-      .order('event_id', { ascending: true }),
+      .order('event_id', { ascending: true })
+      .limit(5000),
     // Fetch shifts for shift chart
+    // Supabase default limit is 1000 - explicitly set higher for games with many shifts
     supabase
       .from('fact_shifts')
       .select('*')
       .eq('game_id', gameIdNum)
-      .order('shift_start_total_seconds', { ascending: true }),
+      .order('shift_start_total_seconds', { ascending: true })
+      .limit(3000),
     // Fetch prior games for both teams in the same season
     (async () => {
       if (!game.season_id) return { homeGames: [], awayGames: [], headToHeadGames: [] }
@@ -341,12 +352,14 @@ export default async function GameDetailPage({
             game_type: game.game_type || 'Regular',
           }]
       
-      return { 
-        homeGames: homeTeamGames || [], 
+      return {
+        homeGames: homeTeamGames || [],
         awayGames: awayTeamGames || [],
         headToHeadGames: finalHeadToHeadGames
       }
-    })()
+    })(),
+    getGameVideos(gameIdNum),
+    getGameHighlights(gameIdNum)
   ])
   
   // Extract results with error handling
@@ -371,9 +384,15 @@ export default async function GameDetailPage({
   const shiftsData = shiftsResult.status === 'fulfilled' && !shiftsResult.value.error
     ? shiftsResult.value.data || []
     : []
-  
+
+  // Handle game videos result
+  const gameVideos = gameVideosResult.status === 'fulfilled' ? gameVideosResult.value : []
+
+  // Handle game highlights result
+  const gameHighlights = gameHighlightsResult.status === 'fulfilled' ? gameHighlightsResult.value : []
+
   // Log any rejected promises for debugging
-  const rejected = [roster, goals, players, goalieStats, shots, gameEventsResult, allEventsResult, shiftsResult, priorGamesResult]
+  const rejected = [roster, goals, players, goalieStats, shots, gameEventsResult, allEventsResult, shiftsResult, priorGamesResult, gameVideosResult, gameHighlightsResult]
     .filter((p) => p.status === 'rejected')
   if (rejected.length > 0) {
     const errorDetails = rejected.map((r) => {
@@ -707,7 +726,24 @@ export default async function GameDetailPage({
     .eq('game_id', gameIdNum)
     
   const allPlayerStats = allPlayerStatsError ? [] : (allPlayerStatsData || [])
-  
+
+  // Fetch player images from dim_player for all players in this game
+  const playerIds = [...new Set(allPlayerStats.map((s: any) => s.player_id).filter(Boolean))]
+  let playerImageMap = new Map<string, string | null>()
+
+  if (playerIds.length > 0) {
+    const { data: playerImages } = await supabase
+      .from('dim_player')
+      .select('player_id, player_image')
+      .in('player_id', playerIds)
+
+    if (playerImages) {
+      playerImages.forEach((p: any) => {
+        playerImageMap.set(String(p.player_id), p.player_image || null)
+      })
+    }
+  }
+
   // Filter by team (by team_id or team_name for compatibility)
   const homePlayerStatsList = allPlayerStats.filter((stat: any) => {
     const statTeamId = String(stat.team_id || '')
@@ -753,7 +789,41 @@ export default async function GameDetailPage({
     }))
     .sort((a, b) => b.points - a.points || b.goals - a.goals)
     .slice(0, 5)
-  
+
+  // Calculate Three Stars - combine all players and get top 3 by points/impact
+  const allPlayerPerformers = [
+    ...homePlayerStatsList.map((stat: any) => ({
+      player_id: String(stat.player_id),
+      player_name: stat.player_name || stat.player_full_name || '',
+      player_image: playerImageMap.get(String(stat.player_id)) || null,
+      team_name: game.home_team_name,
+      team_id: String(homeTeamId),
+      team_logo: homeTeam?.team_logo || null,
+      team_cd: homeTeam?.team_cd,
+      primary_color: homeTeam?.primary_color || homeTeam?.team_color1,
+      goals: Number(stat.goals ?? stat.g ?? 0),
+      assists: Number(stat.assists ?? stat.a ?? 0),
+      points: Number(stat.points ?? stat.pts ?? (Number(stat.goals ?? stat.g ?? 0) + Number(stat.assists ?? stat.a ?? 0))),
+      position: stat.position || stat.player_position,
+    })),
+    ...awayPlayerStatsList.map((stat: any) => ({
+      player_id: String(stat.player_id),
+      player_name: stat.player_name || stat.player_full_name || '',
+      player_image: playerImageMap.get(String(stat.player_id)) || null,
+      team_name: game.away_team_name,
+      team_id: String(awayTeamId),
+      team_logo: awayTeam?.team_logo || null,
+      team_cd: awayTeam?.team_cd,
+      primary_color: awayTeam?.primary_color || awayTeam?.team_color1,
+      goals: Number(stat.goals ?? stat.g ?? 0),
+      assists: Number(stat.assists ?? stat.a ?? 0),
+      points: Number(stat.points ?? stat.pts ?? (Number(stat.goals ?? stat.g ?? 0) + Number(stat.assists ?? stat.a ?? 0))),
+      position: stat.position || stat.player_position,
+    })),
+  ]
+    .sort((a, b) => b.points - a.points || b.goals - a.goals)
+    .slice(0, 3)
+
   // Get team game stats for additional details
   const { data: teamGameStatsData, error: teamGameStatsError } = await supabase
     .from('fact_team_game_stats')
@@ -874,801 +944,367 @@ export default async function GameDetailPage({
         )}
       </div>
       
-      {/* Scoreboard - Enhanced Header */}
+      {/* Scoreboard - ESPN-Style Centered Layout */}
       <div className="bg-card rounded-xl border border-border overflow-hidden">
-        <div className="bg-gradient-to-r from-primary/10 via-transparent to-primary/10 p-8">
-          <div className="flex items-center justify-between">
-            {/* Away Team */}
-            <div className="flex-1 text-center">
-              <div className="flex items-center justify-center gap-4 mb-3">
-                {awayTeam && (
-                  <Link 
-                    href={`/norad/team/${(awayTeam.team_name || game.away_team_name || '').replace(/\s+/g, '_')}`}
-                    className="hover:opacity-80 transition-opacity"
-                  >
-                    <TeamLogo
-                      src={awayTeam.team_logo || null}
-                      name={awayTeam.team_name || game.away_team_name || ''}
-                      abbrev={awayTeam.team_cd}
-                      primaryColor={awayTeam.primary_color || awayTeam.team_color1}
-                      secondaryColor={awayTeam.team_color2}
-                      size="xl"
-                    />
-                  </Link>
-                )}
-                <div>
-                  {awayTeam?.team_name || game.away_team_name ? (
-                    <Link 
-                      href={`/norad/team/${(awayTeam?.team_name || game.away_team_name || '').replace(/\s+/g, '_')}`}
-                      className="font-display text-xl font-bold text-foreground hover:text-primary transition-colors"
-                    >
-                      {game.away_team_name || 'Away'}
-                    </Link>
-                  ) : (
-                    <div className="font-display text-xl font-bold text-foreground">
-                      {game.away_team_name || 'Away'}
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className={cn(
-                'font-mono text-6xl font-bold',
-                awayGoals > homeGoals ? 'text-save' : 'text-muted-foreground'
-              )}>
-                {awayGoals}
-              </div>
-            </div>
-            
-            {/* VS / Date */}
-            <div className="px-8 text-center">
-              <div className="text-xs font-mono text-muted-foreground uppercase mb-2">Final</div>
-              <div className="text-sm font-mono text-muted-foreground mb-1">
-                {game.date ? new Date(game.date).toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric'
-                }) : ''}
-              </div>
-              {game.date && (
-                <div className="text-xs font-mono text-muted-foreground">
-                  {new Date(game.date).toLocaleDateString('en-US', {
-                    weekday: 'long'
-                  })}
-                </div>
-              )}
-            </div>
-            
-            {/* Home Team */}
-            <div className="flex-1 text-center">
-              <div className="flex items-center justify-center gap-4 mb-3">
-                {homeTeam && (
-                  <Link 
-                    href={`/norad/team/${(homeTeam.team_name || game.home_team_name || '').replace(/\s+/g, '_')}`}
-                    className="hover:opacity-80 transition-opacity"
-                  >
-                    <TeamLogo
-                      src={homeTeam.team_logo || null}
-                      name={homeTeam.team_name || game.home_team_name || ''}
-                      abbrev={homeTeam.team_cd}
-                      primaryColor={homeTeam.primary_color || homeTeam.team_color1}
-                      secondaryColor={homeTeam.team_color2}
-                      size="xl"
-                    />
-                  </Link>
-                )}
-                <div>
-                  {homeTeam?.team_name || game.home_team_name ? (
-                    <Link 
-                      href={`/norad/team/${(homeTeam?.team_name || game.home_team_name || '').replace(/\s+/g, '_')}`}
-                      className="font-display text-xl font-bold text-foreground hover:text-primary transition-colors"
-                    >
-                      {game.home_team_name || 'Home'}
-                    </Link>
-                  ) : (
-                    <div className="font-display text-xl font-bold text-foreground">
-                      {game.home_team_name || 'Home'}
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className={cn(
-                'font-mono text-6xl font-bold',
-                homeGoals > awayGoals ? 'text-save' : 'text-muted-foreground'
-              )}>
-                {homeGoals}
-              </div>
-            </div>
-          </div>
-          
-          {/* Championship Banner & Game Type */}
-          {(isChampionshipGame || isPlayoff) && (
-            <div className="mt-4 pt-4 border-t border-border/50">
-              {isChampionshipGame && (
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <Trophy className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-                  <span className="font-display text-lg font-bold text-yellow-500 uppercase tracking-wider">
-                    Championship Game
-                  </span>
-                  <Trophy className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-                </div>
-              )}
-              <div className="flex items-center justify-center">
-                <span className={cn(
-                  'text-sm font-mono uppercase px-3 py-1 rounded font-semibold',
-                  isPlayoff
-                    ? 'bg-primary/20 text-primary'
-                    : 'bg-muted text-muted-foreground'
-                )}>
-                  {isPlayoff ? 'Playoffs' : 'Regular Season'}
+        <div className="bg-gradient-to-r from-primary/10 via-transparent to-primary/10 p-6">
+          {/* Game Status Badge */}
+          <div className="flex items-center justify-center gap-3 mb-4">
+            {(() => {
+              // Determine if game went to OT from dim_schedule data
+              const gameAny = game as any
+              const homeOTGoals = Number(gameAny.home_team_periodOT_goals) || 0
+              const awayOTGoals = Number(gameAny.away_team_periodOT_goals) || 0
+              const hasOT = homeOTGoals > 0 || awayOTGoals > 0
+              const statusText = hasOT ? 'FINAL/OT' : 'FINAL'
+
+              return (
+                <span className="px-3 py-1 bg-muted text-foreground font-mono text-xs font-bold uppercase tracking-wider rounded">
+                  {statusText}
                 </span>
-              </div>
+              )
+            })()}
+            {isPlayoff && (
+              <span className="px-3 py-1 bg-primary/20 text-primary font-mono text-xs font-bold uppercase tracking-wider rounded">
+                Playoffs
+              </span>
+            )}
+          </div>
+
+          {/* Championship Banner */}
+          {isChampionshipGame && (
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Trophy className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+              <span className="font-display text-lg font-bold text-yellow-500 uppercase tracking-wider">
+                Championship Game
+              </span>
+              <Trophy className="w-5 h-5 text-yellow-500 fill-yellow-500" />
             </div>
           )}
-        </div>
-        
-        <div className="px-6 py-4 bg-accent/50 border-t border-border">
-          {/* Period-by-Period Score Breakdown - Show for all games */}
-          {(() => {
-            // Calculate period scores from goal events (more accurate) - supports multiple OT periods
-            const calculatePeriodScores = () => {
-              const periodScores: Record<number, { home: number; away: number }> = {}
-              
-              // Get all goal events
-              const goalEvents = allEvents.filter((event: any) => {
-                return event.is_goal === true || 
-                       (event.event_type === 'Goal' && event.event_detail === 'Goal_Scored')
-              })
-              
-              goalEvents.forEach((event: any) => {
-                const period = event.period ? Number(event.period) : 1
-                const teamId = event.team_id || event.event_team_id
-                
-                if (teamId && period >= 1) {
-                  // Initialize period if not exists
-                  if (!periodScores[period]) {
-                    periodScores[period] = { home: 0, away: 0 }
-                  }
-                  
-                  const isHome = String(teamId) === String(homeTeamId)
-                  const isAway = String(teamId) === String(awayTeamId)
-                  
-                  if (isHome) {
-                    periodScores[period].home++
-                  } else if (isAway) {
-                    periodScores[period].away++
-                  }
-                }
-              })
-              
-              return periodScores
-            }
-            
-            const periodScores = calculatePeriodScores()
-            
-            // Check if we have event data (more accurate than game table fields)
-            const hasEventData = allEvents.length > 0 && allEvents.some((e: any) => 
-              (e.is_goal === true || e.event_type === 'Goal') && e.period
-            )
-            
-            // Fallback to game data if no events available
-            const gameAny = game as any
-            const homeP1 = hasEventData 
-              ? (periodScores[1]?.home ?? null)
-              : (gameAny.home_team_period1_goals ?? gameAny.home_p1_goals ?? null)
-            const awayP1 = hasEventData 
-              ? (periodScores[1]?.away ?? null)
-              : (gameAny.away_team_period1_goals ?? gameAny.away_p1_goals ?? null)
-            const homeP2 = hasEventData 
-              ? (periodScores[2]?.home ?? null)
-              : (gameAny.home_team_period2_goals ?? gameAny.home_p2_goals ?? null)
-            const awayP2 = hasEventData 
-              ? (periodScores[2]?.away ?? null)
-              : (gameAny.away_team_period2_goals ?? gameAny.away_p2_goals ?? null)
-            const homeP3 = hasEventData 
-              ? (periodScores[3]?.home ?? null)
-              : (gameAny.home_team_period3_goals ?? gameAny.home_p3_goals ?? null)
-            const awayP3 = hasEventData 
-              ? (periodScores[3]?.away ?? null)
-              : (gameAny.away_team_period3_goals ?? gameAny.away_p3_goals ?? null)
-            
-            // Get all OT periods (period 4+)
-            const otPeriods: Array<{ period: number; home: number | null; away: number | null }> = []
-            if (hasEventData) {
-              // Get all periods > 3 from events
-              const otPeriodNumbers = Object.keys(periodScores)
-                .map(Number)
-                .filter(p => p > 3)
-                .sort((a, b) => a - b)
-              
-              otPeriodNumbers.forEach(periodNum => {
-                otPeriods.push({
-                  period: periodNum,
-                  home: periodScores[periodNum]?.home ?? null,
-                  away: periodScores[periodNum]?.away ?? null
-                })
-              })
-            }
-            
-            // If no OT periods found in events (or no event data), check fallback fields
-            // Try multiple field name variations (case variations)
-            if (otPeriods.length === 0) {
-              // Try all possible field name variations
-              const homeOTTotal = gameAny.home_team_periodOT_goals ?? 
-                                 gameAny.home_team_periodot_goals ?? 
-                                 gameAny.home_ot_goals ??
-                                 null
-              const awayOTTotal = gameAny.away_team_periodOT_goals ?? 
-                                gameAny.away_team_periodot_goals ?? 
-                                gameAny.away_ot_goals ??
-                                null
-              
-              // Also check if game went to OT by comparing regulation goals to total goals
-              const homeRegulation = (homeP1 ?? 0) + (homeP2 ?? 0) + (homeP3 ?? 0)
-              const awayRegulation = (awayP1 ?? 0) + (awayP2 ?? 0) + (awayP3 ?? 0)
-              const homeTotal = Number(gameAny.home_total_goals) ?? 0
-              const awayTotal = Number(gameAny.away_total_goals) ?? 0
-              const homeOTCalculated = homeTotal > homeRegulation ? homeTotal - homeRegulation : null
-              const awayOTCalculated = awayTotal > awayRegulation ? awayTotal - awayRegulation : null
-              
-              // Use explicit OT goals if available, otherwise calculate from totals
-              const finalHomeOT = homeOTTotal !== null && homeOTTotal !== undefined 
-                ? Number(homeOTTotal) 
-                : (homeOTCalculated !== null && homeOTCalculated > 0 ? homeOTCalculated : null)
-              const finalAwayOT = awayOTTotal !== null && awayOTTotal !== undefined 
-                ? Number(awayOTTotal) 
-                : (awayOTCalculated !== null && awayOTCalculated > 0 ? awayOTCalculated : null)
-              
-              if (finalHomeOT !== null || finalAwayOT !== null) {
-                // For now, show total OT goals in a single OT period
-                // In the future, if we have per-OT-period data, we can split it
-                otPeriods.push({
-                  period: 4,
-                  home: finalHomeOT,
-                  away: finalAwayOT
-                })
-              }
-            }
-            
-            // Calculate running scores
-            const runningHomeP1 = homeP1 ?? 0
-            const runningAwayP1 = awayP1 ?? 0
-            const runningHomeP2 = (homeP1 ?? 0) + (homeP2 ?? 0)
-            const runningAwayP2 = (awayP1 ?? 0) + (awayP2 ?? 0)
-            const runningHomeP3 = (homeP1 ?? 0) + (homeP2 ?? 0) + (homeP3 ?? 0)
-            const runningAwayP3 = (awayP1 ?? 0) + (awayP2 ?? 0) + (awayP3 ?? 0)
-            
-            // Calculate running scores for each OT period
-            const otRunningScores = otPeriods.map((ot, idx) => {
-              const prevOTTotal = idx === 0 
-                ? runningHomeP3 
-                : otPeriods.slice(0, idx).reduce((sum, p) => sum + (p.home ?? 0), runningHomeP3)
-              const prevAwayOTTotal = idx === 0 
-                ? runningAwayP3 
-                : otPeriods.slice(0, idx).reduce((sum, p) => sum + (p.away ?? 0), runningAwayP3)
-              return {
-                home: prevOTTotal + (ot.home ?? 0),
-                away: prevAwayOTTotal + (ot.away ?? 0)
-              }
-            })
-            
-            // Only show if we have at least one period of data
-            if (homeP1 === null && awayP1 === null && homeP2 === null && awayP2 === null && homeP3 === null && awayP3 === null && otPeriods.length === 0) {
-              return null
-            }
-            
-            const totalPeriods = 3 + otPeriods.length
-            
-            return (
-              <div 
-                className="grid gap-3 mt-3 pt-3 border-t border-border/50"
-                style={{ gridTemplateColumns: `repeat(${Math.min(totalPeriods, 6)}, minmax(0, 1fr))` }}
-              >
-                <div className="text-center">
-                  <div className="text-xs font-mono text-muted-foreground uppercase mb-2">P1</div>
-                  {awayP1 !== null && homeP1 !== null ? (
-                    <div className="flex items-center justify-center gap-2">
-                      {awayTeam && (
-                        <TeamLogo
-                          src={awayTeam.team_logo || null}
-                          name={awayTeam.team_name || ''}
-                          abbrev={awayTeam.team_cd}
-                          primaryColor={awayTeam.primary_color || awayTeam.team_color1}
-                          secondaryColor={awayTeam.team_color2}
-                          size="sm"
-                        />
-                      )}
-                      <span className="text-sm font-mono font-semibold">{awayP1}</span>
-                      <span className="text-xs text-muted-foreground">-</span>
-                      <span className="text-sm font-mono font-semibold">{homeP1}</span>
-                      {homeTeam && (
-                        <TeamLogo
-                          src={homeTeam.team_logo || null}
-                          name={homeTeam.team_name || ''}
-                          abbrev={homeTeam.team_cd}
-                          primaryColor={homeTeam.primary_color || homeTeam.team_color1}
-                          secondaryColor={homeTeam.team_color2}
-                          size="sm"
-                        />
-                      )}
-                    </div>
-                  ) : (
-                    <div className="text-xs font-mono text-muted-foreground">-</div>
-                  )}
-                  {/* Running Score */}
-                  {(awayP1 !== null || homeP1 !== null) && (
-                    <div className="text-xs font-mono text-muted-foreground mt-2 pt-2 border-t border-border/30">
-                      {runningAwayP1} - {runningHomeP1}
-                    </div>
-                  )}
-                </div>
-                <div className="text-center">
-                  <div className="text-xs font-mono text-muted-foreground uppercase mb-2">P2</div>
-                  {awayP2 !== null && homeP2 !== null ? (
-                    <div className="flex items-center justify-center gap-2">
-                      {awayTeam && (
-                        <TeamLogo
-                          src={awayTeam.team_logo || null}
-                          name={awayTeam.team_name || ''}
-                          abbrev={awayTeam.team_cd}
-                          primaryColor={awayTeam.primary_color || awayTeam.team_color1}
-                          secondaryColor={awayTeam.team_color2}
-                          size="sm"
-                        />
-                      )}
-                      <span className="text-sm font-mono font-semibold">{awayP2}</span>
-                      <span className="text-xs text-muted-foreground">-</span>
-                      <span className="text-sm font-mono font-semibold">{homeP2}</span>
-                      {homeTeam && (
-                        <TeamLogo
-                          src={homeTeam.team_logo || null}
-                          name={homeTeam.team_name || ''}
-                          abbrev={homeTeam.team_cd}
-                          primaryColor={homeTeam.primary_color || homeTeam.team_color1}
-                          secondaryColor={homeTeam.team_color2}
-                          size="sm"
-                        />
-                      )}
-                    </div>
-                  ) : (
-                    <div className="text-xs font-mono text-muted-foreground">-</div>
-                  )}
-                  {/* Running Score */}
-                  {(awayP2 !== null || homeP2 !== null) && (
-                    <div className="text-xs font-mono text-muted-foreground mt-2 pt-2 border-t border-border/30">
-                      {runningAwayP2} - {runningHomeP2}
-                    </div>
-                  )}
-                </div>
-                <div className="text-center">
-                  <div className="text-xs font-mono text-muted-foreground uppercase mb-2">P3</div>
-                  {awayP3 !== null && homeP3 !== null ? (
-                    <div className="flex items-center justify-center gap-2">
-                      {awayTeam && (
-                        <TeamLogo
-                          src={awayTeam.team_logo || null}
-                          name={awayTeam.team_name || ''}
-                          abbrev={awayTeam.team_cd}
-                          primaryColor={awayTeam.primary_color || awayTeam.team_color1}
-                          secondaryColor={awayTeam.team_color2}
-                          size="sm"
-                        />
-                      )}
-                      <span className="text-sm font-mono font-semibold">{awayP3}</span>
-                      <span className="text-xs text-muted-foreground">-</span>
-                      <span className="text-sm font-mono font-semibold">{homeP3}</span>
-                      {homeTeam && (
-                        <TeamLogo
-                          src={homeTeam.team_logo || null}
-                          name={homeTeam.team_name || ''}
-                          abbrev={homeTeam.team_cd}
-                          primaryColor={homeTeam.primary_color || homeTeam.team_color1}
-                          secondaryColor={homeTeam.team_color2}
-                          size="sm"
-                        />
-                      )}
-                    </div>
-                  ) : (
-                    <div className="text-xs font-mono text-muted-foreground">-</div>
-                  )}
-                  {/* Running Score */}
-                  {(awayP3 !== null || homeP3 !== null) && (
-                    <div className="text-xs font-mono text-muted-foreground mt-2 pt-2 border-t border-border/30">
-                      {runningAwayP3} - {runningHomeP3}
-                    </div>
-                  )}
-                </div>
-                {/* OT Periods - Dynamic */}
-                {otPeriods.map((ot, idx) => {
-                  const otNumber = idx + 1
-                  const runningHome = otRunningScores[idx]?.home ?? 0
-                  const runningAway = otRunningScores[idx]?.away ?? 0
-                  
-                  return (
-                    <div key={`ot-${ot.period}`} className="text-center">
-                      <div className="text-xs font-mono text-muted-foreground uppercase mb-2">
-                        OT{otNumber}
-                      </div>
-                      {ot.away !== null && ot.home !== null ? (
-                        <div className="flex items-center justify-center gap-2">
-                          {awayTeam && (
-                            <TeamLogo
-                              src={awayTeam.team_logo || null}
-                              name={awayTeam.team_name || ''}
-                              abbrev={awayTeam.team_cd}
-                              primaryColor={awayTeam.primary_color || awayTeam.team_color1}
-                              secondaryColor={awayTeam.team_color2}
-                              size="sm"
-                            />
-                          )}
-                          <span className="text-sm font-mono font-semibold">{ot.away}</span>
-                          <span className="text-xs text-muted-foreground">-</span>
-                          <span className="text-sm font-mono font-semibold">{ot.home}</span>
-                          {homeTeam && (
-                            <TeamLogo
-                              src={homeTeam.team_logo || null}
-                              name={homeTeam.team_name || ''}
-                              abbrev={homeTeam.team_cd}
-                              primaryColor={homeTeam.primary_color || homeTeam.team_color1}
-                              secondaryColor={homeTeam.team_color2}
-                              size="sm"
-                            />
-                          )}
-                        </div>
-                      ) : (
-                        <div className="text-xs font-mono text-muted-foreground">-</div>
-                      )}
-                      {/* Running Score */}
-                      {(ot.away !== null || ot.home !== null) && (
-                        <div className="text-xs font-mono text-muted-foreground mt-2 pt-2 border-t border-border/30">
-                          {runningAway} - {runningHome}
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            )
-          })()}
-        </div>
-      </div>
-      
-      {/* Team Stats Comparison - Show for all games */}
-      {(homeTeamGameStats || awayTeamGameStats || homePPOpps > 0 || awayPPOpps > 0) && (
-        <div className="bg-card rounded-xl border border-border overflow-hidden">
-          <div className="px-4 py-3 bg-accent border-b border-border">
-            <h2 className="font-display text-sm font-semibold uppercase tracking-wider flex items-center gap-2">
-              <BarChart3 className="w-4 h-4" />
-              Team Stats Comparison
-            </h2>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-accent/50">
-                  <th className="px-4 py-2 text-left font-display text-xs text-muted-foreground">Stat</th>
-                  <th className="px-4 py-2 text-center font-display text-xs text-foreground">
-                    {awayTeam?.team_cd || game.away_team_name || 'Away'}
-                  </th>
-                  <th className="px-4 py-2 text-center font-display text-xs text-foreground">
-                    {homeTeam?.team_cd || game.home_team_name || 'Home'}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {/* Shots */}
-                {(homeTeamGameStats?.shots_for || awayTeamGameStats?.shots_for || homeTeamAggs.shots > 0 || awayTeamAggs.shots > 0) && (
-                  <tr className="border-b border-border hover:bg-muted/50 transition-colors">
-                    <td className="px-4 py-2 font-mono text-xs text-muted-foreground">Shots</td>
-                    <td className="px-4 py-2 text-center font-mono font-semibold">
-                      {awayTeamGameStats?.shots_for ?? awayTeamAggs.shots ?? 0}
-                    </td>
-                    <td className="px-4 py-2 text-center font-mono font-semibold">
-                      {homeTeamGameStats?.shots_for ?? homeTeamAggs.shots ?? 0}
-                    </td>
-                  </tr>
-                )}
-                
-                {/* Shots on Goal */}
-                {(homeTeamGameStats?.shots_on_goal_for || awayTeamGameStats?.shots_on_goal_for) && (
-                  <tr className="border-b border-border hover:bg-muted/50 transition-colors">
-                    <td className="px-4 py-2 font-mono text-xs text-muted-foreground">Shots on Goal</td>
-                    <td className="px-4 py-2 text-center font-mono font-semibold">
-                      {awayTeamGameStats?.shots_on_goal_for ?? 0}
-                    </td>
-                    <td className="px-4 py-2 text-center font-mono font-semibold">
-                      {homeTeamGameStats?.shots_on_goal_for ?? 0}
-                    </td>
-                  </tr>
-                )}
-                
-                {/* Faceoffs */}
-                {(homeTeamGameStats?.fo_taken || awayTeamGameStats?.fo_taken) && (
-                  <tr className="border-b border-border hover:bg-muted/50 transition-colors">
-                    <td className="px-4 py-2 font-mono text-xs text-muted-foreground">Faceoffs Won</td>
-                    <td className="px-4 py-2 text-center font-mono font-semibold">
-                      {awayTeamGameStats?.fo_wins ?? 0} / {awayTeamGameStats?.fo_taken ?? 0}
-                      {awayTeamGameStats?.fo_pct && (
-                        <span className="text-xs text-muted-foreground ml-1">
-                          ({Number(awayTeamGameStats.fo_pct).toFixed(1)}%)
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2 text-center font-mono font-semibold">
-                      {homeTeamGameStats?.fo_wins ?? 0} / {homeTeamGameStats?.fo_taken ?? 0}
-                      {homeTeamGameStats?.fo_pct && (
-                        <span className="text-xs text-muted-foreground ml-1">
-                          ({Number(homeTeamGameStats.fo_pct).toFixed(1)}%)
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                )}
-                
-                {/* Power Play */}
-                {(homePPOpps > 0 || awayPPOpps > 0 || homeTeamGameStats?.pp_opportunities || awayTeamGameStats?.pp_opportunities) && (
-                  <tr className="border-b border-border hover:bg-muted/50 transition-colors">
-                    <td className="px-4 py-2 font-mono text-xs text-muted-foreground">Power Play</td>
-                    <td className="px-4 py-2 text-center font-mono font-semibold">
-                      {awayPPGoals || awayTeamGameStats?.pp_goals || 0} / {awayPPOpps || awayTeamGameStats?.pp_opportunities || 0}
-                      {awayPPOpps > 0 && (
-                        <span className="text-xs text-muted-foreground ml-1">
-                          ({((awayPPGoals || awayTeamGameStats?.pp_goals || 0) / awayPPOpps * 100).toFixed(1)}%)
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2 text-center font-mono font-semibold">
-                      {homePPGoals || homeTeamGameStats?.pp_goals || 0} / {homePPOpps || homeTeamGameStats?.pp_opportunities || 0}
-                      {homePPOpps > 0 && (
-                        <span className="text-xs text-muted-foreground ml-1">
-                          ({((homePPGoals || homeTeamGameStats?.pp_goals || 0) / homePPOpps * 100).toFixed(1)}%)
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                )}
-                
-                {/* Penalty Kill */}
-                {(homeTeamGameStats?.pk_opportunities || awayTeamGameStats?.pk_opportunities) && (
-                  <tr className="border-b border-border hover:bg-muted/50 transition-colors">
-                    <td className="px-4 py-2 font-mono text-xs text-muted-foreground">Penalty Kill</td>
-                    <td className="px-4 py-2 text-center font-mono font-semibold">
-                      {awayTeamGameStats?.pk_opportunities ? (awayTeamGameStats.pk_opportunities - (awayTeamGameStats.pk_goals_against || 0)) : 0} / {awayTeamGameStats?.pk_opportunities || 0}
-                      {awayTeamGameStats?.pk_pct && (
-                        <span className="text-xs text-muted-foreground ml-1">
-                          ({Number(awayTeamGameStats.pk_pct).toFixed(1)}%)
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2 text-center font-mono font-semibold">
-                      {homeTeamGameStats?.pk_opportunities ? (homeTeamGameStats.pk_opportunities - (homeTeamGameStats.pk_goals_against || 0)) : 0} / {homeTeamGameStats?.pk_opportunities || 0}
-                      {homeTeamGameStats?.pk_pct && (
-                        <span className="text-xs text-muted-foreground ml-1">
-                          ({Number(homeTeamGameStats.pk_pct).toFixed(1)}%)
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                )}
-                
-                {/* Hits */}
-                {(homeTeamGameStats?.hits || awayTeamGameStats?.hits || homeTeamAggs.hits > 0 || awayTeamAggs.hits > 0) && (
-                  <tr className="border-b border-border hover:bg-muted/50 transition-colors">
-                    <td className="px-4 py-2 font-mono text-xs text-muted-foreground">Hits</td>
-                    <td className="px-4 py-2 text-center font-mono font-semibold">
-                      {awayTeamGameStats?.hits ?? awayTeamAggs.hits ?? 0}
-                    </td>
-                    <td className="px-4 py-2 text-center font-mono font-semibold">
-                      {homeTeamGameStats?.hits ?? homeTeamAggs.hits ?? 0}
-                    </td>
-                  </tr>
-                )}
-                
-                {/* Blocks */}
-                {(homeTeamGameStats?.blocks || awayTeamGameStats?.blocks || homeTeamAggs.blocks > 0 || awayTeamAggs.blocks > 0) && (
-                  <tr className="border-b border-border hover:bg-muted/50 transition-colors">
-                    <td className="px-4 py-2 font-mono text-xs text-muted-foreground">Blocks</td>
-                    <td className="px-4 py-2 text-center font-mono font-semibold">
-                      {awayTeamGameStats?.blocks ?? awayTeamAggs.blocks ?? 0}
-                    </td>
-                    <td className="px-4 py-2 text-center font-mono font-semibold">
-                      {homeTeamGameStats?.blocks ?? homeTeamAggs.blocks ?? 0}
-                    </td>
-                  </tr>
-                )}
-                
-                {/* PIM */}
-                {(homeTeamGameStats?.pim || awayTeamGameStats?.pim) && (
-                  <tr className="border-b border-border hover:bg-muted/50 transition-colors">
-                    <td className="px-4 py-2 font-mono text-xs text-muted-foreground">Penalty Minutes</td>
-                    <td className="px-4 py-2 text-center font-mono font-semibold">
-                      {awayTeamGameStats?.pim ?? 0}
-                    </td>
-                    <td className="px-4 py-2 text-center font-mono font-semibold">
-                      {homeTeamGameStats?.pim ?? 0}
-                    </td>
-                  </tr>
-                )}
-                
-                {/* Corsi/Fenwick (if available) */}
-                {hasTracking && (homeTeamGameStats?.cf_pct || awayTeamGameStats?.cf_pct) && (
-                  <>
-                    <tr className="border-b border-border hover:bg-muted/50 transition-colors">
-                      <td className="px-4 py-2 font-mono text-xs text-muted-foreground">CF%</td>
-                      <td className="px-4 py-2 text-center font-mono font-semibold">
-                        {awayTeamGameStats?.cf_pct ? Number(awayTeamGameStats.cf_pct).toFixed(1) : awayCFPct.toFixed(1)}%
-                      </td>
-                      <td className="px-4 py-2 text-center font-mono font-semibold">
-                        {homeTeamGameStats?.cf_pct ? Number(homeTeamGameStats.cf_pct).toFixed(1) : homeCFPct.toFixed(1)}%
-                      </td>
-                    </tr>
-                    <tr className="border-b border-border hover:bg-muted/50 transition-colors">
-                      <td className="px-4 py-2 font-mono text-xs text-muted-foreground">FF%</td>
-                      <td className="px-4 py-2 text-center font-mono font-semibold">
-                        {awayTeamGameStats?.ff_pct ? Number(awayTeamGameStats.ff_pct).toFixed(1) : awayFFPct.toFixed(1)}%
-                      </td>
-                      <td className="px-4 py-2 text-center font-mono font-semibold">
-                        {homeTeamGameStats?.ff_pct ? Number(homeTeamGameStats.ff_pct).toFixed(1) : homeFFPct.toFixed(1)}%
-                      </td>
-                    </tr>
-                  </>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-      
-      {/* Team Advanced Stats Summary - Only show if we have tracking data */}
-      {hasTracking && (
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Home Team Aggregates */}
-        <div className="bg-card rounded-xl border border-border overflow-hidden">
-          <div className="px-4 py-3 bg-accent border-b border-border">
-            <div className="flex items-center gap-2">
-              {homeTeam && (
-                <Link 
-                  href={`/norad/team/${(homeTeam.team_name || game.home_team_name || '').replace(/\s+/g, '_')}`}
-                  className="hover:opacity-80 transition-opacity"
-                >
-                  <TeamLogo
-                    src={homeTeam.team_logo || null}
-                    name={homeTeam.team_name || ''}
-                    abbrev={homeTeam.team_cd}
-                    primaryColor={homeTeam.primary_color || homeTeam.team_color1}
-                    secondaryColor={homeTeam.team_color2}
-                    size="sm"
-                  />
-                </Link>
-              )}
-              {homeTeam?.team_name || game.home_team_name ? (
-                <Link 
-                  href={`/norad/team/${(homeTeam?.team_name || game.home_team_name || '').replace(/\s+/g, '_')}`}
-                  className="font-display text-sm font-semibold uppercase tracking-wider hover:text-primary transition-colors"
-                >
-                  {homeTeam?.team_name || game.home_team_name || 'Home'} Team Stats
-                </Link>
-              ) : (
-                <h2 className="font-display text-sm font-semibold uppercase tracking-wider">
-                  {homeTeam?.team_name || game.home_team_name || 'Home'} Team Stats
-                </h2>
-              )}
-            </div>
-          </div>
-          <div className="p-6">
-            <div className="grid grid-cols-3 gap-4">
-              <div className="text-center">
-                <div className="text-xs font-mono text-muted-foreground uppercase mb-1">CF%</div>
-                <div className="font-mono text-xl font-semibold text-primary">{homeCFPct.toFixed(1)}%</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xs font-mono text-muted-foreground uppercase mb-1">FF%</div>
-                <div className="font-mono text-xl font-semibold text-primary">{homeFFPct.toFixed(1)}%</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xs font-mono text-muted-foreground uppercase mb-1">Shots</div>
-                <div className="font-mono text-xl font-semibold">{homeTeamAggs.shots}</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xs font-mono text-muted-foreground uppercase mb-1">Hits</div>
-                <div className="font-mono text-xl font-semibold">{homeTeamAggs.hits}</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xs font-mono text-muted-foreground uppercase mb-1">Blocks</div>
-                <div className="font-mono text-xl font-semibold text-save">{homeTeamAggs.blocks}</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xs font-mono text-muted-foreground uppercase mb-1">TO Diff</div>
-                <div className={cn(
-                  'font-mono text-xl font-semibold',
-                  (homeTeamAggs.takeaways - homeTeamAggs.badGiveaways) > 0 ? 'text-save' : 'text-goal'
-                )}>
-                  {(homeTeamAggs.takeaways - homeTeamAggs.badGiveaways) > 0 ? '+' : ''}
-                  {homeTeamAggs.takeaways - homeTeamAggs.badGiveaways}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Away Team Aggregates */}
-        <div className="bg-card rounded-xl border border-border overflow-hidden">
-          <div className="px-4 py-3 bg-accent border-b border-border">
-            <div className="flex items-center gap-2">
+
+          {/* Centered Score Display */}
+          <div className="flex items-center justify-center gap-4 md:gap-8">
+            {/* Away Team */}
+            <div className="flex items-center gap-3 md:gap-4">
               {awayTeam && (
-                <Link 
+                <Link
                   href={`/norad/team/${(awayTeam.team_name || game.away_team_name || '').replace(/\s+/g, '_')}`}
                   className="hover:opacity-80 transition-opacity"
                 >
                   <TeamLogo
                     src={awayTeam.team_logo || null}
-                    name={awayTeam.team_name || ''}
+                    name={awayTeam.team_name || game.away_team_name || ''}
                     abbrev={awayTeam.team_cd}
                     primaryColor={awayTeam.primary_color || awayTeam.team_color1}
                     secondaryColor={awayTeam.team_color2}
-                    size="sm"
+                    size="xl"
                   />
                 </Link>
               )}
-              {awayTeam?.team_name || game.away_team_name ? (
-                <Link 
-                  href={`/norad/team/${(awayTeam?.team_name || game.away_team_name || '').replace(/\s+/g, '_')}`}
-                  className="font-display text-sm font-semibold uppercase tracking-wider hover:text-primary transition-colors"
+              <div className="text-right">
+                {awayTeam?.team_name || game.away_team_name ? (
+                  <Link
+                    href={`/norad/team/${(awayTeam?.team_name || game.away_team_name || '').replace(/\s+/g, '_')}`}
+                    className="font-display text-lg md:text-xl font-bold text-foreground hover:text-primary transition-colors block"
+                  >
+                    {game.away_team_name || 'Away'}
+                  </Link>
+                ) : (
+                  <div className="font-display text-lg md:text-xl font-bold text-foreground">
+                    {game.away_team_name || 'Away'}
+                  </div>
+                )}
+                <div className="text-xs text-muted-foreground font-mono">AWAY</div>
+              </div>
+            </div>
+
+            {/* Score */}
+            <div className="flex items-center gap-3 md:gap-6">
+              <div className={cn(
+                'font-mono text-5xl md:text-6xl font-bold tabular-nums',
+                awayGoals > homeGoals ? 'text-foreground' : 'text-muted-foreground'
+              )}>
+                {awayGoals}
+              </div>
+              <div className="text-2xl md:text-3xl text-muted-foreground font-mono">-</div>
+              <div className={cn(
+                'font-mono text-5xl md:text-6xl font-bold tabular-nums',
+                homeGoals > awayGoals ? 'text-foreground' : 'text-muted-foreground'
+              )}>
+                {homeGoals}
+              </div>
+            </div>
+
+            {/* Home Team */}
+            <div className="flex items-center gap-3 md:gap-4">
+              <div className="text-left">
+                {homeTeam?.team_name || game.home_team_name ? (
+                  <Link
+                    href={`/norad/team/${(homeTeam?.team_name || game.home_team_name || '').replace(/\s+/g, '_')}`}
+                    className="font-display text-lg md:text-xl font-bold text-foreground hover:text-primary transition-colors block"
+                  >
+                    {game.home_team_name || 'Home'}
+                  </Link>
+                ) : (
+                  <div className="font-display text-lg md:text-xl font-bold text-foreground">
+                    {game.home_team_name || 'Home'}
+                  </div>
+                )}
+                <div className="text-xs text-muted-foreground font-mono">HOME</div>
+              </div>
+              {homeTeam && (
+                <Link
+                  href={`/norad/team/${(homeTeam.team_name || game.home_team_name || '').replace(/\s+/g, '_')}`}
+                  className="hover:opacity-80 transition-opacity"
                 >
-                  {awayTeam?.team_name || game.away_team_name || 'Away'} Team Stats
+                  <TeamLogo
+                    src={homeTeam.team_logo || null}
+                    name={homeTeam.team_name || game.home_team_name || ''}
+                    abbrev={homeTeam.team_cd}
+                    primaryColor={homeTeam.primary_color || homeTeam.team_color1}
+                    secondaryColor={homeTeam.team_color2}
+                    size="xl"
+                  />
                 </Link>
-              ) : (
-                <h2 className="font-display text-sm font-semibold uppercase tracking-wider">
-                  {awayTeam?.team_name || game.away_team_name || 'Away'} Team Stats
-                </h2>
               )}
             </div>
           </div>
-          <div className="p-6">
-            <div className="grid grid-cols-3 gap-4">
-              <div className="text-center">
-                <div className="text-xs font-mono text-muted-foreground uppercase mb-1">CF%</div>
-                <div className="font-mono text-xl font-semibold text-primary">{awayCFPct.toFixed(1)}%</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xs font-mono text-muted-foreground uppercase mb-1">FF%</div>
-                <div className="font-mono text-xl font-semibold text-primary">{awayFFPct.toFixed(1)}%</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xs font-mono text-muted-foreground uppercase mb-1">Shots</div>
-                <div className="font-mono text-xl font-semibold">{awayTeamAggs.shots}</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xs font-mono text-muted-foreground uppercase mb-1">Hits</div>
-                <div className="font-mono text-xl font-semibold">{awayTeamAggs.hits}</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xs font-mono text-muted-foreground uppercase mb-1">Blocks</div>
-                <div className="font-mono text-xl font-semibold text-save">{awayTeamAggs.blocks}</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xs font-mono text-muted-foreground uppercase mb-1">TO Diff</div>
-                <div className={cn(
-                  'font-mono text-xl font-semibold',
-                  (awayTeamAggs.takeaways - awayTeamAggs.badGiveaways) > 0 ? 'text-save' : 'text-goal'
-                )}>
-                  {(awayTeamAggs.takeaways - awayTeamAggs.badGiveaways) > 0 ? '+' : ''}
-                  {awayTeamAggs.takeaways - awayTeamAggs.badGiveaways}
-                </div>
-              </div>
+
+          {/* Date */}
+          <div className="text-center mt-4">
+            <div className="text-sm font-mono text-muted-foreground">
+              {game.date ? new Date(game.date).toLocaleDateString('en-US', {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+              }) : ''}
             </div>
           </div>
         </div>
+        
+        {/* Compact Period Score Table - Using dim_schedule data */}
+        {(() => {
+          // Get period goals directly from dim_schedule (source of truth)
+          const gameAny = game as any
+          const homeP1 = Number(gameAny.home_team_period1_goals) || 0
+          const awayP1 = Number(gameAny.away_team_period1_goals) || 0
+          const homeP2 = Number(gameAny.home_team_period2_goals) || 0
+          const awayP2 = Number(gameAny.away_team_period2_goals) || 0
+          const homeP3 = Number(gameAny.home_team_period3_goals) || 0
+          const awayP3 = Number(gameAny.away_team_period3_goals) || 0
+          const homeOT = Number(gameAny.home_team_periodOT_goals) || 0
+          const awayOT = Number(gameAny.away_team_periodOT_goals) || 0
+
+          // Build OT periods array if there were OT goals
+          const otPeriods: Array<{ period: number; home: number; away: number }> = []
+          if (homeOT > 0 || awayOT > 0) {
+            otPeriods.push({ period: 4, home: homeOT, away: awayOT })
+          }
+
+          // Don't show if no period data at all
+          const hasAnyPeriodData = homeP1 > 0 || awayP1 > 0 || homeP2 > 0 || awayP2 > 0 || homeP3 > 0 || awayP3 > 0 || otPeriods.length > 0
+          if (!hasAnyPeriodData) {
+            return null
+          }
+
+          return (
+            <div className="px-4 py-3 bg-accent/50 border-t border-border">
+              <table className="w-full max-w-md mx-auto text-sm">
+                <thead>
+                  <tr className="text-muted-foreground font-mono text-xs">
+                    <th className="text-left py-1 w-24"></th>
+                    <th className="text-center py-1 w-10">1</th>
+                    <th className="text-center py-1 w-10">2</th>
+                    <th className="text-center py-1 w-10">3</th>
+                    {otPeriods.map((ot, idx) => (
+                      <th key={`ot-header-${ot.period}`} className="text-center py-1 w-10">OT{idx + 1}</th>
+                    ))}
+                    <th className="text-center py-1 w-10 font-semibold text-foreground">T</th>
+                  </tr>
+                </thead>
+                <tbody className="font-mono">
+                  {/* Away Team Row */}
+                  <tr>
+                    <td className="py-1.5">
+                      <div className="flex items-center gap-2">
+                        {awayTeam && (
+                          <TeamLogo
+                            src={awayTeam.team_logo || null}
+                            name={awayTeam.team_name || ''}
+                            abbrev={awayTeam.team_cd}
+                            primaryColor={awayTeam.primary_color || awayTeam.team_color1}
+                            size="xs"
+                          />
+                        )}
+                        <span className="text-xs text-muted-foreground">{awayTeam?.team_cd || game.away_team_name?.substring(0, 3).toUpperCase() || 'AWY'}</span>
+                      </div>
+                    </td>
+                    <td className="text-center py-1.5">{awayP1}</td>
+                    <td className="text-center py-1.5">{awayP2}</td>
+                    <td className="text-center py-1.5">{awayP3}</td>
+                    {otPeriods.map(ot => (
+                      <td key={`away-ot-${ot.period}`} className="text-center py-1.5">{ot.away}</td>
+                    ))}
+                    <td className={cn(
+                      'text-center py-1.5 font-bold',
+                      awayGoals > homeGoals ? 'text-foreground' : 'text-muted-foreground'
+                    )}>{awayGoals}</td>
+                  </tr>
+                  {/* Home Team Row */}
+                  <tr>
+                    <td className="py-1.5">
+                      <div className="flex items-center gap-2">
+                        {homeTeam && (
+                          <TeamLogo
+                            src={homeTeam.team_logo || null}
+                            name={homeTeam.team_name || ''}
+                            abbrev={homeTeam.team_cd}
+                            primaryColor={homeTeam.primary_color || homeTeam.team_color1}
+                            size="xs"
+                          />
+                        )}
+                        <span className="text-xs text-muted-foreground">{homeTeam?.team_cd || game.home_team_name?.substring(0, 3).toUpperCase() || 'HOM'}</span>
+                      </div>
+                    </td>
+                    <td className="text-center py-1.5">{homeP1}</td>
+                    <td className="text-center py-1.5">{homeP2}</td>
+                    <td className="text-center py-1.5">{homeP3}</td>
+                    {otPeriods.map(ot => (
+                      <td key={`home-ot-${ot.period}`} className="text-center py-1.5">{ot.home}</td>
+                    ))}
+                    <td className={cn(
+                      'text-center py-1.5 font-bold',
+                      homeGoals > awayGoals ? 'text-foreground' : 'text-muted-foreground'
+                    )}>{homeGoals}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )
+        })()}
       </div>
-      )}
-      
+
+      {/* Media Section: Video, Highlights, Three Stars, Team Stats */}
+      <GameMediaSection
+        videos={gameVideos}
+        highlights={gameHighlights}
+        stars={allPlayerPerformers.slice(0, 3)}
+        gameId={gameIdNum}
+        homeTeam={game.home_team_name || 'Home'}
+        awayTeam={game.away_team_name || 'Away'}
+        homeColor={homeTeam?.primary_color || homeTeam?.team_color1 || '#1e40af'}
+        awayColor={awayTeam?.primary_color || awayTeam?.team_color1 || '#dc2626'}
+        teamStatsContent={
+          (homeTeamGameStats || awayTeamGameStats || homePPOpps > 0 || awayPPOpps > 0) ? (
+            <CompactTeamStats
+              awayTeamAbbrev={awayTeam?.team_cd || game.away_team_name?.substring(0, 3).toUpperCase() || 'AWY'}
+              homeTeamAbbrev={homeTeam?.team_cd || game.home_team_name?.substring(0, 3).toUpperCase() || 'HOM'}
+              stats={[
+                // Shot Attempts (total)
+                ...(homeTeamGameStats?.shots || awayTeamGameStats?.shots || homeTeamAggs.shots > 0 || awayTeamAggs.shots > 0 ? [{
+                  label: 'Shot Attempts',
+                  away: awayTeamGameStats?.shots ?? awayTeamAggs.shots ?? 0,
+                  home: homeTeamGameStats?.shots ?? homeTeamAggs.shots ?? 0,
+                  awayWins: (awayTeamGameStats?.shots ?? awayTeamAggs.shots ?? 0) > (homeTeamGameStats?.shots ?? homeTeamAggs.shots ?? 0),
+                  homeWins: (homeTeamGameStats?.shots ?? homeTeamAggs.shots ?? 0) > (awayTeamGameStats?.shots ?? awayTeamAggs.shots ?? 0),
+                }] : []),
+                // SOG (shots on goal)
+                ...(homeTeamGameStats?.sog || awayTeamGameStats?.sog ? [{
+                  label: 'SOG',
+                  away: awayTeamGameStats?.sog ?? 0,
+                  home: homeTeamGameStats?.sog ?? 0,
+                  awayWins: (awayTeamGameStats?.sog ?? 0) > (homeTeamGameStats?.sog ?? 0),
+                  homeWins: (homeTeamGameStats?.sog ?? 0) > (awayTeamGameStats?.sog ?? 0),
+                }] : []),
+                // Shooting %
+                ...(homeTeamGameStats?.shooting_pct || awayTeamGameStats?.shooting_pct ? [{
+                  label: 'SH%',
+                  away: awayTeamGameStats?.shooting_pct ? `${Number(awayTeamGameStats.shooting_pct).toFixed(1)}%` : '-',
+                  home: homeTeamGameStats?.shooting_pct ? `${Number(homeTeamGameStats.shooting_pct).toFixed(1)}%` : '-',
+                  awayWins: Number(awayTeamGameStats?.shooting_pct || 0) > Number(homeTeamGameStats?.shooting_pct || 0),
+                  homeWins: Number(homeTeamGameStats?.shooting_pct || 0) > Number(awayTeamGameStats?.shooting_pct || 0),
+                }] : []),
+                // xG (expected goals)
+                ...(homeTeamGameStats?.xg_for || awayTeamGameStats?.xg_for ? [{
+                  label: 'xG',
+                  away: awayTeamGameStats?.xg_for ? Number(awayTeamGameStats.xg_for).toFixed(2) : '-',
+                  home: homeTeamGameStats?.xg_for ? Number(homeTeamGameStats.xg_for).toFixed(2) : '-',
+                  awayWins: Number(awayTeamGameStats?.xg_for || 0) > Number(homeTeamGameStats?.xg_for || 0),
+                  homeWins: Number(homeTeamGameStats?.xg_for || 0) > Number(awayTeamGameStats?.xg_for || 0),
+                }] : []),
+                // FO% (faceoff percentage) - placeholder, needs ETL aggregation
+                // TODO: Aggregate from fact_player_game_stats fo_wins/fo_losses
+                // Power Play
+                ...(homePPOpps > 0 || awayPPOpps > 0 ? [{
+                  label: 'PP',
+                  away: `${awayPPGoals || 0}/${awayPPOpps || 0}`,
+                  home: `${homePPGoals || 0}/${homePPOpps || 0}`,
+                }] : []),
+                // PIM (penalty minutes) - placeholder, needs ETL aggregation
+                // TODO: Aggregate from fact_penalties
+                // Hits
+                ...(homeTeamGameStats?.hits || awayTeamGameStats?.hits || homeTeamAggs.hits > 0 || awayTeamAggs.hits > 0 ? [{
+                  label: 'Hits',
+                  away: awayTeamGameStats?.hits ?? homeTeamAggs.hits ?? 0,
+                  home: homeTeamGameStats?.hits ?? homeTeamAggs.hits ?? 0,
+                  awayWins: (awayTeamGameStats?.hits ?? awayTeamAggs.hits ?? 0) > (homeTeamGameStats?.hits ?? homeTeamAggs.hits ?? 0),
+                  homeWins: (homeTeamGameStats?.hits ?? homeTeamAggs.hits ?? 0) > (awayTeamGameStats?.hits ?? awayTeamAggs.hits ?? 0),
+                }] : []),
+                // Corsi For %
+                ...(hasTracking && (homeTeamGameStats?.cf_pct || awayTeamGameStats?.cf_pct || homeCFPct > 0 || awayCFPct > 0) ? [{
+                  label: 'CF%',
+                  away: `${awayTeamGameStats?.cf_pct ? Number(awayTeamGameStats.cf_pct).toFixed(0) : awayCFPct.toFixed(0)}%`,
+                  home: `${homeTeamGameStats?.cf_pct ? Number(homeTeamGameStats.cf_pct).toFixed(0) : homeCFPct.toFixed(0)}%`,
+                  awayWins: (Number(awayTeamGameStats?.cf_pct) || awayCFPct) > (Number(homeTeamGameStats?.cf_pct) || homeCFPct),
+                  homeWins: (Number(homeTeamGameStats?.cf_pct) || homeCFPct) > (Number(awayTeamGameStats?.cf_pct) || awayCFPct),
+                }] : []),
+                // Fenwick For %
+                ...(hasTracking && (homeTeamGameStats?.ff_pct || awayTeamGameStats?.ff_pct || homeFFPct > 0 || awayFFPct > 0) ? [{
+                  label: 'FF%',
+                  away: `${awayTeamGameStats?.ff_pct ? Number(awayTeamGameStats.ff_pct).toFixed(0) : awayFFPct.toFixed(0)}%`,
+                  home: `${homeTeamGameStats?.ff_pct ? Number(homeTeamGameStats.ff_pct).toFixed(0) : homeFFPct.toFixed(0)}%`,
+                  awayWins: (Number(awayTeamGameStats?.ff_pct) || awayFFPct) > (Number(homeTeamGameStats?.ff_pct) || homeFFPct),
+                  homeWins: (Number(homeTeamGameStats?.ff_pct) || homeFFPct) > (Number(awayTeamGameStats?.ff_pct) || awayFFPct),
+                }] : []),
+                // Takeaways
+                ...(homeTeamGameStats?.takeaways || awayTeamGameStats?.takeaways || homeTeamAggs.takeaways > 0 || awayTeamAggs.takeaways > 0 ? [{
+                  label: 'Takeaways',
+                  away: awayTeamGameStats?.takeaways ?? awayTeamAggs.takeaways ?? 0,
+                  home: homeTeamGameStats?.takeaways ?? homeTeamAggs.takeaways ?? 0,
+                  awayWins: (awayTeamGameStats?.takeaways ?? awayTeamAggs.takeaways ?? 0) > (homeTeamGameStats?.takeaways ?? homeTeamAggs.takeaways ?? 0),
+                  homeWins: (homeTeamGameStats?.takeaways ?? homeTeamAggs.takeaways ?? 0) > (awayTeamGameStats?.takeaways ?? awayTeamAggs.takeaways ?? 0),
+                }] : []),
+                // Giveaways
+                ...(homeTeamGameStats?.giveaways || awayTeamGameStats?.giveaways || homeTeamAggs.badGiveaways > 0 || awayTeamAggs.badGiveaways > 0 ? [{
+                  label: 'Giveaways',
+                  away: awayTeamGameStats?.giveaways ?? awayTeamAggs.badGiveaways ?? 0,
+                  home: homeTeamGameStats?.giveaways ?? homeTeamAggs.badGiveaways ?? 0,
+                  awayWins: (awayTeamGameStats?.giveaways ?? awayTeamAggs.badGiveaways ?? 0) < (homeTeamGameStats?.giveaways ?? homeTeamAggs.badGiveaways ?? 0),
+                  homeWins: (homeTeamGameStats?.giveaways ?? homeTeamAggs.badGiveaways ?? 0) < (awayTeamGameStats?.giveaways ?? awayTeamAggs.badGiveaways ?? 0),
+                }] : []),
+                // Forechecks
+                ...(homeTeamGameStats?.forechecks || awayTeamGameStats?.forechecks ? [{
+                  label: 'Forechecks',
+                  away: awayTeamGameStats?.forechecks ?? 0,
+                  home: homeTeamGameStats?.forechecks ?? 0,
+                  awayWins: (awayTeamGameStats?.forechecks ?? 0) > (homeTeamGameStats?.forechecks ?? 0),
+                  homeWins: (homeTeamGameStats?.forechecks ?? 0) > (awayTeamGameStats?.forechecks ?? 0),
+                }] : []),
+              ]}
+              viewAllLink={`/norad/games/${gameIdNum}/analysis`}
+            />
+          ) : undefined
+        }
+      />
+
       {/* Scoring Summary - Grouped by Period */}
       {(() => {
-        // Use allEvents filtered for goals instead of goalsData to ensure we get all periods
-        // Filter allEvents for goals (event_type='Goal' or is_goal=true)
-        const allGoalsFromEvents = allEvents.filter((event: any) => 
-          event.event_type === 'Goal' || event.is_goal === true
+        // Use allEvents filtered for ACTUAL goals per CLAUDE.md rules:
+        // Goals are ONLY counted when event_type='Goal' AND event_detail='Goal_Scored'
+        const allGoalsFromEvents = allEvents.filter((event: any) =>
+          event.event_type === 'Goal' && event.event_detail === 'Goal_Scored'
         )
-        
+
         // Combine with goalsData to ensure we don't miss any goals
         const allGoals = [...goalsData]
         allGoalsFromEvents.forEach((event: any) => {
@@ -1677,7 +1313,7 @@ export default async function GameDetailPage({
             allGoals.push(event)
           }
         })
-        
+
         if (allGoals.length === 0) return null
         
         // Helper function to get period (used throughout)
@@ -1691,16 +1327,17 @@ export default async function GameDetailPage({
         }
         
         // First, sort all goals chronologically to calculate running score
+        // time_start_total_seconds is elapsed time from game start, so ASCENDING = first goal first
         const allGoalsSorted = [...allGoals].sort((a: GameEvent, b: GameEvent) => {
           const periodA = getPeriod(a)
           const periodB = getPeriod(b)
           if (periodA !== periodB) {
             return periodA - periodB
           }
-          // Within same period, sort by time DESCENDING (hockey time counts down)
+          // Within same period, sort by elapsed time ASCENDING (lower time = earlier in period)
           const timeA = a.time_start_total_seconds ?? a.time_seconds ?? 0
           const timeB = b.time_start_total_seconds ?? b.time_seconds ?? 0
-          return timeB - timeA
+          return timeA - timeB
         })
         
         // Calculate running score for each goal
@@ -1782,11 +1419,11 @@ export default async function GameDetailPage({
             <div className="divide-y divide-border">
               {periods.map((period) => {
                 const periodGoals = goalsByPeriod.get(period)!
-                  // Sort goals within period by time DESCENDING (hockey time counts down)
+                  // Sort goals within period by elapsed time ASCENDING (lower time = earlier goal)
                   .sort((a: GameEvent, b: GameEvent) => {
                     const timeA = a.time_start_total_seconds ?? a.time_seconds ?? 0
                     const timeB = b.time_start_total_seconds ?? b.time_seconds ?? 0
-                    return timeB - timeA
+                    return timeA - timeB
                   })
                 
                 const periodLabel = period > 3 ? `OT${period - 3}` : `Period ${period}`
@@ -1801,12 +1438,23 @@ export default async function GameDetailPage({
                     </div>
                     {/* Goals in this period */}
                     {periodGoals.map((goal: GameEvent, index: number) => {
-                      // Use time_start_total_seconds if available, otherwise time_seconds
-                      const timeSeconds = goal.time_start_total_seconds ?? goal.time_seconds ?? 0
-                      // Calculate period time (time within the period)
-                      const periodSeconds = timeSeconds % 1200 // 20 minutes = 1200 seconds per period
-                      const minutes = Math.floor(periodSeconds / 60)
-                      const seconds = Math.floor(periodSeconds % 60)
+                      // Use event_start_min/sec (countdown time) if available
+                      // Otherwise fall back to calculating from total seconds
+                      let minutes: number
+                      let seconds: number
+
+                      if (goal.event_start_min !== undefined && goal.event_start_sec !== undefined) {
+                        // Use countdown time directly from data
+                        minutes = goal.event_start_min
+                        seconds = goal.event_start_sec
+                      } else {
+                        // Calculate countdown from elapsed time (20:00 - elapsed)
+                        const timeSeconds = goal.time_start_total_seconds ?? goal.time_seconds ?? 0
+                        const periodSecondsElapsed = timeSeconds % 1200 // 20 minutes = 1200 seconds
+                        const periodSecondsRemaining = 1200 - periodSecondsElapsed
+                        minutes = Math.floor(periodSecondsRemaining / 60)
+                        seconds = Math.floor(periodSecondsRemaining % 60)
+                      }
                       const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`
                       
                       // Determine which team scored - check multiple fields
@@ -1887,22 +1535,12 @@ export default async function GameDetailPage({
                       const scoreStr = `${runningScore.away}-${runningScore.home}`
                       
                       return (
-                        <div key={`${period}-${index}`} className="p-4 flex items-center gap-4">
-                          <div className="w-20 text-center flex-shrink-0">
-                            <div className="font-mono text-base font-semibold text-foreground">{timeStr}</div>
-                            {videoLink && hasVideo && (
-                              <a
-                                href={videoLink}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-xs text-primary hover:underline mt-1 block"
-                                title="Watch goal video"
-                              >
-                                ▶ Video
-                              </a>
-                            )}
+                        <div key={`${period}-${index}`} className="p-4 flex items-center gap-3 hover:bg-muted/30 transition-colors">
+                          {/* Time */}
+                          <div className="w-14 text-center flex-shrink-0">
+                            <div className="font-mono text-sm font-semibold text-foreground">{timeStr}</div>
                           </div>
-                          
+
                           {/* Team Logo */}
                           {scoringTeam && (
                             <TeamLogo
@@ -1911,70 +1549,69 @@ export default async function GameDetailPage({
                               abbrev={scoringTeam.team_cd}
                               primaryColor={scoringTeam.primary_color || scoringTeam.team_color1}
                               secondaryColor={scoringTeam.team_color2}
-                              size="md"
-                            />
-                          )}
-                          
-                          {/* Running Score */}
-                          <div className="flex items-center gap-2 min-w-[60px]">
-                            <div className="font-mono text-lg font-bold text-foreground">
-                              {scoreStr}
-                            </div>
-                          </div>
-                          
-                          {/* Player Photo */}
-                          {scorerImage && (
-                            <PlayerPhoto
-                              src={scorerImage}
-                              name={scorerName || ''}
                               size="sm"
                             />
                           )}
-                          
-                          <div className="flex-1">
-                            {scorerName ? (
-                              getPlayerGameLink(scorerId) ? (
-                                <Link
-                                  href={getPlayerGameLink(scorerId)!}
-                                  className="font-display text-sm font-semibold text-foreground hover:text-primary transition-colors"
-                                >
-                                  {scorerName}
-                                </Link>
-                              ) : (
-                                <div className="font-display text-sm font-semibold text-foreground">
-                                  {scorerName}
-                                </div>
-                              )
-                            ) : scorerId && playersMap.has(scorerId) ? (
-                              (() => {
-                                const player = playersMap.get(scorerId)!
-                                const name = player.player_name || player.player_full_name || 'Unknown Player'
-                                return getPlayerGameLink(scorerId) ? (
+
+                          {/* Player Photo - Always show with fallback */}
+                          <PlayerPhoto
+                            src={scorerImage}
+                            name={scorerName || 'Unknown'}
+                            primaryColor={scoringTeam?.primary_color || scoringTeam?.team_color1}
+                            size="sm"
+                          />
+
+                          {/* Player Info */}
+                          <div className="flex-1 min-w-0">
+                            {/* Goal Label + Scorer Name */}
+                            <div className="flex items-center gap-2">
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-green-500/20 text-green-600 dark:text-green-400 text-xs font-bold uppercase tracking-wide">
+                                Goal
+                              </span>
+                              {scorerName ? (
+                                getPlayerGameLink(scorerId) ? (
                                   <Link
                                     href={getPlayerGameLink(scorerId)!}
                                     className="font-display text-sm font-semibold text-foreground hover:text-primary transition-colors"
                                   >
-                                    {name}
+                                    {scorerName}
                                   </Link>
                                 ) : (
-                                  <div className="font-display text-sm font-semibold text-foreground">
-                                    {name}
-                                  </div>
+                                  <span className="font-display text-sm font-semibold text-foreground">
+                                    {scorerName}
+                                  </span>
                                 )
-                              })()
-                            ) : (
-                              <div className="font-display text-sm font-semibold text-muted-foreground">
-                                Unknown Scorer
-                              </div>
-                            )}
-                            {/* Assists */}
+                              ) : scorerId && playersMap.has(scorerId) ? (
+                                (() => {
+                                  const player = playersMap.get(scorerId)!
+                                  const name = player.player_name || player.player_full_name || 'Unknown Player'
+                                  return getPlayerGameLink(scorerId) ? (
+                                    <Link
+                                      href={getPlayerGameLink(scorerId)!}
+                                      className="font-display text-sm font-semibold text-foreground hover:text-primary transition-colors"
+                                    >
+                                      {name}
+                                    </Link>
+                                  ) : (
+                                    <span className="font-display text-sm font-semibold text-foreground">
+                                      {name}
+                                    </span>
+                                  )
+                                })()
+                              ) : (
+                                <span className="font-display text-sm font-semibold text-muted-foreground">
+                                  Unknown Scorer
+                                </span>
+                              )}
+                            </div>
+                            {/* Assists - Show as "Assisted by: Name, Name" */}
                             {(() => {
                               // Get assists from assistEventsMap (if available) or fallback to event_player_2
                               const goalKey = goal.event_id || String(goal.time_start_total_seconds || index)
-                              const assists = assistEventsMap.get(goalKey) || 
+                              const assists = assistEventsMap.get(goalKey) ||
                                             (goal.event_id ? assistEventsMap.get(goal.event_id) : null) ||
                                             (goal.time_start_total_seconds ? assistEventsMap.get(String(goal.time_start_total_seconds)) : null)
-                              
+
                               if (assists && assists.length > 0) {
                                 // Sort: primary first, then secondary
                                 const sortedAssists = assists.sort((a, b) => {
@@ -1982,80 +1619,84 @@ export default async function GameDetailPage({
                                   if (a.assist_type === 'secondary' && b.assist_type === 'primary') return 1
                                   return 0
                                 })
-                                
+
                                 return (
-                                  <div className="text-xs text-muted-foreground space-y-1 mt-1">
+                                  <div className="text-xs text-muted-foreground mt-0.5">
+                                    <span className="italic">Assisted by: </span>
                                     {sortedAssists.map((assist, idx) => {
                                       const assistPlayer = playersMap.get(assist.player_id)
                                       const assistName = assistPlayer?.player_name || assistPlayer?.player_full_name || assist.player_name || 'Unknown'
-                                      const assistId = assist.player_id
-                                      const assistImage = assistPlayer?.player_image || null
-                                      const assistLink = getPlayerGameLink(assistId)
-                                      
+                                      const assistLink = getPlayerGameLink(assist.player_id)
+
                                       return (
-                                        <div key={idx} className="flex items-center gap-2">
-                                          {assistImage && (
-                                            <PlayerPhoto
-                                              src={assistImage}
-                                              name={assistName}
-                                              size="xs"
-                                            />
+                                        <span key={idx}>
+                                          {idx > 0 && ', '}
+                                          {assistLink ? (
+                                            <Link
+                                              href={assistLink}
+                                              className="hover:text-foreground transition-colors"
+                                            >
+                                              {assistName}
+                                            </Link>
+                                          ) : (
+                                            <span>{assistName}</span>
                                           )}
-                                          <span>
-                                            {assist.assist_type === 'primary' ? 'A1' : 'A2'}:{' '}
-                                            {assistLink ? (
-                                              <Link
-                                                href={assistLink}
-                                                className="hover:text-foreground transition-colors"
-                                              >
-                                                {assistName}
-                                              </Link>
-                                            ) : (
-                                              <span>{assistName}</span>
-                                            )}
-                                          </span>
-                                        </div>
+                                        </span>
                                       )
                                     })}
                                   </div>
                                 )
                               }
-                              
+
                               // Fallback to event_player_2 if no assist events found
                               if (goal.event_player_2) {
                                 const assistId = playerNameToIdMap.get(goal.event_player_2.toLowerCase().trim()) || null
-                                const assistPlayer = assistId ? playersMap.get(assistId) : null
-                                const assistImage = assistPlayer?.player_image || null
                                 const assistLink = getPlayerGameLink(assistId)
-                                
+
                                 return (
-                                  <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
-                                    {assistImage && (
-                                      <PlayerPhoto
-                                        src={assistImage}
-                                        name={goal.event_player_2}
-                                        size="xs"
-                                      />
+                                  <div className="text-xs text-muted-foreground mt-0.5">
+                                    <span className="italic">Assisted by: </span>
+                                    {assistLink ? (
+                                      <Link
+                                        href={assistLink}
+                                        className="hover:text-foreground transition-colors"
+                                      >
+                                        {goal.event_player_2}
+                                      </Link>
+                                    ) : (
+                                      <span>{goal.event_player_2}</span>
                                     )}
-                                    <span>
-                                      Assist:{' '}
-                                      {assistLink ? (
-                                        <Link
-                                          href={assistLink}
-                                          className="hover:text-foreground transition-colors"
-                                        >
-                                          {goal.event_player_2}
-                                        </Link>
-                                      ) : (
-                                        <span>{goal.event_player_2}</span>
-                                      )}
-                                    </span>
                                   </div>
                                 )
                               }
-                              
-                              return null
+
+                              // Unassisted goal
+                              return (
+                                <div className="text-xs text-muted-foreground mt-0.5 italic">
+                                  Unassisted
+                                </div>
+                              )
                             })()}
+                          </div>
+
+                          {/* Running Score - Right side */}
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <div className="font-mono text-lg font-bold text-foreground tabular-nums">
+                              {scoreStr}
+                            </div>
+                            {videoLink && hasVideo && (
+                              <a
+                                href={videoLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-primary hover:text-primary/80 transition-colors"
+                                title="Watch goal video"
+                              >
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                  <path d="M8 5v14l11-7z"/>
+                                </svg>
+                              </a>
+                            )}
                           </div>
                         </div>
                       )
@@ -2067,7 +1708,7 @@ export default async function GameDetailPage({
           </div>
         )
       })()}
-      
+
       {/* Head-to-Head Games This Season */}
       {priorGamesData.headToHeadGames && priorGamesData.headToHeadGames.length > 0 && (() => {
         const regularSeasonGames = priorGamesData.headToHeadGames.filter((g: any) => 
@@ -3481,93 +3122,88 @@ export default async function GameDetailPage({
         </div>
       )}
       
-      {/* Tracking Status */}
+      {/* Tracking Status - Compact Footer */}
       {gameTrackingStatus && (
-        <div className="bg-card rounded-xl border border-border overflow-hidden">
-          <div className="px-4 py-3 bg-accent border-b border-border">
-            <h2 className="font-display text-sm font-semibold uppercase tracking-wider flex items-center gap-2">
-              <Activity className="w-4 h-4" />
-              Game Tracking Status
-            </h2>
-          </div>
-          <div className="p-6">
-            <div className="space-y-4">
-              {/* Status Badge */}
-              <div className="flex items-center gap-3">
-                <div className={cn(
-                  'px-3 py-1.5 rounded-lg font-mono text-sm font-semibold',
-                  gameTrackingStatus.status === 'full' && 'bg-save/20 text-save',
-                  gameTrackingStatus.status === 'partial' && 'bg-assist/20 text-assist',
-                  gameTrackingStatus.status === 'non-full' && 'bg-primary/20 text-primary',
-                  gameTrackingStatus.status === 'none' && 'bg-muted text-muted-foreground'
-                )}>
-                  {gameTrackingStatus.status === 'full' && 'Full Tracking'}
-                  {gameTrackingStatus.status === 'partial' && 'Partial Tracking'}
-                  {gameTrackingStatus.status === 'non-full' && 'Non-Full Game'}
-                  {gameTrackingStatus.status === 'none' && 'No Tracking'}
-                </div>
-                {gameTrackingStatus.coverage && (
-                  <div className="text-xs font-mono text-muted-foreground">
-                    {gameTrackingStatus.coverage}
-                  </div>
-                )}
-              </div>
-              
-              {/* Components Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div>
-                  <div className="text-xs font-mono text-muted-foreground uppercase mb-1">Events</div>
-                  <div className={cn(
-                    'font-mono text-sm font-semibold',
-                    gameTrackingStatus.hasEvents ? 'text-foreground' : 'text-muted-foreground'
-                  )}>
-                    {gameTrackingStatus.hasEvents ? gameTrackingStatus.eventCount.toLocaleString() : 'None'}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xs font-mono text-muted-foreground uppercase mb-1">Shifts</div>
-                  <div className={cn(
-                    'font-mono text-sm font-semibold',
-                    gameTrackingStatus.hasShifts ? 'text-foreground' : 'text-muted-foreground'
-                  )}>
-                    {gameTrackingStatus.hasShifts ? gameTrackingStatus.shiftCount.toLocaleString() : 'None'}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xs font-mono text-muted-foreground uppercase mb-1">XY Data</div>
-                  <div className={cn(
-                    'font-mono text-sm font-semibold',
-                    gameTrackingStatus.hasXY ? 'text-foreground' : 'text-muted-foreground'
-                  )}>
-                    {gameTrackingStatus.hasXY ? gameTrackingStatus.xyCount.toLocaleString() : 'None'}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xs font-mono text-muted-foreground uppercase mb-1">Video</div>
-                  <div className={cn(
-                    'font-mono text-sm font-semibold',
-                    gameTrackingStatus.hasVideo ? 'text-foreground' : 'text-muted-foreground'
-                  )}>
-                    {gameTrackingStatus.hasVideo ? 'Available' : 'None'}
-                  </div>
-                </div>
-              </div>
-              
-              {/* Missing Components */}
-              {gameTrackingStatus.missing.length > 0 && (
-                <div className="pt-2 border-t border-border">
-                  <div className="text-xs font-mono text-muted-foreground uppercase mb-1">Missing Components</div>
-                  <div className="text-sm text-muted-foreground">
-                    {gameTrackingStatus.missing.join(', ')}
-                  </div>
-                </div>
-              )}
+        <details className="group">
+          <summary className="cursor-pointer list-none bg-muted/30 rounded-lg px-4 py-2 flex items-center justify-between hover:bg-muted/50 transition-colors">
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-mono text-muted-foreground uppercase">Tracking:</span>
+              <span className={cn(
+                'px-2 py-0.5 rounded text-xs font-mono font-medium',
+                gameTrackingStatus.status === 'full' && 'bg-save/20 text-save',
+                gameTrackingStatus.status === 'partial' && 'bg-assist/20 text-assist',
+                gameTrackingStatus.status === 'non-full' && 'bg-primary/20 text-primary',
+                gameTrackingStatus.status === 'none' && 'bg-muted text-muted-foreground'
+              )}>
+                {gameTrackingStatus.status === 'full' && 'Full'}
+                {gameTrackingStatus.status === 'partial' && 'Partial'}
+                {gameTrackingStatus.status === 'non-full' && 'Non-Full'}
+                {gameTrackingStatus.status === 'none' && 'None'}
+              </span>
+              <span className="text-xs font-mono text-muted-foreground hidden md:inline">
+                {[
+                  gameTrackingStatus.hasEvents && `${gameTrackingStatus.eventCount} events`,
+                  gameTrackingStatus.hasShifts && `${gameTrackingStatus.shiftCount} shifts`,
+                  gameTrackingStatus.hasXY && `${gameTrackingStatus.xyCount} XY`,
+                  gameTrackingStatus.hasVideo && 'Video'
+                ].filter(Boolean).join(' | ')}
+              </span>
             </div>
+            <span className="text-xs text-muted-foreground group-open:rotate-180 transition-transform">
+              &#9660;
+            </span>
+          </summary>
+          <div className="mt-2 p-4 bg-muted/20 rounded-lg">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div>
+                <div className="text-xs font-mono text-muted-foreground uppercase mb-1">Events</div>
+                <div className={cn(
+                  'font-mono font-semibold',
+                  gameTrackingStatus.hasEvents ? 'text-foreground' : 'text-muted-foreground'
+                )}>
+                  {gameTrackingStatus.hasEvents ? gameTrackingStatus.eventCount.toLocaleString() : 'None'}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs font-mono text-muted-foreground uppercase mb-1">Shifts</div>
+                <div className={cn(
+                  'font-mono font-semibold',
+                  gameTrackingStatus.hasShifts ? 'text-foreground' : 'text-muted-foreground'
+                )}>
+                  {gameTrackingStatus.hasShifts ? gameTrackingStatus.shiftCount.toLocaleString() : 'None'}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs font-mono text-muted-foreground uppercase mb-1">XY Data</div>
+                <div className={cn(
+                  'font-mono font-semibold',
+                  gameTrackingStatus.hasXY ? 'text-foreground' : 'text-muted-foreground'
+                )}>
+                  {gameTrackingStatus.hasXY ? gameTrackingStatus.xyCount.toLocaleString() : 'None'}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs font-mono text-muted-foreground uppercase mb-1">Video</div>
+                <div className={cn(
+                  'font-mono font-semibold',
+                  gameTrackingStatus.hasVideo ? 'text-foreground' : 'text-muted-foreground'
+                )}>
+                  {gameTrackingStatus.hasVideo ? 'Available' : 'None'}
+                </div>
+              </div>
+            </div>
+            {gameTrackingStatus.missing.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-border/50">
+                <div className="text-xs font-mono text-muted-foreground">
+                  Missing: {gameTrackingStatus.missing.join(', ')}
+                </div>
+              </div>
+            )}
           </div>
-        </div>
+        </details>
       )}
       
-      {/* Game Highlights */}
+      {/* Game Highlights - Always show when available */}
       {highlights && highlights.length > 0 && (
         <GameHighlights
           highlights={highlights}
@@ -3579,60 +3215,75 @@ export default async function GameDetailPage({
         />
       )}
 
-      {/* Play-by-Play Timeline - Only show if we have events */}
-      {hasEvents && (
-        <PlayByPlayTimeline
-          events={allEvents}
-          homeTeam={homeTeam?.team_name || game.home_team_name || 'Home'}
-          awayTeam={awayTeam?.team_name || game.away_team_name || 'Away'}
-          homeTeamId={String(homeTeamId || '')}
-          awayTeamId={String(awayTeamId || '')}
-          playersMap={playersMap}
-                    homeTeamData={homeTeam ? {
-                      team_name: homeTeam.team_name || game.home_team_name || 'Home',
-                      team_logo: homeTeam.team_logo,
-                      team_cd: homeTeam.team_cd,
-                      primary_color: homeTeam.primary_color || homeTeam.team_color1,
-                      team_color1: homeTeam.team_color1
-                    } : undefined}
-                    awayTeamData={awayTeam ? {
-                      team_name: awayTeam.team_name || game.away_team_name || 'Away',
-                      team_logo: awayTeam.team_logo,
-                      team_cd: awayTeam.team_cd,
-                      primary_color: awayTeam.primary_color || awayTeam.team_color1,
-                      team_color1: awayTeam.team_color1
-                    } : undefined}
-        />
-      )}
-
-      {/* Shift Chart - Only show if we have shifts */}
-      {hasShifts && shiftsData && shiftsData.length > 0 && (
-        <ShiftChart shifts={shiftsData} />
-      )}
-
-      {/* Enhanced Shot Map - Only show if we have XY data */}
-      {hasXY && shots && shots.length > 0 && (
-        <EnhancedShotMap 
-          shots={shotsData.map(shot => ({
-            x_coord: shot.x_coord ?? shot.shot_x,
-            y_coord: shot.y_coord ?? shot.shot_y,
-            shot_x: shot.shot_x ?? shot.x_coord,
-            shot_y: shot.shot_y ?? shot.y_coord,
-            is_goal: shot.is_goal,
-            shot_result: shot.shot_result,
-            xg: shot.xg ?? shot.shot_xg,
-            danger_zone: shot.danger_zone,
-            danger_level: shot.danger_level,
-            period: shot.period,
-            strength: shot.strength,
-            player_id: shot.player_id,
-            player_name: shot.player_name,
-            event_type: shot.event_type,
-          }))}
-          width={600}
-          height={300}
-          showFilters={true}
-          title="Shot Map"
+      {/* Advanced Analytics Tabs - Only show when we have tracked data */}
+      {(hasEvents || hasShifts || hasXY) && (
+        <GameDetailTabs
+          hasScoring={false}
+          hasPlayByPlay={hasEvents}
+          hasShots={hasXY && shotsData && shotsData.length > 0}
+          hasShifts={hasShifts && shiftsData && shiftsData.length > 0}
+          boxScoreContent={
+            <div className="p-4 text-center text-muted-foreground">
+              <p className="text-sm">See player stats in the tables above.</p>
+            </div>
+          }
+          playByPlayContent={
+            hasEvents && (
+              <PlayByPlayTimeline
+                events={allEvents}
+                homeTeam={homeTeam?.team_name || game.home_team_name || 'Home'}
+                awayTeam={awayTeam?.team_name || game.away_team_name || 'Away'}
+                homeTeamId={String(homeTeamId || '')}
+                awayTeamId={String(awayTeamId || '')}
+                playersMap={playersMap}
+                homeTeamData={homeTeam ? {
+                  team_name: homeTeam.team_name || game.home_team_name || 'Home',
+                  team_logo: homeTeam.team_logo,
+                  team_cd: homeTeam.team_cd,
+                  primary_color: homeTeam.primary_color || homeTeam.team_color1,
+                  team_color1: homeTeam.team_color1
+                } : undefined}
+                awayTeamData={awayTeam ? {
+                  team_name: awayTeam.team_name || game.away_team_name || 'Away',
+                  team_logo: awayTeam.team_logo,
+                  team_cd: awayTeam.team_cd,
+                  primary_color: awayTeam.primary_color || awayTeam.team_color1,
+                  team_color1: awayTeam.team_color1
+                } : undefined}
+              />
+            )
+          }
+          shiftsContent={
+            hasShifts && shiftsData && shiftsData.length > 0 && (
+              <ShiftChart shifts={shiftsData} />
+            )
+          }
+          shotsContent={
+            hasXY && shotsData && shotsData.length > 0 && (
+              <EnhancedShotMap
+                shots={shotsData.map(shot => ({
+                  x_coord: shot.x_coord ?? shot.shot_x,
+                  y_coord: shot.y_coord ?? shot.shot_y,
+                  shot_x: shot.shot_x ?? shot.x_coord,
+                  shot_y: shot.shot_y ?? shot.y_coord,
+                  is_goal: shot.is_goal,
+                  shot_result: shot.shot_result,
+                  xg: shot.xg ?? shot.shot_xg,
+                  danger_zone: shot.danger_zone,
+                  danger_level: shot.danger_level,
+                  period: shot.period,
+                  strength: shot.strength,
+                  player_id: shot.player_id,
+                  player_name: shot.player_name,
+                  event_type: shot.event_type,
+                }))}
+                width={600}
+                height={300}
+                showFilters={true}
+                title="Shot Map"
+              />
+            )
+          }
         />
       )}
     </div>
