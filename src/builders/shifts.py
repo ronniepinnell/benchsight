@@ -45,7 +45,10 @@ def build_fact_shifts(
         'home_team_pk', 'home_team_pp', 'away_team_pp', 'away_team_pk',
         'situation', 'strength', 'home_goals', 'away_goals',
         'stoppage_time', 'home_ozone_start', 'home_ozone_end',
-        'home_dzone_start', 'home_dzone_end', 'home_nzone_start', 'home_nzone_end'
+        'home_dzone_start', 'home_dzone_end', 'home_nzone_start', 'home_nzone_end',
+        # Video timing columns (#136)
+        'running_video_time', 'shift_start_running_time', 'shift_end_running_time',
+        'period_start_total_running_seconds'
     ]
     
     shifts = shifts[[c for c in keep_cols if c in shifts.columns]]
