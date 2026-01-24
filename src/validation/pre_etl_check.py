@@ -788,25 +788,8 @@ class PreETLValidator:
             ))
             return results
 
-        # Determine actual team for each row based on event team + player role
-        # event_player_* = same team as event, opp_player_* = opposite team
-        def get_actual_team(row) -> Optional[str]:
-            event_team = row.get('team_')
-            player_role = row.get('player_role')
-
-            if pd.isna(event_team) or pd.isna(player_role):
-                return None
-
-            is_event_player = str(player_role).startswith('event_')
-
-            if event_team == 'h':
-                return 'home' if is_event_player else 'away'
-            elif event_team == 'a':
-                return 'away' if is_event_player else 'home'
-            return None
-
+        # Vectorized team assignment: event_player_* = same team as event, opp_player_* = opposite
         df_with_team = df.copy()
-        # Vectorized team assignment (avoid .apply(axis=1))
         is_event_player = df_with_team['player_role'].str.startswith('event_', na=False)
         is_home_event = df_with_team['team_'] == 'h'
         is_away_event = df_with_team['team_'] == 'a'
