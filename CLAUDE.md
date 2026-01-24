@@ -211,14 +211,30 @@ Set in Vercel Dashboard → Project Settings → Environment Variables:
 
 ## Git Workflow
 
+### CRITICAL: Worktree Setup
+Two parallel worktrees exist - **NEVER remove them or checkout main/develop directly**:
+- `benchsight/` → Always on a feature branch
+- `benchsight-dev/` → Always on a feature branch
+
+**If stuck on main (hooks will break):**
+```bash
+git stash
+git checkout -f -b feature/{issue#}-description origin/develop
+```
+
+### Branch Rules
 - **Branches:** `main` (production), `develop` (staging/integration), `feature/*`, `fix/*`
+- **Branch naming:** `feature/{issue#}-description` or `fix/{issue#}-description` (MUST tie to GitHub issue)
 - **Default merge target:** `develop` (NOT `main`)
 - **Flow:** `feature/*` or `fix/*` → `develop` → `main` (production releases only)
 - **Commit format:** `[TYPE] Brief description` (FEAT, FIX, DOCS, REFACTOR, TEST, CHORE)
 - **PRD-first:** Create PRD in `docs/prds/` before implementing features
 - **Never push directly to `main`** - all changes go through `develop` first
+- **Never checkout `main` or `develop`** - always stay on feature branches
 - **Never use "Closes #XX" in PR descriptions** - issues are closed manually after verification
 - **Never include "Generated with Claude Code" in PRs** - omit this footer entirely
+
+See `docs/workflows/GIT_WORKTREE_WORKFLOW.md` for full worktree documentation.
 
 
 
