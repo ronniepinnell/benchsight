@@ -62,6 +62,8 @@ This document serves as the master index for all BenchSight documentation.
 - [tracker/TRACKER_CONVERSION.md](tracker/TRACKER_CONVERSION.md) - Rust/Next.js conversion plan
 - [tracker/TRACKER_LOGIC_DOCUMENTATION.md](tracker/TRACKER_LOGIC_DOCUMENTATION.md) - Logic documentation
 - [tracker/TRACKER_ARCHITECTURE_DIAGRAMS.md](tracker/TRACKER_ARCHITECTURE_DIAGRAMS.md) - Visual diagrams
+- [tracker/TRACKER_EXPORT_SPECIFICATION.md](tracker/TRACKER_EXPORT_SPECIFICATION.md) - Export format spec (7 sheets, 91 columns)
+- [tracker/TRACKER_EXPORT_QUICK_REFERENCE.md](tracker/TRACKER_EXPORT_QUICK_REFERENCE.md) - Quick column lookup
 
 ### 🔌 API Documentation (docs/api/)
 - [api/API.md](api/API.md) - Complete API documentation

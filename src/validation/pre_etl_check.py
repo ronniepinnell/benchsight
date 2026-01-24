@@ -630,26 +630,28 @@ class PreETLValidator:
 
         df = self._events_df.copy()
 
-        # Determine role_team: 'event' or 'opp' based on player_role prefix
-        def get_role_team(role):
-            if pd.isna(role):
-                return None
-            return 'event' if str(role).startswith('event_') else 'opp'
-
-        df['_role_team'] = df['player_role'].apply(get_role_team)
+        # Determine role_team: 'event' or 'opp' based on player_role prefix (vectorized)
+        df['_role_team'] = None
+        has_role = df['player_role'].notna()
+        is_event_role = df['player_role'].str.startswith('event_', na=False)
+        df.loc[has_role & is_event_role, '_role_team'] = 'event'
+        df.loc[has_role & ~is_event_role, '_role_team'] = 'opp'
 
         # Group by event_index, player_game_number, AND role_team
         # Only flag duplicates within the same team context
-        duplicates = df.groupby(['event_index', 'player_game_number', '_role_team']).size()
-        dup_events = duplicates[duplicates > 1]
+        duplicates = df.groupby(['event_index', 'player_game_number', '_role_team']).size().reset_index(name='count')
+        dup_events = duplicates[duplicates['count'] > 1]
 
         if len(dup_events) > 0:
-            # Get sample of duplicate events
-            sample = dup_events.head(5).reset_index()
-            sample_str = [
-                f"event {row['event_index']}: #{int(row['player_game_number'])} ({row['_role_team']}_player) x{row[0]}"
-                for _, row in sample.iterrows() if not pd.isna(row['player_game_number'])
-            ]
+            # Get sample of duplicate events - vectorized formatting
+            sample = dup_events.head(5)
+            sample = sample[sample['player_game_number'].notna()]
+            sample_str = (
+                "event " + sample['event_index'].astype(str) +
+                ": #" + sample['player_game_number'].astype(int).astype(str) +
+                " (" + sample['_role_team'].astype(str) + "_player) x" +
+                sample['count'].astype(str)
+            ).tolist()
 
             return CheckResult(
                 check_name='duplicate_event_slots',
@@ -699,23 +701,34 @@ class PreETLValidator:
         # Get unique events (one row per event)
         events_unique = df.drop_duplicates(subset=['event_index']).copy()
 
+        # Vectorized time consistency check using .shift()
+        # Clock counts DOWN in hockey (18:00 -> 0:00), so time should decrease or stay same
         issues = []
         for period in events_unique['period'].dropna().unique():
-            period_events = events_unique[events_unique['period'] == period].sort_values('event_index')
+            period_events = events_unique[events_unique['period'] == period].sort_values('event_index').copy()
+            period_events = period_events[period_events[time_col].notna()]
 
-            # Clock counts DOWN in hockey (18:00 -> 0:00)
-            # So event_start_min should decrease or stay same
-            prev_time = None
-            for _, row in period_events.iterrows():
-                curr_time = row.get(time_col)
-                if pd.isna(curr_time):
-                    continue
+            if len(period_events) < 2:
+                continue
 
-                if prev_time is not None and curr_time > prev_time:
-                    # Time went UP, which is wrong (clock should count down)
-                    issues.append(f"P{period} event {row['event_index']}: time jumped from {prev_time} to {curr_time}")
+            # Compare current time to previous time using shift
+            period_events['_prev_time'] = period_events[time_col].shift(1)
+            # Time went UP = current > previous (wrong direction)
+            time_jumps = period_events[
+                period_events['_prev_time'].notna() &
+                (period_events[time_col] > period_events['_prev_time'])
+            ]
 
-                prev_time = curr_time
+            # Format issues vectorized
+            if len(time_jumps) > 0:
+                jump_strs = (
+                    "P" + str(int(period)) + " event " +
+                    time_jumps['event_index'].astype(str) +
+                    ": time jumped from " +
+                    time_jumps['_prev_time'].astype(str) +
+                    " to " + time_jumps[time_col].astype(str)
+                ).tolist()
+                issues.extend(jump_strs)
 
         if issues:
             return CheckResult(
@@ -793,7 +806,17 @@ class PreETLValidator:
             return None
 
         df_with_team = df.copy()
-        df_with_team['actual_team'] = df_with_team.apply(get_actual_team, axis=1)
+        # Vectorized team assignment (avoid .apply(axis=1))
+        is_event_player = df_with_team['player_role'].str.startswith('event_', na=False)
+        is_home_event = df_with_team['team_'] == 'h'
+        is_away_event = df_with_team['team_'] == 'a'
+        has_valid_data = df_with_team['player_role'].notna() & df_with_team['team_'].notna()
+
+        df_with_team['actual_team'] = None
+        df_with_team.loc[has_valid_data & is_home_event & is_event_player, 'actual_team'] = 'home'
+        df_with_team.loc[has_valid_data & is_home_event & ~is_event_player, 'actual_team'] = 'away'
+        df_with_team.loc[has_valid_data & is_away_event & is_event_player, 'actual_team'] = 'away'
+        df_with_team.loc[has_valid_data & is_away_event & ~is_event_player, 'actual_team'] = 'home'
 
         # Check home team jerseys
         home_players = df_with_team[df_with_team['actual_team'] == 'home']
@@ -956,14 +979,13 @@ class PreETLValidator:
         """
         fixes = []
 
-        # Add role_team column: 'event' or 'opp'
-        def get_role_team(role):
-            if pd.isna(role):
-                return None
-            return 'event' if str(role).startswith('event_') else 'opp'
-
+        # Add role_team column: 'event' or 'opp' (vectorized)
         df = df.copy()
-        df['_role_team'] = df['player_role'].apply(get_role_team)
+        df['_role_team'] = None
+        has_role = df['player_role'].notna()
+        is_event_role = df['player_role'].str.startswith('event_', na=False)
+        df.loc[has_role & is_event_role, '_role_team'] = 'event'
+        df.loc[has_role & ~is_event_role, '_role_team'] = 'opp'
 
         # Find duplicates: same player on same team appearing multiple times in same event
         dup_counts = df.groupby(['event_index', 'player_game_number', '_role_team']).size()
@@ -991,10 +1013,18 @@ class PreETLValidator:
                 continue
 
             # Rule 1: Keep row with play_detail1 or play_detail_2 populated
-            has_detail = player_rows[
-                (player_rows['play_detail1'].notna() & (player_rows['play_detail1'] != '')) |
-                (player_rows['play_detail_2'].notna() & (player_rows['play_detail_2'] != ''))
-            ]
+            # Check if columns exist before accessing (fixed operator precedence)
+            if 'play_detail1' in player_rows.columns:
+                has_detail1 = player_rows['play_detail1'].notna() & (player_rows['play_detail1'] != '')
+            else:
+                has_detail1 = pd.Series(False, index=player_rows.index)
+
+            if 'play_detail_2' in player_rows.columns:
+                has_detail2 = player_rows['play_detail_2'].notna() & (player_rows['play_detail_2'] != '')
+            else:
+                has_detail2 = pd.Series(False, index=player_rows.index)
+
+            has_detail = player_rows[has_detail1 | has_detail2]
 
             if len(has_detail) > 0:
                 # Keep the first row with details, drop others
