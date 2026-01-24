@@ -311,18 +311,18 @@ export default async function FaceoffAnalysisPage() {
             <BarChart3 className="w-4 h-4" />
             Comprehensive Faceoff Statistics
           </h2>
-          <ExportButton 
+          <ExportButton
             data={statsWithPlayers
               .filter(p => p.foTotal > 0)
               .map(f => ({
-                Player: f.playerName,
-                Team: f.teamName,
+                Player: f.player_name || f.player?.player_full_name || 'Unknown',
+                Team: f.team?.team_name || '',
                 GP: f.games,
-                Wins: f.totalWins,
-                Losses: f.totalLosses,
+                Wins: f.foWins,
+                Losses: f.foLosses,
                 Total: f.foTotal,
-                'Win %': f.winPct.toFixed(1) + '%',
-                'Avg/G': f.avgPerGame.toFixed(1),
+                'Win %': f.foPct.toFixed(1) + '%',
+                'Avg/G': f.foTotalPerGame.toFixed(1),
               }))}
             filename="faceoff_stats"
           />
