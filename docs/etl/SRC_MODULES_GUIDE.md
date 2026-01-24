@@ -97,6 +97,7 @@ The ETL runs in 11 phases (see `run_etl.py`):
 | `src/qa/` | Quality assurance | `build_qa_facts.py` |
 | `src/etl/` | ETL support | `post_etl_processor.py` |
 | `src/models/` | Data models | `dimensions.py`, `master_dims.py` |
+| `src/validation/` | Pre/Post ETL validation | `pre_etl_check.py`, `table_verifier.py` |
 
 ### External Integration
 
