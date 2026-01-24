@@ -483,7 +483,254 @@ export async function getGameFromSchedule(gameId: number) {
     .select('*')
     .eq('game_id', gameId)
     .single()
-  
+
   if (error) return null
   return data
+}
+
+// Get game videos from fact_video (can have multiple per game)
+export interface GameVideo {
+  video_key: string
+  game_id: number
+  video_type_id: string
+  video_type: string
+  video_description: string | null
+  video_url: string
+  period_1_start: number | null
+  period_2_start: number | null
+  period_3_start: number | null
+}
+
+export async function getGameVideos(gameId: number): Promise<GameVideo[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('fact_video')
+    .select('*')
+    .eq('game_id', gameId)
+    .order('video_type_id', { ascending: true })
+
+  if (error) return []
+  return data as GameVideo[]
+}
+
+// Get game highlights from fact_events with player images
+export interface GameHighlight {
+  event_id: string
+  event_type: string
+  event_detail: string | null
+  period: number
+  player_name: string
+  player_team: string
+  player_id: string | null
+  player_image: string | null
+  primary_color: string | null
+  is_goal: number
+  is_highlight: number
+  running_video_time: number
+  event_start_min: number | null
+  event_start_sec: number | null
+  // Additional event details
+  event_team_zone: string | null
+  strength: string | null
+  is_rebound: number
+  is_rush: number
+  play_detail1: string | null
+  play_detail_2: string | null
+  event_player_2: string | null
+  team_venue: string | null
+  // Shot location and goalie info
+  puck_x_start: number | null
+  puck_y_start: number | null
+  goalie_player_id: string | null
+  goalie_name: string | null
+  // Future: separate highlight video
+  highlight_video_url: string | null
+}
+
+export async function getGameHighlights(gameId: number): Promise<GameHighlight[]> {
+  const supabase = await createClient()
+
+  // Get highlights from fact_events - filter on database side to avoid 1000 row limit
+  // Include events where is_highlight = 1 OR is_goal = 1 OR event_type = 'Goal'
+  const { data: events, error } = await supabase
+    .from('fact_events')
+    .select('*')
+    .eq('game_id', gameId)
+    .or('is_highlight.eq.1,is_goal.eq.1,event_type.eq.Goal')
+    .order('running_video_time', { ascending: true })
+
+  if (error) {
+    console.error('Error fetching highlights:', error.message)
+    return []
+  }
+
+  if (!events || events.length === 0) {
+    return []
+  }
+
+  // Extract player IDs - use event_player_ids (may be comma-separated, take first) or shooter_player_id
+  const getPlayerId = (e: any): string | null => {
+    // Try shooter_player_id first for goals
+    if (e.shooter_player_id && e.shooter_player_id !== '0' && !e.shooter_player_id.startsWith('SH')) {
+      return e.shooter_player_id
+    }
+    // Try event_player_ids (take first if comma-separated)
+    if (e.event_player_ids) {
+      const ids = String(e.event_player_ids).split(',')
+      const firstId = ids[0]?.trim()
+      if (firstId && firstId.startsWith('P')) {
+        return firstId
+      }
+    }
+    return null
+  }
+
+  // Get unique player IDs
+  const playerIds = Array.from(new Set(events.map(getPlayerId).filter(Boolean))) as string[]
+
+  // Also get unique player names for fallback lookup
+  const playerNames = Array.from(new Set(events.map(e => e.player_name).filter(Boolean)))
+
+  // Fetch player images by ID and by name
+  let playerImageById = new Map<string, string | null>()
+  let playerImageByName = new Map<string, string | null>()
+
+  if (playerIds.length > 0 || playerNames.length > 0) {
+    // Fetch by ID
+    if (playerIds.length > 0) {
+      const { data: playersById } = await supabase
+        .from('dim_player')
+        .select('player_id, player_image, player_full_name')
+        .in('player_id', playerIds)
+
+      if (playersById) {
+        playersById.forEach(p => {
+          playerImageById.set(p.player_id, p.player_image || null)
+          if (p.player_full_name) {
+            playerImageByName.set(p.player_full_name, p.player_image || null)
+          }
+        })
+      }
+    }
+
+    // Also fetch by name for fallback
+    if (playerNames.length > 0) {
+      const { data: playersByName } = await supabase
+        .from('dim_player')
+        .select('player_id, player_image, player_full_name')
+        .in('player_full_name', playerNames)
+
+      if (playersByName) {
+        playersByName.forEach(p => {
+          if (p.player_full_name) {
+            playerImageByName.set(p.player_full_name, p.player_image || null)
+          }
+          playerImageById.set(p.player_id, p.player_image || null)
+        })
+      }
+    }
+  }
+
+  // Get team colors
+  const { data: teams } = await supabase
+    .from('dim_team')
+    .select('team_name, primary_color')
+
+  const teamColorMap = new Map((teams || []).map(t => [t.team_name, t.primary_color]))
+
+  // Map events with player data
+  return events.map(e => {
+    const playerId = getPlayerId(e)
+    const playerImage = playerImageById.get(playerId || '') || playerImageByName.get(e.player_name) || null
+
+    return {
+      event_id: e.event_id,
+      event_type: e.event_type,
+      event_detail: e.event_detail,
+      period: e.period,
+      player_name: e.player_name,
+      player_team: e.player_team,
+      player_id: playerId,
+      player_image: playerImage,
+      primary_color: teamColorMap.get(e.player_team) || null,
+      is_goal: e.is_goal,
+      is_highlight: e.is_highlight,
+      running_video_time: e.running_video_time,
+      event_start_min: e.event_start_min,
+      event_start_sec: e.event_start_sec,
+      // Additional details
+      event_team_zone: e.event_team_zone || null,
+      strength: e.strength || null,
+      is_rebound: e.is_rebound || 0,
+      is_rush: e.is_rush || 0,
+      play_detail1: e.play_detail1 || null,
+      play_detail_2: e.play_detail_2 || null,
+      event_player_2: e.event_player_2_name_x || null,
+      team_venue: e.team_venue || null,
+      // Shot location and goalie info
+      puck_x_start: e.puck_x_start ?? null,
+      puck_y_start: e.puck_y_start ?? null,
+      goalie_player_id: e.goalie_player_id || null,
+      goalie_name: e.goalie_name || null,
+      highlight_video_url: null, // Future: separate highlight compilation
+    }
+  })
+}
+
+// Event context for play sequence display
+export interface EventContext {
+  event_id: string
+  event_type: string
+  event_detail: string | null
+  player_name: string | null
+  player_team: string | null
+  period: number
+  event_start_min: number | null
+  event_start_sec: number | null
+  running_video_time: number
+}
+
+// Get previous events leading up to a highlight for context
+export async function getEventContext(
+  gameId: number,
+  eventId: string,
+  count: number = 10
+): Promise<EventContext[]> {
+  const supabase = await createClient()
+
+  // First get the target event to find its running_video_time
+  const { data: targetEvent, error: targetError } = await supabase
+    .from('fact_events')
+    .select('running_video_time, period')
+    .eq('event_id', eventId)
+    .single()
+
+  if (targetError || !targetEvent) return []
+
+  // Get events before this one (by running_video_time), same period preferred
+  const { data: events, error } = await supabase
+    .from('fact_events')
+    .select(`
+      event_id, event_type, event_detail, player_name, player_team,
+      period, event_start_min, event_start_sec, running_video_time
+    `)
+    .eq('game_id', gameId)
+    .lt('running_video_time', targetEvent.running_video_time)
+    .order('running_video_time', { ascending: false })
+    .limit(count)
+
+  if (error || !events) return []
+
+  // Return in chronological order (oldest first) so the current event is at the end
+  return events.reverse().map(e => ({
+    event_id: e.event_id,
+    event_type: e.event_type,
+    event_detail: e.event_detail,
+    player_name: e.player_name || null,
+    player_team: e.player_team || null,
+    period: e.period,
+    event_start_min: e.event_start_min,
+    event_start_sec: e.event_start_sec,
+    running_video_time: e.running_video_time,
+  }))
 }
