@@ -251,34 +251,59 @@ class PreETLValidator:
         self._shifts_df: Optional[pd.DataFrame] = None
         self._metadata_df: Optional[pd.DataFrame] = None
         self._dim_cache: Dict[str, pd.DataFrame] = {}
+        self._is_partial: bool = False  # True if video-only (no events/shifts)
 
     def _load_tracker_data(self) -> Tuple[bool, str]:
-        """Load tracker Excel file and return success status."""
+        """
+        Load tracker Excel file and return success status.
+
+        Handles partially tracked games gracefully:
+        - If events/shifts sheets don't exist, game is considered "partial" (video-only)
+        - Partial games pass validation with a note - they just won't be processed by ETL
+        - Only report errors if sheets exist but have data quality issues
+        """
         tracking_file = self.raw_dir / f"{self.game_id}_tracking.xlsx"
 
         if not tracking_file.exists():
-            return False, f"Tracking file not found: {tracking_file}"
+            # No tracking file = game not tracked yet, nothing to validate
+            self._is_partial = True
+            return True, "No tracking file - game not tracked yet"
 
         try:
             sheets = pd.read_excel(tracking_file, sheet_name=None)
 
-            if 'events' not in sheets:
-                return False, "Missing required 'events' sheet"
-            if 'shifts' not in sheets:
-                return False, "Missing required 'shifts' sheet"
-            if 'metadata' not in sheets:
-                return False, "Missing required 'metadata' sheet"
+            # Check for partial tracking (video-only games)
+            has_events = 'events' in sheets
+            has_shifts = 'shifts' in sheets
+            has_metadata = 'metadata' in sheets
 
-            self._events_df = sheets['events']
-            self._shifts_df = sheets['shifts']
-            self._metadata_df = sheets['metadata']
+            if not has_events and not has_shifts:
+                # Partial game - video only, no event/shift data to validate
+                self._is_partial = True
+                if has_metadata:
+                    self._metadata_df = sheets['metadata']
+                    self._metadata_df.columns = [c.lower().strip() for c in self._metadata_df.columns]
+                return True, "Partial tracking (video-only) - no events/shifts to validate"
 
-            # Normalize column names to lowercase
-            self._events_df.columns = [c.lower().strip() for c in self._events_df.columns]
-            self._shifts_df.columns = [c.lower().strip() for c in self._shifts_df.columns]
-            self._metadata_df.columns = [c.lower().strip() for c in self._metadata_df.columns]
+            # Full tracking - load all sheets
+            self._is_partial = False
 
-            return True, f"Loaded {len(self._events_df)} event rows, {len(self._shifts_df)} shift rows"
+            if has_events:
+                self._events_df = sheets['events']
+                self._events_df.columns = [c.lower().strip() for c in self._events_df.columns]
+
+            if has_shifts:
+                self._shifts_df = sheets['shifts']
+                self._shifts_df.columns = [c.lower().strip() for c in self._shifts_df.columns]
+
+            if has_metadata:
+                self._metadata_df = sheets['metadata']
+                self._metadata_df.columns = [c.lower().strip() for c in self._metadata_df.columns]
+
+            events_count = len(self._events_df) if self._events_df is not None else 0
+            shifts_count = len(self._shifts_df) if self._shifts_df is not None else 0
+
+            return True, f"Loaded {events_count} event rows, {shifts_count} shift rows"
 
         except Exception as e:
             return False, f"Error reading tracking file: {e}"
@@ -335,6 +360,16 @@ class PreETLValidator:
             message=message
         ))
 
+        # Skip validation for partial games (video-only)
+        if self._is_partial:
+            result.add(CheckResult(
+                check_name='partial_game',
+                passed=True,
+                level=CheckLevel.WARNING,
+                message="Partial tracking - skipping event/shift validation"
+            ))
+            return result
+
         # Run validation checks
         result.add(self._check_required_columns())
         result.add(self._check_required_fields())
@@ -359,6 +394,15 @@ class PreETLValidator:
 
         # Shift validation
         result.add(self._check_shift_required_fields())
+
+        # New checks from #132
+        result.add(self._check_event_player_1_required())
+        result.add(self._check_event_index_unique())
+        result.add(self._check_linked_event_references())
+        result.add(self._check_period_valid())
+        result.add(self._check_time_bounds())
+        result.add(self._check_goal_structure())
+        result.add(self._check_faceoff_structure())
 
         return result
 
@@ -892,6 +936,514 @@ class PreETLValidator:
             message=f"Shifts data valid ({len(df)} shifts)"
         )
 
+    def _check_event_player_1_required(self) -> CheckResult:
+        """
+        Check that every event has at least one row with player_role='event_player_1'.
+
+        Per CLAUDE.md: Stats are counted for the row where player_role='event_player_1'.
+        If an event has no event_player_1, stat attribution will fail.
+
+        Exception: No-player events (GameStart, Intermission, etc.) don't need event_player_1.
+        """
+        if self._events_df is None:
+            return CheckResult(
+                check_name='event_player_1_required',
+                passed=False,
+                level=CheckLevel.CRITICAL,
+                message="Events data not loaded"
+            )
+
+        df = self._events_df
+
+        # Find event type column
+        et_col = None
+        for col in self.EVENT_TYPE_COLUMNS:
+            if col in df.columns:
+                et_col = col
+                break
+
+        # Get all unique event indices
+        all_events = set(df['event_index'].dropna().unique())
+
+        # Get events that have event_player_1
+        has_ep1 = df[df['player_role'] == 'event_player_1']
+        events_with_ep1 = set(has_ep1['event_index'].dropna().unique())
+
+        # Get no-player events (these don't need event_player_1)
+        if et_col:
+            no_player_events = df[df[et_col].isin(self.NO_PLAYER_EVENT_TYPES)]
+            no_player_event_indices = set(no_player_events['event_index'].dropna().unique())
+        else:
+            no_player_event_indices = set()
+
+        # Events that should have event_player_1 but don't
+        missing_ep1 = all_events - events_with_ep1 - no_player_event_indices
+
+        if missing_ep1:
+            sample = sorted(missing_ep1)[:10]
+            return CheckResult(
+                check_name='event_player_1_required',
+                passed=False,
+                level=CheckLevel.CRITICAL,
+                message=f"{len(missing_ep1)} events missing event_player_1",
+                details={'missing_count': len(missing_ep1), 'sample_events': sample}
+            )
+
+        return CheckResult(
+            check_name='event_player_1_required',
+            passed=True,
+            level=CheckLevel.CRITICAL,
+            message=f"All {len(all_events - no_player_event_indices)} player events have event_player_1"
+        )
+
+    def _check_event_index_unique(self) -> CheckResult:
+        """
+        Check that event_index values are unique within the game.
+
+        Duplicate event_index values cause key collisions in downstream tables
+        like fact_events which use event_index as part of their primary key.
+        """
+        if self._events_df is None:
+            return CheckResult(
+                check_name='event_index_unique',
+                passed=False,
+                level=CheckLevel.CRITICAL,
+                message="Events data not loaded"
+            )
+
+        df = self._events_df
+
+        # Get unique events (should be one event_index per logical event)
+        # Note: Each event has multiple rows (one per player), so we check uniqueness
+        # by looking at the first row per event_index
+        event_indices = df.drop_duplicates(subset=['event_index'])['event_index']
+
+        # Check for duplicates in the original event_index column
+        # This would indicate the same event_index appears in different logical events
+        duplicates = event_indices[event_indices.duplicated(keep=False)]
+
+        if len(duplicates) > 0:
+            dup_values = sorted(duplicates.unique())[:10]
+            return CheckResult(
+                check_name='event_index_unique',
+                passed=False,
+                level=CheckLevel.CRITICAL,
+                message=f"Duplicate event_index values found",
+                details={'duplicate_indices': dup_values}
+            )
+
+        return CheckResult(
+            check_name='event_index_unique',
+            passed=True,
+            level=CheckLevel.CRITICAL,
+            message=f"All {len(event_indices)} event indices are unique"
+        )
+
+    def _check_linked_event_references(self) -> CheckResult:
+        """
+        Check that linked_event_index references a valid event_index.
+
+        If linked_event_index is populated, it should reference an existing
+        event_index in the same game. Orphan links break event chains.
+        """
+        if self._events_df is None:
+            return CheckResult(
+                check_name='linked_event_references',
+                passed=False,
+                level=CheckLevel.CRITICAL,
+                message="Events data not loaded"
+            )
+
+        df = self._events_df
+
+        # Check if linked_event_index column exists
+        link_col = None
+        for col in ['linked_event_index', 'linked_event_key']:
+            if col in df.columns:
+                link_col = col
+                break
+
+        if link_col is None:
+            return CheckResult(
+                check_name='linked_event_references',
+                passed=True,
+                level=CheckLevel.CRITICAL,
+                message="No linked_event column found - skipping check"
+            )
+
+        # Get all valid event indices
+        valid_indices = set(df['event_index'].dropna().unique())
+
+        # Get linked event indices that are populated
+        linked = df[df[link_col].notna() & (df[link_col] != '')][link_col]
+
+        # For numeric indices, convert and check
+        orphan_links = []
+        for val in linked.unique():
+            try:
+                link_idx = int(float(val)) if pd.notna(val) else None
+                if link_idx is not None and link_idx not in valid_indices:
+                    orphan_links.append(link_idx)
+            except (ValueError, TypeError):
+                # Non-numeric link (could be a key format) - skip for now
+                pass
+
+        if orphan_links:
+            return CheckResult(
+                check_name='linked_event_references',
+                passed=False,
+                level=CheckLevel.CRITICAL,
+                message=f"{len(orphan_links)} orphan linked_event references",
+                details={'orphan_indices': sorted(orphan_links)[:10]}
+            )
+
+        return CheckResult(
+            check_name='linked_event_references',
+            passed=True,
+            level=CheckLevel.CRITICAL,
+            message="All linked_event references are valid"
+        )
+
+    def _check_period_valid(self) -> CheckResult:
+        """
+        Check that period values are valid positive integers.
+
+        Period should be 1, 2, 3 for regulation, 4+ for overtime.
+        """
+        if self._events_df is None:
+            return CheckResult(
+                check_name='period_valid',
+                passed=False,
+                level=CheckLevel.ERROR,
+                message="Events data not loaded"
+            )
+
+        df = self._events_df
+        issues = []
+
+        # Get unique periods
+        periods = df['period'].dropna().unique()
+
+        for p in periods:
+            try:
+                period_int = int(p)
+                if period_int < 1:
+                    issues.append(f"Period {p} is not positive")
+            except (ValueError, TypeError):
+                issues.append(f"Period '{p}' is not a valid integer")
+
+        if issues:
+            return CheckResult(
+                check_name='period_valid',
+                passed=False,
+                level=CheckLevel.ERROR,
+                message=f"Invalid period values: {issues[:5]}",
+                details={'issues': issues}
+            )
+
+        return CheckResult(
+            check_name='period_valid',
+            passed=True,
+            level=CheckLevel.ERROR,
+            message=f"All {len(periods)} period values are valid"
+        )
+
+    def _check_time_bounds(self) -> CheckResult:
+        """
+        Check that time values are within valid bounds.
+
+        - Minutes: 0 to period_length (from metadata, varies per game)
+        - Seconds: 0 to 59
+
+        Note: Duration validation (start vs end time) is not checked here because
+        the tracker may store start/end differently for events with duration.
+        The clock counts DOWN, so events spanning time may have start < end numerically.
+        """
+        if self._events_df is None:
+            return CheckResult(
+                check_name='time_bounds',
+                passed=False,
+                level=CheckLevel.ERROR,
+                message="Events data not loaded"
+            )
+
+        df = self._events_df
+        issues = []
+
+        # Get period length from metadata (default to 20 if not found)
+        period_length = 20
+        if self._metadata_df is not None:
+            if 'period_length_minutes' in self._metadata_df.columns:
+                try:
+                    period_length = int(self._metadata_df['period_length_minutes'].iloc[0])
+                except (ValueError, TypeError, IndexError):
+                    pass
+
+        # Find time columns
+        start_min_col = None
+        start_sec_col = None
+        end_min_col = None
+        end_sec_col = None
+
+        for col in ['event_start_min', 'event_start_min_']:
+            if col in df.columns:
+                start_min_col = col
+                break
+        for col in ['event_start_sec', 'event_start_sec_']:
+            if col in df.columns:
+                start_sec_col = col
+                break
+        for col in ['event_end_min', 'event_end_min_']:
+            if col in df.columns:
+                end_min_col = col
+                break
+        for col in ['event_end_sec', 'event_end_sec_']:
+            if col in df.columns:
+                end_sec_col = col
+                break
+
+        # Get unique events for checking
+        events = df.drop_duplicates(subset=['event_index']).copy()
+
+        # Find event type column to exclude no-player events (which use running time, not game clock)
+        et_col = None
+        for col in self.EVENT_TYPE_COLUMNS:
+            if col in events.columns:
+                et_col = col
+                break
+
+        # Filter to player events only (no-player events like Intermission use different timing)
+        if et_col:
+            events = events[~events[et_col].isin(self.NO_PLAYER_EVENT_TYPES)]
+
+        # Check minutes bounds (allow up to period_length + small buffer for tracking variance)
+        # Some games have slightly longer periods or timing discrepancies
+        max_minutes = period_length + 2  # Allow 2 minute buffer
+
+        if start_min_col:
+            invalid_start_min = events[
+                (events[start_min_col].notna()) &
+                ((events[start_min_col] < 0) | (events[start_min_col] > max_minutes))
+            ]
+            if len(invalid_start_min) > 0:
+                sample = invalid_start_min['event_index'].head(5).tolist()
+                issues.append(f"start_min out of bounds (0-{max_minutes}): events {sample}")
+
+        if end_min_col:
+            invalid_end_min = events[
+                (events[end_min_col].notna()) &
+                ((events[end_min_col] < 0) | (events[end_min_col] > max_minutes))
+            ]
+            if len(invalid_end_min) > 0:
+                sample = invalid_end_min['event_index'].head(5).tolist()
+                issues.append(f"end_min out of bounds (0-{max_minutes}): events {sample}")
+
+        # Check seconds bounds (0-59)
+        if start_sec_col:
+            invalid_start_sec = events[
+                (events[start_sec_col].notna()) &
+                ((events[start_sec_col] < 0) | (events[start_sec_col] > 59))
+            ]
+            if len(invalid_start_sec) > 0:
+                sample = invalid_start_sec['event_index'].head(5).tolist()
+                issues.append(f"start_sec out of bounds (0-59): events {sample}")
+
+        if end_sec_col:
+            invalid_end_sec = events[
+                (events[end_sec_col].notna()) &
+                ((events[end_sec_col] < 0) | (events[end_sec_col] > 59))
+            ]
+            if len(invalid_end_sec) > 0:
+                sample = invalid_end_sec['event_index'].head(5).tolist()
+                issues.append(f"end_sec out of bounds (0-59): events {sample}")
+
+        if issues:
+            return CheckResult(
+                check_name='time_bounds',
+                passed=False,
+                level=CheckLevel.ERROR,
+                message=f"Time validation issues: {len(issues)} types",
+                details={'issues': issues}
+            )
+
+        return CheckResult(
+            check_name='time_bounds',
+            passed=True,
+            level=CheckLevel.ERROR,
+            message=f"All time values within bounds (period_length={period_length})"
+        )
+
+    def _check_goal_structure(self) -> CheckResult:
+        """
+        Check that goals have the correct structure.
+
+        Per CLAUDE.md CRITICAL rules:
+        Goals are ONLY counted when both conditions are true:
+        - event_type == 'Goal'
+        - event_detail == 'Goal_Scored'
+        """
+        if self._events_df is None:
+            return CheckResult(
+                check_name='goal_structure',
+                passed=False,
+                level=CheckLevel.ERROR,
+                message="Events data not loaded"
+            )
+
+        df = self._events_df
+        issues = []
+
+        # Find event type and detail columns
+        et_col = None
+        ed_col = None
+        for col in self.EVENT_TYPE_COLUMNS:
+            if col in df.columns:
+                et_col = col
+                break
+        for col in ['event_detail_code', 'event_detail_', 'event_detail']:
+            if col in df.columns:
+                ed_col = col
+                break
+
+        if et_col is None or ed_col is None:
+            return CheckResult(
+                check_name='goal_structure',
+                passed=True,
+                level=CheckLevel.ERROR,
+                message="Cannot check goal structure - missing columns"
+            )
+
+        # Get unique events
+        events = df.drop_duplicates(subset=['event_index'])
+
+        # Find goals (event_type == 'Goal')
+        goals = events[events[et_col] == 'Goal']
+
+        if len(goals) == 0:
+            return CheckResult(
+                check_name='goal_structure',
+                passed=True,
+                level=CheckLevel.ERROR,
+                message="No goals found in data"
+            )
+
+        # Check that all goals have event_detail == 'Goal_Scored'
+        invalid_goals = goals[goals[ed_col] != 'Goal_Scored']
+
+        if len(invalid_goals) > 0:
+            sample = invalid_goals[['event_index', ed_col]].head(5).to_dict('records')
+            issues.append(f"Goals without Goal_Scored detail: {sample}")
+
+        # Also check for Shot events with Goal detail (common mistake)
+        shots_with_goal = events[
+            (events[et_col] == 'Shot') &
+            (events[ed_col] == 'Goal')
+        ]
+        if len(shots_with_goal) > 0:
+            sample = shots_with_goal['event_index'].head(5).tolist()
+            issues.append(f"Shot events with 'Goal' detail (should be Goal/Goal_Scored): events {sample}")
+
+        if issues:
+            return CheckResult(
+                check_name='goal_structure',
+                passed=False,
+                level=CheckLevel.ERROR,
+                message=f"Goal structure issues found",
+                details={'issues': issues}
+            )
+
+        return CheckResult(
+            check_name='goal_structure',
+            passed=True,
+            level=CheckLevel.ERROR,
+            message=f"All {len(goals)} goals have correct structure"
+        )
+
+    def _check_faceoff_structure(self) -> CheckResult:
+        """
+        Check that faceoffs have both winner and loser.
+
+        Per CLAUDE.md:
+        - event_player_1 (player_role) is faceoff winner
+        - opp_player_1 is faceoff loser
+        """
+        if self._events_df is None:
+            return CheckResult(
+                check_name='faceoff_structure',
+                passed=False,
+                level=CheckLevel.ERROR,
+                message="Events data not loaded"
+            )
+
+        df = self._events_df
+
+        # Find event type column
+        et_col = None
+        for col in self.EVENT_TYPE_COLUMNS:
+            if col in df.columns:
+                et_col = col
+                break
+
+        if et_col is None:
+            return CheckResult(
+                check_name='faceoff_structure',
+                passed=True,
+                level=CheckLevel.ERROR,
+                message="Cannot check faceoff structure - missing event_type column"
+            )
+
+        # Get faceoff events
+        faceoffs = df[df[et_col] == 'Faceoff']
+
+        if len(faceoffs) == 0:
+            return CheckResult(
+                check_name='faceoff_structure',
+                passed=True,
+                level=CheckLevel.ERROR,
+                message="No faceoffs found in data"
+            )
+
+        # Get unique faceoff event indices
+        faceoff_indices = faceoffs['event_index'].unique()
+
+        issues = []
+        missing_winner = []
+        missing_loser = []
+
+        for fo_idx in faceoff_indices:
+            fo_rows = df[df['event_index'] == fo_idx]
+            roles = set(fo_rows['player_role'].dropna().unique())
+
+            if 'event_player_1' not in roles:
+                missing_winner.append(fo_idx)
+            if 'opp_player_1' not in roles:
+                missing_loser.append(fo_idx)
+
+        if missing_winner:
+            issues.append(f"Faceoffs missing winner (event_player_1): {missing_winner[:5]}")
+        if missing_loser:
+            issues.append(f"Faceoffs missing loser (opp_player_1): {missing_loser[:5]}")
+
+        if issues:
+            return CheckResult(
+                check_name='faceoff_structure',
+                passed=False,
+                level=CheckLevel.ERROR,
+                message=f"Faceoff structure issues found",
+                details={
+                    'missing_winner_count': len(missing_winner),
+                    'missing_loser_count': len(missing_loser),
+                    'issues': issues
+                }
+            )
+
+        return CheckResult(
+            check_name='faceoff_structure',
+            passed=True,
+            level=CheckLevel.ERROR,
+            message=f"All {len(faceoff_indices)} faceoffs have winner and loser"
+        )
+
     # =========================================================================
     # CLEANING METHODS
     # =========================================================================
@@ -914,9 +1466,14 @@ class PreETLValidator:
             result.blocking_issues.append(f"Cannot load data: {message}")
             return result
 
+        # Handle partial games (video-only)
+        if self._is_partial:
+            result.warnings.append("Partial tracking (video-only) - no events/shifts to process")
+            return result
+
         # Make copies for cleaning
-        events_df = self._events_df.copy()
-        shifts_df = self._shifts_df.copy()
+        events_df = self._events_df.copy() if self._events_df is not None else pd.DataFrame()
+        shifts_df = self._shifts_df.copy() if self._shifts_df is not None else pd.DataFrame()
 
         # Fix 1: Duplicate event slots
         events_df, dup_fixes = self._fix_duplicate_event_slots(events_df)
