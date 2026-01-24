@@ -60,12 +60,16 @@ git fetch origin
 git checkout -b feature/{issue#}-description origin/develop
 ```
 
-### After PR is merged
+### Merge a PR (use --squash, NOT --delete-branch)
 ```bash
+gh pr merge {PR#} --squash
+# Then manually clean up:
 git fetch origin
 git checkout -b feature/{next-issue#}-description origin/develop
-git branch -D feature/old-branch  # delete old branch
+git branch -D feature/old-branch  # delete old branch locally
 ```
+
+**WARNING:** Do NOT use `--delete-branch` flag - it tries to checkout develop which breaks worktrees.
 
 ### Check current state
 ```bash
@@ -95,6 +99,7 @@ git checkout -f -b feature/branch-name origin/develop
 - ❌ `git checkout develop`
 - ❌ `git checkout main`
 - ❌ `git worktree remove`
+- ❌ `gh pr merge --delete-branch` (breaks worktrees)
 - ❌ Push directly to develop or main
 - ❌ Create branches not tied to issues
 - ❌ Use placeholder branch names like `feature/{issue#}-description`
