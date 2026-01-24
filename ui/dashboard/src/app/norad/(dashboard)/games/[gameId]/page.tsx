@@ -2,13 +2,45 @@
 // src/app/norad/(dashboard)/games/[gameId]/page.tsx
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getGameFromSchedule, getGameRoster, getGameGoals, getGameGoalieStats, getGameShots, getGameVideos, getGameHighlights } from '@/lib/supabase/queries/games'
+import {
+  getGameFromSchedule,
+  getGameRoster,
+  getGameGoals,
+  getGameGoalieStats,
+  getGameShots,
+  getGameVideos,
+  getGameHighlights,
+  getPriorGames,
+  getGamePlayerStats,
+  getTeamGameStats,
+  getGameAssistEvents,
+  getPlayerImages,
+  checkIsChampionshipGame,
+  getGameAllEvents,
+  getGameShifts,
+  getGameHighlightEvents,
+} from '@/lib/supabase/queries/games'
 import { getGameTrackingStatus } from '@/lib/supabase/queries/game-tracking'
 import { createClient } from '@/lib/supabase/server'
 import { getTeamById } from '@/lib/supabase/queries/teams'
 import { getPlayers } from '@/lib/supabase/queries/players'
 import { ArrowLeft, Target, User, TrendingUp, Activity, BarChart3, Shield, Zap, ExternalLink, Trophy } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import {
+  calculateTeamAggregates,
+  calculatePercentage,
+  buildPlayerMaps,
+  processRoster,
+  padArray,
+  filterStatsByTeam,
+  getTopPerformers,
+  calculateThreeStars,
+  createPlayerStatsMap,
+  processAssists,
+  enhanceHighlights,
+  type GameEvent,
+  type EnhancedHighlight,
+} from '@/lib/utils/game-data'
 import { TeamLogo } from '@/components/teams/team-logo'
 import { PlayerPhoto } from '@/components/players/player-photo'
 import { ShotHeatmap } from '@/components/charts/shot-heatmap'
@@ -26,84 +58,6 @@ import { CompactTeamStats } from '@/components/games/compact-team-stats'
 import type { FactPlayerGameStats, FactGoalieGameStats, DimTeam, DimPlayer } from '@/types/database'
 
 export const revalidate = 300
-
-// Type definitions for internal use
-interface TeamAggregates {
-  cf: number
-  ca: number
-  ff: number
-  fa: number
-  goals: number
-  assists: number
-  points: number
-  shots: number
-  hits: number
-  blocks: number
-  takeaways: number
-  badGiveaways: number
-  toi: number
-}
-
-interface GameEvent {
-  event_id?: string
-  period?: number
-  time_start_total_seconds?: number
-  time_seconds?: number
-  time_remaining?: string
-  period_time?: string
-  event_start_min?: number
-  event_start_sec?: number
-  is_goal?: boolean
-  is_highlight?: boolean
-  is_save?: boolean
-  event_type?: string
-  player_name?: string
-  event_player_ids?: string
-  event_player_1?: string
-  event_player_2?: string
-  sequence_key?: string
-  play_key?: string
-  linked_event_key?: string
-  play_detail1?: string
-  play_detail_2?: string
-  team_id?: string
-  event_time?: string
-  running_video_time?: number
-}
-
-interface EnhancedHighlight extends GameEvent {
-  period_time: string
-  event_time: string
-}
-
-// Helper function to calculate team aggregates from player stats
-function calculateTeamAggregates(playerStatsList: (FactPlayerGameStats | Record<string, any>)[]): TeamAggregates {
-  return playerStatsList.reduce<TeamAggregates>((acc, stat) => {
-    // Type assertion to access properties that may not be in FactPlayerGameStats
-    const statAny = stat as Record<string, any>
-    return {
-      cf: (acc.cf || 0) + (Number(stat.corsi_for ?? statAny.cf ?? 0) || 0),
-      ca: (acc.ca || 0) + (Number(stat.corsi_against ?? statAny.ca ?? 0) || 0),
-      ff: (acc.ff || 0) + (Number(stat.fenwick_for ?? statAny.ff ?? 0) || 0),
-      fa: (acc.fa || 0) + (Number(stat.fenwick_against ?? statAny.fa ?? 0) || 0),
-      goals: (acc.goals || 0) + (Number(stat.goals ?? 0) || 0),
-      assists: (acc.assists || 0) + (Number(stat.assists ?? 0) || 0),
-      points: (acc.points || 0) + (Number(stat.points ?? 0) || 0),
-      shots: (acc.shots || 0) + (Number(stat.shots ?? 0) || 0),
-      hits: (acc.hits || 0) + (Number(stat.hits ?? 0) || 0),
-      blocks: (acc.blocks || 0) + (Number(stat.blocks ?? 0) || 0),
-      takeaways: (acc.takeaways || 0) + (Number(stat.takeaways ?? 0) || 0),
-      badGiveaways: (acc.badGiveaways || 0) + (Number(stat.bad_giveaways ?? statAny.bad_give ?? 0) || 0),
-      toi: (acc.toi || 0) + (Number(stat.toi_seconds ?? 0) || 0),
-    };
-  }, { cf: 0, ca: 0, ff: 0, fa: 0, goals: 0, assists: 0, points: 0, shots: 0, hits: 0, blocks: 0, takeaways: 0, badGiveaways: 0, toi: 0 });
-}
-
-// Helper function to calculate percentage
-function calculatePercentage(forValue: number, againstValue: number): number {
-  const total = forValue + againstValue;
-  return total > 0 ? (forValue / total) * 100 : 0;
-}
 
 export async function generateMetadata({ params }: { params: Promise<{ gameId: string }> }) {
   const { gameId } = await params
@@ -153,215 +107,34 @@ export default async function GameDetailPage({
   if (isNaN(gameIdNum)) {
     notFound()
   }
-  
+
   const supabase = await createClient()
-  
+
   // Get game from dim_schedule
   const game = await getGameFromSchedule(gameIdNum)
   if (!game) {
     notFound()
   }
-  
+
   // Fetch all data in parallel with improved error handling
-  const [roster, goals, players, goalieStats, shots, gameEventsResult, allEventsResult, shiftsResult, priorGamesResult, gameVideosResult, gameHighlightsResult] = await Promise.allSettled([
+  const [
+    roster, goals, players, goalieStats, shots,
+    highlightEventsResult, allEventsResult, shiftsResult, priorGamesResult,
+    gameVideosResult, gameHighlightsResult
+  ] = await Promise.allSettled([
     getGameRoster(gameIdNum),
     getGameGoals(gameIdNum),
     getPlayers(),
     getGameGoalieStats(gameIdNum),
     getGameShots(gameIdNum),
-    supabase
-      .from('fact_events')
-      .select('*')
-      .eq('game_id', gameIdNum)
-      .or('is_goal.eq.true,is_highlight.eq.true,is_save.eq.true')
-      .order('time_start_total_seconds', { ascending: true })
-      .limit(50),
-    // Fetch all events for play-by-play timeline
-    // Order by event_id to ensure we get events in sequential order (EV1896901000, EV1896901001, etc.)
-    // Supabase default limit is 1000 - games can have 1500+ events
-    supabase
-      .from('fact_events')
-      .select('*')
-      .eq('game_id', gameIdNum)
-      .order('event_id', { ascending: true })
-      .limit(5000),
-    // Fetch shifts for shift chart
-    // Supabase default limit is 1000 - explicitly set higher for games with many shifts
-    supabase
-      .from('fact_shifts')
-      .select('*')
-      .eq('game_id', gameIdNum)
-      .order('shift_start_total_seconds', { ascending: true })
-      .limit(3000),
-    // Fetch prior games for both teams in the same season
-    (async () => {
-      if (!game.season_id) return { homeGames: [], awayGames: [], headToHeadGames: [] }
-      
-      // Get prior games for home team
-      const { data: homeTeamGames } = await supabase
-        .from('dim_schedule')
-        .select('game_id, date, home_team_name, away_team_name, home_total_goals, away_total_goals, official_home_goals, official_away_goals, home_team_id, away_team_id')
-        .eq('season_id', game.season_id)
-        .or(`home_team_id.eq.${game.home_team_id},away_team_id.eq.${game.home_team_id}`)
-        .neq('game_id', gameIdNum)
-        .not('home_total_goals', 'is', null)
-        .not('away_total_goals', 'is', null)
-        .order('date', { ascending: false })
-        .limit(10)
-      
-      // Get prior games for away team
-      const { data: awayTeamGames } = await supabase
-        .from('dim_schedule')
-        .select('game_id, date, home_team_name, away_team_name, home_total_goals, away_total_goals, official_home_goals, official_away_goals, home_team_id, away_team_id')
-        .eq('season_id', game.season_id)
-        .or(`home_team_id.eq.${game.away_team_id},away_team_id.eq.${game.away_team_id}`)
-        .neq('game_id', gameIdNum)
-        .not('home_total_goals', 'is', null)
-        .not('away_total_goals', 'is', null)
-        .order('date', { ascending: false })
-        .limit(10)
-      
-      // Get head-to-head games between these two teams in the same season
-      // Fetch all games in the season, then filter in JavaScript for better reliability
-      const { data: allSeasonGames } = await supabase
-        .from('dim_schedule')
-        .select('game_id, date, home_team_name, away_team_name, home_total_goals, away_total_goals, official_home_goals, official_away_goals, home_team_id, away_team_id, game_type')
-        .eq('season_id', game.season_id)
-        .order('date', { ascending: true })
-        .order('game_id', { ascending: true })
-      
-      // Normalize team identifiers for matching
-      const homeTeamIds = new Set<string>()
-      const awayTeamIds = new Set<string>()
-      const homeTeamNames = new Set<string>()
-      const awayTeamNames = new Set<string>()
-      
-      // Add all possible identifiers for home team (normalized)
-      if (game.home_team_id) {
-        homeTeamIds.add(String(game.home_team_id).trim())
-        homeTeamIds.add(String(game.home_team_id).trim().toLowerCase())
-      }
-      if (game.home_team_name) {
-        const normalized = String(game.home_team_name).trim()
-        homeTeamNames.add(normalized)
-        homeTeamNames.add(normalized.toLowerCase())
-      }
-      
-      // Add all possible identifiers for away team (normalized)
-      if (game.away_team_id) {
-        awayTeamIds.add(String(game.away_team_id).trim())
-        awayTeamIds.add(String(game.away_team_id).trim().toLowerCase())
-      }
-      if (game.away_team_name) {
-        const normalized = String(game.away_team_name).trim()
-        awayTeamNames.add(normalized)
-        awayTeamNames.add(normalized.toLowerCase())
-      }
-      
-      // Filter games to find head-to-head matchups
-      // A game is a head-to-head if:
-      // 1. Home team matches one of our teams AND away team matches the other, OR
-      // 2. Away team matches one of our teams AND home team matches the other
-      const headToHeadGames = (allSeasonGames || [])
-        .filter((g: any) => {
-          // Always include the current game
-          if (Number(g.game_id) === gameIdNum) return true
-          
-          const gHomeId = g.home_team_id ? String(g.home_team_id).trim() : null
-          const gAwayId = g.away_team_id ? String(g.away_team_id).trim() : null
-          const gHomeName = g.home_team_name ? String(g.home_team_name).trim() : null
-          const gAwayName = g.away_team_name ? String(g.away_team_name).trim() : null
-          
-          // Check if this game involves both teams
-          // Try matching by ID first (case-insensitive), then fallback to name (case-insensitive)
-          const homeMatchesHome = (gHomeId && (homeTeamIds.has(gHomeId) || homeTeamIds.has(gHomeId.toLowerCase()))) || 
-                                  (gHomeName && (homeTeamNames.has(gHomeName) || homeTeamNames.has(gHomeName.toLowerCase())))
-          const homeMatchesAway = (gHomeId && (awayTeamIds.has(gHomeId) || awayTeamIds.has(gHomeId.toLowerCase()))) || 
-                                  (gHomeName && (awayTeamNames.has(gHomeName) || awayTeamNames.has(gHomeName.toLowerCase())))
-          const awayMatchesHome = (gAwayId && (homeTeamIds.has(gAwayId) || homeTeamIds.has(gAwayId.toLowerCase()))) || 
-                                  (gAwayName && (homeTeamNames.has(gAwayName) || homeTeamNames.has(gAwayName.toLowerCase())))
-          const awayMatchesAway = (gAwayId && (awayTeamIds.has(gAwayId) || awayTeamIds.has(gAwayId.toLowerCase()))) || 
-                                  (gAwayName && (awayTeamNames.has(gAwayName) || awayTeamNames.has(gAwayName.toLowerCase())))
-          
-          // Match if: (home=our home AND away=our away) OR (home=our away AND away=our home)
-          return (homeMatchesHome && awayMatchesAway) || (homeMatchesAway && awayMatchesHome)
-        })
-        .map((g: any) => ({
-          game_id: Number(g.game_id),
-          date: g.date,
-          home_team_name: g.home_team_name,
-          away_team_name: g.away_team_name,
-          home_total_goals: g.home_total_goals,
-          away_total_goals: g.away_total_goals,
-          official_home_goals: g.official_home_goals,
-          official_away_goals: g.official_away_goals,
-          home_team_id: g.home_team_id,
-          away_team_id: g.away_team_id,
-          game_type: g.game_type || 'Regular',
-        }))
-        .sort((a, b) => {
-          const dateA = a.date ? new Date(a.date).getTime() : 0
-          const dateB = b.date ? new Date(b.date).getTime() : 0
-          if (dateA === dateB) {
-            return (a.game_id || 0) - (b.game_id || 0)
-          }
-          return dateA - dateB
-        })
-      
-      // Always include current game if it's not already in the list
-      const hasCurrentGame = headToHeadGames.some(g => g.game_id === gameIdNum)
-      if (!hasCurrentGame) {
-        headToHeadGames.push({
-          game_id: gameIdNum,
-          date: game.date,
-          home_team_name: game.home_team_name,
-          away_team_name: game.away_team_name,
-          home_total_goals: game.home_total_goals,
-          away_total_goals: game.away_total_goals,
-          official_home_goals: game.official_home_goals,
-          official_away_goals: game.official_away_goals,
-          home_team_id: game.home_team_id,
-          away_team_id: game.away_team_id,
-          game_type: game.game_type || 'Regular',
-        })
-        // Re-sort after adding current game
-        headToHeadGames.sort((a, b) => {
-          const dateA = a.date ? new Date(a.date).getTime() : 0
-          const dateB = b.date ? new Date(b.date).getTime() : 0
-          if (dateA === dateB) {
-            return (a.game_id || 0) - (b.game_id || 0)
-          }
-          return dateA - dateB
-        })
-      }
-      
-      // Ensure we always have at least the current game
-      const finalHeadToHeadGames = headToHeadGames.length > 0 
-        ? headToHeadGames 
-        : [{
-            game_id: gameIdNum,
-            date: game.date,
-            home_team_name: game.home_team_name,
-            away_team_name: game.away_team_name,
-            home_total_goals: game.home_total_goals,
-            away_total_goals: game.away_total_goals,
-            official_home_goals: game.official_home_goals,
-            official_away_goals: game.official_away_goals,
-            home_team_id: game.home_team_id,
-            away_team_id: game.away_team_id,
-            game_type: game.game_type || 'Regular',
-          }]
-      
-      return {
-        homeGames: homeTeamGames || [],
-        awayGames: awayTeamGames || [],
-        headToHeadGames: finalHeadToHeadGames
-      }
-    })(),
+    getGameHighlightEvents(gameIdNum),
+    getGameAllEvents(gameIdNum),
+    getGameShifts(gameIdNum),
+    getPriorGames(gameIdNum, game.season_id, game.home_team_id, game.away_team_id, game),
     getGameVideos(gameIdNum),
     getGameHighlights(gameIdNum)
   ])
-  
+
   // Extract results with error handling
   const rosterData = roster.status === 'fulfilled' ? roster.value : []
   const goalsData = goals.status === 'fulfilled' ? goals.value : []
@@ -369,124 +142,51 @@ export default async function GameDetailPage({
   const priorGamesData = priorGamesResult.status === 'fulfilled' ? priorGamesResult.value : { homeGames: [], awayGames: [], headToHeadGames: [] }
   const goalieStatsData = goalieStats.status === 'fulfilled' ? goalieStats.value : []
   const shotsData = shots.status === 'fulfilled' ? shots.value : []
-  
-  // Handle game events result (highlights only)
-  const gameEvents = gameEventsResult.status === 'fulfilled' && !gameEventsResult.value.error
-    ? gameEventsResult.value
-    : { data: [] }
-  
-  // Handle all events result (for play-by-play timeline)
-  const allEvents = allEventsResult.status === 'fulfilled' && !allEventsResult.value.error
-    ? allEventsResult.value.data || []
-    : []
-  
-  // Handle shifts result
-  const shiftsData = shiftsResult.status === 'fulfilled' && !shiftsResult.value.error
-    ? shiftsResult.value.data || []
-    : []
-
-  // Handle game videos result
+  const highlightEventsData = highlightEventsResult.status === 'fulfilled' ? highlightEventsResult.value : []
+  const allEvents = allEventsResult.status === 'fulfilled' ? allEventsResult.value : []
+  const shiftsData = shiftsResult.status === 'fulfilled' ? shiftsResult.value : []
   const gameVideos = gameVideosResult.status === 'fulfilled' ? gameVideosResult.value : []
-
-  // Handle game highlights result
   const gameHighlights = gameHighlightsResult.status === 'fulfilled' ? gameHighlightsResult.value : []
 
-  // Log any rejected promises for debugging
-  const rejected = [roster, goals, players, goalieStats, shots, gameEventsResult, allEventsResult, shiftsResult, priorGamesResult, gameVideosResult, gameHighlightsResult]
-    .filter((p) => p.status === 'rejected')
-  if (rejected.length > 0) {
-    const errorDetails = rejected.map((r) => {
-      if (r.status === 'rejected') {
-        return r.reason?.message || r.reason || 'Unknown error'
-      }
-      return null
-    }).filter(Boolean)
-    console.warn(`Some data failed to load for game ${gameIdNum}:`, errorDetails)
-  }
-  
-  // Debug: Log roster data (only in development)
+  // Log any rejected promises for debugging (development only)
   if (process.env.NODE_ENV === 'development') {
-    if (roster.status === 'fulfilled') {
-      if (rosterData.length === 0) {
-        console.warn(`No roster data found for game ${gameIdNum}`)
-      }
-    } else if (roster.status === 'rejected') {
-      console.error(`Game ${gameIdNum} roster fetch failed:`, roster.reason)
+    const results = [roster, goals, players, goalieStats, shots, highlightEventsResult, allEventsResult, shiftsResult, priorGamesResult, gameVideosResult, gameHighlightsResult]
+    const rejected = results.filter((p) => p.status === 'rejected')
+    if (rejected.length > 0) {
+      console.warn(`Some data failed to load for game ${gameIdNum}`)
+    }
+    if (rosterData.length === 0) {
+      console.warn(`No roster data found for game ${gameIdNum}`)
     }
   }
-  
-  // Get highlights (goals, saves, and other highlight events)
-  // Merge with schedule for date/time formatting
-  const highlightsRaw = (gameEvents?.data || []).filter((e: GameEvent) => 
+
+  // Enhance highlight events with period/time info
+  const highlightsRaw = highlightEventsData.filter((e: GameEvent) =>
     e.is_goal || e.is_highlight || e.is_save || e.event_type === 'Goal'
   )
-  
-  // Enhance highlights with period/time info
-  const highlights: EnhancedHighlight[] = highlightsRaw.map((event: GameEvent) => {
-    const period = event.period || 1
-    const timeSeconds = event.time_start_total_seconds || event.time_seconds || 0
-    const periodTime = event.time_remaining || event.period_time
-    const minutes = Math.floor(timeSeconds / 60) % 20 // Period minutes
-    const seconds = timeSeconds % 60
-    const timeStr = periodTime || `${minutes}:${seconds.toString().padStart(2, '0')}`
-    
-    return {
-      ...event,
-      period_time: timeStr,
-      event_time: `${periodTime || timeStr} (P${period})`,
-    }
-  })
-  
-  // Get tracking status using the new comprehensive function
+  const highlights = enhanceHighlights(highlightsRaw)
+
+  // Get tracking status
   const gameTrackingStatus = await getGameTrackingStatus(gameIdNum).catch(() => null)
   const hasVideo = gameTrackingStatus?.hasVideo || false
   const hasTracking = gameTrackingStatus?.status !== 'none' && gameTrackingStatus !== null
   const hasEvents = gameTrackingStatus?.hasEvents || false
   const hasShifts = gameTrackingStatus?.hasShifts || false
   const hasXY = gameTrackingStatus?.hasXY || false
-  
-  // For play-by-play: if we have events, we have tracked data (regardless of fact_game_status)
   const hasTrackedEvents = allEvents.length > 0
-  
-  // Get team info for logos with error handling
+
+  // Get team info for logos
   const homeTeamId = game.home_team_id
   const awayTeamId = game.away_team_id
   const [homeTeamResult, awayTeamResult] = await Promise.allSettled([
     homeTeamId ? getTeamById(String(homeTeamId)) : Promise.resolve(null),
     awayTeamId ? getTeamById(String(awayTeamId)) : Promise.resolve(null)
   ])
-  
   const homeTeam: DimTeam | null = homeTeamResult.status === 'fulfilled' ? homeTeamResult.value : null
   const awayTeam: DimTeam | null = awayTeamResult.status === 'fulfilled' ? awayTeamResult.value : null
-  
-  // Create players map for photos (optimized - single pass)
-  const playersMap = new Map<string, DimPlayer>(
-    playersData.map((p) => [String(p.player_id), p])
-  )
-  
-  // Create name-to-ID map for goal scorers (multiple name variations)
-  // Performance: Single pass through players array
-  const playerNameToIdMap = new Map<string, string>()
-  playersData.forEach((p: DimPlayer) => {
-    if (p.player_name) {
-      const nameLower = p.player_name.toLowerCase().trim()
-      playerNameToIdMap.set(nameLower, String(p.player_id))
-      // Also add "Last, First" format if it's "First Last"
-      const parts = p.player_name.trim().split(/\s+/)
-      if (parts.length === 2) {
-        playerNameToIdMap.set(`${parts[1]}, ${parts[0]}`.toLowerCase(), String(p.player_id))
-      }
-    }
-    if (p.player_full_name) {
-      const fullNameLower = p.player_full_name.toLowerCase().trim()
-      playerNameToIdMap.set(fullNameLower, String(p.player_id))
-      // Also add "Last, First" format if it's "First Last"
-      const parts = p.player_full_name.trim().split(/\s+/)
-      if (parts.length === 2) {
-        playerNameToIdMap.set(`${parts[1]}, ${parts[0]}`.toLowerCase(), String(p.player_id))
-      }
-    }
-  })
+
+  // Build player lookup maps
+  const { playersMap, playerNameToIdMap } = buildPlayerMaps(playersData)
   
   // Also create event_id -> player_id map from event_player_ids for goals
   const goalEventPlayerIdsMap = new Map<string, string>()
