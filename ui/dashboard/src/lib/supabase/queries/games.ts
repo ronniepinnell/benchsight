@@ -734,3 +734,347 @@ export async function getEventContext(
     running_video_time: e.running_video_time,
   }))
 }
+
+// ============================================================================
+// Game Detail Data Fetching (extracted from page component)
+// ============================================================================
+
+export interface PriorGamesResult {
+  homeGames: any[]
+  awayGames: any[]
+  headToHeadGames: any[]
+}
+
+/**
+ * Fetch prior games and head-to-head matchups for a game
+ */
+export async function getPriorGames(
+  gameId: number,
+  seasonId: string | number | null | undefined,
+  homeTeamId: string | number | null | undefined,
+  awayTeamId: string | number | null | undefined,
+  game: { date?: string; home_team_name?: string; away_team_name?: string; game_type?: string }
+): Promise<PriorGamesResult> {
+  if (!seasonId) {
+    return { homeGames: [], awayGames: [], headToHeadGames: [] }
+  }
+
+  const supabase = await createClient()
+
+  // Get prior games for home team
+  const { data: homeTeamGames } = await supabase
+    .from('dim_schedule')
+    .select('game_id, date, home_team_name, away_team_name, home_total_goals, away_total_goals, official_home_goals, official_away_goals, home_team_id, away_team_id')
+    .eq('season_id', seasonId)
+    .or(`home_team_id.eq.${homeTeamId},away_team_id.eq.${homeTeamId}`)
+    .neq('game_id', gameId)
+    .not('home_total_goals', 'is', null)
+    .not('away_total_goals', 'is', null)
+    .order('date', { ascending: false })
+    .limit(10)
+
+  // Get prior games for away team
+  const { data: awayTeamGames } = await supabase
+    .from('dim_schedule')
+    .select('game_id, date, home_team_name, away_team_name, home_total_goals, away_total_goals, official_home_goals, official_away_goals, home_team_id, away_team_id')
+    .eq('season_id', seasonId)
+    .or(`home_team_id.eq.${awayTeamId},away_team_id.eq.${awayTeamId}`)
+    .neq('game_id', gameId)
+    .not('home_total_goals', 'is', null)
+    .not('away_total_goals', 'is', null)
+    .order('date', { ascending: false })
+    .limit(10)
+
+  // Get head-to-head games between these two teams in the same season
+  const { data: allSeasonGames } = await supabase
+    .from('dim_schedule')
+    .select('game_id, date, home_team_name, away_team_name, home_total_goals, away_total_goals, official_home_goals, official_away_goals, home_team_id, away_team_id, game_type')
+    .eq('season_id', seasonId)
+    .order('date', { ascending: true })
+    .order('game_id', { ascending: true })
+
+  // Normalize team identifiers for matching
+  const homeTeamIds = new Set<string>()
+  const awayTeamIds = new Set<string>()
+  const homeTeamNames = new Set<string>()
+  const awayTeamNames = new Set<string>()
+
+  if (homeTeamId) {
+    homeTeamIds.add(String(homeTeamId).trim())
+    homeTeamIds.add(String(homeTeamId).trim().toLowerCase())
+  }
+  if (game.home_team_name) {
+    const normalized = String(game.home_team_name).trim()
+    homeTeamNames.add(normalized)
+    homeTeamNames.add(normalized.toLowerCase())
+  }
+  if (awayTeamId) {
+    awayTeamIds.add(String(awayTeamId).trim())
+    awayTeamIds.add(String(awayTeamId).trim().toLowerCase())
+  }
+  if (game.away_team_name) {
+    const normalized = String(game.away_team_name).trim()
+    awayTeamNames.add(normalized)
+    awayTeamNames.add(normalized.toLowerCase())
+  }
+
+  // Filter games to find head-to-head matchups
+  const headToHeadGames = (allSeasonGames || [])
+    .filter((g: any) => {
+      if (Number(g.game_id) === gameId) return true
+
+      const gHomeId = g.home_team_id ? String(g.home_team_id).trim() : null
+      const gAwayId = g.away_team_id ? String(g.away_team_id).trim() : null
+      const gHomeName = g.home_team_name ? String(g.home_team_name).trim() : null
+      const gAwayName = g.away_team_name ? String(g.away_team_name).trim() : null
+
+      const homeMatchesHome = (gHomeId && (homeTeamIds.has(gHomeId) || homeTeamIds.has(gHomeId.toLowerCase()))) ||
+        (gHomeName && (homeTeamNames.has(gHomeName) || homeTeamNames.has(gHomeName.toLowerCase())))
+      const homeMatchesAway = (gHomeId && (awayTeamIds.has(gHomeId) || awayTeamIds.has(gHomeId.toLowerCase()))) ||
+        (gHomeName && (awayTeamNames.has(gHomeName) || awayTeamNames.has(gHomeName.toLowerCase())))
+      const awayMatchesHome = (gAwayId && (homeTeamIds.has(gAwayId) || homeTeamIds.has(gAwayId.toLowerCase()))) ||
+        (gAwayName && (homeTeamNames.has(gAwayName) || homeTeamNames.has(gAwayName.toLowerCase())))
+      const awayMatchesAway = (gAwayId && (awayTeamIds.has(gAwayId) || awayTeamIds.has(gAwayId.toLowerCase()))) ||
+        (gAwayName && (awayTeamNames.has(gAwayName) || awayTeamNames.has(gAwayName.toLowerCase())))
+
+      return (homeMatchesHome && awayMatchesAway) || (homeMatchesAway && awayMatchesHome)
+    })
+    .map((g: any) => ({
+      game_id: Number(g.game_id),
+      date: g.date,
+      home_team_name: g.home_team_name,
+      away_team_name: g.away_team_name,
+      home_total_goals: g.home_total_goals,
+      away_total_goals: g.away_total_goals,
+      official_home_goals: g.official_home_goals,
+      official_away_goals: g.official_away_goals,
+      home_team_id: g.home_team_id,
+      away_team_id: g.away_team_id,
+      game_type: g.game_type || 'Regular',
+    }))
+    .sort((a: any, b: any) => {
+      const dateA = a.date ? new Date(a.date).getTime() : 0
+      const dateB = b.date ? new Date(b.date).getTime() : 0
+      if (dateA === dateB) {
+        return (a.game_id || 0) - (b.game_id || 0)
+      }
+      return dateA - dateB
+    })
+
+  // Always include current game if not already in the list
+  const hasCurrentGame = headToHeadGames.some((g: any) => g.game_id === gameId)
+  if (!hasCurrentGame) {
+    headToHeadGames.push({
+      game_id: gameId,
+      date: game.date,
+      home_team_name: game.home_team_name,
+      away_team_name: game.away_team_name,
+      home_total_goals: null,
+      away_total_goals: null,
+      official_home_goals: null,
+      official_away_goals: null,
+      home_team_id: homeTeamId,
+      away_team_id: awayTeamId,
+      game_type: game.game_type || 'Regular',
+    })
+    headToHeadGames.sort((a: any, b: any) => {
+      const dateA = a.date ? new Date(a.date).getTime() : 0
+      const dateB = b.date ? new Date(b.date).getTime() : 0
+      if (dateA === dateB) {
+        return (a.game_id || 0) - (b.game_id || 0)
+      }
+      return dateA - dateB
+    })
+  }
+
+  return {
+    homeGames: homeTeamGames || [],
+    awayGames: awayTeamGames || [],
+    headToHeadGames: headToHeadGames.length > 0 ? headToHeadGames : [{
+      game_id: gameId,
+      date: game.date,
+      home_team_name: game.home_team_name,
+      away_team_name: game.away_team_name,
+      home_total_goals: null,
+      away_total_goals: null,
+      official_home_goals: null,
+      official_away_goals: null,
+      home_team_id: homeTeamId,
+      away_team_id: awayTeamId,
+      game_type: game.game_type || 'Regular',
+    }]
+  }
+}
+
+/**
+ * Fetch all player game stats for a game
+ */
+export async function getGamePlayerStats(gameId: number): Promise<any[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('fact_player_game_stats')
+    .select('*')
+    .eq('game_id', gameId)
+
+  if (error) {
+    console.error('Error fetching player game stats:', error)
+    return []
+  }
+  return data || []
+}
+
+/**
+ * Fetch team game stats for a game
+ */
+export async function getTeamGameStats(gameId: number): Promise<any[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('fact_team_game_stats')
+    .select('*')
+    .eq('game_id', gameId)
+
+  if (error) {
+    console.error('Error fetching team game stats:', error)
+    return []
+  }
+  return data || []
+}
+
+/**
+ * Fetch assist events for goals in a game
+ */
+export async function getGameAssistEvents(gameId: number): Promise<any[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('fact_events')
+    .select('event_id, sequence_key, play_key, player_name, event_player_ids, play_detail1, play_detail_2, linked_event_key, time_start_total_seconds')
+    .eq('game_id', gameId)
+
+  if (error) {
+    console.error('Error fetching assist events:', error)
+    return []
+  }
+  return data || []
+}
+
+/**
+ * Fetch player images for a list of player IDs
+ */
+export async function getPlayerImages(playerIds: string[]): Promise<Map<string, string | null>> {
+  const playerImageMap = new Map<string, string | null>()
+
+  if (playerIds.length === 0) {
+    return playerImageMap
+  }
+
+  const supabase = await createClient()
+  const { data: playerImages } = await supabase
+    .from('dim_player')
+    .select('player_id, player_image')
+    .in('player_id', playerIds)
+
+  if (playerImages) {
+    playerImages.forEach((p: any) => {
+      playerImageMap.set(String(p.player_id), p.player_image || null)
+    })
+  }
+
+  return playerImageMap
+}
+
+/**
+ * Check if a game is a championship game (last game of a completed season)
+ */
+export async function checkIsChampionshipGame(
+  gameId: number,
+  seasonId: string | number | null | undefined
+): Promise<boolean> {
+  if (!seasonId) return false
+
+  const supabase = await createClient()
+
+  // Get current season to exclude it
+  const { data: currentSeasonData } = await supabase
+    .from('v_standings_current')
+    .select('season_id')
+    .limit(1)
+    .maybeSingle()
+
+  const currentSeason = currentSeasonData?.season_id || null
+
+  // Only check for championship if this is NOT the current season
+  if (currentSeason && String(seasonId) === String(currentSeason)) {
+    return false
+  }
+
+  const { data: lastGame } = await supabase
+    .from('dim_schedule')
+    .select('game_id')
+    .eq('season_id', seasonId)
+    .not('home_total_goals', 'is', null)
+    .not('away_total_goals', 'is', null)
+    .order('date', { ascending: false })
+    .order('game_id', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  return lastGame?.game_id === gameId
+}
+
+/**
+ * Fetch all events for play-by-play timeline
+ */
+export async function getGameAllEvents(gameId: number): Promise<any[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('fact_events')
+    .select('*')
+    .eq('game_id', gameId)
+    .order('event_id', { ascending: true })
+    .limit(5000)
+
+  if (error) {
+    console.error('Error fetching all events:', error)
+    return []
+  }
+  return data || []
+}
+
+/**
+ * Fetch shifts for shift chart
+ */
+export async function getGameShifts(gameId: number): Promise<any[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('fact_shifts')
+    .select('*')
+    .eq('game_id', gameId)
+    .order('shift_start_total_seconds', { ascending: true })
+    .limit(3000)
+
+  if (error) {
+    console.error('Error fetching shifts:', error)
+    return []
+  }
+  return data || []
+}
+
+/**
+ * Fetch highlight events (goals, saves, highlights)
+ */
+export async function getGameHighlightEvents(gameId: number): Promise<any[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('fact_events')
+    .select('*')
+    .eq('game_id', gameId)
+    .or('is_goal.eq.1,is_highlight.eq.1,is_save.eq.1')
+    .order('time_start_total_seconds', { ascending: true })
+    .limit(50)
+
+  if (error) {
+    console.error('Error fetching highlight events:', error)
+    return []
+  }
+  return data || []
+}
