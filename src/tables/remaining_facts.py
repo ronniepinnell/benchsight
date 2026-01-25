@@ -2508,6 +2508,211 @@ def create_lookup_player_game_rating() -> pd.DataFrame:
 
 
 # =============================================================================
+# GOAL ASSISTS (Denormalized Goal+Assist Table)
+# =============================================================================
+
+def create_fact_goal_assists() -> pd.DataFrame:
+    """
+    Create denormalized table with goal scorer + assists in one row per goal.
+
+    This table simplifies queries for goal scoring plays by combining:
+    - Goal scorer information
+    - Primary assist (if any)
+    - Secondary assist (if any)
+    - Goal context (strength, shot type, time, video)
+
+    Key Rules (from CLAUDE.md):
+    - Goals: event_type='Goal' AND event_detail='Goal_Scored'
+    - Assists: play_detail1 contains 'AssistPrimary' or 'AssistSecondary'
+    - Only primary and secondary assists count (ignore AssistTertiary)
+    """
+    event_players = load_table('fact_event_players', required=True)
+
+    if len(event_players) == 0:
+        print("  SKIP: fact_event_players is empty")
+        return pd.DataFrame()
+
+    # event_index is added in Phase 10, but we run in Phase 4C
+    # Derive it from event_id if not present (e.g., EV1896901001 -> 1001)
+    if 'event_index' not in event_players.columns:
+        event_players['event_index'] = event_players['event_id'].str.extract(r'EV\d{5}(\d+)')[0].astype(float)
+
+    # assist_primary_event_index and assist_secondary_event_index link goals to assists
+    # These may not exist yet - derive from assist_to_goal_index on assists
+    if 'assist_primary_event_index' not in event_players.columns:
+        # We'll derive this from the assists themselves
+        pass  # Will handle in the lookup logic below
+
+    # Check if required columns exist
+    required_cols = ['event_index', 'play_detail1', 'player_role', 'player_id', 'player_name', 'event_id']
+    missing_cols = [c for c in required_cols if c not in event_players.columns]
+    if missing_cols:
+        print(f"  SKIP: Missing required columns: {missing_cols}")
+        return pd.DataFrame()
+
+    # Get all goals (scorer is event_player_1)
+    goals = event_players[
+        (event_players['event_type'].astype(str).str.lower() == 'goal') &
+        (event_players['event_detail'].astype(str).str.lower().str.contains('goal_scored', na=False)) &
+        (event_players['player_role'].astype(str).str.lower() == 'event_player_1')
+    ].copy()
+
+    if len(goals) == 0:
+        print("  SKIP: No goals found")
+        return pd.DataFrame()
+
+    # Build assist lookups - index by the GOAL's event_index (via assist_to_goal_index)
+    # This is more reliable than using assist_*_event_index on goals which may not exist yet
+    primary_assist_filter = (
+        (event_players['play_detail1'].astype(str).str.lower() == 'assistprimary') &
+        (event_players['player_role'].astype(str).str.lower() == 'event_player_1')
+    )
+    primary_assist_rows = event_players[primary_assist_filter].copy()
+    if len(primary_assist_rows) > 0 and 'assist_to_goal_index' in primary_assist_rows.columns:
+        # Create goal_index column - derive from assist_to_goal_index or event_id pattern
+        if primary_assist_rows['assist_to_goal_index'].notna().any():
+            primary_assist_rows['goal_index'] = primary_assist_rows['assist_to_goal_index']
+        else:
+            # Fallback - shouldn't happen with proper data
+            primary_assist_rows['goal_index'] = None
+        valid_assists = primary_assist_rows[primary_assist_rows['goal_index'].notna()]
+        if len(valid_assists) > 0:
+            primary_assists = valid_assists.set_index('goal_index')[['player_id', 'player_name', 'event_id', 'event_index']].copy()
+            primary_assists.columns = ['primary_assist_player_id', 'primary_assist_player_name', 'primary_assist_event_id', 'primary_assist_event_index']
+        else:
+            primary_assists = pd.DataFrame()
+    else:
+        primary_assists = pd.DataFrame()
+
+    secondary_assist_filter = (
+        (event_players['play_detail1'].astype(str).str.lower() == 'assistsecondary') &
+        (event_players['player_role'].astype(str).str.lower() == 'event_player_1')
+    )
+    secondary_assist_rows = event_players[secondary_assist_filter].copy()
+    if len(secondary_assist_rows) > 0 and 'assist_to_goal_index' in secondary_assist_rows.columns:
+        if secondary_assist_rows['assist_to_goal_index'].notna().any():
+            secondary_assist_rows['goal_index'] = secondary_assist_rows['assist_to_goal_index']
+        else:
+            secondary_assist_rows['goal_index'] = None
+        valid_assists = secondary_assist_rows[secondary_assist_rows['goal_index'].notna()]
+        if len(valid_assists) > 0:
+            secondary_assists = valid_assists.set_index('goal_index')[['player_id', 'player_name', 'event_id', 'event_index']].copy()
+            secondary_assists.columns = ['secondary_assist_player_id', 'secondary_assist_player_name', 'secondary_assist_event_id', 'secondary_assist_event_index']
+        else:
+            secondary_assists = pd.DataFrame()
+    else:
+        secondary_assists = pd.DataFrame()
+
+    # Build result records
+    records = []
+    for _, goal in goals.iterrows():
+        game_id = goal['game_id']
+        event_index = goal['event_index']
+
+        # Generate key: GA{game_id}{event_index:05d}
+        goal_assist_key = f"GA{game_id}{int(event_index):05d}"
+
+        record = {
+            # Primary key and identifiers
+            'goal_assist_key': goal_assist_key,
+            'game_id': game_id,
+            'goal_event_id': goal['event_id'],
+            'goal_event_index': int(event_index),
+
+            # Time context
+            'period': int(goal['period']) if pd.notna(goal['period']) else None,
+            'time_minutes': int(goal['event_start_min']) if pd.notna(goal['event_start_min']) else None,
+            'time_seconds': int(goal['event_start_sec']) if pd.notna(goal['event_start_sec']) else None,
+            'time_total_seconds': int(goal['time_start_total_seconds']) if pd.notna(goal['time_start_total_seconds']) else None,
+
+            # Scorer info
+            'scorer_player_id': goal['player_id'],
+            'scorer_player_name': goal['player_name'],
+            'scorer_team_id': goal['player_team_id'],
+            'scorer_team_name': goal['player_team'],
+
+            # Goal context
+            'strength': goal['strength'],
+            'shot_type': goal.get('event_detail_2', '').replace('Goal_', '') if pd.notna(goal.get('event_detail_2')) else None,
+            'home_team_id': goal['home_team_id'],
+            'away_team_id': goal['away_team_id'],
+            'home_team_name': goal['home_team'],
+            'away_team_name': goal['away_team'],
+            'video_url': goal['video_url'],
+            'running_video_time': goal['running_video_time'],
+        }
+
+        # Add primary assist if exists (lookup by goal's event_index)
+        a1_player_id, a1_name, a1_event_id = None, None, None
+        if len(primary_assists) > 0 and event_index in primary_assists.index:
+            a1 = primary_assists.loc[event_index]
+            # Handle case where duplicate indices return a DataFrame
+            if isinstance(a1, pd.DataFrame):
+                a1 = a1.iloc[0]  # Take first match
+            a1_player_id = a1['primary_assist_player_id']
+            a1_name = a1['primary_assist_player_name']
+            a1_event_id = a1['primary_assist_event_id']
+        record['primary_assist_player_id'] = a1_player_id
+        record['primary_assist_player_name'] = a1_name
+        record['primary_assist_event_id'] = a1_event_id
+
+        # Add secondary assist if exists (lookup by goal's event_index)
+        a2_player_id, a2_name, a2_event_id = None, None, None
+        if len(secondary_assists) > 0 and event_index in secondary_assists.index:
+            a2 = secondary_assists.loc[event_index]
+            if isinstance(a2, pd.DataFrame):
+                a2 = a2.iloc[0]
+            a2_player_id = a2['secondary_assist_player_id']
+            a2_name = a2['secondary_assist_player_name']
+            a2_event_id = a2['secondary_assist_event_id']
+        record['secondary_assist_player_id'] = a2_player_id
+        record['secondary_assist_player_name'] = a2_name
+        record['secondary_assist_event_id'] = a2_event_id
+
+        # Goal type flags (based on strength)
+        strength_lower = str(goal['strength']).lower() if pd.notna(goal['strength']) else ''
+        record['is_powerplay_goal'] = 'pp' in strength_lower or '5v4' in strength_lower or '5v3' in strength_lower or '4v3' in strength_lower
+        record['is_shorthanded_goal'] = 'pk' in strength_lower or '4v5' in strength_lower or '3v5' in strength_lower or '3v4' in strength_lower
+        record['is_empty_net'] = 'en' in strength_lower or 'empty' in strength_lower
+        # Game winner would require knowing final score - set to False for now
+        record['is_game_winner'] = False
+
+        # Count assists
+        assist_count = 0
+        if a1_player_id is not None:
+            assist_count += 1
+        if a2_player_id is not None:
+            assist_count += 1
+        record['assist_count'] = assist_count
+
+        # Is unassisted?
+        record['is_unassisted'] = assist_count == 0
+
+        # Timestamp
+        record['_export_timestamp'] = datetime.now().isoformat()
+
+        records.append(record)
+
+    df = pd.DataFrame(records)
+
+    # Order columns logically
+    column_order = [
+        'goal_assist_key', 'game_id', 'goal_event_id', 'goal_event_index',
+        'period', 'time_minutes', 'time_seconds', 'time_total_seconds',
+        'scorer_player_id', 'scorer_player_name', 'scorer_team_id', 'scorer_team_name',
+        'primary_assist_player_id', 'primary_assist_player_name', 'primary_assist_event_id',
+        'secondary_assist_player_id', 'secondary_assist_player_name', 'secondary_assist_event_id',
+        'strength', 'shot_type', 'assist_count', 'is_unassisted',
+        'is_powerplay_goal', 'is_shorthanded_goal', 'is_empty_net', 'is_game_winner',
+        'home_team_id', 'away_team_id', 'home_team_name', 'away_team_name',
+        'video_url', 'running_video_time', '_export_timestamp'
+    ]
+    df = df[[c for c in column_order if c in df.columns]]
+
+    return df
+
+
+# =============================================================================
 # MAIN BUILDER
 # =============================================================================
 
@@ -2561,7 +2766,10 @@ def build_remaining_tables(verbose: bool = True) -> dict:
         # Event chains
         ('fact_event_chains', create_fact_event_chains),
         ('fact_player_event_chains', create_fact_player_event_chains),
-        
+
+        # Goal/Assist analysis (denormalized view of goals with assists)
+        ('fact_goal_assists', create_fact_goal_assists),
+
         # Zone analysis
         ('fact_zone_entry_summary', create_fact_zone_entry_summary),
         ('fact_zone_exit_summary', create_fact_zone_exit_summary),
