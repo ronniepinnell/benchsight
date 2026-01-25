@@ -66,8 +66,10 @@ export function formatYouTubeUrlWithTime(
  * - modestbranding=1: Reduce YouTube branding
  * - iv_load_policy=3: Disable video annotations
  * - fs=1: Allow fullscreen
- * - vq=hd1080: Request 1080p quality (YouTube may override based on connection)
+ * - vq=hd1080: Request 1080p quality
  * - hd=1: Prefer HD playback
+ * - quality=hd1080: Alternative quality parameter
+ * - suggestedQuality=hd1080: Suggested quality for the player
  */
 const YOUTUBE_EMBED_PARAMS = {
   rel: '0',
@@ -76,6 +78,8 @@ const YOUTUBE_EMBED_PARAMS = {
   fs: '1',
   vq: 'hd1080',
   hd: '1',
+  quality: 'hd1080',
+  suggestedQuality: 'hd1080',
 }
 
 /**
@@ -123,9 +127,8 @@ export function formatYouTubeHighlightUrl(
 
   const params = new URLSearchParams(YOUTUBE_EMBED_PARAMS)
 
-  if (startTimeSeconds > 0) {
-    params.set('start', String(Math.floor(startTimeSeconds)))
-  }
+  // Always set start time (even 0) for consistent behavior
+  params.set('start', String(Math.floor(Math.max(0, startTimeSeconds))))
 
   if (endTimeSeconds > startTimeSeconds) {
     params.set('end', String(Math.floor(endTimeSeconds)))

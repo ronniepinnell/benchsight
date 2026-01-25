@@ -341,6 +341,7 @@ export async function getGameGoalieStats(gameId: number): Promise<FactGoalieGame
 }
 
 // Get game events (play-by-play)
+// Note: Supabase default limit is 1000, so we need explicit higher limit for full game events
 export async function getGameEvents(gameId: number): Promise<FactEvents[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
@@ -348,7 +349,8 @@ export async function getGameEvents(gameId: number): Promise<FactEvents[]> {
     .select('*')
     .eq('game_id', gameId)
     .order('time_start_total_seconds', { ascending: true })
-  
+    .limit(10000) // Explicit limit to override Supabase default of 1000
+
   if (error) throw error
   return data ?? []
 }
@@ -363,7 +365,8 @@ export async function getGameGoals(gameId: number): Promise<FactEvents[]> {
     .eq('event_type', 'Goal')
     .eq('event_detail', 'Goal_Scored')
     .order('time_start_total_seconds', { ascending: true })
-  
+    .limit(100) // Goals in a game shouldn't exceed this
+
   if (error) throw error
   return data ?? []
 }
@@ -761,105 +764,105 @@ export async function getPriorGames(
 
   const supabase = await createClient()
 
-  // Get prior games for home team
-  const { data: homeTeamGames } = await supabase
+  // Filter to games BEFORE the current game's date
+  const gameDate = game.date
+
+  // Get prior games for home team (games before this game's date)
+  let homeTeamQuery = supabase
     .from('dim_schedule')
-    .select('game_id, date, home_team_name, away_team_name, home_total_goals, away_total_goals, official_home_goals, official_away_goals, home_team_id, away_team_id')
+    .select('game_id, date, home_team_name, away_team_name, home_total_goals, away_total_goals, home_team_id, away_team_id')
     .eq('season_id', seasonId)
     .or(`home_team_id.eq.${homeTeamId},away_team_id.eq.${homeTeamId}`)
     .neq('game_id', gameId)
     .not('home_total_goals', 'is', null)
     .not('away_total_goals', 'is', null)
+
+  // Only include games before this game's date
+  if (gameDate) {
+    homeTeamQuery = homeTeamQuery.lt('date', gameDate)
+  }
+
+  const { data: homeTeamGames } = await homeTeamQuery
     .order('date', { ascending: false })
     .limit(10)
 
-  // Get prior games for away team
-  const { data: awayTeamGames } = await supabase
+  // Get prior games for away team (games before this game's date)
+  let awayTeamQuery = supabase
     .from('dim_schedule')
-    .select('game_id, date, home_team_name, away_team_name, home_total_goals, away_total_goals, official_home_goals, official_away_goals, home_team_id, away_team_id')
+    .select('game_id, date, home_team_name, away_team_name, home_total_goals, away_total_goals, home_team_id, away_team_id')
     .eq('season_id', seasonId)
     .or(`home_team_id.eq.${awayTeamId},away_team_id.eq.${awayTeamId}`)
     .neq('game_id', gameId)
     .not('home_total_goals', 'is', null)
     .not('away_total_goals', 'is', null)
+
+  // Only include games before this game's date
+  if (gameDate) {
+    awayTeamQuery = awayTeamQuery.lt('date', gameDate)
+  }
+
+  const { data: awayTeamGames } = await awayTeamQuery
     .order('date', { ascending: false })
     .limit(10)
 
   // Get head-to-head games between these two teams in the same season
-  const { data: allSeasonGames } = await supabase
-    .from('dim_schedule')
-    .select('game_id, date, home_team_name, away_team_name, home_total_goals, away_total_goals, official_home_goals, official_away_goals, home_team_id, away_team_id, game_type')
-    .eq('season_id', seasonId)
-    .order('date', { ascending: true })
-    .order('game_id', { ascending: true })
+  // Use two queries: one for each home/away configuration, then merge
+  let headToHeadGames: any[] = []
 
-  // Normalize team identifiers for matching
-  const homeTeamIds = new Set<string>()
-  const awayTeamIds = new Set<string>()
-  const homeTeamNames = new Set<string>()
-  const awayTeamNames = new Set<string>()
+  console.log('[H2H DEBUG] Input:', { homeTeamId, awayTeamId, seasonId, gameId })
 
-  if (homeTeamId) {
-    homeTeamIds.add(String(homeTeamId).trim())
-    homeTeamIds.add(String(homeTeamId).trim().toLowerCase())
+  if (homeTeamId && awayTeamId) {
+    // Ensure team IDs are strings for comparison
+    const homeId = String(homeTeamId)
+    const awayId = String(awayTeamId)
+    const seasonIdStr = String(seasonId)
+
+    console.log('[H2H DEBUG] Querying with:', { homeId, awayId, seasonIdStr })
+
+    // Run both queries in parallel
+    const [h2hResult1, h2hResult2] = await Promise.all([
+      // Query 1: Team A at home vs Team B away
+      supabase
+        .from('dim_schedule')
+        .select('game_id, date, home_team_name, away_team_name, home_total_goals, away_total_goals, home_team_id, away_team_id, game_type')
+        .eq('season_id', seasonIdStr)
+        .eq('home_team_id', homeId)
+        .eq('away_team_id', awayId),
+      // Query 2: Team B at home vs Team A away (reversed)
+      supabase
+        .from('dim_schedule')
+        .select('game_id, date, home_team_name, away_team_name, home_total_goals, away_total_goals, home_team_id, away_team_id, game_type')
+        .eq('season_id', seasonIdStr)
+        .eq('home_team_id', awayId)
+        .eq('away_team_id', homeId)
+    ])
+
+    console.log('[H2H DEBUG] Query1 result:', { data: h2hResult1.data?.length, error: h2hResult1.error })
+    console.log('[H2H DEBUG] Query2 result:', { data: h2hResult2.data?.length, error: h2hResult2.error })
+    if (h2hResult1.data?.length) console.log('[H2H DEBUG] Query1 sample:', h2hResult1.data[0])
+    if (h2hResult2.data?.length) console.log('[H2H DEBUG] Query2 sample:', h2hResult2.data[0])
+
+    // Combine both query results
+    const allH2hGames = [...(h2hResult1.data || []), ...(h2hResult2.data || [])]
+
+    headToHeadGames = allH2hGames
+      .map((g: any) => ({
+        game_id: Number(g.game_id),
+        date: g.date,
+        home_team_name: g.home_team_name,
+        away_team_name: g.away_team_name,
+        home_total_goals: g.home_total_goals,
+        away_total_goals: g.away_total_goals,
+        home_team_id: g.home_team_id,
+        away_team_id: g.away_team_id,
+        game_type: g.game_type || 'Regular',
+      }))
+      .sort((a, b) => {
+        const dateA = a.date ? new Date(a.date).getTime() : 0
+        const dateB = b.date ? new Date(b.date).getTime() : 0
+        return dateA - dateB || a.game_id - b.game_id
+      })
   }
-  if (game.home_team_name) {
-    const normalized = String(game.home_team_name).trim()
-    homeTeamNames.add(normalized)
-    homeTeamNames.add(normalized.toLowerCase())
-  }
-  if (awayTeamId) {
-    awayTeamIds.add(String(awayTeamId).trim())
-    awayTeamIds.add(String(awayTeamId).trim().toLowerCase())
-  }
-  if (game.away_team_name) {
-    const normalized = String(game.away_team_name).trim()
-    awayTeamNames.add(normalized)
-    awayTeamNames.add(normalized.toLowerCase())
-  }
-
-  // Filter games to find head-to-head matchups
-  const headToHeadGames = (allSeasonGames || [])
-    .filter((g: any) => {
-      if (Number(g.game_id) === gameId) return true
-
-      const gHomeId = g.home_team_id ? String(g.home_team_id).trim() : null
-      const gAwayId = g.away_team_id ? String(g.away_team_id).trim() : null
-      const gHomeName = g.home_team_name ? String(g.home_team_name).trim() : null
-      const gAwayName = g.away_team_name ? String(g.away_team_name).trim() : null
-
-      const homeMatchesHome = (gHomeId && (homeTeamIds.has(gHomeId) || homeTeamIds.has(gHomeId.toLowerCase()))) ||
-        (gHomeName && (homeTeamNames.has(gHomeName) || homeTeamNames.has(gHomeName.toLowerCase())))
-      const homeMatchesAway = (gHomeId && (awayTeamIds.has(gHomeId) || awayTeamIds.has(gHomeId.toLowerCase()))) ||
-        (gHomeName && (awayTeamNames.has(gHomeName) || awayTeamNames.has(gHomeName.toLowerCase())))
-      const awayMatchesHome = (gAwayId && (homeTeamIds.has(gAwayId) || homeTeamIds.has(gAwayId.toLowerCase()))) ||
-        (gAwayName && (homeTeamNames.has(gAwayName) || homeTeamNames.has(gAwayName.toLowerCase())))
-      const awayMatchesAway = (gAwayId && (awayTeamIds.has(gAwayId) || awayTeamIds.has(gAwayId.toLowerCase()))) ||
-        (gAwayName && (awayTeamNames.has(gAwayName) || awayTeamNames.has(gAwayName.toLowerCase())))
-
-      return (homeMatchesHome && awayMatchesAway) || (homeMatchesAway && awayMatchesHome)
-    })
-    .map((g: any) => ({
-      game_id: Number(g.game_id),
-      date: g.date,
-      home_team_name: g.home_team_name,
-      away_team_name: g.away_team_name,
-      home_total_goals: g.home_total_goals,
-      away_total_goals: g.away_total_goals,
-      official_home_goals: g.official_home_goals,
-      official_away_goals: g.official_away_goals,
-      home_team_id: g.home_team_id,
-      away_team_id: g.away_team_id,
-      game_type: g.game_type || 'Regular',
-    }))
-    .sort((a: any, b: any) => {
-      const dateA = a.date ? new Date(a.date).getTime() : 0
-      const dateB = b.date ? new Date(b.date).getTime() : 0
-      if (dateA === dateB) {
-        return (a.game_id || 0) - (b.game_id || 0)
-      }
-      return dateA - dateB
-    })
 
   // Always include current game if not already in the list
   const hasCurrentGame = headToHeadGames.some((g: any) => g.game_id === gameId)
@@ -871,8 +874,6 @@ export async function getPriorGames(
       away_team_name: game.away_team_name,
       home_total_goals: null,
       away_total_goals: null,
-      official_home_goals: null,
-      official_away_goals: null,
       home_team_id: homeTeamId,
       away_team_id: awayTeamId,
       game_type: game.game_type || 'Regular',
@@ -897,8 +898,6 @@ export async function getPriorGames(
       away_team_name: game.away_team_name,
       home_total_goals: null,
       away_total_goals: null,
-      official_home_goals: null,
-      official_away_goals: null,
       home_team_id: homeTeamId,
       away_team_id: awayTeamId,
       game_type: game.game_type || 'Regular',
@@ -942,19 +941,39 @@ export async function getTeamGameStats(gameId: number): Promise<any[]> {
 
 /**
  * Fetch assist events for goals in a game
+ * Uses pagination to overcome Supabase row limits
  */
 export async function getGameAssistEvents(gameId: number): Promise<any[]> {
   const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('fact_events')
-    .select('event_id, sequence_key, play_key, player_name, event_player_ids, play_detail1, play_detail_2, linked_event_key, time_start_total_seconds')
-    .eq('game_id', gameId)
+  const allEvents: any[] = []
+  const pageSize = 1000
+  let offset = 0
+  let hasMore = true
 
-  if (error) {
-    console.error('Error fetching assist events:', error)
-    return []
+  while (hasMore) {
+    const { data, error } = await supabase
+      .from('fact_events')
+      .select('event_id, sequence_key, play_key, player_name, event_player_ids, play_detail1, play_detail_2, linked_event_key, time_start_total_seconds')
+      .eq('game_id', gameId)
+      .range(offset, offset + pageSize - 1)
+
+    if (error) {
+      console.error('Error fetching assist events:', error)
+      break
+    }
+
+    if (data && data.length > 0) {
+      allEvents.push(...data)
+      offset += pageSize
+      hasMore = data.length === pageSize
+    } else {
+      hasMore = false
+    }
+
+    if (offset > 20000) break
   }
-  return data || []
+
+  return allEvents
 }
 
 /**
@@ -1023,40 +1042,154 @@ export async function checkIsChampionshipGame(
 
 /**
  * Fetch all events for play-by-play timeline
+ * Uses pagination to overcome Supabase row limits
  */
 export async function getGameAllEvents(gameId: number): Promise<any[]> {
   const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('fact_events')
-    .select('*')
-    .eq('game_id', gameId)
-    .order('event_id', { ascending: true })
-    .limit(5000)
+  const allEvents: any[] = []
+  const pageSize = 1000
+  let offset = 0
+  let hasMore = true
 
-  if (error) {
-    console.error('Error fetching all events:', error)
-    return []
+  while (hasMore) {
+    const { data, error } = await supabase
+      .from('fact_events')
+      .select('*')
+      .eq('game_id', gameId)
+      .order('event_id', { ascending: true })
+      .range(offset, offset + pageSize - 1)
+
+    if (error) {
+      console.error('Error fetching events:', error)
+      break
+    }
+
+    if (data && data.length > 0) {
+      allEvents.push(...data)
+      offset += pageSize
+      hasMore = data.length === pageSize // Continue if we got a full page
+    } else {
+      hasMore = false
+    }
+
+    // Safety limit to prevent infinite loops
+    if (offset > 20000) {
+      console.warn('Hit safety limit fetching events')
+      break
+    }
   }
-  return data || []
+
+  console.log(`[getGameAllEvents] Fetched ${allEvents.length} events for game ${gameId}`)
+  return allEvents
 }
 
 /**
- * Fetch shifts for shift chart
+ * Fetch shifts for shift chart with player names
  */
 export async function getGameShifts(gameId: number): Promise<any[]> {
   const supabase = await createClient()
-  const { data, error } = await supabase
+
+  // First try simple query and then enrich with player/team names
+  const { data: shiftsData, error: shiftsError } = await supabase
     .from('fact_shifts')
     .select('*')
     .eq('game_id', gameId)
     .order('shift_start_total_seconds', { ascending: true })
     .limit(3000)
 
-  if (error) {
-    console.error('Error fetching shifts:', error)
+  if (shiftsError) {
+    console.error('Error fetching shifts:', shiftsError)
     return []
   }
-  return data || []
+
+  if (!shiftsData || shiftsData.length === 0) {
+    return []
+  }
+
+  // Get unique player IDs and team IDs
+  const playerIds = [...new Set(shiftsData.map(s => s.player_id).filter(Boolean))]
+  const teamIds = [...new Set(shiftsData.map(s => s.team_id).filter(Boolean))]
+
+  // Fetch player names
+  let playerMap = new Map<string, { player_name: string; player_full_name: string }>()
+  if (playerIds.length > 0) {
+    const { data: players } = await supabase
+      .from('dim_player')
+      .select('player_id, player_name, player_full_name')
+      .in('player_id', playerIds)
+
+    if (players) {
+      players.forEach(p => {
+        playerMap.set(String(p.player_id), {
+          player_name: p.player_name || '',
+          player_full_name: p.player_full_name || ''
+        })
+      })
+    }
+  }
+
+  // Fetch team names
+  let teamMap = new Map<string, { team_name: string; team_cd: string }>()
+  if (teamIds.length > 0) {
+    const { data: teams } = await supabase
+      .from('dim_team')
+      .select('team_id, team_name, team_cd')
+      .in('team_id', teamIds)
+
+    if (teams) {
+      teams.forEach(t => {
+        teamMap.set(String(t.team_id), {
+          team_name: t.team_name || '',
+          team_cd: t.team_cd || ''
+        })
+      })
+    }
+  }
+
+  // Enrich shifts with player and team names
+  return shiftsData.map(shift => {
+    const player = playerMap.get(String(shift.player_id))
+    const team = teamMap.get(String(shift.team_id))
+
+    return {
+      ...shift,
+      player_name: player?.player_full_name || player?.player_name || shift.player_name || '',
+      team_name: team?.team_name || shift.team_name || '',
+      team_cd: team?.team_cd || shift.team_cd || '',
+    }
+  })
+}
+
+/**
+ * Fetch player shift counts from fact_shift_players
+ * Returns a map of player_id -> shift count (using logical_shift_number for distinct shifts)
+ */
+export async function getGamePlayerShiftCounts(gameId: number): Promise<Map<string, number>> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('fact_shift_players')
+    .select('player_id, logical_shift_number')
+    .eq('game_id', gameId)
+    .eq('is_first_segment', true) // Only count first segment of each logical shift
+
+  if (error) {
+    console.error('Error fetching player shift counts:', error)
+    return new Map()
+  }
+
+  // Count shifts per player
+  const shiftCounts = new Map<string, number>()
+  if (data) {
+    data.forEach((row: any) => {
+      const playerId = String(row.player_id || '')
+      if (playerId) {
+        shiftCounts.set(playerId, (shiftCounts.get(playerId) || 0) + 1)
+      }
+    })
+  }
+
+  console.log('[SHIFT COUNTS DEBUG] Found shifts for', shiftCounts.size, 'players')
+  return shiftCounts
 }
 
 /**

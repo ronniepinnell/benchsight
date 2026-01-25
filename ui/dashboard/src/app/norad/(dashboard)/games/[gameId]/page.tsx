@@ -19,12 +19,13 @@ import {
   getGameAllEvents,
   getGameShifts,
   getGameHighlightEvents,
+  getGamePlayerShiftCounts,
 } from '@/lib/supabase/queries/games'
 import { getGameTrackingStatus } from '@/lib/supabase/queries/game-tracking'
 import { createClient } from '@/lib/supabase/server'
 import { getTeamById } from '@/lib/supabase/queries/teams'
 import { getPlayers } from '@/lib/supabase/queries/players'
-import { ArrowLeft, Target, User, TrendingUp, Activity, BarChart3, Shield, Zap, ExternalLink, Trophy } from 'lucide-react'
+import { ArrowLeft, Target, User, TrendingUp, Activity, BarChart3, Shield, Zap, ExternalLink, Trophy, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   calculateTeamAggregates,
@@ -50,11 +51,14 @@ import { GameHighlights } from '@/components/games/game-highlights'
 import { GameSummary } from '@/components/games/game-summary'
 import { PlayByPlayTimeline } from '@/components/games/PlayByPlayTimeline'
 import { ShiftChart } from '@/components/games/shift-chart'
+import { ShiftsTimeline } from '@/components/games/shifts-timeline'
+import { GameAnalyticsPanel } from '@/components/games/game-analytics-panel'
 import { SortableGoaliesTable } from '@/components/games/sortable-goalies-table'
 import { ThreeStars } from '@/components/games/three-stars'
 import { GameDetailTabs } from '@/components/games/game-detail-tabs'
 import { GameMediaSection } from '@/components/games/game-media-section'
 import { CompactTeamStats } from '@/components/games/compact-team-stats'
+import { MiniShotRink } from '@/components/games/mini-shot-rink'
 import type { FactPlayerGameStats, FactGoalieGameStats, DimTeam, DimPlayer } from '@/types/database'
 
 export const revalidate = 300
@@ -120,7 +124,7 @@ export default async function GameDetailPage({
   const [
     roster, goals, players, goalieStats, shots,
     highlightEventsResult, allEventsResult, shiftsResult, priorGamesResult,
-    gameVideosResult, gameHighlightsResult
+    gameVideosResult, gameHighlightsResult, playerShiftCountsResult
   ] = await Promise.allSettled([
     getGameRoster(gameIdNum),
     getGameGoals(gameIdNum),
@@ -132,7 +136,8 @@ export default async function GameDetailPage({
     getGameShifts(gameIdNum),
     getPriorGames(gameIdNum, game.season_id, game.home_team_id, game.away_team_id, game),
     getGameVideos(gameIdNum),
-    getGameHighlights(gameIdNum)
+    getGameHighlights(gameIdNum),
+    getGamePlayerShiftCounts(gameIdNum)
   ])
 
   // Extract results with error handling
@@ -147,6 +152,7 @@ export default async function GameDetailPage({
   const shiftsData = shiftsResult.status === 'fulfilled' ? shiftsResult.value : []
   const gameVideos = gameVideosResult.status === 'fulfilled' ? gameVideosResult.value : []
   const gameHighlights = gameHighlightsResult.status === 'fulfilled' ? gameHighlightsResult.value : []
+  const playerShiftCounts = playerShiftCountsResult.status === 'fulfilled' ? playerShiftCountsResult.value : new Map<string, number>()
 
   // Log any rejected promises for debugging (development only)
   if (process.env.NODE_ENV === 'development') {
@@ -187,7 +193,19 @@ export default async function GameDetailPage({
 
   // Build player lookup maps
   const { playersMap, playerNameToIdMap } = buildPlayerMaps(playersData)
-  
+
+  // Create jersey number to player name map from roster (for shifts)
+  const jerseyToPlayerMap = new Map<string, { player_name: string; team_id: string }>()
+  rosterData.forEach((r: any) => {
+    const jerseyNum = r.player_game_number
+    if (jerseyNum !== null && jerseyNum !== undefined) {
+      jerseyToPlayerMap.set(String(Math.floor(Number(jerseyNum))), {
+        player_name: r.player_full_name || r.player_name || `#${jerseyNum}`,
+        team_id: String(r.team_id || '')
+      })
+    }
+  })
+
   // Also create event_id -> player_id map from event_player_ids for goals
   const goalEventPlayerIdsMap = new Map<string, string>()
   goalsData.forEach((goal) => {
@@ -558,12 +576,19 @@ export default async function GameDetailPage({
   const homeGoals = game.home_total_goals ?? 0;
   const awayGoals = game.away_total_goals ?? 0;
   
-  // Create maps of player_id to advanced stats
-  const createPlayerStatsMap = (statsList: (FactPlayerGameStats | Record<string, any>)[]) => 
+  // Shift counts per player are fetched from fact_shift_players via getGamePlayerShiftCounts
+  // The playerShiftCounts Map is already extracted from the Promise.allSettled results
+
+  // Create maps of player_id to advanced stats (with shift counts merged in)
+  const createPlayerStatsMap = (statsList: (FactPlayerGameStats | Record<string, any>)[]) =>
     new Map<string, FactPlayerGameStats | Record<string, any>>(
-      statsList.map((s) => [String(s.player_id), s])
+      statsList.map((s) => {
+        const playerId = String(s.player_id)
+        const shiftCount = playerShiftCounts.get(playerId) ?? s.shifts ?? null
+        return [playerId, { ...s, shifts: shiftCount }]
+      })
     );
-  
+
   const homePlayerStatsMap = createPlayerStatsMap(homePlayerStatsList);
   const awayPlayerStatsMap = createPlayerStatsMap(awayPlayerStatsList);
 
@@ -900,6 +925,44 @@ export default async function GameDetailPage({
               awayTeamAbbrev={awayTeam?.team_cd || game.away_team_name?.substring(0, 3).toUpperCase() || 'AWY'}
               homeTeamAbbrev={homeTeam?.team_cd || game.home_team_name?.substring(0, 3).toUpperCase() || 'HOM'}
               stats={[
+                // Avg Rating - calculated from roster players
+                ...(() => {
+                  const allAwaySkaters = [...awayForwards, ...awayDefense]
+                  const allHomeSkaters = [...homeForwards, ...homeDefense]
+                  const awayWithRatings = allAwaySkaters.filter(p => {
+                    const playerInfo = playersMap.get(String(p.player_id))
+                    const rating = playerInfo?.current_skill_rating
+                    return rating != null && rating !== '' && Number(rating) > 0
+                  })
+                  const homeWithRatings = allHomeSkaters.filter(p => {
+                    const playerInfo = playersMap.get(String(p.player_id))
+                    const rating = playerInfo?.current_skill_rating
+                    return rating != null && rating !== '' && Number(rating) > 0
+                  })
+                  const awayAvgRating = awayWithRatings.length > 0
+                    ? awayWithRatings.reduce((sum, p) => {
+                        const playerInfo = playersMap.get(String(p.player_id))
+                        return sum + Number(playerInfo?.current_skill_rating || 0)
+                      }, 0) / awayWithRatings.length
+                    : null
+                  const homeAvgRating = homeWithRatings.length > 0
+                    ? homeWithRatings.reduce((sum, p) => {
+                        const playerInfo = playersMap.get(String(p.player_id))
+                        return sum + Number(playerInfo?.current_skill_rating || 0)
+                      }, 0) / homeWithRatings.length
+                    : null
+
+                  if (awayAvgRating !== null || homeAvgRating !== null) {
+                    return [{
+                      label: 'Avg Rating',
+                      away: awayAvgRating !== null ? awayAvgRating.toFixed(1) : '-',
+                      home: homeAvgRating !== null ? homeAvgRating.toFixed(1) : '-',
+                      awayWins: (awayAvgRating || 0) > (homeAvgRating || 0),
+                      homeWins: (homeAvgRating || 0) > (awayAvgRating || 0),
+                    }]
+                  }
+                  return []
+                })(),
                 // Shot Attempts (total)
                 ...(homeTeamGameStats?.shots || awayTeamGameStats?.shots || homeTeamAggs.shots > 0 || awayTeamAggs.shots > 0 ? [{
                   label: 'Shot Attempts',
@@ -1113,7 +1176,7 @@ export default async function GameDetailPage({
             <div className="px-4 py-3 bg-accent border-b border-border">
               <h2 className="font-display text-sm font-semibold uppercase tracking-wider flex items-center gap-2">
                 <Target className="w-4 h-4 text-goal" />
-                Scoring Summary
+                Scoring Summary ({allGoals.length})
               </h2>
             </div>
             <div className="divide-y divide-border">
@@ -1234,171 +1297,233 @@ export default async function GameDetailPage({
                       // Determine score format: away - home (standard hockey format)
                       const scoreStr = `${runningScore.away}-${runningScore.home}`
                       
-                      return (
-                        <div key={`${period}-${index}`} className="p-4 flex items-center gap-3 hover:bg-muted/30 transition-colors">
-                          {/* Time */}
-                          <div className="w-14 text-center flex-shrink-0">
-                            <div className="font-mono text-sm font-semibold text-foreground">{timeStr}</div>
-                          </div>
+                      // Get goal details for expanded view
+                      const shotX = (goal as any).puck_x_start ?? null
+                      const shotY = (goal as any).puck_y_start ?? null
+                      const strength = (goal as any).strength ?? null
+                      const isRush = (goal as any).is_rush === 1
+                      const isRebound = (goal as any).is_rebound === 1
+                      const goalieName = (goal as any).goalie_name ?? null
 
-                          {/* Team Logo */}
-                          {scoringTeam && (
-                            <TeamLogo
-                              src={scoringTeam.team_logo || null}
-                              name={scoringTeam.team_name || ''}
-                              abbrev={scoringTeam.team_cd}
-                              primaryColor={scoringTeam.primary_color || scoringTeam.team_color1}
-                              secondaryColor={scoringTeam.team_color2}
+                      return (
+                        <details key={`${period}-${index}`} className="group">
+                          <summary className="p-4 flex items-center gap-3 hover:bg-muted/30 transition-colors cursor-pointer list-none">
+                            {/* Time */}
+                            <div className="w-14 text-center flex-shrink-0">
+                              <div className="font-mono text-sm font-semibold text-foreground">{timeStr}</div>
+                            </div>
+
+                            {/* Team Logo */}
+                            {scoringTeam && (
+                              <TeamLogo
+                                src={scoringTeam.team_logo || null}
+                                name={scoringTeam.team_name || ''}
+                                abbrev={scoringTeam.team_cd}
+                                primaryColor={scoringTeam.primary_color || scoringTeam.team_color1}
+                                secondaryColor={scoringTeam.team_color2}
+                                size="sm"
+                              />
+                            )}
+
+                            {/* Player Photo - Always show with fallback */}
+                            <PlayerPhoto
+                              src={scorerImage}
+                              name={scorerName || 'Unknown'}
+                              primaryColor={scoringTeam?.primary_color || scoringTeam?.team_color1}
                               size="sm"
                             />
-                          )}
 
-                          {/* Player Photo - Always show with fallback */}
-                          <PlayerPhoto
-                            src={scorerImage}
-                            name={scorerName || 'Unknown'}
-                            primaryColor={scoringTeam?.primary_color || scoringTeam?.team_color1}
-                            size="sm"
-                          />
+                            {/* Player Info */}
+                            <div className="flex-1 min-w-0">
+                              {/* Goal Label + Scorer Name */}
+                              <div className="flex items-center gap-2">
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-green-500/20 text-green-600 dark:text-green-400 text-xs font-bold uppercase tracking-wide">
+                                  Goal
+                                </span>
+                                <span className="font-display text-sm font-semibold text-foreground truncate">
+                                  {scorerName || 'Unknown Scorer'}
+                                </span>
+                              </div>
+                              {/* Compact assists display */}
+                              {(() => {
+                                const goalKey = goal.event_id || String(goal.time_start_total_seconds || index)
+                                const assists = assistEventsMap.get(goalKey) ||
+                                              (goal.event_id ? assistEventsMap.get(goal.event_id) : null) ||
+                                              (goal.time_start_total_seconds ? assistEventsMap.get(String(goal.time_start_total_seconds)) : null)
 
-                          {/* Player Info */}
-                          <div className="flex-1 min-w-0">
-                            {/* Goal Label + Scorer Name */}
-                            <div className="flex items-center gap-2">
-                              <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-green-500/20 text-green-600 dark:text-green-400 text-xs font-bold uppercase tracking-wide">
-                                Goal
-                              </span>
-                              {scorerName ? (
-                                getPlayerGameLink(scorerId) ? (
-                                  <Link
-                                    href={getPlayerGameLink(scorerId)!}
-                                    className="font-display text-sm font-semibold text-foreground hover:text-primary transition-colors"
-                                  >
-                                    {scorerName}
-                                  </Link>
-                                ) : (
-                                  <span className="font-display text-sm font-semibold text-foreground">
-                                    {scorerName}
-                                  </span>
+                                if (assists && assists.length > 0) {
+                                  return (
+                                    <div className="text-xs text-muted-foreground mt-0.5 truncate">
+                                      Assisted by: {assists.map(a => {
+                                        const assistPlayer = playersMap.get(a.player_id)
+                                        return assistPlayer?.player_name || assistPlayer?.player_full_name || a.player_name || 'Unknown'
+                                      }).join(', ')}
+                                    </div>
+                                  )
+                                }
+                                if (goal.event_player_2) {
+                                  return (
+                                    <div className="text-xs text-muted-foreground mt-0.5 truncate">
+                                      Assisted by: {goal.event_player_2}
+                                    </div>
+                                  )
+                                }
+                                return (
+                                  <div className="text-xs text-muted-foreground mt-0.5 italic">
+                                    Unassisted
+                                  </div>
                                 )
-                              ) : scorerId && playersMap.has(scorerId) ? (
-                                (() => {
-                                  const player = playersMap.get(scorerId)!
-                                  const name = player.player_name || player.player_full_name || 'Unknown Player'
-                                  return getPlayerGameLink(scorerId) ? (
+                              })()}
+                            </div>
+
+                            {/* Running Score */}
+                            <div className="font-mono text-lg font-bold text-foreground tabular-nums flex-shrink-0">
+                              {scoreStr}
+                            </div>
+
+                            {/* Expand Icon */}
+                            <ChevronDown className="w-5 h-5 text-muted-foreground transition-transform group-open:rotate-180 flex-shrink-0" />
+                          </summary>
+
+                          {/* Expanded Details Panel */}
+                          <div className="bg-muted/10 border-t border-border/50 p-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {/* Left: Shot Location */}
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                  <Target className="w-3 h-3" />
+                                  Shot Location
+                                </div>
+                                <MiniShotRink
+                                  shotX={shotX}
+                                  shotY={shotY}
+                                  isGoal={true}
+                                />
+                              </div>
+
+                              {/* Right: Goal Details */}
+                              <div className="space-y-3">
+                                {/* Scorer with link */}
+                                <div>
+                                  <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Scorer</div>
+                                  {getPlayerGameLink(scorerId) ? (
                                     <Link
                                       href={getPlayerGameLink(scorerId)!}
                                       className="font-display text-sm font-semibold text-foreground hover:text-primary transition-colors"
                                     >
-                                      {name}
+                                      {scorerName}
                                     </Link>
                                   ) : (
                                     <span className="font-display text-sm font-semibold text-foreground">
-                                      {name}
+                                      {scorerName || 'Unknown'}
                                     </span>
-                                  )
-                                })()
-                              ) : (
-                                <span className="font-display text-sm font-semibold text-muted-foreground">
-                                  Unknown Scorer
-                                </span>
-                              )}
-                            </div>
-                            {/* Assists - Show as "Assisted by: Name, Name" */}
-                            {(() => {
-                              // Get assists from assistEventsMap (if available) or fallback to event_player_2
-                              const goalKey = goal.event_id || String(goal.time_start_total_seconds || index)
-                              const assists = assistEventsMap.get(goalKey) ||
-                                            (goal.event_id ? assistEventsMap.get(goal.event_id) : null) ||
-                                            (goal.time_start_total_seconds ? assistEventsMap.get(String(goal.time_start_total_seconds)) : null)
-
-                              if (assists && assists.length > 0) {
-                                // Sort: primary first, then secondary
-                                const sortedAssists = assists.sort((a, b) => {
-                                  if (a.assist_type === 'primary' && b.assist_type === 'secondary') return -1
-                                  if (a.assist_type === 'secondary' && b.assist_type === 'primary') return 1
-                                  return 0
-                                })
-
-                                return (
-                                  <div className="text-xs text-muted-foreground mt-0.5">
-                                    <span className="italic">Assisted by: </span>
-                                    {sortedAssists.map((assist, idx) => {
-                                      const assistPlayer = playersMap.get(assist.player_id)
-                                      const assistName = assistPlayer?.player_name || assistPlayer?.player_full_name || assist.player_name || 'Unknown'
-                                      const assistLink = getPlayerGameLink(assist.player_id)
-
-                                      return (
-                                        <span key={idx}>
-                                          {idx > 0 && ', '}
-                                          {assistLink ? (
-                                            <Link
-                                              href={assistLink}
-                                              className="hover:text-foreground transition-colors"
-                                            >
-                                              {assistName}
-                                            </Link>
-                                          ) : (
-                                            <span>{assistName}</span>
-                                          )}
-                                        </span>
-                                      )
-                                    })}
-                                  </div>
-                                )
-                              }
-
-                              // Fallback to event_player_2 if no assist events found
-                              if (goal.event_player_2) {
-                                const assistId = playerNameToIdMap.get(goal.event_player_2.toLowerCase().trim()) || null
-                                const assistLink = getPlayerGameLink(assistId)
-
-                                return (
-                                  <div className="text-xs text-muted-foreground mt-0.5">
-                                    <span className="italic">Assisted by: </span>
-                                    {assistLink ? (
-                                      <Link
-                                        href={assistLink}
-                                        className="hover:text-foreground transition-colors"
-                                      >
-                                        {goal.event_player_2}
-                                      </Link>
-                                    ) : (
-                                      <span>{goal.event_player_2}</span>
-                                    )}
-                                  </div>
-                                )
-                              }
-
-                              // Unassisted goal
-                              return (
-                                <div className="text-xs text-muted-foreground mt-0.5 italic">
-                                  Unassisted
+                                  )}
                                 </div>
-                              )
-                            })()}
-                          </div>
 
-                          {/* Running Score - Right side */}
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            <div className="font-mono text-lg font-bold text-foreground tabular-nums">
-                              {scoreStr}
+                                {/* Assists with links */}
+                                <div>
+                                  <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Assists</div>
+                                  {(() => {
+                                    const goalKey = goal.event_id || String(goal.time_start_total_seconds || index)
+                                    const assists = assistEventsMap.get(goalKey) ||
+                                                  (goal.event_id ? assistEventsMap.get(goal.event_id) : null) ||
+                                                  (goal.time_start_total_seconds ? assistEventsMap.get(String(goal.time_start_total_seconds)) : null)
+
+                                    if (assists && assists.length > 0) {
+                                      const sortedAssists = [...assists].sort((a, b) => {
+                                        if (a.assist_type === 'primary' && b.assist_type === 'secondary') return -1
+                                        if (a.assist_type === 'secondary' && b.assist_type === 'primary') return 1
+                                        return 0
+                                      })
+                                      return (
+                                        <div className="space-y-1">
+                                          {sortedAssists.map((assist, idx) => {
+                                            const assistPlayer = playersMap.get(assist.player_id)
+                                            const assistName = assistPlayer?.player_name || assistPlayer?.player_full_name || assist.player_name || 'Unknown'
+                                            const assistLink = getPlayerGameLink(assist.player_id)
+                                            return (
+                                              <div key={idx} className="text-sm">
+                                                {assistLink ? (
+                                                  <Link href={assistLink} className="text-foreground hover:text-primary transition-colors">
+                                                    {assistName}
+                                                  </Link>
+                                                ) : (
+                                                  <span className="text-foreground">{assistName}</span>
+                                                )}
+                                                <span className="text-xs text-muted-foreground ml-1">({assist.assist_type})</span>
+                                              </div>
+                                            )
+                                          })}
+                                        </div>
+                                      )
+                                    }
+                                    if (goal.event_player_2) {
+                                      const assistId = playerNameToIdMap.get(goal.event_player_2.toLowerCase().trim()) || null
+                                      const assistLink = getPlayerGameLink(assistId)
+                                      return assistLink ? (
+                                        <Link href={assistLink} className="text-sm text-foreground hover:text-primary transition-colors">
+                                          {goal.event_player_2}
+                                        </Link>
+                                      ) : (
+                                        <span className="text-sm text-foreground">{goal.event_player_2}</span>
+                                      )
+                                    }
+                                    return <span className="text-sm text-muted-foreground italic">Unassisted</span>
+                                  })()}
+                                </div>
+
+                                {/* Goalie */}
+                                {goalieName && (
+                                  <div>
+                                    <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Goalie</div>
+                                    <span className="text-sm text-foreground">{goalieName}</span>
+                                  </div>
+                                )}
+
+                                {/* Tags */}
+                                <div className="flex flex-wrap gap-1.5">
+                                  {strength && strength !== 'Even' && strength !== 'EV' && (
+                                    <span className={cn(
+                                      'px-2 py-0.5 rounded text-xs font-medium',
+                                      strength === 'PP' ? 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400' :
+                                      strength === 'SH' ? 'bg-red-500/20 text-red-600 dark:text-red-400' :
+                                      'bg-muted text-muted-foreground'
+                                    )}>
+                                      {strength}
+                                    </span>
+                                  )}
+                                  {isRush && (
+                                    <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-600 dark:text-purple-400 text-xs font-medium">
+                                      Rush
+                                    </span>
+                                  )}
+                                  {isRebound && (
+                                    <span className="px-2 py-0.5 rounded bg-orange-500/20 text-orange-600 dark:text-orange-400 text-xs font-medium">
+                                      Rebound
+                                    </span>
+                                  )}
+                                </div>
+
+                                {/* Video Link */}
+                                {videoLink && hasVideo && (
+                                  <div className="pt-2">
+                                    <a
+                                      href={videoLink}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm"
+                                    >
+                                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M8 5v14l11-7z"/>
+                                      </svg>
+                                      Watch Goal
+                                    </a>
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                            {videoLink && hasVideo && (
-                              <a
-                                href={videoLink}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-primary hover:text-primary/80 transition-colors"
-                                title="Watch goal video"
-                              >
-                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                  <path d="M8 5v14l11-7z"/>
-                                </svg>
-                              </a>
-                            )}
                           </div>
-                        </div>
+                        </details>
                       )
                     })}
                   </div>
@@ -1409,188 +1534,134 @@ export default async function GameDetailPage({
         )
       })()}
 
-      {/* Head-to-Head Games This Season */}
+      {/* Head-to-Head Games This Season - Ticker Style */}
       {priorGamesData.headToHeadGames && priorGamesData.headToHeadGames.length > 0 && (() => {
-        const regularSeasonGames = priorGamesData.headToHeadGames.filter((g: any) => 
-          !g.game_type || g.game_type === 'Regular' || g.game_type === 'regular'
-        )
-        const playoffGames = priorGamesData.headToHeadGames.filter((g: any) => 
-          g.game_type === 'Playoffs' || g.game_type === 'playoffs' || g.game_type === 'Playoff'
-        )
-        
+        const allH2HGames = priorGamesData.headToHeadGames.sort((a: any, b: any) => {
+          const dateA = a.date ? new Date(a.date).getTime() : 0
+          const dateB = b.date ? new Date(b.date).getTime() : 0
+          return dateA - dateB
+        })
+
         return (
           <div className="bg-card rounded-xl border border-border overflow-hidden">
             <div className="px-4 py-3 bg-accent border-b border-border">
               <h2 className="font-display text-sm font-semibold uppercase tracking-wider flex items-center gap-2">
                 <Activity className="w-4 h-4" />
-                Head-to-Head This Season
+                Season Series ({allH2HGames.length})
               </h2>
             </div>
-            <div className="p-6 space-y-6">
-              {/* Regular Season Games */}
-              {regularSeasonGames.length > 0 && (
-                <div>
-                  <h3 className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-                    Regular Season ({regularSeasonGames.length})
-                  </h3>
-                  <div className="space-y-2">
-                    {regularSeasonGames.map((h2hGame: any) => {
-                      const homeGoals = h2hGame.official_home_goals ?? h2hGame.home_total_goals ?? null
-                      const awayGoals = h2hGame.official_away_goals ?? h2hGame.away_total_goals ?? null
-                      const hasScore = homeGoals !== null && awayGoals !== null
-                      const gameDate = h2hGame.date ? new Date(h2hGame.date).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric'
-                      }) : ''
-                      const isCurrentGame = h2hGame.game_id === gameIdNum
-                      const isFutureGame = !hasScore
-                      
-                      return (
-                        <Link
-                          key={h2hGame.game_id}
-                          href={`/norad/games/${h2hGame.game_id}`}
-                          className={cn(
-                            'block p-3 rounded-lg border border-border hover:border-primary/50 transition-all',
-                            isCurrentGame && 'bg-primary/10 border-primary',
-                            isFutureGame && 'opacity-75'
-                          )}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="text-xs font-mono text-muted-foreground">{gameDate}</span>
-                                {isFutureGame && (
-                                  <span className="text-xs font-mono uppercase px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
-                                    Scheduled
-                                  </span>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className={cn(
-                                  'font-display text-sm',
-                                  hasScore && awayGoals! > homeGoals! ? 'font-semibold text-foreground' : 'text-muted-foreground'
-                                )}>
-                                  {h2hGame.away_team_name || 'Away'}
-                                </span>
-                                {hasScore ? (
-                                  <>
-                                    <span className="font-mono text-sm font-bold text-foreground">
-                                      {awayGoals}
-                                    </span>
-                                    <span className="text-muted-foreground">-</span>
-                                    <span className="font-mono text-sm font-bold text-foreground">
-                                      {homeGoals}
-                                    </span>
-                                  </>
-                                ) : (
-                                  <span className="text-xs font-mono text-muted-foreground">vs</span>
-                                )}
-                                <span className={cn(
-                                  'font-display text-sm',
-                                  hasScore && homeGoals! > awayGoals! ? 'font-semibold text-foreground' : 'text-muted-foreground'
-                                )}>
-                                  {h2hGame.home_team_name || 'Home'}
-                                </span>
-                                {isCurrentGame && (
-                                  <span className="text-xs font-mono bg-primary text-primary-foreground px-2 py-0.5 rounded">
-                                    Current Game
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                            <ExternalLink className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                          </div>
-                        </Link>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
-              
-              {/* Playoff Games */}
-              {playoffGames.length > 0 && (
-                <div>
-                  <h3 className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-                    Playoffs ({playoffGames.length})
-                  </h3>
-                  <div className="space-y-2">
-                    {playoffGames.map((h2hGame: any) => {
-                      const homeGoals = h2hGame.official_home_goals ?? h2hGame.home_total_goals ?? null
-                      const awayGoals = h2hGame.official_away_goals ?? h2hGame.away_total_goals ?? null
-                      const hasScore = homeGoals !== null && awayGoals !== null
-                      const gameDate = h2hGame.date ? new Date(h2hGame.date).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric'
-                      }) : ''
-                      const isCurrentGame = h2hGame.game_id === gameIdNum
-                      const isFutureGame = !hasScore
-                      
-                      return (
-                        <Link
-                          key={h2hGame.game_id}
-                          href={`/norad/games/${h2hGame.game_id}`}
-                          className={cn(
-                            'block p-3 rounded-lg border border-border hover:border-primary/50 transition-all',
-                            isCurrentGame && 'bg-primary/10 border-primary',
-                            isFutureGame && 'opacity-75'
-                          )}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="text-xs font-mono text-muted-foreground">{gameDate}</span>
-                                <span className="text-xs font-mono uppercase px-1.5 py-0.5 rounded bg-primary/20 text-primary">
-                                  Playoff
-                                </span>
-                                {isFutureGame && (
-                                  <span className="text-xs font-mono uppercase px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
-                                    Scheduled
-                                  </span>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className={cn(
-                                  'font-display text-sm',
-                                  hasScore && awayGoals! > homeGoals! ? 'font-semibold text-foreground' : 'text-muted-foreground'
-                                )}>
-                                  {h2hGame.away_team_name || 'Away'}
-                                </span>
-                                {hasScore ? (
-                                  <>
-                                    <span className="font-mono text-sm font-bold text-foreground">
-                                      {awayGoals}
-                                    </span>
-                                    <span className="text-muted-foreground">-</span>
-                                    <span className="font-mono text-sm font-bold text-foreground">
-                                      {homeGoals}
-                                    </span>
-                                  </>
-                                ) : (
-                                  <span className="text-xs font-mono text-muted-foreground">vs</span>
-                                )}
-                                <span className={cn(
-                                  'font-display text-sm',
-                                  hasScore && homeGoals! > awayGoals! ? 'font-semibold text-foreground' : 'text-muted-foreground'
-                                )}>
-                                  {h2hGame.home_team_name || 'Home'}
-                                </span>
-                                {isCurrentGame && (
-                                  <span className="text-xs font-mono bg-primary text-primary-foreground px-2 py-0.5 rounded">
-                                    Current Game
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                            <ExternalLink className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                          </div>
-                        </Link>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
+            <div className="p-3">
+              <div className="flex items-stretch gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                {allH2HGames.map((h2hGame: any) => {
+                  const hGoals = h2hGame.home_total_goals ?? null
+                  const aGoals = h2hGame.away_total_goals ?? null
+                  const hasScore = hGoals !== null && aGoals !== null
+                  const homeWon = hasScore && hGoals > aGoals
+                  const awayWon = hasScore && aGoals > hGoals
+                  const isCurrentGame = h2hGame.game_id === gameIdNum
+                  const isFutureGame = !hasScore
+                  const isPlayoff = h2hGame.game_type === 'Playoffs' || h2hGame.game_type === 'playoffs' || h2hGame.game_type === 'Playoff'
+
+                  // Determine which team data to use based on H2H game
+                  const h2hHomeIsHome = String(h2hGame.home_team_id) === String(homeTeam?.team_id)
+                  const displayHomeTeam = h2hHomeIsHome ? homeTeam : awayTeam
+                  const displayAwayTeam = h2hHomeIsHome ? awayTeam : homeTeam
+
+                  const gameDate = h2hGame.date ? new Date(h2hGame.date).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric'
+                  }) : ''
+
+                  return (
+                    <Link
+                      key={h2hGame.game_id}
+                      href={isCurrentGame ? '#' : `/norad/games/${h2hGame.game_id}`}
+                      className={cn(
+                        'flex flex-col px-3 py-2 rounded-lg border transition-all min-w-[100px] shrink-0',
+                        isCurrentGame
+                          ? 'bg-primary/15 border-primary ring-1 ring-primary/50'
+                          : 'border-border hover:border-primary/50 hover:bg-muted/30',
+                        isFutureGame && !isCurrentGame && 'opacity-60'
+                      )}
+                    >
+                      {/* Date */}
+                      <div className="text-[9px] font-mono text-muted-foreground text-center mb-1.5">
+                        {gameDate}
+                        {isPlayoff && <span className="ml-1 text-primary">P</span>}
+                      </div>
+
+                      {/* Away Team Row */}
+                      <div className="flex items-center justify-between gap-1.5">
+                        <div className="flex items-center gap-1">
+                          <TeamLogo
+                            src={displayAwayTeam?.team_logo || null}
+                            name=""
+                            abbrev={displayAwayTeam?.team_cd || ''}
+                            primaryColor={displayAwayTeam?.primary_color || displayAwayTeam?.team_color1}
+                            secondaryColor={displayAwayTeam?.team_color2}
+                            size="xs"
+                          />
+                          <span className={cn(
+                            'text-[10px] font-mono',
+                            awayWon && 'font-bold'
+                          )}>
+                            {displayAwayTeam?.team_cd || 'AWY'}
+                          </span>
+                        </div>
+                        {hasScore && (
+                          <span className={cn(
+                            'font-mono text-xs',
+                            awayWon ? 'font-bold' : 'text-muted-foreground'
+                          )}>
+                            {aGoals}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Home Team Row */}
+                      <div className="flex items-center justify-between gap-1.5 mt-0.5">
+                        <div className="flex items-center gap-1">
+                          <TeamLogo
+                            src={displayHomeTeam?.team_logo || null}
+                            name=""
+                            abbrev={displayHomeTeam?.team_cd || ''}
+                            primaryColor={displayHomeTeam?.primary_color || displayHomeTeam?.team_color1}
+                            secondaryColor={displayHomeTeam?.team_color2}
+                            size="xs"
+                          />
+                          <span className={cn(
+                            'text-[10px] font-mono',
+                            homeWon && 'font-bold'
+                          )}>
+                            {displayHomeTeam?.team_cd || 'HME'}
+                          </span>
+                        </div>
+                        {hasScore ? (
+                          <span className={cn(
+                            'font-mono text-xs',
+                            homeWon ? 'font-bold' : 'text-muted-foreground'
+                          )}>
+                            {hGoals}
+                          </span>
+                        ) : (
+                          <span className="text-[8px] text-muted-foreground">TBD</span>
+                        )}
+                      </div>
+
+                      {/* Status */}
+                      <div className="text-[8px] font-mono text-center mt-1">
+                        {isCurrentGame ? (
+                          <span className="text-primary font-semibold">This Game</span>
+                        ) : isFutureGame ? (
+                          <span className="text-muted-foreground">Upcoming</span>
+                        ) : (
+                          <span className="text-muted-foreground">Final</span>
+                        )}
+                      </div>
+                    </Link>
+                  )
+                })}
+              </div>
             </div>
           </div>
         )
@@ -2400,354 +2471,7 @@ export default async function GameDetailPage({
           </div>
         )}
       </div>
-      
-      {/* Team Totals - Separate Section with Aligned Rows */}
-      {((awayForwards.length > 0 || awayDefense.length > 0) || (homeForwards.length > 0 || homeDefense.length > 0)) && (
-        <div className="bg-card rounded-xl border border-border overflow-hidden">
-          <div className="px-4 py-3 bg-accent border-b border-border">
-            <h2 className="font-display text-sm font-semibold uppercase tracking-wider flex items-center gap-2">
-              <BarChart3 className="w-4 h-4" />
-              Team Totals
-            </h2>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-accent/50">
-                  <th className="px-3 py-2 text-left font-display text-xs text-muted-foreground">Team</th>
-                  <th className="px-2 py-2 text-center font-display text-xs text-muted-foreground">#</th>
-                  <th className="px-2 py-2 text-center font-display text-xs text-muted-foreground">Rating</th>
-                  <th className="px-2 py-2 text-center font-display text-xs text-goal">G</th>
-                  <th className="px-2 py-2 text-center font-display text-xs text-assist">A</th>
-                  <th className="px-2 py-2 text-center font-display text-xs text-primary">P</th>
-                  {hasTracking && (
-                    <>
-                      <th className="px-2 py-2 text-center font-display text-xs text-muted-foreground">S</th>
-                      <th className="px-2 py-2 text-center font-display text-xs text-muted-foreground">+/-</th>
-                    </>
-                  )}
-                  <th className="px-2 py-2 text-center font-display text-xs text-muted-foreground">PIM</th>
-                  {hasTracking && (
-                    <>
-                      {hasShifts && (
-                        <>
-                          <th className="px-2 py-2 text-center font-display text-xs text-muted-foreground">TOI</th>
-                          <th className="px-2 py-2 text-center font-display text-xs text-muted-foreground">Shifts</th>
-                        </>
-                      )}
-                      <th className="px-2 py-2 text-center font-display text-xs text-muted-foreground">CF%</th>
-                      {hasEvents && (
-                        <>
-                          <th className="px-2 py-2 text-center font-display text-xs text-muted-foreground">P</th>
-                          <th className="px-2 py-2 text-center font-display text-xs text-muted-foreground">GvA</th>
-                          <th className="px-2 py-2 text-center font-display text-xs text-muted-foreground">TkA</th>
-                        </>
-                      )}
-                    </>
-                  )}
-                </tr>
-              </thead>
-              <tbody>
-                {/* Away Team Totals */}
-                {(awayForwards.length > 0 || awayDefense.length > 0) && (() => {
-                  const allAwaySkaters = [...awayForwards, ...awayDefense]
-                  const playersWithRatings = allAwaySkaters.filter(p => {
-                    const playerInfo = playersMap.get(String(p.player_id))
-                    const rating = playerInfo?.current_skill_rating
-                    return rating != null && rating !== '' && Number(rating) > 0
-                  })
-                  const avgRating = playersWithRatings.length > 0
-                    ? playersWithRatings.reduce((sum, p) => {
-                        const playerInfo = playersMap.get(String(p.player_id))
-                        return sum + Number(playerInfo?.current_skill_rating || 0)
-                      }, 0) / playersWithRatings.length
-                    : null
 
-                  return (
-                    <tr className="border-b-2 border-border bg-muted/30 font-bold">
-                      <td className="px-3 py-2 font-display">
-                        {awayTeam?.team_name || game.away_team_name || 'Away'}
-                      </td>
-                      <td className="px-2 py-2 text-center"></td>
-                      <td className="px-2 py-2 text-center font-mono text-sm">
-                        {avgRating != null ? Number(avgRating).toFixed(1) : '-'}
-                      </td>
-                      <td className="px-2 py-2 text-center font-mono text-goal font-semibold">
-                        {allAwaySkaters.reduce((sum, p) => sum + Number(p.goals ?? 0), 0)}
-                      </td>
-                      <td className="px-2 py-2 text-center font-mono text-assist font-semibold">
-                        {allAwaySkaters.reduce((sum, p) => sum + Number(p.assist ?? 0), 0)}
-                      </td>
-                      <td className="px-2 py-2 text-center font-mono text-primary font-semibold">
-                        {allAwaySkaters.reduce((sum, p) => sum + Number(p.goals ?? 0) + Number(p.assist ?? 0), 0)}
-                      </td>
-                      {hasTracking && (
-                        <>
-                          <td className="px-2 py-2 text-center font-mono text-muted-foreground font-semibold">
-                            {allAwaySkaters.reduce((sum, p) => {
-                              const advStats = awayPlayerStatsMap.get(String(p.player_id))
-                              return sum + (Number(advStats?.shots ?? advStats?.sog ?? 0) || 0)
-                            }, 0)}
-                          </td>
-                          <td className="px-2 py-2 text-center font-mono text-muted-foreground font-semibold">
-                            {allAwaySkaters.reduce((sum, p) => {
-                              const advStats = awayPlayerStatsMap.get(String(p.player_id))
-                              return sum + (Number(advStats?.plus_minus_total ?? advStats?.plus_minus ?? 0) || 0)
-                            }, 0)}
-                          </td>
-                        </>
-                      )}
-                      <td className="px-2 py-2 text-center font-mono text-muted-foreground font-semibold">
-                        {allAwaySkaters.reduce((sum, p) => sum + Number(p.pim ?? p.pim_total ?? 0), 0)}
-                      </td>
-                      {hasTracking && (
-                        <>
-                          {hasShifts && (
-                            <>
-                              <td className="px-2 py-2 text-center font-mono text-xs text-muted-foreground">-</td>
-                              <td className="px-2 py-2 text-center font-mono text-xs text-muted-foreground">-</td>
-                            </>
-                          )}
-                          <td className="px-2 py-2 text-center font-mono text-xs text-muted-foreground">-</td>
-                          {hasEvents && (
-                            <>
-                              <td className="px-2 py-2 text-center font-mono text-xs text-muted-foreground">-</td>
-                              <td className="px-2 py-2 text-center font-mono text-xs text-muted-foreground">-</td>
-                              <td className="px-2 py-2 text-center font-mono text-xs text-muted-foreground">-</td>
-                            </>
-                          )}
-                        </>
-                      )}
-                    </tr>
-                  )
-                })()}
-                
-                {/* Home Team Totals */}
-                {(homeForwards.length > 0 || homeDefense.length > 0) && (() => {
-                  const allHomeSkaters = [...homeForwards, ...homeDefense]
-                  const playersWithRatings = allHomeSkaters.filter(p => {
-                    const playerInfo = playersMap.get(String(p.player_id))
-                    const rating = playerInfo?.current_skill_rating
-                    return rating != null && rating !== '' && Number(rating) > 0
-                  })
-                  const avgRating = playersWithRatings.length > 0
-                    ? playersWithRatings.reduce((sum, p) => {
-                        const playerInfo = playersMap.get(String(p.player_id))
-                        return sum + Number(playerInfo?.current_skill_rating || 0)
-                      }, 0) / playersWithRatings.length
-                    : null
-
-                  return (
-                    <tr className="border-b-2 border-border bg-muted/30 font-bold">
-                      <td className="px-3 py-2 font-display">
-                        {homeTeam?.team_name || game.home_team_name || 'Home'}
-                      </td>
-                      <td className="px-2 py-2 text-center"></td>
-                      <td className="px-2 py-2 text-center font-mono text-sm">
-                        {avgRating != null ? Number(avgRating).toFixed(1) : '-'}
-                      </td>
-                      <td className="px-2 py-2 text-center font-mono text-goal font-semibold">
-                        {allHomeSkaters.reduce((sum, p) => sum + Number(p.goals ?? 0), 0)}
-                      </td>
-                      <td className="px-2 py-2 text-center font-mono text-assist font-semibold">
-                        {allHomeSkaters.reduce((sum, p) => sum + Number(p.assist ?? 0), 0)}
-                      </td>
-                      <td className="px-2 py-2 text-center font-mono text-primary font-semibold">
-                        {allHomeSkaters.reduce((sum, p) => sum + Number(p.goals ?? 0) + Number(p.assist ?? 0), 0)}
-                      </td>
-                      {hasTracking && (
-                        <>
-                          <td className="px-2 py-2 text-center font-mono text-muted-foreground font-semibold">
-                            {allHomeSkaters.reduce((sum, p) => {
-                              const advStats = homePlayerStatsMap.get(String(p.player_id))
-                              return sum + (Number(advStats?.shots ?? advStats?.sog ?? 0) || 0)
-                            }, 0)}
-                          </td>
-                          <td className="px-2 py-2 text-center font-mono text-muted-foreground font-semibold">
-                            {allHomeSkaters.reduce((sum, p) => {
-                              const advStats = homePlayerStatsMap.get(String(p.player_id))
-                              return sum + (Number(advStats?.plus_minus_total ?? advStats?.plus_minus ?? 0) || 0)
-                            }, 0)}
-                          </td>
-                        </>
-                      )}
-                      <td className="px-2 py-2 text-center font-mono text-muted-foreground font-semibold">
-                        {allHomeSkaters.reduce((sum, p) => sum + Number(p.pim ?? p.pim_total ?? 0), 0)}
-                      </td>
-                      {hasTracking && (
-                        <>
-                          {hasShifts && (
-                            <>
-                              <td className="px-2 py-2 text-center font-mono text-xs text-muted-foreground">-</td>
-                              <td className="px-2 py-2 text-center font-mono text-xs text-muted-foreground">-</td>
-                            </>
-                          )}
-                          <td className="px-2 py-2 text-center font-mono text-xs text-muted-foreground">-</td>
-                          {hasEvents && (
-                            <>
-                              <td className="px-2 py-2 text-center font-mono text-xs text-muted-foreground">-</td>
-                              <td className="px-2 py-2 text-center font-mono text-xs text-muted-foreground">-</td>
-                              <td className="px-2 py-2 text-center font-mono text-xs text-muted-foreground">-</td>
-                            </>
-                          )}
-                        </>
-                      )}
-                    </tr>
-                  )
-                })()}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-      
-      {/* Prior Games - Season Results */}
-      {(priorGamesData.homeGames.length > 0 || priorGamesData.awayGames.length > 0) && (
-        <div className="grid lg:grid-cols-2 gap-6">
-          {/* Home Team Prior Games */}
-          {priorGamesData.homeGames.length > 0 && (
-            <div className="bg-card rounded-xl border border-border overflow-hidden">
-              <div className="px-4 py-3 bg-accent border-b border-border">
-                <div className="flex items-center gap-2">
-                  {homeTeam && (
-                    <Link 
-                      href={`/norad/team/${(homeTeam.team_name || game.home_team_name || '').replace(/\s+/g, '_')}`}
-                      className="hover:opacity-80 transition-opacity"
-                    >
-                      <TeamLogo
-                        src={homeTeam.team_logo || null}
-                        name={homeTeam.team_name || ''}
-                        abbrev={homeTeam.team_cd}
-                        primaryColor={homeTeam.primary_color || homeTeam.team_color1}
-                        secondaryColor={homeTeam.team_color2}
-                        size="sm"
-                      />
-                    </Link>
-                  )}
-                  <h2 className="font-display text-sm font-semibold uppercase tracking-wider">
-                    {homeTeam?.team_name || game.home_team_name || 'Home'} Prior Games
-                  </h2>
-                </div>
-              </div>
-              <div className="divide-y divide-border">
-                {priorGamesData.homeGames.map((priorGame: any) => {
-                  const isHome = String(priorGame.home_team_id) === String(game.home_team_id)
-                  const teamGoals = isHome ? (priorGame.official_home_goals ?? priorGame.home_total_goals ?? 0) : (priorGame.official_away_goals ?? priorGame.away_total_goals ?? 0)
-                  const oppGoals = isHome ? (priorGame.official_away_goals ?? priorGame.away_total_goals ?? 0) : (priorGame.official_home_goals ?? priorGame.home_total_goals ?? 0)
-                  const opponent = isHome ? priorGame.away_team_name : priorGame.home_team_name
-                  const result = teamGoals > oppGoals ? 'W' : teamGoals < oppGoals ? 'L' : 'T'
-                  const resultColor = result === 'W' ? 'text-save' : result === 'L' ? 'text-goal' : 'text-muted-foreground'
-                  
-                  return (
-                    <Link
-                      key={priorGame.game_id}
-                      href={`/norad/games/${priorGame.game_id}`}
-                      className="flex items-center justify-between p-3 hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-center gap-3 flex-1">
-                        <span className={`font-mono font-bold text-sm ${resultColor}`}>{result}</span>
-                        <div className="flex-1">
-                          <div className="text-sm font-medium">
-                            vs {opponent}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {priorGame.date ? new Date(priorGame.date).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              year: 'numeric'
-                            }) : ''}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="font-mono text-sm font-semibold">
-                        <span className={isHome ? 'text-primary' : 'text-muted-foreground'}>
-                          {teamGoals}
-                        </span>
-                        <span className="text-muted-foreground mx-1">-</span>
-                        <span className={!isHome ? 'text-primary' : 'text-muted-foreground'}>
-                          {oppGoals}
-                        </span>
-                      </div>
-                    </Link>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-          
-          {/* Away Team Prior Games */}
-          {priorGamesData.awayGames.length > 0 && (
-            <div className="bg-card rounded-xl border border-border overflow-hidden">
-              <div className="px-4 py-3 bg-accent border-b border-border">
-                <div className="flex items-center gap-2">
-                  {awayTeam && (
-                    <Link 
-                      href={`/norad/team/${(awayTeam.team_name || game.away_team_name || '').replace(/\s+/g, '_')}`}
-                      className="hover:opacity-80 transition-opacity"
-                    >
-                      <TeamLogo
-                        src={awayTeam.team_logo || null}
-                        name={awayTeam.team_name || ''}
-                        abbrev={awayTeam.team_cd}
-                        primaryColor={awayTeam.primary_color || awayTeam.team_color1}
-                        secondaryColor={awayTeam.team_color2}
-                        size="sm"
-                      />
-                    </Link>
-                  )}
-                  <h2 className="font-display text-sm font-semibold uppercase tracking-wider">
-                    {awayTeam?.team_name || game.away_team_name || 'Away'} Prior Games
-                  </h2>
-                </div>
-              </div>
-              <div className="divide-y divide-border">
-                {priorGamesData.awayGames.map((priorGame: any) => {
-                  const isHome = String(priorGame.home_team_id) === String(game.away_team_id)
-                  const teamGoals = isHome ? (priorGame.official_home_goals ?? priorGame.home_total_goals ?? 0) : (priorGame.official_away_goals ?? priorGame.away_total_goals ?? 0)
-                  const oppGoals = isHome ? (priorGame.official_away_goals ?? priorGame.away_total_goals ?? 0) : (priorGame.official_home_goals ?? priorGame.home_total_goals ?? 0)
-                  const opponent = isHome ? priorGame.away_team_name : priorGame.home_team_name
-                  const result = teamGoals > oppGoals ? 'W' : teamGoals < oppGoals ? 'L' : 'T'
-                  const resultColor = result === 'W' ? 'text-save' : result === 'L' ? 'text-goal' : 'text-muted-foreground'
-                  
-                  return (
-                    <Link
-                      key={priorGame.game_id}
-                      href={`/norad/games/${priorGame.game_id}`}
-                      className="flex items-center justify-between p-3 hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-center gap-3 flex-1">
-                        <span className={`font-mono font-bold text-sm ${resultColor}`}>{result}</span>
-                        <div className="flex-1">
-                          <div className="text-sm font-medium">
-                            vs {opponent}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {priorGame.date ? new Date(priorGame.date).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              year: 'numeric'
-                            }) : ''}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="font-mono text-sm font-semibold">
-                        <span className={isHome ? 'text-primary' : 'text-muted-foreground'}>
-                          {teamGoals}
-                        </span>
-                        <span className="text-muted-foreground mx-1">-</span>
-                        <span className={!isHome ? 'text-primary' : 'text-muted-foreground'}>
-                          {oppGoals}
-                        </span>
-                      </div>
-                    </Link>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-      
       {/* Goalies - Separated Section */}
       {(homeGoalies.length > 0 || awayGoalies.length > 0 || goalieStatsData.length > 0) && (
         <div className="bg-card rounded-xl border border-border overflow-hidden">
@@ -2822,7 +2546,282 @@ export default async function GameDetailPage({
         </div>
       )}
       
-      {/* Tracking Status - Compact Footer */}
+      {/* Advanced Analytics Tabs - Only show when we have tracked data */}
+      {(hasEvents || hasShifts || hasXY) && (
+        <GameDetailTabs
+          hasPlayByPlay={hasEvents}
+          hasShots={hasXY && shotsData && shotsData.length > 0}
+          hasShifts={hasShifts && shiftsData && shiftsData.length > 0}
+          playByPlayContent={
+            hasEvents && (
+              <PlayByPlayTimeline
+                events={allEvents}
+                homeTeam={homeTeam?.team_name || game.home_team_name || 'Home'}
+                awayTeam={awayTeam?.team_name || game.away_team_name || 'Away'}
+                homeTeamId={String(homeTeamId || '')}
+                awayTeamId={String(awayTeamId || '')}
+                playersMap={playersMap}
+                homeTeamData={homeTeam ? {
+                  team_name: homeTeam.team_name || game.home_team_name || 'Home',
+                  team_logo: homeTeam.team_logo,
+                  team_cd: homeTeam.team_cd,
+                  primary_color: homeTeam.primary_color || homeTeam.team_color1,
+                  team_color1: homeTeam.team_color1
+                } : undefined}
+                awayTeamData={awayTeam ? {
+                  team_name: awayTeam.team_name || game.away_team_name || 'Away',
+                  team_logo: awayTeam.team_logo,
+                  team_cd: awayTeam.team_cd,
+                  primary_color: awayTeam.primary_color || awayTeam.team_color1,
+                  team_color1: awayTeam.team_color1
+                } : undefined}
+                videoUrl={gameVideos.length > 0 ? gameVideos[0].video_url : null}
+                videoStartOffset={gameVideos.length > 0 ? (gameVideos[0].period_1_start || 0) : 0}
+                videos={gameVideos}
+                shifts={shiftsData}
+                jerseyToPlayerMap={jerseyToPlayerMap}
+              />
+            )
+          }
+          shiftsContent={
+            hasShifts && shiftsData && shiftsData.length > 0 && (
+              <ShiftsTimeline
+                shifts={shiftsData}
+                homeTeam={homeTeam?.team_name || game.home_team_name || 'Home'}
+                awayTeam={awayTeam?.team_name || game.away_team_name || 'Away'}
+                homeTeamId={String(homeTeamId || '')}
+                awayTeamId={String(awayTeamId || '')}
+                homeColor={homeTeam?.primary_color || homeTeam?.team_color1 || '#3b82f6'}
+                awayColor={awayTeam?.primary_color || awayTeam?.team_color1 || '#ef4444'}
+                jerseyToPlayerMap={jerseyToPlayerMap}
+                videos={gameVideos}
+                events={allEvents?.map(e => ({
+                  event_id: e.event_id,
+                  event_type: e.event_type,
+                  event_detail: e.event_detail,
+                  player_team: e.player_team,
+                  shift_id: (e as any).shift_id || (e as any).shift_index,
+                  running_video_time: e.running_video_time
+                })) || []}
+              />
+            )
+          }
+          shotsContent={
+            hasXY && shotsData && shotsData.length > 0 && (
+              <EnhancedShotMap
+                shots={shotsData.map(shot => ({
+                  x_coord: shot.x_coord ?? shot.shot_x,
+                  y_coord: shot.y_coord ?? shot.shot_y,
+                  shot_x: shot.shot_x ?? shot.x_coord,
+                  shot_y: shot.shot_y ?? shot.y_coord,
+                  is_goal: shot.is_goal,
+                  shot_result: shot.shot_result,
+                  xg: shot.xg ?? shot.shot_xg,
+                  danger_zone: shot.danger_zone,
+                  danger_level: shot.danger_level,
+                  period: shot.period,
+                  strength: shot.strength,
+                  player_id: shot.player_id,
+                  player_name: shot.player_name,
+                  event_type: shot.event_type,
+                }))}
+                width={600}
+                height={300}
+                showFilters={true}
+                title="Shot Map"
+              />
+            )
+          }
+          hasAnalytics={!!(homeTeamGameStats || awayTeamGameStats)}
+          analyticsContent={
+            (homeTeamGameStats || awayTeamGameStats) && (
+              <GameAnalyticsPanel
+                homeStats={homeTeamGameStats ? {
+                  team_name: homeTeam?.team_name || game.home_team_name || 'Home',
+                  shots: homeTeamGameStats.shots,
+                  goals: homeTeamGameStats.goals,
+                  corsi_for: homeTeamGameStats.cf || homeTeamGameStats.corsi_for,
+                  corsi_against: homeTeamGameStats.ca || homeTeamGameStats.corsi_against,
+                  fenwick_for: homeTeamGameStats.ff || homeTeamGameStats.fenwick_for,
+                  fenwick_against: homeTeamGameStats.fa || homeTeamGameStats.fenwick_against,
+                  xg_for: homeTeamGameStats.xg_for || homeTeamGameStats.xgf,
+                  xg_against: homeTeamGameStats.xg_against || homeTeamGameStats.xga,
+                  high_danger_chances: homeTeamGameStats.high_danger_chances || homeTeamGameStats.hd_chances,
+                  scoring_chances: homeTeamGameStats.scoring_chances || homeTeamGameStats.sc,
+                  save_percentage: homeTeamGameStats.save_pct || homeTeamGameStats.sv_pct,
+                } : null}
+                awayStats={awayTeamGameStats ? {
+                  team_name: awayTeam?.team_name || game.away_team_name || 'Away',
+                  shots: awayTeamGameStats.shots,
+                  goals: awayTeamGameStats.goals,
+                  corsi_for: awayTeamGameStats.cf || awayTeamGameStats.corsi_for,
+                  corsi_against: awayTeamGameStats.ca || awayTeamGameStats.corsi_against,
+                  fenwick_for: awayTeamGameStats.ff || awayTeamGameStats.fenwick_for,
+                  fenwick_against: awayTeamGameStats.fa || awayTeamGameStats.fenwick_against,
+                  xg_for: awayTeamGameStats.xg_for || awayTeamGameStats.xgf,
+                  xg_against: awayTeamGameStats.xg_against || awayTeamGameStats.xga,
+                  high_danger_chances: awayTeamGameStats.high_danger_chances || awayTeamGameStats.hd_chances,
+                  scoring_chances: awayTeamGameStats.scoring_chances || awayTeamGameStats.sc,
+                  save_percentage: awayTeamGameStats.save_pct || awayTeamGameStats.sv_pct,
+                } : null}
+                homeTeamName={homeTeam?.team_name || game.home_team_name || 'Home'}
+                awayTeamName={awayTeam?.team_name || game.away_team_name || 'Away'}
+                homeColor={homeTeam?.primary_color || homeTeam?.team_color1 || '#3b82f6'}
+                awayColor={awayTeam?.primary_color || awayTeam?.team_color1 || '#ef4444'}
+              />
+            )
+          }
+        />
+      )}
+
+      {/* Prior Games - Season Results (As of Game Date) */}
+      {(priorGamesData.homeGames.length > 0 || priorGamesData.awayGames.length > 0) && (
+        <div className="grid lg:grid-cols-2 gap-6">
+          {/* Away Team Prior Games (Left side to match scoreboard) */}
+          {priorGamesData.awayGames.length > 0 && (
+            <div className="bg-card rounded-xl border border-border overflow-hidden">
+              <div className="px-4 py-3 bg-accent border-b border-border">
+                <div className="flex items-center gap-2">
+                  {awayTeam && (
+                    <Link
+                      href={`/norad/team/${(awayTeam.team_name || game.away_team_name || '').replace(/\s+/g, '_')}`}
+                      className="hover:opacity-80 transition-opacity"
+                    >
+                      <TeamLogo
+                        src={awayTeam.team_logo || null}
+                        name={awayTeam.team_name || ''}
+                        abbrev={awayTeam.team_cd}
+                        primaryColor={awayTeam.primary_color || awayTeam.team_color1}
+                        secondaryColor={awayTeam.team_color2}
+                        size="sm"
+                      />
+                    </Link>
+                  )}
+                  <h2 className="font-display text-sm font-semibold uppercase tracking-wider">
+                    {awayTeam?.team_name || game.away_team_name || 'Away'} Prior Games
+                  </h2>
+                </div>
+              </div>
+              <div className="divide-y divide-border">
+                {priorGamesData.awayGames.map((priorGame: any) => {
+                  const isHome = String(priorGame.home_team_id) === String(game.away_team_id)
+                  const teamGoals = isHome ? (priorGame.home_total_goals ?? 0) : (priorGame.away_total_goals ?? 0)
+                  const oppGoals = isHome ? (priorGame.away_total_goals ?? 0) : (priorGame.home_total_goals ?? 0)
+                  const opponent = isHome ? priorGame.away_team_name : priorGame.home_team_name
+                  const result = teamGoals > oppGoals ? 'W' : teamGoals < oppGoals ? 'L' : 'T'
+                  const resultColor = result === 'W' ? 'text-save' : result === 'L' ? 'text-goal' : 'text-muted-foreground'
+
+                  return (
+                    <Link
+                      key={priorGame.game_id}
+                      href={`/norad/games/${priorGame.game_id}`}
+                      className="flex items-center justify-between p-3 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3 flex-1">
+                        <span className={`font-mono font-bold text-sm ${resultColor}`}>{result}</span>
+                        <div className="flex-1">
+                          <div className="text-sm font-medium">
+                            vs {opponent}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {priorGame.date ? new Date(priorGame.date).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric'
+                            }) : ''}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="font-mono text-sm font-semibold">
+                        <span className={isHome ? 'text-primary' : 'text-muted-foreground'}>
+                          {teamGoals}
+                        </span>
+                        <span className="text-muted-foreground mx-1">-</span>
+                        <span className={!isHome ? 'text-primary' : 'text-muted-foreground'}>
+                          {oppGoals}
+                        </span>
+                      </div>
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Home Team Prior Games (Right side to match scoreboard) */}
+          {priorGamesData.homeGames.length > 0 && (
+            <div className="bg-card rounded-xl border border-border overflow-hidden">
+              <div className="px-4 py-3 bg-accent border-b border-border">
+                <div className="flex items-center gap-2">
+                  {homeTeam && (
+                    <Link
+                      href={`/norad/team/${(homeTeam.team_name || game.home_team_name || '').replace(/\s+/g, '_')}`}
+                      className="hover:opacity-80 transition-opacity"
+                    >
+                      <TeamLogo
+                        src={homeTeam.team_logo || null}
+                        name={homeTeam.team_name || ''}
+                        abbrev={homeTeam.team_cd}
+                        primaryColor={homeTeam.primary_color || homeTeam.team_color1}
+                        secondaryColor={homeTeam.team_color2}
+                        size="sm"
+                      />
+                    </Link>
+                  )}
+                  <h2 className="font-display text-sm font-semibold uppercase tracking-wider">
+                    {homeTeam?.team_name || game.home_team_name || 'Home'} Prior Games
+                  </h2>
+                </div>
+              </div>
+              <div className="divide-y divide-border">
+                {priorGamesData.homeGames.map((priorGame: any) => {
+                  const isHome = String(priorGame.home_team_id) === String(game.home_team_id)
+                  const teamGoals = isHome ? (priorGame.home_total_goals ?? 0) : (priorGame.away_total_goals ?? 0)
+                  const oppGoals = isHome ? (priorGame.away_total_goals ?? 0) : (priorGame.home_total_goals ?? 0)
+                  const opponent = isHome ? priorGame.away_team_name : priorGame.home_team_name
+                  const result = teamGoals > oppGoals ? 'W' : teamGoals < oppGoals ? 'L' : 'T'
+                  const resultColor = result === 'W' ? 'text-save' : result === 'L' ? 'text-goal' : 'text-muted-foreground'
+
+                  return (
+                    <Link
+                      key={priorGame.game_id}
+                      href={`/norad/games/${priorGame.game_id}`}
+                      className="flex items-center justify-between p-3 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3 flex-1">
+                        <span className={`font-mono font-bold text-sm ${resultColor}`}>{result}</span>
+                        <div className="flex-1">
+                          <div className="text-sm font-medium">
+                            vs {opponent}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {priorGame.date ? new Date(priorGame.date).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric'
+                            }) : ''}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="font-mono text-sm font-semibold">
+                        <span className={isHome ? 'text-primary' : 'text-muted-foreground'}>
+                          {teamGoals}
+                        </span>
+                        <span className="text-muted-foreground mx-1">-</span>
+                        <span className={!isHome ? 'text-primary' : 'text-muted-foreground'}>
+                          {oppGoals}
+                        </span>
+                      </div>
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Tracking Status - Compact Footer (Very Bottom) */}
       {gameTrackingStatus && (
         <details className="group">
           <summary className="cursor-pointer list-none bg-muted/30 rounded-lg px-4 py-2 flex items-center justify-between hover:bg-muted/50 transition-colors">
@@ -2901,90 +2900,6 @@ export default async function GameDetailPage({
             )}
           </div>
         </details>
-      )}
-      
-      {/* Game Highlights - Always show when available */}
-      {highlights && highlights.length > 0 && (
-        <GameHighlights
-          highlights={highlights}
-          homeTeam={homeTeam || undefined}
-          awayTeam={awayTeam || undefined}
-          gameId={gameIdNum}
-          gameVideoUrl={game.video_url_1 || game.video_url_2 || null}
-          gameVideoStartOffset={game.video_start_offset || 0}
-        />
-      )}
-
-      {/* Advanced Analytics Tabs - Only show when we have tracked data */}
-      {(hasEvents || hasShifts || hasXY) && (
-        <GameDetailTabs
-          hasScoring={false}
-          hasPlayByPlay={hasEvents}
-          hasShots={hasXY && shotsData && shotsData.length > 0}
-          hasShifts={hasShifts && shiftsData && shiftsData.length > 0}
-          boxScoreContent={
-            <div className="p-4 text-center text-muted-foreground">
-              <p className="text-sm">See player stats in the tables above.</p>
-            </div>
-          }
-          playByPlayContent={
-            hasEvents && (
-              <PlayByPlayTimeline
-                events={allEvents}
-                homeTeam={homeTeam?.team_name || game.home_team_name || 'Home'}
-                awayTeam={awayTeam?.team_name || game.away_team_name || 'Away'}
-                homeTeamId={String(homeTeamId || '')}
-                awayTeamId={String(awayTeamId || '')}
-                playersMap={playersMap}
-                homeTeamData={homeTeam ? {
-                  team_name: homeTeam.team_name || game.home_team_name || 'Home',
-                  team_logo: homeTeam.team_logo,
-                  team_cd: homeTeam.team_cd,
-                  primary_color: homeTeam.primary_color || homeTeam.team_color1,
-                  team_color1: homeTeam.team_color1
-                } : undefined}
-                awayTeamData={awayTeam ? {
-                  team_name: awayTeam.team_name || game.away_team_name || 'Away',
-                  team_logo: awayTeam.team_logo,
-                  team_cd: awayTeam.team_cd,
-                  primary_color: awayTeam.primary_color || awayTeam.team_color1,
-                  team_color1: awayTeam.team_color1
-                } : undefined}
-              />
-            )
-          }
-          shiftsContent={
-            hasShifts && shiftsData && shiftsData.length > 0 && (
-              <ShiftChart shifts={shiftsData} />
-            )
-          }
-          shotsContent={
-            hasXY && shotsData && shotsData.length > 0 && (
-              <EnhancedShotMap
-                shots={shotsData.map(shot => ({
-                  x_coord: shot.x_coord ?? shot.shot_x,
-                  y_coord: shot.y_coord ?? shot.shot_y,
-                  shot_x: shot.shot_x ?? shot.x_coord,
-                  shot_y: shot.shot_y ?? shot.y_coord,
-                  is_goal: shot.is_goal,
-                  shot_result: shot.shot_result,
-                  xg: shot.xg ?? shot.shot_xg,
-                  danger_zone: shot.danger_zone,
-                  danger_level: shot.danger_level,
-                  period: shot.period,
-                  strength: shot.strength,
-                  player_id: shot.player_id,
-                  player_name: shot.player_name,
-                  event_type: shot.event_type,
-                }))}
-                width={600}
-                height={300}
-                showFilters={true}
-                title="Shot Map"
-              />
-            )
-          }
-        />
       )}
     </div>
   )

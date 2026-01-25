@@ -18,7 +18,7 @@ export default function NoradDashboardLayout({
         <div className="max-w-7xl mx-auto px-4 py-1 flex items-center justify-between">
           <Link href="/norad" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <Image
-              src="/images/NORAD_logo.png"
+              src="/norad-logo.png"
               alt="NORAD"
               width={24}
               height={24}

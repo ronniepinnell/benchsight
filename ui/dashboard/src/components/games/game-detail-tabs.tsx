@@ -2,39 +2,41 @@
 
 import * as React from 'react'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { BarChart3, Activity, Target, Clock, ListOrdered } from 'lucide-react'
+import { Activity, Target, Clock, ListOrdered, BarChart3 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface GameDetailTabsProps {
-  boxScoreContent: React.ReactNode
   scoringContent?: React.ReactNode
   playByPlayContent?: React.ReactNode
   shotsContent?: React.ReactNode
   shiftsContent?: React.ReactNode
-  hasScoring: boolean
+  analyticsContent?: React.ReactNode
+  hasScoring?: boolean
   hasPlayByPlay: boolean
   hasShots: boolean
   hasShifts: boolean
+  hasAnalytics?: boolean
   className?: string
 }
 
 export function GameDetailTabs({
-  boxScoreContent,
   scoringContent,
   playByPlayContent,
   shotsContent,
   shiftsContent,
-  hasScoring,
+  analyticsContent,
+  hasScoring = false,
   hasPlayByPlay,
   hasShots,
   hasShifts,
+  hasAnalytics = false,
   className
 }: GameDetailTabsProps) {
-  // Determine default tab
-  const defaultTab = 'boxscore'
+  // Determine default tab - prioritize play-by-play
+  const defaultTab = hasPlayByPlay ? 'playbyplay' : hasShifts ? 'shifts' : hasShots ? 'shots' : hasAnalytics ? 'analytics' : 'scoring'
 
   // Count available tabs for responsive layout
-  const tabCount = 1 + (hasScoring ? 1 : 0) + (hasPlayByPlay ? 1 : 0) + (hasShots ? 1 : 0) + (hasShifts ? 1 : 0)
+  const tabCount = (hasScoring ? 1 : 0) + (hasPlayByPlay ? 1 : 0) + (hasShots ? 1 : 0) + (hasShifts ? 1 : 0) + (hasAnalytics ? 1 : 0)
 
   return (
     <Tabs defaultValue={defaultTab} className={cn('w-full', className)}>
@@ -48,10 +50,6 @@ export function GameDetailTabs({
             tabCount === 4 && 'grid-cols-4',
             tabCount === 5 && 'grid-cols-5'
           )}>
-            <TabsTrigger value="boxscore" icon={<BarChart3 className="w-4 h-4" />}>
-              Box Score
-            </TabsTrigger>
-
             {hasScoring && (
               <TabsTrigger value="scoring" icon={<ListOrdered className="w-4 h-4" />}>
                 Scoring
@@ -75,12 +73,14 @@ export function GameDetailTabs({
                 Shifts
               </TabsTrigger>
             )}
+
+            {hasAnalytics && (
+              <TabsTrigger value="analytics" icon={<BarChart3 className="w-4 h-4" />}>
+                Analytics
+              </TabsTrigger>
+            )}
           </TabsList>
         </div>
-
-        <TabsContent value="boxscore" className="mt-0 p-0">
-          {boxScoreContent}
-        </TabsContent>
 
         {hasScoring && (
           <TabsContent value="scoring" className="mt-0 p-0">
@@ -103,6 +103,12 @@ export function GameDetailTabs({
         {hasShifts && (
           <TabsContent value="shifts" className="mt-0 p-4">
             {shiftsContent}
+          </TabsContent>
+        )}
+
+        {hasAnalytics && (
+          <TabsContent value="analytics" className="mt-0 p-4">
+            {analyticsContent}
           </TabsContent>
         )}
       </div>
