@@ -51,6 +51,24 @@ def enhance_shift_tables(output_dir: Path, log, save_table_func=None):
 
     log.info(f"Enhancing {len(shifts)} shifts...")
 
+    # Fix EN convention (#177): strength/situation should indicate who HAS empty net
+    # The EN flags are correct (based on goalie presence), but strength/situation labels are backwards
+    if 'home_team_en' in shifts.columns and 'away_team_en' in shifts.columns:
+        home_en_mask = shifts['home_team_en'] == 1
+        away_en_mask = shifts['away_team_en'] == 1
+
+        # Correct strength: ENH = home has empty net, ENA = away has empty net
+        shifts.loc[home_en_mask, 'strength'] = 'ENH'
+        shifts.loc[away_en_mask, 'strength'] = 'ENA'
+
+        # Correct situation: home_en = home has empty net, away_en = away has empty net
+        shifts.loc[home_en_mask, 'situation'] = 'home_en'
+        shifts.loc[away_en_mask, 'situation'] = 'away_en'
+
+        en_corrected = home_en_mask.sum() + away_en_mask.sum()
+        if en_corrected > 0:
+            log.info(f"  Corrected {en_corrected} EN shift labels (strength/situation)")
+
     # Calculate total seconds for shifts (from period start, counting down)
     shifts['shift_start_total_seconds'] = shifts['shift_start_min'].fillna(0) * 60 + shifts['shift_start_sec'].fillna(0)
     shifts['shift_end_total_seconds'] = shifts['shift_end_min'].fillna(0) * 60 + shifts['shift_end_sec'].fillna(0)
@@ -243,10 +261,12 @@ def enhance_shift_tables(output_dir: Path, log, save_table_func=None):
         id_col = f'{col_name}_id'
         team_col = f'{venue}_team'
 
+        # Convert jersey numbers to clean strings (27.0 -> '27') for lookup
+        jersey_str = shifts[col_name].fillna('').astype(str).str.replace(r'\.0$', '', regex=True)
         shifts['_lookup_key_team'] = list(zip(
             shifts['game_id'],
             shifts[team_col].fillna(''),
-            shifts[col_name].fillna('').astype(str)
+            jersey_str
         ))
         shifts[id_col] = shifts['_lookup_key_team'].map(roster_lookup)
         shifts.drop(columns=['_lookup_key_team'], inplace=True, errors='ignore')
@@ -383,7 +403,8 @@ def enhance_shift_tables(output_dir: Path, log, save_table_func=None):
 
     for game_id in shifts['game_id'].unique():
         game_shifts = shifts[shifts['game_id'] == game_id].copy()
-        game_goals = actual_goals[actual_goals['game_id'] == game_id].sort_values('event_total_seconds')
+        # Sort goals DESCENDING by event_total_seconds (countdown format: higher = earlier in period)
+        game_goals = actual_goals[actual_goals['game_id'] == game_id].sort_values('event_total_seconds', ascending=False)
 
         if len(game_goals) == 0:
             continue
@@ -392,6 +413,7 @@ def enhance_shift_tables(output_dir: Path, log, save_table_func=None):
         away_score = 0
         goal_scores = []
 
+        # Build cumulative scores in chronological order (earliest goals first)
         for _, goal in game_goals.iterrows():
             if goal['is_home_goal']:
                 home_score += 1
@@ -405,8 +427,10 @@ def enhance_shift_tables(output_dir: Path, log, save_table_func=None):
                 continue
 
             h_score, a_score = 0, 0
+            # Countdown format: goal happened before shift if goal_time > shift_start
+            # (higher clock value = earlier in period)
             for goal_time, h, a in goal_scores:
-                if goal_time < shift_start:
+                if goal_time > shift_start:
                     h_score, a_score = h, a
                 else:
                     break
@@ -431,9 +455,9 @@ def enhance_shift_tables(output_dir: Path, log, save_table_func=None):
                  'home_zone_entries', 'away_zone_entries', 'home_zone_exits', 'away_zone_exits',
                  'home_giveaways', 'away_giveaways', 'home_bad_giveaways', 'away_bad_giveaways',
                  'home_takeaways', 'away_takeaways',
-                 'fo_won', 'fo_lost', 'fo_pct', 'event_count']
+                 'home_fo_won', 'away_fo_won', 'event_count']
     for col in stat_cols:
-        shifts[col] = 0 if col not in ['cf_pct', 'ff_pct', 'fo_pct'] else 0.0
+        shifts[col] = 0 if col not in ['cf_pct', 'ff_pct'] else 0.0
 
     # VECTORIZED: Aggregate shift stats using groupby
     if len(shift_events_map) > 0:
@@ -531,12 +555,10 @@ def enhance_shift_tables(output_dir: Path, log, save_table_func=None):
 
                 fo_events = events_df[events_df['is_faceoff'] == 1] if 'is_faceoff' in events_df.columns else pd.DataFrame()
                 if len(fo_events) > 0 and 'player_team' in fo_events.columns and 'home_team' in fo_events.columns:
-                    home_fo_won = fo_events[fo_events['player_team'] == fo_events['home_team']].groupby('_shift_id').size()
-                    stats['fo_won'] = shift_ids.map(home_fo_won).fillna(0)
+                    home_fo_wins = fo_events[fo_events['player_team'] == fo_events['home_team']].groupby('_shift_id').size()
+                    stats['home_fo_won'] = shift_ids.map(home_fo_wins).fillna(0)
                     total_fo = fo_events.groupby('_shift_id').size()
-                    stats['fo_lost'] = (shift_ids.map(total_fo).fillna(0) - stats['fo_won']).fillna(0)
-                    total_fo_sum = stats['fo_won'] + stats['fo_lost']
-                    stats['fo_pct'] = (stats['fo_won'] / total_fo_sum * 100).where(total_fo_sum > 0, 0.0)
+                    stats['away_fo_won'] = (shift_ids.map(total_fo).fillna(0) - stats['home_fo_won']).fillna(0)
 
                 return stats
 
@@ -632,7 +654,7 @@ def enhance_shift_players(output_dir: Path, log, save_table_func=None):
     zone_cols = ['home_zone_entries', 'away_zone_entries', 'home_zone_exits', 'away_zone_exits',
                  'home_giveaways', 'away_giveaways', 'home_bad_giveaways', 'away_bad_giveaways',
                  'home_takeaways', 'away_takeaways']
-    fo_cols = ['fo_won', 'fo_lost', 'fo_pct']
+    fo_cols = ['home_fo_won', 'away_fo_won']
     stat_cols_direct = ['event_count']
 
     rating_cols_shifts = ['home_avg_rating', 'home_min_rating', 'home_max_rating',
@@ -757,13 +779,11 @@ def enhance_shift_players(output_dir: Path, log, save_table_func=None):
                                    sp['home_takeaways'].fillna(0),
                                    sp['away_takeaways'].fillna(0))
 
-        fo_won_orig = sp['fo_won'].fillna(0)
-        fo_lost_orig = sp['fo_lost'].fillna(0)
-        sp['fo_won'] = np.where(home_mask, fo_won_orig, fo_lost_orig)
-        sp['fo_lost'] = np.where(home_mask, fo_lost_orig, fo_won_orig)
-
-    total_fo = sp['fo_won'] + sp['fo_lost']
-    sp['fo_pct'] = (sp['fo_won'] / total_fo * 100).where(total_fo > 0, 0.0)
+        # Player perspective: fo_won = your team's wins, fo_lost = opponent's wins
+        home_fo = sp['home_fo_won'].fillna(0)
+        away_fo = sp['away_fo_won'].fillna(0)
+        sp['fo_won'] = np.where(home_mask, home_fo, away_fo)
+        sp['fo_lost'] = np.where(home_mask, away_fo, home_fo)
 
     sp['playing_time'] = sp['shift_duration'].fillna(0) - sp['stoppage_time'].fillna(0)
     sp['playing_time'] = sp['playing_time'].clip(lower=0)
