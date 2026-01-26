@@ -21,6 +21,25 @@ from src.core.table_writer import save_output_table
 from .utilities import drop_all_null_columns
 
 
+def _convert_su_columns_to_boolean(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Convert s/u string columns to proper boolean columns.
+
+    This fixes Supabase upload errors where 's'/'u' values fail
+    to insert into columns that Supabase expects to be boolean.
+
+    Columns affected: event_successful, play_detail_successful
+    """
+    su_columns = ['event_successful', 'play_detail_successful']
+
+    for col in su_columns:
+        if col in df.columns:
+            # Drop the column - the data is now in the _successful boolean column
+            df = df.drop(columns=[col])
+
+    return df
+
+
 def create_fact_sequences(output_dir: Path, log, save_table_func=None):
     """Create fact_sequences aggregating events by sequence_key.
 
@@ -355,6 +374,8 @@ def create_derived_event_tables(output_dir: Path, log, save_table_func=None):
     breakouts['breakout_successful'] = breakouts['event_successful'].apply(
         lambda x: True if x == 's' else (False if x == 'u' else None)
     )
+    # Convert s/u string columns to boolean (fixes Supabase upload errors)
+    breakouts = _convert_su_columns_to_boolean(breakouts)
     breakouts, removed_cols = drop_all_null_columns(breakouts)
     if removed_cols:
         log.info(f"  Removed {len(removed_cols)} all-null columns from fact_breakouts: {removed_cols[:10]}{'...' if len(removed_cols) > 10 else ''}")
@@ -365,6 +386,11 @@ def create_derived_event_tables(output_dir: Path, log, save_table_func=None):
     zone_entries = events[events['is_zone_entry'] == 1].copy()
     zone_entries['zone_entry_key'] = 'ZN' + zone_entries['game_id'].astype(str) + zone_entries.index.astype(str).str.zfill(4)
     zone_entries['entry_method'] = zone_entries['event_detail_2'].apply(lambda x: 'rush' if pd.notna(x) and 'Rush' in str(x) else 'dump_in' if pd.notna(x) and 'Dump' in str(x) else 'other')
+    zone_entries['entry_successful'] = zone_entries['event_successful'].apply(
+        lambda x: True if x == 's' else (False if x == 'u' else None)
+    )
+    # Convert s/u string columns to boolean (fixes Supabase upload errors)
+    zone_entries = _convert_su_columns_to_boolean(zone_entries)
     save_table_func(zone_entries, 'fact_zone_entries')
     log.info(f"  ✓ fact_zone_entries: {len(zone_entries)} rows")
 
@@ -372,6 +398,11 @@ def create_derived_event_tables(output_dir: Path, log, save_table_func=None):
     zone_exits = events[events['is_zone_exit'] == 1].copy()
     zone_exits['zone_exit_key'] = 'ZX' + zone_exits['game_id'].astype(str) + zone_exits.index.astype(str).str.zfill(4)
     zone_exits['exit_method'] = zone_exits['event_detail_2'].apply(lambda x: 'rush' if pd.notna(x) and 'Rush' in str(x) else 'clear' if pd.notna(x) and 'Clear' in str(x) else 'other')
+    zone_exits['exit_successful'] = zone_exits['event_successful'].apply(
+        lambda x: True if x == 's' else (False if x == 'u' else None)
+    )
+    # Convert s/u string columns to boolean (fixes Supabase upload errors)
+    zone_exits = _convert_su_columns_to_boolean(zone_exits)
     save_table_func(zone_exits, 'fact_zone_exits')
     log.info(f"  ✓ fact_zone_exits: {len(zone_exits)} rows")
 
