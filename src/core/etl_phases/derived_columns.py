@@ -440,4 +440,29 @@ def calculate_derived_columns(df, log):
         unique_calcs = list(dict.fromkeys(calculated))  # Remove duplicates while preserving order
         log.info(f"    Calculated {len(unique_calcs)} columns: {', '.join(unique_calcs[:10])}{'...' if len(unique_calcs) > 10 else ''}")
 
+    # ================================================================
+    # 8. EVENT SUCCESS & PLAY DETAIL AUTOMATION
+    # ================================================================
+    # Process s/u logic and auto-derive play_details
+    # See docs/reference/EVENT_SUCCESS_LOGIC.md for full specification
+
+    try:
+        from src.advanced.event_success import process_event_success
+        from src.advanced.play_detail_automation import derive_all_play_details
+
+        log.info("  Processing event success and play detail automation...")
+
+        # Derive automated play_details first (before s/u logic)
+        df = derive_all_play_details(df, config=None, log=log.info)
+
+        # Process event success (standardize values, derive s/u, opposing pairs)
+        df = process_event_success(df, config=None, log=log.info)
+
+        log.info("    Event success and play detail automation complete")
+
+    except ImportError as e:
+        log.warning(f"    Could not import event_success modules: {e}")
+    except Exception as e:
+        log.warning(f"    Event success processing failed: {e}")
+
     return df

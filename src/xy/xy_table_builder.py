@@ -894,7 +894,8 @@ def build_fact_shot_event(event_players: pd.DataFrame, events: pd.DataFrame) -> 
         shooter = shooter_data.iloc[0]
         
         # Get shooter end position (where shot was taken)
-        shot_x, shot_y = get_last_point(shooter, 'player')
+        # Use start/stop format (player_x_stop/player_x_start) not numbered format
+        shot_x, shot_y = get_last_point(shooter, 'player', use_startstop=True)
         
         # Calculate screen metrics for all players in this shot event
         event_group = event_players[event_players['event_id'] == event_id]
@@ -908,7 +909,7 @@ def build_fact_shot_event(event_players: pd.DataFrame, events: pd.DataFrame) -> 
                 if player.get('player_role') == 'event_player_1':  # Skip shooter
                     continue
                     
-                player_x, player_y = get_last_point(player, 'player')
+                player_x, player_y = get_last_point(player, 'player', use_startstop=True)
                 is_shooter_team = 'event_player' in str(player.get('player_role', ''))
                 
                 screen_data = calculate_screen_score(
@@ -954,9 +955,9 @@ def build_fact_shot_event(event_players: pd.DataFrame, events: pd.DataFrame) -> 
             'screen_count': screen_count,
             'is_screened': is_screened,
             
-            # Net target location (when available)
-            'net_target_x': None,
-            'net_target_y': None,
+            # Net target location (from shooter's net_x/net_y)
+            'net_target_x': shooter.get('net_x') if pd.notna(shooter.get('net_x')) else None,
+            'net_target_y': shooter.get('net_y') if pd.notna(shooter.get('net_y')) else None,
             'net_location_id': None,
             
             '_export_timestamp': datetime.now().isoformat()

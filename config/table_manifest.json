@@ -2541,6 +2541,56 @@
       "min_rows": 1,
       "allow_empty": false
     },
+    "fact_goal_assists": {
+      "type": "fact",
+      "columns": [
+        "goal_assist_key",
+        "game_id",
+        "goal_event_id",
+        "goal_event_index",
+        "period",
+        "time_minutes",
+        "time_seconds",
+        "time_total_seconds",
+        "scorer_player_id",
+        "scorer_player_name",
+        "scorer_team_id",
+        "scorer_team_name",
+        "primary_assist_player_id",
+        "primary_assist_player_name",
+        "primary_assist_event_id",
+        "secondary_assist_player_id",
+        "secondary_assist_player_name",
+        "secondary_assist_event_id",
+        "strength",
+        "shot_type",
+        "assist_count",
+        "is_unassisted",
+        "is_powerplay_goal",
+        "is_shorthanded_goal",
+        "is_empty_net",
+        "is_game_winner",
+        "home_team_id",
+        "away_team_id",
+        "home_team_name",
+        "away_team_name",
+        "video_url",
+        "running_video_time",
+        "_export_timestamp"
+      ],
+      "primary_key": "goal_assist_key",
+      "foreign_keys": {
+        "scorer_player_id": "dim_player.player_id",
+        "primary_assist_player_id": "dim_player.player_id",
+        "secondary_assist_player_id": "dim_player.player_id",
+        "scorer_team_id": "dim_team.team_id",
+        "home_team_id": "dim_team.team_id",
+        "away_team_id": "dim_team.team_id"
+      },
+      "row_count": 18,
+      "min_rows": 1,
+      "allow_empty": false
+    },
     "fact_h2h": {
       "type": "fact",
       "columns": [
@@ -8392,16 +8442,6 @@
       "row_count": 1052,
       "min_rows": 1,
       "allow_empty": false
-    },
-    "fact_shot_xy": {
-      "type": "fact",
-      "columns": [],
-      "primary_key": null,
-      "foreign_keys": null,
-      "row_count": 0,
-      "min_rows": 0,
-      "allow_empty": true,
-      "note": "Placeholder table - XY/momentum data not yet populated"
     },
     "fact_shots": {
       "type": "fact",
