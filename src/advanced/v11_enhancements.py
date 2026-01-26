@@ -41,6 +41,103 @@ VERSION = "11.04"
 VERSION_DATE = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
+def _deduplicate_event_players(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Remove duplicate (event_index, player_id, role_team) rows.
+
+    Same player on DIFFERENT teams is valid (two people share jersey number).
+    Only fix when same player appears multiple times on the SAME team:
+    - #8 as event_player_1 AND event_player_2 = duplicate (fix it)
+    - #8 as event_player_1 AND opp_player_1 = valid (different people)
+
+    Priority for keeping:
+    1. Row with play_detail1 or play_detail_2 populated
+    2. If both empty, keep lowest-numbered slot (event_player_1 > event_player_2)
+
+    Args:
+        df: DataFrame with event player data
+
+    Returns:
+        Deduplicated DataFrame
+    """
+    original_count = len(df)
+
+    # Determine role_team from player_role (vectorized)
+    df = df.copy()
+    df['_role_team'] = None
+    has_role = df['player_role'].notna()
+    is_event_role = df['player_role'].str.startswith('event_', na=False)
+    df.loc[has_role & is_event_role, '_role_team'] = 'event'
+    df.loc[has_role & ~is_event_role, '_role_team'] = 'opp'
+
+    # Find duplicates: same player_id on same team appearing multiple times in same event
+    dup_counts = df.groupby(['event_index', 'player_id', '_role_team']).size()
+    dup_combos = dup_counts[dup_counts > 1].index.tolist()
+
+    if not dup_combos:
+        df = df.drop(columns=['_role_team'])
+        return df
+
+    rows_to_drop = []
+
+    for event_idx, player_id, role_team in dup_combos:
+        if pd.isna(player_id) or pd.isna(role_team):
+            continue
+
+        # Get all rows for this event/player/team combination
+        mask = (
+            (df['event_index'] == event_idx) &
+            (df['player_id'] == player_id) &
+            (df['_role_team'] == role_team)
+        )
+        player_rows = df[mask]
+
+        if len(player_rows) <= 1:
+            continue
+
+        # Priority 1: Keep row with play_detail1 or play_detail_2 populated
+        has_detail1 = pd.Series(False, index=player_rows.index)
+        has_detail2 = pd.Series(False, index=player_rows.index)
+
+        if 'play_detail1' in player_rows.columns:
+            has_detail1 = player_rows['play_detail1'].notna() & (player_rows['play_detail1'] != '')
+        if 'play_detail_2' in player_rows.columns:
+            has_detail2 = player_rows['play_detail_2'].notna() & (player_rows['play_detail_2'] != '')
+
+        has_detail = player_rows[has_detail1 | has_detail2]
+
+        if len(has_detail) > 0:
+            # Keep the first row with details, drop others
+            keep_idx = has_detail.index[0]
+            drop_indices = [i for i in player_rows.index if i != keep_idx]
+            rows_to_drop.extend(drop_indices)
+        else:
+            # Priority 2: Keep lowest-numbered slot
+            def get_role_sort_key(idx):
+                role = df.loc[idx, 'player_role']
+                if pd.isna(role):
+                    return 99
+                try:
+                    return int(str(role).split('_')[-1])
+                except (ValueError, IndexError):
+                    return 99
+
+            sorted_indices = sorted(player_rows.index, key=get_role_sort_key)
+            keep_idx = sorted_indices[0]
+            drop_indices = sorted_indices[1:]
+            rows_to_drop.extend(drop_indices)
+
+    # Drop the duplicate rows and the temp column
+    cleaned_df = df.drop(rows_to_drop)
+    cleaned_df = cleaned_df.drop(columns=['_role_team'])
+
+    removed = original_count - len(cleaned_df)
+    if removed > 0:
+        logger.info(f"  Removed {removed} duplicate player slots ({len(dup_combos)} events affected)")
+
+    return cleaned_df
+
+
 def create_dim_shift_duration() -> pd.DataFrame:
     """
     Create dimension table for shift duration buckets.
@@ -140,7 +237,10 @@ def add_event_index_to_tracking():
     if 'event_index' not in df.columns:
         df['event_index'] = df['event_id'].str.extract(r'EV\d{5}(\d{5})')[0].astype(int)
         logger.info("  Added event_index")
-    
+
+    # Deduplicate before key generation - same player should not be in multiple slots
+    df = _deduplicate_event_players(df)
+
     # Add event_player_key (format: EP{game_id:05d}{event_index:05d}{player_id})
     # player_id is string like P100001, use as-is (or NULL for missing)
     df['event_player_key'] = (

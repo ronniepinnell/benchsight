@@ -815,32 +815,46 @@ def load_tracking_data(player_lookup, use_parallel: bool = True):
     return results
 
 def link_player_ids(df, lookup, player_col, team_col):
-    """Link player_id using lookup, handling team for duplicates"""
-    
+    """Link player_id using lookup, handling team for duplicates.
+
+    For opp_player roles, uses the OPPOSITE team since team_venue represents
+    which team has possession, not which team the player is on.
+    """
+
     def get_player_id(row):
         game_id = str(row.get('game_id', ''))
         player_num = str(row.get(player_col, '')).strip()
-        
+
         if not game_id or not player_num:
             return None
-        
+
         # Try with team first (more accurate)
         team = str(row.get(team_col, '')).strip()
         if team:
-            # Map venue to team name if needed
+            # Check if this is an opp_player role - they're on the OPPOSITE team
+            player_role = str(row.get('player_role', '')).strip()
+            is_opp_player = player_role.startswith('opp_')
+
+            # Map venue to team name, flipping for opp_player roles
             if team.lower() in ['home', 'h']:
-                team = str(row.get('home_team', '')).strip()
+                if is_opp_player:
+                    team = str(row.get('away_team', '')).strip()  # Opposite team
+                else:
+                    team = str(row.get('home_team', '')).strip()
             elif team.lower() in ['away', 'a']:
-                team = str(row.get('away_team', '')).strip()
-            
+                if is_opp_player:
+                    team = str(row.get('home_team', '')).strip()  # Opposite team
+                else:
+                    team = str(row.get('away_team', '')).strip()
+
             key = (game_id, team, player_num)
             if key in lookup:
                 return lookup[key]
-        
+
         # Fallback to simple lookup
         simple_key = (game_id, player_num)
         return lookup.get(simple_key)
-    
+
     df['player_id'] = df.apply(get_player_id, axis=1)
     return df
 
