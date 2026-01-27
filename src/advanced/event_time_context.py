@@ -120,26 +120,28 @@ def calculate_shift_toi_at_event(events_df: pd.DataFrame, shift_players_df: pd.D
         # Find all players on ice at this event time
         shifts = shift_lookup[lookup_key]
         players_on_ice = {}  # player_id -> {'toi': x, 'venue': v, 'shift_end': e}
-        
+
+        # Determine period length from shift data (max shift_start gives period length)
+        # Shifts use countdown format (1080 at start of 18-min period)
+        period_length = max(s[2] for s in shifts if pd.notna(s[2])) if shifts else 1080
+
+        # Events use elapsed format (0 at start, increasing through period)
+        # Convert event_time to countdown format for comparison with shifts
+        # event_time_elapsed -> event_time_countdown = period_length - event_time_elapsed
+        event_time_countdown = period_length - event_time if event_time >= 0 else event_time
+
         for player_id, venue, shift_start, shift_end in shifts:
-            # Determine time format: if shift_start > shift_end, it's countdown; else elapsed
-            # Countdown: shift_start (high, e.g. 1080) >= event_time >= shift_end (low, e.g. 0)
-            # Elapsed: shift_start (low, e.g. 0) <= event_time <= shift_end (high, e.g. 1080)
-            is_countdown = shift_start > shift_end if pd.notna(shift_start) and pd.notna(shift_end) else True
-            
+            # Shifts are in countdown format: shift_start (high) >= time >= shift_end (low)
+            if not (pd.notna(shift_start) and pd.notna(shift_end)):
+                continue
+
             player_in_shift = False
-            if is_countdown:
-                # Countdown format: shift_start >= event_time >= shift_end
-                if shift_start >= event_time >= shift_end:
-                    player_in_shift = True
-                    # TOI = time from shift start to event time (shift_start - event_time in countdown)
-                    toi = shift_start - event_time
-            else:
-                # Elapsed format: shift_start <= event_time <= shift_end
-                if shift_start <= event_time <= shift_end:
-                    player_in_shift = True
-                    # TOI = time from shift start to event time (event_time - shift_start in elapsed)
-                    toi = event_time - shift_start
+            # Countdown format: shift_start >= event_time_countdown >= shift_end
+            if shift_start >= event_time_countdown >= shift_end:
+                player_in_shift = True
+                # TOI = time on ice from shift start to event (in seconds)
+                # shift_start - event_time_countdown = elapsed time in this shift
+                toi = shift_start - event_time_countdown
             
             if player_in_shift:
                 # If player already found, keep the shift with end closest to event
@@ -147,13 +149,10 @@ def calculate_shift_toi_at_event(events_df: pd.DataFrame, shift_players_df: pd.D
                     players_on_ice[player_id] = {'toi': toi, 'venue': venue, 'shift_end': shift_end}
                 else:
                     # Compare which shift end is closer to event time to handle overlapping shifts
-                    if is_countdown:
-                        current_dist = abs(event_time - shift_end)
-                        existing_dist = abs(event_time - players_on_ice[player_id]['shift_end'])
-                    else:
-                        current_dist = abs(event_time - shift_end)
-                        existing_dist = abs(event_time - players_on_ice[player_id]['shift_end'])
-                    
+                    # Using countdown format for comparison
+                    current_dist = abs(event_time_countdown - shift_end)
+                    existing_dist = abs(event_time_countdown - players_on_ice[player_id]['shift_end'])
+
                     if current_dist < existing_dist:
                         players_on_ice[player_id] = {'toi': toi, 'venue': venue, 'shift_end': shift_end}
         
@@ -265,40 +264,71 @@ def calculate_shift_ratings_at_event(events_df: pd.DataFrame, shift_players_df: 
     
     # Exclude goalies from shift data for aggregates
     sp_skaters = sp[sp['position'] != 'G'].copy()
-    
-    # Pre-build lookup: game_id -> list of (player_id, venue, shift_start, shift_end, rating)
-    logger.info("  Building shift-rating lookup by game...")
+
+    # Pre-build lookup: (game_id, period) -> list of (player_id, venue, shift_start, shift_end, rating)
+    # Using period-based lookup for accurate time conversion
+    logger.info("  Building shift-rating lookup by game and period...")
     shift_lookup = {}
-    for game_id, group in sp_skaters.groupby('game_id'):
-        shift_lookup[game_id] = group[['player_id', 'venue', 'shift_start_total_seconds', 'shift_end_total_seconds', 'player_rating']].values.tolist()
-    
-    # Process each unique game + event_time combination
+    has_period = 'period' in sp_skaters.columns
+
+    if has_period:
+        for (game_id, period), group in sp_skaters.groupby(['game_id', 'period']):
+            key = (int(game_id), int(period))
+            shift_lookup[key] = group[['player_id', 'venue', 'shift_start_total_seconds', 'shift_end_total_seconds', 'player_rating']].values.tolist()
+    else:
+        for game_id, group in sp_skaters.groupby('game_id'):
+            shift_lookup[int(game_id)] = group[['player_id', 'venue', 'shift_start_total_seconds', 'shift_end_total_seconds', 'player_rating']].values.tolist()
+
+    # Process each unique game + period + event_time combination
     logger.info("  Processing events...")
-    unique_events = df[['game_id', 'event_id', 'time_start_total_seconds', 'team_venue']].drop_duplicates()
-    
-    event_rating_cache = {}  # (game_id, event_time, team_venue) -> {team_avg, opp_avg}
-    
+    event_cols = ['game_id', 'event_id', 'time_start_total_seconds', 'team_venue']
+    if 'period' in df.columns:
+        event_cols.append('period')
+    unique_events = df[event_cols].drop_duplicates()
+
+    event_rating_cache = {}  # (game_id, period, event_time, team_venue) -> {team_avg, opp_avg}
+
     for _, evt in unique_events.iterrows():
-        game_id = evt['game_id']
+        game_id = int(evt['game_id'])
         event_time = evt['time_start_total_seconds']
         event_team_venue = evt['team_venue']
-        
-        if pd.isna(event_time) or game_id not in shift_lookup:
+        event_period = int(evt['period']) if 'period' in evt and pd.notna(evt.get('period')) else None
+
+        if pd.isna(event_time):
             continue
-        
-        cache_key = (game_id, event_time, event_team_venue)
+
+        # Get lookup key based on whether we have period info
+        if has_period and event_period is not None:
+            lookup_key = (game_id, event_period)
+        else:
+            lookup_key = game_id
+
+        if lookup_key not in shift_lookup:
+            continue
+
+        cache_key = (game_id, event_period, event_time, event_team_venue) if event_period is not None else (game_id, event_time, event_team_venue)
         if cache_key in event_rating_cache:
             continue
-        
+
         # Find all players on ice at this event time
-        shifts = shift_lookup[game_id]
+        shifts = shift_lookup[lookup_key]
         players_on_ice = {}  # player_id -> {'rating': r, 'venue': v, 'shift_end': e}
-        
+
+        # Determine period length from shift data (max shift_start gives period length)
+        # Shifts use countdown format (1080 at start of 18-min period)
+        period_length = max(s[2] for s in shifts if pd.notna(s[2])) if shifts else 1080
+
+        # Events use elapsed format (0 at start, increasing through period)
+        # Convert event_time to countdown format for comparison with shifts
+        event_time_countdown = period_length - event_time if event_time >= 0 else event_time
+
         for player_id, venue, shift_start, shift_end, rating in shifts:
-            # Countdown clock: shift_start >= event_time >= shift_end
-            if shift_start >= event_time >= shift_end:
+            if not (pd.notna(shift_start) and pd.notna(shift_end)):
+                continue
+            # Countdown clock: shift_start >= event_time_countdown >= shift_end
+            if shift_start >= event_time_countdown >= shift_end:
                 # If player already found, keep the shift with end closest to event
-                if player_id not in players_on_ice or (event_time - shift_end) < (event_time - players_on_ice[player_id]['shift_end']):
+                if player_id not in players_on_ice or (event_time_countdown - shift_end) < (event_time_countdown - players_on_ice[player_id]['shift_end']):
                     players_on_ice[player_id] = {'rating': rating, 'venue': venue, 'shift_end': shift_end}
         
         # Split by team vs opp
@@ -318,10 +348,20 @@ def calculate_shift_ratings_at_event(events_df: pd.DataFrame, shift_players_df: 
     # Apply to dataframe
     logger.info("  Applying rating values...")
     for idx, row in df.iterrows():
-        cache_key = (row['game_id'], row['time_start_total_seconds'], row['team_venue'])
+        game_id = int(row['game_id'])
+        event_time = row['time_start_total_seconds']
+        team_venue = row['team_venue']
+        event_period = int(row['period']) if 'period' in row and pd.notna(row.get('period')) else None
+
+        # Build cache key (same logic as above)
+        if has_period and event_period is not None:
+            cache_key = (game_id, event_period, event_time, team_venue)
+        else:
+            cache_key = (game_id, event_time, team_venue)
+
         if cache_key not in event_rating_cache:
             continue
-        
+
         result = event_rating_cache[cache_key]
         
         # Team avg rating
@@ -1020,6 +1060,10 @@ def enhance_event_tables() -> Dict[str, int]:
         events_tracking['shift_id'] = events_tracking.apply(find_shift_id, axis=1)
         shift_fill = events_tracking['shift_id'].notna().sum()
         logger.info(f"  fact_event_players.shift_id: {shift_fill}/{len(events_tracking)} ({100*shift_fill/len(events_tracking):.1f}%)")
+
+        # Copy shift_id to shift_key (shift_id IS the shift_key format: 'SH1896900001')
+        events_tracking['shift_key'] = events_tracking['shift_id']
+        logger.info(f"  fact_event_players.shift_key: populated from shift_id")
     else:
         logger.warning("  Shift time columns not found, skipping shift_id FK")
     
@@ -1065,6 +1109,10 @@ def enhance_event_tables() -> Dict[str, int]:
             events['shift_id'] = events['event_id'].map(shift_id_map)
             shift_fill = events['shift_id'].notna().sum()
             logger.info(f"  fact_events.shift_id: {shift_fill}/{len(events)} ({100*shift_fill/len(events):.1f}%)")
+
+            # Copy shift_id to shift_key
+            events['shift_key'] = events['shift_id']
+            logger.info(f"  fact_events.shift_key: populated from shift_id")
         
         # First, add team columns from tracking data if not present
         # (needed for goal_for/goal_against calculations)
@@ -1123,16 +1171,57 @@ def enhance_event_tables() -> Dict[str, int]:
         save_output_table(events, 'fact_events', OUTPUT_DIR)
         results['fact_events'] = len(events)
         logger.info(f"Saved fact_events: {len(events)} rows, {len(events.columns)} cols")
-        
+
+        # ========================================
+        # REFRESH FILTERED TABLES WITH shift_key
+        # ========================================
+        # These tables are created from fact_events in base_etl (before shift_key added)
+        # Re-create them now that fact_events has shift_key
+        logger.info("\n--- Refreshing filtered tables with shift_key ---")
+
+        # fact_zone_entries (filter: is_zone_entry == 1)
+        ze_path = OUTPUT_DIR / 'fact_zone_entries.csv'
+        if ze_path.exists():
+            zone_entries = pd.read_csv(ze_path, low_memory=False)
+            if 'event_id' in zone_entries.columns and 'shift_key' in events.columns:
+                shift_map = events.set_index('event_id')['shift_key'].to_dict()
+                zone_entries['shift_key'] = zone_entries['event_id'].map(shift_map)
+                save_output_table(zone_entries, 'fact_zone_entries', OUTPUT_DIR)
+                filled = zone_entries['shift_key'].notna().sum()
+                logger.info(f"  fact_zone_entries.shift_key: {filled}/{len(zone_entries)} ({100*filled/len(zone_entries):.1f}%)")
+                results['fact_zone_entries'] = len(zone_entries)
+
+        # fact_zone_exits (filter: is_zone_exit == 1)
+        zx_path = OUTPUT_DIR / 'fact_zone_exits.csv'
+        if zx_path.exists():
+            zone_exits = pd.read_csv(zx_path, low_memory=False)
+            if 'event_id' in zone_exits.columns and 'shift_key' in events.columns:
+                zone_exits['shift_key'] = zone_exits['event_id'].map(shift_map)
+                save_output_table(zone_exits, 'fact_zone_exits', OUTPUT_DIR)
+                filled = zone_exits['shift_key'].notna().sum()
+                logger.info(f"  fact_zone_exits.shift_key: {filled}/{len(zone_exits)} ({100*filled/len(zone_exits):.1f}%)")
+                results['fact_zone_exits'] = len(zone_exits)
+
+        # fact_high_danger_chances
+        hd_path = OUTPUT_DIR / 'fact_high_danger_chances.csv'
+        if hd_path.exists():
+            hd_chances = pd.read_csv(hd_path, low_memory=False)
+            if 'event_id' in hd_chances.columns and 'shift_key' in events.columns:
+                hd_chances['shift_key'] = hd_chances['event_id'].map(shift_map)
+                save_output_table(hd_chances, 'fact_high_danger_chances', OUTPUT_DIR)
+                filled = hd_chances['shift_key'].notna().sum()
+                logger.info(f"  fact_high_danger_chances.shift_key: {filled}/{len(hd_chances)} ({100*filled/len(hd_chances):.1f}%)")
+                results['fact_high_danger_chances'] = len(hd_chances)
+
     except FileNotFoundError:
         logger.warning("fact_events.csv not found")
         events = None
-    
+
     logger.info("\n" + "=" * 60)
     logger.info("EVENT TIME & TOI ENHANCEMENT COMPLETE")
     logger.info(f"Tables enhanced: {list(results.keys())}")
     logger.info("=" * 60)
-    
+
     return results
 
 

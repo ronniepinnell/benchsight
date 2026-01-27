@@ -81,10 +81,49 @@ def load_fact_events() -> pd.DataFrame:
 
 
 def get_xy_columns(df: pd.DataFrame) -> Tuple[List[str], List[str]]:
-    """Get lists of puck and player XY columns."""
-    puck_cols = sorted([c for c in df.columns if c.startswith('puck_x_') or c.startswith('puck_y_')])
-    player_cols = sorted([c for c in df.columns if c.startswith('player_x_') or c.startswith('player_y_')])
-    return puck_cols, player_cols
+    """Get lists of puck and player XY columns.
+
+    Handles two formats:
+    1. Numbered format: puck_x_1, puck_x_2, ... puck_x_10 (from xy_puck sheet)
+    2. Start/stop format: puck_x_start, puck_x_stop (from events sheet)
+    """
+    # Look for numbered format first
+    puck_numbered = sorted([c for c in df.columns if
+                           (c.startswith('puck_x_') or c.startswith('puck_y_')) and
+                           any(c.endswith(f'_{i}') for i in range(1, 11))])
+    player_numbered = sorted([c for c in df.columns if
+                             (c.startswith('player_x_') or c.startswith('player_y_')) and
+                             any(c.endswith(f'_{i}') for i in range(1, 11))])
+
+    # If numbered format found, use it
+    if puck_numbered or player_numbered:
+        return puck_numbered, player_numbered
+
+    # Fall back to start/stop format (exclude adjusted columns)
+    puck_startstop = sorted([c for c in df.columns if
+                            (c.startswith('puck_x_') or c.startswith('puck_y_')) and
+                            'adjusted' not in c.lower()])
+    player_startstop = sorted([c for c in df.columns if
+                              (c.startswith('player_x_') or c.startswith('player_y_')) and
+                              'adjusted' not in c.lower()])
+
+    return puck_startstop, player_startstop
+
+
+def has_startstop_format(df: pd.DataFrame, prefix: str = 'puck') -> bool:
+    """Check if dataframe uses start/stop format instead of numbered format."""
+    has_numbered = any(f'{prefix}_x_{i}' in df.columns for i in range(1, 11))
+    has_startstop = f'{prefix}_x_start' in df.columns
+    return has_startstop and not has_numbered
+
+
+def get_startstop_points(row: pd.Series, prefix: str) -> Tuple[Optional[float], Optional[float], Optional[float], Optional[float]]:
+    """Get start and stop points from start/stop format columns."""
+    x_start = row.get(f'{prefix}_x_start')
+    y_start = row.get(f'{prefix}_y_start')
+    x_stop = row.get(f'{prefix}_x_stop')
+    y_stop = row.get(f'{prefix}_y_stop')
+    return x_start, y_start, x_stop, y_stop
 
 
 def has_xy_data(df: pd.DataFrame) -> bool:
@@ -95,8 +134,37 @@ def has_xy_data(df: pd.DataFrame) -> bool:
     return df[puck_cols + player_cols].notna().any().any()
 
 
-def count_populated_points(row: pd.Series, prefix: str) -> int:
-    """Count how many XY points are populated (1-10) for a given prefix."""
+def count_populated_points(row: pd.Series, prefix: str, use_startstop: bool = False) -> int:
+    """Count how many XY points are populated (1-10) for a given prefix.
+
+    Args:
+        row: DataFrame row
+        prefix: Column prefix (e.g., 'puck', 'player')
+        use_startstop: If True, check start/stop format instead of numbered
+    """
+    if use_startstop:
+        # Start/stop format: count based on what's available
+        x_start = row.get(f'{prefix}_x_start')
+        y_start = row.get(f'{prefix}_y_start')
+        x_stop = row.get(f'{prefix}_x_stop')
+        y_stop = row.get(f'{prefix}_y_stop')
+
+        has_start = pd.notna(x_start) and pd.notna(y_start)
+        has_stop = pd.notna(x_stop) and pd.notna(y_stop)
+
+        if has_start and has_stop:
+            # Check if stop differs from start
+            try:
+                if (float(x_start) != float(x_stop)) or (float(y_start) != float(y_stop)):
+                    return 2
+            except (ValueError, TypeError):
+                pass
+            return 1
+        elif has_start:
+            return 1
+        return 0
+
+    # Numbered format
     count = 0
     for i in POINT_NUMBERS:
         x_col = f'{prefix}_x_{i}'
@@ -106,14 +174,69 @@ def count_populated_points(row: pd.Series, prefix: str) -> int:
     return count
 
 
-def get_last_point(row: pd.Series, prefix: str) -> Tuple[Optional[float], Optional[float]]:
-    """Get the last populated XY point (the endpoint)."""
+def get_last_point(row: pd.Series, prefix: str, use_startstop: bool = False) -> Tuple[Optional[float], Optional[float]]:
+    """Get the last populated XY point (the endpoint).
+
+    Args:
+        row: DataFrame row
+        prefix: Column prefix (e.g., 'puck', 'player')
+        use_startstop: If True, use start/stop format instead of numbered
+    """
+    if use_startstop:
+        # Try stop point first
+        x_stop = row.get(f'{prefix}_x_stop')
+        y_stop = row.get(f'{prefix}_y_stop')
+        if pd.notna(x_stop) and pd.notna(y_stop):
+            try:
+                return float(x_stop), float(y_stop)
+            except (ValueError, TypeError):
+                pass
+        # Fall back to start point
+        x_start = row.get(f'{prefix}_x_start')
+        y_start = row.get(f'{prefix}_y_start')
+        if pd.notna(x_start) and pd.notna(y_start):
+            try:
+                return float(x_start), float(y_start)
+            except (ValueError, TypeError):
+                pass
+        return None, None
+
+    # Numbered format
     for i in reversed(POINT_NUMBERS):
         x_col = f'{prefix}_x_{i}'
         y_col = f'{prefix}_y_{i}'
         x, y = row.get(x_col), row.get(y_col)
         if pd.notna(x) and pd.notna(y):
             return float(x), float(y)
+    return None, None
+
+
+def get_first_point(row: pd.Series, prefix: str, use_startstop: bool = False) -> Tuple[Optional[float], Optional[float]]:
+    """Get the first populated XY point (the start point).
+
+    Args:
+        row: DataFrame row
+        prefix: Column prefix (e.g., 'puck', 'player')
+        use_startstop: If True, use start/stop format instead of numbered
+    """
+    if use_startstop:
+        x_start = row.get(f'{prefix}_x_start')
+        y_start = row.get(f'{prefix}_y_start')
+        if pd.notna(x_start) and pd.notna(y_start):
+            try:
+                return float(x_start), float(y_start)
+            except (ValueError, TypeError):
+                pass
+        return None, None
+
+    # Numbered format - first point is _1
+    x = row.get(f'{prefix}_x_1')
+    y = row.get(f'{prefix}_y_1')
+    if pd.notna(x) and pd.notna(y):
+        try:
+            return float(x), float(y)
+        except (ValueError, TypeError):
+            pass
     return None, None
 
 
@@ -156,33 +279,48 @@ def calculate_distance_to_net(x: float, y: float, attacking_right: bool = True) 
 def build_fact_puck_xy_wide(event_players: pd.DataFrame) -> pd.DataFrame:
     """
     Build fact_puck_xy_wide - one row per event with all puck positions.
-    
+
+    Handles two input formats:
+    1. Numbered format: puck_x_1, puck_x_2, ... puck_x_10 (from xy_puck sheet)
+    2. Start/stop format: puck_x_start, puck_x_stop (from events sheet)
+
     Puck position is the same for all players in an event, so we dedupe.
     """
     logger.info("Building fact_puck_xy_wide...")
-    
+
     puck_cols, _ = get_xy_columns(event_players)
     if not puck_cols:
         logger.warning("  No puck XY columns found")
         return pd.DataFrame()
-    
+
+    # Determine which format we're using
+    use_startstop = has_startstop_format(event_players, 'puck')
+    if use_startstop:
+        logger.info("  Using start/stop format for puck XY data")
+    else:
+        logger.info("  Using numbered format for puck XY data")
+
     # Filter to rows with puck data
     has_puck = event_players[puck_cols].notna().any(axis=1)
     puck_data = event_players[has_puck].copy()
-    
+
     if len(puck_data) == 0:
         logger.info("  No puck XY data found")
         return pd.DataFrame()
-    
+
     # Dedupe by event_id (puck is same for all players in event)
     key_cols = ['event_id', 'game_id', 'period', 'event_type', 'event_detail']
     key_cols = [c for c in key_cols if c in puck_data.columns]
-    
+
     puck_wide = puck_data.groupby('event_id').first().reset_index()
-    
+
     # Build output columns
     records = []
     for _, row in puck_wide.iterrows():
+        # Get start and end points using format-aware helpers
+        x_start, y_start = get_first_point(row, 'puck', use_startstop)
+        x_end, y_end = get_last_point(row, 'puck', use_startstop)
+
         record = {
             'puck_xy_key': f"PKW{row.get('game_id', '')}{str(row.get('event_id', ''))[-5:]}",
             'event_id': row['event_id'],
@@ -190,27 +328,35 @@ def build_fact_puck_xy_wide(event_players: pd.DataFrame) -> pd.DataFrame:
             'period': row.get('period'),
             'event_type': row.get('event_type'),
             'event_detail': row.get('event_detail'),
-            'point_count': count_populated_points(row, 'puck'),
+            'point_count': count_populated_points(row, 'puck', use_startstop),
         }
-        
+
         # Add x_1 through x_10, y_1 through y_10
-        for i in POINT_NUMBERS:
-            record[f'x_{i}'] = row.get(f'puck_x_{i}')
-            record[f'y_{i}'] = row.get(f'puck_y_{i}')
-        
-        # Calculate derived fields
-        x_start, y_start = row.get('puck_x_1'), row.get('puck_y_1')
-        x_end, y_end = get_last_point(row, 'puck')
-        
+        if use_startstop:
+            # Map start/stop to x_1/y_1 and x_2/y_2
+            record['x_1'] = x_start
+            record['y_1'] = y_start
+            record['x_2'] = x_end if (x_end != x_start or y_end != y_start) else None
+            record['y_2'] = y_end if (x_end != x_start or y_end != y_start) else None
+            for i in range(3, 11):
+                record[f'x_{i}'] = None
+                record[f'y_{i}'] = None
+        else:
+            # Numbered format - copy directly
+            for i in POINT_NUMBERS:
+                record[f'x_{i}'] = row.get(f'puck_x_{i}')
+                record[f'y_{i}'] = row.get(f'puck_y_{i}')
+
+        # Add derived fields
         record['x_start'] = x_start
         record['y_start'] = y_start
         record['x_end'] = x_end
         record['y_end'] = y_end
-        record['distance_traveled'] = calculate_distance(x_start, y_start, x_end, y_end) if x_end else None
-        
+        record['distance_traveled'] = calculate_distance(x_start, y_start, x_end, y_end) if x_end and x_start else None
+
         record['_export_timestamp'] = datetime.now().isoformat()
         records.append(record)
-    
+
     df = pd.DataFrame(records)
     save_output_table(df, 'fact_puck_xy_wide', OUTPUT_DIR)
     logger.info(f"  ✓ fact_puck_xy_wide: {len(df)} rows")
@@ -220,45 +366,126 @@ def build_fact_puck_xy_wide(event_players: pd.DataFrame) -> pd.DataFrame:
 def build_fact_puck_xy_long(event_players: pd.DataFrame) -> pd.DataFrame:
     """
     Build fact_puck_xy_long - one row per point per event.
-    
-    Unpivots puck_x_1..10, puck_y_1..10 into long format.
+
+    Handles two input formats:
+    1. Numbered format: puck_x_1, puck_x_2, ... puck_x_10 (from xy_puck sheet)
+    2. Start/stop format: puck_x_start, puck_x_stop (from events sheet)
+
+    Unpivots to long format with one row per point per event.
     """
     logger.info("Building fact_puck_xy_long...")
-    
+
     puck_cols, _ = get_xy_columns(event_players)
     if not puck_cols:
         return pd.DataFrame()
-    
+
+    # Determine which format we're using
+    use_startstop = has_startstop_format(event_players, 'puck')
+
     # Filter and dedupe by event
     has_puck = event_players[puck_cols].notna().any(axis=1)
     puck_data = event_players[has_puck].groupby('event_id').first().reset_index()
-    
+
     if len(puck_data) == 0:
         logger.info("  No puck XY data found")
         return pd.DataFrame()
-    
+
     records = []
     for _, row in puck_data.iterrows():
-        for i in POINT_NUMBERS:
-            x = row.get(f'puck_x_{i}')
-            y = row.get(f'puck_y_{i}')
-            
-            if pd.notna(x) and pd.notna(y):
-                records.append({
-                    'puck_xy_key': f"PKL{row.get('game_id', '')}{str(row.get('event_id', ''))[-5:]}{i:02d}",
-                    'event_id': row['event_id'],
-                    'game_id': row.get('game_id'),
-                    'point_number': i,
-                    'x': x,
-                    'y': y,
-                    'distance_to_net': calculate_distance_to_net(x, y),
-                    'angle_to_net': calculate_angle_to_net(x, y),
-                    '_export_timestamp': datetime.now().isoformat()
-                })
-    
+        event_id = row['event_id'] if 'event_id' in row.index else None
+        game_id = row['game_id'] if 'game_id' in row.index else None
+
+        if not event_id:
+            continue
+
+        if use_startstop:
+            # Start/stop format - create 1-2 records
+            x_start = row.get('puck_x_start')
+            y_start = row.get('puck_y_start')
+            x_stop = row.get('puck_x_stop')
+            y_stop = row.get('puck_y_stop')
+
+            # Add start point
+            if pd.notna(x_start) and pd.notna(y_start):
+                try:
+                    x_float = float(x_start)
+                    y_float = float(y_start)
+                    records.append({
+                        'puck_xy_key': f"PKL{game_id or ''}{str(event_id)[-5:]}01",
+                        'event_id': event_id,
+                        'game_id': game_id,
+                        'point_number': 1,
+                        'x': x_float,
+                        'y': y_float,
+                        'is_start': 1,
+                        'is_stop': 0 if pd.notna(x_stop) else 1,
+                        'distance_to_net': calculate_distance_to_net(x_float, y_float),
+                        'angle_to_net': calculate_angle_to_net(x_float, y_float),
+                        '_export_timestamp': datetime.now().isoformat()
+                    })
+                except (ValueError, TypeError):
+                    pass
+
+            # Add stop point if different from start
+            if pd.notna(x_stop) and pd.notna(y_stop):
+                try:
+                    x_stop_float = float(x_stop)
+                    y_stop_float = float(y_stop)
+                    # Only add if different from start
+                    if x_stop_float != x_float or y_stop_float != y_float:
+                        records.append({
+                            'puck_xy_key': f"PKL{game_id or ''}{str(event_id)[-5:]}02",
+                            'event_id': event_id,
+                            'game_id': game_id,
+                            'point_number': 2,
+                            'x': x_stop_float,
+                            'y': y_stop_float,
+                            'is_start': 0,
+                            'is_stop': 1,
+                            'distance_to_net': calculate_distance_to_net(x_stop_float, y_stop_float),
+                            'angle_to_net': calculate_angle_to_net(x_stop_float, y_stop_float),
+                            '_export_timestamp': datetime.now().isoformat()
+                        })
+                except (ValueError, TypeError):
+                    pass
+        else:
+            # Numbered format - iterate through all 10 possible points
+            for i in POINT_NUMBERS:
+                x_col = f'puck_x_{i}'
+                y_col = f'puck_y_{i}'
+
+                if x_col not in row.index or y_col not in row.index:
+                    continue
+
+                x = row[x_col]
+                y = row[y_col]
+
+                if pd.notna(x) and pd.notna(y):
+                    try:
+                        x_float = float(x)
+                        y_float = float(y)
+                    except (ValueError, TypeError):
+                        continue
+
+                    records.append({
+                        'puck_xy_key': f"PKL{game_id or ''}{str(event_id)[-5:]}{i:02d}",
+                        'event_id': event_id,
+                        'game_id': game_id,
+                        'point_number': i,
+                        'x': x_float,
+                        'y': y_float,
+                        'distance_to_net': calculate_distance_to_net(x_float, y_float),
+                        'angle_to_net': calculate_angle_to_net(x_float, y_float),
+                        '_export_timestamp': datetime.now().isoformat()
+                    })
+
     df = pd.DataFrame(records)
-    save_output_table(df, 'fact_puck_xy_long', OUTPUT_DIR)
-    logger.info(f"  ✓ fact_puck_xy_long: {len(df)} rows")
+    if len(df) > 0:
+        # Save directly to ensure it's saved even if save_output_table skips empty
+        df.to_csv(OUTPUT_DIR / 'fact_puck_xy_long.csv', index=False)
+        logger.info(f"  ✓ fact_puck_xy_long: {len(df)} rows (saved directly)")
+    else:
+        logger.info("  ⚠ fact_puck_xy_long: 0 rows (no data found)")
     return df
 
 
@@ -269,23 +496,34 @@ def build_fact_puck_xy_long(event_players: pd.DataFrame) -> pd.DataFrame:
 def build_fact_player_xy_wide(event_players: pd.DataFrame) -> pd.DataFrame:
     """
     Build fact_player_xy_wide - one row per player per event.
+
+    Handles two input formats:
+    1. Numbered format: player_x_1, player_x_2, ... player_x_10
+    2. Start/stop format: player_x_start, player_x_stop
     """
     logger.info("Building fact_player_xy_wide...")
-    
+
     _, player_cols = get_xy_columns(event_players)
     if not player_cols:
         return pd.DataFrame()
-    
+
+    # Determine which format we're using
+    use_startstop = has_startstop_format(event_players, 'player')
+
     # Filter to rows with player XY data
     has_player_xy = event_players[player_cols].notna().any(axis=1)
     player_data = event_players[has_player_xy].copy()
-    
+
     if len(player_data) == 0:
         logger.info("  No player XY data found")
         return pd.DataFrame()
-    
+
     records = []
     for _, row in player_data.iterrows():
+        # Get start and end points using format-aware helpers
+        x_start, y_start = get_first_point(row, 'player', use_startstop)
+        x_end, y_end = get_last_point(row, 'player', use_startstop)
+
         record = {
             'player_xy_key': f"PXW{row.get('game_id', '')}{str(row.get('event_id', ''))[-5:]}{str(row.get('player_id', ''))[-4:]}",
             'event_id': row.get('event_id'),
@@ -295,29 +533,36 @@ def build_fact_player_xy_wide(event_players: pd.DataFrame) -> pd.DataFrame:
             'player_role': row.get('player_role'),
             'team_id': row.get('team_id'),
             'is_event_team': 'event_player' in str(row.get('player_role', '')),
-            'point_count': count_populated_points(row, 'player'),
+            'point_count': count_populated_points(row, 'player', use_startstop),
         }
-        
+
         # Add all point columns
-        for i in POINT_NUMBERS:
-            record[f'x_{i}'] = row.get(f'player_x_{i}')
-            record[f'y_{i}'] = row.get(f'player_y_{i}')
-        
+        if use_startstop:
+            # Map start/stop to x_1/y_1 and x_2/y_2
+            record['x_1'] = x_start
+            record['y_1'] = y_start
+            record['x_2'] = x_end if (x_end != x_start or y_end != y_start) else None
+            record['y_2'] = y_end if (x_end != x_start or y_end != y_start) else None
+            for i in range(3, 11):
+                record[f'x_{i}'] = None
+                record[f'y_{i}'] = None
+        else:
+            for i in POINT_NUMBERS:
+                record[f'x_{i}'] = row.get(f'player_x_{i}')
+                record[f'y_{i}'] = row.get(f'player_y_{i}')
+
         # Derived fields
-        x_start, y_start = row.get('player_x_1'), row.get('player_y_1')
-        x_end, y_end = get_last_point(row, 'player')
-        
         record['x_start'] = x_start
         record['y_start'] = y_start
         record['x_end'] = x_end
         record['y_end'] = y_end
-        record['distance_traveled'] = calculate_distance(x_start, y_start, x_end, y_end) if x_end else None
+        record['distance_traveled'] = calculate_distance(x_start, y_start, x_end, y_end) if x_end and x_start else None
         record['distance_to_net_start'] = calculate_distance_to_net(x_start, y_start) if pd.notna(x_start) else None
         record['distance_to_net_end'] = calculate_distance_to_net(x_end, y_end) if x_end else None
-        
+
         record['_export_timestamp'] = datetime.now().isoformat()
         records.append(record)
-    
+
     df = pd.DataFrame(records)
     save_output_table(df, 'fact_player_xy_wide', OUTPUT_DIR)
     logger.info(f"  ✓ fact_player_xy_wide: {len(df)} rows")
@@ -327,46 +572,136 @@ def build_fact_player_xy_wide(event_players: pd.DataFrame) -> pd.DataFrame:
 def build_fact_player_xy_long(event_players: pd.DataFrame) -> pd.DataFrame:
     """
     Build fact_player_xy_long - one row per point per player per event.
+
+    Handles two input formats:
+    1. Numbered format: player_x_1, player_x_2, ... player_x_10
+    2. Start/stop format: player_x_start, player_x_stop
     """
     logger.info("Building fact_player_xy_long...")
-    
+
     _, player_cols = get_xy_columns(event_players)
     if not player_cols:
         return pd.DataFrame()
-    
+
+    # Determine which format we're using
+    use_startstop = has_startstop_format(event_players, 'player')
+
     has_player_xy = event_players[player_cols].notna().any(axis=1)
     player_data = event_players[has_player_xy].copy()
-    
+
     if len(player_data) == 0:
         logger.info("  No player XY data found")
         return pd.DataFrame()
-    
+
     records = []
     for _, row in player_data.iterrows():
-        for i in POINT_NUMBERS:
-            x = row.get(f'player_x_{i}')
-            y = row.get(f'player_y_{i}')
-            
-            if pd.notna(x) and pd.notna(y):
-                records.append({
-                    'player_xy_key': f"PXL{row.get('game_id', '')}{str(row.get('event_id', ''))[-5:]}{str(row.get('player_id', ''))[-4:]}{i:02d}",
-                    'event_id': row.get('event_id'),
-                    'game_id': row.get('game_id'),
-                    'player_id': row.get('player_id'),
-                    'player_name': row.get('player_name'),
-                    'player_role': row.get('player_role'),
-                    'is_event_team': 'event_player' in str(row.get('player_role', '')),
-                    'point_number': i,
-                    'x': x,
-                    'y': y,
-                    'distance_to_net': calculate_distance_to_net(x, y),
-                    'angle_to_net': calculate_angle_to_net(x, y),
-                    '_export_timestamp': datetime.now().isoformat()
-                })
-    
+        event_id = row['event_id'] if 'event_id' in row.index else None
+        game_id = row['game_id'] if 'game_id' in row.index else None
+        player_id = row['player_id'] if 'player_id' in row.index else None
+
+        if not event_id or not player_id:
+            continue
+
+        if use_startstop:
+            # Start/stop format - create 1-2 records
+            x_start = row.get('player_x_start')
+            y_start = row.get('player_y_start')
+            x_stop = row.get('player_x_stop')
+            y_stop = row.get('player_y_stop')
+
+            # Add start point
+            if pd.notna(x_start) and pd.notna(y_start):
+                try:
+                    x_float = float(x_start)
+                    y_float = float(y_start)
+                    records.append({
+                        'player_xy_key': f"PXL{game_id or ''}{str(event_id)[-5:]}{str(player_id)[-4:]}01",
+                        'event_id': event_id,
+                        'game_id': game_id,
+                        'player_id': player_id,
+                        'player_name': row['player_name'] if 'player_name' in row.index else None,
+                        'player_role': row['player_role'] if 'player_role' in row.index else None,
+                        'is_event_team': 'event_player' in str(row.get('player_role', '')),
+                        'point_number': 1,
+                        'x': x_float,
+                        'y': y_float,
+                        'is_start': 1,
+                        'is_stop': 0 if pd.notna(x_stop) else 1,
+                        'distance_to_net': calculate_distance_to_net(x_float, y_float),
+                        'angle_to_net': calculate_angle_to_net(x_float, y_float),
+                        '_export_timestamp': datetime.now().isoformat()
+                    })
+                except (ValueError, TypeError):
+                    pass
+
+            # Add stop point if different from start
+            if pd.notna(x_stop) and pd.notna(y_stop):
+                try:
+                    x_stop_float = float(x_stop)
+                    y_stop_float = float(y_stop)
+                    # Only add if different from start
+                    if x_stop_float != x_float or y_stop_float != y_float:
+                        records.append({
+                            'player_xy_key': f"PXL{game_id or ''}{str(event_id)[-5:]}{str(player_id)[-4:]}02",
+                            'event_id': event_id,
+                            'game_id': game_id,
+                            'player_id': player_id,
+                            'player_name': row['player_name'] if 'player_name' in row.index else None,
+                            'player_role': row['player_role'] if 'player_role' in row.index else None,
+                            'is_event_team': 'event_player' in str(row.get('player_role', '')),
+                            'point_number': 2,
+                            'x': x_stop_float,
+                            'y': y_stop_float,
+                            'is_start': 0,
+                            'is_stop': 1,
+                            'distance_to_net': calculate_distance_to_net(x_stop_float, y_stop_float),
+                            'angle_to_net': calculate_angle_to_net(x_stop_float, y_stop_float),
+                            '_export_timestamp': datetime.now().isoformat()
+                        })
+                except (ValueError, TypeError):
+                    pass
+        else:
+            # Numbered format
+            for i in POINT_NUMBERS:
+                x_col = f'player_x_{i}'
+                y_col = f'player_y_{i}'
+
+                if x_col not in row.index or y_col not in row.index:
+                    continue
+
+                x = row[x_col]
+                y = row[y_col]
+
+                if pd.notna(x) and pd.notna(y):
+                    try:
+                        x_float = float(x)
+                        y_float = float(y)
+                    except (ValueError, TypeError):
+                        continue
+
+                    records.append({
+                        'player_xy_key': f"PXL{game_id or ''}{str(event_id)[-5:]}{str(player_id)[-4:]}{i:02d}",
+                        'event_id': event_id,
+                        'game_id': game_id,
+                        'player_id': player_id,
+                        'player_name': row['player_name'] if 'player_name' in row.index else None,
+                        'player_role': row['player_role'] if 'player_role' in row.index else None,
+                        'is_event_team': 'event_player' in str(row.get('player_role', '')),
+                        'point_number': i,
+                        'x': x_float,
+                        'y': y_float,
+                        'distance_to_net': calculate_distance_to_net(x_float, y_float),
+                        'angle_to_net': calculate_angle_to_net(x_float, y_float),
+                        '_export_timestamp': datetime.now().isoformat()
+                    })
+
     df = pd.DataFrame(records)
-    save_output_table(df, 'fact_player_xy_long', OUTPUT_DIR)
-    logger.info(f"  ✓ fact_player_xy_long: {len(df)} rows")
+    if len(df) > 0:
+        # Save directly to ensure it's saved even if save_output_table skips empty
+        df.to_csv(OUTPUT_DIR / 'fact_player_xy_long.csv', index=False)
+        logger.info(f"  ✓ fact_player_xy_long: {len(df)} rows (saved directly)")
+    else:
+        logger.info("  ⚠ fact_player_xy_long: 0 rows (no data found)")
     return df
 
 
@@ -559,7 +894,8 @@ def build_fact_shot_event(event_players: pd.DataFrame, events: pd.DataFrame) -> 
         shooter = shooter_data.iloc[0]
         
         # Get shooter end position (where shot was taken)
-        shot_x, shot_y = get_last_point(shooter, 'player')
+        # Use start/stop format (player_x_stop/player_x_start) not numbered format
+        shot_x, shot_y = get_last_point(shooter, 'player', use_startstop=True)
         
         # Calculate screen metrics for all players in this shot event
         event_group = event_players[event_players['event_id'] == event_id]
@@ -573,7 +909,7 @@ def build_fact_shot_event(event_players: pd.DataFrame, events: pd.DataFrame) -> 
                 if player.get('player_role') == 'event_player_1':  # Skip shooter
                     continue
                     
-                player_x, player_y = get_last_point(player, 'player')
+                player_x, player_y = get_last_point(player, 'player', use_startstop=True)
                 is_shooter_team = 'event_player' in str(player.get('player_role', ''))
                 
                 screen_data = calculate_screen_score(
@@ -619,9 +955,9 @@ def build_fact_shot_event(event_players: pd.DataFrame, events: pd.DataFrame) -> 
             'screen_count': screen_count,
             'is_screened': is_screened,
             
-            # Net target location (when available)
-            'net_target_x': None,
-            'net_target_y': None,
+            # Net target location (from shooter's net_x/net_y)
+            'net_target_x': shooter.get('net_x') if pd.notna(shooter.get('net_x')) else None,
+            'net_target_y': shooter.get('net_y') if pd.notna(shooter.get('net_y')) else None,
             'net_location_id': None,
             
             '_export_timestamp': datetime.now().isoformat()
@@ -859,6 +1195,213 @@ def build_fact_shot_players(event_players: pd.DataFrame, events: pd.DataFrame) -
 
 
 # =============================================================================
+# TRACKING TAB LOADER (xy_puck / xy_player sheets)
+# =============================================================================
+
+GAMES_DIR = Path('data/raw/games')
+
+
+def _remap_event_ids(df: pd.DataFrame, flag_to_event_id: dict, game_id: str) -> pd.DataFrame:
+    """
+    Remap event_ids from event_index_flag_ format to tracking_event_index format.
+
+    The tracking_xy_loader formats event_ids using the raw event_index_flag_ values
+    from the xy tabs, but the ETL uses tracking_event_index (flag + 999). This
+    function looks up the correct event_id from the flag→event_id mapping built
+    from the events sheet.
+    """
+    from src.core.key_utils import format_key
+
+    def remap(event_id):
+        # Extract the raw flag index from the loader-formatted event_id
+        # The loader creates event_ids like EV{game_id}{padded_flag_index}
+        # We need to extract the flag_index and look it up
+        eid_str = str(event_id)
+        if not eid_str.startswith('EV'):
+            return event_id
+
+        # Extract the numeric suffix after 'EV' + game_id
+        prefix_len = 2 + len(str(game_id))  # 'EV' + game_id
+        if len(eid_str) <= prefix_len:
+            return event_id
+
+        try:
+            flag_index = int(eid_str[prefix_len:])
+        except ValueError:
+            return event_id
+
+        return flag_to_event_id.get(flag_index, event_id)
+
+    df['event_id'] = df['event_id'].apply(remap)
+    return df
+
+
+def load_xy_from_tracking_tabs(event_players: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Load detailed multi-point XY data from xy_puck and xy_player tabs in
+    tracking Excel files. Returns (puck_long_df, player_long_df).
+
+    This provides all intermediate points (up to 8+ per event) rather than
+    just start/stop from fact_event_players.
+
+    After loading, resolves player_id for player data by joining with
+    event_players on (event_id, player_role).
+    """
+    from src.xy.tracking_xy_loader import (
+        load_tracking_xy_puck_long,
+        load_tracking_xy_player_long
+    )
+
+    all_puck = []
+    all_player = []
+
+    if not GAMES_DIR.exists():
+        logger.warning(f"Games directory not found: {GAMES_DIR}")
+        return pd.DataFrame(), pd.DataFrame()
+
+    # Discover all game directories
+    game_dirs = sorted([
+        d for d in GAMES_DIR.iterdir()
+        if d.is_dir() and d.name.isdigit()
+    ])
+
+    for game_dir in game_dirs:
+        game_id = game_dir.name
+        tracking_files = list(game_dir.glob("*_tracking.xlsx"))
+        tracking_files = [f for f in tracking_files
+                         if 'bkup' not in str(f).lower()
+                         and not f.name.startswith('~$')]
+
+        if not tracking_files:
+            continue
+
+        tracking_path = tracking_files[0]
+
+        # Check if this file has xy tabs
+        try:
+            xl = pd.ExcelFile(tracking_path)
+            has_xy_puck = 'xy_puck' in xl.sheet_names
+            has_xy_player = 'xy_player' in xl.sheet_names
+            has_events = 'events' in xl.sheet_names
+            xl.close()
+
+            if not has_xy_puck and not has_xy_player:
+                continue
+
+            logger.info(f"  Loading XY tabs from game {game_id}...")
+
+            # Build event_index_flag_ → event_id mapping from events sheet.
+            # The xy tabs use event_index_flag_ numbering, but the ETL uses
+            # tracking_event_index (= event_index_flag_ + 999) for event_ids.
+            flag_to_event_id = {}
+            if has_events:
+                events_sheet = pd.read_excel(
+                    tracking_path, sheet_name='events',
+                    usecols=['event_index_flag_', 'tracking_event_index']
+                )
+                from src.core.key_utils import format_key
+                for _, row in events_sheet.drop_duplicates('event_index_flag_').iterrows():
+                    flag = int(row['event_index_flag_'])
+                    track_idx = int(row['tracking_event_index'])
+                    flag_to_event_id[flag] = format_key('EV', game_id, str(track_idx))
+
+            if has_xy_puck:
+                puck_df = load_tracking_xy_puck_long(tracking_path, game_id, test_mode=True)
+                if len(puck_df) > 0:
+                    # Remap event_ids using the flag→event_id mapping
+                    if flag_to_event_id:
+                        puck_df = _remap_event_ids(puck_df, flag_to_event_id, game_id)
+                    all_puck.append(puck_df)
+                    logger.info(f"    Puck: {len(puck_df)} rows")
+
+            if has_xy_player:
+                player_df = load_tracking_xy_player_long(tracking_path, game_id, test_mode=True)
+                if len(player_df) > 0:
+                    # Remap event_ids using the flag→event_id mapping
+                    if flag_to_event_id:
+                        player_df = _remap_event_ids(player_df, flag_to_event_id, game_id)
+                    all_player.append(player_df)
+                    logger.info(f"    Player: {len(player_df)} rows")
+
+        except Exception as e:
+            logger.warning(f"  Error loading XY tabs from {tracking_path.name}: {e}")
+            continue
+
+    # Concatenate results across all games
+    puck_long = pd.concat(all_puck, ignore_index=True) if all_puck else pd.DataFrame()
+    player_long = pd.concat(all_player, ignore_index=True) if all_player else pd.DataFrame()
+
+    # Resolve player_id from event_players
+    if len(player_long) > 0 and len(event_players) > 0:
+        # Step 1: Direct role join for matching roles (event_player_N, opp_player_N)
+        ep_lookup = event_players[['event_id', 'player_role', 'player_id']].drop_duplicates(
+            subset=['event_id', 'player_role']
+        )
+        ep_lookup = ep_lookup.rename(columns={'player_id': 'resolved_player_id'})
+
+        player_long = player_long.merge(
+            ep_lookup, on=['event_id', 'player_role'], how='left'
+        )
+        has_resolved = player_long['resolved_player_id'].notna()
+        player_long.loc[has_resolved, 'player_id'] = player_long.loc[has_resolved, 'resolved_player_id']
+        player_long.drop(columns=['resolved_player_id'], inplace=True)
+
+        role_resolved = has_resolved.sum()
+
+        # Step 2: Name-based fallback for unresolved players
+        # (e.g., event_team_player_N, opp_team_player_N roles not in event_players)
+        still_unresolved = player_long['player_id'].str.contains(' ', na=False) | player_long['player_id'].isna()
+        if still_unresolved.any():
+            # Build a name→player_id lookup from event_players (per game)
+            name_lookup = event_players[['game_id', 'player_name', 'player_id']].dropna(
+                subset=['player_name', 'player_id']
+            ).drop_duplicates(subset=['game_id', 'player_name'])
+            name_lookup = name_lookup.rename(columns={'player_id': 'name_resolved_pid'})
+            name_lookup['game_id'] = name_lookup['game_id'].astype(str)
+
+            player_long['game_id'] = player_long['game_id'].astype(str)
+            player_long = player_long.merge(
+                name_lookup, on=['game_id', 'player_name'], how='left'
+            )
+            has_name_resolved = still_unresolved & player_long['name_resolved_pid'].notna()
+            player_long.loc[has_name_resolved, 'player_id'] = player_long.loc[has_name_resolved, 'name_resolved_pid']
+            player_long.drop(columns=['name_resolved_pid'], inplace=True)
+
+            name_resolved = has_name_resolved.sum()
+        else:
+            name_resolved = 0
+
+        # Regenerate player_xy_key with proper player_id
+        def make_player_xy_key(row):
+            pid = str(row.get('player_id', ''))
+            pid_suffix = pid[-4:] if len(pid) >= 4 else pid.zfill(4)
+            return f"PXL{row.get('game_id', '')}{str(row.get('event_id', ''))[-5:]}{pid_suffix}{int(row.get('point_number', 1)):02d}"
+
+        player_long['player_xy_key'] = player_long.apply(make_player_xy_key, axis=1)
+
+        # Set is_event_team from player_role
+        # Both "event_player_N" and "event_team_player_N" are on the event team
+        def is_event_team_from_role(role):
+            if pd.isna(role):
+                return None
+            role_str = str(role).lower()
+            return 'event' in role_str and 'opp' not in role_str
+
+        player_long['is_event_team'] = player_long['player_role'].apply(is_event_team_from_role)
+
+        total_resolved = role_resolved + name_resolved
+        logger.info(f"  Resolved {total_resolved}/{len(player_long)} player_ids "
+                     f"({role_resolved} by role, {name_resolved} by name)")
+
+    if len(puck_long) > 0:
+        logger.info(f"  Total puck XY from tracking tabs: {len(puck_long)} rows")
+    if len(player_long) > 0:
+        logger.info(f"  Total player XY from tracking tabs: {len(player_long)} rows")
+
+    return puck_long, player_long
+
+
+# =============================================================================
 # MAIN BUILDER
 # =============================================================================
 
@@ -900,13 +1443,40 @@ def build_all_xy_tables() -> dict:
         return {'status': 'empty_schemas_created'}
     
     results = {}
-    
+
+    # Try loading detailed XY data from tracking Excel xy_puck/xy_player tabs
+    # These contain all intermediate points (up to 8+ per event), not just start/stop
+    logger.info("\n--- Loading XY from tracking tabs ---")
+    tracking_puck_long, tracking_player_long = load_xy_from_tracking_tabs(event_players)
+
     # Build core XY tables
     logger.info("\n--- Core XY Tables ---")
     results['fact_puck_xy_wide'] = len(build_fact_puck_xy_wide(event_players))
-    results['fact_puck_xy_long'] = len(build_fact_puck_xy_long(event_players))
+
+    # For long tables: prefer tracking tab data (multi-point), fall back to start/stop
+    if len(tracking_puck_long) > 0:
+        logger.info(f"  Using tracking tab data for fact_puck_xy_long ({len(tracking_puck_long)} rows)")
+        # Drop timestamp column if present (not in schema)
+        if 'timestamp' in tracking_puck_long.columns:
+            tracking_puck_long = tracking_puck_long.drop(columns=['timestamp'])
+        tracking_puck_long.to_csv(OUTPUT_DIR / 'fact_puck_xy_long.csv', index=False)
+        results['fact_puck_xy_long'] = len(tracking_puck_long)
+    else:
+        logger.info("  No tracking tab puck data - falling back to start/stop from event_players")
+        results['fact_puck_xy_long'] = len(build_fact_puck_xy_long(event_players))
+
     results['fact_player_xy_wide'] = len(build_fact_player_xy_wide(event_players))
-    results['fact_player_xy_long'] = len(build_fact_player_xy_long(event_players))
+
+    if len(tracking_player_long) > 0:
+        logger.info(f"  Using tracking tab data for fact_player_xy_long ({len(tracking_player_long)} rows)")
+        # Drop timestamp column if present (not in schema)
+        if 'timestamp' in tracking_player_long.columns:
+            tracking_player_long = tracking_player_long.drop(columns=['timestamp'])
+        tracking_player_long.to_csv(OUTPUT_DIR / 'fact_player_xy_long.csv', index=False)
+        results['fact_player_xy_long'] = len(tracking_player_long)
+    else:
+        logger.info("  No tracking tab player data - falling back to start/stop from event_players")
+        results['fact_player_xy_long'] = len(build_fact_player_xy_long(event_players))
     
     # Build spatial relationship tables
     logger.info("\n--- Spatial Relationship Tables ---")

@@ -16,8 +16,9 @@ SELECT
     pg.points,
     pg.shots,
     pg.sog,
-    pg.pim,
-    pg.toi,
+    --pg.pim,
+    pg.toi_seconds,
+    pg.playing_time_on_ice,
     pg.plus_minus,
     pg.game_score
 FROM fact_player_game_stats pg
@@ -62,7 +63,7 @@ SELECT
     tg.points,
     tg.shots,
     tg.sog,
-    tg.pim,
+    NULL::BIGINT as pim,
     CASE 
         WHEN tg.team_name = s.home_team_name AND s.home_total_goals > s.away_total_goals THEN 'W'
         WHEN tg.team_name = s.away_team_name AND s.away_total_goals > s.home_total_goals THEN 'W'
@@ -88,9 +89,9 @@ SELECT
     p1_shots,
     p2_shots,
     p3_shots,
-    p1_toi,
-    p2_toi,
-    p3_toi
+    p1_toi_seconds as p1_toi,
+    p2_toi_seconds as p2_toi,
+    p3_toi_seconds as p3_toi
 FROM fact_player_game_stats
 WHERE game_id != 99999;
 
@@ -196,3 +197,6 @@ SELECT
 FROM dim_schedule s
 JOIN fact_gameroster r ON s.game_id = r.game_id
 ORDER BY s.date DESC, r.team_venue, r.points DESC;
+
+
+

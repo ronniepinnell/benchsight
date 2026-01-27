@@ -1,19 +1,188 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { cn } from '@/lib/utils'
-import { 
-  Goal, 
-  AlertCircle, 
-  Clock, 
+import {
+  Goal,
+  AlertCircle,
+  Clock,
   Filter,
   ChevronDown,
   ChevronUp,
   Target,
-  Shield
+  Shield,
+  Play,
+  Link2,
+  Video,
+  Check,
+  X
 } from 'lucide-react'
-import type { FactEvents } from '@/types/database'
+import { extractYouTubeVideoId, formatYouTubeHighlightUrl } from '@/lib/utils/video'
+import type { FactEvents, FactPuckXYLong, FactPlayerXYLong } from '@/types/database'
 import { TeamLogo } from '@/components/teams/team-logo'
+import { IceRinkSVG } from '@/components/games/ice-rink-svg'
+import type { PlayerMarker, PuckPosition } from '@/components/games/ice-rink-svg'
+import { NetFrontSVG } from '@/components/games/net-front-svg'
+
+// Format text: remove underscores, add spaces to CamelCase, capitalize
+function formatDisplayText(text: string | null | undefined): string {
+  if (!text) return ''
+  return text
+    .replace(/_/g, ' ')  // Replace underscores with spaces
+    .replace(/([a-z])([A-Z])/g, '$1 $2')  // Add space before capitals in CamelCase
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')  // Handle consecutive capitals
+    .trim()
+}
+
+// Multi-select dropdown component
+interface OptionGroup {
+  label: string
+  options: string[]
+}
+
+interface MultiSelectDropdownProps {
+  label: string
+  options: string[]
+  selected: string[]
+  onChange: (selected: string[]) => void
+  isOpen: boolean
+  onToggle: () => void
+  formatOption?: (option: string) => string
+  groups?: OptionGroup[]
+}
+
+function MultiSelectDropdown({
+  label,
+  options,
+  selected,
+  onChange,
+  isOpen,
+  onToggle,
+  formatOption = (o) => o,
+  groups
+}: MultiSelectDropdownProps) {
+  const toggleOption = (option: string) => {
+    if (selected.includes(option)) {
+      onChange(selected.filter(s => s !== option))
+    } else {
+      onChange([...selected, option])
+    }
+  }
+
+  const clearAll = () => onChange([])
+
+  const renderOption = (option: string) => (
+    <button
+      key={option}
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation()
+        toggleOption(option)
+      }}
+      className={cn(
+        "w-full px-3 py-1.5 text-xs text-left hover:bg-accent flex items-center gap-2",
+        selected.includes(option) && "bg-primary/5"
+      )}
+    >
+      <span className={cn(
+        "w-4 h-4 border rounded flex items-center justify-center flex-shrink-0",
+        selected.includes(option) ? "bg-primary border-primary" : "border-border"
+      )}>
+        {selected.includes(option) && <Check className="w-3 h-3 text-primary-foreground" />}
+      </span>
+      <span className="truncate">{formatOption(option)}</span>
+    </button>
+  )
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={onToggle}
+        className={cn(
+          "flex items-center gap-1 px-2 py-1.5 text-xs rounded-md border transition-colors min-w-[100px]",
+          selected.length > 0
+            ? "bg-primary/10 border-primary text-primary"
+            : "bg-background border-border text-muted-foreground hover:text-foreground"
+        )}
+      >
+        <span className="truncate max-w-[80px]">
+          {selected.length === 0 ? label : `${label} (${selected.length})`}
+        </span>
+        <ChevronDown className="w-3 h-3 flex-shrink-0" />
+      </button>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 mt-1 z-50 bg-background border border-border rounded-md shadow-lg min-w-[200px] max-h-[300px] overflow-y-auto">
+          {/* Clear all button */}
+          {selected.length > 0 && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                clearAll()
+              }}
+              className="w-full px-3 py-1.5 text-xs text-left text-destructive hover:bg-destructive/10 border-b border-border flex items-center gap-1"
+            >
+              <X className="w-3 h-3" />
+              Clear all
+            </button>
+          )}
+
+          {/* Grouped options */}
+          {groups ? (
+            groups.map(group => (
+              <div key={group.label}>
+                <div className="px-3 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider bg-muted/30 border-b border-border sticky top-0">
+                  {group.label}
+                </div>
+                {group.options.map(renderOption)}
+              </div>
+            ))
+          ) : (
+            options.map(renderOption)
+          )}
+
+          {!groups && options.length === 0 && (
+            <div className="px-3 py-2 text-xs text-muted-foreground">No options</div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+interface GameVideo {
+  video_key: string
+  video_type: string
+  video_url: string
+}
+
+interface ShiftData {
+  shift_id?: number
+  shift_index?: number
+  home_forward_1?: number | string
+  home_forward_2?: number | string
+  home_forward_3?: number | string
+  home_defense_1?: number | string
+  home_defense_2?: number | string
+  home_xtra?: number | string
+  home_goalie?: number | string
+  away_forward_1?: number | string
+  away_forward_2?: number | string
+  away_forward_3?: number | string
+  away_defense_1?: number | string
+  away_defense_2?: number | string
+  away_xtra?: number | string
+  away_goalie?: number | string
+}
+
+interface RosterPlayer {
+  name: string
+  gameNumber: number | null
+  teamId: string
+  isGoalie: boolean
+}
 
 interface PlayByPlayTimelineProps {
   events: FactEvents[]
@@ -24,31 +193,341 @@ interface PlayByPlayTimelineProps {
   playersMap?: Map<string, { player_name?: string; player_full_name?: string }>
   homeTeamData?: { team_name: string; team_logo?: string | null; team_cd?: string; primary_color?: string; team_color1?: string }
   awayTeamData?: { team_name: string; team_logo?: string | null; team_cd?: string; primary_color?: string; team_color1?: string }
+  videoUrl?: string | null
+  videoStartOffset?: number
+  videos?: GameVideo[]
+  shifts?: ShiftData[]
+  jerseyToPlayerMap?: Map<string, { player_name: string; team_id: string }>
+  puckXYData?: FactPuckXYLong[]
+  playerXYData?: FactPlayerXYLong[]
+  playerIdToJerseyMap?: Record<string, number>
+  playerIdToTeamIdMap?: Record<string, string>
+  rosterPlayers?: RosterPlayer[]
+  eventPlayerRoles?: Array<{ event_id: string; player_id: string; player_role: string }>
 }
 
-type EventFilter = 'all' | 'goals' | 'penalties' | 'highlights'
+// Highlight timing offsets
+const HIGHLIGHT_PRE_OFFSET = 5
+const HIGHLIGHT_POST_OFFSET = 15
 
-export function PlayByPlayTimeline({ 
-  events, 
-  homeTeam, 
+export function PlayByPlayTimeline({
+  events,
+  homeTeam,
   awayTeam,
   homeTeamId,
   awayTeamId,
   playersMap = new Map(),
   homeTeamData,
-  awayTeamData
+  awayTeamData,
+  videoUrl,
+  videoStartOffset = 0,
+  videos = [],
+  shifts = [],
+  jerseyToPlayerMap = new Map(),
+  puckXYData = [],
+  playerXYData = [],
+  playerIdToJerseyMap = {},
+  playerIdToTeamIdMap = {},
+  rosterPlayers = [],
+  eventPlayerRoles = []
 }: PlayByPlayTimelineProps) {
-  const [filter, setFilter] = useState<EventFilter>('all')
   const [expandedPeriods, setExpandedPeriods] = useState<Set<number>>(new Set([1, 2, 3]))
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null)
   const [showDebug, setShowDebug] = useState(false)
   const [debugEvent, setDebugEvent] = useState<FactEvents | null>(null)
   const [viewMode, setViewMode] = useState<'basic' | 'detailed'>('basic')
-  
-  // Additional filters
-  const [selectedPeriod, setSelectedPeriod] = useState<number | 'all'>('all')
-  const [selectedTeam, setSelectedTeam] = useState<string | 'all'>('all')
-  const [selectedPlayer, setSelectedPlayer] = useState<string | 'all'>('all')
+  const [highlightedEvent, setHighlightedEvent] = useState<string | null>(null)
+  const [playingEvent, setPlayingEvent] = useState<string | null>(null)
+  const [selectedVideoIndex, setSelectedVideoIndex] = useState(0)
+  const [focusedPlayerId, setFocusedPlayerId] = useState<string | null>(null)
+  const [roleFilter, setRoleFilter] = useState<string | null>(null) // null = all, 'event_primary', 'opp_primary', 'event_support', 'opp_support'
+
+  // Get current video
+  const currentVideo = videos.length > 0 ? videos[selectedVideoIndex] : videoUrl ? {
+    video_key: 'main',
+    video_type: 'Main',
+    video_url: videoUrl,
+  } : null
+
+  // Get embedded video URL with timestamp
+  const getEmbedVideoUrl = (event: FactEvents): string | null => {
+    if (!currentVideo) return null
+    if (event.running_video_time === undefined || event.running_video_time === null) return null
+    const videoId = extractYouTubeVideoId(currentVideo.video_url)
+    if (!videoId) return null
+    const startTime = Math.max(0, event.running_video_time - HIGHLIGHT_PRE_OFFSET)
+    const endTime = event.running_video_time + HIGHLIGHT_POST_OFFSET
+    return formatYouTubeHighlightUrl(videoId, startTime, endTime, true)
+  }
+
+  // Check if video available for event
+  const hasVideo = (event: FactEvents): boolean => {
+    return currentVideo !== null && event.running_video_time !== undefined && event.running_video_time !== null
+  }
+
+  // Get player name from jersey number
+  const getPlayerNameFromJersey = (jerseyNum: number | string | null | undefined): string => {
+    if (!jerseyNum || jerseyNum === 0 || jerseyNum === '0') return ''
+    const jersey = String(Math.floor(Number(jerseyNum)))
+    const player = jerseyToPlayerMap.get(jersey)
+    return player?.player_name || `#${jersey}`
+  }
+
+  // Build reverse map: player name -> player IDs (for filtering by all event/opp players)
+  const nameToIdsMap = useMemo(() => {
+    const map = new Map<string, Set<string>>()
+    playersMap.forEach((info, playerId) => {
+      const names = [info.player_name, info.player_full_name].filter(Boolean) as string[]
+      names.forEach(name => {
+        let ids = map.get(name)
+        if (!ids) {
+          ids = new Set<string>()
+          map.set(name, ids)
+        }
+        ids.add(playerId)
+      })
+    })
+    return map
+  }, [playersMap])
+
+  // Check if any player from selectedNames appears in an event's event_player_ids or opp_player_ids
+  const eventInvolvesAnyPlayer = useCallback((event: FactEvents, selectedNames: string[]): boolean => {
+    // Quick check on direct name fields first
+    if (event.event_player_1 && selectedNames.includes(event.event_player_1)) return true
+    if (event.event_player_2 && selectedNames.includes(event.event_player_2)) return true
+    if (event.player_name && selectedNames.includes(event.player_name)) return true
+
+    // Build set of all selected player IDs
+    const selectedIds = new Set<string>()
+    selectedNames.forEach(name => {
+      const ids = nameToIdsMap.get(name)
+      if (ids) ids.forEach(id => selectedIds.add(id))
+    })
+    if (selectedIds.size === 0) return false
+
+    // Check event_player_ids (comma-separated)
+    if (event.event_player_ids) {
+      const eventIds = event.event_player_ids.split(',').map(id => id.trim())
+      if (eventIds.some(id => selectedIds.has(id))) return true
+    }
+
+    // Check opp_player_ids (comma-separated)
+    if (event.opp_player_ids) {
+      const oppIds = event.opp_player_ids.split(',').map(id => id.trim())
+      if (oppIds.some(id => selectedIds.has(id))) return true
+    }
+
+    return false
+  }, [nameToIdsMap])
+
+  // Index puck XY data by event_id
+  const puckXYByEvent = useMemo(() => {
+    const map = new Map<string, FactPuckXYLong[]>()
+    for (const row of puckXYData) {
+      const existing = map.get(row.event_id)
+      if (existing) {
+        existing.push(row)
+      } else {
+        map.set(row.event_id, [row])
+      }
+    }
+    return map
+  }, [puckXYData])
+
+  // Index player XY data by event_id
+  const playerXYByEvent = useMemo(() => {
+    const map = new Map<string, FactPlayerXYLong[]>()
+    for (const row of playerXYData) {
+      const existing = map.get(row.event_id)
+      if (existing) {
+        existing.push(row)
+      } else {
+        map.set(row.event_id, [row])
+      }
+    }
+    return map
+  }, [playerXYData])
+
+  // Index event player roles by event_id -> Set of player_roles present in that event
+  // Also build event_id -> Map<player_id, player_role> for player-specific role filtering
+  const eventRolesMap = useMemo(() => {
+    const rolesMap = new Map<string, Set<string>>()
+    const playerRolesMap = new Map<string, Map<string, string>>()
+    for (const row of eventPlayerRoles) {
+      if (!row.event_id || !row.player_role) continue
+      // Set of roles present in event
+      let roles = rolesMap.get(row.event_id)
+      if (!roles) {
+        roles = new Set()
+        rolesMap.set(row.event_id, roles)
+      }
+      roles.add(row.player_role)
+      // Player -> role mapping
+      if (row.player_id) {
+        let playerMap = playerRolesMap.get(row.event_id)
+        if (!playerMap) {
+          playerMap = new Map()
+          playerRolesMap.set(row.event_id, playerMap)
+        }
+        playerMap.set(row.player_id, row.player_role)
+      }
+    }
+    return { rolesMap, playerRolesMap }
+  }, [eventPlayerRoles])
+
+  // Index play_detail1/play_detail_2 per player_name per event_id from allEvents
+  const eventPlayerDetailsMap = useMemo(() => {
+    const map = new Map<string, Map<string, { play_detail1: string | null; play_detail_2: string | null; player_role: string }>>()
+    for (const e of events) {
+      if (!e.event_id || !e.player_name) continue
+      let eventMap = map.get(e.event_id)
+      if (!eventMap) {
+        eventMap = new Map()
+        map.set(e.event_id, eventMap)
+      }
+      // Use player_name as key (unique within an event's roles)
+      if (!eventMap.has(e.player_name)) {
+        eventMap.set(e.player_name, {
+          play_detail1: e.play_detail1 || null,
+          play_detail_2: (e as any).play_detail_2 || null,
+          player_role: e.player_role || ''
+        })
+      }
+    }
+    return map
+  }, [events])
+
+  // Build IceRinkSVG visualization data for an event
+  const buildEventVisualization = useCallback((event: FactEvents): {
+    players: PlayerMarker[]
+    puckPath: PuckPosition[]
+  } | null => {
+    const puckRows = puckXYByEvent.get(event.event_id)
+    const playerRows = playerXYByEvent.get(event.event_id)
+
+    // If no XY long data at all, return null (caller handles fallback)
+    if (!puckRows && !playerRows) return null
+
+    // Build puck path from long data, sorted by point_number
+    const puckPath: PuckPosition[] = (puckRows || [])
+      .sort((a, b) => a.point_number - b.point_number)
+      .map(r => ({ x: r.x, y: r.y, seq: r.point_number }))
+
+    // Build player markers - ALL points per player (for movement paths)
+    const players: PlayerMarker[] = []
+    // Track which player_role maps to which player_id (for isSelected)
+    const roleToId = new Map<string, string>()
+
+    const allPoints = (playerRows || [])
+      .sort((a, b) => a.player_role.localeCompare(b.player_role) || a.point_number - b.point_number)
+
+    for (const row of allPoints) {
+      roleToId.set(row.player_role, row.player_id)
+
+      // Determine home/away
+      let team: 'home' | 'away' = 'away'
+      const playerTeamId = playerIdToTeamIdMap[row.player_id]
+      if (playerTeamId) {
+        team = String(playerTeamId) === String(homeTeamId) ? 'home' : 'away'
+      } else {
+        const eventTeamVenue = (event as any).team_venue
+        if (row.is_event_team) {
+          team = eventTeamVenue === 'Home' ? 'home' : 'away'
+        } else {
+          team = eventTeamVenue === 'Home' ? 'away' : 'home'
+        }
+      }
+
+      const jerseyNum = playerIdToJerseyMap[row.player_id]
+      const isSelected = row.player_role === 'event_player_1'
+
+      players.push({
+        x: row.x,
+        y: row.y,
+        name: row.player_name,
+        number: jerseyNum !== undefined ? jerseyNum : undefined,
+        team,
+        isSelected,
+        playerId: row.player_id,
+        seq: row.point_number,
+        role: row.player_role
+      })
+    }
+
+    return { players, puckPath }
+  }, [puckXYByEvent, playerXYByEvent, homeTeamId, playerIdToJerseyMap, playerIdToTeamIdMap])
+
+  // Get players on ice for an event based on shift_id
+  const getPlayersOnIce = (event: FactEvents): { home: string[], away: string[] } | null => {
+    const shiftId = (event as any).shift_id || (event as any).shift_index
+    if (!shiftId || shifts.length === 0) return null
+
+    const shift = shifts.find(s => s.shift_id === shiftId || s.shift_index === shiftId)
+    if (!shift) return null
+
+    const homePlayerJerseys: (number | string)[] = []
+    const awayPlayerJerseys: (number | string)[] = []
+
+    // Collect home players
+    if (shift.home_forward_1) homePlayerJerseys.push(shift.home_forward_1)
+    if (shift.home_forward_2) homePlayerJerseys.push(shift.home_forward_2)
+    if (shift.home_forward_3) homePlayerJerseys.push(shift.home_forward_3)
+    if (shift.home_defense_1) homePlayerJerseys.push(shift.home_defense_1)
+    if (shift.home_defense_2) homePlayerJerseys.push(shift.home_defense_2)
+    if (shift.home_xtra) homePlayerJerseys.push(shift.home_xtra)
+
+    // Collect away players
+    if (shift.away_forward_1) awayPlayerJerseys.push(shift.away_forward_1)
+    if (shift.away_forward_2) awayPlayerJerseys.push(shift.away_forward_2)
+    if (shift.away_forward_3) awayPlayerJerseys.push(shift.away_forward_3)
+    if (shift.away_defense_1) awayPlayerJerseys.push(shift.away_defense_1)
+    if (shift.away_defense_2) awayPlayerJerseys.push(shift.away_defense_2)
+    if (shift.away_xtra) awayPlayerJerseys.push(shift.away_xtra)
+
+    return {
+      home: homePlayerJerseys.map(j => getPlayerNameFromJersey(j)).filter(Boolean),
+      away: awayPlayerJerseys.map(j => getPlayerNameFromJersey(j)).filter(Boolean)
+    }
+  }
+
+  // Refs for scrolling to events
+  const eventRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+
+  // Scroll to an event by ID
+  const scrollToEvent = useCallback((eventId: string) => {
+    const element = eventRefs.current.get(eventId)
+    if (element) {
+      // Find the event's period and expand it if needed
+      const event = events.find(e => e.event_id === eventId)
+      if (event) {
+        const period = getPeriod(event)
+        if (!expandedPeriods.has(period)) {
+          const newExpanded = new Set(expandedPeriods)
+          newExpanded.add(period)
+          setExpandedPeriods(newExpanded)
+        }
+      }
+
+      // Scroll to the element with some offset
+      setTimeout(() => {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        // Highlight the event temporarily
+        setHighlightedEvent(eventId)
+        setSelectedEvent(eventId)
+        setTimeout(() => setHighlightedEvent(null), 2000)
+      }, 100)
+    }
+  }, [events, expandedPeriods])
+
+  // Multi-select Filters (using arrays)
+  const [selectedPeriods, setSelectedPeriods] = useState<number[]>([])
+  const [selectedTeams, setSelectedTeams] = useState<string[]>([])
+  const [selectedPlayers, setSelectedPlayers] = useState<string[]>([])
+  const [selectedPlayersOnIce, setSelectedPlayersOnIce] = useState<string[]>([])
+  const [selectedEventTypes, setSelectedEventTypes] = useState<string[]>([])
+  const [selectedEventDetails, setSelectedEventDetails] = useState<string[]>([])
+  const [selectedEventDetails2, setSelectedEventDetails2] = useState<string[]>([])
+  const [showFilterDropdown, setShowFilterDropdown] = useState<string | null>(null)
   
   // Helper function to get period as number
   const getPeriod = (event: FactEvents): number => {
@@ -136,32 +615,364 @@ export function PlayByPlayTimeline({
     
     return Array.from(periods).sort((a, b) => a - b)
   }, [events])
-  
+
+  // Base filter function - excludes saves, rebounds, bad giveaways
+  const getBaseFilteredEvents = useMemo(() => {
+    let filtered = events
+
+    // Exclude saves
+    filtered = filtered.filter(e => {
+      const isSave = e.is_save === 1 ||
+                    e.event_type?.toLowerCase().includes('save')
+      return !isSave
+    })
+
+    // Exclude rebounds
+    filtered = filtered.filter(e => {
+      const isRebound = e.is_rebound === 1 ||
+                       e.event_type?.toLowerCase().includes('rebound') ||
+                       e.event_detail?.toLowerCase().includes('rebound') ||
+                       e.play_detail1?.toLowerCase().includes('rebound') ||
+                       e.event_detail_2?.toLowerCase().includes('rebound')
+      return !isRebound
+    })
+
+    // Exclude "bad" giveaways
+    filtered = filtered.filter(e => {
+      const isGiveaway = e.event_type?.toLowerCase().includes('giveaway') ||
+                        e.play_detail1?.toLowerCase().includes('giveaway')
+      if (isGiveaway) {
+        const eventDetail = e.event_detail?.toLowerCase() || ''
+        const eventDetail2 = e.event_detail_2?.toLowerCase() || ''
+        const playDetail1 = e.play_detail1?.toLowerCase() || ''
+        const playDetail2 = e.play_detail_2?.toLowerCase() || ''
+
+        const isBad = eventDetail.includes('misplay') ||
+                     eventDetail.includes('pass intercepted') ||
+                     eventDetail.includes('pass blocked') ||
+                     eventDetail.includes('pass missed') ||
+                     eventDetail2.includes('misplay') ||
+                     eventDetail2.includes('pass intercepted') ||
+                     eventDetail2.includes('pass blocked') ||
+                     eventDetail2.includes('pass missed') ||
+                     playDetail1.includes('misplay') ||
+                     playDetail1.includes('pass intercepted') ||
+                     playDetail1.includes('pass blocked') ||
+                     playDetail1.includes('pass missed') ||
+                     playDetail2.includes('misplay') ||
+                     playDetail2.includes('pass intercepted') ||
+                     playDetail2.includes('pass blocked') ||
+                     playDetail2.includes('pass missed')
+
+        return !isBad
+      }
+      return true
+    })
+
+    return filtered
+  }, [events])
+
+  // Get unique event types for filtering (based on base filtered events with other filters applied)
+  const availableEventTypes = useMemo(() => {
+    let filtered = getBaseFilteredEvents
+
+    // Apply team filter
+    if (selectedTeams.length > 0) {
+      filtered = filtered.filter(e => e.player_team && selectedTeams.includes(e.player_team))
+    }
+
+    // Apply player filter (checks all event_player and opp_player fields)
+    if (selectedPlayers.length > 0) {
+      filtered = filtered.filter(e => eventInvolvesAnyPlayer(e, selectedPlayers))
+    }
+
+    const types = new Set<string>()
+    filtered.forEach(event => {
+      if (event.event_type) types.add(event.event_type)
+    })
+    return Array.from(types).sort()
+  }, [getBaseFilteredEvents, selectedTeams, selectedPlayers, eventInvolvesAnyPlayer])
+
+  // Get unique event details for filtering (cascading with event type)
+  const availableEventDetails = useMemo(() => {
+    let filtered = getBaseFilteredEvents
+
+    // Apply event type filter
+    if (selectedEventTypes.length > 0) {
+      filtered = filtered.filter(e => e.event_type && selectedEventTypes.includes(e.event_type))
+    }
+
+    // Apply team filter
+    if (selectedTeams.length > 0) {
+      filtered = filtered.filter(e => e.player_team && selectedTeams.includes(e.player_team))
+    }
+
+    // Apply player filter (checks all event_player and opp_player fields)
+    if (selectedPlayers.length > 0) {
+      filtered = filtered.filter(e => eventInvolvesAnyPlayer(e, selectedPlayers))
+    }
+
+    const details = new Set<string>()
+    filtered.forEach(event => {
+      if (event.event_detail) details.add(event.event_detail)
+    })
+    return Array.from(details).sort()
+  }, [getBaseFilteredEvents, selectedEventTypes, selectedTeams, selectedPlayers, eventInvolvesAnyPlayer])
+
+  // Get unique event detail 2 / play_detail_2 for filtering (cascading with event type and detail)
+  const availableEventDetails2 = useMemo(() => {
+    let filtered = getBaseFilteredEvents
+
+    // Apply event type filter
+    if (selectedEventTypes.length > 0) {
+      filtered = filtered.filter(e => e.event_type && selectedEventTypes.includes(e.event_type))
+    }
+
+    // Apply event detail filter
+    if (selectedEventDetails.length > 0) {
+      filtered = filtered.filter(e => e.event_detail && selectedEventDetails.includes(e.event_detail))
+    }
+
+    // Apply team filter
+    if (selectedTeams.length > 0) {
+      filtered = filtered.filter(e => e.player_team && selectedTeams.includes(e.player_team))
+    }
+
+    // Apply player filter (checks all event_player and opp_player fields)
+    if (selectedPlayers.length > 0) {
+      filtered = filtered.filter(e => eventInvolvesAnyPlayer(e, selectedPlayers))
+    }
+
+    const details = new Set<string>()
+    filtered.forEach(event => {
+      if (event.play_detail_2) details.add(event.play_detail_2)
+      if (event.event_detail_2) details.add(event.event_detail_2)
+    })
+    return Array.from(details).sort()
+  }, [getBaseFilteredEvents, selectedEventTypes, selectedEventDetails, selectedTeams, selectedPlayers, eventInvolvesAnyPlayer])
+
+  // Get unique teams for filtering (cascading with event type and detail)
   const availableTeams = useMemo(() => {
+    let filtered = getBaseFilteredEvents
+
+    // Apply event type filter
+    if (selectedEventTypes.length > 0) {
+      filtered = filtered.filter(e => e.event_type && selectedEventTypes.includes(e.event_type))
+    }
+
+    // Apply event detail filter
+    if (selectedEventDetails.length > 0) {
+      filtered = filtered.filter(e => e.event_detail && selectedEventDetails.includes(e.event_detail))
+    }
+
     const teams = new Set<string>()
-    events.forEach(event => {
+    filtered.forEach(event => {
       if (event.player_team) teams.add(event.player_team)
     })
     return Array.from(teams).sort()
-  }, [events])
-  
+  }, [getBaseFilteredEvents, selectedEventTypes, selectedEventDetails])
+
+  // Build roster lookup maps: player name -> game number, player name -> teamId
+  const rosterGameNumberMap = useMemo(() => {
+    const map = new Map<string, number>()
+    rosterPlayers.forEach(rp => {
+      if (rp.gameNumber !== null) map.set(rp.name, rp.gameNumber)
+    })
+    return map
+  }, [rosterPlayers])
+
+  const rosterTeamMap = useMemo(() => {
+    const map = new Map<string, string>()
+    rosterPlayers.forEach(rp => {
+      map.set(rp.name, rp.teamId)
+    })
+    return map
+  }, [rosterPlayers])
+
+  // Format player name with game number: "#17 John Smith"
+  const formatPlayerOption = useCallback((name: string) => {
+    const num = rosterGameNumberMap.get(name)
+    return num !== undefined ? `#${num} ${name}` : name
+  }, [rosterGameNumberMap])
+
+  // Get unique players for filtering (cascading with event type, detail, and team)
+  // Includes goalies from roster data
   const availablePlayers = useMemo(() => {
+    let filtered = getBaseFilteredEvents
+
+    // Apply event type filter
+    if (selectedEventTypes.length > 0) {
+      filtered = filtered.filter(e => e.event_type && selectedEventTypes.includes(e.event_type))
+    }
+
+    // Apply event detail filter
+    if (selectedEventDetails.length > 0) {
+      filtered = filtered.filter(e => e.event_detail && selectedEventDetails.includes(e.event_detail))
+    }
+
+    // Apply team filter
+    if (selectedTeams.length > 0) {
+      filtered = filtered.filter(e => e.player_team && selectedTeams.includes(e.player_team))
+    }
+
     const players = new Set<string>()
-    events.forEach(event => {
+    filtered.forEach(event => {
       if (event.event_player_1) players.add(event.event_player_1)
       if (event.event_player_2) players.add(event.event_player_2)
       if (event.player_name) players.add(event.player_name)
     })
+
+    // Add goalies from roster (they don't appear as event_player_1/2 typically)
+    rosterPlayers.forEach(rp => {
+      if (rp.isGoalie) {
+        // If team filter is active, only include goalies from selected teams
+        if (selectedTeams.length > 0) {
+          const rosterTeamName = rp.teamId === homeTeamId ? homeTeam : rp.teamId === awayTeamId ? awayTeam : ''
+          if (rosterTeamName && selectedTeams.includes(rosterTeamName)) {
+            players.add(rp.name)
+          }
+        } else {
+          players.add(rp.name)
+        }
+      }
+    })
+
     return Array.from(players).sort()
-  }, [events])
+  }, [getBaseFilteredEvents, selectedEventTypes, selectedEventDetails, selectedTeams, rosterPlayers, homeTeamId, awayTeamId, homeTeam, awayTeam])
+
+  // Build grouped player options for the Player filter (grouped by team)
+  const playerGroups = useMemo((): OptionGroup[] => {
+    const homeLabel = homeTeamData?.team_cd || homeTeam
+    const awayLabel = awayTeamData?.team_cd || awayTeam
+    const homePlayers: string[] = []
+    const awayPlayers: string[] = []
+    const otherPlayers: string[] = []
+
+    availablePlayers.forEach(name => {
+      const teamId = rosterTeamMap.get(name)
+      if (teamId === homeTeamId) {
+        homePlayers.push(name)
+      } else if (teamId === awayTeamId) {
+        awayPlayers.push(name)
+      } else {
+        otherPlayers.push(name)
+      }
+    })
+
+    const groups: OptionGroup[] = []
+    if (awayPlayers.length > 0) groups.push({ label: awayLabel, options: awayPlayers })
+    if (homePlayers.length > 0) groups.push({ label: homeLabel, options: homePlayers })
+    if (otherPlayers.length > 0) groups.push({ label: 'Other', options: otherPlayers })
+    return groups
+  }, [availablePlayers, rosterTeamMap, homeTeamId, awayTeamId, homeTeam, awayTeam, homeTeamData, awayTeamData])
+
+  // Get all unique players who were on ice during any shift (for "Players On Ice" filter)
+  // Includes goalies from shifts
+  const availablePlayersOnIce = useMemo(() => {
+    const players = new Set<string>()
+    shifts.forEach(shift => {
+      const jerseys = [
+        shift.home_forward_1, shift.home_forward_2, shift.home_forward_3,
+        shift.home_defense_1, shift.home_defense_2, shift.home_xtra,
+        shift.home_goalie,
+        shift.away_forward_1, shift.away_forward_2, shift.away_forward_3,
+        shift.away_defense_1, shift.away_defense_2, shift.away_xtra,
+        shift.away_goalie
+      ]
+      jerseys.forEach(jersey => {
+        if (jersey && jersey !== 0 && jersey !== '0') {
+          const name = getPlayerNameFromJersey(jersey)
+          if (name && !name.startsWith('#')) {
+            players.add(name)
+          }
+        }
+      })
+    })
+    return Array.from(players).sort()
+  }, [shifts, jerseyToPlayerMap])
+
+  // Reset child filters when parent filter changes make current selection invalid
+  useEffect(() => {
+    if (selectedEventTypes.length > 0) {
+      const validTypes = selectedEventTypes.filter(t => availableEventTypes.includes(t))
+      if (validTypes.length !== selectedEventTypes.length) {
+        setSelectedEventTypes(validTypes)
+      }
+    }
+  }, [availableEventTypes, selectedEventTypes])
+
+  useEffect(() => {
+    if (selectedEventDetails.length > 0) {
+      const validDetails = selectedEventDetails.filter(d => availableEventDetails.includes(d))
+      if (validDetails.length !== selectedEventDetails.length) {
+        setSelectedEventDetails(validDetails)
+      }
+    }
+  }, [availableEventDetails, selectedEventDetails])
+
+  useEffect(() => {
+    if (selectedEventDetails2.length > 0) {
+      const validDetails = selectedEventDetails2.filter(d => availableEventDetails2.includes(d))
+      if (validDetails.length !== selectedEventDetails2.length) {
+        setSelectedEventDetails2(validDetails)
+      }
+    }
+  }, [availableEventDetails2, selectedEventDetails2])
+
+  useEffect(() => {
+    if (selectedTeams.length > 0) {
+      const validTeams = selectedTeams.filter(t => availableTeams.includes(t))
+      if (validTeams.length !== selectedTeams.length) {
+        setSelectedTeams(validTeams)
+      }
+    }
+  }, [availableTeams, selectedTeams])
+
+  useEffect(() => {
+    if (selectedPlayers.length > 0) {
+      const validPlayers = selectedPlayers.filter(p => availablePlayers.includes(p))
+      if (validPlayers.length !== selectedPlayers.length) {
+        setSelectedPlayers(validPlayers)
+      }
+    }
+  }, [availablePlayers, selectedPlayers])
+
+  // Close filter dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setShowFilterDropdown(null)
+    if (showFilterDropdown) {
+      document.addEventListener('click', handleClickOutside)
+      return () => document.removeEventListener('click', handleClickOutside)
+    }
+  }, [showFilterDropdown])
+
+  // Helper to check if any player in the shift is selected in playersOnIce filter
+  const shiftHasSelectedPlayer = (shiftId: number | undefined): boolean => {
+    if (selectedPlayersOnIce.length === 0 || !shiftId) return true
+    const shift = shifts.find(s => s.shift_id === shiftId || s.shift_index === shiftId)
+    if (!shift) return true
+
+    const jerseys = [
+      shift.home_forward_1, shift.home_forward_2, shift.home_forward_3,
+      shift.home_defense_1, shift.home_defense_2, shift.home_xtra,
+      shift.away_forward_1, shift.away_forward_2, shift.away_forward_3,
+      shift.away_defense_1, shift.away_defense_2, shift.away_xtra
+    ]
+
+    return jerseys.some(jersey => {
+      if (!jersey || jersey === 0 || jersey === '0') return false
+      const name = getPlayerNameFromJersey(jersey)
+      return name && selectedPlayersOnIce.includes(name)
+    })
+  }
 
   // Create maps for linked events - group events by linked_event_key (primary), then fallback to other keys
   const eventsByLinkedKey = useMemo(() => {
     const map = new Map<string, FactEvents[]>()
     events.forEach(event => {
-      // Use linked_event_key first (primary driver), then fallback to event_chain_key, sequence_key, or play_key
+      // Use linked_event_key first (primary driver), then fallback to sequence_key or play_key
       const eventAny = event as any // Type assertion to access fields that might not be in type
-      const key = eventAny.linked_event_key || eventAny.event_chain_key || eventAny.sequence_key || eventAny.play_key
+      const key = eventAny.linked_event_key || eventAny.sequence_key || eventAny.play_key
       if (key) {
         if (!map.has(key)) {
           map.set(key, [])
@@ -272,12 +1083,12 @@ export function PlayByPlayTimeline({
   // Filter events based on selected filters
   const filteredEventsByPeriod = useMemo(() => {
     const filtered = new Map<number, FactEvents[]>()
-    
+
     eventsByPeriod.forEach((periodEvents, period) => {
       let filteredEvents = periodEvents
 
-      // Filter by period
-      if (selectedPeriod !== 'all' && period !== selectedPeriod) {
+      // Filter by period (multi-select)
+      if (selectedPeriods.length > 0 && !selectedPeriods.includes(period)) {
         return // Skip this period
       }
 
@@ -294,7 +1105,7 @@ export function PlayByPlayTimeline({
                          e.event_type?.toLowerCase().includes('rebound') ||
                          e.event_detail?.toLowerCase().includes('rebound') ||
                          e.play_detail1?.toLowerCase().includes('rebound') ||
-                         (e as any).event_detail_2?.toLowerCase().includes('rebound')
+                         e.event_detail_2?.toLowerCase().includes('rebound')
         return !isRebound
       })
 
@@ -305,7 +1116,7 @@ export function PlayByPlayTimeline({
         if (isGiveaway) {
           // Check if it's a "bad" giveaway: misplay, pass intercepted, pass blocked, pass missed
           const eventDetail = e.event_detail?.toLowerCase() || ''
-          const eventDetail2 = (e as any).event_detail_2?.toLowerCase() || ''
+          const eventDetail2 = e.event_detail_2?.toLowerCase() || ''
           const playDetail1 = e.play_detail1?.toLowerCase() || ''
           const playDetail2 = e.play_detail_2?.toLowerCase() || ''
           
@@ -382,35 +1193,61 @@ export function PlayByPlayTimeline({
         })
       }
 
-      // Filter by event type
-      if (filter === 'goals') {
-        filteredEvents = filteredEvents.filter(e => e.is_goal === 1 || e.event_type === 'Goal')
-      } else if (filter === 'penalties') {
-        filteredEvents = filteredEvents.filter(e => 
-          e.event_type?.toLowerCase().includes('penalty') || 
-          e.play_detail1?.toLowerCase().includes('penalty')
-        )
-      } else if (filter === 'highlights') {
-        filteredEvents = filteredEvents.filter(e => 
-          e.is_highlight === 1 || 
-          e.is_goal === 1
-        )
+      // Filter by event type (multi-select)
+      if (selectedEventTypes.length > 0) {
+        filteredEvents = filteredEvents.filter(e => e.event_type && selectedEventTypes.includes(e.event_type))
       }
 
-      // Filter by team
-      if (selectedTeam !== 'all') {
-        filteredEvents = filteredEvents.filter(e => 
-          e.player_team === selectedTeam
-        )
+      // Filter by event detail (multi-select)
+      if (selectedEventDetails.length > 0) {
+        filteredEvents = filteredEvents.filter(e => e.event_detail && selectedEventDetails.includes(e.event_detail))
       }
 
-      // Filter by player
-      if (selectedPlayer !== 'all') {
-        filteredEvents = filteredEvents.filter(e => 
-          e.event_player_1 === selectedPlayer ||
-          e.event_player_2 === selectedPlayer ||
-          e.player_name === selectedPlayer
-        )
+      // Filter by event detail 2 / play_detail_2 (multi-select)
+      if (selectedEventDetails2.length > 0) {
+        filteredEvents = filteredEvents.filter(e => {
+          return (e.play_detail_2 && selectedEventDetails2.includes(e.play_detail_2)) ||
+                 (e.event_detail_2 && selectedEventDetails2.includes(e.event_detail_2))
+        })
+      }
+
+      // Filter by team (multi-select)
+      if (selectedTeams.length > 0) {
+        filteredEvents = filteredEvents.filter(e => e.player_team && selectedTeams.includes(e.player_team))
+      }
+
+      // Filter by player (multi-select - checks all event_player and opp_player fields)
+      if (selectedPlayers.length > 0) {
+        filteredEvents = filteredEvents.filter(e => eventInvolvesAnyPlayer(e, selectedPlayers))
+      }
+
+      // Filter by players on ice (multi-select) - filter by shift
+      if (selectedPlayersOnIce.length > 0) {
+        filteredEvents = filteredEvents.filter(e => {
+          const shiftId = (e as any).shift_id || (e as any).shift_index
+          return shiftHasSelectedPlayer(shiftId)
+        })
+      }
+
+      // Filter by role using fact_event_players data (proper player_role values)
+      if (roleFilter && selectedPlayers.length > 0) {
+        // When a player is selected + role filter active: show events where
+        // the selected player has the matching role in that event
+        const { playerRolesMap } = eventRolesMap
+        filteredEvents = filteredEvents.filter(e => {
+          if (!e.event_id) return false
+          const playerMap = playerRolesMap.get(e.event_id)
+          if (!playerMap) return false
+          return selectedPlayers.some(pid => {
+            const role = playerMap.get(pid)
+            if (!role) return false
+            if (roleFilter === 'event_primary') return role === 'event_player_1'
+            if (roleFilter === 'event_support') return role.startsWith('event_player_') && role !== 'event_player_1'
+            if (roleFilter === 'opp_primary') return role === 'opp_player_1'
+            if (roleFilter === 'opp_support') return role.startsWith('opp_player_') && role !== 'opp_player_1'
+            return true
+          })
+        })
       }
 
       if (filteredEvents.length > 0) {
@@ -419,97 +1256,123 @@ export function PlayByPlayTimeline({
     })
 
     return filtered
-  }, [eventsByPeriod, filter, selectedPeriod, selectedTeam, selectedPlayer, viewMode])
+  }, [eventsByPeriod, selectedPeriods, selectedTeams, selectedPlayers, selectedPlayersOnIce, selectedEventTypes, selectedEventDetails, selectedEventDetails2, viewMode, shiftHasSelectedPlayer, eventInvolvesAnyPlayer, roleFilter, eventRolesMap])
+
+  // Max period length in minutes (for detecting cumulative vs per-period times)
+  const periodLengthMinutes = useMemo(() => {
+    // Use P1's max event_start_min as the reference period length
+    const p1Events = events.filter(e => getPeriod(e) === 1)
+    let maxMin = 0
+    p1Events.forEach(e => {
+      if (typeof e.event_start_min === 'number' && !isNaN(e.event_start_min) && e.event_start_min <= 25) {
+        maxMin = Math.max(maxMin, e.event_start_min)
+      }
+    })
+    return maxMin > 0 ? maxMin : 18 // Default to 18 if no P1 data
+  }, [events])
 
   const formatTime = (event: FactEvents): string => {
     const period = getPeriod(event)
-    const periodStartTime = periodStartTimes.get(period) || 0
-    
-    // Expected period start: 18:00 = 1080 seconds (for 18-minute periods)
-    const expectedPeriodStart = 1080
-    
-    // If we have event_start_min and event_start_sec, use them but adjust if needed
+
+    // Use event_start_min and event_start_sec directly - they are the period clock
     if (
-      typeof event.event_start_min === 'number' && 
+      typeof event.event_start_min === 'number' &&
       typeof event.event_start_sec === 'number' &&
       !isNaN(event.event_start_min) &&
       !isNaN(event.event_start_sec)
     ) {
-      // If the period actually started at 18:00 but database shows lower values,
-      // calculate the offset and adjust
-      if (periodStartTime > 0 && periodStartTime < expectedPeriodStart) {
-        // Offset = difference between expected start (18:00) and actual max time in data
-        const offset = expectedPeriodStart - periodStartTime
-        // Adjust: add offset to get correct time
-        const currentSeconds = event.event_start_min * 60 + event.event_start_sec
-        const adjustedSeconds = currentSeconds + offset
-        const minutes = Math.floor(adjustedSeconds / 60)
-        const secs = adjustedSeconds % 60
-        return `${minutes}:${secs.toString().padStart(2, '0')}`
+      let minutes = event.event_start_min
+      const secs = event.event_start_sec
+
+      // If minutes > period length * 1.3, it's likely cumulative (total game time)
+      // Convert to per-period time by subtracting prior periods
+      if (minutes > periodLengthMinutes * 1.3 && period > 1) {
+        minutes = minutes - (period - 1) * periodLengthMinutes
       }
-      // If period start is correct (>= 1080), use values directly
-      return `${event.event_start_min}:${event.event_start_sec.toString().padStart(2, '0')}`
+
+      // Clamp to reasonable range
+      if (minutes < 0) minutes = 0
+
+      return `${Math.floor(minutes)}:${Math.floor(secs).toString().padStart(2, '0')}`
     }
-    
+
     // FALLBACK: Calculate from time_start_total_seconds
     const timeSeconds = event.time_start_total_seconds ?? event.time_seconds ?? 0
-    
-    // Adjust if period should start at 18:00 but max time is less
-    if (periodStartTime > 0 && periodStartTime < expectedPeriodStart) {
-      const offset = expectedPeriodStart - periodStartTime
-      const adjustedSeconds = timeSeconds + offset
-      const minutes = Math.floor(adjustedSeconds / 60)
-      const secs = adjustedSeconds % 60
+
+    // time_start_total_seconds could be countdown (high→low) or elapsed (low→high)
+    // Use periodLengthMinutes to determine the period clock
+    const periodLengthSec = periodLengthMinutes * 60
+    if (periodLengthSec > 0 && timeSeconds >= 0 && timeSeconds <= periodLengthSec) {
+      // Elapsed time → convert to countdown: periodLength - elapsed
+      const countdown = periodLengthSec - timeSeconds
+      const minutes = Math.floor(countdown / 60)
+      const secs = Math.floor(countdown % 60)
       return `${minutes}:${secs.toString().padStart(2, '0')}`
     }
-    
-    // Otherwise use modulo 1200 (for 20-min periods) or direct value
-    const periodSeconds = timeSeconds % 1200
-    const minutes = Math.floor(periodSeconds / 60)
-    const secs = Math.floor(periodSeconds % 60)
+
+    // Last resort: direct display
+    const minutes = Math.floor(Math.abs(timeSeconds) / 60)
+    const secs = Math.floor(Math.abs(timeSeconds) % 60)
     return `${minutes}:${secs.toString().padStart(2, '0')}`
   }
 
   const formatEndTime = (event: FactEvents): string | null => {
     const period = getPeriod(event)
-    const periodStartTime = periodStartTimes.get(period) || 0
-    const expectedPeriodStart = 1080
-    
-    // If we have event_end_min and event_end_sec, use them but adjust if needed
+
+    // Use event_end_min and event_end_sec directly
     if (
-      typeof event.event_end_min === 'number' && 
+      typeof event.event_end_min === 'number' &&
       typeof event.event_end_sec === 'number' &&
       !isNaN(event.event_end_min) &&
       !isNaN(event.event_end_sec)
     ) {
-      if (periodStartTime > 0 && periodStartTime < expectedPeriodStart) {
-        const offset = expectedPeriodStart - periodStartTime
-        const currentSeconds = event.event_end_min * 60 + event.event_end_sec
-        const adjustedSeconds = currentSeconds + offset
-        const minutes = Math.floor(adjustedSeconds / 60)
-        const secs = adjustedSeconds % 60
-        return `${minutes}:${secs.toString().padStart(2, '0')}`
+      let minutes = event.event_end_min
+      const secs = event.event_end_sec
+
+      // If cumulative, adjust to per-period
+      if (minutes > periodLengthMinutes * 1.3 && period > 1) {
+        minutes = minutes - (period - 1) * periodLengthMinutes
       }
-      return `${event.event_end_min}:${event.event_end_sec.toString().padStart(2, '0')}`
+      if (minutes < 0) minutes = 0
+
+      return `${Math.floor(minutes)}:${Math.floor(secs).toString().padStart(2, '0')}`
     }
-    
+
     // FALLBACK: Calculate from time_end_total_seconds
     const timeEndSeconds = (event as any).time_end_total_seconds
-    if (timeEndSeconds) {
-      if (periodStartTime > 0 && periodStartTime < expectedPeriodStart) {
-        const offset = expectedPeriodStart - periodStartTime
-        const adjustedSeconds = timeEndSeconds + offset
-        const minutes = Math.floor(adjustedSeconds / 60)
-        const secs = adjustedSeconds % 60
+    if (timeEndSeconds != null && timeEndSeconds !== 0) {
+      const periodLengthSec = periodLengthMinutes * 60
+      if (periodLengthSec > 0 && timeEndSeconds >= 0 && timeEndSeconds <= periodLengthSec) {
+        const countdown = periodLengthSec - timeEndSeconds
+        const minutes = Math.floor(countdown / 60)
+        const secs = Math.floor(countdown % 60)
         return `${minutes}:${secs.toString().padStart(2, '0')}`
       }
-      const periodSeconds = timeEndSeconds % 1200
-      const minutes = Math.floor(periodSeconds / 60)
-      const secs = Math.floor(periodSeconds % 60)
+      const minutes = Math.floor(Math.abs(timeEndSeconds) / 60)
+      const secs = Math.floor(Math.abs(timeEndSeconds) % 60)
       return `${minutes}:${secs.toString().padStart(2, '0')}`
     }
-    
+
     return null
+  }
+
+  // Generate video URL with timestamp for an event
+  const getVideoUrlWithTimestamp = (event: FactEvents): string | null => {
+    if (!videoUrl || !event.running_video_time) return null
+
+    // Calculate adjusted time: running_video_time - video_start_offset
+    const adjustedTime = Math.max(0, event.running_video_time - videoStartOffset)
+    const seconds = Math.floor(adjustedTime)
+
+    // Handle YouTube URLs - add &t= parameter
+    if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
+      const separator = videoUrl.includes('?') ? '&' : '?'
+      return `${videoUrl}${separator}t=${seconds}`
+    }
+
+    // For other video URLs, just append timestamp as query param
+    const separator = videoUrl.includes('?') ? '&' : '?'
+    return `${videoUrl}${separator}t=${seconds}`
   }
 
   const getEventIcon = (event: FactEvents) => {
@@ -563,7 +1426,7 @@ export function PlayByPlayTimeline({
     
     if (isDeadIceOrStoppage) {
       // Return just the event type/detail without player names
-      return event.event_type?.replace(/_/g, ' ') || event.event_detail || event.play_detail1 || 'Stoppage'
+      return formatDisplayText(event.event_type) || formatDisplayText(event.event_detail) || formatDisplayText(event.play_detail1) || 'Stoppage'
     }
     
     // Get players from event_player_ids (primary), fallback to event_player_1, then player_name
@@ -589,16 +1452,37 @@ export function PlayByPlayTimeline({
       return `${playerName} - Goal${assistText}`
     }
     
-    // Handle shots with saves
-    if (event.event_type?.toLowerCase().includes('shot') || 
-        event.play_detail1?.toLowerCase().includes('shot')) {
-      // Use opp_player_ids for the goalie who saved it
-      const goalieName = oppPlayers.length > 0 
-        ? oppPlayers[0]  // First player from opp_player_ids is the goalie
-        : null
-      
-      if (goalieName) {
-        return `Shot by ${playerName} saved by ${goalieName}`
+    // Handle shots - show shot type from event_detail (e.g., Shot_OnNet, Shot_Missed, Shot_Blocked)
+    if (event.event_type?.toLowerCase() === 'shot' ||
+        event.event_type?.toLowerCase().includes('shot')) {
+      const eventDetail = event.event_detail || ''
+
+      // Parse the shot type from event_detail
+      let shotOutcome = ''
+      if (eventDetail.toLowerCase().includes('goal') || eventDetail.toLowerCase().includes('scored')) {
+        shotOutcome = 'Goal'
+      } else if (eventDetail.toLowerCase().includes('saved') || eventDetail.toLowerCase().includes('onnet')) {
+        shotOutcome = 'Saved'
+      } else if (eventDetail.toLowerCase().includes('blocked')) {
+        shotOutcome = 'Blocked'
+      } else if (eventDetail.toLowerCase().includes('missed') || eventDetail.toLowerCase().includes('post')) {
+        shotOutcome = 'Missed'
+      }
+
+      // Get goalie name for saves
+      const goalieName = oppPlayers.length > 0 ? oppPlayers[0] : null
+
+      if (shotOutcome === 'Saved' && goalieName) {
+        return `Shot by ${playerName} - Saved by ${goalieName}`
+      } else if (shotOutcome === 'Blocked') {
+        const blockerName = oppPlayers.length > 0 ? oppPlayers[0] : null
+        return blockerName
+          ? `Shot by ${playerName} - Blocked by ${blockerName}`
+          : `Shot by ${playerName} - Blocked`
+      } else if (shotOutcome === 'Missed') {
+        return `Shot by ${playerName} - Missed`
+      } else if (shotOutcome) {
+        return `Shot by ${playerName} - ${shotOutcome}`
       }
       return `Shot by ${playerName}`
     }
@@ -622,43 +1506,83 @@ export function PlayByPlayTimeline({
       return `Save by ${playerName}`
     }
     
-    // Handle turnovers (especially intercepted passes)
-    if (event.event_type?.toLowerCase().includes('turnover') || 
-        event.play_detail1?.toLowerCase().includes('turnover') ||
-        event.play_detail1?.toLowerCase().includes('intercept') ||
-        event.play_detail_2?.toLowerCase().includes('intercept')) {
-      // Use only event_detail_2 for turnover description (not event_type)
-      const detail2 = (event as any).event_detail_2 || event.play_detail_2 || ''
-      
-      if (event.play_detail1?.toLowerCase().includes('intercept') || 
-          event.play_detail_2?.toLowerCase().includes('intercept') ||
-          event.event_detail?.toLowerCase().includes('intercept')) {
-        return detail2 ? `Pass Intercepted - ${detail2} by ${playerName}` : `Pass Intercepted - Turnover by ${playerName}`
+    // Handle turnovers - distinguish between giveaways and takeaways using event_detail
+    if (event.event_type?.toLowerCase() === 'turnover' ||
+        event.event_type?.toLowerCase().includes('turnover')) {
+      const eventDetail = event.event_detail?.toLowerCase() || ''
+
+      if (eventDetail.includes('takeaway')) {
+        // Takeaway - good play by the player
+        const fromPlayer = oppPlayers.length > 0 ? oppPlayers[0] : null
+        return fromPlayer
+          ? `Takeaway by ${playerName} from ${fromPlayer}`
+          : `Takeaway by ${playerName}`
+      } else if (eventDetail.includes('giveaway')) {
+        // Giveaway - player lost the puck
+        const toPlayer = oppPlayers.length > 0 ? oppPlayers[0] : null
+        return toPlayer
+          ? `Giveaway by ${playerName} to ${toPlayer}`
+          : `Giveaway by ${playerName}`
+      } else if (eventDetail.includes('intercept')) {
+        const interceptor = oppPlayers.length > 0 ? oppPlayers[0] : null
+        return interceptor
+          ? `Pass Intercepted - ${interceptor} stole from ${playerName}`
+          : `Pass Intercepted by opponent from ${playerName}`
       }
-      return detail2 ? `${detail2} by ${playerName}` : `Turnover by ${playerName}`
+
+      // Generic turnover
+      return `Turnover by ${playerName}`
+    }
+
+    // Handle standalone takeaways
+    if (event.event_type?.toLowerCase().includes('takeaway') ||
+        event.play_detail1?.toLowerCase().includes('takeaway')) {
+      const fromPlayer = oppPlayers.length > 0 ? oppPlayers[0] : null
+      return fromPlayer
+        ? `Takeaway by ${playerName} from ${fromPlayer}`
+        : `Takeaway by ${playerName}`
+    }
+
+    // Handle standalone giveaways
+    if (event.event_type?.toLowerCase().includes('giveaway') ||
+        event.play_detail1?.toLowerCase().includes('giveaway')) {
+      const toPlayer = oppPlayers.length > 0 ? oppPlayers[0] : null
+      return toPlayer
+        ? `Giveaway by ${playerName} to ${toPlayer}`
+        : `Giveaway by ${playerName}`
     }
     
-    // Handle passes
-    if (event.event_type?.toLowerCase().includes('pass')) {
-      const isSuccessful = event.event_successful === true || 
-                          (event as any).play_detail_successful?.toLowerCase() === 'successful' ||
-                          (event as any).play_detail_successful === 's'
-      // Show recipient if available (second player in event_player_ids)
+    // Handle passes - show pass outcome from event_detail (e.g., Pass_Completed, Pass_Missed)
+    if (event.event_type?.toLowerCase() === 'pass' ||
+        event.event_type?.toLowerCase().includes('pass')) {
+      const eventDetail = event.event_detail?.toLowerCase() || ''
+
+      // Determine pass outcome from event_detail
+      const isCompleted = eventDetail.includes('completed') || eventDetail.includes('success')
+      const isIntercepted = eventDetail.includes('intercepted')
+      const isBlocked = eventDetail.includes('blocked')
+      const isMissed = eventDetail.includes('missed')
+
+      // Get recipient from second player in event_player_ids
       const recipient = eventPlayers.length > 1 ? eventPlayers[1] : null
       const recipientText = recipient ? ` to ${recipient}` : ''
-      return `${isSuccessful ? 'Pass' : 'Pass Missed'} by ${playerName}${recipientText}`
-    }
-    
-    // Handle takeaways
-    if (event.event_type?.toLowerCase().includes('takeaway') || 
-        event.play_detail1?.toLowerCase().includes('takeaway')) {
-      return `Takeaway by ${playerName}`
-    }
-    
-    // Handle giveaways
-    if (event.event_type?.toLowerCase().includes('giveaway') || 
-        event.play_detail1?.toLowerCase().includes('giveaway')) {
-      return `Giveaway by ${playerName}`
+
+      if (isIntercepted) {
+        const interceptor = oppPlayers.length > 0 ? oppPlayers[0] : null
+        return interceptor
+          ? `Pass by ${playerName} - Intercepted by ${interceptor}`
+          : `Pass by ${playerName} - Intercepted`
+      } else if (isBlocked) {
+        return `Pass by ${playerName} - Blocked`
+      } else if (isMissed) {
+        return `Pass by ${playerName}${recipientText} - Missed`
+      } else if (isCompleted) {
+        return `Pass by ${playerName}${recipientText}`
+      }
+
+      // Fallback to event_successful field
+      const isSuccessful = event.event_successful === true
+      return `${isSuccessful ? 'Pass' : 'Pass'} by ${playerName}${recipientText}`
     }
     
     // Handle penalties
@@ -667,32 +1591,38 @@ export function PlayByPlayTimeline({
     }
     
     // Handle faceoffs
+    // Per CLAUDE.md: event_player_1 (player_role) is faceoff winner, opp_player_1 is faceoff loser
+    // IMPORTANT: For faceoffs with multiple event_player_ids, the winner is in event.player_name field
+    // event_player_ids may contain the winner + teammate who received the puck
     if (event.event_type?.toLowerCase().includes('faceoff')) {
-      // Faceoff won by first player from event_player_ids against first player from opp_player_ids
-      const opponentName = oppPlayers.length > 0 
-        ? oppPlayers[0]  // First player from opp_player_ids
-        : 'Unknown'
-      return `Faceoff won by ${playerName} against ${opponentName}`
+      // Use player_name as primary source for faceoff winner (it's always the winner)
+      const winnerName = event.player_name || playerName
+      const loserName = oppPlayers.length > 0 ? oppPlayers[0] : null
+
+      if (loserName) {
+        return `Faceoff won by ${winnerName} against ${loserName}`
+      }
+      return `Faceoff won by ${winnerName}`
     }
     
     // Handle zone entries/exits
     if (event.event_type?.toLowerCase().includes('zone')) {
       // Use only event_detail_2 for zone entry/exit description (not event_type)
-      const detail2 = (event as any).event_detail_2 || event.play_detail_2 || ''
-      return detail2 ? `${detail2} - ${playerName}` : `${event.event_type.replace(/_/g, ' ')} - ${playerName}`
+      const detail2 = event.event_detail_2 || event.play_detail_2 || ''
+      return detail2 ? `${formatDisplayText(detail2)} - ${playerName}` : `${formatDisplayText(event.event_type)} - ${playerName}`
     }
-    
+
     // Default description - use event_type and event_detail if available
     if (event.event_type) {
-      const detail = event.event_detail && event.event_detail !== event.event_type 
-        ? ` (${event.event_detail})` 
-        : event.play_detail1 
-        ? ` (${event.play_detail1})` 
+      const detail = event.event_detail && event.event_detail !== event.event_type
+        ? ` (${formatDisplayText(event.event_detail)})`
+        : event.play_detail1
+        ? ` (${formatDisplayText(event.play_detail1)})`
         : ''
-      return `${event.event_type.replace(/_/g, ' ')}${detail}${playerName !== 'Unknown' ? ` - ${playerName}` : ''}`
+      return `${formatDisplayText(event.event_type)}${detail}${playerName !== 'Unknown' ? ` - ${playerName}` : ''}`
     }
-    
-    return event.play_detail1 || event.event_detail || 'Event'
+
+    return formatDisplayText(event.play_detail1) || formatDisplayText(event.event_detail) || 'Event'
   }
 
   const togglePeriod = (period: number) => {
@@ -729,6 +1659,7 @@ export function PlayByPlayTimeline({
           {/* Filters and Debug Toggle */}
           <div className="flex items-center gap-2 flex-wrap">
             <button
+              type="button"
               onClick={() => setShowDebug(!showDebug)}
               className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded border border-border bg-background"
               title="Toggle debug view"
@@ -736,11 +1667,12 @@ export function PlayByPlayTimeline({
               {showDebug ? 'Hide' : 'Show'} Debug
             </button>
             <button
+              type="button"
               onClick={() => setViewMode(viewMode === 'basic' ? 'detailed' : 'basic')}
               className={cn(
                 "text-xs px-2 py-1 rounded border border-border transition-colors",
-                viewMode === 'basic' 
-                  ? "bg-primary text-primary-foreground border-primary" 
+                viewMode === 'basic'
+                  ? "bg-primary text-primary-foreground border-primary"
                   : "bg-background text-muted-foreground hover:text-foreground"
               )}
               title="Toggle between basic and detailed view"
@@ -748,48 +1680,106 @@ export function PlayByPlayTimeline({
               {viewMode === 'basic' ? 'Basic' : 'Detailed'}
             </button>
             <Filter className="w-4 h-4 text-muted-foreground" />
-            <select
-              value={filter}
-              onChange={(e) => setFilter(e.target.value as EventFilter)}
-              className="bg-background border border-border rounded-md px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="all">All Events</option>
-              <option value="goals">Goals</option>
-              <option value="penalties">Penalties</option>
-              <option value="highlights">Highlights</option>
-            </select>
-            <select
-              value={selectedPeriod}
-              onChange={(e) => setSelectedPeriod(e.target.value === 'all' ? 'all' : Number(e.target.value))}
-              className="bg-background border border-border rounded-md px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="all">All Periods</option>
-              {availablePeriods.map(period => (
-                <option key={period} value={period}>
-                  {period > 3 ? `OT${period - 3}` : `Period ${period}`}
-                </option>
-              ))}
-            </select>
-            <select
-              value={selectedTeam}
-              onChange={(e) => setSelectedTeam(e.target.value)}
-              className="bg-background border border-border rounded-md px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="all">All Teams</option>
-              {availableTeams.map(team => (
-                <option key={team} value={team}>{team}</option>
-              ))}
-            </select>
-            <select
-              value={selectedPlayer}
-              onChange={(e) => setSelectedPlayer(e.target.value)}
-              className="bg-background border border-border rounded-md px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary min-w-[120px]"
-            >
-              <option value="all">All Players</option>
-              {availablePlayers.map(player => (
-                <option key={player} value={player}>{player}</option>
-              ))}
-            </select>
+            {/* Period Filter */}
+            <MultiSelectDropdown
+              label="Period"
+              options={availablePeriods.map(String)}
+              selected={selectedPeriods.map(String)}
+              onChange={(vals) => setSelectedPeriods(vals.map(Number))}
+              isOpen={showFilterDropdown === 'period'}
+              onToggle={() => setShowFilterDropdown(showFilterDropdown === 'period' ? null : 'period')}
+              formatOption={(p) => Number(p) > 3 ? `OT${Number(p) - 3}` : `Period ${p}`}
+            />
+            {/* Event Type Filter */}
+            <MultiSelectDropdown
+              label="Event Type"
+              options={availableEventTypes}
+              selected={selectedEventTypes}
+              onChange={setSelectedEventTypes}
+              isOpen={showFilterDropdown === 'eventType'}
+              onToggle={() => setShowFilterDropdown(showFilterDropdown === 'eventType' ? null : 'eventType')}
+              formatOption={formatDisplayText}
+            />
+            {/* Event Detail Filter */}
+            <MultiSelectDropdown
+              label="Detail"
+              options={availableEventDetails}
+              selected={selectedEventDetails}
+              onChange={setSelectedEventDetails}
+              isOpen={showFilterDropdown === 'eventDetail'}
+              onToggle={() => setShowFilterDropdown(showFilterDropdown === 'eventDetail' ? null : 'eventDetail')}
+              formatOption={formatDisplayText}
+            />
+            {/* Event Detail 2 Filter */}
+            {availableEventDetails2.length > 0 && (
+              <MultiSelectDropdown
+                label="Detail 2"
+                options={availableEventDetails2}
+                selected={selectedEventDetails2}
+                onChange={setSelectedEventDetails2}
+                isOpen={showFilterDropdown === 'eventDetail2'}
+                onToggle={() => setShowFilterDropdown(showFilterDropdown === 'eventDetail2' ? null : 'eventDetail2')}
+                formatOption={formatDisplayText}
+              />
+            )}
+            {/* Team Filter */}
+            <MultiSelectDropdown
+              label="Team"
+              options={availableTeams}
+              selected={selectedTeams}
+              onChange={setSelectedTeams}
+              isOpen={showFilterDropdown === 'team'}
+              onToggle={() => setShowFilterDropdown(showFilterDropdown === 'team' ? null : 'team')}
+            />
+            {/* Player Filter (grouped by team, with game numbers) */}
+            <MultiSelectDropdown
+              label="Player"
+              options={availablePlayers}
+              selected={selectedPlayers}
+              onChange={setSelectedPlayers}
+              isOpen={showFilterDropdown === 'player'}
+              onToggle={() => setShowFilterDropdown(showFilterDropdown === 'player' ? null : 'player')}
+              formatOption={formatPlayerOption}
+              groups={playerGroups.length > 0 ? playerGroups : undefined}
+            />
+            {/* Players On Ice Filter */}
+            {availablePlayersOnIce.length > 0 && (
+              <MultiSelectDropdown
+                label="On Ice"
+                options={availablePlayersOnIce}
+                selected={selectedPlayersOnIce}
+                onChange={setSelectedPlayersOnIce}
+                isOpen={showFilterDropdown === 'playersOnIce'}
+                onToggle={() => setShowFilterDropdown(showFilterDropdown === 'playersOnIce' ? null : 'playersOnIce')}
+                formatOption={formatPlayerOption}
+              />
+            )}
+            {/* Role Filter (filters event list + XY rink visualization) */}
+            {(
+              <div className="flex items-center gap-0.5 border border-border rounded-md overflow-hidden">
+                {[
+                  { key: null as string | null, label: 'All' },
+                  { key: 'event_primary', label: 'Primary' },
+                  { key: 'event_support', label: 'Support' },
+                  { key: 'opp_primary', label: 'Opp 1' },
+                  { key: 'opp_support', label: 'Opp Sup' },
+                ].map(({ key, label }) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => { setRoleFilter(key); setFocusedPlayerId(null) }}
+                    className={cn(
+                      'px-2 py-1 text-[10px] transition-colors',
+                      roleFilter === key
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-background text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -849,7 +1839,7 @@ export function PlayByPlayTimeline({
       )}
 
       {/* Timeline */}
-      <div className="p-6 space-y-4 max-h-[600px] overflow-y-auto">
+      <div className="p-2 sm:p-4 md:p-6 space-y-4 max-h-[600px] overflow-y-auto">
         {periods.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             No events match the selected filter
@@ -864,6 +1854,7 @@ export function PlayByPlayTimeline({
               <div key={period} className="border border-border rounded-lg overflow-hidden">
                 {/* Period Header */}
                 <button
+                  type="button"
                   onClick={() => togglePeriod(period)}
                   className="w-full px-4 py-3 bg-accent/50 hover:bg-accent transition-colors flex items-center justify-between"
                 >
@@ -988,31 +1979,36 @@ export function PlayByPlayTimeline({
                       // Get linked events for this event
                       const eventAny = event as any // Type assertion to access fields that might not be in type
                       // Use linked_event_key first (primary driver), then fallback to other keys
-                      const linkedKey = eventAny.linked_event_key || eventAny.event_chain_key || eventAny.sequence_key || eventAny.play_key
+                      const linkedKey = eventAny.linked_event_key || eventAny.sequence_key || eventAny.play_key
                       const linkedEvents = linkedKey ? eventsByLinkedKey.get(linkedKey) : undefined
 
                       return (
                         <div
                           key={eventKey}
+                          ref={(el) => {
+                            if (el) eventRefs.current.set(eventKey, el)
+                          }}
                           onClick={() => {
                             setSelectedEvent(isSelected ? null : eventKey)
                             setDebugEvent(event)
+                            if (isSelected) { setFocusedPlayerId(null); setRoleFilter(null) }
                           }}
                           className={cn(
-                            'px-4 py-3 transition-colors cursor-pointer',
+                            'px-2 sm:px-4 py-2 sm:py-3 transition-colors cursor-pointer',
                             getEventColor(event),
-                            isSelected && 'ring-2 ring-primary'
+                            isSelected && 'ring-2 ring-primary',
+                            highlightedEvent === eventKey && 'ring-2 ring-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 animate-pulse'
                           )}
                         >
-                          <div className="flex items-start gap-3">
+                          <div className="flex items-start gap-1.5 sm:gap-3">
                             {/* Time */}
-                            <div className="flex-shrink-0 w-20 text-xs font-mono text-muted-foreground">
+                            <div className="flex-shrink-0 w-12 sm:w-20 text-[10px] sm:text-xs font-mono text-muted-foreground">
                               {(() => {
                                 const endTime = formatEndTime(event)
                                 return endTime ? (
                                   <div>
                                     <div>{time}</div>
-                                    <div className="text-[10px] opacity-70">→ {endTime}</div>
+                                    <div className="text-[9px] sm:text-[10px] opacity-70">→ {endTime}</div>
                                   </div>
                                 ) : (
                                   <div>{time}</div>
@@ -1027,7 +2023,7 @@ export function PlayByPlayTimeline({
 
                             {/* Event Details */}
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1">
+                              <div className="flex items-center gap-1 sm:gap-2 mb-1 flex-wrap">
                                 {/* Team Logo - only show if not a game state event */}
                                 {!isGameStateEvent && teamData && (
                                   <TeamLogo
@@ -1038,155 +2034,368 @@ export function PlayByPlayTimeline({
                                     showGradient={false}
                                   />
                                 )}
-                                {/* Team Name - only show if not a game state event */}
+                                {/* Team Name - hide on mobile, show on sm+ */}
                                 {!isGameStateEvent && (
-                                  <span 
-                                    className="text-xs font-semibold"
+                                  <span
+                                    className="hidden sm:inline text-xs font-semibold"
                                     style={(teamData as any)?.primary_color || (teamData as any)?.team_color1 ? {
                                       color: (teamData as any).primary_color || (teamData as any).team_color1
                                     } : {
-                                      color: 'inherit' // Use default foreground color if no team color
+                                      color: 'inherit'
                                     }}
                                   >
                                     {teamName}
                                   </span>
                                 )}
-                                <span className="text-xs text-foreground">
+                                <span className="text-[11px] sm:text-xs text-foreground">
                                   {getEventDescription(event, linkedEvents)}
                                 </span>
+                                {/* Watch Button */}
+                                {hasVideo(event) && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      setSelectedEvent(eventKey)
+                                      setPlayingEvent(playingEvent === eventKey ? null : eventKey)
+                                    }}
+                                    className="ml-auto flex-shrink-0 p-1 sm:p-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary transition-colors"
+                                    title="Watch video at this event"
+                                  >
+                                    <Play className="w-3 h-3" />
+                                  </button>
+                                )}
                               </div>
                               
                               {/* Additional Details - Expanded View */}
                               {isSelected && (
                                 <div className="mt-2 pt-2 border-t border-border/50 text-xs text-muted-foreground space-y-2">
-                                  {/* Basic Info */}
-                                  <div className="grid grid-cols-2 gap-2">
-                                    <div><strong>Event ID:</strong> {event.event_id}</div>
-                                    <div><strong>Period:</strong> {getPeriod(event)}</div>
-                                    <div><strong>Event Type:</strong> {event.event_type}</div>
-                                    <div><strong>Event Type ID:</strong> {event.event_type_id}</div>
-                                  </div>
-
-                                  {/* Time Info */}
-                                  <div className="pt-2 border-t border-border/30">
-                                    <div className="font-semibold mb-1">Time Information:</div>
-                                    <div className="grid grid-cols-2 gap-2">
-                                      <div>Start: {event.event_start_min}:{String(event.event_start_sec).padStart(2, '0')}</div>
-                                      <div>Total Seconds: {event.time_start_total_seconds}</div>
-                                      {event.event_end_min !== undefined && (
-                                        <div>End: {event.event_end_min}:{String(event.event_end_sec || 0).padStart(2, '0')}</div>
-                                      )}
-                                      {event.duration && <div>Duration: {event.duration}s</div>}
-                                    </div>
-                                  </div>
-
-                                  {/* Player Info */}
-                                  <div className="pt-2 border-t border-border/30">
-                                    <div className="font-semibold mb-1">Player Information:</div>
-                                    <div className="space-y-1">
-                                      {event.event_player_1 && <div><strong>Player 1:</strong> {event.event_player_1}</div>}
-                                      {event.event_player_2 && <div><strong>Player 2:</strong> {event.event_player_2}</div>}
-                                      {event.player_name && <div><strong>Player Name:</strong> {event.player_name}</div>}
-                                      {event.event_player_ids && (
-                                        <div>
-                                          <strong>Player IDs:</strong> {event.event_player_ids}
-                                          <div className="text-xs mt-1">
-                                            Players: {getEventPlayers(event).join(', ') || 'None found'}
+                                  {/* Embedded Video Player */}
+                                  {playingEvent === eventKey && (() => {
+                                    const embedUrl = getEmbedVideoUrl(event)
+                                    return embedUrl ? (
+                                      <div className="mb-4">
+                                        {/* Camera Switcher */}
+                                        {videos.length > 1 && (
+                                          <div className="flex gap-1 mb-2">
+                                            {videos.map((video, vidIdx) => (
+                                              <button
+                                                key={video.video_key}
+                                                type="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation()
+                                                  setSelectedVideoIndex(vidIdx)
+                                                }}
+                                                className={cn(
+                                                  'px-3 py-1 text-xs font-medium rounded-md transition-colors',
+                                                  vidIdx === selectedVideoIndex
+                                                    ? 'bg-primary text-primary-foreground'
+                                                    : 'bg-muted hover:bg-muted/80 text-muted-foreground'
+                                                )}
+                                              >
+                                                <Video className="w-3 h-3 inline mr-1" />
+                                                {video.video_type.replace('_', ' ')}
+                                              </button>
+                                            ))}
                                           </div>
+                                        )}
+                                        <div className="aspect-video w-full rounded-lg overflow-hidden">
+                                          <iframe
+                                            key={`event-video-${eventKey}-${selectedVideoIndex}`}
+                                            src={embedUrl}
+                                            title="Event Video"
+                                            className="w-full h-full"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                          />
                                         </div>
-                                      )}
-                                      {event.opp_player_ids && (
-                                        <div>
-                                          <strong>Opp Player IDs:</strong> {event.opp_player_ids}
-                                          <div className="text-xs mt-1">
-                                            Opponents: {getOppPlayers(event).join(', ') || 'None found'}
+                                        <button
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation()
+                                            setPlayingEvent(null)
+                                          }}
+                                          className="mt-2 text-xs text-muted-foreground hover:text-foreground"
+                                        >
+                                          Close Video
+                                        </button>
+                                      </div>
+                                    ) : null
+                                  })()}
+
+                                  {/* Players (clickable to highlight on rink) */}
+                                  {(() => {
+                                    const epIds = event.event_player_ids?.split(',').map(id => id.trim()).filter(Boolean) || []
+                                    const opIds = event.opp_player_ids?.split(',').map(id => id.trim()).filter(Boolean) || []
+                                    const epNames = getEventPlayers(event)
+                                    const opNames = getOppPlayers(event)
+
+                                    const renderClickableName = (name: string, playerId: string | undefined, idx: number) => {
+                                      const isFocused = playerId && focusedPlayerId === playerId
+                                      return (
+                                        <button
+                                          key={idx}
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation()
+                                            if (playerId) {
+                                              setFocusedPlayerId(prev => prev === playerId ? null : playerId)
+                                            }
+                                          }}
+                                          className={cn(
+                                            "inline text-xs hover:underline transition-colors",
+                                            isFocused ? "text-primary font-semibold" : "text-foreground"
+                                          )}
+                                        >
+                                          {name}
+                                        </button>
+                                      )
+                                    }
+
+                                    return (
+                                      <div className="grid grid-cols-2 gap-2">
+                                        {epNames.length > 0 && (
+                                          <div className="text-xs">
+                                            <strong>Players: </strong>
+                                            {epNames.map((name, idx) => (
+                                              <span key={idx}>
+                                                {idx > 0 && ', '}
+                                                {renderClickableName(name, epIds[idx], idx)}
+                                              </span>
+                                            ))}
                                           </div>
-                                        </div>
-                                      )}
-                                      {event.player_role && <div><strong>Player Role:</strong> {event.player_role}</div>}
-                                      {event.player_team && <div><strong>Player Team:</strong> {event.player_team}</div>}
-                                    </div>
-                                  </div>
+                                        )}
+                                        {opNames.length > 0 && (
+                                          <div className="text-xs">
+                                            <strong>Opponents: </strong>
+                                            {opNames.map((name, idx) => (
+                                              <span key={idx}>
+                                                {idx > 0 && ', '}
+                                                {renderClickableName(name, opIds[idx], idx)}
+                                              </span>
+                                            ))}
+                                          </div>
+                                        )}
+                                      </div>
+                                    )
+                                  })()}
+
+                                  {/* Play details for focused player */}
+                                  {focusedPlayerId && (() => {
+                                    const detailsMap = eventPlayerDetailsMap.get(event.event_id)
+                                    if (!detailsMap) return null
+                                    // Find the player name for this player_id
+                                    const epIds = event.event_player_ids?.split(',').map(id => id.trim()).filter(Boolean) || []
+                                    const opIds = event.opp_player_ids?.split(',').map(id => id.trim()).filter(Boolean) || []
+                                    const epNames = getEventPlayers(event)
+                                    const opNames = getOppPlayers(event)
+
+                                    let focusedName: string | null = null
+                                    const epIdx = epIds.indexOf(focusedPlayerId)
+                                    const opIdx = opIds.indexOf(focusedPlayerId)
+                                    if (epIdx >= 0 && epNames[epIdx]) focusedName = epNames[epIdx]
+                                    else if (opIdx >= 0 && opNames[opIdx]) focusedName = opNames[opIdx]
+
+                                    if (!focusedName) return null
+                                    const details = detailsMap.get(focusedName)
+                                    if (!details) return null
+                                    if (!details.play_detail1 && !details.play_detail_2) return null
+
+                                    return (
+                                      <div className="px-2 py-1.5 rounded bg-primary/5 border border-primary/20 text-xs">
+                                        <div className="font-semibold text-primary mb-0.5">{focusedName} — Details</div>
+                                        {details.player_role && (
+                                          <div className="text-muted-foreground">Role: {formatDisplayText(details.player_role)}</div>
+                                        )}
+                                        {details.play_detail1 && (
+                                          <div>Detail 1: {formatDisplayText(details.play_detail1)}</div>
+                                        )}
+                                        {details.play_detail_2 && (
+                                          <div>Detail 2: {formatDisplayText(details.play_detail_2)}</div>
+                                        )}
+                                      </div>
+                                    )
+                                  })()}
 
                                   {/* Event Details */}
-                                  <div className="pt-2 border-t border-border/30">
-                                    <div className="font-semibold mb-1">Event Details:</div>
-                                    <div className="space-y-1">
-                                      {event.event_detail && <div><strong>Event Detail:</strong> {event.event_detail}</div>}
-                                      {event.event_detail_id && <div><strong>Event Detail ID:</strong> {event.event_detail_id}</div>}
-                                      {event.play_detail1 && <div><strong>Play Detail 1:</strong> {event.play_detail1}</div>}
-                                      {event.play_detail_2 && <div><strong>Play Detail 2:</strong> {event.play_detail_2}</div>}
-                                      {event.event_successful !== null && event.event_successful !== undefined && (
-                                        <div><strong>Successful:</strong> {event.event_successful ? 'Yes' : 'No'}</div>
-                                      )}
-                                    </div>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <div><strong>Type:</strong> {formatDisplayText(event.event_type)}</div>
+                                    {event.event_detail && <div><strong>Detail:</strong> {formatDisplayText(event.event_detail)}</div>}
+                                    {event.event_detail_2 && <div><strong>Detail 2:</strong> {formatDisplayText(event.event_detail_2)}</div>}
+                                    {event.play_detail1 && <div><strong>Play Detail:</strong> {formatDisplayText(event.play_detail1)}</div>}
+                                    {event.play_detail_2 && <div><strong>Play Detail 2:</strong> {formatDisplayText(event.play_detail_2)}</div>}
                                   </div>
 
-                                  {/* Context Info */}
-                                  <div className="pt-2 border-t border-border/30">
-                                    <div className="font-semibold mb-1">Context:</div>
-                                    <div className="grid grid-cols-2 gap-2">
-                                      {event.event_team_zone && <div><strong>Zone:</strong> {event.event_team_zone}</div>}
-                                      {event.team_venue && <div><strong>Team Venue:</strong> {event.team_venue}</div>}
-                                      {event.team_id && <div><strong>Team ID:</strong> {event.team_id}</div>}
-                                      {event.event_team_id && <div><strong>Event Team ID:</strong> {event.event_team_id}</div>}
-                                      {event.strength && <div><strong>Strength:</strong> {event.strength}</div>}
-                                      {event.home_team && <div><strong>Home Team:</strong> {event.home_team}</div>}
-                                      {event.away_team && <div><strong>Away Team:</strong> {event.away_team}</div>}
-                                    </div>
+                                  {/* Context */}
+                                  <div className="grid grid-cols-2 gap-2">
+                                    {event.event_team_zone && <div><strong>Zone:</strong> {formatDisplayText(event.event_team_zone)}</div>}
+                                    {event.strength && <div><strong>Strength:</strong> {formatDisplayText(event.strength)}</div>}
+                                    {event.duration && event.duration > 0 && <div><strong>Duration:</strong> {event.duration}s</div>}
+                                    {event.event_successful !== null && event.event_successful !== undefined && (
+                                      <div><strong>Successful:</strong> {event.event_successful ? 'Yes' : 'No'}</div>
+                                    )}
                                   </div>
+
+                                  {/* Players On Ice */}
+                                  {(() => {
+                                    const playersOnIce = getPlayersOnIce(event)
+                                    if (!playersOnIce) return null
+                                    return (
+                                      <div className="pt-2 border-t border-border/30">
+                                        <div className="font-semibold mb-1">Players On Ice:</div>
+                                        <div className="grid grid-cols-2 gap-2">
+                                          <div>
+                                            <div className="flex items-center gap-1 mb-1">
+                                              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: homeTeamData?.primary_color || homeTeamData?.team_color1 || '#3b82f6' }} />
+                                              <span className="text-[10px] font-medium">{homeTeam}</span>
+                                            </div>
+                                            <div className="text-[10px] text-muted-foreground">
+                                              {playersOnIce.home.join(', ') || 'N/A'}
+                                            </div>
+                                          </div>
+                                          <div>
+                                            <div className="flex items-center gap-1 mb-1">
+                                              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: awayTeamData?.primary_color || awayTeamData?.team_color1 || '#ef4444' }} />
+                                              <span className="text-[10px] font-medium">{awayTeam}</span>
+                                            </div>
+                                            <div className="text-[10px] text-muted-foreground">
+                                              {playersOnIce.away.join(', ') || 'N/A'}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )
+                                  })()}
 
                                   {/* Flags */}
-                                  <div className="pt-2 border-t border-border/30">
-                                    <div className="font-semibold mb-1">Flags:</div>
-                                    <div className="grid grid-cols-2 gap-2">
-                                      {event.is_goal === 1 && <div className="text-goal">✓ Goal</div>}
-                                      {event.is_save === 1 && <div className="text-primary">✓ Save</div>}
-                                      {event.is_highlight === 1 && <div>✓ Highlight</div>}
-                                      {event.is_rebound === 1 && <div>✓ Rebound</div>}
-                                      {event.is_rush === 1 && <div>✓ Rush</div>}
+                                  {(event.is_goal === 1 || event.is_save === 1 || event.is_highlight === 1 || event.is_rebound === 1 || event.is_rush === 1) && (
+                                    <div className="flex flex-wrap gap-1.5">
+                                      {event.is_goal === 1 && <span className="px-2 py-0.5 rounded bg-green-500/20 text-green-600 dark:text-green-400 text-xs">Goal</span>}
+                                      {event.is_save === 1 && <span className="px-2 py-0.5 rounded bg-blue-500/20 text-blue-600 dark:text-blue-400 text-xs">Save</span>}
+                                      {event.is_highlight === 1 && <span className="px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 text-xs">Highlight</span>}
+                                      {event.is_rebound === 1 && <span className="px-2 py-0.5 rounded bg-orange-500/20 text-orange-600 dark:text-orange-400 text-xs">Rebound</span>}
+                                      {event.is_rush === 1 && <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-600 dark:text-purple-400 text-xs">Rush</span>}
                                     </div>
-                                  </div>
+                                  )}
 
-                                  {/* Linking Info */}
-                                  <div className="pt-2 border-t border-border/30">
-                                    <div className="font-semibold mb-1">Linking:</div>
-                                    <div className="space-y-1">
-                                      {eventAny.event_chain_key && <div><strong>Event Chain Key:</strong> {eventAny.event_chain_key}</div>}
-                                      {eventAny.linked_event_key && <div><strong>Linked Event Key:</strong> {eventAny.linked_event_key}</div>}
-                                      {eventAny.sequence_key && <div><strong>Sequence Key:</strong> {eventAny.sequence_key}</div>}
-                                      {eventAny.play_key && <div><strong>Play Key:</strong> {eventAny.play_key}</div>}
-                                      {linkedEvents && linkedEvents.length > 1 && (
-                                        <div className="mt-2 pt-2 border-t border-border/30">
-                                          <div className="font-semibold mb-1">Linked Events ({linkedEvents.length}):</div>
-                                          {linkedEvents.filter(e => e.event_id !== event.event_id).map((linkedEvent, i) => (
-                                            <div key={i} className="text-xs pl-2 border-l-2 border-border/30">
-                                              • {getEventDescription(linkedEvent)}
+                                  {/* Ice Rink Visualization - XY long data or fallback to puck_x/y_start */}
+                                  {(() => {
+                                    const viz = buildEventVisualization(event)
+                                    const homeColor = homeTeamData?.primary_color || homeTeamData?.team_color1 || '#3b82f6'
+                                    const awayColor = awayTeamData?.primary_color || awayTeamData?.team_color1 || '#ef4444'
+
+                                    if (viz) {
+                                      // Full visualization with players + puck path from XY long tables
+                                      if (viz.players.length === 0 && viz.puckPath.length === 0) return null
+
+                                      // Apply role filter to players
+                                      const filteredPlayers = roleFilter ? viz.players.filter(p => {
+                                        if (!p.role) return true // keep players without role data
+                                        if (roleFilter === 'event_primary') return p.role === 'event_player_1'
+                                        if (roleFilter === 'opp_primary') return p.role === 'opp_player_1'
+                                        if (roleFilter === 'event_support') return p.role.startsWith('event_player_') && p.role !== 'event_player_1'
+                                        if (roleFilter === 'opp_support') return p.role.startsWith('opp_player_') && p.role !== 'opp_player_1'
+                                        return true
+                                      }) : viz.players
+
+                                      return (
+                                        <div className="pt-2 border-t border-border/30">
+                                          <div className="font-semibold text-xs mb-1">Ice Positions:</div>
+                                          <div className="w-full max-w-sm mx-auto">
+                                            <IceRinkSVG
+                                              players={filteredPlayers}
+                                              puckPath={viz.puckPath}
+                                              showPuck={true}
+                                              showZoneLabels={true}
+                                              homeColor={homeColor}
+                                              awayColor={awayColor}
+                                              homeTeamName={homeTeam}
+                                              awayTeamName={awayTeam}
+                                              className="border border-border rounded-lg"
+                                              focusedPlayerId={focusedPlayerId}
+                                              onPlayerClick={(pid) => setFocusedPlayerId(prev => prev === pid ? null : pid)}
+                                            />
+                                          </div>
+                                          {/* Legend */}
+                                          <div className="flex items-center justify-center gap-3 mt-1">
+                                            <div className="flex items-center gap-1">
+                                              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: homeColor }} />
+                                              <span className="text-[10px] text-muted-foreground">{homeTeam}</span>
                                             </div>
-                                          ))}
+                                            <div className="flex items-center gap-1">
+                                              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: awayColor }} />
+                                              <span className="text-[10px] text-muted-foreground">{awayTeam}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                              <div className="w-2 h-2 rounded-full bg-gray-900" />
+                                              <span className="text-[10px] text-muted-foreground">Puck</span>
+                                            </div>
+                                          </div>
                                         </div>
-                                      )}
-                                    </div>
-                                  </div>
+                                      )
+                                    }
 
-                                  {/* Video Info */}
-                                  {(event.running_video_time || event.video_url) && (
+                                    // Fallback: single puck dot from puck_x_start / puck_y_start
+                                    const puckX = event.puck_x_start
+                                    const puckY = event.puck_y_start
+                                    if (puckX === null || puckX === undefined || puckY === null || puckY === undefined) return null
+                                    return (
+                                      <div className="pt-2 border-t border-border/30">
+                                        <div className="font-semibold mb-1 text-xs">Puck Location:</div>
+                                        <div className="w-full max-w-sm mx-auto">
+                                          <IceRinkSVG
+                                            puckPath={[{
+                                              x: puckX,
+                                              y: puckY,
+                                              seq: 1
+                                            }]}
+                                            showPuck={true}
+                                            showZoneLabels={true}
+                                            homeColor={homeColor}
+                                            awayColor={awayColor}
+                                            className="border border-border rounded-lg"
+                                          />
+                                        </div>
+                                        <div className="text-[10px] text-muted-foreground text-center mt-1">
+                                          Position: ({Number(puckX).toFixed(1)}, {Number(puckY).toFixed(1)})
+                                        </div>
+                                      </div>
+                                    )
+                                  })()}
+
+                                  {/* Net Front View (if net_x/net_y data exists) */}
+                                  {event.net_x != null && event.net_y != null && (
                                     <div className="pt-2 border-t border-border/30">
-                                      <div className="font-semibold mb-1">Video:</div>
-                                      <div className="space-y-1">
-                                        {event.running_video_time && <div><strong>Video Time:</strong> {event.running_video_time}s</div>}
-                                        {event.video_url && <div><strong>Video URL:</strong> <a href={event.video_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{event.video_url}</a></div>}
+                                      <div className="font-semibold mb-1 text-xs">Net Placement:</div>
+                                      <div className="w-full max-w-[180px] mx-auto">
+                                        <NetFrontSVG
+                                          shotX={event.net_x}
+                                          shotY={event.net_y}
+                                          isGoal={event.is_goal === 1}
+                                        />
                                       </div>
                                     </div>
                                   )}
 
-                                  {/* Raw JSON (Collapsible) */}
-                                  <details className="pt-2 border-t border-border/30">
-                                    <summary className="font-semibold cursor-pointer hover:text-foreground">Raw JSON Data</summary>
-                                    <pre className="mt-2 text-[10px] overflow-auto max-h-60 bg-background p-2 rounded border border-border/30">
-                                      {JSON.stringify(event, null, 2)}
-                                    </pre>
-                                  </details>
+                                  {/* Video Time / Watch Button */}
+                                  {hasVideo(event) && playingEvent !== eventKey && (
+                                    <div className="pt-2 border-t border-border/30 flex items-center gap-2">
+                                      {event.running_video_time && event.running_video_time > 0 && (
+                                        <span><strong>Video Time:</strong> {Math.floor(event.running_video_time / 60)}:{String(Math.floor(event.running_video_time % 60)).padStart(2, '0')}</span>
+                                      )}
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          setPlayingEvent(eventKey)
+                                        }}
+                                        className="inline-flex items-center gap-1 px-2 py-1 bg-primary text-primary-foreground rounded text-xs hover:bg-primary/90 transition-colors"
+                                      >
+                                        <Play className="w-3 h-3" />
+                                        Watch
+                                      </button>
+                                    </div>
+                                  )}
                                 </div>
                               )}
                             </div>

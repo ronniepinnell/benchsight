@@ -1,0 +1,64 @@
+# BenchSight Analytics Constants
+# Centralized configuration for xG models, WAR/GAR weights, and other analytical constants
+
+xg_model:
+  base_rates:
+    high_danger: 0.25
+    medium_danger: 0.08
+    low_danger: 0.03
+    default: 0.06
+
+  modifiers:
+    rush: 1.3
+    rebound: 1.5
+    one_timer: 1.4
+    breakaway: 2.5
+    screened: 1.2
+    deflection: 1.3
+
+  shot_type_modifiers:
+    wrist: 1.0
+    slap: 0.95
+    snap: 1.05
+    backhand: 0.9
+    tip: 1.15
+    deflection: 1.1
+
+gar_weights:
+  player:
+    goals: 1.0
+    primary_assists: 0.7
+    secondary_assists: 0.4
+    shots_generated: 0.015
+    xg_generated: 0.8
+    takeaways: 0.05
+    blocked_shots: 0.02
+    defensive_zone_exits: 0.03
+    cf_above_avg: 0.02
+    zone_entry_value: 0.04
+    shot_assists: 0.3
+    pressure_success: 0.02
+
+  goalie:
+    saves_above_avg: 0.1
+    high_danger_saves: 0.15
+    goals_prevented: 1.0
+    rebound_control: 0.05
+    quality_start_bonus: 0.5
+
+league_constants:
+  goals_per_win: 4.5
+  games_per_season: 20
+  avg_save_pct: 88.0
+
+rating_game_score_map:
+  1: 1.0
+  2: 2.3
+  3: 3.5
+  4: 4.7
+  5: 5.9
+  6: 7.1
+  7: 8.3
+  8: 9.5
+  9: 10.7
+  10: 12.0

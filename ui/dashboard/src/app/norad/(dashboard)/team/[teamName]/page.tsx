@@ -62,12 +62,13 @@ async function TeamAdvancedStatsSection({
         return { ...totals, cfPct, ffPct, xgDiff: totals.goals - totals.xg }
       }),
     
-    // Special teams
+    // Special teams (only Past games)
     supabase
       .from('dim_schedule')
       .select('home_team_id, away_team_id, home_pp_goals, away_pp_goals, home_pp_opportunities, away_pp_opportunities, home_pk_goals_against, away_pk_goals_against, home_pk_opportunities, away_pk_opportunities')
       .or(`home_team_id.eq.${teamId},away_team_id.eq.${teamId}`)
       .eq('season_id', seasonId)
+      .eq('schedule_type', 'Past')
       .then(({ data }) => {
         if (!data || data.length === 0) return null
         const totals = data.reduce((acc, game) => {
@@ -644,6 +645,7 @@ export default async function TeamDetailPage({
       .from('dim_schedule')
       .select('*')
       .eq('season_id', seasonId)
+      .eq('schedule_type', 'Past')
       .not('home_total_goals', 'is', null)
       .not('away_total_goals', 'is', null)
       .order('date', { ascending: false })
@@ -676,11 +678,12 @@ export default async function TeamDetailPage({
     }
   }
   
-  // Get team's recent completed games directly from dim_schedule
+  // Get team's recent completed games directly from dim_schedule (only Past games)
   let teamGamesQuery = supabase
     .from('dim_schedule')
     .select('*')
     .or(`home_team_name.eq.${team.team_name},away_team_name.eq.${team.team_name},home_team_id.eq.${team.team_id},away_team_id.eq.${team.team_id}`)
+    .eq('schedule_type', 'Past')
     .not('home_total_goals', 'is', null) // Only completed games
   
   // Filter by season if specified and not empty
@@ -703,13 +706,14 @@ export default async function TeamDetailPage({
   const seasonsInGames = [...new Set(teamGames.map((g: any) => g.season_id).filter(Boolean))]
   const championshipGameIds = new Set<number>()
   
-  // Fetch last game for each season in parallel
+  // Fetch last game for each season in parallel (only Past games)
   if (seasonsInGames.length > 0) {
-    const lastGamesPromises = seasonsInGames.map(seasonId => 
+    const lastGamesPromises = seasonsInGames.map(seasonId =>
       supabase
         .from('dim_schedule')
         .select('game_id')
         .eq('season_id', seasonId)
+        .eq('schedule_type', 'Past')
         .not('home_total_goals', 'is', null)
         .not('away_total_goals', 'is', null)
         .order('date', { ascending: false })
@@ -753,15 +757,11 @@ export default async function TeamDetailPage({
       .from('dim_schedule')
       .select('*')
       .or(`home_team_name.eq.${team.team_name},away_team_name.eq.${team.team_name},home_team_id.eq.${team.team_id},away_team_id.eq.${team.team_id}`)
-      .gte('date', today)
+      .eq('schedule_type', 'Upcoming')
       .order('date', { ascending: true })
-      .limit(20)
-    
-    // Filter to only games that haven't been played (no scores)
-    upcomingGames = (upcomingGamesData || []).filter((g: any) => 
-      g.home_total_goals === null || g.away_total_goals === null || 
-      g.home_total_goals === undefined || g.away_total_goals === undefined
-    ).slice(0, 10)
+      .limit(10)
+
+    upcomingGames = upcomingGamesData || []
   }
   
   // Also get opponent teams for upcoming games
@@ -806,12 +806,13 @@ export default async function TeamDetailPage({
   
   const { data: allGameRoster } = await gameRosterQuery
   
-  // Get game IDs for filtering advanced stats
-  const { data: scheduleForRoster } = seasonId 
+  // Get game IDs for filtering advanced stats (only Past games)
+  const { data: scheduleForRoster } = seasonId
     ? await supabase
         .from('dim_schedule')
         .select('game_id')
         .eq('season_id', seasonId)
+        .eq('schedule_type', 'Past')
     : { data: null }
   
   const gameIdsForRoster = scheduleForRoster?.map(g => g.game_id) || []
@@ -1650,53 +1651,66 @@ export default async function TeamDetailPage({
           style={{ backgroundColor: team.primary_color || team.team_color1 || '#3b82f6' }}
         />
         <div className="p-6">
-          <div className="flex items-start gap-6">
-            <TeamLogo
-              src={team.team_logo || null}
-              name={team.team_name || ''}
-              abbrev={team.team_cd}
-              primaryColor={team.primary_color || team.team_color1}
-              secondaryColor={team.team_color2}
-              size="2xl"
-            />
+          <div className="flex items-start gap-3 sm:gap-6">
+            {/* Mobile: lg, Desktop: xl */}
+            <div className="sm:hidden">
+              <TeamLogo
+                src={team.team_logo || null}
+                name={team.team_name || ''}
+                abbrev={team.team_cd}
+                primaryColor={team.primary_color || team.team_color1}
+                secondaryColor={team.team_color2}
+                size="lg"
+              />
+            </div>
+            <div className="hidden sm:block">
+              <TeamLogo
+                src={team.team_logo || null}
+                name={team.team_name || ''}
+                abbrev={team.team_cd}
+                primaryColor={team.primary_color || team.team_color1}
+                secondaryColor={team.team_color2}
+                size="xl"
+              />
+            </div>
             <div className="flex-1">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h1 className="font-display text-4xl font-bold tracking-wider text-foreground mb-3">
+                  <h1 className="font-display text-2xl sm:text-4xl font-bold tracking-wider text-foreground mb-2 sm:mb-3">
                     {team.team_name}
                   </h1>
-                  
+
                   {/* Record and Standings - Prominent Display */}
                   {teamStanding && (
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-6 flex-wrap">
+                    <div className="space-y-2 sm:space-y-3">
+                      <div className="flex items-center gap-3 sm:gap-6 flex-wrap">
                         <div>
                           <div className="text-xs font-mono text-muted-foreground uppercase mb-1">Record</div>
-                          <div className="font-display text-3xl font-bold text-foreground">
+                          <div className="font-display text-xl sm:text-3xl font-bold text-foreground">
                             {wins}-{losses}-{ties}
                           </div>
                         </div>
                         <div>
                           <div className="text-xs font-mono text-muted-foreground uppercase mb-1">Win %</div>
-                          <div className="font-mono text-2xl font-bold text-primary">
+                          <div className="font-mono text-lg sm:text-2xl font-bold text-primary">
                             {winPct.toFixed(1)}%
                           </div>
                         </div>
                         <div>
                           <div className="text-xs font-mono text-muted-foreground uppercase mb-1">Points</div>
-                          <div className="font-mono text-2xl font-bold text-primary">
+                          <div className="font-mono text-lg sm:text-2xl font-bold text-primary">
                             {points}
                           </div>
                         </div>
                         <div>
                           <div className="text-xs font-mono text-muted-foreground uppercase mb-1">Standing</div>
-                          <div className="font-mono text-2xl font-bold text-foreground">
+                          <div className="font-mono text-lg sm:text-2xl font-bold text-foreground">
                             #{teamStanding.standing || regularSeasonFinish || '-'}
                           </div>
                         </div>
                         <div>
                           <div className="text-xs font-mono text-muted-foreground uppercase mb-1">Games Played</div>
-                          <div className="font-mono text-xl font-semibold text-foreground">
+                          <div className="font-mono text-lg sm:text-xl font-semibold text-foreground">
                             {teamStanding.games_played || 0}
                           </div>
                         </div>

@@ -1,16 +1,17 @@
 -- ============================================================================
 -- BENCHSIGHT VIEWS - AUTO-GENERATED DEPLOY SCRIPT
--- Generated: 2026-01-13T07:37:11.687900
+-- Generated: 2026-01-26
 -- Total Views: 59
 -- ============================================================================
 
 -- Run this script in Supabase SQL Editor to deploy all views
+-- NOTE: All views querying dim_schedule filter on include = TRUE to exclude upcoming games
 
 
 -- === 01_leaderboard_views.sql ===
 
 CREATE OR REPLACE VIEW v_leaderboard_points AS
-SELECT 
+SELECT
     player_id,
     player_name,
     team_name,
@@ -29,7 +30,7 @@ WHERE game_type = 'All' AND games_played >= 1
 ORDER BY points DESC;
 
 CREATE OR REPLACE VIEW v_leaderboard_points_by_game_type AS
-SELECT 
+SELECT
     player_id,
     player_name,
     team_name,
@@ -47,7 +48,7 @@ WHERE games_played >= 1
 ORDER BY game_type, points DESC;
 
 CREATE OR REPLACE VIEW v_leaderboard_goals AS
-SELECT 
+SELECT
     player_id,
     player_name,
     team_name,
@@ -63,7 +64,7 @@ WHERE game_type = 'All' AND games_played >= 1
 ORDER BY goals DESC;
 
 CREATE OR REPLACE VIEW v_leaderboard_assists AS
-SELECT 
+SELECT
     player_id,
     player_name,
     team_name,
@@ -79,7 +80,7 @@ WHERE game_type = 'All' AND games_played >= 1
 ORDER BY assists DESC;
 
 CREATE OR REPLACE VIEW v_leaderboard_ppg AS
-SELECT 
+SELECT
     player_id,
     player_name,
     team_name,
@@ -95,7 +96,7 @@ WHERE game_type = 'All' AND games_played >= 5
 ORDER BY points_per_game DESC;
 
 CREATE OR REPLACE VIEW v_leaderboard_pim AS
-SELECT 
+SELECT
     player_id,
     player_name,
     team_name,
@@ -111,12 +112,11 @@ WHERE game_type = 'All' AND games_played >= 1
 ORDER BY pim DESC;
 
 CREATE OR REPLACE VIEW v_leaderboard_career_points AS
-SELECT 
+SELECT
     player_id,
     player_name,
     current_team,
     position,
-    seasons_played,
     career_games,
     career_goals,
     career_assists,
@@ -128,7 +128,7 @@ WHERE career_games >= 1
 ORDER BY career_points DESC;
 
 CREATE OR REPLACE VIEW v_leaderboard_goalie_wins AS
-SELECT 
+SELECT
     player_id,
     player_name,
     team_name,
@@ -147,7 +147,7 @@ WHERE game_type = 'All' AND games_played >= 1
 ORDER BY wins DESC;
 
 CREATE OR REPLACE VIEW v_leaderboard_goalie_wins_by_game_type AS
-SELECT 
+SELECT
     player_id,
     player_name,
     team_name,
@@ -166,7 +166,7 @@ WHERE games_played >= 1
 ORDER BY game_type, wins DESC;
 
 CREATE OR REPLACE VIEW v_leaderboard_goalie_gaa AS
-SELECT 
+SELECT
     player_id,
     player_name,
     team_name,
@@ -186,7 +186,7 @@ WHERE game_type = 'All' AND games_played >= 5
 ORDER BY gaa ASC;
 
 CREATE OR REPLACE VIEW v_leaderboard_goalie_record AS
-SELECT 
+SELECT
     player_id,
     player_name,
     team_name,
@@ -211,11 +211,11 @@ ORDER BY wins DESC, gaa ASC;
 
 CREATE OR REPLACE VIEW v_standings_current AS
 WITH latest_season AS (
-    SELECT season_id FROM fact_team_season_stats_basic 
+    SELECT season_id FROM fact_team_season_stats_basic
     WHERE game_type = 'All'
     ORDER BY season DESC LIMIT 1
 )
-SELECT 
+SELECT
     t.team_id,
     t.team_name,
     t.season,
@@ -240,11 +240,11 @@ ORDER BY t.points DESC, t.wins DESC, t.goal_diff DESC;
 
 CREATE OR REPLACE VIEW v_standings_current_regular AS
 WITH latest_season AS (
-    SELECT season_id FROM fact_team_season_stats_basic 
+    SELECT season_id FROM fact_team_season_stats_basic
     WHERE game_type = 'Regular'
     ORDER BY season DESC LIMIT 1
 )
-SELECT 
+SELECT
     t.team_id,
     t.team_name,
     t.season,
@@ -269,11 +269,11 @@ ORDER BY t.points DESC, t.wins DESC, t.goal_diff DESC;
 
 CREATE OR REPLACE VIEW v_standings_current_playoffs AS
 WITH latest_season AS (
-    SELECT season_id FROM fact_team_season_stats_basic 
+    SELECT season_id FROM fact_team_season_stats_basic
     WHERE game_type = 'Playoffs'
     ORDER BY season DESC LIMIT 1
 )
-SELECT 
+SELECT
     t.team_id,
     t.team_name,
     t.season,
@@ -297,7 +297,7 @@ WHERE t.game_type = 'Playoffs'
 ORDER BY t.points DESC, t.wins DESC, t.goal_diff DESC;
 
 CREATE OR REPLACE VIEW v_standings_all_seasons AS
-SELECT 
+SELECT
     team_id,
     team_name,
     season,
@@ -318,7 +318,7 @@ WHERE game_type = 'All'
 ORDER BY season DESC, points DESC;
 
 CREATE OR REPLACE VIEW v_standings_by_game_type AS
-SELECT 
+SELECT
     team_id,
     team_name,
     season,
@@ -338,7 +338,7 @@ FROM fact_team_season_stats_basic
 ORDER BY season DESC, game_type, points DESC;
 
 CREATE OR REPLACE VIEW v_standings_team_history AS
-SELECT 
+SELECT
     team_id,
     team_name,
     COUNT(DISTINCT season_id) as seasons,
@@ -357,7 +357,7 @@ GROUP BY team_id, team_name
 ORDER BY total_points DESC;
 
 CREATE OR REPLACE VIEW v_standings_h2h AS
-SELECT 
+SELECT
     home_team_name as team1,
     away_team_name as team2,
     COUNT(*) as games_played,
@@ -367,7 +367,7 @@ SELECT
     SUM(home_total_goals) as team1_goals,
     SUM(away_total_goals) as team2_goals
 FROM dim_schedule
-WHERE home_total_goals IS NOT NULL
+WHERE home_total_goals IS NOT NULL AND include = TRUE AND schedule_type = 'Past'
 GROUP BY home_team_name, away_team_name
 HAVING COUNT(*) > 0
 ORDER BY games_played DESC;
@@ -377,10 +377,10 @@ ORDER BY games_played DESC;
 
 CREATE OR REPLACE VIEW v_rankings_players_current AS
 WITH latest_season AS (
-    SELECT season_id FROM fact_player_season_stats_basic 
+    SELECT season_id FROM fact_player_season_stats_basic
     ORDER BY season DESC LIMIT 1
 )
-SELECT 
+SELECT
     p.player_id,
     p.player_name,
     p.team_name,
@@ -403,10 +403,10 @@ ORDER BY p.points DESC;
 
 CREATE OR REPLACE VIEW v_rankings_goalies_current AS
 WITH latest_season AS (
-    SELECT season_id FROM fact_goalie_season_stats_basic 
+    SELECT season_id FROM fact_goalie_season_stats_basic
     ORDER BY season DESC LIMIT 1
 )
-SELECT 
+SELECT
     g.player_id,
     g.player_name,
     g.team_name,
@@ -427,7 +427,7 @@ WHERE g.games_played >= 1
 ORDER BY g.wins DESC;
 
 CREATE OR REPLACE VIEW v_rankings_goalies_advanced AS
-SELECT 
+SELECT
     player_id,
     player_name,
     team_name,
@@ -449,12 +449,11 @@ WHERE games_played >= 1
 ORDER BY save_pct DESC;
 
 CREATE OR REPLACE VIEW v_rankings_career AS
-SELECT 
+SELECT
     player_id,
     player_name,
     current_team,
     position,
-    seasons_played,
     career_games,
     career_goals,
     career_assists,
@@ -470,11 +469,10 @@ WHERE career_games >= 5
 ORDER BY career_points DESC;
 
 CREATE OR REPLACE VIEW v_rankings_goalies_career AS
-SELECT 
+SELECT
     player_id,
     player_name,
     current_team,
-    seasons_played,
     career_games,
     career_wins,
     career_losses,
@@ -490,7 +488,7 @@ WHERE career_games >= 3
 ORDER BY career_wins DESC;
 
 CREATE OR REPLACE VIEW v_rankings_by_position AS
-SELECT 
+SELECT
     player_id,
     player_name,
     team_name,
@@ -511,7 +509,7 @@ ORDER BY season_id DESC, position, points DESC;
 -- === 04_summary_views.sql ===
 
 CREATE OR REPLACE VIEW v_summary_league AS
-SELECT 
+SELECT
     season_id,
     season,
     COUNT(DISTINCT player_id) as total_players,
@@ -530,7 +528,7 @@ GROUP BY season_id, season
 ORDER BY season DESC;
 
 CREATE OR REPLACE VIEW v_summary_team_season AS
-SELECT 
+SELECT
     t.team_id,
     t.team_name,
     t.season_id,
@@ -552,21 +550,20 @@ SELECT
     SUM(p.assists) as team_total_assists,
     MAX(p.points) as top_scorer_points
 FROM fact_team_season_stats_basic t
-LEFT JOIN fact_player_season_stats_basic p 
+LEFT JOIN fact_player_season_stats_basic p
     ON t.team_id = p.team_id AND t.season_id = p.season_id
-GROUP BY t.team_id, t.team_name, t.season_id, t.season, 
+GROUP BY t.team_id, t.team_name, t.season_id, t.season,
          t.games_played, t.wins, t.losses, t.ties, t.points,t.win_pct,
          t.goals_for, t.goals_against, t.goal_diff,
          t.goals_for_per_game, t.goals_against_per_game
 ORDER BY t.season DESC, t.wins DESC;
 
 CREATE OR REPLACE VIEW v_summary_player_career AS
-SELECT 
+SELECT
     player_id,
     player_name,
     current_team,
     position,
-    seasons_played,
     career_games,
     career_goals,
     career_assists,
@@ -584,11 +581,10 @@ FROM fact_player_career_stats_basic
 ORDER BY career_points DESC;
 
 CREATE OR REPLACE VIEW v_summary_goalie_career AS
-SELECT 
+SELECT
     player_id,
     player_name,
     current_team,
-    seasons_played,
     career_games,
     career_wins,
     career_losses,
@@ -603,26 +599,27 @@ FROM fact_goalie_career_stats_basic
 ORDER BY career_wins DESC;
 
 CREATE OR REPLACE VIEW v_summary_game AS
-SELECT 
+SELECT
     s.game_id,
     s.date,
     s.home_team_name,
     s.away_team_name,
     s.home_total_goals,
     s.away_total_goals,
-    CASE 
+    CASE
         WHEN s.home_total_goals > s.away_total_goals THEN s.home_team_name
-        ELSE s.away_team_name 
+        WHEN s.away_total_goals > s.home_total_goals THEN s.away_team_name
+        ELSE 'Tie'
     END as winner,
     s.home_team_period1_goals || '-' || s.away_team_period1_goals as p1_score,
     s.home_team_period2_goals || '-' || s.away_team_period2_goals as p2_score,
     s.home_team_period3_goals || '-' || s.away_team_period3_goals as p3_score
 FROM dim_schedule s
-WHERE s.home_total_goals IS NOT NULL
+WHERE s.include = TRUE AND s.schedule_type = 'Past' AND s.home_total_goals IS NOT NULL
 ORDER BY s.date DESC;
 
 CREATE OR REPLACE VIEW v_summary_by_position AS
-SELECT 
+SELECT
     season_id,
     season,
     position,
@@ -641,7 +638,7 @@ ORDER BY season DESC, position;
 -- === 05_recent_views.sql ===
 
 CREATE OR REPLACE VIEW v_recent_games AS
-SELECT 
+SELECT
     game_id,
     date,
     season,
@@ -650,19 +647,19 @@ SELECT
     home_total_goals,
     away_total_goals,
     home_total_goals || '-' || away_total_goals as score,
-    CASE 
+    CASE
         WHEN home_total_goals > away_total_goals THEN home_team_name
         WHEN away_total_goals > home_total_goals THEN away_team_name
         ELSE 'Tie'
     END as winner,
     ABS(home_total_goals - away_total_goals) as goal_diff
 FROM dim_schedule
-WHERE home_total_goals IS NOT NULL
+WHERE include = TRUE AND schedule_type = 'Past' AND home_total_goals IS NOT NULL
 ORDER BY date DESC
 LIMIT 20;
 
 CREATE OR REPLACE VIEW v_recent_player_games AS
-SELECT 
+SELECT
     pg.game_id,
     pg.player_id,
     pg.player_name,
@@ -678,10 +675,11 @@ SELECT
     pg.game_score
 FROM fact_player_game_stats pg
 JOIN dim_schedule s ON pg.game_id = s.game_id
+WHERE s.include = TRUE
 ORDER BY s.date DESC, pg.points DESC;
 
 CREATE OR REPLACE VIEW v_recent_goalie_games AS
-SELECT 
+SELECT
     gg.game_id,
     gg.player_id,
     gg.player_name,
@@ -697,26 +695,29 @@ SELECT
     gg.goalie_war
 FROM fact_goalie_game_stats gg
 JOIN dim_schedule s ON gg.game_id = s.game_id
+WHERE s.include = TRUE
 ORDER BY s.date DESC;
 
 CREATE OR REPLACE VIEW v_recent_hot_players AS
-SELECT 
-    player_id,
-    player_name,
-    team_name,
+SELECT
+    pg.player_id,
+    pg.player_name,
+    pg.team_name,
     COUNT(*) as games,
-    SUM(goals) as goals,
-    SUM(assists) as assists,
-    SUM(points) as points,
-    ROUND(AVG(game_score)::numeric, 2) as avg_game_score
-FROM fact_player_game_stats
-GROUP BY player_id, player_name, team_name
+    SUM(pg.goals) as goals,
+    SUM(pg.assists) as assists,
+    SUM(pg.points) as points,
+    ROUND(AVG(pg.game_score)::numeric, 2) as avg_game_score
+FROM fact_player_game_stats pg
+JOIN dim_schedule s ON pg.game_id = s.game_id
+WHERE s.include = TRUE
+GROUP BY pg.player_id, pg.player_name, pg.team_name
 HAVING COUNT(*) >= 2
-ORDER BY SUM(points) DESC, AVG(game_score) DESC
+ORDER BY SUM(pg.points) DESC, AVG(pg.game_score) DESC
 LIMIT 10;
 
 CREATE OR REPLACE VIEW v_recent_high_scoring AS
-SELECT 
+SELECT
     game_id,
     date,
     home_team_name,
@@ -726,34 +727,34 @@ SELECT
     (home_total_goals + away_total_goals) as total_goals,
     home_total_goals || '-' || away_total_goals as score
 FROM dim_schedule
-WHERE home_total_goals IS NOT NULL
+WHERE include = TRUE AND schedule_type = 'Past' AND home_total_goals IS NOT NULL
 ORDER BY (home_total_goals + away_total_goals) DESC
 LIMIT 20;
 
 CREATE OR REPLACE VIEW v_recent_team_form AS
 WITH team_games AS (
-    SELECT 
+    SELECT
         home_team_name as team_name,
         date,
-        CASE WHEN home_total_goals > away_total_goals THEN 'W' 
+        CASE WHEN home_total_goals > away_total_goals THEN 'W'
              WHEN home_total_goals < away_total_goals THEN 'L'
              ELSE 'T' END as result,
         home_total_goals as gf,
         away_total_goals as ga
-    FROM dim_schedule WHERE home_total_goals IS NOT NULL
+    FROM dim_schedule WHERE include = TRUE AND schedule_type = 'Past' AND home_total_goals IS NOT NULL
     UNION ALL
-    SELECT 
+    SELECT
         away_team_name as team_name,
         date,
-        CASE WHEN away_total_goals > home_total_goals THEN 'W' 
+        CASE WHEN away_total_goals > home_total_goals THEN 'W'
              WHEN away_total_goals < home_total_goals THEN 'L'
              ELSE 'T' END as result,
         away_total_goals as gf,
         home_total_goals as ga
-    FROM dim_schedule WHERE home_total_goals IS NOT NULL
+    FROM dim_schedule WHERE include = TRUE AND schedule_type = 'Past' AND home_total_goals IS NOT NULL
 ),
 ranked AS (
-    SELECT 
+    SELECT
         team_name,
         date,
         result,
@@ -762,7 +763,7 @@ ranked AS (
         ROW_NUMBER() OVER (PARTITION BY team_name ORDER BY date DESC) as game_num
     FROM team_games
 )
-SELECT 
+SELECT
     team_name,
     STRING_AGG(result, '' ORDER BY game_num) as last_5_form,
     SUM(CASE WHEN result = 'W' THEN 1 ELSE 0 END) as wins,
@@ -778,7 +779,7 @@ ORDER BY wins DESC;
 -- === 06_comparison_views.sql ===
 
 CREATE OR REPLACE VIEW v_compare_players AS
-SELECT 
+SELECT
     player_id,
     player_name,
     team_name,
@@ -798,7 +799,7 @@ FROM fact_player_season_stats_basic
 ORDER BY season_id DESC, player_name;
 
 CREATE OR REPLACE VIEW v_compare_goalies AS
-SELECT 
+SELECT
     player_id,
     player_name,
     team_name,
@@ -816,14 +817,13 @@ FROM fact_goalie_season_stats_basic
 ORDER BY season_id DESC, player_name;
 
 CREATE OR REPLACE VIEW v_compare_goalies_advanced AS
-SELECT 
+SELECT
     player_id,
     player_name,
     team_name,
     games_played,
     saves,
     goals_against,
-    shots_against,
     save_pct,
     rush_sv_pct,
     set_play_sv_pct,
@@ -834,7 +834,7 @@ FROM fact_goalie_season_stats
 ORDER BY player_name;
 
 CREATE OR REPLACE VIEW v_compare_teams AS
-SELECT 
+SELECT
     team_id,
     team_name,
     season_id,
@@ -857,7 +857,7 @@ ORDER BY season_id DESC, team_name;
 
 CREATE OR REPLACE VIEW v_compare_player_vs_league AS
 WITH league_avg AS (
-    SELECT 
+    SELECT
         season_id,
         ROUND(AVG(goals_per_game)::numeric, 2) as league_avg_gpg,
         ROUND(AVG(assists_per_game)::numeric, 2) as league_avg_apg,
@@ -866,7 +866,7 @@ WITH league_avg AS (
     WHERE games_played >= 5
     GROUP BY season_id
 )
-SELECT 
+SELECT
     p.player_id,
     p.player_name,
     p.team_name,
@@ -878,7 +878,7 @@ SELECT
     p.points_per_game,
     la.league_avg_ppg,
     ROUND((p.points_per_game - la.league_avg_ppg)::numeric, 2) as ppg_vs_avg,
-    CASE 
+    CASE
         WHEN p.points_per_game > la.league_avg_ppg * 2.0 THEN 'Elite'
         WHEN p.points_per_game > la.league_avg_ppg THEN 'Above Average'
         WHEN p.points_per_game > la.league_avg_ppg * 0.3 THEN 'Average'
@@ -890,7 +890,7 @@ WHERE p.games_played >= 5
 ORDER BY p.points_per_game DESC;
 
 CREATE OR REPLACE VIEW v_compare_teammates AS
-SELECT 
+SELECT
     p1.team_name,
     p1.season_id,
     p1.player_name as player1,
@@ -902,8 +902,8 @@ SELECT
     p1.games_played as p1_gp,
     p2.games_played as p2_gp
 FROM fact_player_season_stats_basic p1
-JOIN fact_player_season_stats_basic p2 
-    ON p1.team_id = p2.team_id 
+JOIN fact_player_season_stats_basic p2
+    ON p1.team_id = p2.team_id
     AND p1.season_id = p2.season_id
     AND p1.player_id < p2.player_id
 WHERE p1.games_played >= 5 AND p2.games_played >= 5
@@ -913,7 +913,7 @@ ORDER BY p1.team_name, p1.points + p2.points DESC;
 -- === 07_detail_views.sql ===
 
 CREATE OR REPLACE VIEW v_detail_player_game_log AS
-SELECT 
+SELECT
     pg.player_id,
     pg.player_name,
     pg.team_name,
@@ -930,10 +930,11 @@ SELECT
     pg.game_score
 FROM fact_player_game_stats pg
 JOIN dim_schedule s ON pg.game_id = s.game_id
+WHERE s.include = TRUE
 ORDER BY pg.player_id, s.date DESC;
 
 CREATE OR REPLACE VIEW v_detail_goalie_game_log AS
-SELECT 
+SELECT
     gg.player_id,
     gg.player_name,
     gg.team_name,
@@ -951,15 +952,16 @@ SELECT
     gg.goalie_war
 FROM fact_goalie_game_stats gg
 JOIN dim_schedule s ON gg.game_id = s.game_id
+WHERE s.include = TRUE
 ORDER BY gg.player_id, s.date DESC;
 
 CREATE OR REPLACE VIEW v_detail_team_game_log AS
-SELECT 
+SELECT
     tg.team_id,
     tg.team_name,
     tg.game_id,
     s.date,
-    CASE 
+    CASE
         WHEN tg.team_name = s.home_team_name THEN 'vs ' || s.away_team_name
         ELSE '@ ' || s.home_team_name
     END as opponent,
@@ -968,17 +970,19 @@ SELECT
     tg.points,
     tg.shots,
     tg.sog,
-    CASE 
+    CASE
         WHEN tg.team_name = s.home_team_name AND s.home_total_goals > s.away_total_goals THEN 'W'
         WHEN tg.team_name = s.away_team_name AND s.away_total_goals > s.home_total_goals THEN 'W'
+        WHEN s.home_total_goals = s.away_total_goals THEN 'T'
         ELSE 'L'
     END as result
 FROM fact_team_game_stats tg
 JOIN dim_schedule s ON tg.game_id = s.game_id
+WHERE s.include = TRUE
 ORDER BY tg.team_id, s.date DESC;
 
 CREATE OR REPLACE VIEW v_detail_player_periods AS
-SELECT 
+SELECT
     player_id,
     player_name,
     team_name,
@@ -999,7 +1003,7 @@ FROM fact_player_game_stats
 WHERE game_id != 99999;
 
 CREATE OR REPLACE VIEW v_detail_goalie_periods AS
-SELECT 
+SELECT
     player_id,
     player_name,
     team_name,
@@ -1019,7 +1023,7 @@ SELECT
 FROM fact_goalie_game_stats;
 
 CREATE OR REPLACE VIEW v_detail_goalie_shot_context AS
-SELECT 
+SELECT
     player_id,
     player_name,
     team_name,
@@ -1038,7 +1042,7 @@ SELECT
 FROM fact_goalie_game_stats;
 
 CREATE OR REPLACE VIEW v_detail_goalie_pressure AS
-SELECT 
+SELECT
     player_id,
     player_name,
     team_name,
@@ -1055,11 +1059,11 @@ SELECT
 FROM fact_goalie_game_stats;
 
 CREATE OR REPLACE VIEW v_detail_player_vs_opponent AS
-SELECT 
+SELECT
     pg.player_id,
     pg.player_name,
     pg.team_name,
-    CASE 
+    CASE
         WHEN pg.team_name = s.home_team_name THEN s.away_team_name
         ELSE s.home_team_name
     END as opponent,
@@ -1070,15 +1074,16 @@ SELECT
     ROUND(AVG(pg.points)::numeric, 2) as avg_points_vs
 FROM fact_player_game_stats pg
 JOIN dim_schedule s ON pg.game_id = s.game_id
+WHERE s.include = TRUE
 GROUP BY pg.player_id, pg.player_name, pg.team_name,
-         CASE 
+         CASE
             WHEN pg.team_name = s.home_team_name THEN s.away_team_name
             ELSE s.home_team_name
          END
 ORDER BY pg.player_name, total_points DESC;
 
 CREATE OR REPLACE VIEW v_detail_game_roster AS
-SELECT 
+SELECT
     s.game_id,
     s.date,
     s.home_team_name,
@@ -1094,13 +1099,14 @@ SELECT
     r.pim
 FROM dim_schedule s
 JOIN fact_gameroster r ON s.game_id = r.game_id
+WHERE s.include = TRUE AND s.schedule_type = 'Past'
 ORDER BY s.date DESC, r.team_venue, r.points DESC;
 
 
 -- === 08_tracking_advanced_views.sql ===
 
 CREATE OR REPLACE VIEW v_tracking_event_summary AS
-SELECT 
+SELECT
     game_id,
     event_type,
     COUNT(*) as event_count,
@@ -1110,8 +1116,12 @@ WHERE game_id != 99999
 GROUP BY game_id, event_type
 ORDER BY game_id, event_count DESC;
 
+-- NOTE: The following views are commented out as they reference tables
+-- that may not exist in the current schema or require additional columns.
+-- Uncomment and modify as needed when those tables are available.
+
 --CREATE OR REPLACE VIEW v_tracking_shot_locations AS
---SELECT 
+--SELECT
     --game_id,
     --danger_zone,
     --COUNT(*) as shot_count,
@@ -1122,7 +1132,7 @@ ORDER BY game_id, event_count DESC;
 --ORDER BY game_id, shot_count DESC;
 
 --CREATE OR REPLACE VIEW v_tracking_zone_entries AS
---SELECT 
+--SELECT
     --z.game_id,
     --z.zone_entry_type_id,
     --zet.zone_entry_type_name,
@@ -1136,7 +1146,7 @@ ORDER BY game_id, event_count DESC;
 --ORDER BY z.game_id, attempts DESC;
 
 --CREATE OR REPLACE VIEW v_tracking_player_micro AS
---SELECT 
+--SELECT
     --ms.player_id,
     --ms.player_name,
     --ms.game_id,
@@ -1155,7 +1165,7 @@ ORDER BY game_id, event_count DESC;
 --WHERE ms.game_id != 99999;
 
 --CREATE OR REPLACE VIEW v_tracking_faceoffs AS
---SELECT 
+--SELECT
    -- player_id,
     --game_id,
    -- COUNT(*) as total_faceoffs,
@@ -1168,7 +1178,7 @@ ORDER BY game_id, event_count DESC;
 --ORDER BY total_faceoffs DESC;
 
 --CREATE OR REPLACE VIEW v_tracking_scoring_chances AS
---SELECT 
+--SELECT
    -- game_id,
    -- team_name,
    -- COUNT(*) as total_chances,
@@ -1180,7 +1190,7 @@ ORDER BY game_id, event_count DESC;
 --ORDER BY game_id, total_chances DESC;
 
 --CREATE OR REPLACE VIEW v_tracking_shift_quality AS
---SELECT 
+--SELECT
    -- player_id,
    -- game_id,
    -- COUNT(*) as total_shifts,
@@ -1194,7 +1204,7 @@ ORDER BY game_id, event_count DESC;
 --ORDER BY avg_shift_quality DESC;
 
 --CREATE OR REPLACE VIEW v_tracking_save_types AS
---SELECT 
+--SELECT
    -- goalie_id as player_id,
    -- game_id,
    -- save_type,

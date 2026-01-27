@@ -1,0 +1,37 @@
+{
+  "version": "1.0.0",
+  "description": "Configurable thresholds for ETL s/u logic and play detail automation",
+
+  "time_windows": {
+    "context_window_seconds": 3,
+    "quick_up_max_seconds": 3,
+    "give_and_go_max_seconds": 4,
+    "delay_min_seconds": 5,
+    "one_timer_max_seconds": 0.5,
+    "takeaway_maintain_seconds": 3
+  },
+
+  "distance_thresholds_ft": {
+    "ceded_entry": 20,
+    "ceded_exit": 18,
+    "forced_turnover": 2,
+    "pass_cross_min_y": 20,
+    "pass_stretch_min": 60,
+    "chip_max": 15
+  },
+
+  "percentages": {
+    "pass_lane_tolerance": 0.05
+  },
+
+  "look_ahead_events": {
+    "zone_entry": 5,
+    "zone_exit": 3,
+    "pass": 2
+  },
+
+  "success_value_mappings": {
+    "successful": ["s", "true", "1", "success", "successful"],
+    "unsuccessful": ["u", "false", "0", "unsuccessful", "fail", "failed"]
+  }
+}

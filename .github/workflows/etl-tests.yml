@@ -1,0 +1,29 @@
+name: ETL Tests
+
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "run_etl.py"
+      - "validate.py"
+      - "requirements.txt"
+      - ".github/workflows/etl-tests.yml"
+
+jobs:
+  etl-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run unit tests (if marked)
+        run: python -m pytest -m unit

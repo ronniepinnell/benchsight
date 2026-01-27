@@ -18,6 +18,12 @@ data/raw/**/*.xlsx
 data/raw/**/*.csv
 data/.dtype_optimization_results.json
 data/.etl_*.json
+data/tracking_backup*
+
+# External data sources (NHL, training app - large files, stored locally)
+data/hockey_data/
+data/hockey_training/
+data/external/
 
 # Node modules
 node_modules/
@@ -51,3 +57,39 @@ logs/
 .env.local
 venv/
 env/
+
+# Claude Code
+.claude/usage.log
+.claude/plans/
+.claude/settings.local.json
+
+# Obsidian (editor)
+.obsidian/
+
+# Generated documentation (can regenerate)
+docs/html/
+docs/table-docs/
+docs/code-docs/
+docs/component-docs/
+
+# Debug artifacts
+data/debug/
+*.bak
+*.tmp
+
+# Local configs (keep templates, ignore local overrides)
+config/config_local.ini
+config/config.dev.ini
+config/config.prod.ini
+config/config_local.*.ini
+
+# Dashboard environment files (contain secrets)
+ui/dashboard/.env.local
+ui/dashboard/.env.development
+ui/dashboard/.env.production
+ui/dashboard/.env.local.*
+
+# Playwright test artifacts
+ui/dashboard/playwright-report/
+ui/dashboard/test-results/
+ui/dashboard/test-login-audit.mjs

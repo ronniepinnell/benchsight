@@ -1,0 +1,139 @@
+import torch
+import math
+
+def flash_attention_image_variant(Q, K, V, block_size_r=64, block_size_c=64):
+    """
+    Implements the exact FlashAttention logic described in the provided image.
+    
+    State Variables:
+    - O_i: The running output accumulator (unnormalized).
+    - L_i: The running LogSumExp statistic. 
+           L_i acts as a proxy for the running max (m) and stores the log-sum (l).
+           Mathematically: L_i = m_i + log(l_i)
+    """
+    batch_size, N, d = Q.shape
+    
+    # Initialize Output to zeros
+    O = torch.zeros_like(Q)
+    
+    # Initialize L to negative infinity. 
+    # This represents log(0) + (-inf), effectively the identity for the first update.
+    L = torch.full((batch_size, N), float('-inf'), device=Q.device)
+
+    # Calculate number of blocks
+    Tr = (N + block_size_r - 1) // block_size_r
+    Tc = (N + block_size_c - 1) // block_size_c
+    
+    scale_factor = 1.0 / math.sqrt(d)
+
+    # Outer Loop: Iterate over blocks of Q (Rows)
+    # Note: The image implies loading K/V in the inner loop or vice versa. 
+    # Standard FlashAttention loops K/V outside to minimize writes to O. 
+    # However, the logic holds regardless of loop order. 
+    # We follow the standard "Outer loop Q" for clarity in updating O_i.
+    for i in range(Tr):
+        start_i = i * block_size_r
+        end_i = min((i + 1) * block_size_r, N)
+        
+        # Load Q_i from HBM to SRAM
+        Q_i = Q[:, start_i:end_i, :] # (B, Br, d)
+        
+        # Load running stats for this block from HBM
+        O_i = O[:, start_i:end_i, :] # (B, Br, d)
+        L_i = L[:, start_i:end_i]    # (B, Br)
+
+        # Inner Loop: Iterate over blocks of K, V (Columns)
+        for j in range(Tc):
+            start_j = j * block_size_c
+            end_j = min((j + 1) * block_size_c, N)
+            
+            # Load K_j, V_j from HBM to SRAM
+            K_j = K[:, start_j:end_j, :] # (B, Bc, d)
+            V_j = V[:, start_j:end_j, :] # (B, Bc, d)
+
+            # --------------------------------------------------------
+            # Step 1: Compute Scores
+            # S_{ij} = Q_i * K_j^T
+            # --------------------------------------------------------
+            S_ij = torch.matmul(Q_i, K_j.transpose(1, 2)) * scale_factor
+
+            # --------------------------------------------------------
+            # Step 2: Rescale (Online Softmax)
+            # m_{new} = max(L_i, rowmax(S_{ij}))
+            # Note: L_i is used here as a safe proxy for the previous max.
+            # Since L_i = m_old + log(l_old) and log(l_old) >= 0, L_i >= m_old.
+            # This maintains numerical stability.
+            # --------------------------------------------------------
+            m_block = torch.max(S_ij, dim=-1) # Rowmax of current block
+            m_new = torch.maximum(L_i, m_block)
+
+            # --------------------------------------------------------
+            # Step 3: Compute Probabilities
+            # P_{ij} = exp(S_{ij} - m_{new})
+            # --------------------------------------------------------
+            P_ij = torch.exp(S_ij - m_new.unsqueeze(-1))
+
+            # --------------------------------------------------------
+            # Step 4: Update Sum (l_{new})
+            # l_{new} = exp(L_i - m_{new}) + rowsum(P_{ij})
+            # This implicitly scales the old sum by exp(m_old - m_new)
+            # --------------------------------------------------------
+            l_new = torch.exp(L_i - m_new) + torch.sum(P_ij, dim=-1)
+
+            # --------------------------------------------------------
+            # Step 5: Correction (Update Output)
+            # O_i = O_i * exp(L_i - m_{new}) + P_{ij} * V_j
+            # --------------------------------------------------------
+            # The term exp(L_i - m_{new}) correctly decays the previous accumulator
+            decay_factor = torch.exp(L_i - m_new).unsqueeze(-1)
+            PV_contribution = torch.matmul(P_ij, V_j)
+            
+            O_i = O_i * decay_factor + PV_contribution
+
+            # --------------------------------------------------------
+            # Step 6: Update Stats
+            # L_i = m_{new} + log(l_{new})
+            # --------------------------------------------------------
+            L_i = m_new + torch.log(l_new)
+
+        # --------------------------------------------------------
+        # Step 7: Finalize
+        # O_i = O_i / exp(L_i - m_{end})
+        # Wait, mathematically O_i is scaled by exp(-m_new) relative to true sum.
+        # The stored L_i is the true log-sum-exp.
+        # So we just divide O_i by exp(L_i - L_i_at_current_max_state?)
+        # Actually, simpler: The accumulated O_i is unnormalized.
+        # The total normalization constant is exp(L_i).
+        # We need to compute O_i / exp(L_i - m_final)?
+        # No, simply O_final = O_i / exp(L_i - m_i_final_state) is tricky.
+        # 
+        # Correct derivation based on the update rule:
+        # At the end of loops, O_i holds: Sum(P * V) * exp(-m_final).
+        # The true sum is l_final.
+        # We want O_norm = (Sum(P*V) * exp(-m_final)) / (l_final * exp(-m_final)).
+        # We have L_i = m_final + log(l_final).
+        # So exp(L_i - m_final) = exp(log(l_final)) = l_final.
+        # So we divide O_i by l_final.
+        # --------------------------------------------------------
+        
+        # We reconstruct l_final to normalize
+        # Note: m_new from the last iteration is effectively m_final
+        l_final = torch.exp(L_i - m_new) 
+        
+        # Write O_i back to HBM (Finalized)
+        O[:, start_i:end_i, :] = O_i / l_final.unsqueeze(-1)
+        
+        # Write L_i back to HBM (for backward pass)
+        L[:, start_i:end_i] = L_i
+
+    return O
+
+# Example Usage
+if __name__ == "__main__":
+    B, N, d = 2, 128, 64
+    Q = torch.randn(B, N, d)
+    K = torch.randn(B, N, d)
+    V = torch.randn(B, N, d)
+    
+    out = flash_attention_image_variant(Q, K, V)
+    print("Output shape:", out.shape)

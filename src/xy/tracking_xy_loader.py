@@ -109,9 +109,9 @@ def load_tracking_xy_puck_long(tracking_path: Path, game_id: str, test_mode: boo
         # Map point number columns
         for col in df.columns:
             col_lower = str(col).lower()
-            if ('point_num' in col_lower or 'point' == col_lower) and 'point_number' not in df.columns:
+            if ('point_num' in col_lower or 'point' == col_lower or 'xy_slot' == col_lower or 'slot' == col_lower) and 'point_number' not in df.columns:
                 col_mapping[col] = 'point_number'
-        
+
         # Map X coordinate columns
         for col in df.columns:
             col_lower = str(col).lower()
@@ -156,20 +156,29 @@ def load_tracking_xy_puck_long(tracking_path: Path, game_id: str, test_mode: boo
             df['game_id'] = df['game_id'].fillna(game_id)
         
         # Convert event_index to event_id if needed
-        if 'event_index' in df.columns and 'event_id' not in df.columns:
-            from src.core.key_utils import format_key
-            df['event_id'] = df.apply(
-                lambda r: format_key('EV', game_id, str(r.get('event_index', '')).strip()),
-                axis=1
+        # The column mapping may have copied event_index values into event_id,
+        # so also check if event_id values are raw indices (no 'EV' prefix)
+        from src.core.key_utils import format_key
+        if 'event_id' in df.columns:
+            sample_eid = str(df['event_id'].iloc[0]).strip() if len(df) > 0 else ''
+            if sample_eid and not sample_eid.startswith('EV'):
+                # event_id contains raw event_index values - format them
+                source_col = 'event_index' if 'event_index' in df.columns else 'event_id'
+                df['event_id'] = df[source_col].apply(
+                    lambda v: format_key('EV', game_id, str(v).strip())
+                )
+        elif 'event_index' in df.columns:
+            df['event_id'] = df['event_index'].apply(
+                lambda v: format_key('EV', game_id, str(v).strip())
             )
-        
+
         # Required columns check
         required = ['event_id', 'game_id', 'x', 'y']
         missing = [col for col in required if col not in df.columns]
         if missing:
             logger.error(f"  Missing required columns: {missing}")
             return pd.DataFrame()
-        
+
         # Ensure point_number exists (if missing, infer from row number or sequence)
         if 'point_number' not in df.columns:
             # Try to infer from index or create sequential numbers per event
@@ -219,10 +228,23 @@ def load_tracking_xy_puck_long(tracking_path: Path, game_id: str, test_mode: boo
                 logger.debug(f"  Row {idx}: Skipping - invalid coordinates: {e}")
                 continue
             
+            # Determine is_start flag
+            is_start = 0
+            is_start_val = row.get('is_start') if 'is_start' in df.columns else None
+            if pd.notna(is_start_val):
+                is_start_str = str(is_start_val).strip().lower()
+                if is_start_str in ['true', '1', 'yes', 't']:
+                    is_start = 1
+                try:
+                    if int(float(is_start_val)) == 1:
+                        is_start = 1
+                except:
+                    pass
+
             # Determine is_stop flag
             is_stop = 0
             is_stop_val = row.get('is_stop') if 'is_stop' in df.columns else None
-            
+
             if pd.notna(is_stop_val):
                 is_stop_str = str(is_stop_val).strip().lower()
                 if is_stop_str in ['true', '1', 'yes', 't']:
@@ -232,7 +254,7 @@ def load_tracking_xy_puck_long(tracking_path: Path, game_id: str, test_mode: boo
                         is_stop = 1
                 except:
                     pass
-            
+
             # Try alternative stop column names
             if is_stop == 0:
                 for col in df.columns:
@@ -249,7 +271,7 @@ def load_tracking_xy_puck_long(tracking_path: Path, game_id: str, test_mode: boo
                                     break
                             except:
                                 pass
-            
+
             # Get timestamp if available
             timestamp = None
             timestamp_cols = [c for c in df.columns if 'timestamp' in str(c).lower() or 'time' in str(c).lower()]
@@ -258,7 +280,7 @@ def load_tracking_xy_puck_long(tracking_path: Path, game_id: str, test_mode: boo
                 if pd.notna(ts_val) and str(ts_val).strip() and str(ts_val).lower() != 'nan':
                     timestamp = str(ts_val).strip()
                     break
-            
+
             record = {
                 'puck_xy_key': f"PKL{game_id}{str(event_id)[-5:]}{point_num:02d}",
                 'event_id': event_id,
@@ -266,9 +288,10 @@ def load_tracking_xy_puck_long(tracking_path: Path, game_id: str, test_mode: boo
                 'point_number': point_num,
                 'x': x_val,
                 'y': y_val,
+                'is_start': is_start,
+                'is_stop': is_stop,
                 'distance_to_net': calculate_distance_to_net(x_val, y_val),
                 'angle_to_net': calculate_angle_to_net(x_val, y_val),
-                'is_stop': is_stop,
                 'timestamp': timestamp,
                 '_export_timestamp': datetime.now().isoformat()
             }
@@ -352,9 +375,9 @@ def load_tracking_xy_player_long(tracking_path: Path, game_id: str, test_mode: b
         # Map point number columns
         for col in df.columns:
             col_lower = str(col).lower()
-            if ('point_num' in col_lower or 'point' == col_lower) and 'point_number' not in df.columns:
+            if ('point_num' in col_lower or 'point' == col_lower or 'xy_slot' == col_lower or 'slot' == col_lower) and 'point_number' not in df.columns:
                 col_mapping[col] = 'point_number'
-        
+
         # Map X coordinate columns
         for col in df.columns:
             col_lower = str(col).lower()
@@ -406,13 +429,21 @@ def load_tracking_xy_player_long(tracking_path: Path, game_id: str, test_mode: b
             df['game_id'] = df['game_id'].fillna(game_id)
         
         # Convert event_index to event_id if needed
-        if 'event_index' in df.columns and 'event_id' not in df.columns:
-            from src.core.key_utils import format_key
-            df['event_id'] = df.apply(
-                lambda r: format_key('EV', game_id, str(r.get('event_index', '')).strip()),
-                axis=1
+        # The column mapping may have copied event_index values into event_id,
+        # so also check if event_id values are raw indices (no 'EV' prefix)
+        from src.core.key_utils import format_key
+        if 'event_id' in df.columns:
+            sample_eid = str(df['event_id'].iloc[0]).strip() if len(df) > 0 else ''
+            if sample_eid and not sample_eid.startswith('EV'):
+                source_col = 'event_index' if 'event_index' in df.columns else 'event_id'
+                df['event_id'] = df[source_col].apply(
+                    lambda v: format_key('EV', game_id, str(v).strip())
+                )
+        elif 'event_index' in df.columns:
+            df['event_id'] = df['event_index'].apply(
+                lambda v: format_key('EV', game_id, str(v).strip())
             )
-        
+
         # Required columns check (event_id, player identifier, x, y)
         required = ['event_id', 'game_id', 'x', 'y']
         
@@ -524,10 +555,23 @@ def load_tracking_xy_player_long(tracking_path: Path, game_id: str, test_mode: b
             if is_event_team is None and player_role:
                 is_event_team = 'event_player' in str(player_role).lower() or 'event_team' in str(player_role).lower()
             
+            # Determine is_start flag
+            is_start = 0
+            is_start_val = row.get('is_start') if 'is_start' in df.columns else None
+            if pd.notna(is_start_val):
+                is_start_str = str(is_start_val).strip().lower()
+                if is_start_str in ['true', '1', 'yes', 't']:
+                    is_start = 1
+                try:
+                    if int(float(is_start_val)) == 1:
+                        is_start = 1
+                except:
+                    pass
+
             # Determine is_stop flag (similar to puck XY)
             is_stop = 0
             is_stop_val = row.get('is_stop') if 'is_stop' in df.columns else None
-            
+
             if pd.notna(is_stop_val):
                 is_stop_str = str(is_stop_val).strip().lower()
                 if is_stop_str in ['true', '1', 'yes', 't']:
@@ -537,7 +581,7 @@ def load_tracking_xy_player_long(tracking_path: Path, game_id: str, test_mode: b
                         is_stop = 1
                 except:
                     pass
-            
+
             # Try alternative stop column names
             if is_stop == 0:
                 for col in df.columns:
@@ -554,7 +598,7 @@ def load_tracking_xy_player_long(tracking_path: Path, game_id: str, test_mode: b
                                     break
                             except:
                                 pass
-            
+
             # Get timestamp if available
             timestamp = None
             timestamp_cols = [c for c in df.columns if 'timestamp' in str(c).lower() or 'time' in str(c).lower()]
@@ -563,11 +607,11 @@ def load_tracking_xy_player_long(tracking_path: Path, game_id: str, test_mode: b
                 if pd.notna(ts_val) and str(ts_val).strip() and str(ts_val).lower() != 'nan':
                     timestamp = str(ts_val).strip()
                     break
-            
+
             # Generate player_xy_key (use last 4 chars of player_id)
             player_id_suffix = str(player_id)[-4:] if len(str(player_id)) >= 4 else str(player_id).zfill(4)
             player_xy_key = f"PXL{game_id}{str(event_id)[-5:]}{player_id_suffix}{point_num:02d}"
-            
+
             record = {
                 'player_xy_key': player_xy_key,
                 'event_id': event_id,
@@ -579,9 +623,10 @@ def load_tracking_xy_player_long(tracking_path: Path, game_id: str, test_mode: b
                 'point_number': point_num,
                 'x': x_val,
                 'y': y_val,
+                'is_start': is_start,
+                'is_stop': is_stop,
                 'distance_to_net': calculate_distance_to_net(x_val, y_val),
                 'angle_to_net': calculate_angle_to_net(x_val, y_val),
-                'is_stop': is_stop,
                 'timestamp': timestamp,
                 '_export_timestamp': datetime.now().isoformat()
             }

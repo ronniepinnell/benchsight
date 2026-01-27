@@ -61,6 +61,28 @@ export function formatYouTubeUrlWithTime(
 }
 
 /**
+ * Common YouTube embed parameters to minimize overlays and set quality
+ * - rel=0: Don't show related videos from other channels
+ * - modestbranding=1: Reduce YouTube branding
+ * - iv_load_policy=3: Disable video annotations
+ * - fs=1: Allow fullscreen
+ * - vq=hd1080: Request 1080p quality
+ * - hd=1: Prefer HD playback
+ * - quality=hd1080: Alternative quality parameter
+ * - suggestedQuality=hd1080: Suggested quality for the player
+ */
+const YOUTUBE_EMBED_PARAMS = {
+  rel: '0',
+  modestbranding: '1',
+  iv_load_policy: '3',
+  fs: '1',
+  vq: 'hd1080',
+  hd: '1',
+  quality: 'hd1080',
+  suggestedQuality: 'hd1080',
+}
+
+/**
  * Create YouTube embed URL with start time
  * @param videoId - YouTube video ID or URL
  * @param startTimeSeconds - Start time in seconds
@@ -71,17 +93,52 @@ export function formatYouTubeEmbedUrl(
   startTimeSeconds: number | null | undefined
 ): string | null {
   if (!videoId) return null
-  
+
   const id = extractYouTubeVideoId(videoId)
   if (!id) return null
-  
-  const baseUrl = `https://www.youtube.com/embed/${id}`
-  
+
+  const params = new URLSearchParams(YOUTUBE_EMBED_PARAMS)
+
   if (startTimeSeconds !== null && startTimeSeconds !== undefined && startTimeSeconds > 0) {
-    return `${baseUrl}?start=${Math.floor(startTimeSeconds)}`
+    params.set('start', String(Math.floor(startTimeSeconds)))
   }
-  
-  return baseUrl
+
+  return `https://www.youtube.com/embed/${id}?${params.toString()}`
+}
+
+/**
+ * Create YouTube embed URL with start and end times for highlight clips
+ * @param videoId - YouTube video ID or URL
+ * @param startTimeSeconds - Start time in seconds
+ * @param endTimeSeconds - End time in seconds
+ * @param autoplay - Whether to autoplay the video
+ * @returns YouTube embed URL with start, end, and autoplay parameters
+ */
+export function formatYouTubeHighlightUrl(
+  videoId: string | null | undefined,
+  startTimeSeconds: number,
+  endTimeSeconds: number,
+  autoplay: boolean = true
+): string | null {
+  if (!videoId) return null
+
+  const id = extractYouTubeVideoId(videoId)
+  if (!id) return null
+
+  const params = new URLSearchParams(YOUTUBE_EMBED_PARAMS)
+
+  // Always set start time (even 0) for consistent behavior
+  params.set('start', String(Math.floor(Math.max(0, startTimeSeconds))))
+
+  if (endTimeSeconds > startTimeSeconds) {
+    params.set('end', String(Math.floor(endTimeSeconds)))
+  }
+
+  if (autoplay) {
+    params.set('autoplay', '1')
+  }
+
+  return `https://www.youtube.com/embed/${id}?${params.toString()}`
 }
 
 /**

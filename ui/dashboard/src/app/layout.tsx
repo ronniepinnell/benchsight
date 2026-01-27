@@ -24,7 +24,9 @@ export const metadata: Metadata = {
   title: 'BenchSight - NORAD Hockey Analytics',
   description: 'Advanced analytics for the NORAD recreational hockey league',
   icons: {
-    icon: '/favicon.ico',
+    icon: '/norad-logo.png',
+    shortcut: '/norad-logo.png',
+    apple: '/norad-logo.png',
   },
   viewport: {
     width: 'device-width',

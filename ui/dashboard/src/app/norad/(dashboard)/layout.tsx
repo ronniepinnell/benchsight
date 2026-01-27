@@ -1,55 +1,53 @@
-// src/app/(dashboard)/layout.tsx
-'use client'
+// src/app/norad/(dashboard)/layout.tsx
+import Link from 'next/link'
+import Image from 'next/image'
+import { Suspense } from 'react'
+import { ExternalLink } from 'lucide-react'
+import { GamesTickerWrapper } from '@/components/games/games-ticker-wrapper'
+import { NoradNav } from '@/components/layout/norad-nav'
 
-import { Sidebar } from '@/components/layout/sidebar'
-import { Topbar } from '@/components/layout/topbar'
-import { useState, useEffect } from 'react'
-
-export default function DashboardLayout({
+export default function NoradDashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-
-  // Prevent body scroll when mobile menu is open
-  useEffect(() => {
-    if (isMobileMenuOpen) {
-      // Save current scroll position
-      const scrollY = window.scrollY
-      document.body.style.position = 'fixed'
-      document.body.style.top = `-${scrollY}px`
-      document.body.style.width = '100%'
-      document.body.style.overflow = 'hidden'
-      
-      return () => {
-        // Restore scroll position
-        document.body.style.position = ''
-        document.body.style.top = ''
-        document.body.style.width = ''
-        document.body.style.overflow = ''
-        window.scrollTo(0, scrollY)
-      }
-    }
-  }, [isMobileMenuOpen])
-
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
-      <Sidebar 
-        isMobileOpen={isMobileMenuOpen}
-        onMobileClose={() => setIsMobileMenuOpen(false)}
-      />
-      <Topbar onMobileMenuClick={() => setIsMobileMenuOpen(true)} />
-      
-      {/* Main content area - responsive margins */}
-      <main className={`
-        mt-14 p-4 lg:p-6
-        lg:ml-60
-        min-h-[calc(100vh-3.5rem)]
-        w-full
-        max-w-full
-        overflow-x-hidden
-      `}>
+    <div className="min-h-screen bg-background">
+      {/* Top utility bar */}
+      <div className="bg-muted/30 border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 py-1 flex items-center justify-between">
+          <Link href="/norad" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <Image
+              src="/norad-logo.png"
+              alt="NORAD"
+              width={24}
+              height={24}
+              className="rounded"
+              unoptimized
+            />
+            <span className="text-xs font-mono font-semibold text-foreground">NORAD</span>
+          </Link>
+          <a
+            href="https://www.noradhockey.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] font-mono text-muted-foreground hover:text-primary flex items-center gap-1"
+          >
+            View on NORAD <ExternalLink className="w-2.5 h-2.5" />
+          </a>
+        </div>
+      </div>
+
+      {/* Games Ticker */}
+      <Suspense fallback={<div className="h-16 bg-card border-b border-border animate-pulse" />}>
+        <GamesTickerWrapper />
+      </Suspense>
+
+      {/* Navigation */}
+      <NoradNav />
+
+      {/* Main content area */}
+      <main className="max-w-7xl mx-auto px-4 py-6">
         {children}
       </main>
     </div>

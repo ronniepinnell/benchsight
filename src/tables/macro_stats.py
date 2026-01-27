@@ -65,55 +65,49 @@ def create_fact_player_season_stats_basic() -> pd.DataFrame:
     all_stats = []
     
     # Get unique player-season combinations
-    player_seasons = skaters[['player_id', 'season_id', 'player_full_name', 'team_id', 
-                               'team_name', 'player_position', 'season']].drop_duplicates(
-                                   subset=['player_id', 'season_id'])
+    # VECTORIZED: Use groupby instead of iterrows
+    grouped = skaters.groupby(['player_id', 'season_id', 'game_type'])
     
-    for _, ps in player_seasons.iterrows():
-        player_id = ps['player_id']
-        season_id = ps['season_id']
+    # Get player metadata (first occurrence per player_id, season_id)
+    player_meta = skaters[['player_id', 'season_id', 'player_full_name', 'team_id', 
+                           'team_name', 'player_position', 'season']].drop_duplicates(
+                               subset=['player_id', 'season_id']).set_index(['player_id', 'season_id'])
+    
+    for (player_id, season_id, game_type), games in grouped:
+        if len(games) == 0:
+            continue
         
-        player_games = skaters[(skaters['player_id'] == player_id) & 
-                               (skaters['season_id'] == season_id)]
+        # Get metadata
+        meta = player_meta.loc[(player_id, season_id)]
         
-        # Use GAME_TYPE_SPLITS from shared utility
-        for game_type in GAME_TYPE_SPLITS:
-            if game_type == 'All':
-                games = player_games
-            else:
-                games = player_games[player_games['game_type'] == game_type]
-            
-            if len(games) == 0:
-                continue
-            
-            gp = games['game_id'].nunique()
-            goals = int(games['goals'].sum())
-            assists = int(games['assist'].sum())
-            points = int(games['points'].sum())
-            pim = int(games['pim'].sum())
-            
-            stats = {
-                'player_season_basic_key': f"{player_id}_{season_id}_{game_type}",
-                'player_id': player_id,
-                'season_id': season_id,
-                'season': ps['season'],
-                'game_type': game_type,
-                'player_name': ps['player_full_name'],
-                'team_id': ps['team_id'],
-                'team_name': ps['team_name'],
-                'position': ps['player_position'],
-                'games_played': gp,
-                'goals': goals,
-                'assists': assists,
-                'points': points,
-                'pim': pim,
-                'goals_per_game': round(goals / gp, 2),
-                'assists_per_game': round(assists / gp, 2),
-                'points_per_game': round(points / gp, 2),
-                'pim_per_game': round(pim / gp, 2),
-                '_export_timestamp': datetime.now().isoformat(),
-            }
-            all_stats.append(stats)
+        gp = games['game_id'].nunique()
+        goals = int(games['goals'].sum())
+        assists = int(games['assist'].sum())
+        points = int(games['points'].sum())
+        pim = int(games['pim'].sum())
+        
+        stats = {
+            'player_season_basic_key': f"{player_id}_{season_id}_{game_type}",
+            'player_id': player_id,
+            'season_id': season_id,
+            'season': meta.get('season', ''),
+            'game_type': game_type,
+            'player_name': meta.get('player_full_name', ''),
+            'team_id': meta.get('team_id', ''),
+            'team_name': meta.get('team_name', ''),
+            'position': meta.get('player_position', ''),
+            'games_played': gp,
+            'goals': goals,
+            'assists': assists,
+            'points': points,
+            'pim': pim,
+            'goals_per_game': round(goals / gp, 2) if gp > 0 else 0,
+            'assists_per_game': round(assists / gp, 2) if gp > 0 else 0,
+            'points_per_game': round(points / gp, 2) if gp > 0 else 0,
+            'pim_per_game': round(pim / gp, 2) if gp > 0 else 0,
+            '_export_timestamp': datetime.now().isoformat(),
+        }
+        all_stats.append(stats)
     
     df = pd.DataFrame(all_stats)
     
@@ -245,65 +239,64 @@ def create_fact_goalie_season_stats_basic() -> pd.DataFrame:
         return pd.DataFrame()
     
     # Join to schedule for game_type and game result columns
-    goalies = goalies.merge(
-        schedule[['game_id', 'game_type', 'home_team_name', 'away_team_name', 
-                  'home_total_goals', 'away_total_goals', 'home_team_t', 'away_team_t']],
-        on='game_id',
-        how='left'
-    )
+    # Ensure consistent game_id types before merge (dtype optimization may create mismatches)
+    schedule_cols = schedule[['game_id', 'game_type', 'home_team_name', 'away_team_name',
+                              'home_total_goals', 'away_total_goals', 'home_team_t', 'away_team_t']].copy()
+    schedule_cols['game_id'] = schedule_cols['game_id'].astype(str)
+    goalies['game_id'] = goalies['game_id'].astype(str)
+    goalies = goalies.merge(schedule_cols, on='game_id', how='left')
     goalies['game_type'] = goalies['game_type'].fillna('Regular')
+    # Ensure goal columns are numeric (merge can sometimes affect dtypes)
+    for col in ['home_total_goals', 'away_total_goals', 'home_team_t', 'away_team_t']:
+        if col in goalies.columns:
+            goalies[col] = pd.to_numeric(goalies[col], errors='coerce').fillna(0).astype(int)
     
     all_stats = []
     
     # Get unique goalie-season combinations
-    goalie_seasons = goalies[['player_id', 'season_id', 'player_full_name', 'team_id', 
-                               'team_name', 'season']].drop_duplicates(subset=['player_id', 'season_id'])
+    # VECTORIZED: Use groupby instead of iterrows
+    grouped = goalies.groupby(['player_id', 'season_id', 'game_type'])
     
-    for _, gs in goalie_seasons.iterrows():
-        player_id = gs['player_id']
-        season_id = gs['season_id']
+    # Get goalie metadata
+    goalie_meta = goalies[['player_id', 'season_id', 'player_full_name', 'team_id', 
+                           'team_name', 'season']].drop_duplicates(
+                               subset=['player_id', 'season_id']).set_index(['player_id', 'season_id'])
+    
+    for (player_id, season_id, game_type), games in grouped:
+        if len(games) == 0:
+            continue
         
-        goalie_games = goalies[(goalies['player_id'] == player_id) & 
-                                (goalies['season_id'] == season_id)]
+        # Get metadata
+        meta = goalie_meta.loc[(player_id, season_id)]
         
-        # Use GAME_TYPE_SPLITS from shared utility
-        for game_type in GAME_TYPE_SPLITS:
-            if game_type == 'All':
-                games = goalie_games
-            else:
-                games = goalie_games[goalie_games['game_type'] == game_type]
-            
-            if len(games) == 0:
-                continue
-            
-            # Use shared utility for W-L-T calculation
-            record = get_goalie_record_from_games(games)
-            
-            gp = games['game_id'].nunique()
-            ga = int(games['goals_against'].sum())
-            so = int(games['shutouts'].sum())
-            
-            stats = {
-                'goalie_season_basic_key': f"{player_id}_{season_id}_{game_type}",
-                'player_id': player_id,
-                'season_id': season_id,
-                'season': gs['season'],
-                'game_type': game_type,
-                'player_name': gs['player_full_name'],
-                'team_id': gs['team_id'],
-                'team_name': gs['team_name'],
-                'games_played': gp,
-                'wins': record['wins'],
-                'losses': record['losses'],
-                'ties': record['ties'],
-                'goals_against': ga,
-                'gaa': round(ga / gp, 2) if gp > 0 else 0.0,
-                'shutouts': so,
-                'shutout_pct': round(so / gp * 100, 1) if gp > 0 else 0.0,
-                'win_pct': round(record['wins'] / gp * 100, 1) if gp > 0 else 0.0,
-                '_export_timestamp': datetime.now().isoformat(),
-            }
-            all_stats.append(stats)
+        # Use shared utility for W-L-T calculation
+        record = get_goalie_record_from_games(games)
+        
+        gp = games['game_id'].nunique()
+        ga = int(games['goals_against'].sum())
+        so = int(games['shutouts'].sum())
+        
+        stats = {
+            'goalie_season_basic_key': f"{player_id}_{season_id}_{game_type}",
+            'player_id': player_id,
+            'season_id': season_id,
+            'season': meta.get('season', ''),
+            'game_type': game_type,
+            'player_name': meta.get('player_full_name', ''),
+            'team_id': meta.get('team_id', ''),
+            'team_name': meta.get('team_name', ''),
+            'games_played': gp,
+            'wins': record['wins'],
+            'losses': record['losses'],
+            'ties': record['ties'],
+            'goals_against': ga,
+            'gaa': round(ga / gp, 2) if gp > 0 else 0.0,
+            'shutouts': so,
+            'shutout_pct': round(so / gp * 100, 1) if gp > 0 else 0.0,
+            'win_pct': round(record['wins'] / gp * 100, 1) if gp > 0 else 0.0,
+            '_export_timestamp': datetime.now().isoformat(),
+        }
+        all_stats.append(stats)
     
     df = pd.DataFrame(all_stats)
     
@@ -424,12 +417,17 @@ def create_fact_goalie_career_stats_basic() -> pd.DataFrame:
                 career_shutouts = int(games['shutouts'].sum())
                 
                 # Get record using utility function
-                games_with_schedule = games.merge(
-                    schedule[['game_id', 'game_type', 'home_team_name', 'away_team_name', 
-                             'home_total_goals', 'away_total_goals', 'home_team_t', 'away_team_t']],
-                    on='game_id',
-                    how='left'
-                )
+                # Ensure consistent game_id types before merge
+                schedule_cols = schedule[['game_id', 'game_type', 'home_team_name', 'away_team_name',
+                                         'home_total_goals', 'away_total_goals', 'home_team_t', 'away_team_t']].copy()
+                schedule_cols['game_id'] = schedule_cols['game_id'].astype(str)
+                games_copy = games.copy()
+                games_copy['game_id'] = games_copy['game_id'].astype(str)
+                games_with_schedule = games_copy.merge(schedule_cols, on='game_id', how='left')
+                # Ensure goal columns are numeric
+                for col in ['home_total_goals', 'away_total_goals', 'home_team_t', 'away_team_t']:
+                    if col in games_with_schedule.columns:
+                        games_with_schedule[col] = pd.to_numeric(games_with_schedule[col], errors='coerce').fillna(0).astype(int)
                 record = get_goalie_record_from_games(games_with_schedule)
                 
                 # Calculate rates
@@ -586,11 +584,13 @@ def create_fact_goalie_season_stats() -> pd.DataFrame:
         return pd.DataFrame()
     
     # Add season_id from roster
-    game_stats = game_stats.merge(
-        roster[['game_id', 'player_id', 'season_id', 'season']].drop_duplicates(),
-        on=['game_id', 'player_id'],
-        how='left'
-    )
+    # Ensure consistent types before merge (dtype optimization may create mismatches)
+    roster_subset = roster[['game_id', 'player_id', 'season_id', 'season']].drop_duplicates().copy()
+    roster_subset['game_id'] = roster_subset['game_id'].astype(str)
+    roster_subset['player_id'] = roster_subset['player_id'].astype(str)
+    game_stats['game_id'] = game_stats['game_id'].astype(str)
+    game_stats['player_id'] = game_stats['player_id'].astype(str)
+    game_stats = game_stats.merge(roster_subset, on=['game_id', 'player_id'], how='left')
     
     # Add game_type using shared utility
     game_stats = add_game_type_to_df(game_stats, schedule)
@@ -768,18 +768,20 @@ def create_fact_goalie_career_stats() -> pd.DataFrame:
                     agg_dict[col] = 'sum'
             
             agg_dict['games_played'] = 'sum'
-            agg_dict['player_name'] = 'first'
-            agg_dict['team_name'] = 'last'
-            agg_dict['team_id'] = 'last'
-            
+
             # Mean of ratings
-            for col in ['goalie_war', 'goalie_game_score', 'overall_game_rating', 'clutch_rating', 
+            for col in ['goalie_war', 'goalie_game_score', 'overall_game_rating', 'clutch_rating',
                        'pressure_rating', 'rebound_rating']:
                 if col in type_data.columns:
                     agg_dict[col] = 'mean'
-            
-            # Aggregate
+
+            # Aggregate numeric columns
             grouped_type = type_data.agg(agg_dict).to_dict()
+
+            # Get first/last values directly (pandas 2.0+ doesn't support 'first'/'last' as agg strings)
+            grouped_type['player_name'] = type_data['player_name'].iloc[0] if len(type_data) > 0 else None
+            grouped_type['team_name'] = type_data['team_name'].iloc[-1] if len(type_data) > 0 else None
+            grouped_type['team_id'] = type_data['team_id'].iloc[-1] if len(type_data) > 0 else None
             
             career_games = int(grouped_type.get('games_played', 0))
             
@@ -849,7 +851,26 @@ def create_fact_player_career_stats_enhanced() -> pd.DataFrame:
     if len(season_stats) == 0:
         print("  No player season stats found")
         return pd.DataFrame()
-    
+
+    # Add team info if missing (from roster)
+    if 'team_name' not in season_stats.columns or 'team_id' not in season_stats.columns:
+        # Only add the columns we need
+        merge_cols = ['player_id', 'season_id']
+        add_cols = []
+        if 'team_id' not in season_stats.columns:
+            add_cols.append('team_id')
+        if 'team_name' not in season_stats.columns:
+            add_cols.append('team_name')
+
+        if add_cols:
+            roster_info = roster[merge_cols + add_cols].drop_duplicates(subset=['player_id', 'season_id'])
+            # Ensure consistent types for merge
+            roster_info['player_id'] = roster_info['player_id'].astype(str)
+            roster_info['season_id'] = roster_info['season_id'].astype(str)
+            season_stats['player_id'] = season_stats['player_id'].astype(str)
+            season_stats['season_id'] = season_stats['season_id'].astype(str)
+            season_stats = season_stats.merge(roster_info, on=['player_id', 'season_id'], how='left')
+
     # Key columns to aggregate
     sum_cols = [
         'goals', 'primary_assists', 'secondary_assists', 'assists', 'points',
@@ -891,19 +912,20 @@ def create_fact_player_career_stats_enhanced() -> pd.DataFrame:
             for col in sum_cols:
                 if col in type_data.columns:
                     agg_dict[col] = 'sum'
-            
-            agg_dict['player_name'] = 'first'
-            agg_dict['team_name'] = 'last'
-            agg_dict['team_id'] = 'last'
-            
+
             # Mean of rates/indices
             rate_cols = ['war', 'gar', 'game_score', 'offensive_rating', 'defensive_rating']
             for col in rate_cols:
                 if col in type_data.columns:
                     agg_dict[col] = 'mean'
-            
-            # Aggregate
+
+            # Aggregate numeric columns
             grouped_type = type_data.agg(agg_dict).to_dict()
+
+            # Get first/last values directly (pandas 2.0+ doesn't support 'first'/'last' as agg strings)
+            grouped_type['player_name'] = type_data['player_name'].iloc[0] if len(type_data) > 0 else None
+            grouped_type['team_name'] = type_data['team_name'].iloc[-1] if len(type_data) > 0 else None
+            grouped_type['team_id'] = type_data['team_id'].iloc[-1] if len(type_data) > 0 else None
             
             # Get games played from game_stats for this player+season+type
             game_stats = load_table('fact_player_game_stats')
@@ -912,10 +934,14 @@ def create_fact_player_career_stats_enhanced() -> pd.DataFrame:
                 if 'game_type' not in game_stats.columns:
                     schedule = load_table('dim_schedule')
                     game_stats = add_game_type_to_df(game_stats, schedule)
-                
+
+                # Ensure consistent ID types for comparison (dtype optimization may create mismatches)
+                game_stats['player_id'] = game_stats['player_id'].astype(str)
+                game_stats['season_id'] = game_stats['season_id'].astype(str)
+
                 player_game_stats = game_stats[
-                    (game_stats['player_id'] == player_id) & 
-                    (game_stats['season_id'] == season_id) &
+                    (game_stats['player_id'] == str(player_id)) &
+                    (game_stats['season_id'] == str(season_id)) &
                     (game_stats['game_type'] == game_type)
                 ]
                 career_games = player_game_stats['game_id'].nunique()

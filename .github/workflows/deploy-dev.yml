@@ -1,0 +1,57 @@
+name: Deploy to Dev
+
+on:
+  push:
+    branches: [develop]
+
+jobs:
+  deploy-dashboard-dev:
+    name: Deploy Dashboard to Dev
+    runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.modified, 'ui/dashboard/') || github.event.head_commit.message == '[DEPLOY]'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: ui/dashboard/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: ui/dashboard
+        run: npm ci
+      
+      - name: Build
+        working-directory: ui/dashboard
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL_DEV }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY_DEV }}
+      
+      - name: Deploy to Vercel (Preview)
+        if: github.ref == 'refs/heads/develop'
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_DEV }}
+          vercel-args: '--prod'
+          working-directory: ui/dashboard
+
+  notify:
+    name: Deployment Notification
+    runs-on: ubuntu-latest
+    needs: [deploy-dashboard-dev]
+    if: always()
+    
+    steps:
+      - name: Deployment Status
+        run: |
+          if [ "${{ needs.deploy-dashboard-dev.result }}" == "success" ]; then
+            echo "✅ Dashboard deployed to dev successfully"
+          else
+            echo "⚠️  Dashboard deployment had issues"
+          fi

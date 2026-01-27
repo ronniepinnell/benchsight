@@ -6,8 +6,14 @@ Loads settings from config files and environment variables.
 
 Priority order (highest to lowest):
 1. Environment variables (SUPABASE_URL, SUPABASE_SERVICE_KEY)
-2. config_local.ini (your local settings - not committed to git)
-3. config.ini (default settings)
+2. BENCHSIGHT_ENV-specific config (config.dev.ini or config.prod.ini)
+3. config_local.ini (legacy fallback - not committed to git)
+4. config.ini (default settings)
+
+Environment Selection:
+    export BENCHSIGHT_ENV=dev   # Use config.dev.ini
+    export BENCHSIGHT_ENV=prod  # Use config.prod.ini
+    (unset)                     # Use config_local.ini (legacy)
 
 Usage:
     from config.config_loader import config
@@ -121,19 +127,38 @@ def load_config(config_path: Optional[Path] = None) -> BenchSightConfig:
     if config_path:
         config_files = [config_path]
     else:
-        config_files = [
-            config_dir / "config.ini",
-            config_dir / "config_local.ini",
-        ]
-    
-    # Check if config_local.ini exists, if not, warn user
+        # Check for BENCHSIGHT_ENV to determine which config to load
+        env_name = os.environ.get('BENCHSIGHT_ENV', '').lower()
+
+        config_files = [config_dir / "config.ini"]  # Base defaults
+
+        if env_name in ('dev', 'development'):
+            # Development environment
+            env_config = config_dir / "config.dev.ini"
+            if env_config.exists():
+                config_files.append(env_config)
+            else:
+                print(f"⚠️  BENCHSIGHT_ENV=dev but config.dev.ini not found")
+        elif env_name in ('prod', 'production'):
+            # Production environment
+            env_config = config_dir / "config.prod.ini"
+            if env_config.exists():
+                config_files.append(env_config)
+            else:
+                print(f"⚠️  BENCHSIGHT_ENV=prod but config.prod.ini not found")
+        else:
+            # Legacy fallback: use config_local.ini
+            config_files.append(config_dir / "config_local.ini")
+
+    # Check if any config exists, if not, warn user
     local_config = config_dir / "config_local.ini"
     example_config = config_dir / "config_local.ini.example"
-    
-    if not local_config.exists() and example_config.exists():
+    env_name = os.environ.get('BENCHSIGHT_ENV', '').lower()
+
+    if not env_name and not local_config.exists() and example_config.exists():
         print(f"⚠️  Config file not found: {local_config}")
-        print(f"   Copy the example: cp {example_config} {local_config}")
-        print(f"   Then edit with your Supabase credentials.")
+        print(f"   Option 1: Set BENCHSIGHT_ENV=dev or BENCHSIGHT_ENV=prod")
+        print(f"   Option 2: Copy the example: cp {example_config} {local_config}")
         print()
     
     # Load from config files

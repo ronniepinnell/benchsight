@@ -1,0 +1,90 @@
+name: Bug Report
+description: Report a bug or unexpected behavior
+title: "[BUG] "
+labels: ["type:fix"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Component
+      description: Where is the bug?
+      options:
+        - ETL Pipeline (src/)
+        - Dashboard (ui/dashboard/)
+        - Tracker (ui/tracker/)
+        - Portal (ui/portal/)
+        - API (api/)
+        - Data/Schema
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How severe is this?
+      options:
+        - Critical - Data corruption or system down
+        - High - Major feature broken
+        - Medium - Feature impaired
+        - Low - Minor issue
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: What happened?
+      placeholder: "When I do X, Y happens instead of Z"
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this?
+      placeholder: |
+        1. Go to...
+        2. Click on...
+        3. See error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What should happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happens?
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs/Screenshots
+      description: Any relevant error messages or screenshots
+      placeholder: "```\nerror log here\n```"
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Environment details
+      placeholder: |
+        - Environment: dev/production
+        - Branch: develop
+        - Last commit: abc123
+    validations:
+      required: false

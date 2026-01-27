@@ -66,36 +66,38 @@ def add_game_type_to_df(
 ) -> pd.DataFrame:
     """
     Add game_type column to a DataFrame by joining to schedule.
-    
+
     Parameters:
         df: DataFrame with game_id column
         schedule: Optional pre-loaded schedule (loads if None)
         game_id_col: Name of game_id column in df
-    
+
     Returns:
         DataFrame with game_type column added
     """
     if schedule is None:
         schedule = load_schedule()
-    
+
     if len(schedule) == 0 or game_id_col not in df.columns:
         df['game_type'] = DEFAULT_GAME_TYPE
         return df
-    
-    # Only merge the columns we need
-    schedule_cols = [game_id_col, GAME_TYPE_COLUMN] if GAME_TYPE_COLUMN in schedule.columns else [game_id_col]
-    
+
     if GAME_TYPE_COLUMN not in schedule.columns:
         df['game_type'] = DEFAULT_GAME_TYPE
         return df
-    
+
+    # Ensure consistent game_id types before merge (dtype optimization may create int16 vs object mismatches)
+    schedule_subset = schedule[[game_id_col, GAME_TYPE_COLUMN]].drop_duplicates().copy()
+    schedule_subset[game_id_col] = schedule_subset[game_id_col].astype(str)
+    df[game_id_col] = df[game_id_col].astype(str)
+
     df = df.merge(
-        schedule[[game_id_col, GAME_TYPE_COLUMN]].drop_duplicates(),
+        schedule_subset,
         on=game_id_col,
         how='left'
     )
     df['game_type'] = df['game_type'].fillna(DEFAULT_GAME_TYPE)
-    
+
     return df
 
 
@@ -195,13 +197,30 @@ def get_team_record_from_schedule(
 ) -> Dict[str, Any]:
     """
     Calculate team record (W-L-T) from schedule for a specific team/season/game_type.
-    
-    Uses schedule columns: home_team_id, away_team_id, home_total_goals, 
+
+    Uses schedule columns: home_team_id, away_team_id, home_total_goals,
     away_total_goals, home_team_t, away_team_t
-    
+
     Returns:
         Dict with games_played, wins, losses, ties, points, goals_for, goals_against
     """
+    # Only count Past games (exclude Upcoming, PPD)
+    schedule = schedule.copy()
+    if 'schedule_type' in schedule.columns:
+        schedule = schedule[schedule['schedule_type'] == 'Past']
+
+    # Ensure goal columns are numeric (dtype optimization may create categoricals)
+    for col in ['home_total_goals', 'away_total_goals', 'home_team_t', 'away_team_t']:
+        if col in schedule.columns:
+            schedule[col] = pd.to_numeric(schedule[col], errors='coerce').fillna(0)
+
+    # Ensure ID columns are strings for consistent comparison
+    schedule['home_team_id'] = schedule['home_team_id'].astype(str)
+    schedule['away_team_id'] = schedule['away_team_id'].astype(str)
+    schedule['season_id'] = schedule['season_id'].astype(str)
+    team_id = str(team_id)
+    season_id = str(season_id)
+
     # Filter to team's games in this season
     home_mask = (schedule['home_team_id'] == team_id) & (schedule['season_id'] == season_id)
     away_mask = (schedule['away_team_id'] == team_id) & (schedule['season_id'] == season_id)

@@ -29,12 +29,13 @@ import sys
 import argparse
 from pathlib import Path
 from datetime import datetime
-import configparser
 
 # Paths
 PROJECT_ROOT = Path(__file__).parent.parent
 VIEWS_DIR = PROJECT_ROOT / 'sql' / 'views'
-CONFIG_FILE = PROJECT_ROOT / 'config' / 'config_local.ini'
+
+# Add project root to path for config_loader
+sys.path.insert(0, str(PROJECT_ROOT))
 
 # View file order (deploy in this sequence)
 VIEW_FILE_ORDER = [
@@ -50,21 +51,19 @@ VIEW_FILE_ORDER = [
 
 
 def load_config():
-    """Load Supabase configuration."""
-    if not CONFIG_FILE.exists():
-        print(f"ERROR: Config file not found: {CONFIG_FILE}")
-        print("Create config/config_local.ini with [supabase] section")
-        return None, None
-    
-    config = configparser.ConfigParser()
-    config.read(CONFIG_FILE)
-    
+    """Load Supabase configuration using centralized config_loader."""
     try:
-        url = config.get('supabase', 'url')
-        key = config.get('supabase', 'service_key')
-        return url, key
-    except (configparser.NoSectionError, configparser.NoOptionError) as e:
-        print(f"ERROR: Missing config: {e}")
+        from config.config_loader import load_config as load_benchsight_config
+        cfg = load_benchsight_config()
+
+        if not cfg.supabase_url or not cfg.supabase_service_key:
+            print("ERROR: Supabase credentials not configured")
+            print("Set BENCHSIGHT_ENV=dev or BENCHSIGHT_ENV=prod, or create config/config_local.ini")
+            return None, None
+
+        return cfg.supabase_url, cfg.supabase_service_key
+    except Exception as e:
+        print(f"ERROR: Failed to load config: {e}")
         return None, None
 
 

@@ -60,7 +60,7 @@ def build_fact_events(
         'event_id', 'game_id', 'period',
         'event_type', 'event_detail', 'event_detail_2', 'event_successful',
         'event_team_zone', 'shift_key', 'linked_event_key',
-        'sequence_key', 'play_key', 'event_chain_key', 'tracking_event_key',
+        'sequence_key', 'play_key', 'tracking_event_key',
         'home_team', 'away_team', 'duration',
         # Time columns (calculated)
         'event_start_min', 'event_start_sec', 'event_end_min', 'event_end_sec',
@@ -79,6 +79,7 @@ def build_fact_events(
         'pressured_pressurer',
         # XY data
         'puck_x_start', 'puck_y_start', 'puck_x_end', 'puck_y_end',
+        'net_x', 'net_y',
         'player_x', 'player_y',
         # Flags
         'is_goal', 'is_highlight'
@@ -100,7 +101,7 @@ def build_fact_events(
         'event_detail_2', 'event_detail_2_id',
         'event_successful', 'success_id',
         'event_team_zone', 'event_zone_id',
-        'sequence_key', 'play_key', 'event_chain_key', 'tracking_event_key',
+        'sequence_key', 'play_key', 'tracking_event_key',
         'shift_key', 'linked_event_key',
         'home_team', 'home_team_id', 'away_team', 'away_team_id',
         'duration', 'event_player_ids', 'opp_player_ids',

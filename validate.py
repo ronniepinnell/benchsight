@@ -11,11 +11,12 @@ USAGE:
     python validate.py --tables     # Validate table structure
     python validate.py --data       # Validate data integrity
     python validate.py --goals      # Validate goal counts
-    python validate.py --manifest   # Check files match manifest
+    python validate.py --manifest   # Comprehensive table verification (manifest-based)
+    python validate.py --full       # Run all checks including comprehensive verification
 
 ================================================================================
-Version: 21.0
-Updated: 2026-01-10
+Version: 22.0
+Updated: 2026-01-22
 ================================================================================
 """
 
@@ -37,10 +38,11 @@ logger = logging.getLogger('validate')
 # EXPECTED VALUES (Ground Truth)
 # =============================================================================
 EXPECTED = {
-    'tables': 131,
-    'dim_tables': 55,
-    'fact_tables': 71,
+    'tables': 145,
+    'dim_tables': 57,
+    'fact_tables': 83,
     'qa_tables': 4,
+    'lookup_tables': 1,
     'goals': 17,
     'goals_tracked': 16,  # Due to raw data issue
     'games': [18969, 18977, 18981, 18987],
@@ -249,12 +251,31 @@ class Validator:
         return self.failed == 0
 
 
+def run_comprehensive_verification():
+    """Run comprehensive table verification using manifest."""
+    from src.validation import TableVerifier
+
+    print("\n[COMPREHENSIVE TABLE VERIFICATION]")
+    print("Using manifest: config/table_manifest.json")
+
+    try:
+        verifier = TableVerifier()
+        result = verifier.verify_all()
+        result.add(verifier.check_goal_counts())
+
+        print(result.summary())
+        return result.passed
+    except FileNotFoundError as e:
+        print(f"  ✗ Error: {e}")
+        return False
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='Validate BenchSight ETL output',
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    
+
     parser.add_argument('--quick', action='store_true',
                         help='Quick check (counts only)')
     parser.add_argument('--tables', action='store_true',
@@ -263,18 +284,27 @@ def main():
                         help='Validate goal counts')
     parser.add_argument('--data', action='store_true',
                         help='Validate data integrity')
+    parser.add_argument('--manifest', action='store_true',
+                        help='Comprehensive table verification (manifest-based)')
+    parser.add_argument('--full', action='store_true',
+                        help='Run all checks including comprehensive verification')
     parser.add_argument('--verbose', '-v', action='store_true',
                         help='Verbose output')
-    
+
     args = parser.parse_args()
-    
+
     print("=" * 60)
     print("BENCHSIGHT VALIDATION")
     print("=" * 60)
     print(f"Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    
+
+    # Comprehensive manifest-based verification
+    if args.manifest:
+        passed = run_comprehensive_verification()
+        sys.exit(0 if passed else 1)
+
     validator = Validator()
-    
+
     if args.quick:
         validator.quick_check()
     elif args.tables:
@@ -284,10 +314,16 @@ def main():
     elif args.data:
         validator.validate_player_stats()
         validator.validate_foreign_keys()
-    else:
-        # Run all
+    elif args.full:
+        # Run legacy validation + comprehensive verification
         validator.run_all()
-    
+        comprehensive_passed = run_comprehensive_verification()
+        if not comprehensive_passed:
+            validator.failed += 1
+    else:
+        # Run legacy validation
+        validator.run_all()
+
     # Summary
     print()
     print("=" * 60)
@@ -296,17 +332,17 @@ def main():
     print(f"Passed:   {validator.passed}")
     print(f"Failed:   {validator.failed}")
     print(f"Warnings: {len(validator.warnings)}")
-    
+
     if validator.errors:
         print(f"\nCritical Errors:")
         for err in validator.errors:
             print(f"  ✗ {err}")
-    
+
     if validator.warnings:
         print(f"\nWarnings:")
         for warn in validator.warnings:
             print(f"  ⚠ {warn}")
-    
+
     print()
     if validator.failed == 0:
         print("✓ All validations passed!")

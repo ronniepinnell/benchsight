@@ -110,9 +110,58 @@ def save_table(df: pd.DataFrame, name: str) -> int:
     df.to_csv(path, index=False)
     return len(df)
 
-def load_table(name: str) -> pd.DataFrame:
+def load_table(name: str, required: bool = False) -> pd.DataFrame:
+    """
+    Load a table from cache first, then from CSV.
+    
+    This checks the in-memory table store first (for tables created in this ETL run),
+    then falls back to CSV files. This allows the ETL to work from scratch without
+    relying on previously generated CSVs.
+    
+    Args:
+        name: Table name (without .csv extension)
+        required: If True, warn when table is missing (for critical dependencies)
+    
+    Returns:
+        DataFrame with table data, or empty DataFrame if not found
+    """
+    # Try table store first (in-memory cache from this run)
+    try:
+        from src.core.table_store import get_table
+        df = get_table(name, OUTPUT_DIR)
+        if len(df) > 0:
+            return df
+        # If in store but empty, that's the actual state
+        if name in get_table.__self__._table_store if hasattr(get_table, '__self__') else False:
+            if required:
+                print(f"  WARNING: {name} is EMPTY (required dependency)")
+            return df
+    except Exception:
+        pass
+    
+    # Fall back to CSV (for tables from previous runs)
     path = OUTPUT_DIR / f"{name}.csv"
-    return pd.read_csv(path, low_memory=False) if path.exists() else pd.DataFrame()
+    if not path.exists():
+        if required:
+            print(f"  WARNING: Required table {name} not found - dependent table may be empty")
+        return pd.DataFrame()
+    try:
+        df = pd.read_csv(path, low_memory=False)
+        if len(df) == 0 and required:
+            print(f"  WARNING: {name} exists but is EMPTY (required dependency)")
+        return df
+    except pd.errors.EmptyDataError:
+        # File exists but has no data/columns
+        if required:
+            print(f"  WARNING: {name} exists but has no data (required dependency)")
+        return pd.DataFrame()
+    except Exception as e:
+        # Log error but return empty DataFrame to prevent crashes
+        if required:
+            print(f"  ERROR: Failed to load {name}: {e}")
+        import logging
+        logging.getLogger('ETL').warning(f"Error loading {name}: {e}")
+        return pd.DataFrame()
 
 def add_names_to_table(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -856,12 +905,12 @@ def calculate_competition_tier_stats(player_id, game_id, shift_players: pd.DataF
     
     # Use existing adjusted stats if available
     if 'cf_pct_adj' in ps.columns:
-        stats['cf_pct_adjusted'] = round(ps['cf_pct_adj'].mean(), 1) if ps['cf_pct_adj'].notna().any() else 50.0
+        stats['cf_pct_adjusted'] = round(ps['cf_pct_adj'].mean(), 1) if 'cf_pct_adj' in ps.columns and pd.notna(ps['cf_pct_adj']).any() else 50.0
     else:
         stats['cf_pct_adjusted'] = 50.0
     
     if 'cf_pct_vs_expected' in ps.columns:
-        stats['cf_pct_vs_expected'] = round(ps['cf_pct_vs_expected'].mean(), 1) if ps['cf_pct_vs_expected'].notna().any() else 0.0
+        stats['cf_pct_vs_expected'] = round(ps['cf_pct_vs_expected'].mean(), 1) if 'cf_pct_vs_expected' in ps.columns and pd.notna(ps['cf_pct_vs_expected']).any() else 0.0
     else:
         stats['cf_pct_vs_expected'] = 0.0
     
@@ -1190,20 +1239,21 @@ def calculate_rush_stats(player_id, game_id, event_players, events):
     rush_xg_total = 0.0
     if len(player_rush_events) > 0 and 'time_to_next_sog' in player_rush_events.columns:
         # Get rush entries that led to shots
-        rush_with_shots = player_rush_events[player_rush_events['time_to_next_sog'].notna()]
+        rush_with_shots = player_rush_events[player_rush_events['time_to_next_sog'].notna()].copy()
         if len(rush_with_shots) > 0:
-            for _, rush_entry in rush_with_shots.iterrows():
-                # Use default danger level for rush entries (medium danger typical for rushes)
-                danger = str(rush_entry.get('danger_level', 'default')).lower()
-                base_xg = XG_BASE_RATES.get(danger, XG_BASE_RATES['default'])
-                xg = base_xg * XG_MODIFIERS['rush']  # Rush modifier (1.3x)
-                
-                # Apply breakaway modifier if present
-                event_detail_2 = str(rush_entry.get('event_detail_2', '')).lower()
-                if 'breakaway' in event_detail_2:
-                    xg = xg * XG_MODIFIERS['breakaway']  # Breakaway modifier (2.5x)
-                
-                rush_xg_total += min(xg, 0.95)
+            # VECTORIZED: Calculate xG for all rush entries at once
+            # Use default danger level for rush entries (medium danger typical for rushes)
+            danger_map = rush_with_shots['danger_level'].astype(str).str.lower().map(
+                lambda x: XG_BASE_RATES.get(x, XG_BASE_RATES['default'])
+            ).fillna(XG_BASE_RATES['default'])
+            xg = danger_map * XG_MODIFIERS['rush']  # Rush modifier (1.3x)
+            
+            # Apply breakaway modifier if present - VECTORIZED
+            event_detail_2_col = rush_with_shots['event_detail_2'].astype(str).str.lower() if 'event_detail_2' in rush_with_shots.columns else pd.Series('', index=rush_with_shots.index)
+            breakaway_mask = event_detail_2_col.str.contains('breakaway', na=False)
+            xg[breakaway_mask] = xg[breakaway_mask] * XG_MODIFIERS['breakaway']  # Breakaway modifier (2.5x)
+            
+            rush_xg_total = xg.clip(upper=0.95).sum()
     stats['rush_xg'] = round(rush_xg_total, 2)
     
     # Rush involvement breakdown
@@ -1411,7 +1461,7 @@ def calculate_micro_stats(player_id, game_id, event_players, events):
     - Adds successful/unsuccessful variants for each stat
     - Significantly expanded list of microstats
     
-    CRITICAL: Uses DISTINCT counting by linked_event_index_flag to avoid double-counting.
+    CRITICAL: Uses DISTINCT counting by linked_event_key to avoid double-counting.
     Each event should only be counted once even if pattern appears in multiple columns.
     """
     pe = event_players[(event_players['game_id'] == game_id) & (event_players['player_id'] == player_id) & (event_players['player_role'].astype(str).str.lower() == PRIMARY_PLAYER)]
@@ -1434,7 +1484,7 @@ def calculate_micro_stats(player_id, game_id, event_players, events):
         """
         Count DISTINCT events matching pattern in play_detail1, play_detail_2, event_detail, OR event_detail_2.
         Returns: (total_count, successful_count, unsuccessful_count)
-        Uses linked_event_index_flag for deduplication if available.
+        Uses linked_event_key for deduplication if available.
         """
         matching_events = pd.DataFrame()
         
@@ -1460,19 +1510,19 @@ def calculate_micro_stats(player_id, game_id, event_players, events):
         if len(matching_events) == 0:
             return (0, 0, 0)
         
-        # Deduplicate: use linked_event_index_flag if available, otherwise event_id
-        if 'linked_event_index_flag' in matching_events.columns:
+        # Deduplicate: use linked_event_key if available, otherwise event_id
+        if 'linked_event_key' in matching_events.columns:
             # Split into linked and unlinked
-            linked = matching_events[matching_events['linked_event_index_flag'].notna()]
-            unlinked = matching_events[matching_events['linked_event_index_flag'].isna()]
+            linked = matching_events[matching_events['linked_event_key'].notna()]
+            unlinked = matching_events[matching_events['linked_event_key'].isna()]
             
-            # Get distinct linked events (by linked_event_index_flag) and unlinked (by event_id)
+            # Get distinct linked events (by linked_event_key) and unlinked (by event_id)
             distinct_linked_flags = []
             distinct_unlinked_ids = []
             
             if len(linked) > 0:
-                distinct_linked_flags = linked['linked_event_index_flag'].unique().tolist()
-                linked_events = linked[linked['linked_event_index_flag'].isin(distinct_linked_flags)].drop_duplicates(subset='linked_event_index_flag')
+                distinct_linked_flags = linked['linked_event_key'].unique().tolist()
+                linked_events = linked[linked['linked_event_key'].isin(distinct_linked_flags)].drop_duplicates(subset='linked_event_key')
             else:
                 linked_events = pd.DataFrame()
             
@@ -1993,28 +2043,46 @@ def calculate_xg_stats(player_id, game_id, event_players, events):
     if len(player_shots) == 0: return empty
     
     # Calculate raw xG for each shot (with shot type modifiers)
-    shot_data = []
-    goals_total = 0
-    
-    for _, shot in player_shots.iterrows():
-        danger = str(shot.get('danger_level', 'default')).lower()
-        base_xg = XG_BASE_RATES.get(danger, XG_BASE_RATES['default'])
-        xg = base_xg * (XG_MODIFIERS['rush'] if shot.get('is_rush') == 1 else 1.0)
+    # VECTORIZED: Calculate xG for all shots at once
+    if len(player_shots) == 0:
+        goals_total = 0
+        shot_data = []
+    else:
+        # Count goals
+        goals_total = 0
+        if 'is_goal' in player_shots.columns:
+            goals_total = player_shots['is_goal'].sum()
+        elif 'event_type' in player_shots.columns and 'event_detail' in player_shots.columns:
+            goals_total = (
+                (player_shots['event_type'].astype(str).str.lower() == 'goal') &
+                (player_shots['event_detail'].astype(str).str.lower().str.contains('goal_scored', na=False))
+            ).sum()
         
-        # Apply shot type modifier (from event_detail_2)
-        event_detail_2 = str(shot.get('event_detail_2', '')).lower()
-        shot_type_modifier = 1.0
+        # Map danger levels to base xG rates
+        danger_map = player_shots['danger_level'].astype(str).str.lower().map(
+            lambda x: XG_BASE_RATES.get(x, XG_BASE_RATES['default'])
+        ).fillna(XG_BASE_RATES['default'])
+        
+        # Apply rush modifier
+        rush_multiplier = player_shots['is_rush'].fillna(0).replace({1: XG_MODIFIERS['rush'], 0: 1.0})
+        xg_base = danger_map * rush_multiplier
+        
+        # Apply shot type modifier (from event_detail_2) - VECTORIZED
+        shot_type_modifier = pd.Series(1.0, index=player_shots.index)
+        event_detail_2_col = player_shots['event_detail_2'].astype(str).str.lower() if 'event_detail_2' in player_shots.columns else pd.Series('', index=player_shots.index)
         for shot_type, modifier in SHOT_TYPE_XG_MODIFIERS.items():
-            if shot_type in event_detail_2:
-                shot_type_modifier = modifier
-                break
-        xg = xg * shot_type_modifier
+            mask = event_detail_2_col.str.contains(shot_type.lower(), na=False)
+            shot_type_modifier[mask] = modifier
         
-        shot_time = shot.get('time_start_total_seconds', 0) if 'time_start_total_seconds' in shot else 0
-        shot_data.append({'time': shot_time, 'xg_value': min(xg, 0.95)})
+        xg = xg_base * shot_type_modifier
+        xg = xg.clip(upper=0.95)  # Cap at 0.95
         
-        if str(shot.get('event_type', '')).lower() == 'goal' and 'goal_scored' in str(shot.get('event_detail', '')).lower():
-            goals_total += 1
+        # Build shot_data list
+        shot_time_col = player_shots.get('time_start_total_seconds', pd.Series(0, index=player_shots.index))
+        shot_data = [
+            {'time': float(time), 'xg_value': float(xg_val)}
+            for time, xg_val in zip(shot_time_col.fillna(0), xg)
+        ]
     
     # Apply flurry adjustment
     flurry_result = apply_flurry_adjustment_to_shots(shot_data)
@@ -2816,12 +2884,12 @@ def calculate_player_event_stats(player_id, game_id, event_players, events=None)
     if 'play_detail1' in pe.columns:
         blocks_df = pe[pe['play_detail1'].astype(str).str.lower().str.contains('blockedshot', na=False)]
         if len(blocks_df) > 0:
-            if 'linked_event_index_flag' in blocks_df.columns:
-                # For rows with linked_event_index_flag, count unique flags
+            if 'linked_event_key' in blocks_df.columns:
+                # For rows with linked_event_key, count unique flags
                 # For rows without (NaN), count each row
-                linked = blocks_df[blocks_df['linked_event_index_flag'].notna()]
-                unlinked = blocks_df[blocks_df['linked_event_index_flag'].isna()]
-                stats['blocks'] = linked['linked_event_index_flag'].nunique() + len(unlinked)
+                linked = blocks_df[blocks_df['linked_event_key'].notna()]
+                unlinked = blocks_df[blocks_df['linked_event_key'].isna()]
+                stats['blocks'] = linked['linked_event_key'].nunique() + len(unlinked)
             else:
                 stats['blocks'] = len(blocks_df)
     
@@ -2881,13 +2949,13 @@ def calculate_player_shift_stats(player_id, game_id, shifts, shift_players):
         stats['cf_pct'] = 50.0
     
     # Player's own rating
-    stats['player_rating'] = round(ps['player_rating'].mean(), 2) if 'player_rating' in ps.columns and ps['player_rating'].notna().any() else 4.0
+    stats['player_rating'] = round(ps['player_rating'].mean(), 2) if 'player_rating' in ps.columns and pd.notna(ps['player_rating']).any() else 4.0
     
     # Team avg rating (teammates on ice, excluding goalies - already computed in shift data)
-    stats['team_avg_rating'] = round(ps['team_avg_rating'].mean(), 2) if 'team_avg_rating' in ps.columns and ps['team_avg_rating'].notna().any() else 4.0
+    stats['team_avg_rating'] = round(ps['team_avg_rating'].mean(), 2) if 'team_avg_rating' in ps.columns and pd.notna(ps['team_avg_rating']).any() else 4.0
     
     # Opponent avg rating
-    stats['opp_avg_rating'] = round(ps['opp_avg_rating'].mean(), 2) if 'opp_avg_rating' in ps.columns and ps['opp_avg_rating'].notna().any() else 4.0
+    stats['opp_avg_rating'] = round(ps['opp_avg_rating'].mean(), 2) if 'opp_avg_rating' in ps.columns and pd.notna(ps['opp_avg_rating']).any() else 4.0
     
     # Team rating diff: opp_avg - team_avg (positive = facing tougher team)
     stats['team_rating_diff'] = round(stats['opp_avg_rating'] - stats['team_avg_rating'], 2)
@@ -2905,10 +2973,11 @@ def calculate_player_shift_stats(player_id, game_id, shifts, shift_players):
         team_min_col, team_max_col = 'away_min_rating', 'away_max_rating'
         opp_min_col, opp_max_col = 'home_min_rating', 'home_max_rating'
     
-    stats['team_min_rating_avg'] = round(ps[team_min_col].mean(), 2) if team_min_col in ps.columns and ps[team_min_col].notna().any() else 4.0
-    stats['team_max_rating_avg'] = round(ps[team_max_col].mean(), 2) if team_max_col in ps.columns and ps[team_max_col].notna().any() else 4.0
-    stats['opp_min_rating_avg'] = round(ps[opp_min_col].mean(), 2) if opp_min_col in ps.columns and ps[opp_min_col].notna().any() else 4.0
-    stats['opp_max_rating_avg'] = round(ps[opp_max_col].mean(), 2) if opp_max_col in ps.columns and ps[opp_max_col].notna().any() else 4.0
+    # Use pd.notna() to safely check for non-null values
+    stats['team_min_rating_avg'] = round(ps[team_min_col].mean(), 2) if team_min_col in ps.columns and pd.notna(ps[team_min_col]).any() else 4.0
+    stats['team_max_rating_avg'] = round(ps[team_max_col].mean(), 2) if team_max_col in ps.columns and pd.notna(ps[team_max_col]).any() else 4.0
+    stats['opp_min_rating_avg'] = round(ps[opp_min_col].mean(), 2) if opp_min_col in ps.columns and pd.notna(ps[opp_min_col]).any() else 4.0
+    stats['opp_max_rating_avg'] = round(ps[opp_max_col].mean(), 2) if opp_max_col in ps.columns and pd.notna(ps[opp_max_col]).any() else 4.0
     
     # Min/Max rating diffs (opp - team, positive = opp has better min/max)
     stats['min_rating_diff'] = round(stats['opp_min_rating_avg'] - stats['team_min_rating_avg'], 2)

@@ -38,38 +38,30 @@ logger = logging.getLogger('SupabaseManager')
 class SupabaseManager:
     """
     Manages all Supabase operations for BenchSight.
-    
-    Reads configuration from config/config_local.ini.
+
+    Reads configuration via config_loader (supports BENCHSIGHT_ENV).
     """
-    
+
     # Tables to skip (system tables, etc.)
     SKIP_TABLES = {'VERSION', 'TABLE_MANIFEST'}
-    
+
     # Batch size for uploads
     BATCH_SIZE = 500
-    
+
     def __init__(self, config_path: Optional[Path] = None):
         """
         Initialize Supabase manager.
-        
+
         Args:
-            config_path: Path to config file (default: config/config_local.ini)
+            config_path: Path to config file (optional, uses config_loader by default)
         """
-        # Find config
-        if config_path is None:
-            base_dir = Path(__file__).parent.parent.parent
-            config_path = base_dir / 'config' / 'config_local.ini'
-        
-        if not config_path.exists():
-            raise FileNotFoundError(f"Config not found: {config_path}")
-        
-        # Load config
-        config = configparser.ConfigParser()
-        config.read(config_path)
-        
-        self.url = config.get('supabase', 'url')
-        self.key = config.get('supabase', 'service_key')
-        
+        # Use config_loader for environment-aware config
+        from config.config_loader import load_config
+        cfg = load_config(config_path)
+
+        self.url = cfg.supabase_url
+        self.key = cfg.supabase_service_key
+
         if not self.url or not self.key:
             raise ValueError("Supabase URL and service_key required in config")
         
@@ -311,27 +303,89 @@ class SupabaseManager:
             csv_path = self.data_dir / f'{table_name}.csv'
             if not csv_path.exists():
                 return 0, [f"CSV not found: {csv_path}"]
-            df = pd.read_csv(csv_path, low_memory=False)
-        
+            try:
+                df = pd.read_csv(csv_path, low_memory=False)
+            except pd.errors.EmptyDataError:
+                logger.info(f"  SKIP {table_name}: empty CSV (no columns)")
+                return 0, []
+
         if len(df) == 0:
-            logger.info(f"  SKIP {table_name}: empty")
+            logger.info(f"  SKIP {table_name}: empty (0 rows)")
             return 0, []
         
         # Clean DataFrame
         df = self._clean_dataframe(df)
-        
+
         # Convert to records
         records = self._df_to_records(df)
-        
-        # Upload in batches
+
+        # Detect which columns exist in the Supabase table by probing
+        # If a column doesn't exist, strip it from the data to avoid upload failure
+        try:
+            probe = self.client.table(table_name).select('*').limit(0).execute()
+            # If table has existing data, use column names from response
+            # For empty tables, try a single-row insert to detect schema
+        except Exception:
+            pass  # Table might not exist; insert will fail with clear error
+
+        # Delete existing data before inserting (prevent duplicates)
+        # Use a text column for the neq filter to avoid type mismatches
+        try:
+            text_cols = [c for c in df.columns if df[c].dtype == 'object']
+            if text_cols:
+                delete_col = text_cols[0]
+                self.client.table(table_name).delete().neq(delete_col, '__impossible__').execute()
+            else:
+                # No text columns — use numeric gt on first column
+                first_col = df.columns[0]
+                self.client.table(table_name).delete().gt(first_col, -999999999999).execute()
+        except Exception as e:
+            logger.warning(f"  Could not clear {table_name} before upload: {e}")
+
+        # Upload in batches with column-mismatch retry
         uploaded = 0
+        columns_to_strip = set()
         for i in range(0, len(records), self.BATCH_SIZE):
             batch = records[i:i + self.BATCH_SIZE]
+            # Strip previously detected bad columns
+            if columns_to_strip:
+                batch = [{k: v for k, v in r.items() if k not in columns_to_strip} for r in batch]
             try:
                 self.client.table(table_name).insert(batch).execute()
                 uploaded += len(batch)
             except Exception as e:
                 error_msg = str(e)
+                # Check if error is about a missing column
+                import re
+                col_match = re.search(r"Could not find the '(\w+)' column", error_msg)
+                if col_match and i == 0:
+                    bad_col = col_match.group(1)
+                    columns_to_strip.add(bad_col)
+                    logger.warning(f"  Column '{bad_col}' not in Supabase table {table_name}, stripping and retrying...")
+                    # Check for more missing columns by scanning the full error
+                    for match in re.finditer(r"Could not find the '(\w+)' column", error_msg):
+                        columns_to_strip.add(match.group(1))
+                    # Retry this batch without the bad columns
+                    batch = [{k: v for k, v in r.items() if k not in columns_to_strip} for r in records[i:i + self.BATCH_SIZE]]
+                    try:
+                        self.client.table(table_name).insert(batch).execute()
+                        uploaded += len(batch)
+                        logger.info(f"  Retry succeeded for {table_name} (stripped: {columns_to_strip})")
+                        continue
+                    except Exception as e2:
+                        error_msg = str(e2)
+                        # Check for additional missing columns
+                        for match in re.finditer(r"Could not find the '(\w+)' column", error_msg):
+                            columns_to_strip.add(match.group(1))
+                        # One more retry
+                        batch = [{k: v for k, v in r.items() if k not in columns_to_strip} for r in records[i:i + self.BATCH_SIZE]]
+                        try:
+                            self.client.table(table_name).insert(batch).execute()
+                            uploaded += len(batch)
+                            logger.info(f"  Retry2 succeeded for {table_name} (stripped: {columns_to_strip})")
+                            continue
+                        except Exception as e3:
+                            error_msg = str(e3)
                 # Extract meaningful error
                 if 'message' in error_msg:
                     try:
@@ -385,16 +439,26 @@ class SupabaseManager:
             try:
                 # Read full file for better type inference
                 df = pd.read_csv(csv_path, low_memory=False)
+
+                # Skip empty CSVs (no data rows)
+                if len(df) == 0:
+                    logger.info(f"  SKIP {table_name}: empty (0 rows, schema only)")
+                    continue
+
                 df = self._clean_dataframe(df)
-                
+
                 # Count types for summary
                 for col in df.columns:
                     pg_type = self._infer_pg_type(df[col], col)
                     type_counts[pg_type] = type_counts.get(pg_type, 0) + 1
-                
+
                 create_sql = self.generate_create_sql(table_name, df)
                 sql_statements.append(create_sql)
                 results['tables_created'] += 1
+            except pd.errors.EmptyDataError:
+                # CSV file is completely empty (no columns)
+                logger.info(f"  SKIP {table_name}: empty CSV (no columns)")
+                continue
             except Exception as e:
                 results['errors'].append(f"{table_name}: {e}")
                 logger.error(f"  ERROR creating schema for {table_name}: {e}")

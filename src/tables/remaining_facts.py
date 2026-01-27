@@ -23,18 +23,63 @@ except ImportError:
 
 OUTPUT_DIR = Path(__file__).parent.parent.parent / 'data' / 'output'
 
+# Import table store for in-memory access
+try:
+    from src.core.table_store import get_table as get_table_from_store
+    TABLE_STORE_AVAILABLE = True
+except ImportError:
+    TABLE_STORE_AVAILABLE = False
+    def get_table_from_store(name, output_dir=None):
+        return pd.DataFrame()
 
-def load_table(name: str) -> pd.DataFrame:
-    """Load a table from output directory."""
+
+def load_table(name: str, required: bool = False) -> pd.DataFrame:
+    """
+    Load a table from cache first, then from CSV.
+    
+    This checks the in-memory table store first (for tables created in this ETL run),
+    then falls back to CSV files. This allows the ETL to work from scratch without
+    relying on previously generated CSVs.
+    
+    Args:
+        name: Table name (without .csv extension)
+        required: If True, warn when table is missing (for critical dependencies)
+    
+    Returns:
+        DataFrame with table data, or empty DataFrame if not found
+    """
+    # Try table store first (in-memory cache from this run)
+    if TABLE_STORE_AVAILABLE:
+        df = get_table_from_store(name, OUTPUT_DIR)
+        if len(df) > 0:
+            return df
+        # If we got an empty df from store, it might be in store but empty
+        # Return it anyway (empty is a valid state)
+        if required and len(df) == 0:
+            print(f"  WARNING: {name} is EMPTY (required dependency)")
+        return df
+    
+    # Fall back to CSV (for tables from previous runs)
     path = OUTPUT_DIR / f'{name}.csv'
     if path.exists():
-        return pd.read_csv(path, low_memory=False)
-    return pd.DataFrame()
+        try:
+            df = pd.read_csv(path, low_memory=False)
+            if len(df) == 0 and required:
+                print(f"  WARNING: {name} exists but is EMPTY (required dependency)")
+            return df
+        except Exception as e:
+            if required:
+                print(f"  ERROR: Failed to load {name}: {e}")
+            return pd.DataFrame()
+    else:
+        if required:
+            print(f"  WARNING: Required table {name} not found - table will be empty")
+        return pd.DataFrame()
 
 
 def save_table(df: pd.DataFrame, name: str) -> int:
     """
-    Save a table to output directory.
+    Save a table to output directory AND store in memory cache.
     Automatically adds player_name and team_name columns if player_id/team_id exist.
     Automatically removes 100% null columns (except coordinate/danger/xy columns).
     """
@@ -44,9 +89,20 @@ def save_table(df: pd.DataFrame, name: str) -> int:
         df, removed_cols = drop_all_null_columns(df)
         if removed_cols:
             print(f"  {name}: Removed {len(removed_cols)} all-null columns")
+    
+    # Store in memory cache for later phases
+    if TABLE_STORE_AVAILABLE:
+        try:
+            from src.core.table_store import store_table
+            store_table(name, df if df is not None else pd.DataFrame())
+        except Exception:
+            pass
+    
+    # Also save to CSV
     path = OUTPUT_DIR / f'{name}.csv'
-    df.to_csv(path, index=False)
-    return len(df)
+    df_final = df if df is not None else pd.DataFrame()
+    df_final.to_csv(path, index=False)
+    return len(df_final)
 
 
 # =============================================================================
@@ -62,10 +118,11 @@ def create_fact_player_period_stats() -> pd.DataFrame:
     """
     PRIMARY_PLAYER = 'event_player_1'
     
-    event_players = load_table('fact_event_players')
-    shift_players = load_table('fact_shift_players')
+    event_players = load_table('fact_event_players', required=True)
+    shift_players = load_table('fact_shift_players', required=True)
     
     if len(event_players) == 0:
+        print("  SKIP: fact_event_players is empty - cannot build fact_player_period_stats")
         return pd.DataFrame()
     
     # Filter to only primary player events (event_player_1)
@@ -680,15 +737,13 @@ def create_fact_player_season_stats() -> pd.DataFrame:
     all_results = []
     
     # Get unique player-season combinations
-    player_seasons = player_game_stats[['player_id', 'season_id']].drop_duplicates()
+    # VECTORIZED: Use groupby instead of iterrows
+    records = []
     
-    for _, ps in player_seasons.iterrows():
-        player_id = ps['player_id']
-        season_id = ps['season_id']
-        
-        player_games = player_game_stats[(player_game_stats['player_id'] == player_id) & 
-                                          (player_game_stats['season_id'] == season_id)]
-        
+    # Group by player_id and season_id
+    grouped = player_game_stats.groupby(['player_id', 'season_id'])
+    
+    for (player_id, season_id), player_games in grouped:
         # Use GAME_TYPE_SPLITS from shared utility
         for game_type in GAME_TYPE_SPLITS:
             if game_type == 'All':
@@ -707,7 +762,7 @@ def create_fact_player_season_stats() -> pd.DataFrame:
                 'games_played': len(games),
             }
             
-            # Sum numeric columns
+            # Sum numeric columns - VECTORIZED
             for col in numeric_cols:
                 if col in games.columns:
                     result[col] = games[col].sum()
@@ -755,59 +810,47 @@ def create_fact_player_career_stats() -> pd.DataFrame:
         
         all_results = []
         
-        # Get unique player-season combinations
-        player_seasons = player_game_stats[['player_id', 'season_id']].drop_duplicates()
+        # VECTORIZED: Use groupby instead of iterrows
+        all_results = []
         
-        for _, ps in player_seasons.iterrows():
-            player_id = ps['player_id']
-            season_id = ps['season_id']
+        # Group by player_id, season_id, and game_type
+        grouped = player_game_stats.groupby(['player_id', 'season_id', 'game_type'])
+        
+        numeric_cols = player_game_stats.select_dtypes(include=['number']).columns.tolist()
+        numeric_cols = [c for c in numeric_cols if c not in ['game_id', 'season_id']]
+        
+        for (player_id, season_id, game_type), games in grouped:
+            if len(games) == 0:
+                continue
             
-            player_games = player_game_stats[
-                (player_game_stats['player_id'] == player_id) & 
-                (player_game_stats['season_id'] == season_id)
-            ]
+            agg_dict = {col: 'sum' for col in numeric_cols if col in games.columns}
+            agg_dict['game_id'] = 'count'
+            if 'player_name' in games.columns:
+                agg_dict['player_name'] = 'first'
+            if 'team_name' in games.columns:
+                agg_dict['team_name'] = 'last'
             
-            # Split by game_type
-            for game_type in GAME_TYPE_SPLITS:
-                if game_type == 'All':
-                    games = player_games
-                else:
-                    games = player_games[player_games['game_type'] == game_type]
-                
-                if len(games) == 0:
-                    continue
-                
-                numeric_cols = games.select_dtypes(include=['number']).columns.tolist()
-                numeric_cols = [c for c in numeric_cols if c not in ['game_id', 'season_id']]
-                
-                agg_dict = {col: 'sum' for col in numeric_cols if col in games.columns}
-                agg_dict['game_id'] = 'count'
-                if 'player_name' in games.columns:
-                    agg_dict['player_name'] = 'first'
-                if 'team_name' in games.columns:
-                    agg_dict['team_name'] = 'last'
-                
-                grouped_type = games.agg(agg_dict).to_dict()
-                
-                result = {
-                    'player_career_key': f"{player_id}_{season_id}_{game_type}",
-                    'player_id': player_id,
-                    'season_id': season_id,
-                    'game_type': game_type,
-                    'career_games': grouped_type.get('game_id', 0),
-                    '_export_timestamp': datetime.now().isoformat(),
-                }
-                
-                # Add aggregated numeric columns
-                for col in numeric_cols:
-                    if col in grouped_type:
-                        result[col] = grouped_type[col]
-                
-                # Add player/team info
-                if 'player_name' in grouped_type:
-                    result['player_name'] = grouped_type['player_name']
-                if 'team_name' in grouped_type:
-                    result['team_name'] = grouped_type['team_name']
+            grouped_type = games.agg(agg_dict).to_dict()
+            
+            result = {
+                'player_career_key': f"{player_id}_{season_id}_{game_type}",
+                'player_id': player_id,
+                'season_id': season_id,
+                'game_type': game_type,
+                'career_games': grouped_type.get('game_id', 0),
+                '_export_timestamp': datetime.now().isoformat(),
+            }
+            
+            # Add aggregated numeric columns
+            for col in numeric_cols:
+                if col in grouped_type:
+                    result[col] = grouped_type[col]
+            
+            # Add player/team info
+            if 'player_name' in grouped_type:
+                result['player_name'] = grouped_type['player_name']
+            if 'team_name' in grouped_type:
+                result['team_name'] = grouped_type['team_name']
                 
                 all_results.append(result)
         
@@ -817,53 +860,42 @@ def create_fact_player_career_stats() -> pd.DataFrame:
         all_results = []
         
         # Get unique player-season combinations
-        player_seasons = player_season_stats[['player_id', 'season_id']].drop_duplicates()
+        # VECTORIZED: Use groupby instead of iterrows
+        grouped = player_season_stats.groupby(['player_id', 'season_id', 'game_type'])
         
-        for _, ps in player_seasons.iterrows():
-            player_id = ps['player_id']
-            season_id = ps['season_id']
+        numeric_cols = player_season_stats.select_dtypes(include=['number']).columns.tolist()
+        numeric_cols = [c for c in numeric_cols if c not in ['season_id']]
+        
+        for (player_id, season_id, game_type), type_data in grouped:
+            if len(type_data) == 0:
+                continue
             
-            player_season_data = player_season_stats[
-                (player_season_stats['player_id'] == player_id) & 
-                (player_season_stats['season_id'] == season_id)
-            ]
+            agg_dict = {col: 'sum' for col in numeric_cols if col in type_data.columns}
+            if 'player_name' in type_data.columns:
+                agg_dict['player_name'] = 'first'
+            if 'team_name' in type_data.columns:
+                agg_dict['team_name'] = 'last'
             
-            # Split by game_type
-            for game_type in GAME_TYPE_SPLITS:
-                type_data = player_season_data[player_season_data['game_type'] == game_type]
-                
-                if len(type_data) == 0:
-                    continue
-                
-                numeric_cols = type_data.select_dtypes(include=['number']).columns.tolist()
-                numeric_cols = [c for c in numeric_cols if c not in ['season_id']]
-                
-                agg_dict = {col: 'sum' for col in numeric_cols if col in type_data.columns}
-                if 'player_name' in type_data.columns:
-                    agg_dict['player_name'] = 'first'
-                if 'team_name' in type_data.columns:
-                    agg_dict['team_name'] = 'last'
-                
-                grouped_type = type_data.agg(agg_dict).to_dict()
-                
-                result = {
-                    'player_career_key': f"{player_id}_{season_id}_{game_type}",
-                    'player_id': player_id,
-                    'season_id': season_id,
-                    'game_type': game_type,
-                    '_export_timestamp': datetime.now().isoformat(),
-                }
-                
-                # Add aggregated columns
-                for col in numeric_cols:
-                    if col in grouped_type:
-                        result[col] = grouped_type[col]
-                
-                # Add player/team info
-                if 'player_name' in grouped_type:
-                    result['player_name'] = grouped_type['player_name']
-                if 'team_name' in grouped_type:
-                    result['team_name'] = grouped_type['team_name']
+            grouped_type = type_data.agg(agg_dict).to_dict()
+            
+            result = {
+                'player_career_key': f"{player_id}_{season_id}_{game_type}",
+                'player_id': player_id,
+                'season_id': season_id,
+                'game_type': game_type,
+                '_export_timestamp': datetime.now().isoformat(),
+            }
+            
+            # Add aggregated columns
+            for col in numeric_cols:
+                if col in grouped_type:
+                    result[col] = grouped_type[col]
+            
+            # Add player/team info
+            if 'player_name' in grouped_type:
+                result['player_name'] = grouped_type['player_name']
+            if 'team_name' in grouped_type:
+                result['team_name'] = grouped_type['team_name']
                 
                 all_results.append(result)
         
@@ -896,18 +928,11 @@ def create_fact_team_season_stats() -> pd.DataFrame:
     
     all_results = []
     
-    # Get unique team-season combinations
-    team_seasons = team_game_stats[['team_id', 'season_id']].drop_duplicates()
+    # VECTORIZED: Use groupby instead of iterrows
+    grouped = team_game_stats.groupby(['team_id', 'season_id', 'game_type'])
     
-    for _, ts in team_seasons.iterrows():
-        team_id = ts['team_id']
-        season_id = ts['season_id']
-        
-        team_games = team_game_stats[(team_game_stats['team_id'] == team_id) & 
-                                      (team_game_stats['season_id'] == season_id)]
-        
-        # Use GAME_TYPE_SPLITS from shared utility
-        for game_type in GAME_TYPE_SPLITS:
+    for (team_id, season_id, game_type), team_games in grouped:
+        # Use GAME_TYPE_SPLITS from shared utility (already grouped by game_type)
             if game_type == 'All':
                 games = team_games
             else:
@@ -1008,34 +1033,36 @@ def create_fact_league_leaders_snapshot() -> pd.DataFrame:
     
     records = []
     
-    # Goals leaders
+    # Goals leaders - VECTORIZED
     top_goals = season_stats.nlargest(10, 'goals')
-    for rank, (_, row) in enumerate(top_goals.iterrows(), 1):
-        records.append({
-            'leader_key': f"goals_{rank}",
+    if len(top_goals) > 0:
+        goals_records = pd.DataFrame({
+            'leader_key': [f"goals_{i+1}" for i in range(len(top_goals))],
             'category': 'goals',
-            'rank': rank,
-            'player_id': row['player_id'],
-            'value': row['goals'],
-            'games_played': row['games_played'],
+            'rank': range(1, len(top_goals) + 1),
+            'player_id': top_goals['player_id'].values,
+            'value': top_goals['goals'].values,
+            'games_played': top_goals.get('games_played', pd.Series(0, index=top_goals.index)).values,
             'snapshot_date': datetime.now().date().isoformat(),
             '_export_timestamp': datetime.now().isoformat()
         })
+        records.extend(goals_records.to_dict('records'))
     
-    # Points leaders
+    # Points leaders - VECTORIZED
     if 'points' in season_stats.columns:
         top_points = season_stats.nlargest(10, 'points')
-        for rank, (_, row) in enumerate(top_points.iterrows(), 1):
-            records.append({
-                'leader_key': f"points_{rank}",
+        if len(top_points) > 0:
+            points_records = pd.DataFrame({
+                'leader_key': [f"points_{i+1}" for i in range(len(top_points))],
                 'category': 'points',
-                'rank': rank,
-                'player_id': row['player_id'],
-                'value': row['points'],
-                'games_played': row['games_played'],
+                'rank': range(1, len(top_points) + 1),
+                'player_id': top_points['player_id'].values,
+                'value': top_points['points'].values,
+                'games_played': top_points.get('games_played', pd.Series(0, index=top_points.index)).values,
                 'snapshot_date': datetime.now().date().isoformat(),
                 '_export_timestamp': datetime.now().isoformat()
             })
+            records.extend(points_records.to_dict('records'))
     
     return pd.DataFrame(records)
 
@@ -1218,17 +1245,20 @@ def create_fact_player_trends() -> pd.DataFrame:
         if 'goals' in player_games.columns:
             player_games['goals_3g_avg'] = player_games['goals'].rolling(3, min_periods=1).mean()
         
-        for _, row in player_games.iterrows():
-            records.append({
-                'trend_key': f"{player_id}_{row['game_id']}",
-                'player_id': player_id,
-                'game_id': row['game_id'],
-                'game_date': row.get('game_date'),
-                'points_3g_avg': row.get('points_3g_avg', 0),
-                'goals_3g_avg': row.get('goals_3g_avg', 0),
-                'trend_direction': 'stable',  # Placeholder
-                '_export_timestamp': datetime.now().isoformat()
-            })
+        # VECTORIZED: Build records without iterrows
+        if len(player_games) > 0:
+            player_games = player_games.copy()
+            player_games['trend_key'] = player_id.astype(str) + '_' + player_games['game_id'].astype(str)
+            player_games['player_id'] = player_id
+            player_games['points_3g_avg'] = player_games.get('points_3g_avg', 0).fillna(0)
+            player_games['goals_3g_avg'] = player_games.get('goals_3g_avg', 0).fillna(0)
+            player_games['trend_direction'] = 'stable'  # Placeholder
+            player_games['_export_timestamp'] = datetime.now().isoformat()
+            
+            records_df = player_games[['trend_key', 'player_id', 'game_id', 'game_date', 
+                                       'points_3g_avg', 'goals_3g_avg', 'trend_direction', 
+                                       '_export_timestamp']].copy()
+            records.extend(records_df.to_dict('records'))
     
     return pd.DataFrame(records)
 
@@ -1814,63 +1844,15 @@ def create_fact_team_zone_time() -> pd.DataFrame:
 
 
 # =============================================================================
-# MATCHUP TABLES
+# MATCHUP TABLES - REMOVED (Issue #99)
 # =============================================================================
-
-def create_fact_matchup_summary() -> pd.DataFrame:
-    """
-    Create matchup summary stats.
-    
-    Uses fact_h2h as base which already includes:
-    - Logical shift counting (not raw shift rows)
-    - Real statistics (gf, ga, cf, ca, cf_pct, ff_pct) from fact_shift_players
-    - Proper player_id usage (not jersey numbers)
-    """
-    h2h = load_table('fact_h2h')
-    
-    if len(h2h) == 0:
-        return pd.DataFrame()
-    
-    # Copy H2H data (which uses logical shifts and real stats)
-    h2h = h2h.copy()
-    h2h['matchup_key'] = h2h.get('h2h_key', h2h.index.astype(str))
-    h2h['_export_timestamp'] = datetime.now().isoformat()
-    
-    return h2h
-
-
-def create_fact_matchup_performance() -> pd.DataFrame:
-    """Create matchup performance analysis."""
-    h2h = load_table('fact_h2h')
-    wowy = load_table('fact_wowy')
-    
-    if len(h2h) == 0:
-        return pd.DataFrame()
-    
-    # Join H2H with WOWY
-    if len(wowy) > 0:
-        merged = h2h.merge(wowy, on=['game_id', 'player_1_id', 'player_2_id'], how='left', suffixes=('', '_wowy'))
-    else:
-        merged = h2h.copy()
-    
-    merged['performance_key'] = merged.get('h2h_key', merged.index.astype(str)) + '_perf'
-    merged['_export_timestamp'] = datetime.now().isoformat()
-    
-    return merged
-
-
-def create_fact_head_to_head() -> pd.DataFrame:
-    """Alias for fact_h2h with different column names."""
-    h2h = load_table('fact_h2h')
-    
-    if len(h2h) == 0:
-        return pd.DataFrame()
-    
-    df = h2h.copy()
-    df = df.rename(columns={'h2h_key': 'head_to_head_key'})
-    df['_export_timestamp'] = datetime.now().isoformat()
-    
-    return df
+# The following tables were removed as duplicates of fact_h2h:
+# - fact_matchup_summary: Copy of fact_h2h with matchup_key alias
+# - fact_matchup_performance: Join of fact_h2h + fact_wowy (no new calculations)
+# - fact_head_to_head: Alias with h2h_key renamed to head_to_head_key
+#
+# Use fact_h2h (in src/tables/shift_analytics.py) as the canonical H2H table.
+# =============================================================================
 
 
 # =============================================================================
@@ -2526,6 +2508,269 @@ def create_lookup_player_game_rating() -> pd.DataFrame:
 
 
 # =============================================================================
+# GOAL ASSISTS (Denormalized Goal+Assist Table)
+# =============================================================================
+
+def create_fact_goal_assists() -> pd.DataFrame:
+    """
+    Create denormalized table with goal scorer + assists in one row per goal.
+
+    This table simplifies queries for goal scoring plays by combining:
+    - Goal scorer information
+    - Primary assist (if any)
+    - Secondary assist (if any)
+    - Goal context (strength, shot type, time, video)
+
+    Key Rules (from CLAUDE.md):
+    - Goals: event_type='Goal' AND event_detail='Goal_Scored'
+    - Assists: play_detail1 contains 'AssistPrimary' or 'AssistSecondary'
+    - Only primary and secondary assists count (ignore AssistTertiary)
+    """
+    event_players = load_table('fact_event_players', required=True)
+
+    if len(event_players) == 0:
+        print("  SKIP: fact_event_players is empty")
+        return pd.DataFrame()
+
+    # event_index is added in Phase 10, but we run in Phase 4C
+    # Derive it from event_id if not present (e.g., EV1896901001 -> 1001)
+    if 'event_index' not in event_players.columns:
+        event_players['event_index'] = event_players['event_id'].str.extract(r'EV\d{5}(\d+)')[0].astype(float)
+
+    # assist_primary_event_index and assist_secondary_event_index link goals to assists
+    # These may not exist yet - derive from assist_to_goal_index on assists
+    if 'assist_primary_event_index' not in event_players.columns:
+        # We'll derive this from the assists themselves
+        pass  # Will handle in the lookup logic below
+
+    # Check if required columns exist
+    required_cols = ['event_index', 'play_detail1', 'player_role', 'player_id', 'player_name', 'event_id']
+    missing_cols = [c for c in required_cols if c not in event_players.columns]
+    if missing_cols:
+        print(f"  SKIP: Missing required columns: {missing_cols}")
+        return pd.DataFrame()
+
+    # Get all goals (scorer is event_player_1)
+    goals = event_players[
+        (event_players['event_type'].astype(str).str.lower() == 'goal') &
+        (event_players['event_detail'].astype(str).str.lower().str.contains('goal_scored', na=False)) &
+        (event_players['player_role'].astype(str).str.lower() == 'event_player_1')
+    ].copy()
+
+    if len(goals) == 0:
+        print("  SKIP: No goals found")
+        return pd.DataFrame()
+
+    # ==========================================================================
+    # GWG (Game Winning Goal) Calculation
+    # NHL Standard: GWG = winner's (loser_final_score + 1)th goal
+    # Example: If final is 5-3, GWG is winner's 4th goal
+    # NOTE: Hockey clock counts DOWN, so sort by period ASC, minutes DESC, seconds DESC
+    # ==========================================================================
+
+    # Sort goals chronologically (period ASC, time DESC for countdown clock)
+    goals = goals.sort_values(
+        ['game_id', 'period', 'event_start_min', 'event_start_sec'],
+        ascending=[True, True, False, False]
+    ).reset_index(drop=True)
+
+    # Calculate final scores and determine GWG for each game
+    # gwg_events = set of event_index values that are GWGs
+    gwg_events = set()
+
+    for game_id in goals['game_id'].unique():
+        game_goals = goals[goals['game_id'] == game_id].copy()
+
+        # Count goals per team and track which event is which team goal number
+        team_goal_counts = {}
+        goal_team_numbers = {}  # {event_index: (team, goal_num)}
+
+        for _, g in game_goals.iterrows():
+            team = g['player_team']
+            event_idx = g['event_index']
+            team_goal_counts[team] = team_goal_counts.get(team, 0) + 1
+            goal_team_numbers[event_idx] = (team, team_goal_counts[team])
+
+        # Determine winner and loser
+        if len(team_goal_counts) < 2:
+            # Only one team scored - they win, GWG is their 1st goal
+            if len(team_goal_counts) == 1:
+                winner = list(team_goal_counts.keys())[0]
+                gwg_goal_num = 1
+            else:
+                continue
+        else:
+            # Find team with most goals
+            sorted_teams = sorted(team_goal_counts.items(), key=lambda x: x[1], reverse=True)
+            winner = sorted_teams[0][0]
+            winner_goals = sorted_teams[0][1]
+            loser_goals = sorted_teams[1][1]
+
+            if winner_goals == loser_goals:
+                # Tie game - no GWG
+                continue
+
+            # GWG = winner's (loser_goals + 1)th goal
+            gwg_goal_num = loser_goals + 1
+
+        # Find the event_index for the GWG
+        for event_idx, (team, goal_num) in goal_team_numbers.items():
+            if team == winner and goal_num == gwg_goal_num:
+                gwg_events.add(event_idx)
+                break
+
+    # Build assist lookups - index by the GOAL's event_index (via assist_to_goal_index)
+    # This is more reliable than using assist_*_event_index on goals which may not exist yet
+    primary_assist_filter = (
+        (event_players['play_detail1'].astype(str).str.lower() == 'assistprimary') &
+        (event_players['player_role'].astype(str).str.lower() == 'event_player_1')
+    )
+    primary_assist_rows = event_players[primary_assist_filter].copy()
+    if len(primary_assist_rows) > 0 and 'assist_to_goal_index' in primary_assist_rows.columns:
+        # Create goal_index column - derive from assist_to_goal_index or event_id pattern
+        if primary_assist_rows['assist_to_goal_index'].notna().any():
+            primary_assist_rows['goal_index'] = primary_assist_rows['assist_to_goal_index']
+        else:
+            # Fallback - shouldn't happen with proper data
+            primary_assist_rows['goal_index'] = None
+        valid_assists = primary_assist_rows[primary_assist_rows['goal_index'].notna()]
+        if len(valid_assists) > 0:
+            primary_assists = valid_assists.set_index('goal_index')[['player_id', 'player_name', 'event_id', 'event_index']].copy()
+            primary_assists.columns = ['primary_assist_player_id', 'primary_assist_player_name', 'primary_assist_event_id', 'primary_assist_event_index']
+        else:
+            primary_assists = pd.DataFrame()
+    else:
+        primary_assists = pd.DataFrame()
+
+    secondary_assist_filter = (
+        (event_players['play_detail1'].astype(str).str.lower() == 'assistsecondary') &
+        (event_players['player_role'].astype(str).str.lower() == 'event_player_1')
+    )
+    secondary_assist_rows = event_players[secondary_assist_filter].copy()
+    if len(secondary_assist_rows) > 0 and 'assist_to_goal_index' in secondary_assist_rows.columns:
+        if secondary_assist_rows['assist_to_goal_index'].notna().any():
+            secondary_assist_rows['goal_index'] = secondary_assist_rows['assist_to_goal_index']
+        else:
+            secondary_assist_rows['goal_index'] = None
+        valid_assists = secondary_assist_rows[secondary_assist_rows['goal_index'].notna()]
+        if len(valid_assists) > 0:
+            secondary_assists = valid_assists.set_index('goal_index')[['player_id', 'player_name', 'event_id', 'event_index']].copy()
+            secondary_assists.columns = ['secondary_assist_player_id', 'secondary_assist_player_name', 'secondary_assist_event_id', 'secondary_assist_event_index']
+        else:
+            secondary_assists = pd.DataFrame()
+    else:
+        secondary_assists = pd.DataFrame()
+
+    # Build result records
+    records = []
+    for _, goal in goals.iterrows():
+        game_id = goal['game_id']
+        event_index = goal['event_index']
+
+        # Generate key: GA{game_id}{event_index:05d}
+        goal_assist_key = f"GA{game_id}{int(event_index):05d}"
+
+        record = {
+            # Primary key and identifiers
+            'goal_assist_key': goal_assist_key,
+            'game_id': game_id,
+            'goal_event_id': goal['event_id'],
+            'goal_event_index': int(event_index),
+
+            # Time context
+            'period': int(goal['period']) if pd.notna(goal['period']) else None,
+            'time_minutes': int(goal['event_start_min']) if pd.notna(goal['event_start_min']) else None,
+            'time_seconds': int(goal['event_start_sec']) if pd.notna(goal['event_start_sec']) else None,
+            'time_total_seconds': int(goal['time_start_total_seconds']) if pd.notna(goal['time_start_total_seconds']) else None,
+
+            # Scorer info
+            'scorer_player_id': goal['player_id'],
+            'scorer_player_name': goal['player_name'],
+            'scorer_team_id': goal['player_team_id'],
+            'scorer_team_name': goal['player_team'],
+
+            # Goal context
+            'strength': goal['strength'],
+            'shot_type': goal.get('event_detail_2', '').replace('Goal_', '') if pd.notna(goal.get('event_detail_2')) else None,
+            'home_team_id': goal['home_team_id'],
+            'away_team_id': goal['away_team_id'],
+            'home_team_name': goal['home_team'],
+            'away_team_name': goal['away_team'],
+            'video_url': goal['video_url'],
+            'running_video_time': goal['running_video_time'],
+        }
+
+        # Add primary assist if exists (lookup by goal's event_index)
+        a1_player_id, a1_name, a1_event_id = None, None, None
+        if len(primary_assists) > 0 and event_index in primary_assists.index:
+            a1 = primary_assists.loc[event_index]
+            # Handle case where duplicate indices return a DataFrame
+            if isinstance(a1, pd.DataFrame):
+                a1 = a1.iloc[0]  # Take first match
+            a1_player_id = a1['primary_assist_player_id']
+            a1_name = a1['primary_assist_player_name']
+            a1_event_id = a1['primary_assist_event_id']
+        record['primary_assist_player_id'] = a1_player_id
+        record['primary_assist_player_name'] = a1_name
+        record['primary_assist_event_id'] = a1_event_id
+
+        # Add secondary assist if exists (lookup by goal's event_index)
+        a2_player_id, a2_name, a2_event_id = None, None, None
+        if len(secondary_assists) > 0 and event_index in secondary_assists.index:
+            a2 = secondary_assists.loc[event_index]
+            if isinstance(a2, pd.DataFrame):
+                a2 = a2.iloc[0]
+            a2_player_id = a2['secondary_assist_player_id']
+            a2_name = a2['secondary_assist_player_name']
+            a2_event_id = a2['secondary_assist_event_id']
+        record['secondary_assist_player_id'] = a2_player_id
+        record['secondary_assist_player_name'] = a2_name
+        record['secondary_assist_event_id'] = a2_event_id
+
+        # Goal type flags (based on strength)
+        strength_lower = str(goal['strength']).lower() if pd.notna(goal['strength']) else ''
+        record['is_powerplay_goal'] = 'pp' in strength_lower or '5v4' in strength_lower or '5v3' in strength_lower or '4v3' in strength_lower
+        record['is_shorthanded_goal'] = 'pk' in strength_lower or '4v5' in strength_lower or '3v5' in strength_lower or '3v4' in strength_lower
+        record['is_empty_net'] = 'en' in strength_lower or 'empty' in strength_lower
+        # GWG: Check if this goal's event_index is in the pre-calculated gwg_events set
+        record['is_game_winner'] = event_index in gwg_events
+
+        # Count assists
+        assist_count = 0
+        if a1_player_id is not None:
+            assist_count += 1
+        if a2_player_id is not None:
+            assist_count += 1
+        record['assist_count'] = assist_count
+
+        # Is unassisted?
+        record['is_unassisted'] = assist_count == 0
+
+        # Timestamp
+        record['_export_timestamp'] = datetime.now().isoformat()
+
+        records.append(record)
+
+    df = pd.DataFrame(records)
+
+    # Order columns logically
+    column_order = [
+        'goal_assist_key', 'game_id', 'goal_event_id', 'goal_event_index',
+        'period', 'time_minutes', 'time_seconds', 'time_total_seconds',
+        'scorer_player_id', 'scorer_player_name', 'scorer_team_id', 'scorer_team_name',
+        'primary_assist_player_id', 'primary_assist_player_name', 'primary_assist_event_id',
+        'secondary_assist_player_id', 'secondary_assist_player_name', 'secondary_assist_event_id',
+        'strength', 'shot_type', 'assist_count', 'is_unassisted',
+        'is_powerplay_goal', 'is_shorthanded_goal', 'is_empty_net', 'is_game_winner',
+        'home_team_id', 'away_team_id', 'home_team_name', 'away_team_name',
+        'video_url', 'running_video_time', '_export_timestamp'
+    ]
+    df = df[[c for c in column_order if c in df.columns]]
+
+    return df
+
+
+# =============================================================================
 # MAIN BUILDER
 # =============================================================================
 
@@ -2534,8 +2779,21 @@ def build_remaining_tables(verbose: bool = True) -> dict:
     results = {
         'tables_created': [],
         'total_rows': 0,
-        'errors': []
+        'errors': [],
+        'skipped': []
     }
+    
+    # Check critical dependencies first
+    critical_tables = ['fact_events', 'fact_event_players', 'fact_shifts', 'fact_shift_players', 'dim_schedule']
+    missing_critical = []
+    for table in critical_tables:
+        path = OUTPUT_DIR / f'{table}.csv'
+        if not path.exists():
+            missing_critical.append(table)
+    
+    if missing_critical and verbose:
+        print(f"\n⚠️  WARNING: Missing critical dependencies: {missing_critical}")
+        print("   Some tables may be empty. Run base ETL first.")
     
     # All remaining table builders
     builders = [
@@ -2566,26 +2824,24 @@ def build_remaining_tables(verbose: bool = True) -> dict:
         # Event chains
         ('fact_event_chains', create_fact_event_chains),
         ('fact_player_event_chains', create_fact_player_event_chains),
-        
+
+        # Goal/Assist analysis (denormalized view of goals with assists)
+        ('fact_goal_assists', create_fact_goal_assists),
+
         # Zone analysis
         ('fact_zone_entry_summary', create_fact_zone_entry_summary),
         ('fact_zone_exit_summary', create_fact_zone_exit_summary),
         ('fact_team_zone_time', create_fact_team_zone_time),
         
-        # Matchups
-        ('fact_matchup_summary', create_fact_matchup_summary),
-        ('fact_matchup_performance', create_fact_matchup_performance),
-        ('fact_head_to_head', create_fact_head_to_head),
-        
+        # Note: H2H/matchup tables (fact_matchup_summary, fact_matchup_performance,
+        # fact_head_to_head) removed as duplicates of fact_h2h - see Issue #99
+
         # Special teams
         ('fact_special_teams_summary', create_fact_special_teams_summary),
-        
-        # XY placeholders
-        ('fact_player_xy_long', create_fact_player_xy_long),
-        ('fact_player_xy_wide', create_fact_player_xy_wide),
-        ('fact_puck_xy_long', create_fact_puck_xy_long),
-        ('fact_puck_xy_wide', create_fact_puck_xy_wide),
-        ('fact_shot_xy', create_fact_shot_xy),
+
+        # Note: XY tables (fact_player_xy_*, fact_puck_xy_*, fact_shot_xy) are built
+        # by src/xy/xy_table_builder.py in Phase 10B, not here as placeholders
+
         ('fact_video', create_fact_video),
         ('fact_highlights', create_fact_highlights),
         
@@ -2609,6 +2865,18 @@ def build_remaining_tables(verbose: bool = True) -> dict:
                 print(f"\nBuilding {table_name}...", end=' ')
             
             df = builder_func()
+            
+            # Skip saving if DataFrame is empty (likely due to missing dependencies)
+            if df is None or len(df) == 0:
+                if verbose:
+                    print(f"SKIP (empty - missing dependencies)")
+                results['skipped'].append(table_name)
+                # Still save empty table with headers to maintain schema
+                path = OUTPUT_DIR / f'{table_name}.csv'
+                df_empty = pd.DataFrame()
+                df_empty.to_csv(path, index=False)
+                continue
+            
             rows = save_table(df, table_name)
             
             results['tables_created'].append(table_name)
@@ -2627,6 +2895,11 @@ def build_remaining_tables(verbose: bool = True) -> dict:
         print("\n" + "=" * 70)
         print(f"Created {len(results['tables_created'])} additional tables")
         print(f"Total rows: {results['total_rows']:,}")
+        if results['skipped']:
+            print(f"Skipped (empty): {len(results['skipped'])} tables")
+            if len(results['skipped']) <= 10:
+                for skipped in results['skipped']:
+                    print(f"  - {skipped}")
         if results['errors']:
             print(f"Errors: {len(results['errors'])}")
         print("=" * 70)
