@@ -2150,11 +2150,19 @@ kbd { background: var(--bg); border: 1px solid var(--border); padding: 0 3px; bo
             <option value="Broadcast">Broadcast</option>
             <option value="Highlights">Highlights</option>
             <option value="Goalie">Goalie</option>
+            <option value="Goalie_Home">Goalie (Home)</option>
+            <option value="Goalie_Away">Goalie (Away)</option>
             <option value="Overhead">Overhead</option>
-            <option value="Wide">Wide</option>
-            <option value="Tight">Tight</option>
+            <option value="Overhead_Home">Overhead (Home)</option>
+            <option value="Overhead_Away">Overhead (Away)</option>
+            <option value="Wide">Wide Angle</option>
+            <option value="Wide_Home">Wide Angle (Home)</option>
+            <option value="Wide_Away">Wide Angle (Away)</option>
+            <option value="Tight">Tight Shot</option>
             <option value="Replay">Replay</option>
             <option value="Other">Other</option>
+            <option value="Other_Home">Other (Home)</option>
+            <option value="Other_Away">Other (Away)</option>
           </select>
         </div>
         <div class="form-group" style="flex:0.5;">
@@ -3080,7 +3088,7 @@ const LISTS = {
   },
   // v23.9: Video dim table options (hard-coded from dim_video_type and dim_highlight_category)
   // dim_video_type values
-  videoTypes: ['Full_Ice', 'Broadcast', 'Highlights', 'Goalie', 'Overhead', 'Wide', 'Tight', 'Replay', 'Other'],
+  videoTypes: ['Full_Ice', 'Broadcast', 'Highlights', 'Goalie', 'Goalie_Home', 'Goalie_Away', 'Overhead', 'Overhead_Home', 'Overhead_Away', 'Wide', 'Wide_Home', 'Wide_Away', 'Tight', 'Replay', 'Other', 'Other_Home', 'Other_Away'],
   // dim_highlight_category values (for highlight categorization)
   highlightCategories: ['Goal', 'Save', 'Hit', 'Fight', 'Breakaway', 'Penalty_Shot', 'Sequence', 'Momentum', 'Skill', 'Other'],
   // Video source/platform options
