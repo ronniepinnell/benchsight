@@ -320,16 +320,18 @@ class SupabaseManager:
         records = self._df_to_records(df)
 
         # Delete existing data before inserting (prevent duplicates)
+        # Use a text column for the neq filter to avoid type mismatches
         try:
-            self.client.table(table_name).delete().neq('_export_timestamp', '__impossible__').execute()
-        except Exception as e:
-            # Fallback: try deleting with a different always-true condition
-            try:
-                # Get first column name to use as filter
+            text_cols = [c for c in df.columns if df[c].dtype == 'object']
+            if text_cols:
+                delete_col = text_cols[0]
+                self.client.table(table_name).delete().neq(delete_col, '__impossible__').execute()
+            else:
+                # No text columns — use numeric gt on first column
                 first_col = df.columns[0]
-                self.client.table(table_name).delete().neq(first_col, '__impossible__').execute()
-            except Exception as e2:
-                logger.warning(f"  Could not clear {table_name} before upload: {e2}")
+                self.client.table(table_name).delete().gt(first_col, -999999999999).execute()
+        except Exception as e:
+            logger.warning(f"  Could not clear {table_name} before upload: {e}")
 
         # Upload in batches
         uploaded = 0

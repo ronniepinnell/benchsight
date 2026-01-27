@@ -20,13 +20,13 @@ export async function GamesTickerWrapper() {
     supabase
       .from('dim_schedule')
       .select('game_id, date, game_time, home_team_id, away_team_id, home_team_name, away_team_name, home_total_goals, away_total_goals')
-      .lte('date', today)
+      .eq('schedule_type', 'Past')
       .order('date', { ascending: false })
       .limit(20),
     supabase
       .from('dim_schedule')
       .select('game_id, date, game_time, home_team_id, away_team_id, home_team_name, away_team_name')
-      .gt('date', today)
+      .eq('schedule_type', 'Upcoming')
       .order('date', { ascending: true })
       .limit(15),
     supabase

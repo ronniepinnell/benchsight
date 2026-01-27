@@ -173,25 +173,19 @@ export default async function NoradLandingPage() {
   const allScheduleGames = scheduleData.data || []
   const parseGameDate = (dateStr: string | null) => dateStr ? dateStr.split(' ')[0].split('T')[0] : null
 
-  const recentGames = allScheduleGames.filter(g => {
-    const gameDate = parseGameDate(g.date)
-    const hasScore = (g.home_total_goals ?? 0) + (g.away_total_goals ?? 0) > 0
-    return gameDate && gameDate < today && hasScore
-  }).sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
+  const recentGames = allScheduleGames.filter(g => g.schedule_type === 'Past')
+    .sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
 
   // Upcoming sorted by date (soonest first), then by time
-  const upcomingGames = allScheduleGames.filter(g => {
-    const gameDate = parseGameDate(g.date)
-    const hasNoScore = (g.home_total_goals ?? 0) + (g.away_total_goals ?? 0) === 0
-    return gameDate && gameDate >= today && hasNoScore
-  }).sort((a, b) => {
-    const dateA = new Date(a.date || 0).getTime()
-    const dateB = new Date(b.date || 0).getTime()
-    if (dateA !== dateB) return dateA - dateB
-    return parseTimeToMinutes(a.game_time) - parseTimeToMinutes(b.game_time)
-  })
+  const upcomingGames = allScheduleGames.filter(g => g.schedule_type === 'Upcoming')
+    .sort((a, b) => {
+      const dateA = new Date(a.date || 0).getTime()
+      const dateB = new Date(b.date || 0).getTime()
+      if (dateA !== dateB) return dateA - dateB
+      return parseTimeToMinutes(a.game_time) - parseTimeToMinutes(b.game_time)
+    })
 
-  const playedGames = allScheduleGames.filter(g => (g.home_total_goals ?? 0) + (g.away_total_goals ?? 0) > 0)
+  const playedGames = allScheduleGames.filter(g => g.schedule_type === 'Past')
     .sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
 
   const currentRankings = calculateStandingsAsOfDate(allScheduleGames, today, teamNames)

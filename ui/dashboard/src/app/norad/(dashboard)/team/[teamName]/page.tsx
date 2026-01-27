@@ -757,15 +757,11 @@ export default async function TeamDetailPage({
       .from('dim_schedule')
       .select('*')
       .or(`home_team_name.eq.${team.team_name},away_team_name.eq.${team.team_name},home_team_id.eq.${team.team_id},away_team_id.eq.${team.team_id}`)
-      .gte('date', today)
+      .eq('schedule_type', 'Upcoming')
       .order('date', { ascending: true })
-      .limit(20)
-    
-    // Filter to only games that haven't been played (no scores)
-    upcomingGames = (upcomingGamesData || []).filter((g: any) => 
-      g.home_total_goals === null || g.away_total_goals === null || 
-      g.home_total_goals === undefined || g.away_total_goals === undefined
-    ).slice(0, 10)
+      .limit(10)
+
+    upcomingGames = upcomingGamesData || []
   }
   
   // Also get opponent teams for upcoming games
