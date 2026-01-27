@@ -1195,6 +1195,213 @@ def build_fact_shot_players(event_players: pd.DataFrame, events: pd.DataFrame) -
 
 
 # =============================================================================
+# TRACKING TAB LOADER (xy_puck / xy_player sheets)
+# =============================================================================
+
+GAMES_DIR = Path('data/raw/games')
+
+
+def _remap_event_ids(df: pd.DataFrame, flag_to_event_id: dict, game_id: str) -> pd.DataFrame:
+    """
+    Remap event_ids from event_index_flag_ format to tracking_event_index format.
+
+    The tracking_xy_loader formats event_ids using the raw event_index_flag_ values
+    from the xy tabs, but the ETL uses tracking_event_index (flag + 999). This
+    function looks up the correct event_id from the flag→event_id mapping built
+    from the events sheet.
+    """
+    from src.core.key_utils import format_key
+
+    def remap(event_id):
+        # Extract the raw flag index from the loader-formatted event_id
+        # The loader creates event_ids like EV{game_id}{padded_flag_index}
+        # We need to extract the flag_index and look it up
+        eid_str = str(event_id)
+        if not eid_str.startswith('EV'):
+            return event_id
+
+        # Extract the numeric suffix after 'EV' + game_id
+        prefix_len = 2 + len(str(game_id))  # 'EV' + game_id
+        if len(eid_str) <= prefix_len:
+            return event_id
+
+        try:
+            flag_index = int(eid_str[prefix_len:])
+        except ValueError:
+            return event_id
+
+        return flag_to_event_id.get(flag_index, event_id)
+
+    df['event_id'] = df['event_id'].apply(remap)
+    return df
+
+
+def load_xy_from_tracking_tabs(event_players: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Load detailed multi-point XY data from xy_puck and xy_player tabs in
+    tracking Excel files. Returns (puck_long_df, player_long_df).
+
+    This provides all intermediate points (up to 8+ per event) rather than
+    just start/stop from fact_event_players.
+
+    After loading, resolves player_id for player data by joining with
+    event_players on (event_id, player_role).
+    """
+    from src.xy.tracking_xy_loader import (
+        load_tracking_xy_puck_long,
+        load_tracking_xy_player_long
+    )
+
+    all_puck = []
+    all_player = []
+
+    if not GAMES_DIR.exists():
+        logger.warning(f"Games directory not found: {GAMES_DIR}")
+        return pd.DataFrame(), pd.DataFrame()
+
+    # Discover all game directories
+    game_dirs = sorted([
+        d for d in GAMES_DIR.iterdir()
+        if d.is_dir() and d.name.isdigit()
+    ])
+
+    for game_dir in game_dirs:
+        game_id = game_dir.name
+        tracking_files = list(game_dir.glob("*_tracking.xlsx"))
+        tracking_files = [f for f in tracking_files
+                         if 'bkup' not in str(f).lower()
+                         and not f.name.startswith('~$')]
+
+        if not tracking_files:
+            continue
+
+        tracking_path = tracking_files[0]
+
+        # Check if this file has xy tabs
+        try:
+            xl = pd.ExcelFile(tracking_path)
+            has_xy_puck = 'xy_puck' in xl.sheet_names
+            has_xy_player = 'xy_player' in xl.sheet_names
+            has_events = 'events' in xl.sheet_names
+            xl.close()
+
+            if not has_xy_puck and not has_xy_player:
+                continue
+
+            logger.info(f"  Loading XY tabs from game {game_id}...")
+
+            # Build event_index_flag_ → event_id mapping from events sheet.
+            # The xy tabs use event_index_flag_ numbering, but the ETL uses
+            # tracking_event_index (= event_index_flag_ + 999) for event_ids.
+            flag_to_event_id = {}
+            if has_events:
+                events_sheet = pd.read_excel(
+                    tracking_path, sheet_name='events',
+                    usecols=['event_index_flag_', 'tracking_event_index']
+                )
+                from src.core.key_utils import format_key
+                for _, row in events_sheet.drop_duplicates('event_index_flag_').iterrows():
+                    flag = int(row['event_index_flag_'])
+                    track_idx = int(row['tracking_event_index'])
+                    flag_to_event_id[flag] = format_key('EV', game_id, str(track_idx))
+
+            if has_xy_puck:
+                puck_df = load_tracking_xy_puck_long(tracking_path, game_id, test_mode=True)
+                if len(puck_df) > 0:
+                    # Remap event_ids using the flag→event_id mapping
+                    if flag_to_event_id:
+                        puck_df = _remap_event_ids(puck_df, flag_to_event_id, game_id)
+                    all_puck.append(puck_df)
+                    logger.info(f"    Puck: {len(puck_df)} rows")
+
+            if has_xy_player:
+                player_df = load_tracking_xy_player_long(tracking_path, game_id, test_mode=True)
+                if len(player_df) > 0:
+                    # Remap event_ids using the flag→event_id mapping
+                    if flag_to_event_id:
+                        player_df = _remap_event_ids(player_df, flag_to_event_id, game_id)
+                    all_player.append(player_df)
+                    logger.info(f"    Player: {len(player_df)} rows")
+
+        except Exception as e:
+            logger.warning(f"  Error loading XY tabs from {tracking_path.name}: {e}")
+            continue
+
+    # Concatenate results across all games
+    puck_long = pd.concat(all_puck, ignore_index=True) if all_puck else pd.DataFrame()
+    player_long = pd.concat(all_player, ignore_index=True) if all_player else pd.DataFrame()
+
+    # Resolve player_id from event_players
+    if len(player_long) > 0 and len(event_players) > 0:
+        # Step 1: Direct role join for matching roles (event_player_N, opp_player_N)
+        ep_lookup = event_players[['event_id', 'player_role', 'player_id']].drop_duplicates(
+            subset=['event_id', 'player_role']
+        )
+        ep_lookup = ep_lookup.rename(columns={'player_id': 'resolved_player_id'})
+
+        player_long = player_long.merge(
+            ep_lookup, on=['event_id', 'player_role'], how='left'
+        )
+        has_resolved = player_long['resolved_player_id'].notna()
+        player_long.loc[has_resolved, 'player_id'] = player_long.loc[has_resolved, 'resolved_player_id']
+        player_long.drop(columns=['resolved_player_id'], inplace=True)
+
+        role_resolved = has_resolved.sum()
+
+        # Step 2: Name-based fallback for unresolved players
+        # (e.g., event_team_player_N, opp_team_player_N roles not in event_players)
+        still_unresolved = player_long['player_id'].str.contains(' ', na=False) | player_long['player_id'].isna()
+        if still_unresolved.any():
+            # Build a name→player_id lookup from event_players (per game)
+            name_lookup = event_players[['game_id', 'player_name', 'player_id']].dropna(
+                subset=['player_name', 'player_id']
+            ).drop_duplicates(subset=['game_id', 'player_name'])
+            name_lookup = name_lookup.rename(columns={'player_id': 'name_resolved_pid'})
+            name_lookup['game_id'] = name_lookup['game_id'].astype(str)
+
+            player_long['game_id'] = player_long['game_id'].astype(str)
+            player_long = player_long.merge(
+                name_lookup, on=['game_id', 'player_name'], how='left'
+            )
+            has_name_resolved = still_unresolved & player_long['name_resolved_pid'].notna()
+            player_long.loc[has_name_resolved, 'player_id'] = player_long.loc[has_name_resolved, 'name_resolved_pid']
+            player_long.drop(columns=['name_resolved_pid'], inplace=True)
+
+            name_resolved = has_name_resolved.sum()
+        else:
+            name_resolved = 0
+
+        # Regenerate player_xy_key with proper player_id
+        def make_player_xy_key(row):
+            pid = str(row.get('player_id', ''))
+            pid_suffix = pid[-4:] if len(pid) >= 4 else pid.zfill(4)
+            return f"PXL{row.get('game_id', '')}{str(row.get('event_id', ''))[-5:]}{pid_suffix}{int(row.get('point_number', 1)):02d}"
+
+        player_long['player_xy_key'] = player_long.apply(make_player_xy_key, axis=1)
+
+        # Set is_event_team from player_role
+        # Both "event_player_N" and "event_team_player_N" are on the event team
+        def is_event_team_from_role(role):
+            if pd.isna(role):
+                return None
+            role_str = str(role).lower()
+            return 'event' in role_str and 'opp' not in role_str
+
+        player_long['is_event_team'] = player_long['player_role'].apply(is_event_team_from_role)
+
+        total_resolved = role_resolved + name_resolved
+        logger.info(f"  Resolved {total_resolved}/{len(player_long)} player_ids "
+                     f"({role_resolved} by role, {name_resolved} by name)")
+
+    if len(puck_long) > 0:
+        logger.info(f"  Total puck XY from tracking tabs: {len(puck_long)} rows")
+    if len(player_long) > 0:
+        logger.info(f"  Total player XY from tracking tabs: {len(player_long)} rows")
+
+    return puck_long, player_long
+
+
+# =============================================================================
 # MAIN BUILDER
 # =============================================================================
 
@@ -1236,13 +1443,40 @@ def build_all_xy_tables() -> dict:
         return {'status': 'empty_schemas_created'}
     
     results = {}
-    
+
+    # Try loading detailed XY data from tracking Excel xy_puck/xy_player tabs
+    # These contain all intermediate points (up to 8+ per event), not just start/stop
+    logger.info("\n--- Loading XY from tracking tabs ---")
+    tracking_puck_long, tracking_player_long = load_xy_from_tracking_tabs(event_players)
+
     # Build core XY tables
     logger.info("\n--- Core XY Tables ---")
     results['fact_puck_xy_wide'] = len(build_fact_puck_xy_wide(event_players))
-    results['fact_puck_xy_long'] = len(build_fact_puck_xy_long(event_players))
+
+    # For long tables: prefer tracking tab data (multi-point), fall back to start/stop
+    if len(tracking_puck_long) > 0:
+        logger.info(f"  Using tracking tab data for fact_puck_xy_long ({len(tracking_puck_long)} rows)")
+        # Drop timestamp column if present (not in schema)
+        if 'timestamp' in tracking_puck_long.columns:
+            tracking_puck_long = tracking_puck_long.drop(columns=['timestamp'])
+        tracking_puck_long.to_csv(OUTPUT_DIR / 'fact_puck_xy_long.csv', index=False)
+        results['fact_puck_xy_long'] = len(tracking_puck_long)
+    else:
+        logger.info("  No tracking tab puck data - falling back to start/stop from event_players")
+        results['fact_puck_xy_long'] = len(build_fact_puck_xy_long(event_players))
+
     results['fact_player_xy_wide'] = len(build_fact_player_xy_wide(event_players))
-    results['fact_player_xy_long'] = len(build_fact_player_xy_long(event_players))
+
+    if len(tracking_player_long) > 0:
+        logger.info(f"  Using tracking tab data for fact_player_xy_long ({len(tracking_player_long)} rows)")
+        # Drop timestamp column if present (not in schema)
+        if 'timestamp' in tracking_player_long.columns:
+            tracking_player_long = tracking_player_long.drop(columns=['timestamp'])
+        tracking_player_long.to_csv(OUTPUT_DIR / 'fact_player_xy_long.csv', index=False)
+        results['fact_player_xy_long'] = len(tracking_player_long)
+    else:
+        logger.info("  No tracking tab player data - falling back to start/stop from event_players")
+        results['fact_player_xy_long'] = len(build_fact_player_xy_long(event_players))
     
     # Build spatial relationship tables
     logger.info("\n--- Spatial Relationship Tables ---")

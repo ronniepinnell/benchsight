@@ -2,16 +2,19 @@
 
 import { cn } from '@/lib/utils'
 
-interface PlayerMarker {
+export interface PlayerMarker {
   x: number  // Center-relative: -100 to 100 (0 = center ice)
   y: number  // Center-relative: -42.5 to 42.5 (0 = center)
   name?: string
   number?: string | number
   team: 'home' | 'away'
   isSelected?: boolean
+  playerId?: string
+  seq?: number  // point_number for ordering multi-point paths
+  role?: string  // player_role from fact_player_xy_long (e.g., event_player_1, opp_player_2)
 }
 
-interface PuckPosition {
+export interface PuckPosition {
   x: number
   y: number
   seq?: number
@@ -29,6 +32,8 @@ interface IceRinkSVGProps {
   onRinkClick?: (x: number, y: number) => void
   homeTeamName?: string
   awayTeamName?: string
+  focusedPlayerId?: string | null
+  onPlayerClick?: (playerId: string) => void
 }
 
 /**
@@ -67,7 +72,9 @@ export function IceRinkSVG({
   flipZones = false,
   onRinkClick,
   homeTeamName = 'Home',
-  awayTeamName = 'Away'
+  awayTeamName = 'Away',
+  focusedPlayerId = null,
+  onPlayerClick
 }: IceRinkSVGProps) {
 
   const handleClick = (e: React.MouseEvent<SVGSVGElement>) => {
@@ -260,34 +267,146 @@ export function IceRinkSVG({
         </g>
       )}
 
+      {/* Player movement lines (team-colored, grouped by playerId) */}
+      {(() => {
+        // Group players by playerId to draw connecting lines
+        const grouped = new Map<string, PlayerMarker[]>()
+        players.forEach(p => {
+          if (!p.playerId) return
+          const existing = grouped.get(p.playerId)
+          if (existing) existing.push(p)
+          else grouped.set(p.playerId, [p])
+        })
+
+        return Array.from(grouped.entries()).map(([pid, points]) => {
+          if (points.length < 2) return null
+          const sorted = [...points].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0))
+          const color = sorted[0].team === 'home' ? homeColor : awayColor
+          const isFocused = !focusedPlayerId || pid === focusedPlayerId
+
+          return sorted.map((point, i) => {
+            if (i === 0) return null
+            const prev = sorted[i - 1]
+            const p1 = toSvg(prev.x, prev.y)
+            const p2 = toSvg(point.x, point.y)
+            return (
+              <line
+                key={`trail-${pid}-${i}`}
+                x1={p1.x} y1={p1.y}
+                x2={p2.x} y2={p2.y}
+                stroke={color}
+                strokeWidth="1"
+                strokeLinecap="round"
+                strokeDasharray="2,1.5"
+                opacity={isFocused ? 0.6 : 0.1}
+              />
+            )
+          })
+        })
+      })()}
+
       {/* Player markers */}
       {players.map((player, i) => {
         const pos = toSvg(player.x, player.y)
         const color = player.team === 'home' ? homeColor : awayColor
+        const hasNumber = player.number !== undefined && player.number !== null && player.number !== ''
+        const isFirstPoint = !player.seq || player.seq === 1
+        const isFocused = !focusedPlayerId || player.playerId === focusedPlayerId
+        const markerOpacity = isFocused ? 1 : 0.2
+        const clickable = onPlayerClick && player.playerId
+
+        // Trail dots (non-first points): render as small circles, no jersey number
+        if (!isFirstPoint) {
+          return (
+            <g key={`player-${i}`} opacity={markerOpacity}>
+              <circle
+                cx={pos.x}
+                cy={pos.y}
+                r={2}
+                fill={color}
+                stroke="#000"
+                strokeWidth="0.3"
+                opacity={0.7}
+              />
+            </g>
+          )
+        }
+
+        // First point: full circle with jersey number
+        const radius = hasNumber ? (player.isSelected ? 5 : 4) : (player.isSelected ? 4 : 3)
 
         return (
-          <g key={`player-${i}`}>
-            {/* Player dot */}
+          <g
+            key={`player-${i}`}
+            opacity={markerOpacity}
+            style={clickable ? { cursor: 'pointer' } : undefined}
+            onClick={clickable ? (e) => { e.stopPropagation(); onPlayerClick!(player.playerId!) } : undefined}
+          >
+            {/* Glow ring for selected player (event_player_1) */}
+            {player.isSelected && (
+              <circle
+                cx={pos.x}
+                cy={pos.y}
+                r={radius + 2}
+                fill="none"
+                stroke="#fbbf24"
+                strokeWidth="1.5"
+                opacity="0.7"
+              />
+            )}
+
+            {/* Focus ring when this player is the focused one */}
+            {focusedPlayerId && player.playerId === focusedPlayerId && (
+              <circle
+                cx={pos.x}
+                cy={pos.y}
+                r={radius + 2}
+                fill="none"
+                stroke="#fff"
+                strokeWidth="1.5"
+                opacity="0.9"
+              />
+            )}
+
+            {/* Player circle */}
             <circle
               cx={pos.x}
               cy={pos.y}
-              r={player.isSelected ? 4 : 3}
+              r={radius}
               fill={color}
               stroke={player.isSelected ? '#fff' : '#000'}
               strokeWidth={player.isSelected ? 1.5 : 0.5}
             />
 
-            {/* Player number/name label */}
-            {(player.number || player.name) && (
+            {/* Jersey number inside circle */}
+            {hasNumber ? (
               <text
                 x={pos.x}
-                y={pos.y + 6}
+                y={pos.y}
                 textAnchor="middle"
-                className="text-[2.5px]"
-                fill="#1e293b"
+                dominantBaseline="central"
+                fill="#fff"
+                stroke="#000"
+                strokeWidth="0.3"
+                paintOrder="stroke"
+                className="text-[3px]"
+                style={{ fontWeight: 700 }}
               >
-                {player.number || player.name?.split(' ').pop()?.charAt(0)}
+                {player.number}
               </text>
+            ) : (
+              /* Fallback: player name initial below circle */
+              player.name && (
+                <text
+                  x={pos.x}
+                  y={pos.y + radius + 3}
+                  textAnchor="middle"
+                  className="text-[2.5px]"
+                  fill="#1e293b"
+                >
+                  {player.name.split(' ').pop()?.charAt(0)}
+                </text>
+              )
             )}
           </g>
         )

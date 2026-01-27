@@ -1,10 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
-import type { 
+import type {
   VRecentGames,
   FactPlayerGameStats,
   FactGoalieGameStats,
   FactEvents,
-  FactShotXY
+  FactShotXY,
+  FactPuckXYLong,
+  FactPlayerXYLong
 } from '@/types/database'
 
 // Enhanced get games function with filtering support
@@ -1214,4 +1216,44 @@ export async function getGameHighlightEvents(gameId: number): Promise<any[]> {
     return []
   }
   return data || []
+}
+
+/**
+ * Fetch puck XY coordinates for all events in a game
+ */
+export async function getGamePuckXY(gameId: number): Promise<FactPuckXYLong[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('fact_puck_xy_long')
+    .select('*')
+    .eq('game_id', gameId)
+    .order('event_id', { ascending: true })
+    .order('point_number', { ascending: true })
+    .limit(5000)
+
+  if (error) {
+    console.error('Error fetching puck XY:', error)
+    return []
+  }
+  return (data ?? []) as FactPuckXYLong[]
+}
+
+/**
+ * Fetch player XY coordinates for all events in a game
+ */
+export async function getGamePlayerXY(gameId: number): Promise<FactPlayerXYLong[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('fact_player_xy_long')
+    .select('*')
+    .eq('game_id', gameId)
+    .order('event_id', { ascending: true })
+    .order('point_number', { ascending: true })
+    .limit(5000)
+
+  if (error) {
+    console.error('Error fetching player XY:', error)
+    return []
+  }
+  return (data ?? []) as FactPlayerXYLong[]
 }

@@ -18,9 +18,10 @@ import {
   X
 } from 'lucide-react'
 import { extractYouTubeVideoId, formatYouTubeHighlightUrl } from '@/lib/utils/video'
-import type { FactEvents } from '@/types/database'
+import type { FactEvents, FactPuckXYLong, FactPlayerXYLong } from '@/types/database'
 import { TeamLogo } from '@/components/teams/team-logo'
 import { IceRinkSVG } from '@/components/games/ice-rink-svg'
+import type { PlayerMarker, PuckPosition } from '@/components/games/ice-rink-svg'
 
 // Format text: remove underscores, add spaces to CamelCase, capitalize
 function formatDisplayText(text: string | null | undefined): string {
@@ -169,6 +170,10 @@ interface PlayByPlayTimelineProps {
   videos?: GameVideo[]
   shifts?: ShiftData[]
   jerseyToPlayerMap?: Map<string, { player_name: string; team_id: string }>
+  puckXYData?: FactPuckXYLong[]
+  playerXYData?: FactPlayerXYLong[]
+  playerIdToJerseyMap?: Record<string, number>
+  playerIdToTeamIdMap?: Record<string, string>
 }
 
 // Highlight timing offsets
@@ -188,7 +193,11 @@ export function PlayByPlayTimeline({
   videoStartOffset = 0,
   videos = [],
   shifts = [],
-  jerseyToPlayerMap = new Map()
+  jerseyToPlayerMap = new Map(),
+  puckXYData = [],
+  playerXYData = [],
+  playerIdToJerseyMap = {},
+  playerIdToTeamIdMap = {}
 }: PlayByPlayTimelineProps) {
   const [expandedPeriods, setExpandedPeriods] = useState<Set<number>>(new Set([1, 2, 3]))
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null)
@@ -198,6 +207,8 @@ export function PlayByPlayTimeline({
   const [highlightedEvent, setHighlightedEvent] = useState<string | null>(null)
   const [playingEvent, setPlayingEvent] = useState<string | null>(null)
   const [selectedVideoIndex, setSelectedVideoIndex] = useState(0)
+  const [focusedPlayerId, setFocusedPlayerId] = useState<string | null>(null)
+  const [roleFilter, setRoleFilter] = useState<string | null>(null) // null = all, 'event_primary', 'opp_primary', 'event_support', 'opp_support'
 
   // Get current video
   const currentVideo = videos.length > 0 ? videos[selectedVideoIndex] : videoUrl ? {
@@ -229,6 +240,116 @@ export function PlayByPlayTimeline({
     const player = jerseyToPlayerMap.get(jersey)
     return player?.player_name || `#${jersey}`
   }
+
+  // Index puck XY data by event_id
+  const puckXYByEvent = useMemo(() => {
+    const map = new Map<string, FactPuckXYLong[]>()
+    for (const row of puckXYData) {
+      const existing = map.get(row.event_id)
+      if (existing) {
+        existing.push(row)
+      } else {
+        map.set(row.event_id, [row])
+      }
+    }
+    return map
+  }, [puckXYData])
+
+  // Index player XY data by event_id
+  const playerXYByEvent = useMemo(() => {
+    const map = new Map<string, FactPlayerXYLong[]>()
+    for (const row of playerXYData) {
+      const existing = map.get(row.event_id)
+      if (existing) {
+        existing.push(row)
+      } else {
+        map.set(row.event_id, [row])
+      }
+    }
+    return map
+  }, [playerXYData])
+
+  // Index play_detail1/play_detail_2 per player_name per event_id from allEvents
+  const eventPlayerDetailsMap = useMemo(() => {
+    const map = new Map<string, Map<string, { play_detail1: string | null; play_detail_2: string | null; player_role: string }>>()
+    for (const e of events) {
+      if (!e.event_id || !e.player_name) continue
+      let eventMap = map.get(e.event_id)
+      if (!eventMap) {
+        eventMap = new Map()
+        map.set(e.event_id, eventMap)
+      }
+      // Use player_name as key (unique within an event's roles)
+      if (!eventMap.has(e.player_name)) {
+        eventMap.set(e.player_name, {
+          play_detail1: e.play_detail1 || null,
+          play_detail_2: (e as any).play_detail_2 || null,
+          player_role: e.player_role || ''
+        })
+      }
+    }
+    return map
+  }, [events])
+
+  // Build IceRinkSVG visualization data for an event
+  const buildEventVisualization = useCallback((event: FactEvents): {
+    players: PlayerMarker[]
+    puckPath: PuckPosition[]
+  } | null => {
+    const puckRows = puckXYByEvent.get(event.event_id)
+    const playerRows = playerXYByEvent.get(event.event_id)
+
+    // If no XY long data at all, return null (caller handles fallback)
+    if (!puckRows && !playerRows) return null
+
+    // Build puck path from long data, sorted by point_number
+    const puckPath: PuckPosition[] = (puckRows || [])
+      .sort((a, b) => a.point_number - b.point_number)
+      .map(r => ({ x: r.x, y: r.y, seq: r.point_number }))
+
+    // Build player markers - ALL points per player (for movement paths)
+    const players: PlayerMarker[] = []
+    // Track which player_role maps to which player_id (for isSelected)
+    const roleToId = new Map<string, string>()
+
+    const allPoints = (playerRows || [])
+      .sort((a, b) => a.player_role.localeCompare(b.player_role) || a.point_number - b.point_number)
+
+    for (const row of allPoints) {
+      roleToId.set(row.player_role, row.player_id)
+
+      // Determine home/away
+      let team: 'home' | 'away' = 'away'
+      const playerTeamId = playerIdToTeamIdMap[row.player_id]
+      if (playerTeamId) {
+        team = String(playerTeamId) === String(homeTeamId) ? 'home' : 'away'
+      } else {
+        const eventTeamVenue = (event as any).team_venue
+        if (row.is_event_team) {
+          team = eventTeamVenue === 'Home' ? 'home' : 'away'
+        } else {
+          team = eventTeamVenue === 'Home' ? 'away' : 'home'
+        }
+      }
+
+      const jerseyNum = playerIdToJerseyMap[row.player_id]
+      const isSelected = row.player_role === 'event_player_1'
+
+      players.push({
+        x: row.x,
+        y: row.y,
+        name: row.player_name,
+        number: jerseyNum !== undefined ? jerseyNum : undefined,
+        team,
+        isSelected,
+        playerId: row.player_id,
+        seq: row.point_number,
+        role: row.player_role
+      })
+    }
+
+    return { players, puckPath }
+  }, [puckXYByEvent, playerXYByEvent, homeTeamId, playerIdToJerseyMap, playerIdToTeamIdMap])
 
   // Get players on ice for an event based on shift_id
   const getPlayersOnIce = (event: FactEvents): { home: string[], away: string[] } | null => {
@@ -406,7 +527,7 @@ export function PlayByPlayTimeline({
                        e.event_type?.toLowerCase().includes('rebound') ||
                        e.event_detail?.toLowerCase().includes('rebound') ||
                        e.play_detail1?.toLowerCase().includes('rebound') ||
-                       (e as any).event_detail_2?.toLowerCase().includes('rebound')
+                       e.event_detail_2?.toLowerCase().includes('rebound')
       return !isRebound
     })
 
@@ -416,7 +537,7 @@ export function PlayByPlayTimeline({
                         e.play_detail1?.toLowerCase().includes('giveaway')
       if (isGiveaway) {
         const eventDetail = e.event_detail?.toLowerCase() || ''
-        const eventDetail2 = (e as any).event_detail_2?.toLowerCase() || ''
+        const eventDetail2 = e.event_detail_2?.toLowerCase() || ''
         const playDetail1 = e.play_detail1?.toLowerCase() || ''
         const playDetail2 = e.play_detail_2?.toLowerCase() || ''
 
@@ -530,9 +651,8 @@ export function PlayByPlayTimeline({
 
     const details = new Set<string>()
     filtered.forEach(event => {
-      const eventAny = event as any
       if (event.play_detail_2) details.add(event.play_detail_2)
-      if (eventAny.event_detail_2) details.add(eventAny.event_detail_2)
+      if (event.event_detail_2) details.add(event.event_detail_2)
     })
     return Array.from(details).sort()
   }, [getBaseFilteredEvents, selectedEventTypes, selectedEventDetails, selectedTeams, selectedPlayers])
@@ -822,7 +942,7 @@ export function PlayByPlayTimeline({
                          e.event_type?.toLowerCase().includes('rebound') ||
                          e.event_detail?.toLowerCase().includes('rebound') ||
                          e.play_detail1?.toLowerCase().includes('rebound') ||
-                         (e as any).event_detail_2?.toLowerCase().includes('rebound')
+                         e.event_detail_2?.toLowerCase().includes('rebound')
         return !isRebound
       })
 
@@ -833,7 +953,7 @@ export function PlayByPlayTimeline({
         if (isGiveaway) {
           // Check if it's a "bad" giveaway: misplay, pass intercepted, pass blocked, pass missed
           const eventDetail = e.event_detail?.toLowerCase() || ''
-          const eventDetail2 = (e as any).event_detail_2?.toLowerCase() || ''
+          const eventDetail2 = e.event_detail_2?.toLowerCase() || ''
           const playDetail1 = e.play_detail1?.toLowerCase() || ''
           const playDetail2 = e.play_detail_2?.toLowerCase() || ''
           
@@ -923,9 +1043,8 @@ export function PlayByPlayTimeline({
       // Filter by event detail 2 / play_detail_2 (multi-select)
       if (selectedEventDetails2.length > 0) {
         filteredEvents = filteredEvents.filter(e => {
-          const eventAny = e as any
           return (e.play_detail_2 && selectedEventDetails2.includes(e.play_detail_2)) ||
-                 (eventAny.event_detail_2 && selectedEventDetails2.includes(eventAny.event_detail_2))
+                 (e.event_detail_2 && selectedEventDetails2.includes(e.event_detail_2))
         })
       }
 
@@ -1302,7 +1421,7 @@ export function PlayByPlayTimeline({
     // Handle zone entries/exits
     if (event.event_type?.toLowerCase().includes('zone')) {
       // Use only event_detail_2 for zone entry/exit description (not event_type)
-      const detail2 = (event as any).event_detail_2 || event.play_detail_2 || ''
+      const detail2 = event.event_detail_2 || event.play_detail_2 || ''
       return detail2 ? `${formatDisplayText(detail2)} - ${playerName}` : `${formatDisplayText(event.event_type)} - ${playerName}`
     }
 
@@ -1656,6 +1775,7 @@ export function PlayByPlayTimeline({
                           onClick={() => {
                             setSelectedEvent(isSelected ? null : eventKey)
                             setDebugEvent(event)
+                            if (isSelected) { setFocusedPlayerId(null); setRoleFilter(null) }
                           }}
                           className={cn(
                             'px-4 py-3 transition-colors cursor-pointer',
@@ -1787,20 +1907,105 @@ export function PlayByPlayTimeline({
                                     ) : null
                                   })()}
 
-                                  {/* Players */}
-                                  <div className="grid grid-cols-2 gap-2">
-                                    {getEventPlayers(event).length > 0 && (
-                                      <div><strong>Players:</strong> {getEventPlayers(event).join(', ')}</div>
-                                    )}
-                                    {getOppPlayers(event).length > 0 && (
-                                      <div><strong>Opponents:</strong> {getOppPlayers(event).join(', ')}</div>
-                                    )}
-                                  </div>
+                                  {/* Players (clickable to highlight on rink) */}
+                                  {(() => {
+                                    const epIds = event.event_player_ids?.split(',').map(id => id.trim()).filter(Boolean) || []
+                                    const opIds = event.opp_player_ids?.split(',').map(id => id.trim()).filter(Boolean) || []
+                                    const epNames = getEventPlayers(event)
+                                    const opNames = getOppPlayers(event)
+
+                                    const renderClickableName = (name: string, playerId: string | undefined, idx: number) => {
+                                      const isFocused = playerId && focusedPlayerId === playerId
+                                      return (
+                                        <button
+                                          key={idx}
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation()
+                                            if (playerId) {
+                                              setFocusedPlayerId(prev => prev === playerId ? null : playerId)
+                                            }
+                                          }}
+                                          className={cn(
+                                            "inline text-xs hover:underline transition-colors",
+                                            isFocused ? "text-primary font-semibold" : "text-foreground"
+                                          )}
+                                        >
+                                          {name}
+                                        </button>
+                                      )
+                                    }
+
+                                    return (
+                                      <div className="grid grid-cols-2 gap-2">
+                                        {epNames.length > 0 && (
+                                          <div className="text-xs">
+                                            <strong>Players: </strong>
+                                            {epNames.map((name, idx) => (
+                                              <span key={idx}>
+                                                {idx > 0 && ', '}
+                                                {renderClickableName(name, epIds[idx], idx)}
+                                              </span>
+                                            ))}
+                                          </div>
+                                        )}
+                                        {opNames.length > 0 && (
+                                          <div className="text-xs">
+                                            <strong>Opponents: </strong>
+                                            {opNames.map((name, idx) => (
+                                              <span key={idx}>
+                                                {idx > 0 && ', '}
+                                                {renderClickableName(name, opIds[idx], idx)}
+                                              </span>
+                                            ))}
+                                          </div>
+                                        )}
+                                      </div>
+                                    )
+                                  })()}
+
+                                  {/* Play details for focused player */}
+                                  {focusedPlayerId && (() => {
+                                    const detailsMap = eventPlayerDetailsMap.get(event.event_id)
+                                    if (!detailsMap) return null
+                                    // Find the player name for this player_id
+                                    const epIds = event.event_player_ids?.split(',').map(id => id.trim()).filter(Boolean) || []
+                                    const opIds = event.opp_player_ids?.split(',').map(id => id.trim()).filter(Boolean) || []
+                                    const epNames = getEventPlayers(event)
+                                    const opNames = getOppPlayers(event)
+
+                                    let focusedName: string | null = null
+                                    const epIdx = epIds.indexOf(focusedPlayerId)
+                                    const opIdx = opIds.indexOf(focusedPlayerId)
+                                    if (epIdx >= 0 && epNames[epIdx]) focusedName = epNames[epIdx]
+                                    else if (opIdx >= 0 && opNames[opIdx]) focusedName = opNames[opIdx]
+
+                                    if (!focusedName) return null
+                                    const details = detailsMap.get(focusedName)
+                                    if (!details) return null
+                                    if (!details.play_detail1 && !details.play_detail_2) return null
+
+                                    return (
+                                      <div className="px-2 py-1.5 rounded bg-primary/5 border border-primary/20 text-xs">
+                                        <div className="font-semibold text-primary mb-0.5">{focusedName} — Details</div>
+                                        {details.player_role && (
+                                          <div className="text-muted-foreground">Role: {formatDisplayText(details.player_role)}</div>
+                                        )}
+                                        {details.play_detail1 && (
+                                          <div>Detail 1: {formatDisplayText(details.play_detail1)}</div>
+                                        )}
+                                        {details.play_detail_2 && (
+                                          <div>Detail 2: {formatDisplayText(details.play_detail_2)}</div>
+                                        )}
+                                      </div>
+                                    )
+                                  })()}
 
                                   {/* Event Details */}
                                   <div className="grid grid-cols-2 gap-2">
                                     <div><strong>Type:</strong> {formatDisplayText(event.event_type)}</div>
                                     {event.event_detail && <div><strong>Detail:</strong> {formatDisplayText(event.event_detail)}</div>}
+                                    {event.event_detail_2 && <div><strong>Detail 2:</strong> {formatDisplayText(event.event_detail_2)}</div>}
                                     {event.play_detail1 && <div><strong>Play Detail:</strong> {formatDisplayText(event.play_detail1)}</div>}
                                     {event.play_detail_2 && <div><strong>Play Detail 2:</strong> {formatDisplayText(event.play_detail_2)}</div>}
                                   </div>
@@ -1857,8 +2062,89 @@ export function PlayByPlayTimeline({
                                     </div>
                                   )}
 
-                                  {/* Ice Rink Visualization - Show if event has puck coordinates */}
+                                  {/* Ice Rink Visualization - XY long data or fallback to puck_x/y_start */}
                                   {(() => {
+                                    const viz = buildEventVisualization(event)
+                                    const homeColor = homeTeamData?.primary_color || homeTeamData?.team_color1 || '#3b82f6'
+                                    const awayColor = awayTeamData?.primary_color || awayTeamData?.team_color1 || '#ef4444'
+
+                                    if (viz) {
+                                      // Full visualization with players + puck path from XY long tables
+                                      if (viz.players.length === 0 && viz.puckPath.length === 0) return null
+
+                                      // Apply role filter to players
+                                      const filteredPlayers = roleFilter ? viz.players.filter(p => {
+                                        if (!p.role) return true // keep players without role data
+                                        if (roleFilter === 'event_primary') return p.role === 'event_player_1'
+                                        if (roleFilter === 'opp_primary') return p.role === 'opp_player_1'
+                                        if (roleFilter === 'event_support') return p.role.startsWith('event_player_') && p.role !== 'event_player_1'
+                                        if (roleFilter === 'opp_support') return p.role.startsWith('opp_player_') && p.role !== 'opp_player_1'
+                                        return true
+                                      }) : viz.players
+
+                                      return (
+                                        <div className="pt-2 border-t border-border/30">
+                                          <div className="flex items-center justify-between mb-1">
+                                            <div className="font-semibold text-xs">Ice Positions:</div>
+                                            {/* Role filter buttons */}
+                                            <div className="flex gap-1 flex-wrap">
+                                              {[
+                                                { key: null, label: 'All' },
+                                                { key: 'event_primary', label: 'Primary' },
+                                                { key: 'opp_primary', label: 'Opp Primary' },
+                                                { key: 'event_support', label: 'Support' },
+                                                { key: 'opp_support', label: 'Opp Support' },
+                                              ].map(({ key, label }) => (
+                                                <button
+                                                  key={label}
+                                                  onClick={() => { setRoleFilter(key); setFocusedPlayerId(null) }}
+                                                  className={cn(
+                                                    'px-1.5 py-0.5 text-[9px] rounded transition-colors',
+                                                    roleFilter === key
+                                                      ? 'bg-primary text-primary-foreground'
+                                                      : 'bg-muted/50 hover:bg-muted text-muted-foreground'
+                                                  )}
+                                                >
+                                                  {label}
+                                                </button>
+                                              ))}
+                                            </div>
+                                          </div>
+                                          <div className="w-full max-w-sm mx-auto">
+                                            <IceRinkSVG
+                                              players={filteredPlayers}
+                                              puckPath={viz.puckPath}
+                                              showPuck={true}
+                                              showZoneLabels={true}
+                                              homeColor={homeColor}
+                                              awayColor={awayColor}
+                                              homeTeamName={homeTeam}
+                                              awayTeamName={awayTeam}
+                                              className="border border-border rounded-lg"
+                                              focusedPlayerId={focusedPlayerId}
+                                              onPlayerClick={(pid) => setFocusedPlayerId(prev => prev === pid ? null : pid)}
+                                            />
+                                          </div>
+                                          {/* Legend */}
+                                          <div className="flex items-center justify-center gap-3 mt-1">
+                                            <div className="flex items-center gap-1">
+                                              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: homeColor }} />
+                                              <span className="text-[10px] text-muted-foreground">{homeTeam}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: awayColor }} />
+                                              <span className="text-[10px] text-muted-foreground">{awayTeam}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                              <div className="w-2 h-2 rounded-full bg-gray-900" />
+                                              <span className="text-[10px] text-muted-foreground">Puck</span>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      )
+                                    }
+
+                                    // Fallback: single puck dot from puck_x_start / puck_y_start
                                     const puckX = (event as any).puck_x_start
                                     const puckY = (event as any).puck_y_start
                                     if (puckX === null || puckX === undefined || puckY === null || puckY === undefined) return null
@@ -1874,8 +2160,8 @@ export function PlayByPlayTimeline({
                                             }]}
                                             showPuck={true}
                                             showZoneLabels={true}
-                                            homeColor={homeTeamData?.primary_color || homeTeamData?.team_color1 || '#3b82f6'}
-                                            awayColor={awayTeamData?.primary_color || awayTeamData?.team_color1 || '#ef4444'}
+                                            homeColor={homeColor}
+                                            awayColor={awayColor}
                                             className="border border-border rounded-lg"
                                           />
                                         </div>
@@ -1885,36 +2171,6 @@ export function PlayByPlayTimeline({
                                       </div>
                                     )
                                   })()}
-
-                                  {/* Linked Events */}
-                                  {linkedEvents && linkedEvents.length > 1 && (
-                                    <div className="pt-2 border-t border-border/30">
-                                      <div className="font-semibold mb-1 flex items-center gap-1">
-                                        <Link2 className="w-3 h-3" />
-                                        Related Events ({linkedEvents.length - 1}):
-                                      </div>
-                                      <div className="space-y-1">
-                                        {linkedEvents.filter(e => e.event_id !== event.event_id).map((linkedEvent, i) => (
-                                          <button
-                                            key={i}
-                                            type="button"
-                                            onClick={(e) => {
-                                              e.stopPropagation()
-                                              if (linkedEvent.event_id) {
-                                                scrollToEvent(linkedEvent.event_id)
-                                              }
-                                            }}
-                                            className="w-full text-left text-xs pl-2 border-l-2 border-primary/30 hover:border-primary hover:bg-primary/5 transition-colors py-0.5 rounded-r"
-                                          >
-                                            <span className="flex items-center gap-1">
-                                              <Link2 className="w-2.5 h-2.5 flex-shrink-0" />
-                                              {getEventDescription(linkedEvent)}
-                                            </span>
-                                          </button>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  )}
 
                                   {/* Video Time / Watch Button */}
                                   {hasVideo(event) && playingEvent !== eventKey && (

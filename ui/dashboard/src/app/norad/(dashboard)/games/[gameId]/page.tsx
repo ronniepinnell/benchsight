@@ -20,6 +20,8 @@ import {
   getGameShifts,
   getGameHighlightEvents,
   getGamePlayerShiftCounts,
+  getGamePuckXY,
+  getGamePlayerXY,
 } from '@/lib/supabase/queries/games'
 import { getGameTrackingStatus } from '@/lib/supabase/queries/game-tracking'
 import { createClient } from '@/lib/supabase/server'
@@ -124,7 +126,8 @@ export default async function GameDetailPage({
   const [
     roster, goals, players, goalieStats, shots,
     highlightEventsResult, allEventsResult, shiftsResult, priorGamesResult,
-    gameVideosResult, gameHighlightsResult, playerShiftCountsResult
+    gameVideosResult, gameHighlightsResult, playerShiftCountsResult,
+    puckXYResult, playerXYResult
   ] = await Promise.allSettled([
     getGameRoster(gameIdNum),
     getGameGoals(gameIdNum),
@@ -137,7 +140,9 @@ export default async function GameDetailPage({
     getPriorGames(gameIdNum, game.season_id, game.home_team_id, game.away_team_id, game),
     getGameVideos(gameIdNum),
     getGameHighlights(gameIdNum),
-    getGamePlayerShiftCounts(gameIdNum)
+    getGamePlayerShiftCounts(gameIdNum),
+    getGamePuckXY(gameIdNum),
+    getGamePlayerXY(gameIdNum)
   ])
 
   // Extract results with error handling
@@ -153,6 +158,8 @@ export default async function GameDetailPage({
   const gameVideos = gameVideosResult.status === 'fulfilled' ? gameVideosResult.value : []
   const gameHighlights = gameHighlightsResult.status === 'fulfilled' ? gameHighlightsResult.value : []
   const playerShiftCounts = playerShiftCountsResult.status === 'fulfilled' ? playerShiftCountsResult.value : new Map<string, number>()
+  const puckXYData = puckXYResult.status === 'fulfilled' ? puckXYResult.value : []
+  const playerXYData = playerXYResult.status === 'fulfilled' ? playerXYResult.value : []
 
   // Log any rejected promises for debugging (development only)
   if (process.env.NODE_ENV === 'development') {
@@ -203,6 +210,22 @@ export default async function GameDetailPage({
         player_name: r.player_full_name || r.player_name || `#${jerseyNum}`,
         team_id: String(r.team_id || '')
       })
+    }
+  })
+
+  // Build player_id -> jersey_number and player_id -> team_id maps from roster (for XY visualization)
+  const playerIdToJerseyMap: Record<string, number> = {}
+  const playerIdToTeamIdMap: Record<string, string> = {}
+  rosterData.forEach((r: any) => {
+    const pid = String(r.player_id || '')
+    if (pid) {
+      const jerseyNum = r.player_game_number ?? r.jersey_number
+      if (jerseyNum !== null && jerseyNum !== undefined) {
+        playerIdToJerseyMap[pid] = Math.floor(Number(jerseyNum))
+      }
+      if (r.team_id) {
+        playerIdToTeamIdMap[pid] = String(r.team_id)
+      }
     }
   })
 
@@ -919,6 +942,11 @@ export default async function GameDetailPage({
         awayTeam={game.away_team_name || 'Away'}
         homeColor={homeTeam?.primary_color || homeTeam?.team_color1 || '#1e40af'}
         awayColor={awayTeam?.primary_color || awayTeam?.team_color1 || '#dc2626'}
+        homeTeamId={String(homeTeamId || '')}
+        puckXYData={puckXYData}
+        playerXYData={playerXYData}
+        playerIdToJerseyMap={playerIdToJerseyMap}
+        playerIdToTeamIdMap={playerIdToTeamIdMap}
         teamStatsContent={
           (homeTeamGameStats || awayTeamGameStats || homePPOpps > 0 || awayPPOpps > 0) ? (
             <CompactTeamStats
@@ -2580,6 +2608,10 @@ export default async function GameDetailPage({
                 videos={gameVideos}
                 shifts={shiftsData}
                 jerseyToPlayerMap={jerseyToPlayerMap}
+                puckXYData={puckXYData}
+                playerXYData={playerXYData}
+                playerIdToJerseyMap={playerIdToJerseyMap}
+                playerIdToTeamIdMap={playerIdToTeamIdMap}
               />
             )
           }
