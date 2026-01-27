@@ -45,8 +45,42 @@ print_info() {
 # ETL Commands
 cmd_etl_run() {
     print_header "Running ETL Pipeline"
-    
-    if [ "$#" -gt 0 ] && [ "$1" == "--games" ]; then
+
+    # Check for --check flag
+    RUN_CHECK=false
+    if [ "$#" -gt 0 ] && [ "$1" == "--check" ]; then
+        RUN_CHECK=true
+        shift
+    fi
+
+    # Run pre-ETL validation if requested
+    if [ "$RUN_CHECK" = true ]; then
+        print_info "Running pre-ETL validation..."
+        if [ "$#" -gt 0 ] && [ "$1" == "--games" ]; then
+            shift
+            GAMES="$*"
+            # Validate each specified game
+            for GAME_ID in $GAMES; do
+                print_info "Validating game $GAME_ID..."
+                python -m src.validation.pre_etl_check --game "$GAME_ID" --clean -v
+                if [ $? -ne 0 ]; then
+                    print_error "Pre-ETL validation failed for game $GAME_ID. Blocking ETL."
+                    exit 1
+                fi
+            done
+            print_info "Running ETL for games: $GAMES"
+            python run_etl.py --games $GAMES
+        else
+            # Validate all games
+            python -m src.validation.pre_etl_check --all --clean -v
+            if [ $? -ne 0 ]; then
+                print_error "Pre-ETL validation failed. Blocking ETL."
+                exit 1
+            fi
+            print_info "Running full ETL pipeline"
+            python run_etl.py
+        fi
+    elif [ "$#" -gt 0 ] && [ "$1" == "--games" ]; then
         shift
         GAMES="$*"
         print_info "Running ETL for games: $GAMES"
@@ -58,7 +92,7 @@ cmd_etl_run() {
         print_info "Running full ETL pipeline"
         python run_etl.py
     fi
-    
+
     print_success "ETL complete"
 }
 
@@ -97,6 +131,45 @@ cmd_etl_validate() {
 cmd_etl_verify() {
     print_header "Running Comprehensive Table Verification"
     python -m src.validation.table_verifier
+}
+
+cmd_etl_check() {
+    print_header "Running Pre-ETL Validation"
+
+    if [ "$#" -gt 0 ]; then
+        case "$1" in
+            --game|-g)
+                shift
+                GAME_ID="$1"
+                print_info "Validating game $GAME_ID"
+                python -m src.validation.pre_etl_check --game "$GAME_ID" -v
+                ;;
+            --all|-a)
+                print_info "Validating all games"
+                python -m src.validation.pre_etl_check --all -v
+                ;;
+            --clean|-c)
+                shift
+                if [ "$#" -gt 0 ] && [ "$1" == "--game" ]; then
+                    shift
+                    GAME_ID="$1"
+                    print_info "Cleaning game $GAME_ID"
+                    python -m src.validation.pre_etl_check --game "$GAME_ID" --clean -v
+                else
+                    print_info "Cleaning all games"
+                    python -m src.validation.pre_etl_check --all --clean -v
+                fi
+                ;;
+            *)
+                print_error "Unknown option: $1"
+                echo "Usage: ./benchsight.sh etl check [--game GAME_ID | --all | --clean [--game GAME_ID]]"
+                exit 1
+                ;;
+        esac
+    else
+        print_info "Validating all games (use --game GAME_ID for specific game)"
+        python -m src.validation.pre_etl_check --all -v
+    fi
 }
 
 cmd_etl_status() {
@@ -299,6 +372,64 @@ cmd_db_reset() {
     else
         print_info "Cancelled"
     fi
+}
+
+cmd_db_migrate() {
+    if [ "$#" -eq 0 ]; then
+        print_header "Database Migration Commands"
+        echo "Usage: ./benchsight.sh db migrate [command]"
+        echo ""
+        echo "Commands:"
+        echo "  generate <description>  Generate migration from CSV changes"
+        echo "  push                    Push migrations to linked Supabase project"
+        echo "  list                    List migration status"
+        echo "  new <name>              Create empty migration file"
+        echo ""
+        echo "Examples:"
+        echo "  ./benchsight.sh db migrate generate 'add xg columns'"
+        echo "  ./benchsight.sh db migrate push"
+        return
+    fi
+
+    SUBCMD="$1"
+    shift
+
+    case "$SUBCMD" in
+        generate)
+            if [ "$#" -eq 0 ]; then
+                print_error "Please provide a description"
+                exit 1
+            fi
+            print_header "Generating Migration"
+            python3 scripts/generate_migration.py "$*"
+            ;;
+        push)
+            print_header "Pushing Migrations to Supabase"
+            supabase db push
+            ;;
+        list)
+            print_header "Migration Status"
+            supabase migration list
+            ;;
+        new)
+            if [ "$#" -eq 0 ]; then
+                print_error "Please provide a migration name"
+                exit 1
+            fi
+            print_header "Creating New Migration"
+            supabase migration new "$1"
+            ;;
+        *)
+            print_error "Unknown migrate command: $SUBCMD"
+            exit 1
+            ;;
+    esac
+}
+
+cmd_db_views() {
+    print_header "Deploy Views"
+    print_info "Run sql/views/99_DEPLOY_ALL_VIEWS.sql in Supabase SQL Editor"
+    print_info "Views use CREATE OR REPLACE so they're safe to re-run anytime"
 }
 
 # Environment Commands
@@ -883,7 +1014,11 @@ ${GREEN}Usage:${NC}
   ./benchsight.sh [command] [subcommand] [options]
 
 ${GREEN}ETL Commands:${NC}
+  etl check                        Pre-ETL validation (all games)
+  etl check --game GAME_ID         Validate specific game
+  etl check --clean                Auto-fix issues and report
   etl run [--games GAME_ID ...]    Run ETL pipeline
+  etl run --check                  Validate then run ETL
   etl run --wipe                   Wipe and rebuild
   etl validate                     Validate ETL output (legacy)
   etl validate --manifest          Comprehensive table verification
@@ -975,6 +1110,7 @@ main() {
                 run) cmd_etl_run "$@" ;;
                 validate) cmd_etl_validate "$@" ;;
                 verify) cmd_etl_verify "$@" ;;
+                check) cmd_etl_check "$@" ;;
                 test) cmd_etl_test "$@" ;;
                 status) cmd_etl_status "$@" ;;
                 wipe) cmd_etl_wipe "$@" ;;
@@ -1023,6 +1159,8 @@ main() {
                 upload) cmd_db_upload "$@" ;;
                 schema) cmd_db_schema "$@" ;;
                 reset) cmd_db_reset "$@" ;;
+                migrate) cmd_db_migrate "$@" ;;
+                views) cmd_db_views "$@" ;;
                 *) print_error "Unknown database subcommand: $SUBCOMMAND"; cmd_help; exit 1 ;;
             esac
             ;;

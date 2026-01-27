@@ -62,12 +62,13 @@ async function TeamAdvancedStatsSection({
         return { ...totals, cfPct, ffPct, xgDiff: totals.goals - totals.xg }
       }),
     
-    // Special teams
+    // Special teams (only Past games)
     supabase
       .from('dim_schedule')
       .select('home_team_id, away_team_id, home_pp_goals, away_pp_goals, home_pp_opportunities, away_pp_opportunities, home_pk_goals_against, away_pk_goals_against, home_pk_opportunities, away_pk_opportunities')
       .or(`home_team_id.eq.${teamId},away_team_id.eq.${teamId}`)
       .eq('season_id', seasonId)
+      .eq('schedule_type', 'Past')
       .then(({ data }) => {
         if (!data || data.length === 0) return null
         const totals = data.reduce((acc, game) => {
@@ -644,6 +645,7 @@ export default async function TeamDetailPage({
       .from('dim_schedule')
       .select('*')
       .eq('season_id', seasonId)
+      .eq('schedule_type', 'Past')
       .not('home_total_goals', 'is', null)
       .not('away_total_goals', 'is', null)
       .order('date', { ascending: false })
@@ -676,11 +678,12 @@ export default async function TeamDetailPage({
     }
   }
   
-  // Get team's recent completed games directly from dim_schedule
+  // Get team's recent completed games directly from dim_schedule (only Past games)
   let teamGamesQuery = supabase
     .from('dim_schedule')
     .select('*')
     .or(`home_team_name.eq.${team.team_name},away_team_name.eq.${team.team_name},home_team_id.eq.${team.team_id},away_team_id.eq.${team.team_id}`)
+    .eq('schedule_type', 'Past')
     .not('home_total_goals', 'is', null) // Only completed games
   
   // Filter by season if specified and not empty
@@ -703,13 +706,14 @@ export default async function TeamDetailPage({
   const seasonsInGames = [...new Set(teamGames.map((g: any) => g.season_id).filter(Boolean))]
   const championshipGameIds = new Set<number>()
   
-  // Fetch last game for each season in parallel
+  // Fetch last game for each season in parallel (only Past games)
   if (seasonsInGames.length > 0) {
-    const lastGamesPromises = seasonsInGames.map(seasonId => 
+    const lastGamesPromises = seasonsInGames.map(seasonId =>
       supabase
         .from('dim_schedule')
         .select('game_id')
         .eq('season_id', seasonId)
+        .eq('schedule_type', 'Past')
         .not('home_total_goals', 'is', null)
         .not('away_total_goals', 'is', null)
         .order('date', { ascending: false })
@@ -806,12 +810,13 @@ export default async function TeamDetailPage({
   
   const { data: allGameRoster } = await gameRosterQuery
   
-  // Get game IDs for filtering advanced stats
-  const { data: scheduleForRoster } = seasonId 
+  // Get game IDs for filtering advanced stats (only Past games)
+  const { data: scheduleForRoster } = seasonId
     ? await supabase
         .from('dim_schedule')
         .select('game_id')
         .eq('season_id', seasonId)
+        .eq('schedule_type', 'Past')
     : { data: null }
   
   const gameIdsForRoster = scheduleForRoster?.map(g => g.game_id) || []

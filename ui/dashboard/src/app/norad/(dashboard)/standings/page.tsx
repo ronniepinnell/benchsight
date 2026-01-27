@@ -33,9 +33,10 @@ export default async function StandingsPage({
     getLeagueSummary(),
     getTeams(),
     // Get all games from dim_schedule for current season with team IDs for proper matching
+    // Only include 'Past' games (exclude 'Upcoming' and 'PPD')
     currentSeason
-      ? supabase.from('dim_schedule').select('*').eq('season_id', currentSeason).not('home_total_goals', 'is', null).not('away_total_goals', 'is', null).order('date', { ascending: false })
-      : supabase.from('dim_schedule').select('*').not('home_total_goals', 'is', null).not('away_total_goals', 'is', null).order('date', { ascending: false }).limit(1000)
+      ? supabase.from('dim_schedule').select('*').eq('season_id', currentSeason).eq('schedule_type', 'Past').not('home_total_goals', 'is', null).not('away_total_goals', 'is', null).order('date', { ascending: false })
+      : supabase.from('dim_schedule').select('*').eq('schedule_type', 'Past').not('home_total_goals', 'is', null).not('away_total_goals', 'is', null).order('date', { ascending: false }).limit(1000)
   ])
 
   // Create team lookup maps - by ID and by name (for fallback)
@@ -245,6 +246,7 @@ export default async function StandingsPage({
       .from('dim_schedule')
       .select('*')
       .eq('season_id', season.season_id)
+      .eq('schedule_type', 'Past')
       .not('home_total_goals', 'is', null)
       .not('away_total_goals', 'is', null)
       .order('date', { ascending: false })
