@@ -27,7 +27,7 @@ Tables created:
 - dim_terminology_mapping (84 rows)
 - dim_turnover_quality (3 rows)
 - dim_turnover_type (21 rows)
-- dim_video_type (9 rows)
+- dim_video_type (17 rows)
 - dim_zone_outcome (6 rows)
 
 Usage:
@@ -563,6 +563,14 @@ def create_dim_video_type() -> pd.DataFrame:
         ('VT0007', 'Tight', 'Tight Shot', 'Tight/close-up camera view', False, 7, False),
         ('VT0008', 'Replay', 'Replay', 'Replay/instant replay footage', False, 8, False),
         ('VT0009', 'Other', 'Other', 'Other video type', False, 9, False),
+        ('VT0010', 'Goalie_Home', 'Goalie Camera (Home)', 'Goalie camera view from home end', False, 10, False),
+        ('VT0011', 'Goalie_Away', 'Goalie Camera (Away)', 'Goalie camera view from away end', False, 11, False),
+        ('VT0012', 'Overhead_Home', 'Overhead (Home)', 'Overhead camera view from home end', False, 12, False),
+        ('VT0013', 'Overhead_Away', 'Overhead (Away)', 'Overhead camera view from away end', False, 13, False),
+        ('VT0014', 'Wide_Home', 'Wide Angle (Home)', 'Wide angle camera view from home end', False, 14, False),
+        ('VT0015', 'Wide_Away', 'Wide Angle (Away)', 'Wide angle camera view from away end', False, 15, False),
+        ('VT0016', 'Other_Home', 'Other (Home)', 'Other video type from home end', False, 16, False),
+        ('VT0017', 'Other_Away', 'Other (Away)', 'Other video type from away end', False, 17, False),
     ]
     
     df = pd.DataFrame(video_types, columns=[
