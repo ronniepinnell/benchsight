@@ -30,9 +30,8 @@ from src.transformation.standardize_play_details import standardize_tracking_dat
 from src.core.key_utils import (
     format_key, generate_event_id, generate_shift_id,
     normalize_dataframe_codes, add_all_keys, rename_standard_columns,
-    normalize_player_role, generate_sequences_and_plays, 
-    add_fact_events_fkeys, add_fact_event_players_fkeys,
-    generate_event_chain_key
+    normalize_player_role, generate_sequences_and_plays,
+    add_fact_events_fkeys, add_fact_event_players_fkeys
 )
 
 # Import centralized key parser
@@ -470,13 +469,19 @@ def load_blb_tables():
         if output == 'dim_schedule':
             schedule_cols_to_remove = [
                 'home_team_game_id', 'away_team_game_id',
-                'video_id', 'video_start_time', 'video_end_time', 
+                'video_id', 'video_start_time', 'video_end_time',
                 'video_title', 'video_url'
             ]
             existing_to_remove = [c for c in schedule_cols_to_remove if c in df.columns]
             if existing_to_remove:
                 df = df.drop(columns=existing_to_remove)
                 log.info(f"  Removed {len(existing_to_remove)} video/team_game_id columns from dim_schedule")
+
+            # Convert date to date-only string to prevent timezone issues in dashboard
+            # (midnight UTC dates display as previous day in US Mountain Time)
+            if 'date' in df.columns:
+                df['date'] = pd.to_datetime(df['date']).dt.strftime('%Y-%m-%d')
+                log.info(f"  Converted date column to date-only format (YYYY-MM-DD)")
         
         loaded[output] = df
         rows, cols = save_table(df, output)
@@ -757,15 +762,10 @@ def load_tracking_data(player_lookup, use_parallel: bool = True):
         fk_cols = [c for c in df.columns if c.endswith('_id') and c not in ['event_id', 'game_id', 'player_id']]
         log.info(f"  Added {len(fk_cols)} FK columns")
         
-        # Add event_chain_key
-        log.info("Adding event_chain_key...")
-        df['event_chain_key'] = df.apply(generate_event_chain_key, axis=1)
-        log.info(f"  event_chain_key: {df['event_chain_key'].notna().sum()}/{len(df)}")
-        
         # Reorder columns - keys, FKs, then values
         key_cols = ['event_id', 'game_id', 'player_id', 'player_game_number',
                     'sequence_key', 'play_key', 'shift_key', 'linked_event_key',
-                    'event_chain_key', 'tracking_event_key', 'zone_change_key']
+                    'tracking_event_key', 'zone_change_key']
         fk_id_cols = ['period_id', 'event_type_id', 'event_detail_id', 'event_detail_2_id',
                       'event_success_id', 'event_zone_id', 'home_zone_id', 'away_zone_id',
                       'home_team_id', 'away_team_id', 'player_team_id', 'team_venue_id',
@@ -774,8 +774,12 @@ def load_tracking_data(player_lookup, use_parallel: bool = True):
         other_cols = [c for c in df.columns if c not in priority_cols]
         df = df[[c for c in priority_cols if c in df.columns] + other_cols]
         
-        # v23.0: Remove unused flag columns
-        unused_cols = ['event_index_flag', 'sequence_index_flag', 'play_index_flag']
+        # v23.0: Remove unused flag columns (redundant index systems)
+        unused_cols = [
+            'event_index_flag', 'sequence_index_flag', 'play_index_flag',
+            'assist_to_goal_index_flag', 'assist_primary_event_index_flag',
+            'assist_secondary_event_index_flag', 'linked_event_index_flag'
+        ]
         existing_unused = [c for c in unused_cols if c in df.columns]
         if existing_unused:
             df = df.drop(columns=existing_unused)

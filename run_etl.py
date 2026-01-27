@@ -116,7 +116,20 @@ def run_full_etl():
     except Exception as e:
         errors.append(f"Dimension tables: {e}")
         log(f"Dimension tables FAILED: {e}", "ERROR")
-    
+
+    # =========================================================================
+    # PHASE 3C: Event Time Context (MOVED EARLY - adds shift_key to events)
+    # Must run before Phase 4D creates filtered tables (fact_shots, etc.)
+    # =========================================================================
+    log_phase("3C", "EVENT TIME CONTEXT (shift_key)")
+    try:
+        from src.advanced.event_time_context import enhance_event_tables
+        enhance_event_tables()
+        log(f"Event time context complete: {count_tables()} tables")
+    except Exception as e:
+        errors.append(f"Event time context: {e}")
+        log(f"Event time context FAILED: {e}", "WARN")
+
     # =========================================================================
     # PHASE 4: Core Player Stats
     # =========================================================================
@@ -217,17 +230,9 @@ def run_full_etl():
         log(f"Post processing FAILED: {e}", "WARN")
     
     # =========================================================================
-    # PHASE 8: Event Time Context
+    # PHASE 8: (Moved to Phase 3C - Event Time Context now runs earlier)
     # =========================================================================
-    log_phase(8, "EVENT TIME CONTEXT")
-    try:
-        from src.advanced.event_time_context import enhance_event_tables
-        enhance_event_tables()
-        log(f"Event time context complete: {count_tables()} tables")
-    except Exception as e:
-        errors.append(f"Event time context: {e}")
-        log(f"Event time context FAILED: {e}", "WARN")
-    
+
     # =========================================================================
     # PHASE 9: QA Tables (BEFORE v11 - creates fact_game_status)
     # =========================================================================

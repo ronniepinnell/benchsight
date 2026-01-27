@@ -474,18 +474,48 @@ def normalize_player_role(value) -> Optional[str]:
 
 # =============================================================================
 # SEQUENCE AND PLAY GENERATION
+# Reference: docs/reference/SEQUENCE_PLAY_LOGIC.md
 # =============================================================================
 
-# Events that END a sequence (whistle/stoppage)
-SEQUENCE_END_EVENTS = ['Stoppage', 'Goal', 'Penalty', 'GameEnd', 'Intermission', 'DeadIce', 'Timeout', 'Clockstop']
+# Events that START a sequence (primarily faceoffs)
+SEQUENCE_START_EVENTS = ['Faceoff', 'PeriodStart']
 
-# Events/details that END a play (possession change or zone change)
+# Events that END a sequence (any whistle-causing event)
+# Key principle: If the whistle blows, the sequence ends
+SEQUENCE_END_EVENTS = [
+    'Stoppage',      # General whistle/stoppage
+    'Goal',          # Puck enters net
+    'Penalty',       # Infraction called
+    'Icing',         # Icing call
+    'Offside',       # Offside call
+    'Timeout',       # Team or TV timeout
+    'PeriodEnd',     # End of period
+    'GameEnd',       # End of game
+    'GoalieChange',  # Goalie pulled/replaced (delayed whistle scenario)
+]
+
+# Events/details that END a play (possession change, zone change, or sequence end)
+# Key principle: Plays are nested within sequences
+# Note: Values must match actual event_detail values in tracker data
 PLAY_END_DETAILS = [
     # Possession changes
-    'Turnover_Giveaway', 'Turnover_Takeaway',
-    # Zone transitions  
-    'Zone_Entry', 'Zone_Exit',
-    'Zone_Entryfailed', 'Zone_ExitFailed',
+    'Turnover_Giveaway',
+    'Turnover_Takeaway',
+    'Shot_Blocked',      # Deflection = possession change
+    'Save_Freeze',       # Goalie covers = stoppage imminent
+
+    # Zone transitions (end old play, start new play)
+    'Zone_Entry',
+    'Zone_Exit',
+    'Zone_Entry_Failed',   # Failed entry = turnover at blueline
+    'Zone_Exit_Failed',    # Failed exit = turnover at blueline
+
+    # Sequence-ending events (play ends when sequence ends)
+    'Goal',
+    'Stoppage',
+    'Penalty',
+    'Icing',
+    'Offside',
 ]
 
 
@@ -944,37 +974,3 @@ def add_fact_event_players_fkeys(df: pd.DataFrame, output_dir) -> pd.DataFrame:
         df['play_success_id'] = df['play_detail_successful'].map(lookups['success'])
     
     return df
-
-
-def generate_event_chain_key(row) -> str:
-    """
-    Generate event_chain_key from game_id and event index.
-    Format: EC{game_id}{event_index:06d}
-    Example: EC18969001000
-    """
-    game_id = row.get('game_id')
-    
-    # Try to extract event_index from event_id or tracking_event_index
-    event_index = None
-    
-    # From event_id (format: EV1896901000)
-    if pd.notna(row.get('event_id')):
-        event_id = str(row['event_id'])
-        if event_id.startswith('EV'):
-            try:
-                # Extract last 5 digits as event_index
-                event_index = int(event_id[-5:])
-            except (ValueError, TypeError, KeyError, FileNotFoundError):
-                pass
-    
-    # Fallback to tracking_event_index
-    if event_index is None and pd.notna(row.get('tracking_event_index')):
-        try:
-            event_index = int(float(row['tracking_event_index']))
-        except (ValueError, TypeError, KeyError, FileNotFoundError):
-            pass
-    
-    if game_id is None or event_index is None:
-        return None
-    
-    return f"EC{game_id}{event_index:06d}"

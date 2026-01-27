@@ -440,7 +440,7 @@ def create_derived_event_tables(output_dir: Path, log, save_table_func=None):
         'time_to_next_sog', 'time_since_last_sog',
         'events_to_next_sog', 'events_since_last_sog',
         'is_pre_shot_event', 'is_shot_assist',
-        'play_key', 'sequence_key', 'event_chain_key'
+        'play_key', 'sequence_key'
     ]
     for col in context_cols:
         if col not in saves.columns:

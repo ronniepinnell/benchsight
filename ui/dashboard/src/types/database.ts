@@ -433,7 +433,6 @@ export interface FactEvents {
   is_save: number
   season_id: string
   // Event linking columns
-  event_chain_key?: string
   linked_event_key?: string
   sequence_key?: string
   play_key?: string

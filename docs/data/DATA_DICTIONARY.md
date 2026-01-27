@@ -167,7 +167,7 @@ for _, row in fact_gameroster.iterrows():
 **Key Transformations:**
 1. **Player Resolution:** Jersey numbers → player_ids via Phase 2 lookup
 2. **Time Calculation:** Convert min:sec to total_seconds
-3. **Key Generation:** Create event_id, shift_id, event_chain_key, sequence_key
+3. **Key Generation:** Create event_id, shift_id, sequence_key
 
 **Excluded Games:** 18965, 18993, 19032 (incomplete tracking data)
 
@@ -348,8 +348,6 @@ These phases add foreign keys, calculated columns, and flags to existing tables.
 | **fact_player_pair_stats** | fact_h2h | (player_1_id, player_2_id, season) | Linemate chemistry |
 | **fact_player_boxscore_all** | fact_player_game_stats | (game_id, player_id) | Complete boxscore |
 | **fact_playergames** | fact_gameroster | (game_id, player_id) | Legacy format |
-| **fact_event_chains** | fact_events | (event_chain_key, event_id) | Event sequences |
-| **fact_player_event_chains** | fact_event_chains | (player_id, event_chain_key) | Player in chains |
 | **fact_zone_entry_summary** | fact_events | (game_id, team_id, entry_type) | Entry aggregation |
 | **fact_zone_exit_summary** | fact_events | (game_id, team_id, exit_type) | Exit aggregation |
 | **fact_team_zone_time** | fact_shifts | (game_id, team_id, zone) | Zone possession |

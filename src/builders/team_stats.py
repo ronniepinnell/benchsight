@@ -171,10 +171,10 @@ class TeamStatsBuilder:
                 ]
                 if len(blocks_df) > 0:
                     # Avoid double-counting linked events
-                    if 'linked_event_index_flag' in blocks_df.columns:
-                        linked = blocks_df[blocks_df['linked_event_index_flag'].notna()]
-                        unlinked = blocks_df[blocks_df['linked_event_index_flag'].isna()]
-                        stats['blocks'] = linked['linked_event_index_flag'].nunique() + len(unlinked)
+                    if 'linked_event_key' in blocks_df.columns:
+                        linked = blocks_df[blocks_df['linked_event_key'].notna()]
+                        unlinked = blocks_df[blocks_df['linked_event_key'].isna()]
+                        stats['blocks'] = linked['linked_event_key'].nunique() + len(unlinked)
                     else:
                         # Deduplicate by event_id
                         stats['blocks'] = blocks_df['event_id'].nunique()

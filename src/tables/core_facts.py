@@ -1461,7 +1461,7 @@ def calculate_micro_stats(player_id, game_id, event_players, events):
     - Adds successful/unsuccessful variants for each stat
     - Significantly expanded list of microstats
     
-    CRITICAL: Uses DISTINCT counting by linked_event_index_flag to avoid double-counting.
+    CRITICAL: Uses DISTINCT counting by linked_event_key to avoid double-counting.
     Each event should only be counted once even if pattern appears in multiple columns.
     """
     pe = event_players[(event_players['game_id'] == game_id) & (event_players['player_id'] == player_id) & (event_players['player_role'].astype(str).str.lower() == PRIMARY_PLAYER)]
@@ -1484,7 +1484,7 @@ def calculate_micro_stats(player_id, game_id, event_players, events):
         """
         Count DISTINCT events matching pattern in play_detail1, play_detail_2, event_detail, OR event_detail_2.
         Returns: (total_count, successful_count, unsuccessful_count)
-        Uses linked_event_index_flag for deduplication if available.
+        Uses linked_event_key for deduplication if available.
         """
         matching_events = pd.DataFrame()
         
@@ -1510,19 +1510,19 @@ def calculate_micro_stats(player_id, game_id, event_players, events):
         if len(matching_events) == 0:
             return (0, 0, 0)
         
-        # Deduplicate: use linked_event_index_flag if available, otherwise event_id
-        if 'linked_event_index_flag' in matching_events.columns:
+        # Deduplicate: use linked_event_key if available, otherwise event_id
+        if 'linked_event_key' in matching_events.columns:
             # Split into linked and unlinked
-            linked = matching_events[matching_events['linked_event_index_flag'].notna()]
-            unlinked = matching_events[matching_events['linked_event_index_flag'].isna()]
+            linked = matching_events[matching_events['linked_event_key'].notna()]
+            unlinked = matching_events[matching_events['linked_event_key'].isna()]
             
-            # Get distinct linked events (by linked_event_index_flag) and unlinked (by event_id)
+            # Get distinct linked events (by linked_event_key) and unlinked (by event_id)
             distinct_linked_flags = []
             distinct_unlinked_ids = []
             
             if len(linked) > 0:
-                distinct_linked_flags = linked['linked_event_index_flag'].unique().tolist()
-                linked_events = linked[linked['linked_event_index_flag'].isin(distinct_linked_flags)].drop_duplicates(subset='linked_event_index_flag')
+                distinct_linked_flags = linked['linked_event_key'].unique().tolist()
+                linked_events = linked[linked['linked_event_key'].isin(distinct_linked_flags)].drop_duplicates(subset='linked_event_key')
             else:
                 linked_events = pd.DataFrame()
             
@@ -2884,12 +2884,12 @@ def calculate_player_event_stats(player_id, game_id, event_players, events=None)
     if 'play_detail1' in pe.columns:
         blocks_df = pe[pe['play_detail1'].astype(str).str.lower().str.contains('blockedshot', na=False)]
         if len(blocks_df) > 0:
-            if 'linked_event_index_flag' in blocks_df.columns:
-                # For rows with linked_event_index_flag, count unique flags
+            if 'linked_event_key' in blocks_df.columns:
+                # For rows with linked_event_key, count unique flags
                 # For rows without (NaN), count each row
-                linked = blocks_df[blocks_df['linked_event_index_flag'].notna()]
-                unlinked = blocks_df[blocks_df['linked_event_index_flag'].isna()]
-                stats['blocks'] = linked['linked_event_index_flag'].nunique() + len(unlinked)
+                linked = blocks_df[blocks_df['linked_event_key'].notna()]
+                unlinked = blocks_df[blocks_df['linked_event_key'].isna()]
+                stats['blocks'] = linked['linked_event_key'].nunique() + len(unlinked)
             else:
                 stats['blocks'] = len(blocks_df)
     

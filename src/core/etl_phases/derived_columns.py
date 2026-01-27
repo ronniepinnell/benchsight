@@ -79,23 +79,65 @@ def calculate_derived_columns(df, log):
             calculated.append('time_end_total_seconds')
 
     # duration = start_time - end_time (because clock counts down)
+    # Track inverted rows for recalculating dependent columns
+    inverted_rows = pd.Series([False]*len(df), index=df.index)
+
     if 'time_start_total_seconds' in df.columns and 'time_end_total_seconds' in df.columns:
+        # Fix inverted times: if end > start (negative duration), swap them
+        if 'duration' in df.columns:
+            inverted_rows = df['duration'] < 0
+            if inverted_rows.any():
+                # Swap start and end times for inverted rows
+                start_vals = df.loc[inverted_rows, 'time_start_total_seconds'].copy()
+                end_vals = df.loc[inverted_rows, 'time_end_total_seconds'].copy()
+                df.loc[inverted_rows, 'time_start_total_seconds'] = end_vals
+                df.loc[inverted_rows, 'time_end_total_seconds'] = start_vals
+                # Also swap event_running_start/end if they exist
+                if 'event_running_start' in df.columns and 'event_running_end' in df.columns:
+                    run_start_vals = df.loc[inverted_rows, 'event_running_start'].copy()
+                    run_end_vals = df.loc[inverted_rows, 'event_running_end'].copy()
+                    df.loc[inverted_rows, 'event_running_start'] = run_end_vals
+                    df.loc[inverted_rows, 'event_running_end'] = run_start_vals
+                # Recalculate duration as positive
+                df.loc[inverted_rows, 'duration'] = df.loc[inverted_rows, 'time_start_total_seconds'] - df.loc[inverted_rows, 'time_end_total_seconds']
+                calculated.append(f'duration (fixed {inverted_rows.sum()} inverted)')
+
+        # Calculate duration for rows that need it
         needs_calc = df['duration'].isna() if 'duration' in df.columns else pd.Series([True]*len(df))
         if needs_calc.any():
             calc_vals = df['time_start_total_seconds'] - df['time_end_total_seconds']
-            calc_vals = calc_vals.clip(lower=0)  # Fix negative durations
             if 'duration' not in df.columns:
                 df['duration'] = calc_vals
             else:
                 df.loc[needs_calc, 'duration'] = calc_vals[needs_calc]
             calculated.append('duration')
 
+        # Final pass: fix any remaining negative durations by swapping times
+        negative_duration = (df['duration'] < 0) if 'duration' in df.columns else pd.Series([False]*len(df))
+        if negative_duration.any():
+            # Swap start and end times
+            start_vals = df.loc[negative_duration, 'time_start_total_seconds'].copy()
+            end_vals = df.loc[negative_duration, 'time_end_total_seconds'].copy()
+            df.loc[negative_duration, 'time_start_total_seconds'] = end_vals
+            df.loc[negative_duration, 'time_end_total_seconds'] = start_vals
+            # Swap event_running_start/end if they exist
+            if 'event_running_start' in df.columns and 'event_running_end' in df.columns:
+                run_start = df.loc[negative_duration, 'event_running_start'].copy()
+                run_end = df.loc[negative_duration, 'event_running_end'].copy()
+                df.loc[negative_duration, 'event_running_start'] = run_end
+                df.loc[negative_duration, 'event_running_end'] = run_start
+            # Recalculate duration
+            df.loc[negative_duration, 'duration'] = df.loc[negative_duration, 'time_start_total_seconds'] - df.loc[negative_duration, 'time_end_total_seconds']
+            calculated.append(f'duration (final fix {negative_duration.sum()} negatives)')
+
     # event_running_start/end = cumulative seconds from game start
     # Period 1: 0-1200, Period 2: 1200-2400, Period 3: 2400-3600
     if 'period' in df.columns and 'time_start_total_seconds' in df.columns:
         df['period'] = pd.to_numeric(df['period'], errors='coerce').fillna(1).astype(int)
 
+        # Calculate for rows that need it (NA) OR were inverted (need recalc)
         needs_calc = df['event_running_start'].isna() if 'event_running_start' in df.columns else pd.Series([True]*len(df))
+        needs_calc = needs_calc | inverted_rows  # Include inverted rows
         if needs_calc.any():
             # Running time = (period-1)*1200 + (1200 - time_remaining)
             calc_vals = (df['period'] - 1) * 1200 + (1200 - df['time_start_total_seconds'])
@@ -106,6 +148,7 @@ def calculate_derived_columns(df, log):
             calculated.append('event_running_start')
 
         needs_calc = df['event_running_end'].isna() if 'event_running_end' in df.columns else pd.Series([True]*len(df))
+        needs_calc = needs_calc | inverted_rows  # Include inverted rows
         if needs_calc.any() and 'time_end_total_seconds' in df.columns:
             calc_vals = (df['period'] - 1) * 1200 + (1200 - df['time_end_total_seconds'])
             if 'event_running_end' not in df.columns:
@@ -128,6 +171,7 @@ def calculate_derived_columns(df, log):
     # running_video_time (estimate from running_start, can be adjusted)
     if 'event_running_start' in df.columns:
         needs_calc = df['running_video_time'].isna() if 'running_video_time' in df.columns else pd.Series([True]*len(df))
+        needs_calc = needs_calc | inverted_rows  # Include inverted rows
         if needs_calc.any():
             # Add ~15 min per intermission (periods 2,3 have intermissions before them)
             intermission_offset = df['period'].apply(lambda p: (p - 1) * 900 if pd.notna(p) and p > 1 else 0)
@@ -207,10 +251,11 @@ def calculate_derived_columns(df, log):
         zone_map = {'Offensive': 'Defensive', 'Defensive': 'Offensive', 'Neutral': 'Neutral'}
 
         # home_team_zone
+        # Note: team_venue values are 'h' (home) and 'a' (away), not 'home'/'away'
         needs_calc = df['home_team_zone'].isna() if 'home_team_zone' in df.columns else pd.Series([True]*len(df))
         if needs_calc.any():
             calc_vals = df.apply(
-                lambda r: r.get('event_team_zone') if str(r.get('team_venue', '')).lower() == 'home'
+                lambda r: r.get('event_team_zone') if str(r.get('team_venue', '')).lower() in ('h', 'home')
                           else zone_map.get(r.get('event_team_zone'), 'Neutral'),
                 axis=1
             )

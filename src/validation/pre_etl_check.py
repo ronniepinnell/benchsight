@@ -403,6 +403,7 @@ class PreETLValidator:
         result.add(self._check_time_bounds())
         result.add(self._check_goal_structure())
         result.add(self._check_faceoff_structure())
+        result.add(self._check_boolean_values())
 
         return result
 
@@ -1444,6 +1445,78 @@ class PreETLValidator:
             message=f"All {len(faceoff_indices)} faceoffs have winner and loser"
         )
 
+    def _check_boolean_values(self) -> CheckResult:
+        """
+        Check for invalid boolean values in success/flag columns.
+
+        Issue #77: Boolean columns contain "s" or "u" strings instead of True/False.
+        This causes Supabase upload failures with "invalid input syntax for type boolean".
+
+        Affected columns (from tracker export):
+        - event_successful, event_successful_
+        - play_detail_successful, play_detail_successful_
+
+        Valid values: True, False, 1, 0, None/NaN
+        Invalid values: 's', 'u', or any other string
+        """
+        if self._events_df is None:
+            return CheckResult(
+                check_name='boolean_values',
+                passed=False,
+                level=CheckLevel.CRITICAL,
+                message="Events data not loaded"
+            )
+
+        df = self._events_df
+        issues = []
+
+        # Columns that should be boolean (success/unsuccessful)
+        boolean_columns = [
+            'event_successful', 'event_successful_',
+            'play_detail_successful', 'play_detail_successful_',
+            'is_highlight', 'is_xy_adjusted'
+        ]
+
+        # Valid boolean representations
+        valid_bool_values = {True, False, 1, 0, 1.0, 0.0, 'true', 'false', 'True', 'False', '1', '0'}
+
+        for col in boolean_columns:
+            if col not in df.columns:
+                continue
+
+            # Get non-null values
+            values = df[col].dropna()
+            if len(values) == 0:
+                continue
+
+            # Find invalid values (not in valid set)
+            invalid_mask = ~values.isin(valid_bool_values)
+            invalid_values = values[invalid_mask]
+
+            if len(invalid_values) > 0:
+                unique_invalid = invalid_values.unique().tolist()[:5]
+                count = len(invalid_values)
+                issues.append(f"{col}: {count} invalid values {unique_invalid}")
+
+        if issues:
+            return CheckResult(
+                check_name='boolean_values',
+                passed=False,
+                level=CheckLevel.ERROR,
+                message=f"Invalid boolean values found in {len(issues)} columns",
+                details={
+                    'issues': issues,
+                    'hint': "Convert 's' to True (successful) and 'u' to False (unsuccessful)"
+                }
+            )
+
+        return CheckResult(
+            check_name='boolean_values',
+            passed=True,
+            level=CheckLevel.ERROR,
+            message="All boolean columns have valid values"
+        )
+
     # =========================================================================
     # CLEANING METHODS
     # =========================================================================
@@ -1479,6 +1552,10 @@ class PreETLValidator:
         events_df, dup_fixes = self._fix_duplicate_event_slots(events_df)
         result.fixes.extend(dup_fixes)
 
+        # Fix 2: Boolean values (s/u -> True/False)
+        events_df, bool_fixes = self._fix_boolean_values(events_df)
+        result.fixes.extend(bool_fixes)
+
         # Store cleaned DataFrames
         result.events_df = events_df
         result.shifts_df = shifts_df
@@ -1489,14 +1566,18 @@ class PreETLValidator:
         # Run validation on cleaned data to find remaining issues
         validation = self.validate()
 
+        # Checks that we auto-fix (don't count as blocking after clean)
+        fixed_checks = {'duplicate_event_slots', 'boolean_values'}
+
         for check in validation.checks:
             if not check.passed:
                 if check.level == CheckLevel.CRITICAL:
                     # Critical issues that weren't fixed block ETL
-                    if check.check_name != 'duplicate_event_slots':  # We fixed this
+                    if check.check_name not in fixed_checks:
                         result.blocking_issues.append(f"{check.check_name}: {check.message}")
                 elif check.level == CheckLevel.ERROR:
-                    result.blocking_issues.append(f"{check.check_name}: {check.message}")
+                    if check.check_name not in fixed_checks:
+                        result.blocking_issues.append(f"{check.check_name}: {check.message}")
                 else:
                     result.warnings.append(f"{check.check_name}: {check.message}")
 
@@ -1604,6 +1685,43 @@ class PreETLValidator:
         cleaned_df = cleaned_df.drop(columns=['_role_team'])
 
         return cleaned_df, fixes
+
+    def _fix_boolean_values(self, df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
+        """
+        Convert invalid boolean values to proper booleans.
+
+        Fixes:
+        - 's' -> True (successful)
+        - 'u' -> False (unsuccessful)
+
+        Returns: (cleaned_df, list of fix descriptions)
+        """
+        fixes = []
+        df = df.copy()
+
+        # Columns that should be boolean (success/unsuccessful)
+        boolean_columns = [
+            'event_successful', 'event_successful_',
+            'play_detail_successful', 'play_detail_successful_',
+        ]
+
+        # Mapping for s/u to boolean
+        su_mapping = {'s': True, 'u': False}
+
+        for col in boolean_columns:
+            if col not in df.columns:
+                continue
+
+            # Count s/u values before fix
+            s_count = (df[col] == 's').sum()
+            u_count = (df[col] == 'u').sum()
+
+            if s_count > 0 or u_count > 0:
+                # Apply mapping
+                df[col] = df[col].replace(su_mapping)
+                fixes.append(f"{col}: converted {s_count} 's' -> True, {u_count} 'u' -> False")
+
+        return df, fixes
 
 
 def validate_game(game_id: int, verbose: bool = False) -> ValidationResult:

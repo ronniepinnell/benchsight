@@ -1236,7 +1236,7 @@ CREATE INDEX idx_fact_player_boxscore_all_team_id ON fact_player_boxscore_all(te
 
 -- fact_player_event_chains: 22 columns
 CREATE TABLE fact_player_event_chains (
-    event_chain_key TEXT PRIMARY KEY,
+    linked_event_key TEXT PRIMARY KEY,
     game_id TEXT,
     event_index DECIMAL,
     event_key TEXT,

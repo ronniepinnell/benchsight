@@ -158,6 +158,11 @@ def enhance_event_tables(output_dir: Path, log, table_store_available: bool = Fa
         events['shift_id'] = events.apply(find_shift_id, axis=1)
         shift_fill_ev = events['shift_id'].notna().sum()
         log.info(f"    fact_events.shift_id: {shift_fill_ev}/{len(events)} ({100*shift_fill_ev/len(events):.1f}%)")
+
+        # Copy shift_id to shift_key (shift_id IS the shift_key format: 'SH1896900001')
+        tracking['shift_key'] = tracking['shift_id']
+        events['shift_key'] = events['shift_id']
+        log.info(f"    shift_key populated from shift_id")
     else:
         log.warn("    Shift time columns not found, skipping shift_id FK")
 
@@ -814,9 +819,9 @@ def enhance_events_with_flags(output_dir: Path, log, save_table_func=None):
     # Using event_detail='Zone_Exit' as primary indicator - covers all games consistently
     # NOTE: Some games also have play_detail1 'Breakout' annotations, but this is inconsistent
     # Legacy logic (inconsistent across games): events['event_detail'].str.contains('Breakout', na=False) | events['play_detail1'].str.contains('Breakout', na=False, case=False)
-    # Zone entry = successful zone entries only (exclude Zone_Entryfailed)
+    # Zone entry = successful zone entries only (exclude Zone_Entry_Failed)
     events['is_zone_entry'] = (events['event_detail'] == 'Zone_Entry').astype(int)
-    # Zone exit = successful zone exits only (exclude Zone_ExitFailed)
+    # Zone exit = successful zone exits only (exclude Zone_Exit_Failed)
     events['is_zone_exit'] = (events['event_detail'] == 'Zone_Exit').astype(int)
 
     # is_controlled_entry: Zone entry with puck control (not dump-in)
@@ -1026,13 +1031,14 @@ def enhance_events_with_flags(output_dir: Path, log, save_table_func=None):
     events['save_outcome_id'] = events['event_detail'].map(save_outcome_map)
 
     # zone_outcome_id - maps event_detail to dim_zone_outcome
+    # Note: Values must match actual event_detail values in tracker data
     zone_outcome_map = {
         'Zone_Entry': 'ZO01',
-        'Zone_Entryfailed': 'ZO02',
+        'Zone_Entry_Failed': 'ZO02',
         'Zone_Exit': 'ZO03',
-        'Zone_ExitFailed': 'ZO04',
+        'Zone_Exit_Failed': 'ZO04',
         'Zone_Keepin': 'ZO05',
-        'Zone_KeepinFailed': 'ZO06',
+        'Zone_Keepin_Failed': 'ZO06',
     }
     events['zone_outcome_id'] = events['event_detail'].map(zone_outcome_map)
 
@@ -1359,7 +1365,6 @@ def enhance_events_with_flags(output_dir: Path, log, save_table_func=None):
     # Initialize segment number columns
     events['play_segment_number'] = None
     events['sequence_segment_number'] = None
-    events['event_chain_segment_number'] = None
     events['linked_event_segment_number'] = None
 
     # Sort events by game and time to ensure proper ordering
@@ -1393,19 +1398,7 @@ def enhance_events_with_flags(output_dir: Path, log, save_table_func=None):
             seq_count = events['sequence_segment_number'].notna().sum()
             log.info(f"    sequence_segment_number: {seq_count} events have positions")
 
-        # 3. Event chain segment number (position within event_chain_key)
-        if 'event_chain_key' in events.columns:
-            chain_segments = {}
-            for chain_key, grp in events.groupby('event_chain_key'):
-                if pd.notna(chain_key):
-                    grp_sorted = grp.sort_values(['time_start_total_seconds', 'event_id'])
-                    for i, event_id in enumerate(grp_sorted['event_id'], 1):
-                        chain_segments[event_id] = i
-            events['event_chain_segment_number'] = events['event_id'].map(chain_segments)
-            chain_count = events['event_chain_segment_number'].notna().sum()
-            log.info(f"    event_chain_segment_number: {chain_count} events have positions")
-
-        # 4. Linked event segment number (position within linked_event_key)
+        # 3. Linked event segment number (position within linked_event_key)
         # Check for linked_event_key or linked_event_index
         linked_key_col = None
         if 'linked_event_key' in events.columns:

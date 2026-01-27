@@ -495,7 +495,6 @@ Tracking Excel Files ─────────┤         │
 | sequence_key | string | Derived | `format_key('SQ', game_id, sequence_index)` |
 | play_key | string | Derived | `format_key('PL', game_id, play_index)` |
 | shift_key | string | Derived | `format_key('SH', game_id, shift_index)` |
-| event_chain_key | string | Derived | Links related events |
 
 ### FK Columns (added via `add_fact_event_players_fkeys()`):
 - period_id → dim_period
@@ -1052,7 +1051,7 @@ Plus modifiers as above
 ```
 
 ### fact_linked_events
-**Source:** fact_event_players (grouped by event_chain_key)
+**Source:** fact_event_players (grouped by linked_event_key)
 **Grain:** linked_event_key
 **ETL:** `src/tables/event_analytics.py:create_fact_linked_events()`
 

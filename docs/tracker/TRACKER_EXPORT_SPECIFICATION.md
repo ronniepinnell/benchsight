@@ -651,7 +651,7 @@ Play Detail 2 uses the same dimension table as Play Detail. It allows tracking a
 
 ### What ETL Derives
 
-1. **Keys:** `event_id`, `shift_id`, `sequence_key`, `play_key`, `shift_key`, `event_chain_key`
+1. **Keys:** `event_id`, `shift_id`, `sequence_key`, `play_key`, `shift_key`
 2. **Foreign Keys:** All `*_id` columns (period_id, event_type_id, player_id, etc.)
 3. **Flags:** `is_goal`, `is_shot`, `is_corsi`, `is_fenwick`
 4. **Time Calculations:** All `*_total_seconds`, `*_running_*` columns (if missing)

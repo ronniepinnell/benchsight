@@ -828,9 +828,9 @@ def create_fact_linked_events() -> pd.DataFrame:
         print("  ERROR: fact_events not found!")
         return pd.DataFrame()
     
-    # Use event_chain_key if available
+    # Use linked_event_key or sequence_key for chaining
     chain_col = None
-    for col in ['event_chain_key', 'linked_event_key', 'sequence_key']:
+    for col in ['linked_event_key', 'sequence_key']:
         if col in event_players.columns:
             chain_col = col
             break

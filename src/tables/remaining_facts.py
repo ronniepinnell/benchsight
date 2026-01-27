@@ -2561,6 +2561,64 @@ def create_fact_goal_assists() -> pd.DataFrame:
         print("  SKIP: No goals found")
         return pd.DataFrame()
 
+    # ==========================================================================
+    # GWG (Game Winning Goal) Calculation
+    # NHL Standard: GWG = winner's (loser_final_score + 1)th goal
+    # Example: If final is 5-3, GWG is winner's 4th goal
+    # NOTE: Hockey clock counts DOWN, so sort by period ASC, minutes DESC, seconds DESC
+    # ==========================================================================
+
+    # Sort goals chronologically (period ASC, time DESC for countdown clock)
+    goals = goals.sort_values(
+        ['game_id', 'period', 'event_start_min', 'event_start_sec'],
+        ascending=[True, True, False, False]
+    ).reset_index(drop=True)
+
+    # Calculate final scores and determine GWG for each game
+    # gwg_events = set of event_index values that are GWGs
+    gwg_events = set()
+
+    for game_id in goals['game_id'].unique():
+        game_goals = goals[goals['game_id'] == game_id].copy()
+
+        # Count goals per team and track which event is which team goal number
+        team_goal_counts = {}
+        goal_team_numbers = {}  # {event_index: (team, goal_num)}
+
+        for _, g in game_goals.iterrows():
+            team = g['player_team']
+            event_idx = g['event_index']
+            team_goal_counts[team] = team_goal_counts.get(team, 0) + 1
+            goal_team_numbers[event_idx] = (team, team_goal_counts[team])
+
+        # Determine winner and loser
+        if len(team_goal_counts) < 2:
+            # Only one team scored - they win, GWG is their 1st goal
+            if len(team_goal_counts) == 1:
+                winner = list(team_goal_counts.keys())[0]
+                gwg_goal_num = 1
+            else:
+                continue
+        else:
+            # Find team with most goals
+            sorted_teams = sorted(team_goal_counts.items(), key=lambda x: x[1], reverse=True)
+            winner = sorted_teams[0][0]
+            winner_goals = sorted_teams[0][1]
+            loser_goals = sorted_teams[1][1]
+
+            if winner_goals == loser_goals:
+                # Tie game - no GWG
+                continue
+
+            # GWG = winner's (loser_goals + 1)th goal
+            gwg_goal_num = loser_goals + 1
+
+        # Find the event_index for the GWG
+        for event_idx, (team, goal_num) in goal_team_numbers.items():
+            if team == winner and goal_num == gwg_goal_num:
+                gwg_events.add(event_idx)
+                break
+
     # Build assist lookups - index by the GOAL's event_index (via assist_to_goal_index)
     # This is more reliable than using assist_*_event_index on goals which may not exist yet
     primary_assist_filter = (
@@ -2674,8 +2732,8 @@ def create_fact_goal_assists() -> pd.DataFrame:
         record['is_powerplay_goal'] = 'pp' in strength_lower or '5v4' in strength_lower or '5v3' in strength_lower or '4v3' in strength_lower
         record['is_shorthanded_goal'] = 'pk' in strength_lower or '4v5' in strength_lower or '3v5' in strength_lower or '3v4' in strength_lower
         record['is_empty_net'] = 'en' in strength_lower or 'empty' in strength_lower
-        # Game winner would require knowing final score - set to False for now
-        record['is_game_winner'] = False
+        # GWG: Check if this goal's event_index is in the pre-calculated gwg_events set
+        record['is_game_winner'] = event_index in gwg_events
 
         # Count assists
         assist_count = 0

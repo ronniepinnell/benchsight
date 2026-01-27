@@ -234,7 +234,7 @@ def build_player_event_chains():
         first_row = group.iloc[0]
         
         chains.append({
-            'event_chain_key': f"EC{int(game_id):05d}{int(event_index):06d}",
+            'linked_event_key': f"EC{int(game_id):05d}{int(event_index):06d}",
             'game_id': game_id,
             'event_index': event_index,
             'event_key': first_row.get('event_key'),

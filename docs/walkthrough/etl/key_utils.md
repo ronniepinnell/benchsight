@@ -16,7 +16,7 @@ Version: 2.00
 - Format/generate event and shift IDs (`generate_event_id`, `generate_shift_id`).
 - Normalize codes and roles (`normalize_dataframe_codes`, `normalize_player_role`).
 - Add keys to DataFrames (`add_all_keys`, FK helpers).
-- Create sequence/chain keys (`generate_sequences_and_plays`, `generate_event_chain_key`).
+- Create sequence/play keys (`generate_sequences_and_plays`).
 
 ---
 

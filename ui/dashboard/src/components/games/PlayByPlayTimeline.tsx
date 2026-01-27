@@ -687,9 +687,9 @@ export function PlayByPlayTimeline({
   const eventsByLinkedKey = useMemo(() => {
     const map = new Map<string, FactEvents[]>()
     events.forEach(event => {
-      // Use linked_event_key first (primary driver), then fallback to event_chain_key, sequence_key, or play_key
+      // Use linked_event_key first (primary driver), then fallback to sequence_key or play_key
       const eventAny = event as any // Type assertion to access fields that might not be in type
-      const key = eventAny.linked_event_key || eventAny.event_chain_key || eventAny.sequence_key || eventAny.play_key
+      const key = eventAny.linked_event_key || eventAny.sequence_key || eventAny.play_key
       if (key) {
         if (!map.has(key)) {
           map.set(key, [])
@@ -1644,7 +1644,7 @@ export function PlayByPlayTimeline({
                       // Get linked events for this event
                       const eventAny = event as any // Type assertion to access fields that might not be in type
                       // Use linked_event_key first (primary driver), then fallback to other keys
-                      const linkedKey = eventAny.linked_event_key || eventAny.event_chain_key || eventAny.sequence_key || eventAny.play_key
+                      const linkedKey = eventAny.linked_event_key || eventAny.sequence_key || eventAny.play_key
                       const linkedEvents = linkedKey ? eventsByLinkedKey.get(linkedKey) : undefined
 
                       return (
