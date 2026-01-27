@@ -27,10 +27,11 @@ export async function getGames({
 } = {}): Promise<{ games: VRecentGames[], hasMore: boolean }> {
   const supabase = await createClient()
   
-  // Build base query - only completed games (have scores)
+  // Build base query - only completed past games (have scores)
   let query = supabase
     .from('dim_schedule')
     .select('*', { count: 'exact' })
+    .eq('schedule_type', 'Past')
     .not('home_total_goals', 'is', null)
     .not('away_total_goals', 'is', null)
   
@@ -184,10 +185,11 @@ export async function getGames({
 export async function getRecentGames(limit: number = 10): Promise<VRecentGames[]> {
   const supabase = await createClient()
   
-  // Get ALL games from dim_schedule - filter for completed games (have any score data)
+  // Get ALL past games from dim_schedule - filter for completed games (have any score data)
   const { data: scheduleGames, error: scheduleError } = await supabase
     .from('dim_schedule')
     .select('*')
+    .eq('schedule_type', 'Past')
     .or('home_total_goals.not.is.null,away_total_goals.not.is.null')
     .order('date', { ascending: false })
     .order('game_time', { ascending: false, nullsLast: true })
@@ -772,6 +774,7 @@ export async function getPriorGames(
     .from('dim_schedule')
     .select('game_id, date, home_team_name, away_team_name, home_total_goals, away_total_goals, home_team_id, away_team_id')
     .eq('season_id', seasonId)
+    .eq('schedule_type', 'Past')
     .or(`home_team_id.eq.${homeTeamId},away_team_id.eq.${homeTeamId}`)
     .neq('game_id', gameId)
     .not('home_total_goals', 'is', null)
@@ -791,6 +794,7 @@ export async function getPriorGames(
     .from('dim_schedule')
     .select('game_id, date, home_team_name, away_team_name, home_total_goals, away_total_goals, home_team_id, away_team_id')
     .eq('season_id', seasonId)
+    .eq('schedule_type', 'Past')
     .or(`home_team_id.eq.${awayTeamId},away_team_id.eq.${awayTeamId}`)
     .neq('game_id', gameId)
     .not('home_total_goals', 'is', null)

@@ -367,7 +367,7 @@ SELECT
     SUM(home_total_goals) as team1_goals,
     SUM(away_total_goals) as team2_goals
 FROM dim_schedule
-WHERE home_total_goals IS NOT NULL AND include = TRUE
+WHERE home_total_goals IS NOT NULL AND include = TRUE AND schedule_type = 'Past'
 GROUP BY home_team_name, away_team_name
 HAVING COUNT(*) > 0
 ORDER BY games_played DESC;
@@ -615,7 +615,7 @@ SELECT
     s.home_team_period2_goals || '-' || s.away_team_period2_goals as p2_score,
     s.home_team_period3_goals || '-' || s.away_team_period3_goals as p3_score
 FROM dim_schedule s
-WHERE s.include = TRUE AND s.home_total_goals IS NOT NULL
+WHERE s.include = TRUE AND s.schedule_type = 'Past' AND s.home_total_goals IS NOT NULL
 ORDER BY s.date DESC;
 
 CREATE OR REPLACE VIEW v_summary_by_position AS
@@ -654,7 +654,7 @@ SELECT
     END as winner,
     ABS(home_total_goals - away_total_goals) as goal_diff
 FROM dim_schedule
-WHERE include = TRUE AND home_total_goals IS NOT NULL
+WHERE include = TRUE AND schedule_type = 'Past' AND home_total_goals IS NOT NULL
 ORDER BY date DESC
 LIMIT 20;
 
@@ -727,7 +727,7 @@ SELECT
     (home_total_goals + away_total_goals) as total_goals,
     home_total_goals || '-' || away_total_goals as score
 FROM dim_schedule
-WHERE include = TRUE AND home_total_goals IS NOT NULL
+WHERE include = TRUE AND schedule_type = 'Past' AND home_total_goals IS NOT NULL
 ORDER BY (home_total_goals + away_total_goals) DESC
 LIMIT 20;
 
@@ -741,7 +741,7 @@ WITH team_games AS (
              ELSE 'T' END as result,
         home_total_goals as gf,
         away_total_goals as ga
-    FROM dim_schedule WHERE include = TRUE AND home_total_goals IS NOT NULL
+    FROM dim_schedule WHERE include = TRUE AND schedule_type = 'Past' AND home_total_goals IS NOT NULL
     UNION ALL
     SELECT
         away_team_name as team_name,
@@ -751,7 +751,7 @@ WITH team_games AS (
              ELSE 'T' END as result,
         away_total_goals as gf,
         home_total_goals as ga
-    FROM dim_schedule WHERE include = TRUE AND home_total_goals IS NOT NULL
+    FROM dim_schedule WHERE include = TRUE AND schedule_type = 'Past' AND home_total_goals IS NOT NULL
 ),
 ranked AS (
     SELECT
@@ -1099,7 +1099,7 @@ SELECT
     r.pim
 FROM dim_schedule s
 JOIN fact_gameroster r ON s.game_id = r.game_id
-WHERE s.include = TRUE
+WHERE s.include = TRUE AND s.schedule_type = 'Past'
 ORDER BY s.date DESC, r.team_venue, r.points DESC;
 
 

@@ -315,10 +315,22 @@ class SupabaseManager:
         
         # Clean DataFrame
         df = self._clean_dataframe(df)
-        
+
         # Convert to records
         records = self._df_to_records(df)
-        
+
+        # Delete existing data before inserting (prevent duplicates)
+        try:
+            self.client.table(table_name).delete().neq('_export_timestamp', '__impossible__').execute()
+        except Exception as e:
+            # Fallback: try deleting with a different always-true condition
+            try:
+                # Get first column name to use as filter
+                first_col = df.columns[0]
+                self.client.table(table_name).delete().neq(first_col, '__impossible__').execute()
+            except Exception as e2:
+                logger.warning(f"  Could not clear {table_name} before upload: {e2}")
+
         # Upload in batches
         uploaded = 0
         for i in range(0, len(records), self.BATCH_SIZE):

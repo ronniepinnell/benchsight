@@ -77,7 +77,7 @@ SELECT
     ls.season,
     COUNT(DISTINCT p.player_id) as total_players,
     COUNT(DISTINCT p.team_id) as total_teams,
-    (SELECT COUNT(*) FROM dim_schedule WHERE season_id = ls.season_id AND home_total_goals IS NOT NULL) as total_games,
+    (SELECT COUNT(*) FROM dim_schedule WHERE season_id = ls.season_id AND home_total_goals IS NOT NULL AND schedule_type = 'Past') as total_games,
     SUM(p.goals) as total_goals,
     SUM(p.assists) as total_assists,
     SUM(p.points) as total_points,

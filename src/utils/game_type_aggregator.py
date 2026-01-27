@@ -204,8 +204,12 @@ def get_team_record_from_schedule(
     Returns:
         Dict with games_played, wins, losses, ties, points, goals_for, goals_against
     """
-    # Ensure goal columns are numeric (dtype optimization may create categoricals)
+    # Only count Past games (exclude Upcoming, PPD)
     schedule = schedule.copy()
+    if 'schedule_type' in schedule.columns:
+        schedule = schedule[schedule['schedule_type'] == 'Past']
+
+    # Ensure goal columns are numeric (dtype optimization may create categoricals)
     for col in ['home_total_goals', 'away_total_goals', 'home_team_t', 'away_team_t']:
         if col in schedule.columns:
             schedule[col] = pd.to_numeric(schedule[col], errors='coerce').fillna(0)
