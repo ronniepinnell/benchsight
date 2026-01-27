@@ -119,6 +119,8 @@ export function IceRinkSVG({
           <stop offset="0%" stopColor="#60a5fa" stopOpacity="0.3" />
           <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.2" />
         </linearGradient>
+
+        {/* Net mesh pattern (unused - nets now use direct lines for reliability) */}
       </defs>
 
       {/* Ice surface with rounded corners */}
@@ -178,25 +180,26 @@ export function IceRinkSVG({
         strokeWidth="0.5"
       />
 
-      {/* Goal nets - behind the goal line, 6 units wide x 4 units deep */}
-      {/* Left goal net (posts on goal line at x=11) */}
-      <g>
-        {/* Net frame */}
-        <path d="M11 39.5 L5 39.5 L5 45.5 L11 45.5" fill="none" stroke="#64748b" strokeWidth="0.8" />
-        {/* Goal posts (red) */}
-        <line x1="11" y1="39.5" x2="11" y2="45.5" stroke="#dc2626" strokeWidth="1" />
-        {/* Crossbar hint */}
-        <line x1="5" y1="39.5" x2="5" y2="45.5" stroke="#64748b" strokeWidth="0.5" strokeDasharray="1,1" />
-      </g>
-      {/* Right goal net (posts on goal line at x=189) */}
-      <g>
-        {/* Net frame */}
-        <path d="M189 39.5 L195 39.5 L195 45.5 L189 45.5" fill="none" stroke="#64748b" strokeWidth="0.8" />
-        {/* Goal posts (red) */}
-        <line x1="189" y1="39.5" x2="189" y2="45.5" stroke="#dc2626" strokeWidth="1" />
-        {/* Crossbar hint */}
-        <line x1="195" y1="39.5" x2="195" y2="45.5" stroke="#64748b" strokeWidth="0.5" strokeDasharray="1,1" />
-      </g>
+      {/* Goal nets - behind the goal line */}
+      {/* Left goal net (x=3 to x=11, centered at y=42.5) */}
+      <rect x="3" y="37.5" width="8" height="10" fill="#94a3b8" stroke="#0f172a" strokeWidth="1.5" rx="1" />
+      <line x1="5" y1="37.5" x2="5" y2="47.5" stroke="#64748b" strokeWidth="0.5" />
+      <line x1="7" y1="37.5" x2="7" y2="47.5" stroke="#64748b" strokeWidth="0.5" />
+      <line x1="9" y1="37.5" x2="9" y2="47.5" stroke="#64748b" strokeWidth="0.5" />
+      <line x1="3" y1="40" x2="11" y2="40" stroke="#64748b" strokeWidth="0.5" />
+      <line x1="3" y1="42.5" x2="11" y2="42.5" stroke="#64748b" strokeWidth="0.5" />
+      <line x1="3" y1="45" x2="11" y2="45" stroke="#64748b" strokeWidth="0.5" />
+      <line x1="11" y1="37.5" x2="11" y2="47.5" stroke="#dc2626" strokeWidth="2.5" />
+
+      {/* Right goal net (x=189 to x=197, centered at y=42.5) */}
+      <rect x="189" y="37.5" width="8" height="10" fill="#94a3b8" stroke="#0f172a" strokeWidth="1.5" rx="1" />
+      <line x1="191" y1="37.5" x2="191" y2="47.5" stroke="#64748b" strokeWidth="0.5" />
+      <line x1="193" y1="37.5" x2="193" y2="47.5" stroke="#64748b" strokeWidth="0.5" />
+      <line x1="195" y1="37.5" x2="195" y2="47.5" stroke="#64748b" strokeWidth="0.5" />
+      <line x1="189" y1="40" x2="197" y2="40" stroke="#64748b" strokeWidth="0.5" />
+      <line x1="189" y1="42.5" x2="197" y2="42.5" stroke="#64748b" strokeWidth="0.5" />
+      <line x1="189" y1="45" x2="197" y2="45" stroke="#64748b" strokeWidth="0.5" />
+      <line x1="189" y1="37.5" x2="189" y2="47.5" stroke="#dc2626" strokeWidth="2.5" />
 
       {/* Trapezoid areas */}
       <polygon points="11,28 0,20 0,65 11,57" fill="#94a3b8" opacity="0.1" />

@@ -53,8 +53,9 @@ export function MiniShotRink({
   const mapY = (y: number) => ((y - RINK_Y_MIN) / (RINK_Y_MAX - RINK_Y_MIN)) * SVG_WIDTH
 
   // Shot position in SVG coordinates
-  const shotPixelX = hasShotLocation ? mapY(shotY) : 0  // Y becomes horizontal
-  const shotPixelY = hasShotLocation ? mapX(absX) : 0   // X becomes vertical (depth)
+  // Negate shotY to correct inversion (tracking data Y convention is opposite to display)
+  const shotPixelX = hasShotLocation ? mapY(-(shotY!)) : 0  // Y becomes horizontal (negated)
+  const shotPixelY = hasShotLocation ? mapX(absX) : 0       // X becomes vertical (depth)
 
   // Key rink positions in SVG
   const goalLineY = mapX(GOAL_LINE_X)  // ~89 feet from center

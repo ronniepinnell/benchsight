@@ -22,13 +22,15 @@ import {
   getGamePlayerShiftCounts,
   getGamePuckXY,
   getGamePlayerXY,
+  getGameEventPlayerRoles,
 } from '@/lib/supabase/queries/games'
 import { getGameTrackingStatus } from '@/lib/supabase/queries/game-tracking'
 import { createClient } from '@/lib/supabase/server'
 import { getTeamById } from '@/lib/supabase/queries/teams'
 import { getPlayers } from '@/lib/supabase/queries/players'
-import { ArrowLeft, Target, User, TrendingUp, Activity, BarChart3, Shield, Zap, ExternalLink, Trophy, ChevronDown } from 'lucide-react'
+import { ArrowLeft, Target, User, TrendingUp, Activity, BarChart3, Shield, Zap, ExternalLink, Trophy, ChevronDown, Video } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { extractYouTubeVideoId, formatYouTubeHighlightUrl } from '@/lib/utils/video'
 import {
   calculateTeamAggregates,
   calculatePercentage,
@@ -61,6 +63,9 @@ import { GameDetailTabs } from '@/components/games/game-detail-tabs'
 import { GameMediaSection } from '@/components/games/game-media-section'
 import { CompactTeamStats } from '@/components/games/compact-team-stats'
 import { MiniShotRink } from '@/components/games/mini-shot-rink'
+import { NetFrontSVG } from '@/components/games/net-front-svg'
+import { GoalVideoPlayer } from '@/components/games/goal-video-player'
+import { ScrollableRow } from '@/components/ui/scrollable-row'
 import type { FactPlayerGameStats, FactGoalieGameStats, DimTeam, DimPlayer } from '@/types/database'
 
 export const revalidate = 300
@@ -127,7 +132,7 @@ export default async function GameDetailPage({
     roster, goals, players, goalieStats, shots,
     highlightEventsResult, allEventsResult, shiftsResult, priorGamesResult,
     gameVideosResult, gameHighlightsResult, playerShiftCountsResult,
-    puckXYResult, playerXYResult
+    puckXYResult, playerXYResult, eventPlayerRolesResult
   ] = await Promise.allSettled([
     getGameRoster(gameIdNum),
     getGameGoals(gameIdNum),
@@ -142,7 +147,8 @@ export default async function GameDetailPage({
     getGameHighlights(gameIdNum),
     getGamePlayerShiftCounts(gameIdNum),
     getGamePuckXY(gameIdNum),
-    getGamePlayerXY(gameIdNum)
+    getGamePlayerXY(gameIdNum),
+    getGameEventPlayerRoles(gameIdNum)
   ])
 
   // Extract results with error handling
@@ -160,6 +166,7 @@ export default async function GameDetailPage({
   const playerShiftCounts = playerShiftCountsResult.status === 'fulfilled' ? playerShiftCountsResult.value : new Map<string, number>()
   const puckXYData = puckXYResult.status === 'fulfilled' ? puckXYResult.value : []
   const playerXYData = playerXYResult.status === 'fulfilled' ? playerXYResult.value : []
+  const eventPlayerRoles = eventPlayerRolesResult.status === 'fulfilled' ? eventPlayerRolesResult.value : []
 
   // Log any rejected promises for debugging (development only)
   if (process.env.NODE_ENV === 'development') {
@@ -241,81 +248,97 @@ export default async function GameDetailPage({
     }
   })
   
-  // Fetch assist events for goals (events with play_detail1='AssistPrimary' or 'AssistSecondary' in same sequence/play)
+  // Fetch assist events for goals
+  // Query ONLY rows with assist info (avoids Supabase 1000-row default limit issue)
   const assistEventsMap = new Map<string, Array<{ player_id: string; player_name: string; assist_type: 'primary' | 'secondary' }>>()
-  
-  // Get all events for this game that might be assists (filter in JS to avoid complex Supabase query)
-  let allAssistEvents: GameEvent[] = []
-  if (hasVideo && goalsData.length > 0) {
+
+  let assistCandidates: GameEvent[] = []
+  if (goalsData.length > 0) {
     try {
-      const { data: allAssistEventsData, error: allAssistEventsError } = await supabase
+      const { data: assistData, error: assistError } = await supabase
         .from('fact_events')
-        .select('event_id, sequence_key, play_key, player_name, event_player_ids, play_detail1, play_detail_2, linked_event_key, time_start_total_seconds')
+        .select('event_id, sequence_key, play_key, player_name, event_player_ids, play_detail1, play_detail_2, linked_event_key, time_start_total_seconds, player_role')
         .eq('game_id', gameIdNum)
-      
-      allAssistEvents = allAssistEventsError ? [] : (allAssistEventsData || [])
+        .or('play_detail1.ilike.%assist%,play_detail_2.ilike.%assist%')
+
+      assistCandidates = assistError ? [] : (assistData || [])
     } catch (error) {
       console.error('Error fetching assist events:', error)
-      allAssistEvents = []
     }
   }
-  
-  if (hasVideo && goalsData.length > 0 && allAssistEvents.length > 0) {
-    // Filter to events with assist indicators
-    const assistCandidates = allAssistEvents.filter((e: GameEvent) => {
-      const pd1 = (e.play_detail1 || '').toLowerCase()
-      const pd2 = (e.play_detail_2 || '').toLowerCase()
-      return pd1.includes('assistprimary') || pd1.includes('assistsecondary') || 
-             pd2.includes('assistprimary') || pd2.includes('assistsecondary')
-    })
-    
-    // Group assists by goal event (same sequence/play or linked)
+
+  if (goalsData.length > 0 && assistCandidates.length > 0) {
     goalsData.forEach((goal: GameEvent, goalIndex: number) => {
       const assists: Array<{ player_id: string; player_name: string; assist_type: 'primary' | 'secondary' }> = []
-      
+
+      // Priority 1: Match by sequence_key (strongest link)
+      // Priority 2: Match by play_key
+      // Priority 3: Match by linked_event_key
+      // Priority 4: Time-based fallback (only if no key matches found, within 5 seconds)
       assistCandidates.forEach((assistEvent: GameEvent) => {
-        // Check if this assist event is in the same sequence/play as the goal, or happens just before the goal
         const sameSequence = goal.sequence_key && assistEvent.sequence_key === goal.sequence_key
         const samePlay = goal.play_key && assistEvent.play_key === goal.play_key
         const linkedToGoal = goal.linked_event_key && assistEvent.linked_event_key === goal.linked_event_key
-        // Also check if assist happens within 10 seconds before goal (likely related)
-        const timeDiff = goal.time_start_total_seconds && assistEvent.time_start_total_seconds
-          ? goal.time_start_total_seconds - assistEvent.time_start_total_seconds
-          : null
-        const timeRelated = timeDiff !== null && timeDiff > 0 && timeDiff <= 10
-        
-        if (sameSequence || samePlay || linkedToGoal || timeRelated) {
+
+        if (sameSequence || samePlay || linkedToGoal) {
           const playDetail1 = (assistEvent.play_detail1 || '').toLowerCase()
           const playDetail2 = (assistEvent.play_detail_2 || '').toLowerCase()
-          
+
           if (playDetail1.includes('assistprimary') || playDetail2.includes('assistprimary')) {
-            // Get player ID from event_player_ids (first one is event_player_1)
-            const playerIds = (assistEvent.event_player_ids || '').split(',').map((id: string) => id.trim()).filter(Boolean)
-            if (playerIds.length > 0) {
+            assists.push({
+              player_id: (assistEvent.event_player_ids || '').split(',')[0]?.trim() || '',
+              player_name: assistEvent.player_name || '',
+              assist_type: 'primary'
+            })
+          } else if (playDetail1.includes('assistsecondary') || playDetail2.includes('assistsecondary')) {
+            assists.push({
+              player_id: (assistEvent.event_player_ids || '').split(',')[0]?.trim() || '',
+              player_name: assistEvent.player_name || '',
+              assist_type: 'secondary'
+            })
+          }
+        }
+      })
+
+      // Fallback: if no key-based matches, try time proximity (within 5 seconds before goal)
+      if (assists.length === 0) {
+        assistCandidates.forEach((assistEvent: GameEvent) => {
+          const timeDiff = goal.time_start_total_seconds && assistEvent.time_start_total_seconds
+            ? goal.time_start_total_seconds - assistEvent.time_start_total_seconds
+            : null
+          if (timeDiff !== null && timeDiff >= 0 && timeDiff <= 5) {
+            const playDetail1 = (assistEvent.play_detail1 || '').toLowerCase()
+            const playDetail2 = (assistEvent.play_detail_2 || '').toLowerCase()
+
+            if (playDetail1.includes('assistprimary') || playDetail2.includes('assistprimary')) {
               assists.push({
-                player_id: playerIds[0],
+                player_id: (assistEvent.event_player_ids || '').split(',')[0]?.trim() || '',
                 player_name: assistEvent.player_name || '',
                 assist_type: 'primary'
               })
-            }
-          } else if (playDetail1.includes('assistsecondary') || playDetail2.includes('assistsecondary')) {
-            const playerIds = (assistEvent.event_player_ids || '').split(',').map((id: string) => id.trim()).filter(Boolean)
-            if (playerIds.length > 0) {
+            } else if (playDetail1.includes('assistsecondary') || playDetail2.includes('assistsecondary')) {
               assists.push({
-                player_id: playerIds[0],
+                player_id: (assistEvent.event_player_ids || '').split(',')[0]?.trim() || '',
                 player_name: assistEvent.player_name || '',
                 assist_type: 'secondary'
               })
             }
           }
-        }
-      })
-      
-      // Remove duplicates by player_id
-      const uniqueAssists = assists.filter((assist, idx, self) => 
-        idx === self.findIndex(a => a.player_id === assist.player_id)
-      )
-      
+        })
+      }
+
+      // Remove duplicates by player_id AND exclude the goal scorer from their own assists
+      const scorerPlayerId = (goal.event_player_ids || '').split(',')[0]?.trim() || ''
+      const scorerName = goal.player_name || goal.event_player_1 || ''
+      const uniqueAssists = assists
+        .filter((assist, idx, self) => idx === self.findIndex(a => a.player_id === assist.player_id))
+        .filter(assist => {
+          // Exclude self-assists: scorer cannot assist on their own goal
+          if (scorerPlayerId && assist.player_id === scorerPlayerId) return false
+          if (scorerName && assist.player_name === scorerName) return false
+          return true
+        })
+
       if (uniqueAssists.length > 0) {
         assistEventsMap.set(goal.event_id || String(goal.time_start_total_seconds || goalIndex), uniqueAssists)
       }
@@ -439,7 +462,22 @@ export default async function GameDetailPage({
   // For backwards compatibility, also create combined arrays
   const homePlayers = [...homeForwards, ...homeDefense]
   const awayPlayers = [...awayForwards, ...awayDefense]
-  
+
+  // Build rosterPlayers array for PlayByPlayTimeline filters (includes goalies, game numbers, team grouping)
+  const rosterPlayers = rosterData.map((r: Record<string, any>) => {
+    const gamePos = String(r.player_position || '').trim().toUpperCase()
+    const pid = String(r.player_id || '')
+    const playerInfo = playersMap.get(pid)
+    const primaryPos = String(playerInfo?.player_primary_position || '').trim().toUpperCase()
+    const isGoalie = gamePos === 'G' || gamePos.includes('GOALIE') || primaryPos.includes('GOALIE') || !!r.goals_against
+    return {
+      name: r.player_full_name || r.player_name || '',
+      gameNumber: r.player_game_number ?? null,
+      teamId: String(r.team_id || ''),
+      isGoalie
+    }
+  }).filter((rp: { name: string }) => rp.name !== '')
+
   // Calculate max players per position group to align totals rows
   // Totals should appear at row 6 for both teams (so pad to at least 5 players)
   const maxForwards = Math.max(homeForwards.length, awayForwards.length, 5) // At least 5 so totals at row 6
@@ -730,52 +768,69 @@ export default async function GameDetailPage({
           )}
 
           {/* Centered Score Display */}
-          <div className="flex items-center justify-center gap-4 md:gap-8">
+          <div className="flex items-center justify-center gap-2 sm:gap-4 md:gap-8">
             {/* Away Team */}
-            <div className="flex items-center gap-3 md:gap-4">
+            <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
               {awayTeam && (
                 <Link
                   href={`/norad/team/${(awayTeam.team_name || game.away_team_name || '').replace(/\s+/g, '_')}`}
                   className="hover:opacity-80 transition-opacity"
                 >
-                  <TeamLogo
-                    src={awayTeam.team_logo || null}
-                    name={awayTeam.team_name || game.away_team_name || ''}
-                    abbrev={awayTeam.team_cd}
-                    primaryColor={awayTeam.primary_color || awayTeam.team_color1}
-                    secondaryColor={awayTeam.team_color2}
-                    size="xl"
-                  />
+                  {/* Mobile: lg logo, Desktop: xl logo */}
+                  <div className="md:hidden">
+                    <TeamLogo
+                      src={awayTeam.team_logo || null}
+                      name={awayTeam.team_name || game.away_team_name || ''}
+                      abbrev={awayTeam.team_cd}
+                      primaryColor={awayTeam.primary_color || awayTeam.team_color1}
+                      secondaryColor={awayTeam.team_color2}
+                      size="lg"
+                    />
+                  </div>
+                  <div className="hidden md:block">
+                    <TeamLogo
+                      src={awayTeam.team_logo || null}
+                      name={awayTeam.team_name || game.away_team_name || ''}
+                      abbrev={awayTeam.team_cd}
+                      primaryColor={awayTeam.primary_color || awayTeam.team_color1}
+                      secondaryColor={awayTeam.team_color2}
+                      size="xl"
+                    />
+                  </div>
                 </Link>
               )}
               <div className="text-right">
+                {/* Mobile: show team code, Desktop: show full name */}
                 {awayTeam?.team_name || game.away_team_name ? (
-                  <Link
-                    href={`/norad/team/${(awayTeam?.team_name || game.away_team_name || '').replace(/\s+/g, '_')}`}
-                    className="font-display text-lg md:text-xl font-bold text-foreground hover:text-primary transition-colors block"
-                  >
-                    {game.away_team_name || 'Away'}
-                  </Link>
+                  <>
+                    <Link
+                      href={`/norad/team/${(awayTeam?.team_name || game.away_team_name || '').replace(/\s+/g, '_')}`}
+                      className="font-display text-sm sm:text-lg md:text-xl font-bold text-foreground hover:text-primary transition-colors block"
+                    >
+                      <span className="sm:hidden">{awayTeam?.team_cd || game.away_team_name?.substring(0, 3).toUpperCase() || 'AWY'}</span>
+                      <span className="hidden sm:inline">{game.away_team_name || 'Away'}</span>
+                    </Link>
+                  </>
                 ) : (
-                  <div className="font-display text-lg md:text-xl font-bold text-foreground">
+                  <div className="font-display text-sm sm:text-lg md:text-xl font-bold text-foreground">
                     {game.away_team_name || 'Away'}
                   </div>
                 )}
-                <div className="text-xs text-muted-foreground font-mono">AWAY</div>
+                <div className="text-[10px] sm:text-xs text-muted-foreground font-mono">AWAY</div>
               </div>
             </div>
 
             {/* Score */}
-            <div className="flex items-center gap-3 md:gap-6">
+            <div className="flex items-center gap-2 sm:gap-3 md:gap-6">
               <div className={cn(
-                'font-mono text-5xl md:text-6xl font-bold tabular-nums',
+                'font-mono text-3xl sm:text-5xl md:text-6xl font-bold tabular-nums',
                 awayGoals > homeGoals ? 'text-foreground' : 'text-muted-foreground'
               )}>
                 {awayGoals}
               </div>
-              <div className="text-2xl md:text-3xl text-muted-foreground font-mono">-</div>
+              <div className="text-xl sm:text-2xl md:text-3xl text-muted-foreground font-mono">-</div>
               <div className={cn(
-                'font-mono text-5xl md:text-6xl font-bold tabular-nums',
+                'font-mono text-3xl sm:text-5xl md:text-6xl font-bold tabular-nums',
                 homeGoals > awayGoals ? 'text-foreground' : 'text-muted-foreground'
               )}>
                 {homeGoals}
@@ -783,49 +838,79 @@ export default async function GameDetailPage({
             </div>
 
             {/* Home Team */}
-            <div className="flex items-center gap-3 md:gap-4">
+            <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
               <div className="text-left">
+                {/* Mobile: show team code, Desktop: show full name */}
                 {homeTeam?.team_name || game.home_team_name ? (
-                  <Link
-                    href={`/norad/team/${(homeTeam?.team_name || game.home_team_name || '').replace(/\s+/g, '_')}`}
-                    className="font-display text-lg md:text-xl font-bold text-foreground hover:text-primary transition-colors block"
-                  >
-                    {game.home_team_name || 'Home'}
-                  </Link>
+                  <>
+                    <Link
+                      href={`/norad/team/${(homeTeam?.team_name || game.home_team_name || '').replace(/\s+/g, '_')}`}
+                      className="font-display text-sm sm:text-lg md:text-xl font-bold text-foreground hover:text-primary transition-colors block"
+                    >
+                      <span className="sm:hidden">{homeTeam?.team_cd || game.home_team_name?.substring(0, 3).toUpperCase() || 'HME'}</span>
+                      <span className="hidden sm:inline">{game.home_team_name || 'Home'}</span>
+                    </Link>
+                  </>
                 ) : (
-                  <div className="font-display text-lg md:text-xl font-bold text-foreground">
+                  <div className="font-display text-sm sm:text-lg md:text-xl font-bold text-foreground">
                     {game.home_team_name || 'Home'}
                   </div>
                 )}
-                <div className="text-xs text-muted-foreground font-mono">HOME</div>
+                <div className="text-[10px] sm:text-xs text-muted-foreground font-mono">HOME</div>
               </div>
               {homeTeam && (
                 <Link
                   href={`/norad/team/${(homeTeam.team_name || game.home_team_name || '').replace(/\s+/g, '_')}`}
                   className="hover:opacity-80 transition-opacity"
                 >
-                  <TeamLogo
-                    src={homeTeam.team_logo || null}
-                    name={homeTeam.team_name || game.home_team_name || ''}
-                    abbrev={homeTeam.team_cd}
-                    primaryColor={homeTeam.primary_color || homeTeam.team_color1}
-                    secondaryColor={homeTeam.team_color2}
-                    size="xl"
-                  />
+                  {/* Mobile: lg logo, Desktop: xl logo */}
+                  <div className="md:hidden">
+                    <TeamLogo
+                      src={homeTeam.team_logo || null}
+                      name={homeTeam.team_name || game.home_team_name || ''}
+                      abbrev={homeTeam.team_cd}
+                      primaryColor={homeTeam.primary_color || homeTeam.team_color1}
+                      secondaryColor={homeTeam.team_color2}
+                      size="lg"
+                    />
+                  </div>
+                  <div className="hidden md:block">
+                    <TeamLogo
+                      src={homeTeam.team_logo || null}
+                      name={homeTeam.team_name || game.home_team_name || ''}
+                      abbrev={homeTeam.team_cd}
+                      primaryColor={homeTeam.primary_color || homeTeam.team_color1}
+                      secondaryColor={homeTeam.team_color2}
+                      size="xl"
+                    />
+                  </div>
                 </Link>
               )}
             </div>
           </div>
 
           {/* Date */}
-          <div className="text-center mt-4">
-            <div className="text-sm font-mono text-muted-foreground">
-              {game.date ? new Date(game.date).toLocaleDateString('en-US', {
-                weekday: 'long',
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric'
-              }) : ''}
+          <div className="text-center mt-2 sm:mt-4">
+            <div className="text-xs sm:text-sm font-mono text-muted-foreground">
+              {game.date ? (
+                <>
+                  <span className="sm:hidden">
+                    {new Date(game.date).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric'
+                    })}
+                  </span>
+                  <span className="hidden sm:inline">
+                    {new Date(game.date).toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric'
+                    })}
+                  </span>
+                </>
+              ) : ''}
             </div>
           </div>
         </div>
@@ -1283,11 +1368,11 @@ export default async function GameDetailPage({
                         }
                       }
                       
-                      // Get video link for this goal
+                      // Get video link for this goal (video URL from fact_video, not dim_schedule)
                       const goalVideoTime = goal.running_video_time || goal.time_start_total_seconds
-                      const goalVideoUrl = goal.video_url || game.video_url_1 || game.video_url_2
-                      const videoStartOffset = game.video_start_offset || 0
-                      const videoLink = goalVideoUrl && goalVideoTime 
+                      const goalVideoUrl = gameVideos.length > 0 ? gameVideos[0].video_url : null
+                      const videoStartOffset = gameVideos.length > 0 ? (gameVideos[0].period_1_start || 0) : 0
+                      const videoLink = goalVideoUrl && goalVideoTime
                         ? `${goalVideoUrl}#t=${Math.max(0, (goalVideoTime || 0) - videoStartOffset)}`
                         : null
                       
@@ -1328,6 +1413,8 @@ export default async function GameDetailPage({
                       // Get goal details for expanded view
                       const shotX = (goal as any).puck_x_start ?? null
                       const shotY = (goal as any).puck_y_start ?? null
+                      const netX = (goal as any).net_x ?? null
+                      const netY = (goal as any).net_y ?? null
                       const strength = (goal as any).strength ?? null
                       const isRush = (goal as any).is_rush === 1
                       const isRebound = (goal as any).is_rebound === 1
@@ -1415,8 +1502,8 @@ export default async function GameDetailPage({
 
                           {/* Expanded Details Panel */}
                           <div className="bg-muted/10 border-t border-border/50 p-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {/* Left: Shot Location */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              {/* Shot Location (ice rink) */}
                               <div className="space-y-2">
                                 <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                   <Target className="w-3 h-3" />
@@ -1429,7 +1516,20 @@ export default async function GameDetailPage({
                                 />
                               </div>
 
-                              {/* Right: Goal Details */}
+                              {/* Net Location (front-facing net) */}
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                  <Target className="w-3 h-3" />
+                                  Net Placement
+                                </div>
+                                <NetFrontSVG
+                                  shotX={netX}
+                                  shotY={netY}
+                                  isGoal={true}
+                                />
+                              </div>
+
+                              {/* Goal Details */}
                               <div className="space-y-3">
                                 {/* Scorer with link */}
                                 <div>
@@ -1532,24 +1632,24 @@ export default async function GameDetailPage({
                                   )}
                                 </div>
 
-                                {/* Video Link */}
-                                {videoLink && hasVideo && (
-                                  <div className="pt-2">
-                                    <a
-                                      href={videoLink}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm"
-                                    >
-                                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M8 5v14l11-7z"/>
-                                      </svg>
-                                      Watch Goal
-                                    </a>
-                                  </div>
-                                )}
                               </div>
                             </div>
+
+                            {/* Goal Video - click to reveal embedded player */}
+                            {goalVideoUrl && goalVideoTime != null && (() => {
+                              const videoId = extractYouTubeVideoId(goalVideoUrl)
+                              if (!videoId) return null
+                              const startSec = Math.max(0, Math.floor((goalVideoTime || 0) - videoStartOffset - 5))
+                              const endSec = startSec + 25
+                              const embedUrl = formatYouTubeHighlightUrl(videoId, startSec, endSec, true)
+                              if (!embedUrl) return null
+                              return (
+                                <GoalVideoPlayer
+                                  embedUrl={embedUrl}
+                                  title={`Goal by ${scorerName || 'Unknown'}`}
+                                />
+                              )
+                            })()}
                           </div>
                         </details>
                       )
@@ -1579,7 +1679,7 @@ export default async function GameDetailPage({
               </h2>
             </div>
             <div className="p-3">
-              <div className="flex items-stretch gap-2 overflow-x-auto pb-1 scrollbar-hide">
+              <ScrollableRow>
                 {allH2HGames.map((h2hGame: any) => {
                   const hGoals = h2hGame.home_total_goals ?? null
                   const aGoals = h2hGame.away_total_goals ?? null
@@ -1689,7 +1789,7 @@ export default async function GameDetailPage({
                     </Link>
                   )
                 })}
-              </div>
+              </ScrollableRow>
             </div>
           </div>
         )
@@ -2612,6 +2712,8 @@ export default async function GameDetailPage({
                 playerXYData={playerXYData}
                 playerIdToJerseyMap={playerIdToJerseyMap}
                 playerIdToTeamIdMap={playerIdToTeamIdMap}
+                rosterPlayers={rosterPlayers}
+                eventPlayerRoles={eventPlayerRoles}
               />
             )
           }
@@ -2631,6 +2733,8 @@ export default async function GameDetailPage({
                   event_id: e.event_id,
                   event_type: e.event_type,
                   event_detail: e.event_detail,
+                  event_detail_2: e.event_detail_2,
+                  event_player_1: e.event_player_1,
                   player_team: e.player_team,
                   shift_id: (e as any).shift_id || (e as any).shift_index,
                   running_video_time: e.running_video_time

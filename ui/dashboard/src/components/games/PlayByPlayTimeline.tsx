@@ -22,6 +22,7 @@ import type { FactEvents, FactPuckXYLong, FactPlayerXYLong } from '@/types/datab
 import { TeamLogo } from '@/components/teams/team-logo'
 import { IceRinkSVG } from '@/components/games/ice-rink-svg'
 import type { PlayerMarker, PuckPosition } from '@/components/games/ice-rink-svg'
+import { NetFrontSVG } from '@/components/games/net-front-svg'
 
 // Format text: remove underscores, add spaces to CamelCase, capitalize
 function formatDisplayText(text: string | null | undefined): string {
@@ -34,6 +35,11 @@ function formatDisplayText(text: string | null | undefined): string {
 }
 
 // Multi-select dropdown component
+interface OptionGroup {
+  label: string
+  options: string[]
+}
+
 interface MultiSelectDropdownProps {
   label: string
   options: string[]
@@ -42,6 +48,7 @@ interface MultiSelectDropdownProps {
   isOpen: boolean
   onToggle: () => void
   formatOption?: (option: string) => string
+  groups?: OptionGroup[]
 }
 
 function MultiSelectDropdown({
@@ -51,7 +58,8 @@ function MultiSelectDropdown({
   onChange,
   isOpen,
   onToggle,
-  formatOption = (o) => o
+  formatOption = (o) => o,
+  groups
 }: MultiSelectDropdownProps) {
   const toggleOption = (option: string) => {
     if (selected.includes(option)) {
@@ -62,6 +70,29 @@ function MultiSelectDropdown({
   }
 
   const clearAll = () => onChange([])
+
+  const renderOption = (option: string) => (
+    <button
+      key={option}
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation()
+        toggleOption(option)
+      }}
+      className={cn(
+        "w-full px-3 py-1.5 text-xs text-left hover:bg-accent flex items-center gap-2",
+        selected.includes(option) && "bg-primary/5"
+      )}
+    >
+      <span className={cn(
+        "w-4 h-4 border rounded flex items-center justify-center flex-shrink-0",
+        selected.includes(option) ? "bg-primary border-primary" : "border-border"
+      )}>
+        {selected.includes(option) && <Check className="w-3 h-3 text-primary-foreground" />}
+      </span>
+      <span className="truncate">{formatOption(option)}</span>
+    </button>
+  )
 
   return (
     <div className="relative">
@@ -82,7 +113,7 @@ function MultiSelectDropdown({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 z-50 bg-background border border-border rounded-md shadow-lg min-w-[180px] max-h-[300px] overflow-y-auto">
+        <div className="absolute top-full left-0 mt-1 z-50 bg-background border border-border rounded-md shadow-lg min-w-[200px] max-h-[300px] overflow-y-auto">
           {/* Clear all button */}
           {selected.length > 0 && (
             <button
@@ -98,31 +129,21 @@ function MultiSelectDropdown({
             </button>
           )}
 
-          {/* Options */}
-          {options.map(option => (
-            <button
-              key={option}
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation()
-                toggleOption(option)
-              }}
-              className={cn(
-                "w-full px-3 py-1.5 text-xs text-left hover:bg-accent flex items-center gap-2",
-                selected.includes(option) && "bg-primary/5"
-              )}
-            >
-              <span className={cn(
-                "w-4 h-4 border rounded flex items-center justify-center flex-shrink-0",
-                selected.includes(option) ? "bg-primary border-primary" : "border-border"
-              )}>
-                {selected.includes(option) && <Check className="w-3 h-3 text-primary-foreground" />}
-              </span>
-              <span className="truncate">{formatOption(option)}</span>
-            </button>
-          ))}
+          {/* Grouped options */}
+          {groups ? (
+            groups.map(group => (
+              <div key={group.label}>
+                <div className="px-3 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider bg-muted/30 border-b border-border sticky top-0">
+                  {group.label}
+                </div>
+                {group.options.map(renderOption)}
+              </div>
+            ))
+          ) : (
+            options.map(renderOption)
+          )}
 
-          {options.length === 0 && (
+          {!groups && options.length === 0 && (
             <div className="px-3 py-2 text-xs text-muted-foreground">No options</div>
           )}
         </div>
@@ -156,6 +177,13 @@ interface ShiftData {
   away_goalie?: number | string
 }
 
+interface RosterPlayer {
+  name: string
+  gameNumber: number | null
+  teamId: string
+  isGoalie: boolean
+}
+
 interface PlayByPlayTimelineProps {
   events: FactEvents[]
   homeTeam: string
@@ -174,6 +202,8 @@ interface PlayByPlayTimelineProps {
   playerXYData?: FactPlayerXYLong[]
   playerIdToJerseyMap?: Record<string, number>
   playerIdToTeamIdMap?: Record<string, string>
+  rosterPlayers?: RosterPlayer[]
+  eventPlayerRoles?: Array<{ event_id: string; player_id: string; player_role: string }>
 }
 
 // Highlight timing offsets
@@ -197,7 +227,9 @@ export function PlayByPlayTimeline({
   puckXYData = [],
   playerXYData = [],
   playerIdToJerseyMap = {},
-  playerIdToTeamIdMap = {}
+  playerIdToTeamIdMap = {},
+  rosterPlayers = [],
+  eventPlayerRoles = []
 }: PlayByPlayTimelineProps) {
   const [expandedPeriods, setExpandedPeriods] = useState<Set<number>>(new Set([1, 2, 3]))
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null)
@@ -241,6 +273,53 @@ export function PlayByPlayTimeline({
     return player?.player_name || `#${jersey}`
   }
 
+  // Build reverse map: player name -> player IDs (for filtering by all event/opp players)
+  const nameToIdsMap = useMemo(() => {
+    const map = new Map<string, Set<string>>()
+    playersMap.forEach((info, playerId) => {
+      const names = [info.player_name, info.player_full_name].filter(Boolean) as string[]
+      names.forEach(name => {
+        let ids = map.get(name)
+        if (!ids) {
+          ids = new Set<string>()
+          map.set(name, ids)
+        }
+        ids.add(playerId)
+      })
+    })
+    return map
+  }, [playersMap])
+
+  // Check if any player from selectedNames appears in an event's event_player_ids or opp_player_ids
+  const eventInvolvesAnyPlayer = useCallback((event: FactEvents, selectedNames: string[]): boolean => {
+    // Quick check on direct name fields first
+    if (event.event_player_1 && selectedNames.includes(event.event_player_1)) return true
+    if (event.event_player_2 && selectedNames.includes(event.event_player_2)) return true
+    if (event.player_name && selectedNames.includes(event.player_name)) return true
+
+    // Build set of all selected player IDs
+    const selectedIds = new Set<string>()
+    selectedNames.forEach(name => {
+      const ids = nameToIdsMap.get(name)
+      if (ids) ids.forEach(id => selectedIds.add(id))
+    })
+    if (selectedIds.size === 0) return false
+
+    // Check event_player_ids (comma-separated)
+    if (event.event_player_ids) {
+      const eventIds = event.event_player_ids.split(',').map(id => id.trim())
+      if (eventIds.some(id => selectedIds.has(id))) return true
+    }
+
+    // Check opp_player_ids (comma-separated)
+    if (event.opp_player_ids) {
+      const oppIds = event.opp_player_ids.split(',').map(id => id.trim())
+      if (oppIds.some(id => selectedIds.has(id))) return true
+    }
+
+    return false
+  }, [nameToIdsMap])
+
   // Index puck XY data by event_id
   const puckXYByEvent = useMemo(() => {
     const map = new Map<string, FactPuckXYLong[]>()
@@ -268,6 +347,33 @@ export function PlayByPlayTimeline({
     }
     return map
   }, [playerXYData])
+
+  // Index event player roles by event_id -> Set of player_roles present in that event
+  // Also build event_id -> Map<player_id, player_role> for player-specific role filtering
+  const eventRolesMap = useMemo(() => {
+    const rolesMap = new Map<string, Set<string>>()
+    const playerRolesMap = new Map<string, Map<string, string>>()
+    for (const row of eventPlayerRoles) {
+      if (!row.event_id || !row.player_role) continue
+      // Set of roles present in event
+      let roles = rolesMap.get(row.event_id)
+      if (!roles) {
+        roles = new Set()
+        rolesMap.set(row.event_id, roles)
+      }
+      roles.add(row.player_role)
+      // Player -> role mapping
+      if (row.player_id) {
+        let playerMap = playerRolesMap.get(row.event_id)
+        if (!playerMap) {
+          playerMap = new Map()
+          playerRolesMap.set(row.event_id, playerMap)
+        }
+        playerMap.set(row.player_id, row.player_role)
+      }
+    }
+    return { rolesMap, playerRolesMap }
+  }, [eventPlayerRoles])
 
   // Index play_detail1/play_detail_2 per player_name per event_id from allEvents
   const eventPlayerDetailsMap = useMemo(() => {
@@ -575,13 +681,9 @@ export function PlayByPlayTimeline({
       filtered = filtered.filter(e => e.player_team && selectedTeams.includes(e.player_team))
     }
 
-    // Apply player filter
+    // Apply player filter (checks all event_player and opp_player fields)
     if (selectedPlayers.length > 0) {
-      filtered = filtered.filter(e =>
-        (e.event_player_1 && selectedPlayers.includes(e.event_player_1)) ||
-        (e.event_player_2 && selectedPlayers.includes(e.event_player_2)) ||
-        (e.player_name && selectedPlayers.includes(e.player_name))
-      )
+      filtered = filtered.filter(e => eventInvolvesAnyPlayer(e, selectedPlayers))
     }
 
     const types = new Set<string>()
@@ -589,7 +691,7 @@ export function PlayByPlayTimeline({
       if (event.event_type) types.add(event.event_type)
     })
     return Array.from(types).sort()
-  }, [getBaseFilteredEvents, selectedTeams, selectedPlayers])
+  }, [getBaseFilteredEvents, selectedTeams, selectedPlayers, eventInvolvesAnyPlayer])
 
   // Get unique event details for filtering (cascading with event type)
   const availableEventDetails = useMemo(() => {
@@ -605,13 +707,9 @@ export function PlayByPlayTimeline({
       filtered = filtered.filter(e => e.player_team && selectedTeams.includes(e.player_team))
     }
 
-    // Apply player filter
+    // Apply player filter (checks all event_player and opp_player fields)
     if (selectedPlayers.length > 0) {
-      filtered = filtered.filter(e =>
-        (e.event_player_1 && selectedPlayers.includes(e.event_player_1)) ||
-        (e.event_player_2 && selectedPlayers.includes(e.event_player_2)) ||
-        (e.player_name && selectedPlayers.includes(e.player_name))
-      )
+      filtered = filtered.filter(e => eventInvolvesAnyPlayer(e, selectedPlayers))
     }
 
     const details = new Set<string>()
@@ -619,7 +717,7 @@ export function PlayByPlayTimeline({
       if (event.event_detail) details.add(event.event_detail)
     })
     return Array.from(details).sort()
-  }, [getBaseFilteredEvents, selectedEventTypes, selectedTeams, selectedPlayers])
+  }, [getBaseFilteredEvents, selectedEventTypes, selectedTeams, selectedPlayers, eventInvolvesAnyPlayer])
 
   // Get unique event detail 2 / play_detail_2 for filtering (cascading with event type and detail)
   const availableEventDetails2 = useMemo(() => {
@@ -640,13 +738,9 @@ export function PlayByPlayTimeline({
       filtered = filtered.filter(e => e.player_team && selectedTeams.includes(e.player_team))
     }
 
-    // Apply player filter
+    // Apply player filter (checks all event_player and opp_player fields)
     if (selectedPlayers.length > 0) {
-      filtered = filtered.filter(e =>
-        (e.event_player_1 && selectedPlayers.includes(e.event_player_1)) ||
-        (e.event_player_2 && selectedPlayers.includes(e.event_player_2)) ||
-        (e.player_name && selectedPlayers.includes(e.player_name))
-      )
+      filtered = filtered.filter(e => eventInvolvesAnyPlayer(e, selectedPlayers))
     }
 
     const details = new Set<string>()
@@ -655,7 +749,7 @@ export function PlayByPlayTimeline({
       if (event.event_detail_2) details.add(event.event_detail_2)
     })
     return Array.from(details).sort()
-  }, [getBaseFilteredEvents, selectedEventTypes, selectedEventDetails, selectedTeams, selectedPlayers])
+  }, [getBaseFilteredEvents, selectedEventTypes, selectedEventDetails, selectedTeams, selectedPlayers, eventInvolvesAnyPlayer])
 
   // Get unique teams for filtering (cascading with event type and detail)
   const availableTeams = useMemo(() => {
@@ -678,7 +772,31 @@ export function PlayByPlayTimeline({
     return Array.from(teams).sort()
   }, [getBaseFilteredEvents, selectedEventTypes, selectedEventDetails])
 
+  // Build roster lookup maps: player name -> game number, player name -> teamId
+  const rosterGameNumberMap = useMemo(() => {
+    const map = new Map<string, number>()
+    rosterPlayers.forEach(rp => {
+      if (rp.gameNumber !== null) map.set(rp.name, rp.gameNumber)
+    })
+    return map
+  }, [rosterPlayers])
+
+  const rosterTeamMap = useMemo(() => {
+    const map = new Map<string, string>()
+    rosterPlayers.forEach(rp => {
+      map.set(rp.name, rp.teamId)
+    })
+    return map
+  }, [rosterPlayers])
+
+  // Format player name with game number: "#17 John Smith"
+  const formatPlayerOption = useCallback((name: string) => {
+    const num = rosterGameNumberMap.get(name)
+    return num !== undefined ? `#${num} ${name}` : name
+  }, [rosterGameNumberMap])
+
   // Get unique players for filtering (cascading with event type, detail, and team)
+  // Includes goalies from roster data
   const availablePlayers = useMemo(() => {
     let filtered = getBaseFilteredEvents
 
@@ -703,18 +821,63 @@ export function PlayByPlayTimeline({
       if (event.event_player_2) players.add(event.event_player_2)
       if (event.player_name) players.add(event.player_name)
     })
+
+    // Add goalies from roster (they don't appear as event_player_1/2 typically)
+    rosterPlayers.forEach(rp => {
+      if (rp.isGoalie) {
+        // If team filter is active, only include goalies from selected teams
+        if (selectedTeams.length > 0) {
+          const rosterTeamName = rp.teamId === homeTeamId ? homeTeam : rp.teamId === awayTeamId ? awayTeam : ''
+          if (rosterTeamName && selectedTeams.includes(rosterTeamName)) {
+            players.add(rp.name)
+          }
+        } else {
+          players.add(rp.name)
+        }
+      }
+    })
+
     return Array.from(players).sort()
-  }, [getBaseFilteredEvents, selectedEventTypes, selectedEventDetails, selectedTeams])
+  }, [getBaseFilteredEvents, selectedEventTypes, selectedEventDetails, selectedTeams, rosterPlayers, homeTeamId, awayTeamId, homeTeam, awayTeam])
+
+  // Build grouped player options for the Player filter (grouped by team)
+  const playerGroups = useMemo((): OptionGroup[] => {
+    const homeLabel = homeTeamData?.team_cd || homeTeam
+    const awayLabel = awayTeamData?.team_cd || awayTeam
+    const homePlayers: string[] = []
+    const awayPlayers: string[] = []
+    const otherPlayers: string[] = []
+
+    availablePlayers.forEach(name => {
+      const teamId = rosterTeamMap.get(name)
+      if (teamId === homeTeamId) {
+        homePlayers.push(name)
+      } else if (teamId === awayTeamId) {
+        awayPlayers.push(name)
+      } else {
+        otherPlayers.push(name)
+      }
+    })
+
+    const groups: OptionGroup[] = []
+    if (awayPlayers.length > 0) groups.push({ label: awayLabel, options: awayPlayers })
+    if (homePlayers.length > 0) groups.push({ label: homeLabel, options: homePlayers })
+    if (otherPlayers.length > 0) groups.push({ label: 'Other', options: otherPlayers })
+    return groups
+  }, [availablePlayers, rosterTeamMap, homeTeamId, awayTeamId, homeTeam, awayTeam, homeTeamData, awayTeamData])
 
   // Get all unique players who were on ice during any shift (for "Players On Ice" filter)
+  // Includes goalies from shifts
   const availablePlayersOnIce = useMemo(() => {
     const players = new Set<string>()
     shifts.forEach(shift => {
       const jerseys = [
         shift.home_forward_1, shift.home_forward_2, shift.home_forward_3,
         shift.home_defense_1, shift.home_defense_2, shift.home_xtra,
+        shift.home_goalie,
         shift.away_forward_1, shift.away_forward_2, shift.away_forward_3,
-        shift.away_defense_1, shift.away_defense_2, shift.away_xtra
+        shift.away_defense_1, shift.away_defense_2, shift.away_xtra,
+        shift.away_goalie
       ]
       jerseys.forEach(jersey => {
         if (jersey && jersey !== 0 && jersey !== '0') {
@@ -1053,13 +1216,9 @@ export function PlayByPlayTimeline({
         filteredEvents = filteredEvents.filter(e => e.player_team && selectedTeams.includes(e.player_team))
       }
 
-      // Filter by player (multi-select)
+      // Filter by player (multi-select - checks all event_player and opp_player fields)
       if (selectedPlayers.length > 0) {
-        filteredEvents = filteredEvents.filter(e =>
-          (e.event_player_1 && selectedPlayers.includes(e.event_player_1)) ||
-          (e.event_player_2 && selectedPlayers.includes(e.event_player_2)) ||
-          (e.player_name && selectedPlayers.includes(e.player_name))
-        )
+        filteredEvents = filteredEvents.filter(e => eventInvolvesAnyPlayer(e, selectedPlayers))
       }
 
       // Filter by players on ice (multi-select) - filter by shift
@@ -1070,102 +1229,130 @@ export function PlayByPlayTimeline({
         })
       }
 
+      // Filter by role using fact_event_players data (proper player_role values)
+      if (roleFilter && selectedPlayers.length > 0) {
+        // When a player is selected + role filter active: show events where
+        // the selected player has the matching role in that event
+        const { playerRolesMap } = eventRolesMap
+        filteredEvents = filteredEvents.filter(e => {
+          if (!e.event_id) return false
+          const playerMap = playerRolesMap.get(e.event_id)
+          if (!playerMap) return false
+          return selectedPlayers.some(pid => {
+            const role = playerMap.get(pid)
+            if (!role) return false
+            if (roleFilter === 'event_primary') return role === 'event_player_1'
+            if (roleFilter === 'event_support') return role.startsWith('event_player_') && role !== 'event_player_1'
+            if (roleFilter === 'opp_primary') return role === 'opp_player_1'
+            if (roleFilter === 'opp_support') return role.startsWith('opp_player_') && role !== 'opp_player_1'
+            return true
+          })
+        })
+      }
+
       if (filteredEvents.length > 0) {
         filtered.set(period, filteredEvents)
       }
     })
 
     return filtered
-  }, [eventsByPeriod, selectedPeriods, selectedTeams, selectedPlayers, selectedPlayersOnIce, selectedEventTypes, selectedEventDetails, selectedEventDetails2, viewMode, shiftHasSelectedPlayer])
+  }, [eventsByPeriod, selectedPeriods, selectedTeams, selectedPlayers, selectedPlayersOnIce, selectedEventTypes, selectedEventDetails, selectedEventDetails2, viewMode, shiftHasSelectedPlayer, eventInvolvesAnyPlayer, roleFilter, eventRolesMap])
+
+  // Max period length in minutes (for detecting cumulative vs per-period times)
+  const periodLengthMinutes = useMemo(() => {
+    // Use P1's max event_start_min as the reference period length
+    const p1Events = events.filter(e => getPeriod(e) === 1)
+    let maxMin = 0
+    p1Events.forEach(e => {
+      if (typeof e.event_start_min === 'number' && !isNaN(e.event_start_min) && e.event_start_min <= 25) {
+        maxMin = Math.max(maxMin, e.event_start_min)
+      }
+    })
+    return maxMin > 0 ? maxMin : 18 // Default to 18 if no P1 data
+  }, [events])
 
   const formatTime = (event: FactEvents): string => {
     const period = getPeriod(event)
-    const periodStartTime = periodStartTimes.get(period) || 0
-    
-    // Expected period start: 18:00 = 1080 seconds (for 18-minute periods)
-    const expectedPeriodStart = 1080
-    
-    // If we have event_start_min and event_start_sec, use them but adjust if needed
+
+    // Use event_start_min and event_start_sec directly - they are the period clock
     if (
-      typeof event.event_start_min === 'number' && 
+      typeof event.event_start_min === 'number' &&
       typeof event.event_start_sec === 'number' &&
       !isNaN(event.event_start_min) &&
       !isNaN(event.event_start_sec)
     ) {
-      // If the period actually started at 18:00 but database shows lower values,
-      // calculate the offset and adjust
-      if (periodStartTime > 0 && periodStartTime < expectedPeriodStart) {
-        // Offset = difference between expected start (18:00) and actual max time in data
-        const offset = expectedPeriodStart - periodStartTime
-        // Adjust: add offset to get correct time
-        const currentSeconds = event.event_start_min * 60 + event.event_start_sec
-        const adjustedSeconds = currentSeconds + offset
-        const minutes = Math.floor(adjustedSeconds / 60)
-        const secs = adjustedSeconds % 60
-        return `${minutes}:${secs.toString().padStart(2, '0')}`
+      let minutes = event.event_start_min
+      const secs = event.event_start_sec
+
+      // If minutes > period length * 1.3, it's likely cumulative (total game time)
+      // Convert to per-period time by subtracting prior periods
+      if (minutes > periodLengthMinutes * 1.3 && period > 1) {
+        minutes = minutes - (period - 1) * periodLengthMinutes
       }
-      // If period start is correct (>= 1080), use values directly
-      return `${event.event_start_min}:${event.event_start_sec.toString().padStart(2, '0')}`
+
+      // Clamp to reasonable range
+      if (minutes < 0) minutes = 0
+
+      return `${Math.floor(minutes)}:${Math.floor(secs).toString().padStart(2, '0')}`
     }
-    
+
     // FALLBACK: Calculate from time_start_total_seconds
     const timeSeconds = event.time_start_total_seconds ?? event.time_seconds ?? 0
-    
-    // Adjust if period should start at 18:00 but max time is less
-    if (periodStartTime > 0 && periodStartTime < expectedPeriodStart) {
-      const offset = expectedPeriodStart - periodStartTime
-      const adjustedSeconds = timeSeconds + offset
-      const minutes = Math.floor(adjustedSeconds / 60)
-      const secs = adjustedSeconds % 60
+
+    // time_start_total_seconds could be countdown (high→low) or elapsed (low→high)
+    // Use periodLengthMinutes to determine the period clock
+    const periodLengthSec = periodLengthMinutes * 60
+    if (periodLengthSec > 0 && timeSeconds >= 0 && timeSeconds <= periodLengthSec) {
+      // Elapsed time → convert to countdown: periodLength - elapsed
+      const countdown = periodLengthSec - timeSeconds
+      const minutes = Math.floor(countdown / 60)
+      const secs = Math.floor(countdown % 60)
       return `${minutes}:${secs.toString().padStart(2, '0')}`
     }
-    
-    // Otherwise use modulo 1200 (for 20-min periods) or direct value
-    const periodSeconds = timeSeconds % 1200
-    const minutes = Math.floor(periodSeconds / 60)
-    const secs = Math.floor(periodSeconds % 60)
+
+    // Last resort: direct display
+    const minutes = Math.floor(Math.abs(timeSeconds) / 60)
+    const secs = Math.floor(Math.abs(timeSeconds) % 60)
     return `${minutes}:${secs.toString().padStart(2, '0')}`
   }
 
   const formatEndTime = (event: FactEvents): string | null => {
     const period = getPeriod(event)
-    const periodStartTime = periodStartTimes.get(period) || 0
-    const expectedPeriodStart = 1080
-    
-    // If we have event_end_min and event_end_sec, use them but adjust if needed
+
+    // Use event_end_min and event_end_sec directly
     if (
-      typeof event.event_end_min === 'number' && 
+      typeof event.event_end_min === 'number' &&
       typeof event.event_end_sec === 'number' &&
       !isNaN(event.event_end_min) &&
       !isNaN(event.event_end_sec)
     ) {
-      if (periodStartTime > 0 && periodStartTime < expectedPeriodStart) {
-        const offset = expectedPeriodStart - periodStartTime
-        const currentSeconds = event.event_end_min * 60 + event.event_end_sec
-        const adjustedSeconds = currentSeconds + offset
-        const minutes = Math.floor(adjustedSeconds / 60)
-        const secs = adjustedSeconds % 60
-        return `${minutes}:${secs.toString().padStart(2, '0')}`
+      let minutes = event.event_end_min
+      const secs = event.event_end_sec
+
+      // If cumulative, adjust to per-period
+      if (minutes > periodLengthMinutes * 1.3 && period > 1) {
+        minutes = minutes - (period - 1) * periodLengthMinutes
       }
-      return `${event.event_end_min}:${event.event_end_sec.toString().padStart(2, '0')}`
+      if (minutes < 0) minutes = 0
+
+      return `${Math.floor(minutes)}:${Math.floor(secs).toString().padStart(2, '0')}`
     }
-    
+
     // FALLBACK: Calculate from time_end_total_seconds
     const timeEndSeconds = (event as any).time_end_total_seconds
-    if (timeEndSeconds) {
-      if (periodStartTime > 0 && periodStartTime < expectedPeriodStart) {
-        const offset = expectedPeriodStart - periodStartTime
-        const adjustedSeconds = timeEndSeconds + offset
-        const minutes = Math.floor(adjustedSeconds / 60)
-        const secs = adjustedSeconds % 60
+    if (timeEndSeconds != null && timeEndSeconds !== 0) {
+      const periodLengthSec = periodLengthMinutes * 60
+      if (periodLengthSec > 0 && timeEndSeconds >= 0 && timeEndSeconds <= periodLengthSec) {
+        const countdown = periodLengthSec - timeEndSeconds
+        const minutes = Math.floor(countdown / 60)
+        const secs = Math.floor(countdown % 60)
         return `${minutes}:${secs.toString().padStart(2, '0')}`
       }
-      const periodSeconds = timeEndSeconds % 1200
-      const minutes = Math.floor(periodSeconds / 60)
-      const secs = Math.floor(periodSeconds % 60)
+      const minutes = Math.floor(Math.abs(timeEndSeconds) / 60)
+      const secs = Math.floor(Math.abs(timeEndSeconds) % 60)
       return `${minutes}:${secs.toString().padStart(2, '0')}`
     }
-    
+
     return null
   }
 
@@ -1544,7 +1731,7 @@ export function PlayByPlayTimeline({
               isOpen={showFilterDropdown === 'team'}
               onToggle={() => setShowFilterDropdown(showFilterDropdown === 'team' ? null : 'team')}
             />
-            {/* Player Filter */}
+            {/* Player Filter (grouped by team, with game numbers) */}
             <MultiSelectDropdown
               label="Player"
               options={availablePlayers}
@@ -1552,6 +1739,8 @@ export function PlayByPlayTimeline({
               onChange={setSelectedPlayers}
               isOpen={showFilterDropdown === 'player'}
               onToggle={() => setShowFilterDropdown(showFilterDropdown === 'player' ? null : 'player')}
+              formatOption={formatPlayerOption}
+              groups={playerGroups.length > 0 ? playerGroups : undefined}
             />
             {/* Players On Ice Filter */}
             {availablePlayersOnIce.length > 0 && (
@@ -1562,7 +1751,34 @@ export function PlayByPlayTimeline({
                 onChange={setSelectedPlayersOnIce}
                 isOpen={showFilterDropdown === 'playersOnIce'}
                 onToggle={() => setShowFilterDropdown(showFilterDropdown === 'playersOnIce' ? null : 'playersOnIce')}
+                formatOption={formatPlayerOption}
               />
+            )}
+            {/* Role Filter (filters event list + XY rink visualization) */}
+            {(
+              <div className="flex items-center gap-0.5 border border-border rounded-md overflow-hidden">
+                {[
+                  { key: null as string | null, label: 'All' },
+                  { key: 'event_primary', label: 'Primary' },
+                  { key: 'event_support', label: 'Support' },
+                  { key: 'opp_primary', label: 'Opp 1' },
+                  { key: 'opp_support', label: 'Opp Sup' },
+                ].map(({ key, label }) => (
+                  <button
+                    key={label}
+                    type="button"
+                    onClick={() => { setRoleFilter(key); setFocusedPlayerId(null) }}
+                    className={cn(
+                      'px-2 py-1 text-[10px] transition-colors',
+                      roleFilter === key
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-background text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             )}
           </div>
         </div>
@@ -1623,7 +1839,7 @@ export function PlayByPlayTimeline({
       )}
 
       {/* Timeline */}
-      <div className="p-6 space-y-4 max-h-[600px] overflow-y-auto">
+      <div className="p-2 sm:p-4 md:p-6 space-y-4 max-h-[600px] overflow-y-auto">
         {periods.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             No events match the selected filter
@@ -1778,21 +1994,21 @@ export function PlayByPlayTimeline({
                             if (isSelected) { setFocusedPlayerId(null); setRoleFilter(null) }
                           }}
                           className={cn(
-                            'px-4 py-3 transition-colors cursor-pointer',
+                            'px-2 sm:px-4 py-2 sm:py-3 transition-colors cursor-pointer',
                             getEventColor(event),
                             isSelected && 'ring-2 ring-primary',
                             highlightedEvent === eventKey && 'ring-2 ring-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 animate-pulse'
                           )}
                         >
-                          <div className="flex items-start gap-3">
+                          <div className="flex items-start gap-1.5 sm:gap-3">
                             {/* Time */}
-                            <div className="flex-shrink-0 w-20 text-xs font-mono text-muted-foreground">
+                            <div className="flex-shrink-0 w-12 sm:w-20 text-[10px] sm:text-xs font-mono text-muted-foreground">
                               {(() => {
                                 const endTime = formatEndTime(event)
                                 return endTime ? (
                                   <div>
                                     <div>{time}</div>
-                                    <div className="text-[10px] opacity-70">→ {endTime}</div>
+                                    <div className="text-[9px] sm:text-[10px] opacity-70">→ {endTime}</div>
                                   </div>
                                 ) : (
                                   <div>{time}</div>
@@ -1807,7 +2023,7 @@ export function PlayByPlayTimeline({
 
                             {/* Event Details */}
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1">
+                              <div className="flex items-center gap-1 sm:gap-2 mb-1 flex-wrap">
                                 {/* Team Logo - only show if not a game state event */}
                                 {!isGameStateEvent && teamData && (
                                   <TeamLogo
@@ -1818,20 +2034,20 @@ export function PlayByPlayTimeline({
                                     showGradient={false}
                                   />
                                 )}
-                                {/* Team Name - only show if not a game state event */}
+                                {/* Team Name - hide on mobile, show on sm+ */}
                                 {!isGameStateEvent && (
-                                  <span 
-                                    className="text-xs font-semibold"
+                                  <span
+                                    className="hidden sm:inline text-xs font-semibold"
                                     style={(teamData as any)?.primary_color || (teamData as any)?.team_color1 ? {
                                       color: (teamData as any).primary_color || (teamData as any).team_color1
                                     } : {
-                                      color: 'inherit' // Use default foreground color if no team color
+                                      color: 'inherit'
                                     }}
                                   >
                                     {teamName}
                                   </span>
                                 )}
-                                <span className="text-xs text-foreground">
+                                <span className="text-[11px] sm:text-xs text-foreground">
                                   {getEventDescription(event, linkedEvents)}
                                 </span>
                                 {/* Watch Button */}
@@ -1843,7 +2059,7 @@ export function PlayByPlayTimeline({
                                       setSelectedEvent(eventKey)
                                       setPlayingEvent(playingEvent === eventKey ? null : eventKey)
                                     }}
-                                    className="ml-auto flex-shrink-0 p-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary transition-colors"
+                                    className="ml-auto flex-shrink-0 p-1 sm:p-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary transition-colors"
                                     title="Watch video at this event"
                                   >
                                     <Play className="w-3 h-3" />
@@ -2084,32 +2300,7 @@ export function PlayByPlayTimeline({
 
                                       return (
                                         <div className="pt-2 border-t border-border/30">
-                                          <div className="flex items-center justify-between mb-1">
-                                            <div className="font-semibold text-xs">Ice Positions:</div>
-                                            {/* Role filter buttons */}
-                                            <div className="flex gap-1 flex-wrap">
-                                              {[
-                                                { key: null, label: 'All' },
-                                                { key: 'event_primary', label: 'Primary' },
-                                                { key: 'opp_primary', label: 'Opp Primary' },
-                                                { key: 'event_support', label: 'Support' },
-                                                { key: 'opp_support', label: 'Opp Support' },
-                                              ].map(({ key, label }) => (
-                                                <button
-                                                  key={label}
-                                                  onClick={() => { setRoleFilter(key); setFocusedPlayerId(null) }}
-                                                  className={cn(
-                                                    'px-1.5 py-0.5 text-[9px] rounded transition-colors',
-                                                    roleFilter === key
-                                                      ? 'bg-primary text-primary-foreground'
-                                                      : 'bg-muted/50 hover:bg-muted text-muted-foreground'
-                                                  )}
-                                                >
-                                                  {label}
-                                                </button>
-                                              ))}
-                                            </div>
-                                          </div>
+                                          <div className="font-semibold text-xs mb-1">Ice Positions:</div>
                                           <div className="w-full max-w-sm mx-auto">
                                             <IceRinkSVG
                                               players={filteredPlayers}
@@ -2145,8 +2336,8 @@ export function PlayByPlayTimeline({
                                     }
 
                                     // Fallback: single puck dot from puck_x_start / puck_y_start
-                                    const puckX = (event as any).puck_x_start
-                                    const puckY = (event as any).puck_y_start
+                                    const puckX = event.puck_x_start
+                                    const puckY = event.puck_y_start
                                     if (puckX === null || puckX === undefined || puckY === null || puckY === undefined) return null
                                     return (
                                       <div className="pt-2 border-t border-border/30">
@@ -2171,6 +2362,20 @@ export function PlayByPlayTimeline({
                                       </div>
                                     )
                                   })()}
+
+                                  {/* Net Front View (if net_x/net_y data exists) */}
+                                  {event.net_x != null && event.net_y != null && (
+                                    <div className="pt-2 border-t border-border/30">
+                                      <div className="font-semibold mb-1 text-xs">Net Placement:</div>
+                                      <div className="w-full max-w-[180px] mx-auto">
+                                        <NetFrontSVG
+                                          shotX={event.net_x}
+                                          shotY={event.net_y}
+                                          isGoal={event.is_goal === 1}
+                                        />
+                                      </div>
+                                    </div>
+                                  )}
 
                                   {/* Video Time / Watch Button */}
                                   {hasVideo(event) && playingEvent !== eventKey && (

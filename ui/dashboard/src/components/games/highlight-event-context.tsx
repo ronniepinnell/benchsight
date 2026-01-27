@@ -107,7 +107,8 @@ export function HighlightEventContext({
         return
       }
 
-      // Get events before this one (by running_video_time)
+      // Get ALL events in the same period before this one (by running_video_time)
+      // Filter to player_role='event_player_1' to get one row per event (avoid duplicates)
       const { data: contextEvents, error: eventsError } = await supabase
         .from('fact_events')
         .select(`
@@ -116,9 +117,12 @@ export function HighlightEventContext({
           puck_x_start, puck_y_start, is_goal
         `)
         .eq('game_id', gameId)
+        .eq('player_role', 'event_player_1')
+        .eq('period', targetEvent.period)
         .lt('running_video_time', targetEvent.running_video_time)
+        .gt('running_video_time', 0)
         .order('running_video_time', { ascending: false })
-        .limit(10)
+        .limit(200)
 
       if (eventsError) {
         setError('Failed to load previous events')
@@ -126,8 +130,14 @@ export function HighlightEventContext({
         return
       }
 
-      // Reverse to get chronological order
-      setEvents((contextEvents || []).reverse())
+      // Find the last stoppage/faceoff to use as the start of the play sequence
+      const allEvents = (contextEvents || []).reverse()
+      const lastStoppageIdx = allEvents.findLastIndex(
+        (e: EventContext) => e.event_type === 'Faceoff' || e.event_type === 'Stoppage'
+      )
+      // Show from last faceoff/stoppage onward, or last 30 events if no stoppage found
+      const startIdx = lastStoppageIdx >= 0 ? lastStoppageIdx : Math.max(0, allEvents.length - 30)
+      setEvents(allEvents.slice(startIdx))
       setLoading(false)
     }
 

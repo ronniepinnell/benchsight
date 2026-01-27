@@ -1651,53 +1651,66 @@ export default async function TeamDetailPage({
           style={{ backgroundColor: team.primary_color || team.team_color1 || '#3b82f6' }}
         />
         <div className="p-6">
-          <div className="flex items-start gap-6">
-            <TeamLogo
-              src={team.team_logo || null}
-              name={team.team_name || ''}
-              abbrev={team.team_cd}
-              primaryColor={team.primary_color || team.team_color1}
-              secondaryColor={team.team_color2}
-              size="2xl"
-            />
+          <div className="flex items-start gap-3 sm:gap-6">
+            {/* Mobile: lg, Desktop: xl */}
+            <div className="sm:hidden">
+              <TeamLogo
+                src={team.team_logo || null}
+                name={team.team_name || ''}
+                abbrev={team.team_cd}
+                primaryColor={team.primary_color || team.team_color1}
+                secondaryColor={team.team_color2}
+                size="lg"
+              />
+            </div>
+            <div className="hidden sm:block">
+              <TeamLogo
+                src={team.team_logo || null}
+                name={team.team_name || ''}
+                abbrev={team.team_cd}
+                primaryColor={team.primary_color || team.team_color1}
+                secondaryColor={team.team_color2}
+                size="xl"
+              />
+            </div>
             <div className="flex-1">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h1 className="font-display text-4xl font-bold tracking-wider text-foreground mb-3">
+                  <h1 className="font-display text-2xl sm:text-4xl font-bold tracking-wider text-foreground mb-2 sm:mb-3">
                     {team.team_name}
                   </h1>
-                  
+
                   {/* Record and Standings - Prominent Display */}
                   {teamStanding && (
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-6 flex-wrap">
+                    <div className="space-y-2 sm:space-y-3">
+                      <div className="flex items-center gap-3 sm:gap-6 flex-wrap">
                         <div>
                           <div className="text-xs font-mono text-muted-foreground uppercase mb-1">Record</div>
-                          <div className="font-display text-3xl font-bold text-foreground">
+                          <div className="font-display text-xl sm:text-3xl font-bold text-foreground">
                             {wins}-{losses}-{ties}
                           </div>
                         </div>
                         <div>
                           <div className="text-xs font-mono text-muted-foreground uppercase mb-1">Win %</div>
-                          <div className="font-mono text-2xl font-bold text-primary">
+                          <div className="font-mono text-lg sm:text-2xl font-bold text-primary">
                             {winPct.toFixed(1)}%
                           </div>
                         </div>
                         <div>
                           <div className="text-xs font-mono text-muted-foreground uppercase mb-1">Points</div>
-                          <div className="font-mono text-2xl font-bold text-primary">
+                          <div className="font-mono text-lg sm:text-2xl font-bold text-primary">
                             {points}
                           </div>
                         </div>
                         <div>
                           <div className="text-xs font-mono text-muted-foreground uppercase mb-1">Standing</div>
-                          <div className="font-mono text-2xl font-bold text-foreground">
+                          <div className="font-mono text-lg sm:text-2xl font-bold text-foreground">
                             #{teamStanding.standing || regularSeasonFinish || '-'}
                           </div>
                         </div>
                         <div>
                           <div className="text-xs font-mono text-muted-foreground uppercase mb-1">Games Played</div>
-                          <div className="font-mono text-xl font-semibold text-foreground">
+                          <div className="font-mono text-lg sm:text-xl font-semibold text-foreground">
                             {teamStanding.games_played || 0}
                           </div>
                         </div>

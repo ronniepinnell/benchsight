@@ -22,13 +22,13 @@ export async function GamesTickerWrapper() {
       .select('game_id, date, game_time, home_team_id, away_team_id, home_team_name, away_team_name, home_total_goals, away_total_goals')
       .eq('schedule_type', 'Past')
       .order('date', { ascending: false })
-      .limit(20),
+      .limit(60),
     supabase
       .from('dim_schedule')
       .select('game_id, date, game_time, home_team_id, away_team_id, home_team_name, away_team_name')
       .eq('schedule_type', 'Upcoming')
       .order('date', { ascending: true })
-      .limit(15),
+      .limit(40),
     supabase
       .from('dim_team')
       .select('team_id, team_name, team_cd, team_logo, team_color1, team_color2'),
@@ -47,9 +47,9 @@ export async function GamesTickerWrapper() {
   const teamsByName = new Map(teams.map(t => [t.team_name, t]))
   const gamesWithVideos = new Set(videos.map(v => String(v.game_id)))
 
-  // Combine games for ticker
-  const pastForTicker = recentGames.slice(0, 15).reverse()
-  const upcomingForTicker = upcomingGames.slice(0, 10)
+  // Combine games for ticker (reverse past so oldest is first)
+  const pastForTicker = [...recentGames].reverse()
+  const upcomingForTicker = upcomingGames
   const allGamesForTicker = [...pastForTicker, ...upcomingForTicker]
   const gamesByDate = groupGamesByDate(allGamesForTicker)
   const sortedDates = Array.from(gamesByDate.keys()).sort((a, b) => new Date(a).getTime() - new Date(b).getTime())

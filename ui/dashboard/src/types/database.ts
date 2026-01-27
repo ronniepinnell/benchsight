@@ -433,10 +433,20 @@ export interface FactEvents {
   is_rush: number
   is_save: number
   season_id: string
+  // Puck location
+  puck_x_start?: number | null
+  puck_y_start?: number | null
+  // Net location (inches: x 0-72, y 0-48)
+  net_x?: number | null
+  net_y?: number | null
+  // Goalie
+  goalie_player_id?: string | null
   // Event linking columns
   linked_event_key?: string
   sequence_key?: string
   play_key?: string
+  // Side of puck
+  side_of_puck?: string | null
 }
 
 export interface FactShotXY {

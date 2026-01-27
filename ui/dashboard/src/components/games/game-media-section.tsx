@@ -8,6 +8,7 @@ import { extractYouTubeVideoId, formatYouTubeEmbedUrl, formatYouTubeHighlightUrl
 import { PlayerPhoto } from '@/components/players/player-photo'
 import { IceRinkSVG, type PlayerMarker, type PuckPosition } from '@/components/games/ice-rink-svg'
 import { HighlightEventContext, type SelectedEvent } from '@/components/games/highlight-event-context'
+import { NetFrontSVG } from '@/components/games/net-front-svg'
 import type { FactPuckXYLong, FactPlayerXYLong } from '@/types/database'
 
 // Types
@@ -49,6 +50,8 @@ interface Highlight {
   // Shot location and goalie info
   puck_x_start?: number | null
   puck_y_start?: number | null
+  net_x?: number | null
+  net_y?: number | null
   goalie_player_id?: string | null
   goalie_name?: string | null
   // Future: separate highlight video URL (compilation clips)
@@ -637,6 +640,20 @@ export function GameMediaSection({
                                     </span>
                                   )}
                                 </div>
+
+                                {/* Net Front Visualization */}
+                                {highlight.net_x != null && highlight.net_y != null && (
+                                  <div className="pt-2">
+                                    <div className="text-xs font-semibold text-muted-foreground mb-1">Net Placement</div>
+                                    <div className="w-full max-w-[160px]">
+                                      <NetFrontSVG
+                                        shotX={highlight.net_x}
+                                        shotY={highlight.net_y}
+                                        isGoal={highlight.is_goal === 1}
+                                      />
+                                    </div>
+                                  </div>
+                                )}
 
                                 {/* Period & Time + Watch Button */}
                                 <div className="flex items-center justify-between pt-2">
