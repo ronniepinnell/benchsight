@@ -5,6 +5,7 @@ import { Target, Play, Clock, Zap, Video, ExternalLink } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { TeamLogo } from '@/components/teams/team-logo'
 import { formatYouTubeUrlWithTime, calculateVideoTimestamp } from '@/lib/utils/video'
+import { NetFrontSVG } from '@/components/games/net-front-svg'
 
 interface HighlightEvent {
   event_id?: string
@@ -25,6 +26,8 @@ interface HighlightEvent {
   video_timestamp?: number
   event_time?: string
   period_time?: string
+  net_x?: number | null
+  net_y?: number | null
 }
 
 interface GameHighlightsProps {
@@ -223,6 +226,18 @@ export function GameHighlights({
                   )}
                 </div>
                 
+                {/* Net Front View (if net_x/net_y data exists) */}
+                {event.net_x != null && event.net_y != null && (
+                  <div className="flex-shrink-0">
+                    <NetFrontSVG
+                      shotX={event.net_x}
+                      shotY={event.net_y}
+                      isGoal={!!event.is_goal}
+                      className="scale-75 origin-center"
+                    />
+                  </div>
+                )}
+
                 {/* Video Link (if available) */}
                 {(() => {
                   const videoUrl = getVideoUrlForEvent(event)

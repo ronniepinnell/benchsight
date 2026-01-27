@@ -398,6 +398,7 @@ export interface FactEvents {
   event_type: string
   event_type_id: string
   event_detail: string
+  event_detail_2?: string
   event_detail_id: string
   event_successful: boolean
   event_team_zone: string
@@ -432,10 +433,20 @@ export interface FactEvents {
   is_rush: number
   is_save: number
   season_id: string
+  // Puck location
+  puck_x_start?: number | null
+  puck_y_start?: number | null
+  // Net location (inches: x 0-72, y 0-48)
+  net_x?: number | null
+  net_y?: number | null
+  // Goalie
+  goalie_player_id?: string | null
   // Event linking columns
   linked_event_key?: string
   sequence_key?: string
   play_key?: string
+  // Side of puck
+  side_of_puck?: string | null
 }
 
 export interface FactShotXY {
@@ -455,6 +466,40 @@ export interface FactShotXY {
   danger_zone: string
   danger_level: string
   time_seconds: number
+}
+
+// ============================================
+// XY COORDINATE TABLE TYPES
+// ============================================
+
+export interface FactPuckXYLong {
+  puck_xy_key: string
+  event_id: string
+  game_id: number
+  point_number: number
+  x: number
+  y: number
+  is_start: boolean
+  is_stop: boolean
+  distance_to_net: number | null
+  angle_to_net: number | null
+}
+
+export interface FactPlayerXYLong {
+  player_xy_key: string
+  event_id: string
+  game_id: number
+  player_id: string
+  player_name: string
+  player_role: string
+  is_event_team: boolean
+  point_number: number
+  x: number
+  y: number
+  is_start: boolean
+  is_stop: boolean
+  distance_to_net: number | null
+  angle_to_net: number | null
 }
 
 // ============================================

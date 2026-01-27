@@ -319,6 +319,15 @@ class SupabaseManager:
         # Convert to records
         records = self._df_to_records(df)
 
+        # Detect which columns exist in the Supabase table by probing
+        # If a column doesn't exist, strip it from the data to avoid upload failure
+        try:
+            probe = self.client.table(table_name).select('*').limit(0).execute()
+            # If table has existing data, use column names from response
+            # For empty tables, try a single-row insert to detect schema
+        except Exception:
+            pass  # Table might not exist; insert will fail with clear error
+
         # Delete existing data before inserting (prevent duplicates)
         # Use a text column for the neq filter to avoid type mismatches
         try:
@@ -333,15 +342,50 @@ class SupabaseManager:
         except Exception as e:
             logger.warning(f"  Could not clear {table_name} before upload: {e}")
 
-        # Upload in batches
+        # Upload in batches with column-mismatch retry
         uploaded = 0
+        columns_to_strip = set()
         for i in range(0, len(records), self.BATCH_SIZE):
             batch = records[i:i + self.BATCH_SIZE]
+            # Strip previously detected bad columns
+            if columns_to_strip:
+                batch = [{k: v for k, v in r.items() if k not in columns_to_strip} for r in batch]
             try:
                 self.client.table(table_name).insert(batch).execute()
                 uploaded += len(batch)
             except Exception as e:
                 error_msg = str(e)
+                # Check if error is about a missing column
+                import re
+                col_match = re.search(r"Could not find the '(\w+)' column", error_msg)
+                if col_match and i == 0:
+                    bad_col = col_match.group(1)
+                    columns_to_strip.add(bad_col)
+                    logger.warning(f"  Column '{bad_col}' not in Supabase table {table_name}, stripping and retrying...")
+                    # Check for more missing columns by scanning the full error
+                    for match in re.finditer(r"Could not find the '(\w+)' column", error_msg):
+                        columns_to_strip.add(match.group(1))
+                    # Retry this batch without the bad columns
+                    batch = [{k: v for k, v in r.items() if k not in columns_to_strip} for r in records[i:i + self.BATCH_SIZE]]
+                    try:
+                        self.client.table(table_name).insert(batch).execute()
+                        uploaded += len(batch)
+                        logger.info(f"  Retry succeeded for {table_name} (stripped: {columns_to_strip})")
+                        continue
+                    except Exception as e2:
+                        error_msg = str(e2)
+                        # Check for additional missing columns
+                        for match in re.finditer(r"Could not find the '(\w+)' column", error_msg):
+                            columns_to_strip.add(match.group(1))
+                        # One more retry
+                        batch = [{k: v for k, v in r.items() if k not in columns_to_strip} for r in records[i:i + self.BATCH_SIZE]]
+                        try:
+                            self.client.table(table_name).insert(batch).execute()
+                            uploaded += len(batch)
+                            logger.info(f"  Retry2 succeeded for {table_name} (stripped: {columns_to_strip})")
+                            continue
+                        except Exception as e3:
+                            error_msg = str(e3)
                 # Extract meaningful error
                 if 'message' in error_msg:
                     try:

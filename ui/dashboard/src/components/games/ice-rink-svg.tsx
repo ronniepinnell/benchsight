@@ -2,16 +2,19 @@
 
 import { cn } from '@/lib/utils'
 
-interface PlayerMarker {
+export interface PlayerMarker {
   x: number  // Center-relative: -100 to 100 (0 = center ice)
   y: number  // Center-relative: -42.5 to 42.5 (0 = center)
   name?: string
   number?: string | number
   team: 'home' | 'away'
   isSelected?: boolean
+  playerId?: string
+  seq?: number  // point_number for ordering multi-point paths
+  role?: string  // player_role from fact_player_xy_long (e.g., event_player_1, opp_player_2)
 }
 
-interface PuckPosition {
+export interface PuckPosition {
   x: number
   y: number
   seq?: number
@@ -29,6 +32,8 @@ interface IceRinkSVGProps {
   onRinkClick?: (x: number, y: number) => void
   homeTeamName?: string
   awayTeamName?: string
+  focusedPlayerId?: string | null
+  onPlayerClick?: (playerId: string) => void
 }
 
 /**
@@ -67,7 +72,9 @@ export function IceRinkSVG({
   flipZones = false,
   onRinkClick,
   homeTeamName = 'Home',
-  awayTeamName = 'Away'
+  awayTeamName = 'Away',
+  focusedPlayerId = null,
+  onPlayerClick
 }: IceRinkSVGProps) {
 
   const handleClick = (e: React.MouseEvent<SVGSVGElement>) => {
@@ -112,6 +119,8 @@ export function IceRinkSVG({
           <stop offset="0%" stopColor="#60a5fa" stopOpacity="0.3" />
           <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.2" />
         </linearGradient>
+
+        {/* Net mesh pattern (unused - nets now use direct lines for reliability) */}
       </defs>
 
       {/* Ice surface with rounded corners */}
@@ -171,25 +180,26 @@ export function IceRinkSVG({
         strokeWidth="0.5"
       />
 
-      {/* Goal nets - behind the goal line, 6 units wide x 4 units deep */}
-      {/* Left goal net (posts on goal line at x=11) */}
-      <g>
-        {/* Net frame */}
-        <path d="M11 39.5 L5 39.5 L5 45.5 L11 45.5" fill="none" stroke="#64748b" strokeWidth="0.8" />
-        {/* Goal posts (red) */}
-        <line x1="11" y1="39.5" x2="11" y2="45.5" stroke="#dc2626" strokeWidth="1" />
-        {/* Crossbar hint */}
-        <line x1="5" y1="39.5" x2="5" y2="45.5" stroke="#64748b" strokeWidth="0.5" strokeDasharray="1,1" />
-      </g>
-      {/* Right goal net (posts on goal line at x=189) */}
-      <g>
-        {/* Net frame */}
-        <path d="M189 39.5 L195 39.5 L195 45.5 L189 45.5" fill="none" stroke="#64748b" strokeWidth="0.8" />
-        {/* Goal posts (red) */}
-        <line x1="189" y1="39.5" x2="189" y2="45.5" stroke="#dc2626" strokeWidth="1" />
-        {/* Crossbar hint */}
-        <line x1="195" y1="39.5" x2="195" y2="45.5" stroke="#64748b" strokeWidth="0.5" strokeDasharray="1,1" />
-      </g>
+      {/* Goal nets - behind the goal line */}
+      {/* Left goal net (x=3 to x=11, centered at y=42.5) */}
+      <rect x="3" y="37.5" width="8" height="10" fill="#94a3b8" stroke="#0f172a" strokeWidth="1.5" rx="1" />
+      <line x1="5" y1="37.5" x2="5" y2="47.5" stroke="#64748b" strokeWidth="0.5" />
+      <line x1="7" y1="37.5" x2="7" y2="47.5" stroke="#64748b" strokeWidth="0.5" />
+      <line x1="9" y1="37.5" x2="9" y2="47.5" stroke="#64748b" strokeWidth="0.5" />
+      <line x1="3" y1="40" x2="11" y2="40" stroke="#64748b" strokeWidth="0.5" />
+      <line x1="3" y1="42.5" x2="11" y2="42.5" stroke="#64748b" strokeWidth="0.5" />
+      <line x1="3" y1="45" x2="11" y2="45" stroke="#64748b" strokeWidth="0.5" />
+      <line x1="11" y1="37.5" x2="11" y2="47.5" stroke="#dc2626" strokeWidth="2.5" />
+
+      {/* Right goal net (x=189 to x=197, centered at y=42.5) */}
+      <rect x="189" y="37.5" width="8" height="10" fill="#94a3b8" stroke="#0f172a" strokeWidth="1.5" rx="1" />
+      <line x1="191" y1="37.5" x2="191" y2="47.5" stroke="#64748b" strokeWidth="0.5" />
+      <line x1="193" y1="37.5" x2="193" y2="47.5" stroke="#64748b" strokeWidth="0.5" />
+      <line x1="195" y1="37.5" x2="195" y2="47.5" stroke="#64748b" strokeWidth="0.5" />
+      <line x1="189" y1="40" x2="197" y2="40" stroke="#64748b" strokeWidth="0.5" />
+      <line x1="189" y1="42.5" x2="197" y2="42.5" stroke="#64748b" strokeWidth="0.5" />
+      <line x1="189" y1="45" x2="197" y2="45" stroke="#64748b" strokeWidth="0.5" />
+      <line x1="189" y1="37.5" x2="189" y2="47.5" stroke="#dc2626" strokeWidth="2.5" />
 
       {/* Trapezoid areas */}
       <polygon points="11,28 0,20 0,65 11,57" fill="#94a3b8" opacity="0.1" />
@@ -260,34 +270,146 @@ export function IceRinkSVG({
         </g>
       )}
 
+      {/* Player movement lines (team-colored, grouped by playerId) */}
+      {(() => {
+        // Group players by playerId to draw connecting lines
+        const grouped = new Map<string, PlayerMarker[]>()
+        players.forEach(p => {
+          if (!p.playerId) return
+          const existing = grouped.get(p.playerId)
+          if (existing) existing.push(p)
+          else grouped.set(p.playerId, [p])
+        })
+
+        return Array.from(grouped.entries()).map(([pid, points]) => {
+          if (points.length < 2) return null
+          const sorted = [...points].sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0))
+          const color = sorted[0].team === 'home' ? homeColor : awayColor
+          const isFocused = !focusedPlayerId || pid === focusedPlayerId
+
+          return sorted.map((point, i) => {
+            if (i === 0) return null
+            const prev = sorted[i - 1]
+            const p1 = toSvg(prev.x, prev.y)
+            const p2 = toSvg(point.x, point.y)
+            return (
+              <line
+                key={`trail-${pid}-${i}`}
+                x1={p1.x} y1={p1.y}
+                x2={p2.x} y2={p2.y}
+                stroke={color}
+                strokeWidth="1"
+                strokeLinecap="round"
+                strokeDasharray="2,1.5"
+                opacity={isFocused ? 0.6 : 0.1}
+              />
+            )
+          })
+        })
+      })()}
+
       {/* Player markers */}
       {players.map((player, i) => {
         const pos = toSvg(player.x, player.y)
         const color = player.team === 'home' ? homeColor : awayColor
+        const hasNumber = player.number !== undefined && player.number !== null && player.number !== ''
+        const isFirstPoint = !player.seq || player.seq === 1
+        const isFocused = !focusedPlayerId || player.playerId === focusedPlayerId
+        const markerOpacity = isFocused ? 1 : 0.2
+        const clickable = onPlayerClick && player.playerId
+
+        // Trail dots (non-first points): render as small circles, no jersey number
+        if (!isFirstPoint) {
+          return (
+            <g key={`player-${i}`} opacity={markerOpacity}>
+              <circle
+                cx={pos.x}
+                cy={pos.y}
+                r={2}
+                fill={color}
+                stroke="#000"
+                strokeWidth="0.3"
+                opacity={0.7}
+              />
+            </g>
+          )
+        }
+
+        // First point: full circle with jersey number
+        const radius = hasNumber ? (player.isSelected ? 5 : 4) : (player.isSelected ? 4 : 3)
 
         return (
-          <g key={`player-${i}`}>
-            {/* Player dot */}
+          <g
+            key={`player-${i}`}
+            opacity={markerOpacity}
+            style={clickable ? { cursor: 'pointer' } : undefined}
+            onClick={clickable ? (e) => { e.stopPropagation(); onPlayerClick!(player.playerId!) } : undefined}
+          >
+            {/* Glow ring for selected player (event_player_1) */}
+            {player.isSelected && (
+              <circle
+                cx={pos.x}
+                cy={pos.y}
+                r={radius + 2}
+                fill="none"
+                stroke="#fbbf24"
+                strokeWidth="1.5"
+                opacity="0.7"
+              />
+            )}
+
+            {/* Focus ring when this player is the focused one */}
+            {focusedPlayerId && player.playerId === focusedPlayerId && (
+              <circle
+                cx={pos.x}
+                cy={pos.y}
+                r={radius + 2}
+                fill="none"
+                stroke="#fff"
+                strokeWidth="1.5"
+                opacity="0.9"
+              />
+            )}
+
+            {/* Player circle */}
             <circle
               cx={pos.x}
               cy={pos.y}
-              r={player.isSelected ? 4 : 3}
+              r={radius}
               fill={color}
               stroke={player.isSelected ? '#fff' : '#000'}
               strokeWidth={player.isSelected ? 1.5 : 0.5}
             />
 
-            {/* Player number/name label */}
-            {(player.number || player.name) && (
+            {/* Jersey number inside circle */}
+            {hasNumber ? (
               <text
                 x={pos.x}
-                y={pos.y + 6}
+                y={pos.y}
                 textAnchor="middle"
-                className="text-[2.5px]"
-                fill="#1e293b"
+                dominantBaseline="central"
+                fill="#fff"
+                stroke="#000"
+                strokeWidth="0.3"
+                paintOrder="stroke"
+                className="text-[3px]"
+                style={{ fontWeight: 700 }}
               >
-                {player.number || player.name?.split(' ').pop()?.charAt(0)}
+                {player.number}
               </text>
+            ) : (
+              /* Fallback: player name initial below circle */
+              player.name && (
+                <text
+                  x={pos.x}
+                  y={pos.y + radius + 3}
+                  textAnchor="middle"
+                  className="text-[2.5px]"
+                  fill="#1e293b"
+                >
+                  {player.name.split(' ').pop()?.charAt(0)}
+                </text>
+              )
             )}
           </g>
         )

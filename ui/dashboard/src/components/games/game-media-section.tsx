@@ -1,13 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { Video, Play, Star, Clock, ChevronDown, Target } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { extractYouTubeVideoId, formatYouTubeEmbedUrl, formatYouTubeHighlightUrl } from '@/lib/utils/video'
 import { PlayerPhoto } from '@/components/players/player-photo'
-import { MiniShotRink } from '@/components/games/mini-shot-rink'
+import { IceRinkSVG, type PlayerMarker, type PuckPosition } from '@/components/games/ice-rink-svg'
 import { HighlightEventContext, type SelectedEvent } from '@/components/games/highlight-event-context'
+import { NetFrontSVG } from '@/components/games/net-front-svg'
+import type { FactPuckXYLong, FactPlayerXYLong } from '@/types/database'
 
 // Types
 interface GameVideo {
@@ -48,6 +50,8 @@ interface Highlight {
   // Shot location and goalie info
   puck_x_start?: number | null
   puck_y_start?: number | null
+  net_x?: number | null
+  net_y?: number | null
   goalie_player_id?: string | null
   goalie_name?: string | null
   // Future: separate highlight video URL (compilation clips)
@@ -81,8 +85,14 @@ interface GameMediaSectionProps {
   awayTeam: string
   homeColor?: string
   awayColor?: string
+  homeTeamId?: string
   teamStatsContent?: React.ReactNode
   className?: string
+  // XY visualization data
+  puckXYData?: FactPuckXYLong[]
+  playerXYData?: FactPlayerXYLong[]
+  playerIdToJerseyMap?: Record<string, number>
+  playerIdToTeamIdMap?: Record<string, string>
 }
 
 // Highlight timing - start 10 seconds before, end 15 seconds after the event
@@ -136,8 +146,13 @@ export function GameMediaSection({
   awayTeam,
   homeColor = '#1e40af',
   awayColor = '#dc2626',
+  homeTeamId,
   teamStatsContent,
-  className
+  className,
+  puckXYData = [],
+  playerXYData = [],
+  playerIdToJerseyMap = {},
+  playerIdToTeamIdMap = {},
 }: GameMediaSectionProps) {
   const [selectedVideoIndex, setSelectedVideoIndex] = useState(0)
   const [videoStartTime, setVideoStartTime] = useState<number | null>(null)
@@ -148,6 +163,87 @@ export function GameMediaSection({
   const [expandedHighlight, setExpandedHighlight] = useState<string | null>(null)
   const [playingHighlight, setPlayingHighlight] = useState<string | null>(null)
   const [selectedContextEvent, setSelectedContextEvent] = useState<SelectedEvent | null>(null)
+  const [focusedPlayerId, setFocusedPlayerId] = useState<string | null>(null)
+
+  // Index XY data by event_id for fast lookup
+  const puckXYByEvent = useMemo(() => {
+    const map = new Map<string, FactPuckXYLong[]>()
+    for (const row of puckXYData) {
+      const existing = map.get(row.event_id)
+      if (existing) existing.push(row)
+      else map.set(row.event_id, [row])
+    }
+    return map
+  }, [puckXYData])
+
+  const playerXYByEvent = useMemo(() => {
+    const map = new Map<string, FactPlayerXYLong[]>()
+    for (const row of playerXYData) {
+      const existing = map.get(row.event_id)
+      if (existing) existing.push(row)
+      else map.set(row.event_id, [row])
+    }
+    return map
+  }, [playerXYData])
+
+  // Build visualization for a given event_id
+  const buildVisualization = useCallback((eventId: string, highlight: Highlight): {
+    players: PlayerMarker[]
+    puckPath: PuckPosition[]
+  } | null => {
+    const puckRows = puckXYByEvent.get(eventId)
+    const playerRows = playerXYByEvent.get(eventId)
+
+    // Build puck path
+    const puckPath: PuckPosition[] = []
+    if (puckRows && puckRows.length > 0) {
+      const sorted = [...puckRows].sort((a, b) => a.point_number - b.point_number)
+      for (const row of sorted) {
+        puckPath.push({ x: row.x, y: row.y, seq: row.point_number })
+      }
+    } else if (highlight.puck_x_start != null && highlight.puck_y_start != null) {
+      puckPath.push({ x: highlight.puck_x_start, y: highlight.puck_y_start })
+    }
+
+    // Build player markers
+    const players: PlayerMarker[] = []
+    if (playerRows && playerRows.length > 0) {
+      // Group by player_id, include all points
+      const byPlayer = new Map<string, FactPlayerXYLong[]>()
+      for (const row of playerRows) {
+        const existing = byPlayer.get(row.player_id)
+        if (existing) existing.push(row)
+        else byPlayer.set(row.player_id, [row])
+      }
+
+      for (const [pid, points] of Array.from(byPlayer.entries())) {
+        const sorted = [...points].sort((a, b) => a.point_number - b.point_number)
+        const first = sorted[0]
+        const jerseyNum = playerIdToJerseyMap[pid]
+        const teamId = playerIdToTeamIdMap[pid]
+        const isHome = teamId ? teamId === homeTeamId : first.is_event_team
+        const team: 'home' | 'away' = isHome ? 'home' : 'away'
+        const isSelected = first.player_role === 'event_player_1'
+
+        for (const pt of sorted) {
+          players.push({
+            x: pt.x,
+            y: pt.y,
+            name: pt.player_name,
+            number: jerseyNum !== undefined ? jerseyNum : undefined,
+            team,
+            isSelected,
+            playerId: pid,
+            seq: pt.point_number,
+            role: first.player_role,
+          })
+        }
+      }
+    }
+
+    if (puckPath.length === 0 && players.length === 0) return null
+    return { players, puckPath }
+  }, [puckXYByEvent, playerXYByEvent, playerIdToJerseyMap, playerIdToTeamIdMap, homeTeamId])
 
   const hasVideos = videos.length > 0
   const hasHighlights = highlights.length > 0
@@ -310,11 +406,15 @@ export function GameMediaSection({
                     <button
                       onClick={() => {
                         if (isExpanded) {
-                          // Collapsing - also stop video
+                          // Collapsing - also stop video and clear rink state
                           setExpandedHighlight(null)
                           setPlayingHighlight(null)
+                          setSelectedContextEvent(null)
+                          setFocusedPlayerId(null)
                         } else {
                           setExpandedHighlight(highlight.event_id)
+                          setSelectedContextEvent(null)
+                          setFocusedPlayerId(null)
                         }
                       }}
                       className={cn(
@@ -388,14 +488,9 @@ export function GameMediaSection({
                       const assists = parseAssists(highlight.play_detail1, highlight.play_detail_2)
                       const hasAssists = highlight.event_player_2 || assists.primaryAssist || assists.secondaryAssist
 
-                      // Determine which location to show (context event or highlight)
-                      const displayedEvent = selectedContextEvent || {
-                        puck_x_start: highlight.puck_x_start,
-                        puck_y_start: highlight.puck_y_start,
-                        is_goal: highlight.is_goal === 1,
-                        player_name: highlight.player_name,
-                        event_type: highlight.event_type,
-                      }
+                      // Build rink visualization: use context event if selected, otherwise highlight event
+                      const vizEventId = selectedContextEvent?.event_id || highlight.event_id
+                      const viz = buildVisualization(vizEventId, highlight)
 
                       return (
                         <div className="bg-muted/20 border-t border-border/50">
@@ -415,24 +510,57 @@ export function GameMediaSection({
 
                           {/* Main Content Grid */}
                           <div className="p-4 space-y-4">
-                            {/* Top Row: Shot Location + Event Details */}
+                            {/* Top Row: Rink Visualization + Event Details */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {/* Left: Shot Location Rink */}
+                              {/* Left: Ice Rink with players + puck */}
                               <div className="space-y-2">
                                 <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                   <Target className="w-3 h-3" />
-                                  Shot Location
-                                  {selectedContextEvent && (
-                                    <span className="text-primary normal-case font-normal">
-                                      ({selectedContextEvent.event_type}: {selectedContextEvent.player_name})
-                                    </span>
+                                  {selectedContextEvent ? (
+                                    <>
+                                      Play Location
+                                      <span className="text-primary normal-case font-normal">
+                                        ({selectedContextEvent.event_type}: {selectedContextEvent.player_name})
+                                      </span>
+                                    </>
+                                  ) : (
+                                    'Event Location'
                                   )}
                                 </div>
-                                <MiniShotRink
-                                  shotX={displayedEvent.puck_x_start ?? null}
-                                  shotY={displayedEvent.puck_y_start ?? null}
-                                  isGoal={displayedEvent.is_goal}
-                                />
+                                {viz ? (
+                                  <IceRinkSVG
+                                    players={viz.players}
+                                    puckPath={viz.puckPath}
+                                    showPuck={true}
+                                    homeColor={homeColor}
+                                    awayColor={awayColor}
+                                    homeTeamName={homeTeam}
+                                    awayTeamName={awayTeam}
+                                    focusedPlayerId={focusedPlayerId}
+                                    onPlayerClick={(pid) => setFocusedPlayerId(prev => prev === pid ? null : pid)}
+                                  />
+                                ) : (
+                                  <div className="bg-muted/30 rounded-lg p-4 text-center text-xs text-muted-foreground">
+                                    No location data available
+                                  </div>
+                                )}
+                                {/* Legend */}
+                                {viz && (
+                                  <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                                    <span className="flex items-center gap-1">
+                                      <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: homeColor }} />
+                                      {homeTeam}
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                      <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: awayColor }} />
+                                      {awayTeam}
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                      <span className="w-2 h-2 rounded-full inline-block bg-gray-800" />
+                                      Puck
+                                    </span>
+                                  </div>
+                                )}
                               </div>
 
                               {/* Right: Event Details */}
@@ -512,6 +640,20 @@ export function GameMediaSection({
                                     </span>
                                   )}
                                 </div>
+
+                                {/* Net Front Visualization */}
+                                {highlight.net_x != null && highlight.net_y != null && (
+                                  <div className="pt-2">
+                                    <div className="text-xs font-semibold text-muted-foreground mb-1">Net Placement</div>
+                                    <div className="w-full max-w-[160px]">
+                                      <NetFrontSVG
+                                        shotX={highlight.net_x}
+                                        shotY={highlight.net_y}
+                                        isGoal={highlight.is_goal === 1}
+                                      />
+                                    </div>
+                                  </div>
+                                )}
 
                                 {/* Period & Time + Watch Button */}
                                 <div className="flex items-center justify-between pt-2">

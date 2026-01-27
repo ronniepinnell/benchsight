@@ -26,6 +26,11 @@ function formatDisplayText(text: string | null | undefined): string {
 }
 
 // Multi-select dropdown component
+interface OptionGroup {
+  label: string
+  options: string[]
+}
+
 interface MultiSelectDropdownProps {
   label: string
   options: string[]
@@ -34,6 +39,7 @@ interface MultiSelectDropdownProps {
   isOpen: boolean
   onToggle: () => void
   formatOption?: (option: string) => string
+  groups?: OptionGroup[]
 }
 
 function MultiSelectDropdown({
@@ -43,7 +49,8 @@ function MultiSelectDropdown({
   onChange,
   isOpen,
   onToggle,
-  formatOption = (o) => o
+  formatOption = (o) => o,
+  groups
 }: MultiSelectDropdownProps) {
   const toggleOption = (option: string) => {
     if (selected.includes(option)) {
@@ -54,6 +61,29 @@ function MultiSelectDropdown({
   }
 
   const clearAll = () => onChange([])
+
+  const renderOption = (option: string) => (
+    <button
+      key={option}
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation()
+        toggleOption(option)
+      }}
+      className={cn(
+        "w-full px-3 py-1.5 text-xs text-left hover:bg-accent flex items-center gap-2",
+        selected.includes(option) && "bg-primary/5"
+      )}
+    >
+      <span className={cn(
+        "w-4 h-4 border rounded flex items-center justify-center flex-shrink-0",
+        selected.includes(option) ? "bg-primary border-primary" : "border-border"
+      )}>
+        {selected.includes(option) && <Check className="w-3 h-3 text-primary-foreground" />}
+      </span>
+      <span className="truncate">{formatOption(option)}</span>
+    </button>
+  )
 
   return (
     <div className="relative">
@@ -74,7 +104,7 @@ function MultiSelectDropdown({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 z-50 bg-background border border-border rounded-md shadow-lg min-w-[180px] max-h-[300px] overflow-y-auto">
+        <div className="absolute top-full left-0 mt-1 z-50 bg-background border border-border rounded-md shadow-lg min-w-[200px] max-h-[300px] overflow-y-auto">
           {/* Clear all button */}
           {selected.length > 0 && (
             <button
@@ -90,31 +120,21 @@ function MultiSelectDropdown({
             </button>
           )}
 
-          {/* Options */}
-          {options.map(option => (
-            <button
-              key={option}
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation()
-                toggleOption(option)
-              }}
-              className={cn(
-                "w-full px-3 py-1.5 text-xs text-left hover:bg-accent flex items-center gap-2",
-                selected.includes(option) && "bg-primary/5"
-              )}
-            >
-              <span className={cn(
-                "w-4 h-4 border rounded flex items-center justify-center flex-shrink-0",
-                selected.includes(option) ? "bg-primary border-primary" : "border-border"
-              )}>
-                {selected.includes(option) && <Check className="w-3 h-3 text-primary-foreground" />}
-              </span>
-              <span className="truncate">{formatOption(option)}</span>
-            </button>
-          ))}
+          {/* Grouped options */}
+          {groups && groups.length > 0 ? (
+            groups.map(group => (
+              <div key={group.label}>
+                <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground bg-muted/50 sticky top-0">
+                  {group.label}
+                </div>
+                {group.options.map(renderOption)}
+              </div>
+            ))
+          ) : (
+            options.map(renderOption)
+          )}
 
-          {options.length === 0 && (
+          {options.length === 0 && (!groups || groups.length === 0) && (
             <div className="px-3 py-2 text-xs text-muted-foreground">No options</div>
           )}
         </div>
@@ -187,6 +207,8 @@ interface ShiftEvent {
   event_id: string
   event_type?: string
   event_detail?: string
+  event_detail_2?: string
+  event_player_1?: string
   player_team?: string
   shift_id?: number
   running_video_time?: number
@@ -300,7 +322,7 @@ export function ShiftsTimeline({
     return Array.from(periods).sort((a, b) => a - b)
   }, [shifts])
 
-  // Available players (all players across all shifts)
+  // Available players (all players across all shifts) with team info
   const availablePlayers = useMemo(() => {
     const playerNames = new Set<string>()
     shifts.forEach(shift => {
@@ -318,6 +340,54 @@ export function ShiftsTimeline({
     })
     return Array.from(playerNames).sort()
   }, [shifts, jerseyToPlayerMap])
+
+  // Build name → jersey number map from jerseyToPlayerMap
+  const nameToJerseyMap = useMemo(() => {
+    const map = new Map<string, string>()
+    jerseyToPlayerMap.forEach((info, jersey) => {
+      if (info.player_name) map.set(info.player_name, jersey)
+    })
+    return map
+  }, [jerseyToPlayerMap])
+
+  // Build name → team_id map from jerseyToPlayerMap
+  const nameToTeamMap = useMemo(() => {
+    const map = new Map<string, string>()
+    jerseyToPlayerMap.forEach((info) => {
+      if (info.player_name && info.team_id) map.set(info.player_name, info.team_id)
+    })
+    return map
+  }, [jerseyToPlayerMap])
+
+  // Format player name with jersey number
+  const formatPlayerOption = (name: string) => {
+    const jersey = nameToJerseyMap.get(name)
+    return jersey ? `#${jersey} ${name}` : name
+  }
+
+  // Group available players by team (away first, then home - standard hockey display)
+  const playerGroups = useMemo((): OptionGroup[] => {
+    const awayPlayers: string[] = []
+    const homePlayers: string[] = []
+    const otherPlayers: string[] = []
+
+    availablePlayers.forEach(name => {
+      const teamId = nameToTeamMap.get(name)
+      if (teamId === awayTeamId) {
+        awayPlayers.push(name)
+      } else if (teamId === homeTeamId) {
+        homePlayers.push(name)
+      } else {
+        otherPlayers.push(name)
+      }
+    })
+
+    const groups: OptionGroup[] = []
+    if (awayPlayers.length > 0) groups.push({ label: awayTeam, options: awayPlayers })
+    if (homePlayers.length > 0) groups.push({ label: homeTeam, options: homePlayers })
+    if (otherPlayers.length > 0) groups.push({ label: 'Other', options: otherPlayers })
+    return groups
+  }, [availablePlayers, nameToTeamMap, homeTeamId, awayTeamId, homeTeam, awayTeam])
 
   // Available strengths
   const availableStrengths = useMemo(() => {
@@ -559,6 +629,8 @@ export function ShiftsTimeline({
             onChange={setSelectedPlayers}
             isOpen={showFilterDropdown === 'player'}
             onToggle={() => setShowFilterDropdown(showFilterDropdown === 'player' ? null : 'player')}
+            formatOption={formatPlayerOption}
+            groups={playerGroups.length > 0 ? playerGroups : undefined}
           />
         )}
 
@@ -883,9 +955,15 @@ export function ShiftsTimeline({
                                               backgroundColor: `${getEventTeamColor(event)}20`,
                                               color: getEventTeamColor(event)
                                             }}
-                                            title={`${event.player_team}: ${formatDisplayText(event.event_type)}${event.running_video_time !== undefined ? ' (click to watch)' : ''}`}
+                                            title={[
+                                              event.event_player_1,
+                                              formatDisplayText(event.event_detail),
+                                              formatDisplayText(event.event_detail_2),
+                                              event.running_video_time !== undefined ? '(click to watch)' : ''
+                                            ].filter(Boolean).join(' - ')}
                                           >
-                                            {formatDisplayText(event.event_type)}
+                                            {event.event_player_1 ? `${event.event_player_1}: ` : ''}
+                                            {formatDisplayText(event.event_detail || event.event_type)}
                                             {event.running_video_time !== undefined && currentVideo && (
                                               <Play className="w-2 h-2 inline ml-0.5" />
                                             )}

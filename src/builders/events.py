@@ -79,6 +79,7 @@ def build_fact_events(
         'pressured_pressurer',
         # XY data
         'puck_x_start', 'puck_y_start', 'puck_x_end', 'puck_y_end',
+        'net_x', 'net_y',
         'player_x', 'player_y',
         # Flags
         'is_goal', 'is_highlight'

@@ -1,10 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
-import type { 
+import type {
   VRecentGames,
   FactPlayerGameStats,
   FactGoalieGameStats,
   FactEvents,
-  FactShotXY
+  FactShotXY,
+  FactPuckXYLong,
+  FactPlayerXYLong
 } from '@/types/database'
 
 // Enhanced get games function with filtering support
@@ -675,6 +677,8 @@ export async function getGameHighlights(gameId: number): Promise<GameHighlight[]
       // Shot location and goalie info
       puck_x_start: e.puck_x_start ?? null,
       puck_y_start: e.puck_y_start ?? null,
+      net_x: e.net_x ?? null,
+      net_y: e.net_y ?? null,
       goalie_player_id: e.goalie_player_id || null,
       goalie_name: e.goalie_name || null,
       highlight_video_url: null, // Future: separate highlight compilation
@@ -1088,6 +1092,43 @@ export async function getGameAllEvents(gameId: number): Promise<any[]> {
 }
 
 /**
+ * Fetch event player roles from fact_event_players (for PBP role filtering)
+ * Returns lightweight rows: event_id + player_id + player_role
+ */
+export async function getGameEventPlayerRoles(gameId: number): Promise<Array<{ event_id: string; player_id: string; player_role: string }>> {
+  const supabase = await createClient()
+  const allRows: Array<{ event_id: string; player_id: string; player_role: string }> = []
+  const pageSize = 1000
+  let offset = 0
+  let hasMore = true
+
+  while (hasMore) {
+    const { data, error } = await supabase
+      .from('fact_event_players')
+      .select('event_id, player_id, player_role')
+      .eq('game_id', gameId)
+      .range(offset, offset + pageSize - 1)
+
+    if (error) {
+      console.error('Error fetching event player roles:', error)
+      break
+    }
+
+    if (data && data.length > 0) {
+      allRows.push(...data)
+      offset += pageSize
+      hasMore = data.length === pageSize
+    } else {
+      hasMore = false
+    }
+
+    if (offset > 15000) break
+  }
+
+  return allRows
+}
+
+/**
  * Fetch shifts for shift chart with player names
  */
 export async function getGameShifts(gameId: number): Promise<any[]> {
@@ -1214,4 +1255,44 @@ export async function getGameHighlightEvents(gameId: number): Promise<any[]> {
     return []
   }
   return data || []
+}
+
+/**
+ * Fetch puck XY coordinates for all events in a game
+ */
+export async function getGamePuckXY(gameId: number): Promise<FactPuckXYLong[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('fact_puck_xy_long')
+    .select('*')
+    .eq('game_id', gameId)
+    .order('event_id', { ascending: true })
+    .order('point_number', { ascending: true })
+    .limit(5000)
+
+  if (error) {
+    console.error('Error fetching puck XY:', error)
+    return []
+  }
+  return (data ?? []) as FactPuckXYLong[]
+}
+
+/**
+ * Fetch player XY coordinates for all events in a game
+ */
+export async function getGamePlayerXY(gameId: number): Promise<FactPlayerXYLong[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('fact_player_xy_long')
+    .select('*')
+    .eq('game_id', gameId)
+    .order('event_id', { ascending: true })
+    .order('point_number', { ascending: true })
+    .limit(5000)
+
+  if (error) {
+    console.error('Error fetching player XY:', error)
+    return []
+  }
+  return (data ?? []) as FactPlayerXYLong[]
 }

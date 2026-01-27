@@ -75,19 +75,11 @@ export function GamesTicker({
   }, [])
 
   const handleScrollLeft = useCallback(() => {
-    if (scrollRef.current) {
-      const container = scrollRef.current
-      container.style.scrollBehavior = 'smooth'
-      container.scrollLeft = container.scrollLeft - 300
-    }
+    scrollRef.current?.scrollBy({ left: -300, behavior: 'smooth' })
   }, [])
 
   const handleScrollRight = useCallback(() => {
-    if (scrollRef.current) {
-      const container = scrollRef.current
-      container.style.scrollBehavior = 'smooth'
-      container.scrollLeft = container.scrollLeft + 300
-    }
+    scrollRef.current?.scrollBy({ left: 300, behavior: 'smooth' })
   }, [])
 
   return (
