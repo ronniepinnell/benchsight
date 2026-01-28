@@ -31613,7 +31613,8 @@ function buildExportWorkbook() {
         home_team_pp: (!homeEN && !awayEN && homeSkaters > awaySkaters) ? 1 : 0,
         away_team_pp: (!homeEN && !awayEN && awaySkaters > homeSkaters) ? 1 : 0,
         away_team_pk: (!homeEN && !awayEN && awaySkaters < homeSkaters) ? 1 : 0,
-        situation: (homeEN || awayEN) ? (homeEN ? 'away_en' : 'home_en') : (homeSkaters === awaySkaters) ? 'even' : (homeSkaters > awaySkaters ? 'home_pp' : 'away_pp'),
+        // v29.1: Fix #177 — situation indicates which team HAS the empty net (home_en = home pulled goalie)
+        situation: (homeEN || awayEN) ? (homeEN ? 'home_en' : 'away_en') : (homeSkaters === awaySkaters) ? 'even' : (homeSkaters > awaySkaters ? 'home_pp' : 'away_pp'),
         home_goals: goals.startHome,
         away_goals: goals.startAway,
         // Plus/minus: goals FOR and AGAINST during this shift
