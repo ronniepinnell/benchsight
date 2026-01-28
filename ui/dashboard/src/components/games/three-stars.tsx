@@ -85,7 +85,7 @@ function StarRow({ player, rank }: StarRowProps) {
 
       {/* Player photo */}
       <Link
-        href={`/norad/player/${player.player_id}`}
+        href={`/norad/players/${player.player_id}`}
         className="flex-shrink-0 hover:opacity-80 transition-opacity"
       >
         <PlayerPhoto
@@ -99,7 +99,7 @@ function StarRow({ player, rank }: StarRowProps) {
       {/* Player name & team */}
       <div className="flex-1 min-w-0">
         <Link
-          href={`/norad/player/${player.player_id}`}
+          href={`/norad/players/${player.player_id}`}
           className="font-display text-sm font-semibold text-foreground hover:text-primary transition-colors block truncate"
         >
           {player.player_name}
