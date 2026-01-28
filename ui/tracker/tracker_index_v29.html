@@ -6588,12 +6588,9 @@ function renderRecentPlayers() {
 }
 
 function quickAddRecentPlayer(num, team) {
-  const roster = team === 'home' ? S.homeRoster : S.awayRoster;
-  const player = roster.find(p => p.num == num);
-  if (player) {
-    addEventPlayer({ ...player, team });
-    toast(`Added #${num}`, 'success');
-  }
+  // v29.1: Fixed — was calling undefined addEventPlayer(). Now uses quickAddByNumber (#122)
+  const role = team === S.evtTeam ? 'evt' : 'opp';
+  quickAddByNumber(num, role);
 }
 
 // --- 6. QUICK NOTES ---
@@ -13152,7 +13149,7 @@ function renderQuickAdd() {
   const oppTeam = evtTeam === 'home' ? 'away' : 'home';
   const onIce = num => Object.values(S.slots[evtTeam]||{}).some(p => String(p?.num) === String(num));
   const oppOnIce = num => Object.values(S.slots[oppTeam]||{}).some(p => String(p?.num) === String(num));
-  const inEvt = num => S.curr.players.some(p => p.num === num);
+  const inEvt = num => S.curr.players.some(p => String(p.num) === String(num));
   
   // #region agent log
   const evtTeamSlotsNums = Object.values(S.slots[evtTeam]||{}).filter(Boolean).map(p=>String(p.num));
@@ -15389,10 +15386,11 @@ function togglePlayer(num, role) {
     }
   }
   
-  const existingIdx = S.curr.players.findIndex(x => x.num === num);
+  // v29.1: Use String() comparison to avoid "22" !== 22 type mismatch (#122)
+  const existingIdx = S.curr.players.findIndex(x => String(x.num) === String(num));
   if (existingIdx >= 0) {
     S.curr.players.splice(existingIdx, 1);
-    if (S.selectedPlayer?.num === num) S.selectedPlayer = null;
+    if (S.selectedPlayer && String(S.selectedPlayer.num) === String(num)) S.selectedPlayer = null;
   } else {
     const roleNum = S.curr.players.filter(x => x.role?.startsWith(role === 'evt' ? 'event' : 'opp')).length + 1;
     S.curr.players.push({
@@ -15420,6 +15418,14 @@ function removePlayer(num) {
 }
 
 function renumberPlayers() {
+  // v29.1: Deduplicate — remove same player (num+team) appearing multiple times on same side
+  const seen = new Set();
+  S.curr.players = S.curr.players.filter(p => {
+    const key = `${String(p.num)}_${p.team}_${p.role?.startsWith('event') ? 'evt' : 'opp'}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
   let evtN = 1, oppN = 1;
   S.curr.players.forEach(p => {
     if (p.role?.startsWith('event')) { p.role = `event_team_player_${evtN}`; p.roleNum = evtN++; }
@@ -31109,9 +31115,16 @@ function buildExportWorkbook() {
       base.net_y = evt.netXY.y;
     }
     
-    // One row per player
+    // One row per player — v29.1: dedup same player on same side (#122)
     if (evt.players?.length) {
-      evt.players.forEach(p => {
+      const dedupSeen = new Set();
+      const dedupPlayers = evt.players.filter(p => {
+        const key = `${String(p.num)}_${p.role?.startsWith('event') ? 'evt' : 'opp'}`;
+        if (dedupSeen.has(key)) return false;
+        dedupSeen.add(key);
+        return true;
+      });
+      dedupPlayers.forEach(p => {
         const row = {...base};
         row['player_game_number_'] = p.num;
         row['player_game_number'] = p.num;
