@@ -17072,9 +17072,8 @@ function editAutoEvent() {
     if (pendingAutoEvent.linkedIdx !== null && pendingAutoEvent.linkedIdx !== undefined) {
       S.linkedEventIdx = pendingAutoEvent.linkedIdx;
     }
-    if (pendingAutoEvent.puckXY?.length) {
-      S.curr.puckXY = [...pendingAutoEvent.puckXY];
-    }
+    // v29.1: Do NOT copy puckXY from auto-event — user must click rink
+    // Was causing random puck positions on auto-generated events
     if (pendingAutoEvent.players?.length) {
       S.curr.players = pendingAutoEvent.players.map(p => ({...p}));
       renumberPlayers();
@@ -18801,16 +18800,9 @@ function autoLinkFollowUp(type) {
     // Copy time from shot
     document.getElementById('evtStartTime').value = lastEvt.start_time;
     
-    // Copy puck position from shot
-    if (lastEvt.puckXY?.length) {
-      S.curr.puckXY = lastEvt.puckXY.map(xy => ({...xy}));
-    }
-    
-    // Copy net position from shot
-    if (lastEvt.netXY) {
-      S.curr.netXY = {...lastEvt.netXY};
-    }
-    
+    // v29.1: Do NOT copy puckXY/netXY from shot — user must click rink
+    // Was causing random puck positions on Save after Shot
+
     toast(`Auto-linked to Shot #${lastEvt.idx + 1}`, 'info');
   }
   
@@ -18830,10 +18822,8 @@ function autoLinkFollowUp(type) {
     const linkedEvtEl = document.getElementById('linkedEvt');
     if (linkedEvtEl) linkedEvtEl.value = lastEvt.idx + 1;
     document.getElementById('evtStartTime').value = lastEvt.start_time;
-    // Copy puck XY from previous event
-    if (lastEvt.puckXY?.length) {
-      S.curr.puckXY = lastEvt.puckXY.map(xy => ({...xy}));
-    }
+    // v29.1: Do NOT copy puckXY from previous event — user must click rink
+    // Was causing random puck positions on linked events
     toast(`Auto-linked to ${lastEvt.type} #${lastEvt.idx + 1} (Ctrl+U to unlink)`, 'info');
   }
 }
@@ -22030,8 +22020,10 @@ function saveEventFromSidePanel() {
   evt.detail1 = document.getElementById('evtD1').value || evt.detail1;
   evt.detail2 = document.getElementById('evtD2').value || evt.detail2;
   evt.players = S.curr.players ? S.curr.players.map(p => ({...p, xy: [...(p.xy || [])]})) : evt.players;
-  evt.puckXY = S.curr.puckXY && S.curr.puckXY.length > 0 ? [...S.curr.puckXY] : evt.puckXY;
-  evt.netXY = S.curr.netXY ? {...S.curr.netXY} : evt.netXY;
+  // v29.1: Always use current state — if user cleared XY, save it as cleared
+  // Was falling back to old evt.puckXY causing "revert" behavior
+  evt.puckXY = S.curr.puckXY ? [...S.curr.puckXY] : [];
+  evt.netXY = S.curr.netXY ? {...S.curr.netXY} : null;
   
   // Update type codes and IDs for export
   if (evt.type) {
