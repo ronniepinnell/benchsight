@@ -885,12 +885,22 @@ def create_fact_player_career_stats_enhanced() -> pd.DataFrame:
     ]
     
     all_results = []
-    
+
+    # Pre-load tables once (avoid reloading inside nested loop)
+    game_stats = load_table('fact_player_game_stats')
+    if len(game_stats) > 0 and 'game_type' not in game_stats.columns:
+        schedule = load_table('dim_schedule')
+        game_stats = add_game_type_to_df(game_stats, schedule)
+    if len(game_stats) > 0:
+        if 'season_id' in game_stats.columns:
+            game_stats['player_id'] = game_stats['player_id'].astype(str)
+            game_stats['season_id'] = game_stats['season_id'].astype(str)
+
     # Get unique player-season combinations
     player_seasons = season_stats[['player_id', 'season_id', 'player_name']].drop_duplicates(
         subset=['player_id', 'season_id']
     )
-    
+
     for _, ps in player_seasons.iterrows():
         player_id = ps['player_id']
         season_id = ps['season_id']
@@ -927,18 +937,8 @@ def create_fact_player_career_stats_enhanced() -> pd.DataFrame:
             grouped_type['team_name'] = type_data['team_name'].iloc[-1] if len(type_data) > 0 else None
             grouped_type['team_id'] = type_data['team_id'].iloc[-1] if len(type_data) > 0 else None
             
-            # Get games played from game_stats for this player+season+type
-            game_stats = load_table('fact_player_game_stats')
+            # Get games played from pre-loaded game_stats
             if len(game_stats) > 0 and 'season_id' in game_stats.columns:
-                # Add game_type to game_stats if not present
-                if 'game_type' not in game_stats.columns:
-                    schedule = load_table('dim_schedule')
-                    game_stats = add_game_type_to_df(game_stats, schedule)
-
-                # Ensure consistent ID types for comparison (dtype optimization may create mismatches)
-                game_stats['player_id'] = game_stats['player_id'].astype(str)
-                game_stats['season_id'] = game_stats['season_id'].astype(str)
-
                 player_game_stats = game_stats[
                     (game_stats['player_id'] == str(player_id)) &
                     (game_stats['season_id'] == str(season_id)) &

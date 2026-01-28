@@ -590,12 +590,12 @@ def load_tracking_data(player_lookup, use_parallel: bool = True):
             
             if errors:
                 for error in errors:
-                    log.warning(f"  {error}")
+                    log.warn(f"  {error}")
             
             log.info(f"  Parallel loading complete: {len(all_events)} event sets, {len(all_shifts)} shift sets")
             
         except Exception as e:
-            log.warning(f"Parallel loading failed, falling back to sequential: {e}")
+            log.warn(f"Parallel loading failed, falling back to sequential: {e}")
             import traceback
             traceback.print_exc()
             use_parallel = False
