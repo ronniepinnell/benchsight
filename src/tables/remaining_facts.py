@@ -12,6 +12,7 @@ from src.utils.game_type_aggregator import (
     GAME_TYPE_SPLITS,
     add_game_type_to_df
 )
+from src.calculations.goals import get_goal_filter
 
 # Import utility to add names to tables
 try:
@@ -149,10 +150,7 @@ def create_fact_player_period_stats() -> pd.DataFrame:
                 period_events = player_events[player_events['period'] == period]
                 
                 # Count stats (all events here are already filtered to event_player_1)
-                goals = len(period_events[
-                    (period_events['event_type'].astype(str).str.lower() == 'goal') &
-                    (period_events['event_detail'].astype(str).str.lower().str.contains('goal_scored', na=False))
-                ])
+                goals = get_goal_filter(period_events).sum()
                 
                 shots = len(period_events[period_events['event_type'].astype(str).str.lower() == 'shot'])
                 passes = len(period_events[period_events['event_type'].astype(str).str.lower() == 'pass'])
@@ -282,10 +280,7 @@ def create_fact_period_momentum() -> pd.DataFrame:
                 if 'is_goal' in team_events.columns:
                     stats['goals'] = int(team_events['is_goal'].sum())
                 else:
-                    stats['goals'] = len(team_events[
-                        (team_events['event_type'].astype(str).str.lower() == 'goal') &
-                        (team_events['event_detail'].astype(str).str.lower().str.contains('goal_scored', na=False))
-                    ])
+                    stats['goals'] = get_goal_filter(team_events).sum()
                 
                 # Shots (only event_player_1, event_type='Shot')
                 stats['shots'] = len(team_events[team_events['event_type'].astype(str).str.lower() == 'shot'])
@@ -1379,10 +1374,7 @@ def create_fact_player_stats_by_competition_tier() -> pd.DataFrame:
             continue
         
         # Count events where player is event_player_1
-        goals = len(group[
-            (group['event_type'].astype(str).str.lower() == 'goal') &
-            (group['event_detail'].astype(str).str.lower().str.contains('goal_scored', na=False))
-        ])
+        goals = get_goal_filter(group).sum()
         
         shots = len(group[group['event_type'].astype(str).str.lower() == 'shot'])
         passes = len(group[group['event_type'].astype(str).str.lower() == 'pass'])
@@ -2397,10 +2389,7 @@ def create_qa_scorer_comparison() -> pd.DataFrame:
     for game_id in events['game_id'].dropna().unique():
         # Goals from events
         game_events = events[events['game_id'] == game_id]
-        event_goals = len(game_events[
-            (game_events['event_type'].astype(str).str.lower() == 'goal') &
-            (game_events['event_detail'].astype(str).str.lower().str.contains('goal_scored', na=False))
-        ])
+        event_goals = get_goal_filter(game_events).sum()
         
         # Goals from player stats
         game_stats = player_game_stats[player_game_stats['game_id'] == game_id]
@@ -2552,8 +2541,7 @@ def create_fact_goal_assists() -> pd.DataFrame:
 
     # Get all goals (scorer is event_player_1)
     goals = event_players[
-        (event_players['event_type'].astype(str).str.lower() == 'goal') &
-        (event_players['event_detail'].astype(str).str.lower().str.contains('goal_scored', na=False)) &
+        get_goal_filter(event_players) &
         (event_players['player_role'].astype(str).str.lower() == 'event_player_1')
     ].copy()
 

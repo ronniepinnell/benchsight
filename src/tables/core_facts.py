@@ -32,6 +32,7 @@ from pathlib import Path
 from datetime import datetime
 import math
 from src.formulas.formula_applier import apply_player_stats_formulas
+from src.calculations.goals import get_goal_filter
 
 OUTPUT_DIR = Path('data/output')
 
@@ -40,11 +41,8 @@ OUTPUT_DIR = Path('data/output')
 # =============================================================================
 
 def is_goal_scored(df, event_type_col='event_type', event_detail_col='event_detail'):
-    """Single source of truth for goal identification."""
-    return (
-        (df[event_type_col].astype(str).str.lower() == 'goal') &
-        (df[event_detail_col].astype(str).str.lower().str.contains('goal_scored', na=False))
-    )
+    """Goal identification - delegates to canonical src/calculations/goals.py."""
+    return get_goal_filter(df)
 
 PRIMARY_PLAYER = 'event_player_1'
 # ASSIST TRACKING: Assists tracked via play_detail1='AssistPrimary'/'AssistSecondary'
@@ -2053,10 +2051,7 @@ def calculate_xg_stats(player_id, game_id, event_players, events):
         if 'is_goal' in player_shots.columns:
             goals_total = player_shots['is_goal'].sum()
         elif 'event_type' in player_shots.columns and 'event_detail' in player_shots.columns:
-            goals_total = (
-                (player_shots['event_type'].astype(str).str.lower() == 'goal') &
-                (player_shots['event_detail'].astype(str).str.lower().str.contains('goal_scored', na=False))
-            ).sum()
+            goals_total = get_goal_filter(player_shots).sum()
         
         # Map danger levels to base xG rates
         danger_map = player_shots['danger_level'].astype(str).str.lower().map(
