@@ -4042,80 +4042,89 @@ function closeSettings() {
     console.error('settingsModal not found!');
   }
 }
-function openHelp() { 
+function openHelp() {
   try {
-  const modal = document.getElementById('helpModal');
+    const modal = document.getElementById('helpModal');
     if (!modal) {
       console.error('helpModal not found');
       toast('Help modal not found', 'error');
       return;
     }
     modal.classList.add('show');
-    console.log('Help modal opened');
+    modal.style.display = 'flex';
   } catch (err) {
     console.error('Error opening help:', err);
     toast('Error opening help: ' + err.message, 'error');
   }
 }
-function closeHelp() { 
+function closeHelp() {
   const modal = document.getElementById('helpModal');
-  if (modal) modal.classList.remove('show');
+  if (modal) {
+    modal.classList.remove('show');
+    modal.style.display = 'none';
+  }
 }
 
 /**
  * Open the full user guide in a new tab
  */
 function openUserGuide() {
-  // Try to open the guide file
-  const guideUrl = 'TRACKER_USER_GUIDE_v23.4.md';
-  
-  // Create a modal with the guide content if file not accessible
-  const html = `
-    <h3>📖 BenchSight Tracker v23.4 User Guide</h3>
-    <p style="font-size:11px;color:var(--muted);margin-bottom:12px;">
-      The complete user guide covers all features in detail.
-    </p>
-    
-    <div style="max-height:400px;overflow-y:auto;background:var(--panel);padding:12px;border-radius:4px;font-size:10px;line-height:1.6;">
-      <h4 style="color:var(--accent);margin-bottom:8px;">📋 Table of Contents</h4>
-      <ol style="margin-left:16px;">
-        <li><strong>Quick Start</strong> - First time setup, basic workflow</li>
-        <li><strong>Interface Overview</strong> - Layout diagram, color coding</li>
-        <li><strong>Video Playback</strong> - Loading, controls, multi-source, clock sync</li>
-        <li><strong>Event Tracking</strong> - Types, details, players, logging</li>
-        <li><strong>XY Positioning</strong> - Modes, smart linking, drag creation</li>
-        <li><strong>Shift Tracking</strong> - Recording, line presets</li>
-        <li><strong>Workflow Automation</strong> - Chains, templates, auto-features</li>
-        <li><strong>Data Management</strong> - Saving, export/import, rosters</li>
-        <li><strong>Keyboard Shortcuts</strong> - Complete reference table</li>
-        <li><strong>Tips & Best Practices</strong> - Workflows, troubleshooting</li>
-      </ol>
-      
-      <h4 style="color:var(--accent);margin:16px 0 8px;">🎬 Video Hotkeys (v23.4)</h4>
-      <table style="width:100%;border-collapse:collapse;">
-        <tr><td style="padding:2px 8px;border-bottom:1px solid var(--border);"><kbd>Space</kbd></td><td>Play/Pause</td></tr>
-        <tr><td style="padding:2px 8px;border-bottom:1px solid var(--border);"><kbd>←</kbd> / <kbd>→</kbd></td><td>Seek ±1s</td></tr>
-        <tr><td style="padding:2px 8px;border-bottom:1px solid var(--border);"><kbd>Shift+←/→</kbd></td><td>Seek ±10s</td></tr>
-        <tr><td style="padding:2px 8px;border-bottom:1px solid var(--border);"><kbd>↑</kbd> / <kbd>↓</kbd></td><td>Speed up/down</td></tr>
-        <tr><td style="padding:2px 8px;border-bottom:1px solid var(--border);"><kbd>;</kbd> / <kbd>'</kbd></td><td>Frame step</td></tr>
-        <tr><td style="padding:2px 8px;border-bottom:1px solid var(--border);"><kbd>+</kbd> / <kbd>-</kbd></td><td>Zoom in/out</td></tr>
-        <tr><td style="padding:2px 8px;"><kbd>Ctrl+1-9</kbd></td><td>Switch video source</td></tr>
-      </table>
-      
-      <h4 style="color:var(--accent);margin:16px 0 8px;">⚡ Quick Workflows</h4>
-      <p><strong>Shot:</strong> Drag from shooter toward net → Auto-creates shot with XY</p>
-      <p><strong>Pass:</strong> Drag from passer to receiver → Auto-creates pass with XY</p>
-      <p><strong>Hit:</strong> Add players → Click puck → 📍 All Here</p>
-      <p><strong>Faceoff:</strong> Click faceoff dot → Auto-positions players</p>
-    </div>
-    
-    <div class="modal-actions" style="margin-top:12px;display:flex;justify-content:space-between;">
-      <a href="TRACKER_USER_GUIDE_v23.4.md" download class="btn-sm" style="background:var(--accent);color:#000;text-decoration:none;padding:6px 12px;">📥 Download Guide (Markdown)</a>
-      <button class="btn-primary" onclick="closeModal()">Close</button>
-    </div>
-  `;
-  
-  showModal(html);
+  try {
+    const html = `
+      <h3>📖 BenchSight Tracker v29.1 User Guide</h3>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:12px;">
+        The complete user guide covers all features in detail.
+      </p>
+
+      <div style="max-height:400px;overflow-y:auto;background:var(--panel);padding:12px;border-radius:4px;font-size:10px;line-height:1.6;">
+        <h4 style="color:var(--accent);margin-bottom:8px;">📋 Table of Contents</h4>
+        <ol style="margin-left:16px;">
+          <li><strong>Quick Start</strong> - First time setup, basic workflow</li>
+          <li><strong>Interface Overview</strong> - Layout diagram, color coding</li>
+          <li><strong>Video Playback</strong> - Loading, controls, multi-source, clock sync</li>
+          <li><strong>Event Tracking</strong> - Types, details, players, logging</li>
+          <li><strong>Command Bar</strong> - Fast event entry with shorthand syntax</li>
+          <li><strong>Auto-Event Chains</strong> - Goal/Penalty/Save chain automation</li>
+          <li><strong>XY Positioning</strong> - Modes, smart linking, drag creation</li>
+          <li><strong>Shift Tracking</strong> - Recording, line presets</li>
+          <li><strong>Workflow Automation</strong> - Chains, templates, auto-features</li>
+          <li><strong>Data Management</strong> - Saving, export/import, rosters</li>
+          <li><strong>Keyboard Shortcuts</strong> - Complete reference table</li>
+          <li><strong>Tips & Best Practices</strong> - Workflows, troubleshooting</li>
+        </ol>
+
+        <h4 style="color:var(--accent);margin:16px 0 8px;">🎬 Video Hotkeys</h4>
+        <table style="width:100%;border-collapse:collapse;">
+          <tr><td style="padding:2px 8px;border-bottom:1px solid var(--border);"><kbd>Space</kbd></td><td>Play/Pause</td></tr>
+          <tr><td style="padding:2px 8px;border-bottom:1px solid var(--border);"><kbd>←</kbd> / <kbd>→</kbd></td><td>Seek ±1s</td></tr>
+          <tr><td style="padding:2px 8px;border-bottom:1px solid var(--border);"><kbd>Shift+←/→</kbd></td><td>Seek ±10s</td></tr>
+          <tr><td style="padding:2px 8px;border-bottom:1px solid var(--border);"><kbd>↑</kbd> / <kbd>↓</kbd></td><td>Speed up/down</td></tr>
+          <tr><td style="padding:2px 8px;border-bottom:1px solid var(--border);"><kbd>;</kbd> / <kbd>'</kbd></td><td>Frame step</td></tr>
+          <tr><td style="padding:2px 8px;border-bottom:1px solid var(--border);"><kbd>+</kbd> / <kbd>-</kbd></td><td>Zoom in/out</td></tr>
+          <tr><td style="padding:2px 8px;"><kbd>Ctrl+1-9</kbd></td><td>Switch video source</td></tr>
+        </table>
+
+        <h4 style="color:var(--accent);margin:16px 0 8px;">⚡ Command Bar (v29)</h4>
+        <p><strong>Syntax:</strong> <code>[h/a] [EventCode] [Jersey#] [detail1] [detail2]</code></p>
+        <p><strong>Examples:</strong> <code>h S 17 on wr</code> (home shot), <code>a G 9 | 30</code> (away goal vs goalie)</p>
+
+        <h4 style="color:var(--accent);margin:16px 0 8px;">⚡ Quick Workflows</h4>
+        <p><strong>Shot:</strong> Drag from shooter toward net or use command bar</p>
+        <p><strong>Pass:</strong> Drag from passer to receiver</p>
+        <p><strong>Goal:</strong> G [jersey] | [goalie] - auto-creates Stoppage + Faceoff</p>
+        <p><strong>Faceoff:</strong> Click faceoff dot or use F [jersey] w/l | [opp]</p>
+      </div>
+
+      <div class="modal-actions" style="margin-top:12px;display:flex;justify-content:space-between;">
+        <a href="TRACKER_USER_GUIDE_v29.md" download class="btn-sm" style="background:var(--accent);color:#000;text-decoration:none;padding:6px 12px;">📥 Download Guide (Markdown)</a>
+        <button class="btn-primary" onclick="closeModal()">Close</button>
+      </div>
+    `;
+    showModal(html);
+  } catch (err) {
+    console.error('Error opening user guide:', err);
+    toast('Error opening user guide: ' + err.message, 'error');
+  }
 }
 
 // ============================================================
@@ -12562,64 +12571,47 @@ function updateNextPlaySuggestions() {
 }
 
 function selectNextEvent(type) {
-  // Get the last event to carry over data
   const lastEvt = S.events[S.events.length - 1];
-  
-  // Set the event type
+
   setEvtType(type);
-  
-    // Carry over all player data if appropriate
-    if (lastEvt) {
-      // Carry over all players on ice (keep XY positions)
-      if (LISTS.linkedEvents[type]?.includes(lastEvt.type)) {
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/c30ac5c8-e929-44dc-a58e-159aa6b2b75b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'selectNextEvent:linkedEvent',message:'Linked event detected - copying XY',data:{fromType:lastEvt.type,toType:type,lastEvtPlayersCount:lastEvt.players?.length||0,lastEvtPuckXYCount:lastEvt.puckXY?.length||0},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-        // #endregion
-        
-        // Auto-link - use the next available linked index (max + 1)
-        const nextLinkedIdx = getNextLinkedEventIdx();
-        S.linkedEventIdx = nextLinkedIdx;
-        document.getElementById('linkedEvtSelect').value = nextLinkedIdx; // Store linked index, not event idx
-      
-        // Copy players with XY
-        S.curr.players = lastEvt.players.map(p => ({
-          ...p,
-          xy: [...(p.xy || [])] // Clone XY array
-        }));
-        
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/c30ac5c8-e929-44dc-a58e-159aa6b2b75b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'selectNextEvent:playersCopied',message:'Players copied with XY',data:{playersCopied:S.curr.players.length,playersWithXY:S.curr.players.filter(p=>p.xy?.length>0).length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-        // #endregion
-      
-        // Copy puck XY
-        if (lastEvt.puckXY?.length) {
-          S.curr.puckXY = [...lastEvt.puckXY];
-          // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/c30ac5c8-e929-44dc-a58e-159aa6b2b75b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'selectNextEvent:puckXYCopied',message:'Puck XY copied',data:{puckXYCount:S.curr.puckXY.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-          // #endregion
-        }
-      
-        // Copy zone and time
-        document.getElementById('evtZone').value = lastEvt.zone || '';
-        document.getElementById('evtStartTime').value = lastEvt.start_time || lastEvt.end_time || '';
-      }
-    
+
+  // v29.1: Carry over players (without XY) and zone/time for linked events.
+  // XY must be set explicitly by user clicking the rink.
+  if (lastEvt) {
+    if (LISTS.linkedEvents[type]?.includes(lastEvt.type)) {
+      const nextLinkedIdx = getNextLinkedEventIdx();
+      S.linkedEventIdx = nextLinkedIdx;
+      const linkedSel = document.getElementById('linkedEvtSelect');
+      if (linkedSel) linkedSel.value = nextLinkedIdx;
+
+      // Copy players WITHOUT XY (user must click rink for positions)
+      S.curr.players = lastEvt.players.map(p => ({
+        ...p,
+        xy: [] // v29.1: Clear XY - user clicks rink to set
+      }));
+
+      // Copy zone and time (these are useful context)
+      const evtZone = document.getElementById('evtZone');
+      if (evtZone) evtZone.value = lastEvt.zone || '';
+      const evtStart = document.getElementById('evtStartTime');
+      if (evtStart) evtStart.value = lastEvt.start_time || lastEvt.end_time || '';
+    }
+
     // Special cases for role swaps (Shot→Save: shooter becomes opp)
     if (type === 'Save' && lastEvt.type === 'Shot') {
       S.curr.players = lastEvt.players.map(p => ({
         ...p,
         role: p.role?.startsWith('event') ? p.role.replace('event', 'opp') : p.role.replace('opp', 'event'),
-        xy: [...(p.xy || [])]
+        xy: [] // v29.1: Clear XY
       }));
-      // Swap event team
       S.evtTeam = S.evtTeam === 'home' ? 'away' : 'home';
       updateEvtTeamUI();
     }
   }
-  
+
   renderQuickAdd();
   renderMarkers();
-  toast(`${type} - data carried over`, 'success');
+  toast(`${type} - players carried over`, 'success');
 }
 
 function updateEvtTeamUI() {
@@ -15093,8 +15085,9 @@ function setEvtType(type) {
   // Update linked events dropdown based on current type
   updateLinkedEventsDropdown();
 
-  // Apply linked event data if linked
-  applyLinkedEventData();
+  // v29.1: Removed auto applyLinkedEventData() from setEvtType()
+  // Players and XY should only copy when user explicitly links events,
+  // not on every type change. See lines 12663, 12814, 33886, 33895.
 
   // Auto-derive zone from position if we have XY
   const zone = calculateZone();
@@ -15351,8 +15344,13 @@ function onD1Change() {
                            type === 'Goal' || 
                            (d1 && d1.includes('Goal_Scored'));
   if (needsNetLocation) {
-    setTimeout(() => document.getElementById('netModal').classList.add('show'), 100);
-    // v23.3: Auto-add opposing goalie for shots on net
+    setTimeout(() => {
+      const netModal = document.getElementById('netModal');
+      if (netModal) {
+        netModal.classList.add('show');
+        netModal.style.display = 'flex';
+      }
+    }, 100);
     autoPopulateGoalie();
   }
 }
@@ -16487,7 +16485,11 @@ function clearNetXY() {
 }
 
 function closeNetModal() {
-  document.getElementById('netModal').classList.remove('show');
+  const modal = document.getElementById('netModal');
+  if (modal) {
+    modal.classList.remove('show');
+    modal.style.display = 'none';
+  }
 }
 
 // ============================================================
@@ -16584,20 +16586,8 @@ function logEventDirect() {
   autoDetectAllSuccess();
   autoDetectAllSideOfPuck();
   
-  // For Possession and Zone_Entry_Exit, copy player XY to puck
-  const detail1 = document.getElementById('evtD1').value || '';
-  const detail2 = document.getElementById('evtD2').value || '';
-  const isPossessionEvent = S.curr.type === 'Possession' || 
-    (S.curr.type === 'Zone_Entry_Exit' && (detail2.includes('Rush') || detail1.includes('Entry')));
-  
-  if (isPossessionEvent && S.curr.puckXY.length === 0) {
-    const evtPlayer1 = S.curr.players.find(p => 
-      p.role === 'event_team_player_1' || p.role === 'event_player_1' || p.roleNum === 1
-    );
-    if (evtPlayer1?.xy?.length > 0) {
-      S.curr.puckXY = evtPlayer1.xy.map(xy => ({...xy}));
-    }
-  }
+  // v29.1: Disabled auto-copy of player XY to puck XY for possession events.
+  // Was causing unwanted puck XY data. User should click rink to set puck position.
   
   // Build linked event chain
   let linkedEventChain = [];
@@ -18518,19 +18508,8 @@ function doLogEvent() {
   // Detect pressure for all event players
   detectPressure();
   
-  // v23.3: For Possession and Zone_Entry_Exit (rush/carry), copy ONLY event_player_1's XY to puckXY
-  const isPossessionEvent = type === 'Possession' || 
-    (type === 'Zone_Entry_Exit' && (detail2.includes('Rush') || detail2.includes('Carried') || detail1.includes('Entry')));
-  
-  if (isPossessionEvent && S.curr.puckXY.length === 0) {
-    const evtPlayer1 = S.curr.players.find(p => 
-      p.role === 'event_team_player_1' || p.role === 'event_player_1' || p.roleNum === 1
-    );
-    if (evtPlayer1?.xy?.length > 0) {
-      S.curr.puckXY = evtPlayer1.xy.map(xy => ({...xy}));
-      console.log(`Copied #${evtPlayer1.num}'s XY to puckXY for ${type}`);
-    }
-  }
+  // v29.1: Disabled auto-copy of player XY to puck XY for possession events.
+  // Was causing unwanted puck XY data.
   
   // Build linked event chain
   let linkedEventChain = [];
@@ -18909,48 +18888,62 @@ if (typeof window !== 'undefined') {
  * Unlike clearEvent() which preserves players for event chaining
  */
 function clearEventFull() {
-  // Reset current event state completely
-  S.curr = { type: null, players: [], puckXY: [], netXY: null };
-  S.selectedPlayer = null;
-  S.xySlot = 1;
-  S.xyHistory = [];
-  S.linkedEventIdx = null;
+  try {
+    // Reset current event state completely
+    S.curr = { type: null, players: [], puckXY: [], netXY: null };
+    S.selectedPlayer = null;
+    S.xySlot = 1;
+    S.xyHistory = [];
+    S.linkedEventIdx = null;
 
-  // Clear highlighting
-  S.highlightedXYSeq = null;
-  S.highlightedXYType = null;
-  S.highlightedXYPlayerNum = null;
+    // Clear highlighting
+    S.highlightedXYSeq = null;
+    S.highlightedXYType = null;
+    S.highlightedXYPlayerNum = null;
 
-  // Clear all UI elements
-  document.querySelectorAll('.evt-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('evtD1').innerHTML = '<option value="">--</option>';
-  document.getElementById('evtD2').innerHTML = '<option value="">--</option>';
-  document.getElementById('evtZone').value = '';
-  document.getElementById('evtSuccess').value = '';
-  document.getElementById('evtStartTime').value = ''; // Unlike clearEvent, we clear start time
-  document.getElementById('evtEndTime').value = '';
-  document.getElementById('isHighlight').checked = false;
-  document.getElementById('evtVideoUrl').value = '';
+    // Clear all UI elements (null-safe)
+    document.querySelectorAll('.evt-btn').forEach(b => b.classList.remove('active'));
+    const d1 = document.getElementById('evtD1');
+    if (d1) d1.innerHTML = '<option value="">--</option>';
+    const d2 = document.getElementById('evtD2');
+    if (d2) d2.innerHTML = '<option value="">--</option>';
+    const zone = document.getElementById('evtZone');
+    if (zone) zone.value = '';
+    const success = document.getElementById('evtSuccess');
+    if (success) success.value = '';
+    const startTime = document.getElementById('evtStartTime');
+    if (startTime) startTime.value = '';
+    const endTime = document.getElementById('evtEndTime');
+    if (endTime) endTime.value = '';
+    const highlight = document.getElementById('isHighlight');
+    if (highlight) highlight.checked = false;
+    const videoUrl = document.getElementById('evtVideoUrl');
+    if (videoUrl) videoUrl.value = '';
 
-  const highlightVideoUrlRow = document.getElementById('highlightVideoUrlRow');
-  if (highlightVideoUrlRow) highlightVideoUrlRow.style.display = 'none';
+    const highlightVideoUrlRow = document.getElementById('highlightVideoUrlRow');
+    if (highlightVideoUrlRow) highlightVideoUrlRow.style.display = 'none';
 
-  const zoneDisplay = document.getElementById('zoneDisplay');
-  if (zoneDisplay) zoneDisplay.innerHTML = '';
+    const zoneDisplay = document.getElementById('zoneDisplay');
+    if (zoneDisplay) zoneDisplay.innerHTML = '';
 
-  // Also clear the linked event indicator
-  const linkedEvtEl = document.getElementById('linkedEvt');
-  if (linkedEvtEl) linkedEvtEl.value = '';
+    const linkedEvtEl = document.getElementById('linkedEvt');
+    if (linkedEvtEl) linkedEvtEl.value = '';
 
-  // Update entry state indicator
-  updateEntryStateIndicator('new');
+    // Update entry state indicator
+    if (typeof updateEntryStateIndicator === 'function') {
+      updateEntryStateIndicator('new');
+    }
 
-  // Re-render UI
-  renderQuickAdd();
-  renderXYSlots();
-  renderMarkers();
+    // Re-render UI
+    if (typeof renderQuickAdd === 'function') renderQuickAdd();
+    if (typeof renderXYSlots === 'function') renderXYSlots();
+    if (typeof renderMarkers === 'function') renderMarkers();
 
-  toast('Entry cleared', 'info');
+    toast('Entry cleared', 'info');
+  } catch (err) {
+    console.error('Error in clearEventFull:', err);
+    toast('Error clearing entry: ' + err.message, 'error');
+  }
 }
 
 // Ensure clearEventFull is globally accessible
@@ -22310,108 +22303,14 @@ function copyPreviousEventPlayers() {
 }
 
 /**
- * v23.9: Carry over XY from previous event if all players match and no XY is set
+ * v29.1: XY carry-over disabled by default.
+ * Was auto-copying puck and player XY from previous events, causing "random" XY data.
+ * XY should only be set by explicit user action (clicking rink or faceoff dots).
  */
 function carryOverXYFromPreviousEvent(loggedEvent) {
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/c30ac5c8-e929-44dc-a58e-159aa6b2b75b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'carryOverXYFromPreviousEvent:entry',message:'XY carry-over check',data:{enabled:S.xyCarryOverEnabled,hasLoggedEvent:!!loggedEvent,currPlayersCount:S.curr.players?.length||0},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-  // #endregion
-  
-  // v23.9: Check if XY carry-over is enabled
-  if (S.xyCarryOverEnabled === false) {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/c30ac5c8-e929-44dc-a58e-159aa6b2b75b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'carryOverXYFromPreviousEvent:disabled',message:'XY carry-over disabled',timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
-    return;
-  }
-  if (!loggedEvent || !S.curr.players || S.curr.players.length === 0) {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/c30ac5c8-e929-44dc-a58e-159aa6b2b75b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'carryOverXYFromPreviousEvent:noData',message:'No data to carry over',data:{hasLoggedEvent:!!loggedEvent,hasCurrPlayers:!!S.curr.players,currPlayersCount:S.curr.players?.length||0},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
-    return;
-  }
-  
-  // Get previous event (the one just logged)
-  const prevEvent = loggedEvent;
-  if (!prevEvent.players || prevEvent.players.length === 0) {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/c30ac5c8-e929-44dc-a58e-159aa6b2b75b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'carryOverXYFromPreviousEvent:noPrevPlayers',message:'Previous event has no players',timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
-    return;
-  }
-  
-  // Check if all current players were in the previous event
-  const currentPlayerKeys = S.curr.players.map(p => `${p.num}_${p.team || S.evtTeam}`).sort();
-  const prevPlayerKeys = prevEvent.players.map(p => `${p.num}_${p.team || prevEvent.team}`).sort();
-  
-  // Check if all current players exist in previous event
-  const allPlayersMatch = currentPlayerKeys.every(key => prevPlayerKeys.includes(key));
-  
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/c30ac5c8-e929-44dc-a58e-159aa6b2b75b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'carryOverXYFromPreviousEvent:playerMatch',message:'Player match check',data:{allPlayersMatch,currentPlayerKeys,prevPlayerKeys},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-  // #endregion
-  
-  if (!allPlayersMatch) {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/c30ac5c8-e929-44dc-a58e-159aa6b2b75b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'carryOverXYFromPreviousEvent:playersDontMatch',message:'Players dont match - skipping carry-over',timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-    // #endregion
-    return; // Not all players match, skip
-  }
-  
-  let playersCarriedOver = 0;
-  let puckCarriedOver = false;
-  
-  // For each current player, if they have no XY but had XY in previous event, copy last XY
-  S.curr.players.forEach(currPlayer => {
-    // Skip if player already has XY
-    if (currPlayer.xy && currPlayer.xy.length > 0) {
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/c30ac5c8-e929-44dc-a58e-159aa6b2b75b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'carryOverXYFromPreviousEvent:playerHasXY',message:'Player already has XY - skipping',data:{playerNum:currPlayer.num,xyCount:currPlayer.xy.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-      // #endregion
-      return;
-    }
-    
-    // Find matching player in previous event (by num and team)
-    const prevPlayer = prevEvent.players.find(p => 
-      p.num === currPlayer.num && 
-      (p.team || prevEvent.team) === (currPlayer.team || S.evtTeam)
-    );
-    
-    if (prevPlayer && prevPlayer.xy && prevPlayer.xy.length > 0) {
-      // Copy the last XY point (end position) as the first XY point for next event
-      const lastXY = prevPlayer.xy[prevPlayer.xy.length - 1];
-      currPlayer.xy = [{ x: lastXY.x, y: lastXY.y, seq: 1 }];
-      playersCarriedOver++;
-      
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/c30ac5c8-e929-44dc-a58e-159aa6b2b75b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'carryOverXYFromPreviousEvent:playerCarried',message:'Carried over player XY',data:{playerNum:currPlayer.num,fromXY:{x:lastXY.x,y:lastXY.y,seq:lastXY.seq},toXY:{x:currPlayer.xy[0].x,y:currPlayer.xy[0].y,seq:1}},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-      // #endregion
-    }
-  });
-  
-  // Also carry over puck XY if no puck XY is set
-  if ((!S.curr.puckXY || S.curr.puckXY.length === 0) && prevEvent.puckXY && prevEvent.puckXY.length > 0) {
-    const lastPuckXY = prevEvent.puckXY[prevEvent.puckXY.length - 1];
-    S.curr.puckXY = [{ x: lastPuckXY.x, y: lastPuckXY.y, seq: 1 }];
-    puckCarriedOver = true;
-    
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/c30ac5c8-e929-44dc-a58e-159aa6b2b75b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'carryOverXYFromPreviousEvent:puckCarried',message:'Carried over puck XY',data:{fromXY:{x:lastPuckXY.x,y:lastPuckXY.y,seq:lastPuckXY.seq},toXY:{x:S.curr.puckXY[0].x,y:S.curr.puckXY[0].y,seq:1}},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-    // #endregion
-  }
-  
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/c30ac5c8-e929-44dc-a58e-159aa6b2b75b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'carryOverXYFromPreviousEvent:complete',message:'XY carry-over complete',data:{playersCarriedOver,puckCarriedOver},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-  // #endregion
-  
-  // Re-render to show carried over XY
-  renderMarkers();
-  renderXYSlots();
-  
-  // Show visual feedback
-  if (playersCarriedOver > 0 || puckCarriedOver) {
-    toast(`XY carried over: ${playersCarriedOver} player(s)${puckCarriedOver ? ', puck' : ''}`, 'info');
-  }
+  // v29.1: Disabled - was causing random XY population.
+  // Users should explicitly click rink to set XY coordinates.
+  return;
 }
 
 /**
@@ -22681,7 +22580,11 @@ function handleShotChartClick(svgX, svgY, relX, relY) {
     onD1Change();
     
     // Open net modal for shot location
-    document.getElementById('netModal').classList.add('show');
+    const netModal = document.getElementById('netModal');
+    if (netModal) {
+      netModal.classList.add('show');
+      netModal.style.display = 'flex';
+    }
   }, 50);
   
   renderMarkers();
@@ -23198,17 +23101,17 @@ function editEvent(idx) {
   
   renderEditRinkMarkers();
   
-  // v24.0: Show/hide net section for Goal OR Shot_OnNetSaved OR Shot_OnNetGoal
+  // v29.1: Show/hide net section for Goal, Save, or any Shot_OnNet variant
   const type = evt.type || '';
   const d1 = evt.detail1 || '';
   const d1Lower = (d1 || '').toLowerCase();
-  const showNet = type === 'Goal' || 
+  const showNet = type === 'Goal' ||
+                  type === 'Save' ||
+                  d1Lower.includes('shot_onnet') ||
+                  d1Lower.includes('goal') ||
+                  d1 === 'Shot_OnNet' ||
                   d1 === 'Shot_OnNetSaved' ||
-                  d1 === 'Shot_OnNetGoal' ||
-                  d1Lower === 'shot_onnetsaved' ||
-                  d1Lower === 'shot_onnetgoal' ||
-                  d1Lower.includes('shot_onnetsaved') ||
-                  d1Lower.includes('shot_onnetgoal');
+                  d1 === 'Shot_OnNetGoal';
   document.getElementById('editNetSection').style.display = showNet ? 'block' : 'none';
   if (showNet && evt.netXY) {
     renderEditNetMarker(evt.netXY);
@@ -23736,16 +23639,15 @@ function updateNetVisibility() {
     }
   }
   
-  // v24.0: Show net for Goal OR Shot_OnNetSaved OR Shot_OnNetGoal
-  // Check both exact match and case-insensitive
+  // v29.1: Show net for Goal OR any Shot_OnNet variant (OnNet, OnNetSaved, OnNetGoal)
   const d1Lower = (d1 || '').toLowerCase();
-  const shouldShowNet = type === 'Goal' || 
+  const shouldShowNet = type === 'Goal' ||
+                        type === 'Save' ||
+                        d1Lower.includes('shot_onnet') ||
+                        d1Lower.includes('goal') ||
+                        d1 === 'Shot_OnNet' ||
                         d1 === 'Shot_OnNetSaved' ||
-                        d1 === 'Shot_OnNetGoal' ||
-                        d1Lower === 'shot_onnetsaved' ||
-                        d1Lower === 'shot_onnetgoal' ||
-                        d1Lower.includes('shot_onnetsaved') ||
-                        d1Lower.includes('shot_onnetgoal');
+                        d1 === 'Shot_OnNetGoal';
   
   // Update main rink net visualization
   if (netContainer && rinkWrap) {
@@ -25554,157 +25456,93 @@ function clearAllShifts() {
 // LINKED EVENT LOGIC
 // ============================================================
 function applyLinkedEventData() {
-  // #region agent log
-  fetch('http://127.0.0.1:7242/ingest/c30ac5c8-e929-44dc-a58e-159aa6b2b75b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'applyLinkedEventData:entry',message:'Applying linked event data',data:{linkedEventIdx:S.linkedEventIdx,currType:S.curr.type},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-  // #endregion
-  
-  // Copy XY data from linked event chain to current event
-  // This applies to ALL linked event types
+  // v29.1: Only copy XY data from explicitly linked events.
+  // Never fall back to "previous event" - that causes random player/XY population.
   if (S.linkedEventIdx === null && S.linkedEventIdx !== 0) {
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/c30ac5c8-e929-44dc-a58e-159aa6b2b75b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'applyLinkedEventData:noLink',message:'No linked event index',timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-    // #endregion
     return;
   }
-  
+
   const currType = S.curr.type;
-  
-  // ============================================================
-  // FIND THE BEST SOURCE FOR XY DATA
-  // Priority: 1) Most recent sibling (same linked_event), 2) Source event, 3) Previous event
-  // ============================================================
-  
+
+  // Find source: 1) Sibling with same linked_event, 2) The linked event itself
+  // v29.1: Removed fallback #3 (previous event) - was the root cause of random data
   let sourceEvt = null;
   let sourceDesc = '';
-  
-  // 1. Check for sibling events (same linked_event) - get the most recent one with XY
+
+  // 1. Check for sibling events (same linked_event) with XY
   const siblings = S.events
     .filter(e => e.linkedEventIdx === S.linkedEventIdx && e.puckXY?.length)
-    .sort((a, b) => b.idx - a.idx); // Most recent first
-  
+    .sort((a, b) => b.idx - a.idx);
+
   if (siblings.length > 0) {
     sourceEvt = siblings[0];
     sourceDesc = `sibling #${sourceEvt.idx + 1} (${sourceEvt.type})`;
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/c30ac5c8-e929-44dc-a58e-159aa6b2b75b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'applyLinkedEventData:sourceFound',message:'Source found - sibling event',data:{sourceType:'sibling',sourceEventIdx:sourceEvt.idx,sourceType:sourceEvt.type,puckXYCount:sourceEvt.puckXY?.length||0},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-    // #endregion
   }
-  
-  // 2. If no sibling has XY, check the source event itself
+
+  // 2. If no sibling has XY, check the linked event itself
   if (!sourceEvt) {
     const linkedEvt = S.events.find(e => e.idx === S.linkedEventIdx);
     if (linkedEvt?.puckXY?.length) {
       sourceEvt = linkedEvt;
       sourceDesc = `source #${linkedEvt.idx + 1} (${linkedEvt.type})`;
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/c30ac5c8-e929-44dc-a58e-159aa6b2b75b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'applyLinkedEventData:sourceFound',message:'Source found - linked event',data:{sourceType:'linked',sourceEventIdx:linkedEvt.idx,sourceType:linkedEvt.type,puckXYCount:linkedEvt.puckXY?.length||0},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-      // #endregion
     }
   }
-  
-  // 3. If still no XY, check the most recent event (regardless of linked_event)
-  if (!sourceEvt && S.events.length > 0) {
-    const lastEvt = S.events[S.events.length - 1];
-    if (lastEvt?.puckXY?.length) {
-      sourceEvt = lastEvt;
-      sourceDesc = `previous #${lastEvt.idx + 1} (${lastEvt.type})`;
-      // #region agent log
-      fetch('http://127.0.0.1:7242/ingest/c30ac5c8-e929-44dc-a58e-159aa6b2b75b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'applyLinkedEventData:sourceFound',message:'Source found - previous event',data:{sourceType:'previous',sourceEventIdx:lastEvt.idx,sourceType:lastEvt.type,puckXYCount:lastEvt.puckXY?.length||0},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-      // #endregion
-    }
-  }
-  
+
   // If no source found with XY, just copy zone from linked event
   if (!sourceEvt) {
     const linkedEvt = S.events.find(e => e.idx === S.linkedEventIdx);
     if (linkedEvt?.zone) {
       document.getElementById('evtZone').value = linkedEvt.zone;
     }
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/c30ac5c8-e929-44dc-a58e-159aa6b2b75b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'applyLinkedEventData:noXYSource',message:'No XY source found',timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-    // #endregion
     toast(`Linked to #${S.linkedEventIdx + 1} (no XY to copy)`, 'info');
     return;
   }
-  
-  // ============================================================
-  // COPY ALL XY DATA FROM SOURCE
-  // ============================================================
-  
-  // Copy puck XY
+
+  // Copy puck XY from source
   if (sourceEvt.puckXY?.length) {
     S.curr.puckXY = JSON.parse(JSON.stringify(sourceEvt.puckXY));
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/c30ac5c8-e929-44dc-a58e-159aa6b2b75b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'applyLinkedEventData:puckXYCopied',message:'Puck XY copied from source',data:{sourceDesc,puckXYCount:S.curr.puckXY.length,sourcePuckXYCount:sourceEvt.puckXY.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-    // #endregion
   }
-  
+
   // Copy net XY if available
   if (sourceEvt.netXY) {
     S.curr.netXY = JSON.parse(JSON.stringify(sourceEvt.netXY));
   }
-  
-  // Copy ALL player positions from source event
-  let playersCopied = 0;
-  let playersWithXY = 0;
-  if (sourceEvt.players?.length) {
-    // Determine if teams should swap roles (e.g., Shot→Save)
+
+  // v29.1: Only copy player XY positions (not add new players).
+  // Players should be added explicitly by the user or auto-population functions.
+  if (sourceEvt.players?.length && S.curr.players.length > 0) {
     const shouldSwapTeams = (
       (currType === 'Save' && sourceEvt.type === 'Shot') ||
       (currType === 'Block' && sourceEvt.type === 'Shot')
     );
-    
-    sourceEvt.players.forEach(srcPlayer => {
-      // Deep copy the player
-      const newPlayer = JSON.parse(JSON.stringify(srcPlayer));
-      
-      // Map role if teams should swap
-      if (shouldSwapTeams && newPlayer.role) {
-        if (newPlayer.role.includes('event_team')) {
-          newPlayer.role = newPlayer.role.replace('event_team', 'opp_team');
-        } else if (newPlayer.role.includes('opp_team')) {
-          newPlayer.role = newPlayer.role.replace('opp_team', 'event_team');
-        }
-      }
-      
-      // Check if this player already exists in current event
-      const existingIdx = S.curr.players.findIndex(p => 
-        p.num === newPlayer.num && p.team === newPlayer.team
-      );
-      
-      if (existingIdx >= 0) {
-        // Merge XY data into existing player
-        if (newPlayer.xy?.length) {
-          S.curr.players[existingIdx].xy = newPlayer.xy;
-          playersWithXY++;
-        }
-        playersCopied++;
-      } else {
-        // Add player with XY
-        S.curr.players.push(newPlayer);
-        playersCopied++;
-        if (newPlayer.xy?.length) {
-          playersWithXY++;
-        }
+
+    // Only copy XY to players that already exist in current event
+    S.curr.players.forEach(currPlayer => {
+      if (currPlayer.xy?.length) return; // Already has XY
+
+      const srcPlayer = sourceEvt.players.find(p => {
+        const matchNum = p.num === currPlayer.num;
+        const matchTeam = shouldSwapTeams
+          ? (p.team !== currPlayer.team) // Swapped team match
+          : (p.team === currPlayer.team);
+        return matchNum && matchTeam;
+      });
+
+      if (srcPlayer?.xy?.length) {
+        currPlayer.xy = JSON.parse(JSON.stringify(srcPlayer.xy));
       }
     });
-    
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/c30ac5c8-e929-44dc-a58e-159aa6b2b75b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'applyLinkedEventData:playersCopied',message:'Players copied from source',data:{sourceDesc,playersCopied,playersWithXY,shouldSwapTeams},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-    // #endregion
   }
-  
+
   // Copy zone from source or linked event
   const zoneSource = sourceEvt.zone || S.events.find(e => e.idx === S.linkedEventIdx)?.zone;
   if (zoneSource) {
     document.getElementById('evtZone').value = zoneSource;
   }
-  
-  // Re-render to show copied data
+
   renderQuickAdd();
   renderMarkers();
-  
-  // Show confirmation
+
   toast(`Copied XY from ${sourceDesc}`, 'info');
 }
 
