@@ -560,26 +560,26 @@ export function ShiftsTimeline({
     return currentVideo !== null && shift.running_video_time !== undefined && shift.running_video_time !== null
   }
 
-  // Get embedded video URL for shift
+  // Get embedded video URL for shift (no end time - let video play past shift)
   const getEmbedVideoUrl = (shift: TeamShift): string | null => {
     if (!currentVideo) return null
     if (shift.running_video_time === undefined || shift.running_video_time === null) return null
     const videoId = extractYouTubeVideoId(currentVideo.video_url)
     if (!videoId) return null
     const startTime = Math.max(0, shift.running_video_time - HIGHLIGHT_PRE_OFFSET)
-    const endTime = shift.running_video_time + HIGHLIGHT_POST_OFFSET
-    return formatYouTubeHighlightUrl(videoId, startTime, endTime, true)
+    // No end time - video plays continuously from start point
+    return formatYouTubeHighlightUrl(videoId, startTime, 0, true)
   }
 
-  // Get embedded video URL for event
+  // Get embedded video URL for event (no end time - let video play past event)
   const getEventEmbedVideoUrl = (event: ShiftEvent): string | null => {
     if (!currentVideo) return null
     if (event.running_video_time === undefined || event.running_video_time === null) return null
     const videoId = extractYouTubeVideoId(currentVideo.video_url)
     if (!videoId) return null
     const startTime = Math.max(0, event.running_video_time - HIGHLIGHT_PRE_OFFSET)
-    const endTime = event.running_video_time + HIGHLIGHT_POST_OFFSET
-    return formatYouTubeHighlightUrl(videoId, startTime, endTime, true)
+    // No end time - video plays continuously from start point
+    return formatYouTubeHighlightUrl(videoId, startTime, 0, true)
   }
 
   const togglePeriod = (period: number) => {

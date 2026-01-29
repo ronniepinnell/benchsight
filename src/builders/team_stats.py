@@ -13,6 +13,7 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 from typing import Optional, Dict
+from src.calculations.goals import get_goal_filter
 from src.core.table_writer import save_output_table
 
 # Import utility functions from core_facts
@@ -137,15 +138,9 @@ class TeamStatsBuilder:
         
         # ========================================
         # GOALS - Count all goals by the team
-        # Goals are either from Goal_Scored events or Shot_Goal events
+        # Per CLAUDE.md: event_type='Goal' AND event_detail='Goal_Scored' ONLY
         # ========================================
-        goal_events = team_events[
-            ((team_events['event_type'].astype(str).str.lower() == 'goal') &
-             (team_events['event_detail'].astype(str).str.lower().str.contains('goal_scored', na=False))) |
-            ((team_events['event_type'].astype(str).str.lower() == 'shot') &
-             (team_events['event_detail'].astype(str).str.lower().str.contains('shot_goal', na=False)))
-        ]
-        # Deduplicate by event_id to avoid counting same goal twice
+        goal_events = team_events[get_goal_filter(team_events)]
         stats['goals'] = goal_events['event_id'].nunique() if len(goal_events) > 0 else 0
         
         # ========================================
@@ -216,13 +211,8 @@ class TeamStatsBuilder:
             period_sog_mask = period_shots['event_detail'].astype(str).str.lower().str.contains('onnet|saved|goal', na=False, regex=True)
             stats[f'p{period}_sog'] = int(period_sog_mask.sum())
             
-            # Period goals
-            period_goals = period_events[
-                ((period_events['event_type'].astype(str).str.lower() == 'goal') &
-                 (period_events['event_detail'].astype(str).str.lower().str.contains('goal_scored', na=False))) |
-                ((period_events['event_type'].astype(str).str.lower() == 'shot') &
-                 (period_events['event_detail'].astype(str).str.lower().str.contains('shot_goal', na=False)))
-            ]
+            # Period goals - per CLAUDE.md: event_type='Goal' AND event_detail='Goal_Scored' ONLY
+            period_goals = period_events[get_goal_filter(period_events)]
             stats[f'p{period}_goals'] = period_goals['event_id'].nunique() if len(period_goals) > 0 else 0
             
             # Period giveaways/takeaways

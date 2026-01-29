@@ -108,21 +108,19 @@ def is_fenwick_event(event_type: str, event_detail: str) -> bool:
 def calculate_corsi_for_player(
     events_df: pd.DataFrame,
     player_id: str,
-    team_id: Optional[str] = None,
-    for_against: str = 'for'
+    team_id: Optional[str] = None
 ) -> int:
     """
     Calculate Corsi events for a player.
-    
+
     Corsi = all shot attempts (SOG + blocked + missed)
     event_player_1 = primary actor (gets credit)
-    
+
     Args:
         events_df: DataFrame with event data
         player_id: Player ID to calculate for
         team_id: Optional team ID filter
-        for_against: 'for' (CF) or 'against' (CA)
-        
+
     Returns:
         Number of Corsi events
     """
@@ -147,21 +145,19 @@ def calculate_corsi_for_player(
 def calculate_fenwick_for_player(
     events_df: pd.DataFrame,
     player_id: str,
-    team_id: Optional[str] = None,
-    for_against: str = 'for'
+    team_id: Optional[str] = None
 ) -> int:
     """
     Calculate Fenwick events for a player.
-    
+
     Fenwick = unblocked shot attempts (SOG + missed, excludes blocked)
     event_player_1 = primary actor (gets credit)
-    
+
     Args:
         events_df: DataFrame with event data
         player_id: Player ID to calculate for
         team_id: Optional team ID filter
-        for_against: 'for' (FF) or 'against' (FA)
-        
+
     Returns:
         Number of Fenwick events
     """
