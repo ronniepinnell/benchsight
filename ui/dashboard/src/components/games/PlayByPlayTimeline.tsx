@@ -1230,23 +1230,32 @@ export function PlayByPlayTimeline({
       }
 
       // Filter by role using fact_event_players data (proper player_role values)
-      if (roleFilter && selectedPlayers.length > 0) {
-        // When a player is selected + role filter active: show events where
-        // the selected player has the matching role in that event
-        const { playerRolesMap } = eventRolesMap
+      // Works with or without player selection (#182)
+      if (roleFilter) {
+        const { rolesMap, playerRolesMap } = eventRolesMap
+        const matchRole = (role: string): boolean => {
+          if (roleFilter === 'event_primary') return role === 'event_player_1'
+          if (roleFilter === 'event_support') return role.startsWith('event_player_') && role !== 'event_player_1'
+          if (roleFilter === 'opp_primary') return role === 'opp_player_1'
+          if (roleFilter === 'opp_support') return role.startsWith('opp_player_') && role !== 'opp_player_1'
+          return true
+        }
         filteredEvents = filteredEvents.filter(e => {
           if (!e.event_id) return false
-          const playerMap = playerRolesMap.get(e.event_id)
-          if (!playerMap) return false
-          return selectedPlayers.some(pid => {
-            const role = playerMap.get(pid)
-            if (!role) return false
-            if (roleFilter === 'event_primary') return role === 'event_player_1'
-            if (roleFilter === 'event_support') return role.startsWith('event_player_') && role !== 'event_player_1'
-            if (roleFilter === 'opp_primary') return role === 'opp_player_1'
-            if (roleFilter === 'opp_support') return role.startsWith('opp_player_') && role !== 'opp_player_1'
-            return true
-          })
+          if (selectedPlayers.length > 0) {
+            // Player selected: show events where THAT player has the matching role
+            const playerMap = playerRolesMap.get(e.event_id)
+            if (!playerMap) return false
+            return selectedPlayers.some(pid => {
+              const role = playerMap.get(pid)
+              return role ? matchRole(role) : false
+            })
+          } else {
+            // No player selected: show events where ANY player has the matching role
+            const roles = rolesMap.get(e.event_id)
+            if (!roles) return false
+            return Array.from(roles).some(matchRole)
+          }
         })
       }
 
